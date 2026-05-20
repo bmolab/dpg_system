@@ -339,6 +339,13 @@ class SMPLProcessingOptions:
     adaptive_effort_hi: float = 0.5      # effort fraction (||efforts_net||): above this → alpha_max
     adaptive_effort_alpha_min: float = 0.05  # EMA alpha at low effort (~20-frame window)
     adaptive_effort_alpha_max: float = 0.5   # EMA alpha at high effort (~11 Hz cutoff at 100fps)
+    # Signal-change branch: raises alpha when median(|Δeffort|) over a K-frame
+    # window is high, letting fast low-effort oscillations through without
+    # admitting single-frame glitch spikes (a spike contributes 2 large deltas
+    # out of K=5 → median picks the small 3rd value, gate stays closed).
+    adaptive_effort_change_window: int = 5   # K: sliding window for median |Δeff|
+    adaptive_effort_change_lo: float = 0.02  # |Δeff|/frame: below this → no change boost
+    adaptive_effort_change_hi: float = 0.10  # |Δeff|/frame: above this → full change boost
     smooth_contact_forces: bool = False  # proximity-adaptive contact force smoothing
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
@@ -7705,20 +7712,51 @@ class SMPLProcessor:
             en_cur = efforts_net[0]  # (J, 3)
             
             if prev_tv is not None and prev_tv.shape == tv_cur.shape:
-                # Per-joint adaptive alpha based on effort magnitude
-                # (effort = torque / max_torque, already computed per axis).
-                # Norm of the effort vector is dimensionless and naturally
-                # joint-scaled — fixes wrist/hand being locked at alpha_min.
+                # ─── Magnitude branch ───
+                # Effort = torque / max_torque (per axis). Norm of the effort
+                # vector is dimensionless and naturally joint-scaled.
                 eff_mags = np.linalg.norm(en_cur, axis=-1)  # (J,)
-                # Blend: 0 at lo, 1 at hi
-                blend = np.clip((eff_mags - lo) / max(hi - lo, 1e-6), 0.0, 1.0)
-                # alpha: alpha_min at low magnitudes, per-joint alpha_max at high
+                eff_blend = np.clip((eff_mags - lo) / max(hi - lo, 1e-6), 0.0, 1.0)
+
+                # ─── Change branch ───
+                # Per-joint |Δeffort| this frame, then median over a K-frame
+                # window. Median (not mean) survives glitch spikes: a single
+                # spike contributes 2 large deltas (in+out) out of K=5 → median
+                # picks the small 3rd value, gate stays closed. Sustained
+                # oscillation overwhelms the median and opens the gate.
+                deff_now = np.linalg.norm(en_cur - prev_en, axis=-1)  # (J,)
+                K = max(3, int(getattr(options, 'adaptive_effort_change_window', 5)))
+                ring = getattr(self, '_adapt_smooth_deff_ring', None)
+                rptr = getattr(self, '_adapt_smooth_deff_ptr', 0)
+                rcnt = getattr(self, '_adapt_smooth_deff_cnt', 0)
+                if ring is None or ring.shape != (K, n_j):
+                    ring = np.zeros((K, n_j), dtype=np.float64)
+                    rptr = 0
+                    rcnt = 0
+                ring[rptr] = deff_now
+                rptr = (rptr + 1) % K
+                rcnt = min(rcnt + 1, K)
+                self._adapt_smooth_deff_ring = ring
+                self._adapt_smooth_deff_ptr = rptr
+                self._adapt_smooth_deff_cnt = rcnt
+
+                if rcnt >= 3:
+                    deff_med = np.median(ring[:rcnt], axis=0)  # (J,)
+                else:
+                    deff_med = np.zeros(n_j)  # warmup: no change boost
+
+                c_lo = getattr(options, 'adaptive_effort_change_lo', 0.02)
+                c_hi = getattr(options, 'adaptive_effort_change_hi', 0.10)
+                chg_blend = np.clip((deff_med - c_lo) / max(c_hi - c_lo, 1e-6), 0.0, 1.0)
+
+                # ─── Combine: either condition opens the gate ───
+                blend = np.maximum(eff_blend, chg_blend)
                 alpha = alpha_min + blend * (_PER_JOINT_ALPHA_MAX[:n_j] - alpha_min)  # (J,)
                 alpha_3 = alpha[:, np.newaxis]  # (J, 1) for broadcasting
-                
+
                 tv_smooth = alpha_3 * tv_cur + (1.0 - alpha_3) * prev_tv
                 en_smooth = alpha_3 * en_cur + (1.0 - alpha_3) * prev_en
-                
+
                 torques_vec = tv_smooth[np.newaxis]  # (1, J, 3)
                 efforts_net = en_smooth[np.newaxis]  # (1, J, 3)
             

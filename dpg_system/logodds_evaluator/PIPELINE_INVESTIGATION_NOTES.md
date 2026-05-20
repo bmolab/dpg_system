@@ -70,13 +70,18 @@ registry so they're invocable as `python muscle_activation_tester.py
 
 _(Update at end of each session — one short paragraph)_
 
-- **2026-05-19:** First investigation complete + fix applied. Confirmed
-  upper-limb over-filtering, applied effort-based threshold to
-  `adaptive_effort_smooth`, re-validated. Wrist/elbow alpha now varies
-  with actual effort instead of being locked at alpha_min. Open
-  follow-up: per-joint `acc_smooth_window` with global scalar (see
-  Known Issues). Next: user to spot-check fix in live patch, then
-  pick next case to investigate.
+- **2026-05-19:** Three changes applied in one session. (1) Upper-limb
+  over-filtering fixed via effort-based threshold in
+  `adaptive_effort_smooth`. (2) R_knee oscillation case (take 3 frames
+  5492-5532) drove design of signal-change-aware alpha — median-of-K
+  |Δeff| over a sliding window, combined with effort-blend via max.
+  Spike-resistant by construction (a single-frame spike contributes 2
+  large deltas out of K=5; median picks the 3rd, small, value). (3)
+  Both fixes validated on diagnostic. Side finding: `acc_smooth_window`
+  does negligible useful work when the EMA is active. Next: user to
+  spot-check in live viz on both files; if knee shows pulsing-during-
+  oscillation, design works; if user wanted sustained-activation
+  visualization, separate magnitude-EMA approach needed.
 
 ## Investigations log
 
@@ -153,6 +158,65 @@ Even null results matter — they document validated behaviors.
   `dpg_system/logodds_evaluator/muscle_activation_tester.py` (added
   `test_upper_limb_filtering`, updated to track effort fraction).
 
+### 2026-05-19 — R_knee fast back-and-forth on take 3 frames 5492-5532
+- File: `/Users/drokeby/Projects/BMO_Lab/GRANTS/NFRF_2023/smpl_mocap_files/LR/take 3_smpl_poses_aligned.npz`
+- Frames: 5492–5532 (~0.67 s at 60 fps) — quick rhythmic knee flexion/extension
+- Question: user reports the right lower leg's quick back-and-forth at
+  the knee doesn't appear in the muscle visualization. Is the effort
+  fix from earlier enough? If not, what's the dominant filter here?
+- Diagnostic: `test_lower_limb_filtering` (new wrapper around shared
+  `_joint_filtering_diagnostic` helper, defaults to `smooth_input_window=3`
+  for this 60-fps file). Plus an inline ablation script that varies one
+  filter at a time.
+- Observation:
+  - Cascade (R_knee, all values starting from raw rms=20.90 djit=12.0):
+    | filter added                       |  rms   | djit | comment                      |
+    |------------------------------------|--------|------|------------------------------|
+    | + smooth_input_window=3            | 14.58  | 5.35 | -30% rms, -55% djit          |
+    | + acc_smooth_window=7              | 12.53  | 3.53 | -14% rms, -34% djit          |
+    | + adaptive_effort EMA (canonical)  | 12.23  | 0.51 | -2% rms,  -86% djit ← killer |
+  - Even with `adaptive_effort_alpha_max=1.0` the canonical config gave
+    djit=0.49 — alpha_max doesn't help because effort is too low
+    (eff_max=0.20) to escape the threshold.
+  - 12–14 Hz oscillation visible in kin° column (peaks at 5510, 5520-22,
+    5525-26, 5531).
+- Judgement: INCORRECT — fast low-effort oscillations get squashed by
+  the EMA because alpha responds only to magnitude. AMBIGUOUS for
+  `acc_smooth_window`: marginal benefit relative to EMA — user observed
+  it "does not seem to do useful work in the current overall filtering
+  regime."
+- Root cause: EMA's alpha is magnitude-only. A 12 Hz oscillation at 50 Nm
+  peak / 250 Nm max never crosses the effort threshold; alpha stays near
+  alpha_min; oscillation is wiped. Magnitude alone is the wrong signal —
+  *rate of change* also needs to count.
+- Action: APPLIED. Designed and implemented signal-change-aware alpha.
+  New fields on SMPLProcessingOptions: `adaptive_effort_change_window`
+  (K=5), `adaptive_effort_change_lo` (0.02 |Δeff|/frame),
+  `adaptive_effort_change_hi` (0.10). In the EMA block, compute
+  `deff_now = ||en_cur - prev_en||` per joint, push into a (K, J) ring,
+  take median, map to `chg_blend`. Final blend = `max(eff_blend,
+  chg_blend)`. Spike-resistant: a single-frame spike contributes 2
+  large deltas (in + out) out of K=5; the median picks the 3rd value
+  which is small, so a single glitch doesn't open the gate.
+- Validation post-fix:
+  - R_knee: filt_rms 12.23 → 7.10 (lower because EMA on a direction-
+    reversing vector produces smaller magnitudes near zero crossings —
+    physically correct), filt_djit **0.51 → 1.45 (+184%)**. Oscillation
+    now coming through as visible jitter in the magnitude.
+  - popping_1 upper limb (sanity, frames 500-1000): every joint
+    improved on jit_retained. L_wrist 5%→12%, R_wrist 3%→9%, L_elbow
+    6%→15%, R_elbow 9%→18%. Effort-only fix still in effect, change
+    branch adds on top.
+- Files touched: `dpg_system/smpl_processor.py` (added 3 fields lines
+  342-348, modified EMA block ~lines 7707-7757),
+  `dpg_system/logodds_evaluator/muscle_activation_tester.py` (refactored
+  upper/lower limb tests around shared `_joint_filtering_diagnostic`,
+  added `test_lower_limb_filtering` with `smooth_input_window=3`).
+- Pending: user spot-check in live viz. If knee oscillation now reads
+  as pulsing activation, design is good. If user wanted *sustained*
+  activation through the oscillation, that's a separate design (apply
+  EMA to magnitude not vector).
+
 ## Open follow-ups from this investigation
 
 - `acc_smooth_window` is a global SG window applied uniformly to all
@@ -172,12 +236,26 @@ _(none yet)_
 
 Pending work — things we noticed but haven't resolved.
 
-- **Per-joint `acc_smooth_window`** (2026-05-19): currently global SG
-  window of 7 frames applied uniformly. Should become per-joint (smaller
-  for wrist/elbow, larger for proximal high-inertia joints) with a single
-  global scalar that multiplies the per-joint values. Surfaced during
-  the upper-limb over-filtering investigation as the secondary
-  contributor to lost wrist/elbow signal. Not addressed in that session.
+- **Retire `acc_smooth_window`?** (2026-05-19, updated): originally
+  planned as a per-joint refactor with a global scalar. Subsequent probe
+  on `take 3` R_knee (frames 5492-5532, 12-14 Hz oscillation at 60 fps)
+  showed that with the EMA active, `acc_smooth_window=7` provides only a
+  ~9% rms / ~22% djit marginal benefit — the EMA flattens what the SG
+  was going to flatten anyway. User observation: "acc_smooth_window does
+  not seem to do useful work in the current overall filtering regime."
+  Decision: don't refactor; consider defaulting to 0 and removing as a
+  tuning knob. Validate the "no useful work" claim on a more diverse set
+  of cases before deleting.
+
+- **Signal-change-aware alpha for adaptive_effort EMA** (2026-05-19):
+  The effort-based threshold fix handled the wrist/elbow case (motion
+  scales with effort), but didn't fix the R_knee case where a 12-14 Hz
+  oscillation happens at low effort (eff_max=0.20). Even with
+  `adaptive_effort_alpha_max=1.0` the EMA stays near alpha_min for that
+  oscillation because effort never crosses the threshold. Proposed:
+  `alpha = max(effort_blend, change_blend)` where `change_blend`
+  measures frame-to-frame torque-vector delta — catches fast oscillation
+  regardless of magnitude. Discuss with user before implementing.
 
 ## Pipeline change log
 
@@ -192,6 +270,25 @@ Pending work — things we noticed but haven't resolved.
   heavy-smoothing regime regardless of motion speed. Effort is naturally
   joint-scaled. See investigation entry 2026-05-19 (upper-limb).
 - Motivated by: 2026-05-19 upper-limb over-filtering investigation.
+
+### 2026-05-19 — `adaptive_effort_smooth` adds signal-change-aware alpha
+- Files: `dpg_system/smpl_processor.py`
+- What: alpha is now `alpha_min + max(eff_blend, chg_blend) *
+  (per_joint_alpha_max - alpha_min)`, where `chg_blend` is the median
+  of |Δeff| over a K-frame sliding window mapped through
+  `adaptive_effort_change_lo` / `_hi` thresholds. New fields on
+  `SMPLProcessingOptions`: `adaptive_effort_change_window` (default 5),
+  `adaptive_effort_change_lo` (0.02 |Δeff|/frame),
+  `adaptive_effort_change_hi` (0.10). Shared per-joint alpha_max cap.
+  No widget exposes the new fields — existing patches unaffected.
+- Why: the effort-only blend doesn't catch fast oscillations that
+  happen at low effort (e.g. R_knee 12 Hz back-and-forth at eff~0.2).
+  Median (not mean) is the spike-rejection mechanism — a single-frame
+  glitch contributes 2 large |Δeff| values out of K=5, so the median
+  picks the 3rd (small) value and the gate doesn't open. Sustained
+  oscillation overwhelms the median and triggers.
+- Motivated by: 2026-05-19 R_knee oscillation investigation
+  (take 3 frames 5492-5532).
 
 Code changes made as a direct result of investigations. Date, file,
 what changed, why, and which investigation entry motivated it.

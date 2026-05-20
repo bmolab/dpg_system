@@ -318,8 +318,20 @@ def test_pressure(path, start, end):
             print(f'f{f}: {" ".join(parts)}  (total={sum(v for _, v in active):.1f}kg)')
 
 
-def test_upper_limb_filtering(path, start, end):
-    """Raw vs filtered torque attenuation for the upper-limb chain.
+# Per-joint alpha_max from smpl_processor.py (matching global_alpha_max=0.5).
+# Keep in sync with _joint_alpha dict in adaptive_effort smoothing block.
+_PER_JOINT_ALPHA_MAX = {
+    0: 0.3,  1: 0.3,  2: 0.3,  3: 0.3,
+    4: 0.4,  5: 0.4,  6: 0.3,  7: 0.6,
+    8: 0.6,  9: 0.35, 10: 0.8, 11: 0.8,
+    12: 0.4, 13: 0.4, 14: 0.4, 15: 0.8,
+    16: 0.5, 17: 0.5, 18: 0.6, 19: 0.6,
+    20: 0.8, 21: 0.8,
+}
+
+
+def _joint_filtering_diagnostic(path, start, end, joints, title, input_smooth=5):
+    """Shared raw-vs-filtered torque diagnostic for a chosen joint set.
 
     Runs two passes over [0, end):
       A: canonical filter stack (smooth_input_window=5, acc_smooth_window=7,
@@ -327,31 +339,28 @@ def test_upper_limb_filtering(path, start, end):
       B: tunable filters disabled (smooth_input_window=0, acc_smooth_window=0,
          adaptive_effort_smooth=False). The per-joint One Euro filter on
          angular velocity inside _compute_angular_kinematics is unconditional
-         and runs in both passes — that's intentional, we're isolating the
-         effect of the user-tunable filters that the user is worried about.
+         and runs in both passes — we're isolating the user-tunable filters.
 
-    Reports per-joint (L/R shoulder, elbow, wrist):
-      raw_rms / filt_rms         — torque magnitude RMS (Nm)
-      retained_pct               — energy retained
-      raw_djitter / filt_djitter — std of frame-to-frame magnitude diff (Nm)
-      jit_retained_pct           — jitter retained (how much fast variation survives)
-      frac_below_lo              — fraction of frames where raw mag < adaptive_effort_lo
-                                   (== fraction stuck in heavy-smoothing regime)
-      alpha_est_mean             — mean alpha that the adaptive EMA *would*
-                                   choose given the raw-pass magnitude
+    Reports per-joint:
+      raw_rms / filt_rms   — torque magnitude RMS (Nm)
+      retained_pct         — energy retained
+      raw/filt jit (std)   — std of frame-to-frame magnitude diff (Nm)
+      jit_retained_pct     — how much fast variation survives
+      <lo%                 — fraction of frames where raw effort < adaptive_effort_lo
+      alpha_est_mean       — mean alpha the EMA would choose for those frames
+      raw_max / eff_max    — peak raw torque (Nm) and effort fraction
+      kin_max°             — peak per-frame local angular displacement (deg)
 
-    Then prints the K frames with the largest |raw - filt| gap so we can
-    eyeball whether the gap is real motion or jitter.
+    Then prints the K frames with the largest |raw - filt| gap.
     """
     from scipy.spatial.transform import Rotation as R_sp
 
     poses, trans, fps, betas, gender = load_data(path)
     end = min(end, len(poses))
 
-    # Two processors, two option sets — separate state.
     pr_A = make_processor(fps, betas, gender)
     pr_B = make_processor(fps, betas, gender)
-    opts_A = make_options(fps)  # canonical
+    opts_A = make_options(fps, smooth_input_window=input_smooth)
     opts_B = make_options(
         fps,
         smooth_input_window=0,
@@ -359,27 +368,14 @@ def test_upper_limb_filtering(path, start, end):
         adaptive_effort_smooth=False,
     )
 
-    # SMPL upper-limb joint indices
-    JOINTS = {
-        'L_shoulder': 16, 'R_shoulder': 17,
-        'L_elbow':    18, 'R_elbow':    19,
-        'L_wrist':    20, 'R_wrist':    21,
-    }
-    # Per-joint alpha_max from smpl_processor.py (matching global_alpha_max=0.5)
-    ALPHA_MAX = {16: 0.5, 17: 0.5, 18: 0.6, 19: 0.6, 20: 0.8, 21: 0.8}
-    # Effort-based thresholds (||efforts_net|| = ||τ/τ_max||)
-    LO = 0.1
-    HI = 0.5
-    ALPHA_MIN = 0.05
+    LO, HI, ALPHA_MIN = 0.1, 0.5, 0.05
 
-    tv_A = {n: [] for n in JOINTS}   # post-filter torque magnitude per joint
-    tv_B = {n: [] for n in JOINTS}   # pre-filter (raw) torque magnitude per joint
-    eff_B = {n: [] for n in JOINTS}  # raw effort magnitude per joint (||τ/τ_max||)
-    tv_A_vec = {n: [] for n in JOINTS}
-    tv_B_vec = {n: [] for n in JOINTS}
-    kin_deg = {n: [] for n in JOINTS}  # raw per-frame angular displacement (deg)
+    tv_A = {n: [] for n in joints}
+    tv_B = {n: [] for n in joints}
+    eff_B = {n: [] for n in joints}
+    kin_deg = {n: [] for n in joints}
     frame_idx = []
-    max_torque = pr_A.max_torque_array  # (24, 3) Nm per axis
+    max_torque = pr_A.max_torque_array
 
     prev_pose_aa = None
     for f in range(end):
@@ -391,23 +387,17 @@ def test_upper_limb_filtering(path, start, end):
             prev_pose_aa = pose_f[0].copy() if pose_f.ndim == 3 else pose_f.copy()
             continue
 
-        tv_A_arr = res_A.get('torques_vec')   # (1, J, 3)
+        tv_A_arr = res_A.get('torques_vec')
         tv_B_arr = res_B.get('torques_vec')
         if tv_A_arr is None or tv_B_arr is None:
             continue
         ta = tv_A_arr[0]
         tb = tv_B_arr[0]
 
-        # Kinematic ground truth: angular displacement of joint local rotation
-        # frame-to-frame, from the raw input axis-angle.
         curr_aa = pose_f[0] if pose_f.ndim == 3 else pose_f
-        for name, j in JOINTS.items():
-            tv_A_vec[name].append(ta[j].copy())
-            tv_B_vec[name].append(tb[j].copy())
+        for name, j in joints.items():
             tv_A[name].append(float(np.linalg.norm(ta[j])))
             tv_B[name].append(float(np.linalg.norm(tb[j])))
-            # Raw effort = ||τ / τ_max|| per axis. Use pass B torque so we
-            # get an estimate of the pre-EMA effort the code would see.
             eff_B[name].append(float(np.linalg.norm(tb[j] / (max_torque[j] + 1e-6))))
             if prev_pose_aa is not None and j < curr_aa.shape[0]:
                 r_curr = R_sp.from_rotvec(curr_aa[j])
@@ -419,19 +409,16 @@ def test_upper_limb_filtering(path, start, end):
         frame_idx.append(f)
         prev_pose_aa = curr_aa.copy()
 
-    # ─── Per-joint summary ──────────────────────────────────────────────
-    print(f'\n=== Upper-Limb Filter Attenuation (frames {start}-{end}) ===')
+    print(f'\n=== {title} Filter Attenuation (frames {start}-{end}) ===')
     print(f'fps={fps:.1f}  effort_lo={LO}  effort_hi={HI}  alpha_min={ALPHA_MIN}')
     print(f'{"joint":>10s} | {"raw_rms":>7s} {"filt_rms":>8s} {"ret%":>5s}'
           f' | {"raw_djit":>8s} {"filt_djit":>8s} {"jit%":>5s}'
           f' | {"<lo%":>5s} {"alpha_est":>9s} | {"raw_max":>7s} {"eff_max":>7s} {"kin_max°":>8s}')
     print('-' * 120)
     summary = {}
-    for name, j in JOINTS.items():
-        a = np.array(tv_A[name])
-        b = np.array(tv_B[name])
-        e = np.array(eff_B[name])
-        k = np.array(kin_deg[name])
+    for name, j in joints.items():
+        a = np.array(tv_A[name]); b = np.array(tv_B[name])
+        e = np.array(eff_B[name]); k = np.array(kin_deg[name])
         if len(a) < 2:
             continue
         raw_rms = float(np.sqrt(np.mean(b ** 2)))
@@ -441,15 +428,15 @@ def test_upper_limb_filtering(path, start, end):
         filt_djit = float(np.std(np.diff(a)))
         jit_retained = 100.0 * filt_djit / (raw_djit + 1e-9)
         frac_below_lo = 100.0 * np.mean(e < LO)
+        amax = _PER_JOINT_ALPHA_MAX.get(j, 0.5)
         blend = np.clip((e - LO) / (HI - LO), 0.0, 1.0)
-        alpha_est = ALPHA_MIN + blend * (ALPHA_MAX[j] - ALPHA_MIN)
+        alpha_est = ALPHA_MIN + blend * (amax - ALPHA_MIN)
         print(f'{name:>10s} | {raw_rms:7.2f} {filt_rms:8.2f} {retained:5.0f}%'
               f' | {raw_djit:8.3f} {filt_djit:8.3f} {jit_retained:5.0f}%'
               f' | {frac_below_lo:4.0f}% {float(np.mean(alpha_est)):9.3f}'
               f' | {float(np.max(b)):7.2f} {float(np.max(e)):7.2f} {float(np.max(k)):8.2f}')
         summary[name] = dict(a=a, b=b, e=e, k=k, alpha_est=alpha_est)
 
-    # ─── Top-K most divergent frames per joint ──────────────────────────
     K = 8
     print(f'\n=== Top {K} frames with largest raw-vs-filtered torque gap ===')
     for name, s in summary.items():
@@ -463,6 +450,27 @@ def test_upper_limb_filtering(path, start, end):
             print(f'    {f:>6d}  {s["b"][idx]:6.2f}  {s["a"][idx]:6.2f}'
                   f'  {gap[idx]:6.2f}  {s["e"][idx]:5.2f}  {s["alpha_est"][idx]:6.3f}'
                   f'  {s["k"][idx]:6.2f}')
+
+
+def test_upper_limb_filtering(path, start, end):
+    """Raw vs filtered torque attenuation for L/R shoulder, elbow, wrist."""
+    _joint_filtering_diagnostic(path, start, end, {
+        'L_shoulder': 16, 'R_shoulder': 17,
+        'L_elbow':    18, 'R_elbow':    19,
+        'L_wrist':    20, 'R_wrist':    21,
+    }, title='Upper-Limb')
+
+
+def test_lower_limb_filtering(path, start, end):
+    """Raw vs filtered torque attenuation for L/R hip, knee, ankle."""
+    # 60-fps files in this project use a 3-frame input smoother (5 is for
+    # higher-fps mocap). If we ever drive this from data, read it from
+    # the file. For now, default to 3 — safe for the LR take 3 file.
+    _joint_filtering_diagnostic(path, start, end, {
+        'L_hip':   1, 'R_hip':   2,
+        'L_knee':  4, 'R_knee':  5,
+        'L_ankle': 7, 'R_ankle': 8,
+    }, title='Lower-Limb', input_smooth=3)
 
 
 def test_logodds_streams(path, start, end):
@@ -504,6 +512,7 @@ TESTS = {
     'pressure': test_pressure,
     'logodds_streams': test_logodds_streams,
     'upper_limb_filtering': test_upper_limb_filtering,
+    'lower_limb_filtering': test_lower_limb_filtering,
 }
 
 
