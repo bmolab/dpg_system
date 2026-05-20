@@ -920,13 +920,19 @@ class OpenTakeNode(MoCapNode):
 
     def load_take(self, args=None):
         arg = self.load_button()
-        if type(arg) == str:
+        if type(arg) is list:
+            arg = ' '.join(any_to_string(a) for a in arg)
+        if type(arg) == str and arg != '':
+            arg = os.path.expanduser(arg)
             if os.path.exists(arg):
                 try:
                     self.load_path.set(arg)
                     self.load_take_from_npz(arg)
                 except Exception as e:
                     print('load_npz_callback: error loading take file:', e, arg)
+                return
+            else:
+                print('load_take: path does not exist:', arg)
                 return
         LoadDialog(self, self.load_npz_callback, extensions=['.npz'], default_path=self.load_folder_option())
 
