@@ -511,6 +511,11 @@ class OpenTakeNode(MoCapNode):
         if self.streaming or self.paused_outputting or self.play_pause_button.get_label() == 'resume':
             self.streaming = False
             self.paused_outputting = False
+            # Signal the worker (if any) and clear the worker-driven flag so
+            # the next scrub's frame_task falls through to step() instead of
+            # taking the worker-monitoring branch.
+            self._playback_stop_event.set()
+            self._driven_by_worker = False
             self.remove_frame_tasks()
             self.play_pause_button.set_label('play')
             self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
@@ -703,6 +708,10 @@ class OpenTakeNode(MoCapNode):
         # checkbox mid-play we might have started in one mode and need to
         # stop the other.
         self._playback_stop_event.set()
+        # Removing the main frame_task here means the worker-monitoring
+        # branch in frame_task can't clear this itself; do it explicitly so
+        # the next scrub's frame_task takes the step() path.
+        self._driven_by_worker = False
         self.remove_frame_tasks()
 
     def frame_task(self):

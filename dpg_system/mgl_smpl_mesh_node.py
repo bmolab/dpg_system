@@ -145,7 +145,7 @@ class MGLSMPLMeshNode(MGLShapeNode):
         if pose is None:
             return None
 
-        # Detect wxyz quaternion input (assumed scalar-first, matching shadow_to_smpl
+        # Detect wxyz quaternion input (assumed scalar-first, matching shadow_to_smplcollar
         # and smpl_torque defaults) and convert to axis-angle. Trigger: 2-D array with
         # last dim == 4, or flat 1-D size in {88, 96, 208} (22/24/52 joints * 4).
         is_quat = False

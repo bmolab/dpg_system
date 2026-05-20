@@ -4,7 +4,7 @@ import os
 from dpg_system.node import Node
 
 
-def register_nodes():
+def register_noise_review_node():
     Node.app.register_node('noise_review', NoiseReviewNode.factory)
 
 
