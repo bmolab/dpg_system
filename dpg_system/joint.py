@@ -200,7 +200,9 @@ class BaseJoint:
         if self.matrix is not None:
             self.mass = self.dims.copy()
             for child_index in self.children:
-                child = self.body.joints.get(child_index)
+                if not (0 <= child_index < len(self.body.joints)):
+                    continue
+                child = self.body.joints[child_index]
                 if child is None:
                     continue
                 self.mass[0] += child.dims[0]
