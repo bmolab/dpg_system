@@ -1,4 +1,5 @@
 import copy
+import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import os
@@ -3484,7 +3485,7 @@ class SMPLProcessor:
             elif 'head' in name: val = [50.0, 50.0, 50.0]
             
             elif 'collar' in name: val = [60.0, 40.0, 60.0]      # Scapular pro/retraction
-            elif 'shoulder' in name: val = [70.0, 30.0, 60.0]    # Flex~40-80, twist~30, abd~40-60
+            elif 'shoulder' in name: val = [30.0, 70.0, 60.0]    # X=twist~30, Y=flex/ext~40-80, Z=abd~40-60
             elif 'elbow' in name: val = [10.0, 40.0, 8.0]        # Flexion dominant
             elif 'wrist' in name: val = [8.0, 15.0, 10.0]        # Small muscles
             elif 'hand' in name: val = [3.0, 5.0, 3.0]           # Terminal segment
@@ -3538,7 +3539,7 @@ class SMPLProcessor:
             'neck': [50.0, 50.0, 50.0],
             'head': [50.0, 50.0, 50.0],
             'collar': [60.0, 40.0, 60.0],       # Scapular pro/retraction
-            'shoulder': [70.0, 30.0, 60.0],     # Flex~40-80, twist~30, abd~40-60
+            'shoulder': [30.0, 70.0, 60.0],     # X=twist~30, Y=flex/ext~40-80, Z=abd~40-60
             'elbow': [10.0, 40.0, 8.0],          # Flexion dominant
             'wrist': [8.0, 15.0, 10.0],          # Small muscles
             'hand': [3.0, 5.0, 3.0]              # Terminal segment
@@ -6581,15 +6582,50 @@ class SMPLProcessor:
         torques_vec[:, :self.target_joint_count] = t_active_all
         
         # Efforts (vectorized over all joints)
+        # Magnitude: capacity-relative (||τ / max_torque||) — high when the joint
+        # is working close to its limit on any axis.
+        # Direction: raw torque direction (τ / ||τ||) — un-skewed by per-axis
+        # max_torque differences. Keeping direction aligned with the raw
+        # torque vector avoids amplifying L/R asymmetry when one axis of
+        # max_torque is much smaller than the others (e.g. shoulder twist).
         max_torque = self.max_torque_array[:self.target_joint_count]  # (J, 3)
         denom = max_torque + 1e-6  # (J, 3)
-        efforts_net[:, :self.target_joint_count] = t_active_all / denom[np.newaxis, :, :]
         efforts_dyn[:, :self.target_joint_count] = t_dyn_limited[:, :self.target_joint_count] / denom[np.newaxis, :, :]
         efforts_grav[:, :self.target_joint_count] = t_grav_local_all / denom[np.newaxis, :, :]
+        efforts_net[:, :self.target_joint_count] = self._effort_with_raw_direction(
+            t_active_all, denom)
 
         return torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs
 
 
+
+    @staticmethod
+    def _effort_with_raw_direction(torques, denom):
+        """Effort vector with capacity-relative magnitude and raw torque direction.
+
+        Magnitude: ||τ / max_torque|| (per-axis capacity-relative, same as before).
+        Direction: τ / ||τ|| (raw torque direction, NOT skewed by per-axis
+        max_torque differences).
+
+        This avoids the prior behavior where the effort vector was tilted
+        toward whichever axis had the smallest max_torque — a skew that
+        amplified L/R asymmetry for muscles whose flex_axes differed in sign
+        on a small-max axis (e.g. shoulder pecs).
+
+        Args:
+            torques: (F, J, 3) torque vectors.
+            denom:   (J, 3) or (F, J, 3) max_torque + epsilon.
+
+        Returns:
+            (F, J, 3) effort vectors: magnitude × raw direction.
+        """
+        per_axis = torques / (denom if denom.ndim == torques.ndim else denom[np.newaxis])
+        eff_mag = np.linalg.norm(per_axis, axis=-1, keepdims=True)  # (..., 1)
+        tau_mag = np.linalg.norm(torques, axis=-1, keepdims=True)   # (..., 1)
+        # Avoid div-by-zero when a joint has zero torque this frame.
+        safe = np.where(tau_mag > 1e-9, tau_mag, 1.0)
+        direction = np.where(tau_mag > 1e-9, torques / safe, 0.0)
+        return eff_mag * direction
 
     def _apply_torque_rate_limiting(self, t_dyn_vecs, options):
         """
@@ -6967,11 +7003,13 @@ class SMPLProcessor:
         # margin=-10cm          → ~0.04
         # Falloff of 3cm matches typical contact polygon noise level.
         FALLOFF = 0.03  # meters — characteristic transition width
-        # expit is a numerically stable sigmoid: saturates cleanly to 0/1 for
-        # extreme margins (e.g. ZMP becomes ill-conditioned when GRF≈0 during
-        # near-freefall toe-off/heel-strike), where raw np.exp would overflow.
-        from scipy.special import expit
-        stability_score = float(expit(zmp_margin / FALLOFF))
+        # Clamp the exponent so math.exp can't overflow when ZMP lies far
+        # outside the polygon (near-freefall toe-off/heel-strike, where GRF≈0
+        # and the cart-table ZMP is ill-conditioned). Casting to a plain
+        # Python float also avoids ufunc dispatch issues with exotic scalar
+        # dtypes that have surfaced as scipy.special.expit _UFuncNoLoopError.
+        ratio = max(-50.0, min(50.0, float(zmp_margin) / FALLOFF))
+        stability_score = 1.0 / (1.0 + math.exp(-ratio))
 
         # --- 5. Imbalance direction vector (3D, on ground plane) ---
         offset_2d = zmp_hz - centroid
@@ -7631,7 +7669,8 @@ class SMPLProcessor:
                 max_torque = self.max_torque_array[:self.target_joint_count]  # (J, 3)
                 denom = max_torque + 1e-6
                 n_j = min(torques_vec.shape[1], efforts_net.shape[1], denom.shape[0])
-                efforts_net[:, :n_j] = torques_vec[:, :n_j] / denom[np.newaxis, :n_j, :]
+                efforts_net[:, :n_j] = self._effort_with_raw_direction(
+                    torques_vec[:, :n_j], denom[:n_j])
 
         # --- Effort-Adaptive Smoothing ---
         # At low effort (||τ/τ_max|| << 1), SNR is poor and direction/magnitude

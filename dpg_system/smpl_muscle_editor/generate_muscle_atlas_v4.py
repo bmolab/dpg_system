@@ -629,7 +629,7 @@ def build_muscle_contours(jpos):
             (l_collar[0] + 0.06, pec_bot_y + 0.01),  # left lower lateral (wider)
             (sternum_gap + 0.01, pec_bot_y),  # lower sternum, left of midline
         ]},
-        'falloff': F * 2.0, 'flex_axis': [1, -0.3, -0.5],  # flexion + int rotation + adduction
+        'falloff': F * 2.0, 'flex_axis': [0.3, -1, -0.5],  # flexion (L: -Y, Y polarity opposite from R) + int rot (+X) + adduction (-Z)
     })
     muscles.append({
         'name': 'R_Pec', 'joint': 17,
@@ -640,7 +640,7 @@ def build_muscle_contours(jpos):
             (r_collar[0] - 0.06, pec_bot_y + 0.01),  # right lower lateral (wider)
             (-sternum_gap - 0.01, pec_bot_y),  # lower sternum, right of midline
         ]},
-        'falloff': F * 2.0, 'flex_axis': [1, 0.3, 0.5],  # flexion (R: keep X same, Y/Z negated from L [-0.3,-0.5])
+        'falloff': F * 2.0, 'flex_axis': [0.3, 1, 0.5],  # flexion (Y) + int rotation (+X) + adduction (+Z), R: X/Z negated from L
     })
 
     # Lats: split into L and R, each driving its respective shoulder joint.
@@ -655,7 +655,7 @@ def build_muscle_contours(jpos):
             (0.06, spine1[1] - 0.02),                     # lateral, bottom
             (0.01, spine1[1] - 0.02),                     # near midline, bottom
         ]},
-        'falloff': F * 1.5, 'flex_axis': [-1, 0.3, -0.5],  # ext + int rot + adduction
+        'falloff': F * 1.5, 'flex_axis': [-0.3, 1, -0.5],  # extension (L: +Y, Y polarity opposite from R) + int rot (-X) + adduction (-Z)
     })
     muscles.append({
         'name': 'R_Lat', 'joint': 17,
@@ -666,7 +666,7 @@ def build_muscle_contours(jpos):
             (-0.06, spine1[1] - 0.02),                      # lateral, bottom
             (-0.01, spine1[1] - 0.02),                      # near midline, bottom
         ]},
-        'falloff': F * 1.5, 'flex_axis': [-1, -0.3, 0.5],  # extension (R: keep X same, Y/Z negated from L [0.3,-0.5])
+        'falloff': F * 1.5, 'flex_axis': [-0.3, -1, 0.5],  # extension (-Y) + int rot (-X) + adduction (+Z), R mirrored
     })
 
     # Upper chest (Spine2→Spine3) — anterior flexor
@@ -803,7 +803,7 @@ def build_muscle_contours(jpos):
     muscles.append({
         'name': 'L_DeltAnt', 'joint': 16,
         'contours': {'front': ellipse_pts(l_shoulder[0], l_shoulder[1], 0.04, 0.04)},
-        'falloff': F * 1.5, 'flex_axis': [1, -0.3, 0],  # flexion + int rotation
+        'falloff': F * 1.5, 'flex_axis': [0.3, -1, 0],  # flexion (L: -Y, Y polarity opposite from R) + int rotation (+X)
     })
     muscles.append({
         'name': 'L_DeltLat', 'joint': 16, 'x_side': 'L',
@@ -816,12 +816,12 @@ def build_muscle_contours(jpos):
     muscles.append({
         'name': 'L_DeltPost', 'joint': 16,
         'contours': {'back': ellipse_pts(l_shoulder[0], l_shoulder[1], 0.04, 0.04)},
-        'falloff': F * 1.5, 'flex_axis': [-1, 0.3, 0],  # extension + ext rotation
+        'falloff': F * 1.5, 'flex_axis': [-0.3, 1, 0],  # extension (L: +Y, Y polarity opposite from R) + ext rotation (-X)
     })
     muscles.append({
         'name': 'R_DeltAnt', 'joint': 17,
         'contours': {'front': ellipse_pts(r_shoulder[0], r_shoulder[1], 0.04, 0.04)},
-        'falloff': F * 1.5, 'flex_axis': [1, 0.3, 0],  # flexion (R: keep X same, negate Y from L [-0.3])
+        'falloff': F * 1.5, 'flex_axis': [0.3, 1, 0],  # flexion (Y) + int rotation (+X), R mirrored from L
     })
     muscles.append({
         'name': 'R_DeltLat', 'joint': 17, 'x_side': 'R',
@@ -834,7 +834,7 @@ def build_muscle_contours(jpos):
     muscles.append({
         'name': 'R_DeltPost', 'joint': 17,
         'contours': {'back': ellipse_pts(r_shoulder[0], r_shoulder[1], 0.04, 0.04)},
-        'falloff': F * 1.5, 'flex_axis': [-1, -0.3, 0],  # extension (R: keep X same, negate Y from L [0.3])
+        'falloff': F * 1.5, 'flex_axis': [-0.3, -1, 0],  # extension (-Y) + ext rotation (-X), R mirrored from L
     })
 
     # ===== UPPER ARM =====
@@ -881,28 +881,28 @@ def build_muscle_contours(jpos):
         'contours': {'front': rect_pts(
             forearm_cx_l, forearm_cy_l,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, 0, -1],  # wrist flexion (L)
+        'falloff': F, 'flex_axis': [0, 0, -1],  # wrist flexion (empirical: wrist flex/ext is on Z, not Y as smpl_processor comment claims)
     })
     muscles.append({
         'name': 'L_WristExt', 'joint': 20,
         'contours': {'back': rect_pts(
             forearm_cx_l, forearm_cy_l,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, 0, 1],  # wrist extension (L)
+        'falloff': F, 'flex_axis': [0, 0, 1],  # wrist extension (empirical: on Z)
     })
     muscles.append({
         'name': 'R_WristFlex', 'joint': 21,
         'contours': {'front': rect_pts(
             forearm_cx_r, forearm_cy_r,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, 0, 1],  # wrist flexion (R: Z same as L — not mirrored?)
+        'falloff': F, 'flex_axis': [0, 0, 1],  # wrist flexion (R mirrored, Z opposite polarity from L)
     })
     muscles.append({
         'name': 'R_WristExt', 'joint': 21,
         'contours': {'back': rect_pts(
             forearm_cx_r, forearm_cy_r,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, 0, -1],  # wrist extension (R: Z same as L — not mirrored?)
+        'falloff': F, 'flex_axis': [0, 0, -1],  # wrist extension (R mirrored, Z opposite polarity from L)
     })
 
     # Radial/Ulnar deviation: side-to-side wrist movement
@@ -912,28 +912,28 @@ def build_muscle_contours(jpos):
         'contours': {'left': rect_pts(
             0.0, forearm_cy_l,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, -1, 0],  # radial deviation (L)
+        'falloff': F, 'flex_axis': [0, -1, 0],  # radial deviation (empirical: deviation is on Y at the wrist)
     })
     muscles.append({
         'name': 'L_UlnarDev', 'joint': 20, 'x_side': 'L',
         'contours': {'right': rect_pts(
             0.0, forearm_cy_l,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, 1, 0],  # ulnar deviation (L)
+        'falloff': F, 'flex_axis': [0, 1, 0],  # ulnar deviation (empirical: on Y)
     })
     muscles.append({
         'name': 'R_RadialDev', 'joint': 21, 'x_side': 'R',
         'contours': {'right': rect_pts(
             0.0, forearm_cy_r,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, 1, 0],  # radial deviation (R: Y negated from L)
+        'falloff': F, 'flex_axis': [0, 1, 0],  # radial deviation (R mirrored, Y opposite polarity from L)
     })
     muscles.append({
         'name': 'R_UlnarDev', 'joint': 21, 'x_side': 'R',
         'contours': {'left': rect_pts(
             0.0, forearm_cy_r,
             forearm_w, forearm_r * 2)},
-        'falloff': F, 'flex_axis': [0, -1, 0],  # ulnar deviation (R: Y negated from L)
+        'falloff': F, 'flex_axis': [0, -1, 0],  # ulnar deviation (R mirrored, Y opposite polarity from L)
     })
 
     return muscles

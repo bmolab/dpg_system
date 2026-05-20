@@ -217,6 +217,103 @@ Even null results matter — they document validated behaviors.
   activation through the oscillation, that's a separate design (apply
   EMA to magnitude not vector).
 
+### 2026-05-19 — Pec L/R asymmetry from per-axis effort skew + shoulder slot bug
+- File: any with shoulder motion (user-observed in symmetric-movement footage)
+- Question: pec activation asymmetric between L and R for "apparently
+  symmetric" movements. Is the activation formula too sensitive to
+  small direction differences in torque?
+- Diagnostic(s): code reading. Walked the chain from `smpl_torque`
+  `combined_effort` output → heatmap `torques` input → flex_axis dot
+  product. Inspected per-joint max_torque table and v4 muscle atlas
+  flex_axes.
+- Observation: two compounding issues.
+  1. **Per-axis effort vector skew**: `efforts_net = τ / max_torque`
+     (per-axis division). Whichever axis has the smallest max_torque
+     gets the largest contribution to the effort vector → the vector
+     direction is tilted toward that axis. The flex_axis dot product
+     then projects onto this skewed direction instead of the raw τ
+     direction.
+  2. **Shoulder slot mis-ordering**: comment says "Arms: X=Twist,
+     Y=Flex/Ext, Z=Abd/Add" and elbow/wrist values match it, but
+     shoulder is `[70, 30, 60]` — twist torque (~30) is in the X slot
+     would mean X=70, but biomechanically shoulder twist is ~30 and
+     flex is ~70. Values appear to be in `[Flex, Twist, Abd]` order
+     rather than the `[X=Twist, Y=Flex, Z=Abd]` order they're stored in.
+  3. **L/R pecs have opposite-sign Y in v4 flex_axes**:
+     L_Pec=[+1, -0.3, -0.5], R_Pec=[+1, +0.3, +0.5]. So the Y axis is
+     precisely the axis where the two pecs respond to torque with
+     OPPOSITE signs. The shoulder Y slot (currently 30, the smallest)
+     is also the most-amplified axis in `efforts_net`. So any Y-axis
+     noise → over-amplified → projected onto opposite-sign L/R pec
+     flex_axes → large L/R asymmetry.
+- Judgement: INCORRECT — `efforts_net` direction is not what should be
+  projected onto flex_axes. The flex_axis lives in the same space as
+  joint-local torques, not per-axis-skewed efforts.
+- Action: APPLIED two fixes.
+  1. New helper `SMPLProcessor._effort_with_raw_direction(τ, denom)`:
+     magnitude = `||τ / max_torque||` (unchanged capacity-relative
+     semantic), direction = `τ / ||τ||` (raw). Both `efforts_net`
+     computation sites updated to use it.
+  2. Shoulder max_torque corrected: `[70, 30, 60]` → `[30, 70, 60]`.
+- Side effects:
+  - `efforts_net` magnitude semantic unchanged → adaptive_effort_smooth
+    behavior unchanged (uses ||en_cur|| and ||Δen_cur||).
+  - `combined_effort` output direction is now meaningful w.r.t. raw
+    torque direction. Heatmap dot product against flex_axes is now
+    geometrically correct.
+  - Smoothing diagnostics re-run on popping_1 upper limb and take 3
+    lower limb: numbers essentially unchanged (≤0.02 shift in any
+    cell). Confirms the change is direction-only, not magnitude.
+- Files touched: `dpg_system/smpl_processor.py` (lines 3479, 3540 for
+  shoulder slot fix; lines 6583-6594 + 7634 + new helper at ~6593 for
+  effort vector reconstruction).
+- Pending: user spot-check pec L/R symmetry in live viz on symmetric
+  movement. If still asymmetric, investigate (a) torque vectors
+  themselves differing between L/R shoulders, (b) v4 flex_axis values
+  themselves being wrong.
+
+### 2026-05-19 — v4 atlas flex_axis comprehensive audit + empirical polarity rule
+- File: dpg_system/smpl_muscle_editor/generate_muscle_atlas_v4.py
+- Question: are the v4 atlas flex_axes biomechanically correct for all
+  upper-body muscles?
+- Diagnostic: full muscle-by-muscle audit (76 muscles), then user ran a
+  hand-rotation visualizer to empirically determine joint-local axis
+  polarities for shoulder / elbow / wrist.
+- Empirical findings (user's hand-rotation test, 2026-05-19):
+  1. **L/R polarity rule** for shoulder/elbow/wrist: X axis (twist) has
+     SAME polarity between L and R; Y and Z axes have OPPOSITE polarity.
+     So mirror between L and R muscles is: X same, Y/Z negated.
+  2. **Wrist axis convention differs from shoulder/elbow.** The
+     smpl_processor.py:3457 comment says "Arms: X=Twist, Y=Flex/Ext,
+     Z=Abd/Add" but for the wrist specifically, Y=Abd/Add (radial/ulnar
+     deviation) and Z=Flex/Ext (wrist flexion/extension). This is
+     because the wrist's local frame inherits from the forearm-twisted
+     elbow frame, ending up rotated 90° around X.
+  3. Elbow is correct (hinge joint, only Y axis active).
+  4. Right shoulder muscles had correct signs after first round of
+     fixes; left shoulder muscles needed Y and Z negated (mirror).
+- Action: APPLIED. Two-pass fix:
+  - Pass 1 (incorrect): hypothesized smpl_processor comment applied
+    uniformly to wrist → swapped Y↔Z for wrist muscles. Wrong per
+    empirical test.
+  - Pass 2 (final): for L shoulder muscles (Pec, Lat, DeltAnt,
+    DeltPost) negate X and Y, keep Z. For wrist muscles, restore v4
+    originals (flex on Z, deviation on Y). Elbow muscles unchanged.
+- Verification: after re-running generator, R shoulder values match
+  user-validated R muscle behavior; L now properly mirrors R per
+  polarity rule (X same, Y/Z opposite). Wrist matches user's
+  empirical finding (flex/ext on Z, deviation on Y).
+- Files touched:
+  - `dpg_system/smpl_muscle_editor/generate_muscle_atlas_v4.py`
+    (16 flex_axis literals across pec/lat/deltoid and wrist muscles)
+  - `dpg_system/smpl_muscle_editor/muscle_atlas_v4_meta.npy`
+    (regenerated)
+  - `dpg_system/smpl_muscle_editor/muscle_atlas_v4.npy` (regenerated,
+    contents unchanged — atlas matrix doesn't depend on flex_axes)
+- Documentation TODO: update smpl_processor.py:3457 comment to clarify
+  that the wrist's local axis convention differs from shoulder/elbow
+  (wrist: Y=Abd/Add, Z=Flex/Ext).
+
 ## Open follow-ups from this investigation
 
 - `acc_smooth_window` is a global SG window applied uniformly to all
@@ -235,6 +332,26 @@ _(none yet)_
 ## Known issues / open investigations
 
 Pending work — things we noticed but haven't resolved.
+
+- **Soft-tissue vibration ringing on impacts** (2026-05-19):
+  high-frequency vibration of sensors mounted on muscle mass during
+  floor contacts or sudden decelerations (e.g. popping moves) shows up
+  in the torque/effort signal as 100-150 ms of 15-25 Hz oscillation.
+  Locally indistinguishable from real fast voluntary movement by a
+  memoryless filter — the change-aware alpha (correctly) lets it
+  through alongside legitimate motion. User flagged this as
+  potentially-acceptable noise. Three angles for a future fix:
+    1. **Contact-event-gated smoothing**: use existing floor-contact
+       detection to apply a 100-150 ms post-impact attenuation window
+       on the impacted side's chain. Exploits causality (ringing
+       always follows impact). Most promising — uses information the
+       current filter ignores.
+    2. **Physiological ceiling**: voluntary muscle activation can't
+       exceed ~10-12 Hz; current alpha_max=0.8 at 60 fps is already
+       near that cap. Raising it lets in more vibration, not less.
+    3. **Median filter after EMA**: 3- or 5-tap median to attenuate
+       isolated one-cycle transients without smearing sustained
+       signal. Doesn't help with multi-cycle decay.
 
 - **Retire `acc_smooth_window`?** (2026-05-19, updated): originally
   planned as a per-joint refactor with a global scalar. Subsequent probe
@@ -270,6 +387,30 @@ Pending work — things we noticed but haven't resolved.
   heavy-smoothing regime regardless of motion speed. Effort is naturally
   joint-scaled. See investigation entry 2026-05-19 (upper-limb).
 - Motivated by: 2026-05-19 upper-limb over-filtering investigation.
+
+### 2026-05-19 — efforts_net direction now raw τ direction (not per-axis skewed)
+- Files: `dpg_system/smpl_processor.py`
+- What: new helper `_effort_with_raw_direction` rebuilds `efforts_net`
+  as `(||τ/max_torque||) * (τ/||τ||)`. Magnitude unchanged (still
+  capacity-relative), direction = raw torque direction.
+- Why: the prior `efforts_net = τ/max_torque` (per-axis) skewed the
+  effort vector toward whichever axis had the smallest max_torque. For
+  the heatmap's flex_axis dot product this skew amplified L/R muscle
+  asymmetry (most visible on pecs whose v4 flex_axes have
+  opposite-sign Y while shoulder Y has the smallest max_torque). The
+  flex_axes live in raw-torque-direction space; dotting them against
+  a per-axis-skewed vector was geometrically wrong.
+- Motivated by: 2026-05-19 pec L/R asymmetry investigation.
+
+### 2026-05-19 — Shoulder max_torque slot order fix
+- Files: `dpg_system/smpl_processor.py`
+- What: shoulder `max_torque` `[70, 30, 60]` → `[30, 70, 60]`.
+- Why: the axis convention comment is `[X=Twist, Y=Flex/Ext, Z=Abd]`
+  and elbow/wrist values match it, but shoulder values were in the
+  order `[Flex, Twist, Abd]` instead. Biomechanically shoulder twist
+  is ~30 Nm and flex is ~40-80 Nm. Fix matches comment and the rest
+  of the arm chain.
+- Motivated by: 2026-05-19 pec L/R asymmetry investigation.
 
 ### 2026-05-19 — `adaptive_effort_smooth` adds signal-change-aware alpha
 - Files: `dpg_system/smpl_processor.py`
