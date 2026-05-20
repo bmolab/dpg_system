@@ -6967,7 +6967,11 @@ class SMPLProcessor:
         # margin=-10cm          → ~0.04
         # Falloff of 3cm matches typical contact polygon noise level.
         FALLOFF = 0.03  # meters — characteristic transition width
-        stability_score = float(1.0 / (1.0 + np.exp(-zmp_margin / FALLOFF)))
+        # expit is a numerically stable sigmoid: saturates cleanly to 0/1 for
+        # extreme margins (e.g. ZMP becomes ill-conditioned when GRF≈0 during
+        # near-freefall toe-off/heel-strike), where raw np.exp would overflow.
+        from scipy.special import expit
+        stability_score = float(expit(zmp_margin / FALLOFF))
 
         # --- 5. Imbalance direction vector (3D, on ground plane) ---
         offset_2d = zmp_hz - centroid
