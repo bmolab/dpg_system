@@ -408,6 +408,7 @@ class OpenTakeNode(MoCapNode):
         self.frame_input = self.add_input('frame', widget_type='drag_int', widget_width=50, callback=self.frame_widget_changed)
         self.length_property = self.add_input('length: 0', widget_type='label')
         self.speed = self.add_input('play speed', widget_type='drag_float', widget_width=50, default_value=speed)
+        self.file_fps_input = self.add_input('frame rate', widget_type='drag_float', widget_width=50, default_value=60.0, callback=self.file_fps_changed)
         self.add_spacer()
 
         self.clip_start_input = self.add_input('clip start', widget_type='drag_int', callback=self.clip_changed, widget_width=50, trigger_button=True, trigger_callback=self.clip_start_set)
@@ -760,7 +761,8 @@ class OpenTakeNode(MoCapNode):
                     self.force_frame = False
                     self.streaming = False
                     break
-            # Re-read each tick so changes to speed take effect live.
+            # Re-read each tick so changes to speed/framerate take effect live.
+            fps = self.file_fps if self.file_fps > 0 else 60.0
             speed_abs = abs(self.speed()) or 1.0
             period = 1.0 / (fps * speed_abs)
             remaining = next_deadline - time.perf_counter()
@@ -870,12 +872,14 @@ class OpenTakeNode(MoCapNode):
                 self.global_dict[key] = data
             self.global_dict['length'] = sequence_length
             # Tolerant lookup for the source framerate (matches the key set
-            # used by SMPLTorqueNode). Falls back to 60 fps if absent.
-            self.file_fps = 60.0
+            # used by SMPLTorqueNode). When no metadata key is present we
+            # leave self.file_fps (and the widget) at their existing values
+            # so a user-set rate persists across loads of metadata-less files.
             for k in ('motioncapture_framerate', 'mocap_framerate', 'framerate'):
                 if k in self.global_dict:
                     try:
                         self.file_fps = float(self.global_dict[k])
+                        self.file_fps_input.set(self.file_fps, propagate=False)
                     except (TypeError, ValueError):
                         pass
                     break
@@ -909,6 +913,14 @@ class OpenTakeNode(MoCapNode):
             self.streaming = True
             self.force_frame = True
             self.add_frame_task()
+
+    def file_fps_changed(self):
+        try:
+            v = float(self.file_fps_input())
+        except (TypeError, ValueError):
+            return
+        if v > 0:
+            self.file_fps = v
 
     def load_take_message(self, message='', args=None):
         if args is not None:
