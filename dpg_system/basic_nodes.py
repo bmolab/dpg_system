@@ -3781,16 +3781,19 @@ class SublistNode(Node):
         )
         self.output = self.add_output('output')
 
-        # Initialize
-        self.indices_changed()
+        # Widget.value isn't populated until widget.create() runs later, so
+        # parse from the known index_string directly here.
+        self._parse_indices(index_string)
 
     def indices_changed(self):
-        indices_text = any_to_string(self.indices_input())
+        self._parse_indices(any_to_string(self.indices_input()))
+        self.execute()
+
+    def _parse_indices(self, indices_text):
         indices_text = indices_text.strip().strip("[]")
 
         if not indices_text:
             self.operations = [slice(None)]
-            self.execute()
             return
 
         parts = indices_text.split(',')
@@ -3817,7 +3820,6 @@ class SublistNode(Node):
                     new_ops.append(slice(None))
 
         self.operations = new_ops
-        self.execute()
 
     def execute(self):
         raw_input = self.input()

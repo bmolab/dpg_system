@@ -683,22 +683,24 @@ class TorchSubtensorNode(TorchNode):
         )
         self.output = self.add_output('output')
 
-        # Parse the default string immediately
-        self.dim_changed()
+        # Widget.value isn't populated until widget.create() runs later, so
+        # parse from the known index_string directly here.
+        self._parse_slice(index_string)
 
     def dim_changed(self):
         """
         Parses the input string (e.g., "0:5, -1, ::2") into a tuple
         of slice objects and integers that PyTorch can consume directly.
         """
-        dim_text = any_to_string(self.indices_input())
+        self._parse_slice(any_to_string(self.indices_input()))
+        self.execute()
 
+    def _parse_slice(self, dim_text):
         # Clean up brackets/whitespace
         dim_text = dim_text.strip().strip("[]")
 
         if not dim_text:
             self.slice_obj = (slice(None),)
-            self.execute()
             return
 
         parts = dim_text.split(',')
@@ -731,7 +733,6 @@ class TorchSubtensorNode(TorchNode):
                     slices.append(slice(None))
 
         self.slice_obj = tuple(slices)
-        self.execute()
 
     def execute(self):
         # 1. Get Tensor (using parent class helper)
