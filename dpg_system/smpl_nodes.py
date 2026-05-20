@@ -2342,7 +2342,7 @@ class SMPLBetaEditorNode(Node):
                 for i in range(min(len(b), 10)):
                     self.beta_props[i].widget.set(float(b[i]))
             if 'gender' in raw:
-                self.gender_prop.widget.set(raw['gender'])
+                self.gender_prop.widget.set(str(raw['gender']).strip().strip("'\""))
             if 'total_mass' in raw:
                 self.total_mass_prop.widget.set(float(raw['total_mass']))
         else:
