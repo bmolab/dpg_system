@@ -575,6 +575,13 @@ class MGLSMPLHeatmapNode(Node):
                                                     default_value=0.15, speed=0.01)
         self.dir_bias_prop = self.add_option('dir bias', widget_type='drag_float',
                                               default_value=0.7, speed=0.01)
+        # dir_bias_mode: 'hard' = legacy knife-edge at flex=0 (antagonist→0 at high
+        # dir_bias). 'smooth' = linear in flex, symmetric around 0 — eliminates
+        # the L/R asymmetry amplification for muscles whose flex_axis is nearly
+        # perpendicular to the torque (e.g. pecs during non-flexion movement).
+        self.dir_bias_mode_prop = self.add_option('dir bias mode', widget_type='combo',
+                                                   default_value='hard')
+        self.dir_bias_mode_prop.widget.combo_items = ['hard', 'smooth']
         self.muscle_offset_prop = self.add_option('muscle offset', widget_type='drag_float',
                                                    default_value=0.4, speed=0.01)
         self.normalize_prop = self.add_option('normalize', widget_type='checkbox', default_value=True)
@@ -713,6 +720,7 @@ class MGLSMPLHeatmapNode(Node):
                     uniform vec3 u_flex_axes[{n_muscles}]; // per-muscle flex axis
                     uniform int u_muscle_joints[{n_muscles}]; // joint index per muscle
                     uniform float u_dir_bias;
+                    uniform int u_dir_bias_smooth;   // 0=hard knife-edge, 1=smooth linear
                     uniform float u_max_torque;
                     uniform float u_opacity;
                     uniform float u_min_opacity;
@@ -782,9 +790,15 @@ class MGLSMPLHeatmapNode(Node):
                             float mag = tau_mag;
                             if (u_dir_bias > 0.0 && length(u_flex_axes[m]) > 0.5) {{
                                 float flex = clamp(dot(tau, u_flex_axes[m]) / tau_mag, -1.0, 1.0);
-                                // When dir_bias is 1.0, only activate along flex axis (perpendicular = 0)
-                                // Multiplied by 2.0 to match peak brightness of the old formula
-                                mag = tau_mag * mix(1.0, max(0.0, flex) * 2.0, u_dir_bias);
+                                if (u_dir_bias_smooth != 0) {{
+                                    // Smooth: linear in flex, symmetric around 0.
+                                    // dir_bias=1: agonist=2τ, perp=1τ, antagonist=0.
+                                    mag = tau_mag * max(0.0, 1.0 + u_dir_bias * flex);
+                                }} else {{
+                                    // Hard (legacy): knife-edge at flex=0.
+                                    // dir_bias=1: agonist=2τ, perp=0, antagonist=0.
+                                    mag = tau_mag * mix(1.0, max(0.0, flex) * 2.0, u_dir_bias);
+                                }}
                             }}
 
                             float w = texelFetch(u_atlas, ivec2(m, vid), 0).r;
@@ -1637,6 +1651,8 @@ class MGLSMPLHeatmapNode(Node):
         # Scalar uniforms
         if 'u_dir_bias' in prog:
             prog['u_dir_bias'].value = self.dir_bias_prop()
+        if 'u_dir_bias_smooth' in prog:
+            prog['u_dir_bias_smooth'].value = 1 if self.dir_bias_mode_prop() == 'smooth' else 0
         if 'u_max_torque' in prog:
             prog['u_max_torque'].value = max(self.max_torque_prop(), 0.01)
         if 'u_opacity' in prog:
@@ -1751,6 +1767,8 @@ class MGLSMPLHeatmapNode(Node):
         # Scalar uniforms
         if 'u_dir_bias' in prog:
             prog['u_dir_bias'].value = self.dir_bias_prop()
+        if 'u_dir_bias_smooth' in prog:
+            prog['u_dir_bias_smooth'].value = 1 if self.dir_bias_mode_prop() == 'smooth' else 0
         if 'u_max_torque' in prog:
             prog['u_max_torque'].value = max(self.max_torque_prop(), 0.01)
         if 'u_opacity' in prog:
@@ -1806,10 +1824,13 @@ class MGLSMPLHeatmapNode(Node):
                 if tau_mag < 1e-8:
                     continue
                 if dir_bias > 0.0 and np.linalg.norm(self._v2_flex_axes[i]) > 0.5:
-                    # Smooth directional factor: proportional to alignment with flex axis.
-                    # flex in [-1, 1]: +1 = fully agonist, -1 = fully antagonist.
                     flex = np.clip(np.dot(tau, self._v2_flex_axes[i]) / tau_mag, -1.0, 1.0)
-                    magnitudes[i] = tau_mag * max(0.0, 1.0 + dir_bias * flex)
+                    if self.dir_bias_mode_prop() == 'smooth':
+                        # Smooth: linear in flex, symmetric around 0.
+                        magnitudes[i] = tau_mag * max(0.0, 1.0 + dir_bias * flex)
+                    else:
+                        # Hard (legacy): knife-edge at flex=0.
+                        magnitudes[i] = tau_mag * (1.0 - dir_bias + dir_bias * max(0.0, flex) * 2.0)
                 else:
                     magnitudes[i] = tau_mag
 
@@ -1873,7 +1894,10 @@ class MGLSMPLHeatmapNode(Node):
                 fa = flex_axes[i]
                 if np.linalg.norm(fa) > 0.5:
                     flex = np.clip(np.dot(tau, fa) / tau_mag, -1.0, 1.0)
-                    mag = tau_mag * (1.0 - dir_bias + dir_bias * max(0.0, flex) * 2.0)
+                    if self.dir_bias_mode_prop() == 'smooth':
+                        mag = tau_mag * max(0.0, 1.0 + dir_bias * flex)
+                    else:
+                        mag = tau_mag * (1.0 - dir_bias + dir_bias * max(0.0, flex) * 2.0)
 
             result[names[i]] = float(np.clip(mag / max_torque, 0.0, 1.0))
 
@@ -2203,6 +2227,8 @@ class MGLSMPLHeatmapNode(Node):
         # Scalar uniforms
         if 'u_dir_bias' in prog:
             prog['u_dir_bias'].value = self.dir_bias_prop()
+        if 'u_dir_bias_smooth' in prog:
+            prog['u_dir_bias_smooth'].value = 1 if self.dir_bias_mode_prop() == 'smooth' else 0
         if 'u_max_torque' in prog:
             prog['u_max_torque'].value = max(self.max_torque_prop(), 0.01)
         if 'u_opacity' in prog:
