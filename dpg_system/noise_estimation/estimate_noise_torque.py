@@ -187,6 +187,15 @@ CONTACT_CHAIN = _build_contact_chain()
 # Clean segment minimum duration
 CLEAN_MIN_DURATION = 1.0   # seconds
 
+# Clean-fraction noise-score penalty.  A long file that fragments down to
+# only a small fraction of clean material is automatically very problematic
+# regardless of which signal channels fired.  Below the threshold, score
+# gains proportionally to (THRESHOLD - clean_fraction).
+CLEAN_FRAC_PENALTY_MIN_DURATION_S = 10.0   # only apply to files longer than this
+CLEAN_FRAC_PENALTY_THRESHOLD = 0.5         # penalise when clean fraction drops below this
+CLEAN_FRAC_PENALTY_SCALE = 60.0            # multiplier on the gap to threshold
+CLEAN_FRAC_PROBLEMATIC_THRESHOLD = 0.5     # force "problematic" classification below this
+
 # Joint importance weights.
 # Contact joints (ankles, feet) down-weighted because normal gait contact
 # transitions always produce torque spikes.  Spine/hip anomalies are the most
@@ -302,6 +311,14 @@ CORRUPTION_SHORT_WINDOW_S = 1.0       # short-term rolling mean window
 CORRUPTION_LONG_WINDOW_S = 10.0       # long-term rolling median window (local baseline)
 CORRUPTION_LOCAL_RATIO = 4.0          # flag if short/long > this ratio
 CORRUPTION_VEL_FLOOR = 3.0            # absolute minimum velocity to flag (rad/s)
+# On short files the long-window rolling baseline collapses to roughly the
+# length of any sustained motion in the file, so the local-ratio test fires
+# on legitimate fast motion (e.g. a punch on a 2-sec file).  Below this
+# duration the rolling baseline cannot give a meaningful "is this anomalous?"
+# signal, so corruption detection is skipped entirely.  Whole-file p95 is
+# NOT used as a reference because in pervasively-corrupted files p95 is
+# inflated by the corruption itself and would hide it.
+CORRUPTION_MIN_FILE_S = 5.0           # below this duration, skip corruption detection
 CORRUPTION_MERGE_GAP_S = 1.0          # merge zones separated by less than this
 # Only these joints are checked for corruption (arm chain).
 # Leg/pelvis/spine activity during dynamic movement is NOT corruption.
@@ -315,6 +332,55 @@ CORRUPTION_JOINTS = {16, 17, 18, 19, 20, 21}  # L/R shoulder, elbow, wrist
 # inflating the ratio via a tiny denominator; it is not a signal in itself.
 SPIKE_NEIGHBOR_RATIO = 3.0   # vel[t] / max(vel[t-1], vel[t+1]) threshold
 SPIKE_VEL_FLOOR = 2.0        # rad/s — guard against near-stillness noise only
+
+# Spike-density gate for clean segments: sustained low-level arm-chain
+# noise (many sub-significant spikes in a short window) indicates flickery
+# arm data even when no individual spike passes the severity gate.  This
+# gate is applied only to clean-segment determination, not to noise_score
+# or classification.
+ARM_CHAIN_JOINT_INDICES = {13, 14, 16, 17, 18, 19, 20, 21}  # collars + shoulders + elbows + wrists
+SPIKE_DENSITY_WINDOW_S = 1.0    # rolling-window length for the density count
+# Threshold calibrated empirically: vigorous running arm action (C6 post-416)
+# peaks at 8 unique arm-chain spike frames per 1-s window.  Sustained
+# marker flicker (Maritsa) typically runs 12–27.  Threshold 10 cleanly
+# separates "legitimate fast arm motion" from "arm marker flicker".
+SPIKE_DENSITY_MIN_COUNT = 10    # unique-frame count within window to trigger
+
+# Spike-frame severity: per-joint contribution weighted by how independent
+# that joint's motion is from the rest of the body.  Core joints (pelvis,
+# spine) only move when the whole body moves, so anomalies there are strong
+# evidence of a real glitch.  Distal joints (wrists, collars) move fast
+# during normal arm motion, so anomalies there are weak evidence.
+SPIKE_SEVERITY_JOINT_WEIGHT = {
+    'pelvis': 1.0, 'spine1': 1.0, 'spine2': 1.0, 'spine3': 1.0,
+    'neck': 0.7, 'head': 0.7,
+    'left_hip': 0.5, 'right_hip': 0.5,
+    'left_knee': 0.5, 'right_knee': 0.5,
+    'left_ankle': 0.5, 'right_ankle': 0.5,
+    'left_shoulder': 0.5, 'right_shoulder': 0.5,
+    'left_elbow': 0.5, 'right_elbow': 0.5,
+    'left_foot': 0.5, 'right_foot': 0.5,
+    'left_collar': 0.2, 'right_collar': 0.2,
+    'left_wrist': 0.2, 'right_wrist': 0.2,
+}
+# A per-joint contribution must clear this absolute threshold to count
+# toward the "n core/mid qualifying" gate.
+SPIKE_SEVERITY_QUALIFY_CONTRIB = 2.0
+# A spike frame counts as "significant" (fold into clean-segment bad mask)
+# when EITHER (a) wsev >= MAJOR threshold with ≥ N qualifying core/mid
+# joints, or (b) wsev >= STRONG threshold with ≥ N qualifying core/mid.
+# Both criteria require multi-joint involvement to avoid flagging
+# arm-only fast-motion bursts.
+SPIKE_SEVERITY_STRONG_THRESHOLD = 10.0
+SPIKE_SEVERITY_MIN_QUALIFYING = 2
+
+# Pure-arm-cluster gate: a frame with N+ arm-chain joint entries AND zero
+# non-arm-chain entries is the signature of one-side marker failure.
+# Real coordinated motion (running, side step, gesture) involves the
+# spine/pelvis/legs; pure-arm activity is suspicious.  Catches synchronized
+# arm events that the severity gate misses on files where the per-joint
+# p95 reference is inflated by pervasive corruption (e.g. Maritsa frame 994).
+PURE_ARM_CLUSTER_MIN_JOINTS = 3
 
 @dataclass
 class SpikeFrame:
@@ -375,6 +441,13 @@ class TorqueFileReport:
 
     noise_score: float
     classification: str      # clean / moderate / problematic
+
+    # Rates noise level WITHIN the identified clean segments only.
+    # Complements noise_score (which rates the whole file): if you
+    # extract just the clean sections, how usable is that data?
+    # Low = the recoverable data is genuinely clean; high = even
+    # the clean sections have sub-significant flicker.
+    clean_section_score: float
 
     n_glitch_frames: int
     n_suspect_frames: int
@@ -487,6 +560,15 @@ STREAM_BREAK_DISCOUNT = 0.1        # score multiplier for stream break frames
 MIN_JOINTS_FOR_BREAK = 8
 # Per-joint threshold for "this joint teleported": factor × per-joint median
 JOINT_BREAK_FACTOR = 10.0
+# Local-adaptive threshold for multi-joint breaks.  During rapid motion the
+# per-joint pose displacement is naturally elevated and a static
+# global-median threshold over-fires (e.g. 60/100 Hz cadence drops during
+# fast movement on Shadow data produce 18 false breaks).  The threshold
+# at each frame is the MAX of the global threshold and a local rolling-
+# median × factor, so high-motion regions get correspondingly higher bars
+# without affecting low-motion regions.
+JOINT_BREAK_LOCAL_WINDOW_S = 1.0       # rolling-median window length
+JOINT_BREAK_LOCAL_FACTOR = 5.0         # multiplier on local rolling median
 # Core joint indices that MUST be involved for a pose-based stream break.
 # A limb-chain glitch (wrist→elbow→shoulder) can pull 5+ joints without
 # affecting the core.  Real capture resets always move the torso.
@@ -520,8 +602,25 @@ def _detect_stream_breaks(poses, trans, fps):
     # Per-joint median displacement for threshold computation
     joint_medians = np.median(pose_disp, axis=0)  # (J,)
     joint_medians = np.maximum(joint_medians, 0.01)  # floor to avoid div-by-zero
-    joint_thresholds = joint_medians * JOINT_BREAK_FACTOR  # (J,)
-    
+    joint_thresholds_global = joint_medians * JOINT_BREAK_FACTOR  # (J,)
+
+    # Local-rolling-median per-joint thresholds.  Compares each frame's
+    # joint displacement against the median over a surrounding window.
+    # This prevents fast natural motion from being mistaken for break-like
+    # multi-joint teleportation: during a fast movement, ALL pose_disp
+    # values are elevated, raising the local threshold accordingly.
+    w_local = max(3, int(JOINT_BREAK_LOCAL_WINDOW_S * fps))
+    half_w = w_local // 2
+    n_frames_for_local = pose_disp.shape[0]
+    local_joint_medians = np.empty_like(pose_disp)
+    for t in range(n_frames_for_local):
+        lo = max(0, t - half_w)
+        hi = min(n_frames_for_local, t + half_w + 1)
+        local_joint_medians[t] = np.median(pose_disp[lo:hi], axis=0)
+    local_joint_thresholds = local_joint_medians * JOINT_BREAK_LOCAL_FACTOR
+    # Effective threshold at each frame = max of global and local
+    joint_thresholds = np.maximum(joint_thresholds_global[None, :], local_joint_thresholds)
+
     # Whole-skeleton threshold (for the max-across-joints metric)
     pose_max = np.max(pose_disp, axis=1)  # (T-1,)
     pose_median = np.median(pose_max) if len(pose_max) > 0 else 0
@@ -549,8 +648,9 @@ def _detect_stream_breaks(poses, trans, fps):
                           pose_max[f] < pose_shift_ceil and
                           not is_trans)  # don't double-count with full break
         
-        # Count how many joints teleported in this frame
-        joints_exceeded = pose_disp[f] > joint_thresholds  # (J,) boolean
+        # Count how many joints teleported in this frame (using per-frame
+        # adaptive threshold: max of global static and local-rolling)
+        joints_exceeded = pose_disp[f] > joint_thresholds[f]  # (J,) boolean
         exceeded_indices = set(np.where(joints_exceeded)[0].tolist())
         n_joints_jumped = len(exceeded_indices)
         
@@ -880,6 +980,10 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         unique_frames = len({s.frame for s in spike_frames})
         print(f"  Detected {unique_frames} spike frame(s) "
               f"({', '.join(sorted({s.joint_name for s in spike_frames}))})")
+
+    # Significant spike frames — used both for clean-segment fragmentation
+    # and as pose-level corroboration for "hard" glitches below.
+    significant_spike_frame_set = _significant_spike_frames(spike_frames, poses, fps)
 
     # ── Detect corruption zones (raw pose level, before torque filtering)
     # Done early so corruption frames can be excluded from torque scoring.
@@ -1257,17 +1361,33 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     # ── Build frame-level results ─────────────────────────────────────
     # Exclude structural frames (breaks + corruption) from glitch/suspect counts
     non_structural = ~structural_mask
-    glitch_mask = (frame_scores >= GLITCH_THRESH) & non_structural
-    suspect_mask = (frame_scores >= SUSPECT_THRESH) & ~glitch_mask & non_structural
-    n_g = int(np.sum(glitch_mask))
+    soft_glitch_mask = (frame_scores >= GLITCH_THRESH) & non_structural
+    suspect_mask = (frame_scores >= SUSPECT_THRESH) & ~soft_glitch_mask & non_structural
     n_s = int(np.sum(suspect_mask))
     T_valid = int(np.sum(non_structural))  # frames used for scoring
-    g_frac = n_g / max(T_valid, 1)
-    
-    # Glitch frame details (sorted by score)
+
+    # "Hard" glitch corroboration — only frames where the elevated torque
+    # score has independent pose-level evidence (significant spike at the
+    # frame, in a corruption zone, or in a stream break) are counted as
+    # glitches.  Score elevation alone without corroboration is a "soft"
+    # motion impulse (the torque scorer's FP signature on dynamic
+    # core motion, e.g. C24's spine torque during a side step).
+    corroboration_mask = structural_mask.copy()
+    for f in significant_spike_frame_set:
+        if 0 <= f < T:
+            corroboration_mask[f] = True
+    # Note: structural_mask frames are excluded from the score elevation
+    # check (non_structural), so re-include them via corroboration explicitly.
+    glitch_mask = (frame_scores >= GLITCH_THRESH) & corroboration_mask
+    n_g = int(np.sum(glitch_mask))
+    # Count over the full file (T), since corroborated structural frames
+    # are now valid glitches even though they were excluded from non_structural
+    g_frac = n_g / max(T, 1)
+
+    # Glitch frame details (sorted by score) — list HARD glitches only
     glitch_list = []
     for t in range(T):
-        if frame_scores[t] >= GLITCH_THRESH and non_structural[t]:
+        if glitch_mask[t]:
             wj = int(worst_joint_per_frame[t])
             glitch_list.append(FrameScore(
                 frame=t,
@@ -1285,8 +1405,25 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     clusters = _find_clusters(sorted(s.frame for s in glitch_list))
     
     # Clean segments — use structural mask so break AND corruption frames
-    # are excluded from the "clean" analysis
-    clean = _find_clean_segments(frame_scores, fps, corruption_mask=structural_mask)
+    # are excluded from the "clean" analysis; also fold in spike_frames
+    # that pass the severity gate (multi-joint, above-envelope) so a
+    # synchronized whole-body glitch doesn't sit inside a "clean" stretch.
+    # Minor wrist twitches (single-joint, sub-envelope) are intentionally
+    # not folded — they would over-fragment otherwise-clean files.
+    #
+    # Additionally, OR in a "density mask" that catches sustained
+    # low-level arm-chain noise (the Maritsa "flickers in shoulders /
+    # pecs / arms" pattern), which by design doesn't pass the
+    # individual-spike severity gate.
+    # significant_spike_frame_set was computed earlier (right after spike
+    # detection) and used for hard-glitch corroboration.  Reuse here.
+    density_mask = _arm_spike_density_mask(spike_frames, T, fps)
+    clean_bad_mask = structural_mask | density_mask
+    clean = _find_clean_segments(
+        frame_scores, fps,
+        corruption_mask=clean_bad_mask,
+        spike_frame_indices=significant_spike_frame_set,
+    )
     
     # ── Per-joint noise profiles ──────────────────────────────────────
     joint_profiles = []
@@ -1317,16 +1454,27 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     
     # ── File-level scoring (non-break frames only) ────────────────────
     scores_valid = frame_scores[non_structural] if T_valid > 0 else frame_scores
-    peak = float(np.max(scores_valid)) if T_valid > 0 else 0
     p95 = float(np.percentile(scores_valid, 95)) if T_valid > 0 else 0
-    p99 = float(np.percentile(scores_valid, 99)) if T_valid > 0 else 0
-    
-    # Raw signal severity — computed on NON-STRUCTURAL frames only.
-    # Break/corruption anomalies are structural, not motion noise.
-    surprise_valid_all = surprise[non_structural] if T_valid > 0 else surprise
-    effort_valid_all = effort_spike[non_structural] if T_valid > 0 else effort_spike
-    max_raw_surprise = float(np.max(surprise_valid_all)) if T_valid > 0 else 0
-    max_raw_effort = float(np.max(effort_valid_all)) if T_valid > 0 else 0
+
+    # Peak / p99 — restrict to HARD glitch frames so motion-induced FP
+    # impulses (high frame score from dynamic core motion, e.g. C24 spine
+    # during a side step) don't drive these stats.  Falls back to overall
+    # stats if no hard glitches exist — gives a sensible peak/p99 of zero.
+    if n_g > 0:
+        peak = float(np.max(frame_scores[glitch_mask]))
+        p99 = float(np.percentile(frame_scores[glitch_mask], 99))
+    else:
+        peak = 0.0
+        p99 = 0.0
+
+    # Raw signal severity — restrict to HARD glitch frames so motion
+    # impulse FPs don't drive the max-surprise stat either.
+    if n_g > 0:
+        max_raw_surprise = float(np.max(surprise[glitch_mask]))
+        max_raw_effort = float(np.max(effort_spike[glitch_mask]))
+    else:
+        max_raw_surprise = 0.0
+        max_raw_effort = 0.0
     
     # Score: multi-component to handle different noise profiles.
     #
@@ -1354,6 +1502,18 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         cls = 'moderate'
     else:
         cls = 'problematic'
+
+    # If the file is classified clean but has real pose-level anomalies
+    # (significant spike events, corruption zones, or stream breaks),
+    # bump to moderate.  These are real events even if the torque scorer
+    # didn't elevate at those frames.
+    n_pose_anomalies = (
+        len(significant_spike_frame_set)
+        + len(corruption_zones)
+        + len(stream_breaks)
+    )
+    if cls == 'clean' and n_pose_anomalies >= 1:
+        cls = 'moderate'
     
     # ── Surgery analysis (uses corruption zones computed earlier) ─────────
     surgery = _analyze_surgery(stream_breaks, T, fps, corruption_zones=corruption_zones)
@@ -1366,17 +1526,80 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     ns += score_corruption
     ns = min(100.0, ns)
 
-    # Component 7: Single-frame spikes — each spike is a real dropped frame.
-    # Small per-spike penalty; they are structural artifacts, not noise.
+    # Component 7: Single-frame spike fraction.  Each spike is a real
+    # dropped frame.  Scaled by spike density (fraction of file affected)
+    # rather than absolute count, so long files with many spikes are
+    # penalised proportionally instead of saturating at a 15-point cap.
     n_spike_frames = len({s.frame for s in spike_frames})
-    score_spikes = min(n_spike_frames * 3, 15)
+    spike_fraction = n_spike_frames / max(T, 1)
+    score_spikes = spike_fraction * 300
     ns += score_spikes
     ns = min(100.0, ns)
+
+    # Component 8: Pose-level anomaly density.  Significant spikes,
+    # corruption zones, and stream breaks are the channels we trust to
+    # flag REAL physical anomalies.  Scaled by file length (anomalies
+    # per frame) and uncapped so a long file with proportional anomaly
+    # density gets the same per-unit weight as a short file would.
+    n_significant_spikes = len(significant_spike_frame_set)
+    n_pose_anomalies = (
+        n_significant_spikes
+        + len(corruption_zones)
+        + len(stream_breaks)
+    )
+    score_anomalies = (n_pose_anomalies / max(T, 1)) * 300
+    ns += score_anomalies
+    ns = min(100.0, ns)
+
+    # Component 9: Clean-fraction penalty on long files.  A long file that
+    # only yields a small clean fraction is fundamentally compromised —
+    # the score reflects how little usable material survives even if
+    # individual channels are modest.
+    clean_total = sum(s.n_frames for s in clean)
+    clean_frac = clean_total / max(T, 1)
+    file_seconds = T / float(fps) if fps > 0 else 0.0
+    if (file_seconds >= CLEAN_FRAC_PENALTY_MIN_DURATION_S
+            and clean_frac < CLEAN_FRAC_PENALTY_THRESHOLD):
+        score_fragmentation = (CLEAN_FRAC_PENALTY_THRESHOLD - clean_frac) * CLEAN_FRAC_PENALTY_SCALE
+        ns += score_fragmentation
+        ns = min(100.0, ns)
 
     # Corruption fraction also bumps classification.
     # >10% arm corruption means the file is structurally compromised.
     if corruption_frac > 0.10:
         cls = 'problematic'
+
+    # Low clean fraction on a long file is also automatically problematic.
+    if (file_seconds >= CLEAN_FRAC_PENALTY_MIN_DURATION_S
+            and clean_frac < CLEAN_FRAC_PROBLEMATIC_THRESHOLD):
+        cls = 'problematic'
+
+    # ── Clean-section score ───────────────────────────────────────────
+    # Rates noise level WITHIN the clean segments.  Tells the user: if
+    # I extract just the clean sections, how usable is the data?
+    #
+    # By construction, clean segments contain no pose-level anomalies
+    # (significant spikes, corruption zones, stream breaks are all
+    # excluded), so under the hard-glitch concept there are zero hard
+    # glitches within clean.  What's left to measure is sub-significant
+    # spike density — frames flagged by the spike detector but didn't
+    # qualify as significant (single-joint wrist twitches, isolated arm
+    # blips, etc.).  These are what the user calls "flickers."
+    #
+    # Per-frame torque-score components are NOT used — they have the
+    # same dynamic-motion FP signature within clean sections that we
+    # already excluded from noise_score (C24-style spine impulses).
+    clean_frame_idx = np.zeros(T, dtype=bool)
+    for seg in clean:
+        clean_frame_idx[seg.start:seg.end + 1] = True
+    n_clean_frames = int(clean_frame_idx.sum())
+    if n_clean_frames > 0:
+        clean_n_spike_unique = len({s.frame for s in spike_frames
+                                    if 0 <= s.frame < T and clean_frame_idx[s.frame]})
+        cs = (clean_n_spike_unique / n_clean_frames) * 300
+        clean_section_score = round(min(100.0, cs), 4)
+    else:
+        clean_section_score = 0.0
 
     report = TorqueFileReport(
         filename=os.path.basename(filepath),
@@ -1384,6 +1607,7 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         duration_s=round(T / fps, 1),
         noise_score=round(ns, 4),
         classification=cls,
+        clean_section_score=clean_section_score,
         n_glitch_frames=n_g,
         n_suspect_frames=n_s,
         glitch_fraction=round(g_frac, 6),
@@ -1459,6 +1683,93 @@ def _detect_spike_frames(poses, fps):
     return spikes
 
 
+def _arm_spike_density_mask(spike_frames, T, fps):
+    """Build a bad mask from arm-chain spike-frame density.
+
+    Sustained low-level arm-chain noise (multiple sub-significant spikes
+    spread across a short window) indicates flickery arm-marker data even
+    when no individual spike clears the severity gate.  Counts unique
+    frames with arm-chain spike entries in a rolling window; flags any
+    window whose count crosses SPIKE_DENSITY_MIN_COUNT.
+
+    This catches the "flickers of torque on shoulders, pecs, and arms"
+    pattern found in known-corrupted long files (e.g. Maritsa).  It is
+    *not* triggered by isolated multi-joint events (e.g. a single
+    side-step burst): those have high joint count at one instant but
+    only 1–2 unique frames in the density window.
+    """
+    if not spike_frames:
+        return np.zeros(T, dtype=bool)
+
+    has_arm_spike = np.zeros(T, dtype=bool)
+    for s in spike_frames:
+        if s.joint_idx in ARM_CHAIN_JOINT_INDICES and 0 <= s.frame < T:
+            has_arm_spike[s.frame] = True
+
+    # Clamp window to T — np.convolve in 'same' mode returns max(M, N)
+    # elements, so a kernel longer than the input would produce an
+    # output bigger than T and break the downstream OR with structural_mask.
+    window = max(1, min(int(SPIKE_DENSITY_WINDOW_S * fps), T))
+    kernel = np.ones(window, dtype=int)
+    density = np.convolve(has_arm_spike.astype(int), kernel, mode='same')
+    return density >= SPIKE_DENSITY_MIN_COUNT
+
+
+def _significant_spike_frames(spike_frames, poses, fps):
+    """Identify spike frames severe enough to fragment clean segments.
+
+    Returns a set of frame indices.  A frame is "significant" when its
+    per-joint contributions sum to >= SPIKE_SEVERITY_STRONG_THRESHOLD AND
+    >= SPIKE_SEVERITY_MIN_QUALIFYING core/mid joints (weight >= 0.5)
+    each contribute >= SPIKE_SEVERITY_QUALIFY_CONTRIB.
+
+    Per-joint contribution = joint_weight * max(0, vel/joint_p95 - 1) * ratio
+
+    Multi-joint involvement requirement excludes arm-only fast-motion
+    bursts (which produce high single-joint wsev but are real motion).
+    """
+    if not spike_frames:
+        return set()
+
+    T = poses.shape[0]
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    poses_3d = poses.reshape(T, -1, 3)[:, :nj, :]
+    vel = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2) * fps
+    joint_p95 = np.maximum(np.percentile(vel, 95, axis=0), 0.5)
+
+    by_frame = {}
+    for s in spike_frames:
+        by_frame.setdefault(s.frame, []).append(s)
+
+    significant = set()
+    for f, entries in by_frame.items():
+        wsev = 0.0
+        n_qualifying = 0
+        n_arm_chain = 0
+        n_non_arm_chain = 0
+        for e in entries:
+            w = SPIKE_SEVERITY_JOINT_WEIGHT.get(e.joint_name, 0.5)
+            p95 = float(joint_p95[e.joint_idx]) if e.joint_idx < len(joint_p95) else 0.5
+            excess = max(0.0, e.velocity / p95 - 1.0)
+            contrib = w * excess * e.neighbor_ratio
+            wsev += contrib
+            if w >= 0.5 and contrib >= SPIKE_SEVERITY_QUALIFY_CONTRIB:
+                n_qualifying += 1
+            if e.joint_idx in ARM_CHAIN_JOINT_INDICES:
+                n_arm_chain += 1
+            else:
+                n_non_arm_chain += 1
+        # Standard severity gate
+        if wsev >= SPIKE_SEVERITY_STRONG_THRESHOLD and n_qualifying >= SPIKE_SEVERITY_MIN_QUALIFYING:
+            significant.add(f)
+            continue
+        # Pure-arm-cluster gate: signature of one-side marker failure
+        if n_arm_chain >= PURE_ARM_CLUSTER_MIN_JOINTS and n_non_arm_chain == 0:
+            significant.add(f)
+    return significant
+
+
 def _detect_corruption_zones(poses, fps):
     """Detect sustained joint-level corruption (marker dropout, capture failure).
     
@@ -1475,7 +1786,13 @@ def _detect_corruption_zones(poses, fps):
     T = poses.shape[0]
     if T < CORRUPTION_MIN_DURATION_FRAMES * 2:
         return [], np.zeros(T, dtype=bool)
-    
+    # Skip corruption detection on files too short for the rolling baseline
+    # to settle — the long window would collapse to roughly the activity
+    # length itself, causing legitimate motion bursts (punches, quick gestures)
+    # to be mis-flagged as sustained corruption.
+    if T / float(fps) < CORRUPTION_MIN_FILE_S:
+        return [], np.zeros(T, dtype=bool)
+
     nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
     nj = min(nj, N_JOINTS)
     poses_3d = poses.reshape(T, -1, 3)[:, :nj, :]
@@ -1497,10 +1814,10 @@ def _detect_corruption_zones(poses, fps):
     
     for j in sorted(CORRUPTION_JOINTS):
         v = vel[:, j]
-        
+
         # Short-term rolling mean: captures current activity
         short_mean = np.convolve(v, short_kernel, mode='same')
-        
+
         # Long-term rolling median: captures local baseline.
         # Uses a strided approach for efficiency on long files.
         # For each frame, the local baseline is the median velocity over
@@ -1511,18 +1828,18 @@ def _detect_corruption_zones(poses, fps):
             lo = max(0, t - half_long)
             hi = min(len(v), t + half_long + 1)
             long_median[t] = np.median(v[lo:hi])
-        
+
         # Floor the local baseline to avoid division by zero and to avoid
         # flagging noise during near-stillness
         long_median_floor = np.maximum(long_median, 0.5)
-        
+
         # Local surprise ratio: how anomalous is the current velocity
         # relative to the local baseline?
         ratio = short_mean / long_median_floor
-        
+
         # Flag frames where BOTH conditions hold:
         #   1. Local surprise ratio is high (short >> long)
-        #   2. Absolute velocity exceeds floor (to avoid flagging stillness noise)
+        #   2. Absolute velocity exceeds floor (to avoid stillness noise)
         high = (ratio > CORRUPTION_LOCAL_RATIO) & (short_mean > CORRUPTION_VEL_FLOOR)
         
         # Find runs of CORRUPTION_MIN_DURATION_FRAMES+ frames
@@ -1704,26 +2021,58 @@ def _find_clusters(frames, gap=5):
     return clusters
 
 
-def _find_clean_segments(scores, fps, margin=3, corruption_mask=None):
+def _find_clean_segments(scores, fps, margin=3, corruption_mask=None,
+                         spike_frame_indices=None):
     """
-    Find continuous stretches where NO frame is glitch, suspect, or corrupted.
+    Find continuous stretches with NO pose-level anomalies — i.e. no
+    significant spike, no corruption-zone frame, no stream-break frame.
     Expands bad regions by margin frames on each side.
-    
+
+    Per-frame torque scores are NOT consulted: in dynamic-motion files
+    (side steps, punches, jumps) the torque scorer routinely flags
+    legitimate motion impulses on core joints as "glitches" — but those
+    are real movement, not bad data. The pose-level detectors (spike,
+    corruption, stream-break) catch true pose anomalies.  Per-frame
+    score remains in noise_score and classification; just not here.
+
     corruption_mask: optional (T,) boolean array from _detect_corruption_zones.
         Frames in corruption zones are marked bad regardless of their torque
         score, because the torque pipeline's filtering absorbs the evidence
         of arm corruption before scoring.
-    
+
+    spike_frame_indices: optional iterable of frame indices to mark bad.
+        These are typically *significant* spike frames (multi-joint
+        synchronized, above-envelope) that the torque score absorbed via
+        acceleration smoothing.  Caller is expected to pre-filter by
+        severity — passing every spike would over-fragment otherwise-clean
+        files due to minor wrist twitches.
+
     Returns list of CleanSegment, sorted longest-first.
     """
     T = len(scores)
-    bad = scores >= SUSPECT_THRESH
-    
+    bad = np.zeros(T, dtype=bool)
+
+    # Adaptive minimum segment duration: on short files the standard
+    # CLEAN_MIN_DURATION (1.0 s) would reject every gap, even when the
+    # file is overall clean.  Scale down for files where 1.0 s would be
+    # an unreasonable fraction of total length.
+    file_seconds = T / float(fps) if fps > 0 else 0.0
+    effective_min_duration = min(CLEAN_MIN_DURATION, file_seconds / 4.0)
+
     # Merge corruption mask — these frames have pre-filtering evidence
     # of capture failure that the torque scorer cannot see
     if corruption_mask is not None and len(corruption_mask) >= T:
         bad = bad | corruption_mask[:T]
-    
+
+    # Fold significant spike frames into the bad mask.  The torque score
+    # can absorb single-frame discontinuities via acceleration smoothing,
+    # so frames that the spike detector flagged as severe need to be
+    # added explicitly to prevent contaminating clean segments.
+    if spike_frame_indices:
+        for f in spike_frame_indices:
+            if 0 <= f < T:
+                bad[f] = True
+
     if margin > 0:
         bad_expanded = bad.copy()
         for m in range(1, margin + 1):
@@ -1744,7 +2093,7 @@ def _find_clean_segments(scores, fps, margin=3, corruption_mask=None):
             if in_clean:
                 n = f - start
                 dur = n / fps
-                if dur >= CLEAN_MIN_DURATION:
+                if dur >= effective_min_duration:
                     seg_scores = scores[start:f]
                     segments.append(CleanSegment(
                         start=start, end=f - 1, n_frames=n,
@@ -1782,7 +2131,8 @@ def print_report(r):
     print(f"  Classification: {ic.get(r.classification)} {r.classification.upper()}")
     if r.classification_detail:
         print(f"  Detail:         {r.classification_detail}")
-    print(f"  Noise score:    {r.noise_score:.1f} / 100")
+    print(f"  Noise score:    {r.noise_score:.1f} / 100   (file overall)")
+    print(f"  Clean-section:  {r.clean_section_score:.1f} / 100   (within clean segments only)")
     print(f"  Glitch frames:  {r.n_glitch_frames} ({100 * r.glitch_fraction:.2f}%)")
     print(f"  Suspect frames: {r.n_suspect_frames}")
     

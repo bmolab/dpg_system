@@ -20,6 +20,40 @@ except ImportError:
     print("Warning: smplx or torch not found. Dynamic anthropometry will use approximate heuristics.")
 
 
+# Module-level cache for loaded smplx body model objects.  Keyed by
+# (absolute_model_path, gender_tag).  The smplx body model is purely
+# read-only constant data (mesh templates, skinning weights, joint
+# regressor) — instantiating one is expensive (disk read + pickle
+# deserialization + torch tensor construction takes ~5-10 s).  Caching
+# the loaded model lets in-process batch runs reuse it across files
+# without paying that cost per file.
+#
+# SAFETY: The smplx model is stateless under forward calls (just a
+# parametric mesh function); it does NOT accumulate state between
+# files.  All EMA / sequential-filter state in SMPLProcessor lives on
+# the SMPLProcessor instance itself (self.prob_prev_*, self.prev_zmp_*,
+# self._ang_sg_cache, ...) and resets when a new SMPLProcessor is
+# constructed.
+_smplx_model_cache = {}
+
+
+def _get_cached_smplx_model(model_path, g_tag):
+    """Return a smplx body model for (model_path, gender_tag).
+    Loads once per process and caches; subsequent calls return the
+    same instance."""
+    abs_path = os.path.abspath(model_path)
+    key = (abs_path, g_tag)
+    if key not in _smplx_model_cache:
+        _smplx_model_cache[key] = smplx.create(
+            model_path=model_path,
+            model_type='smplh',
+            gender=g_tag,
+            num_betas=10,
+            ext='pkl',
+        )
+    return _smplx_model_cache[key]
+
+
 class NumpySmartClampKF:
     """
     A Linear Kalman Filter with 'Smart Innovation Clamping' for smoothing
@@ -652,14 +686,11 @@ class SMPLProcessor:
         g_tag = gender_map.get(self.gender, 'MALE') # Fallback to MALE for neutral
         
         try:
-            # Create Model
-            # use_pca=False is safer for just shape exploration? No, defaults are fine.
-            model = smplx.create(model_path=model_path, 
-                                 model_type='smplh',
-                                 gender=g_tag, 
-                                 num_betas=10, 
-                                 ext='pkl')
-                                 
+            # Use the module-level cache so the smplx model is loaded
+            # exactly once per (model_path, gender) per process — saves
+            # ~5-10 s per file in batch runs.
+            model = _get_cached_smplx_model(model_path, g_tag)
+
             betas_tensor = torch.zeros(1, 10)
             if self.betas is not None:
                 b = torch.tensor(self.betas, dtype=torch.float32)
