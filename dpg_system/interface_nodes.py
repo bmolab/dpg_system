@@ -1849,7 +1849,10 @@ class Vector2DNode(Node):
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.component_widget_width, callback=self.width_changed)
         self.save_option = self.add_option('save', widget_type='button', callback=self._save_values)
         self.load_option = self.add_option('load', widget_type='button', callback=self._load_values)
-        self.output_vector = np.zeros(self.current_dims)
+        if self.current_dims[1] == 1:
+            self.output_vector = np.zeros(self.current_dims[0])
+        else:
+            self.output_vector = np.zeros(self.current_dims)
 
         self.first_component_input_index = -1
 
@@ -1944,7 +1947,7 @@ class Vector2DNode(Node):
         preset = {}
         values = []
         for i in range(self.current_dims[0]):
-            values.append(list(self.output_vector[i]))
+            values.append(any_to_list(self.output_vector[i]))
         preset['values'] = values
         return preset
 
@@ -2010,7 +2013,10 @@ class Vector2DNode(Node):
     def send(self):
         dim1 = self.current_dims[0]
         dim2 = self.current_dims[1] if len(self.current_dims) > 1 else 1
-        output_array = np.ndarray([dim1, dim2])
+        if dim2 == 1:
+            output_array = np.ndarray([dim1])
+        else:
+            output_array = np.ndarray([dim1, dim2])
         for i in range(dim1):
             output_array[i] = self.component_properties[i]()
         self.output.send(output_array)
@@ -2018,7 +2024,10 @@ class Vector2DNode(Node):
     def load_custom(self, container):
         dim1 = self.current_dims[0]
         dim2 = self.current_dims[1] if len(self.current_dims) > 1 else 1
-        values = np.ndarray([dim1, dim2])
+        if dim2 == 1:
+            values = np.ndarray([dim1])
+        else:
+            values = np.ndarray([dim1, dim2])
         for i in range(dim1):
             values[i] = self.component_properties[i]()
         vf = self.vector_format_input()
@@ -2036,10 +2045,12 @@ class Vector2DNode(Node):
             t = type(value)
             if t == str:
                 if value == 'bang':
-                    output_array = np.ndarray(self.current_dims)
+                    if self.current_dims[1] == 1:
+                        output_array = np.ndarray([self.current_dims[0]])
+                    else:
+                        output_array = np.ndarray(self.current_dims)
                     for i in range(self.current_dims[0]):
-                        for j in range(self.current_dims[1]):
-                            output_array[i] = self.component_properties[i]()
+                        output_array[i] = self.component_properties[i]()
                     self.output.send(output_array)
                     return
                 else:
@@ -2078,6 +2089,8 @@ class Vector2DNode(Node):
                 self.current_dims = [1, 1]
 
             elif t == np.ndarray:
+                if value.ndim == 2 and value.shape[1] == 1:
+                    value = value.reshape(-1)
                 self.current_dims = list(value.shape)
                 if len(self.current_dims) < 2:
                     self.current_dims.append(1)
@@ -2089,6 +2102,8 @@ class Vector2DNode(Node):
                     self.output_vector = torch.from_numpy(value)
 
             elif t == torch.Tensor:
+                if value.dim() == 2 and value.shape[1] == 1:
+                    value = value.reshape(-1)
                 self.current_dims = list(value.shape)
                 if len(self.current_dims) < 2:
                     self.current_dims.append(1)
