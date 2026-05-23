@@ -44,6 +44,8 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_to_active", SMPLToActivePoseNode.factory)
     Node.app.register_node("smpl_to_quats", SMPLToQuaternionsNode.factory)
     Node.app.register_node("active_to_smpl", ActiveToSMPLPoseNode.factory)
+    Node.app.register_node("smpl_pose_adjust", SMPLPoseAdjustNode.factory)
+    Node.app.register_node("smpl_mag_yaw_correct", SMPLMagYawCorrectionNode.factory)
     Node.app.register_node("quats_flip_y_z", QuatFlipYZAxesNode.factory)
     Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)
     Node.app.register_node("smpl_beta_editor", SMPLBetaEditorNode.factory)
@@ -511,6 +513,374 @@ class ActiveToSMPLPoseNode(JointTranslator, Node):
             else:
                 smpl_pose = JointTranslator.translate_from_bmolab_active_to_smpl(active_pose)
         self.output.send(smpl_pose)
+
+
+class SMPLPoseAdjustNode(SMPLNode):
+    """Applies per-joint axis-angle adjustments to a 22-joint SMPL pose.
+
+    Pelvis (root, index 0) adjustments are post-multiplied so the correction is
+    in the body-local frame. All other joints are pre-multiplied so the
+    correction is in the parent's frame (matches PoseAdjustmentNode semantics).
+    """
+
+    JOINT_COUNT = 22
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return SMPLPoseAdjustNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_adjustments)
+
+        self.adj_inputs = []
+        for joint_name in self.joint_names[:self.JOINT_COUNT]:
+            adj = self.add_input(joint_name, widget_type='drag_float_n',
+                                 default_value=[0.0, 0.0, 0.0], columns=3,
+                                 widget_width=45)
+            self.adj_inputs.append(adj)
+
+        self.pose_output = self.add_output('pose out')
+
+    def reset_adjustments(self):
+        identity = [0.0, 0.0, 0.0]
+        for adj in self.adj_inputs:
+            adj.set(identity)
+
+    def get_preset_state(self):
+        values = []
+        for adj in self.adj_inputs:
+            val = adj()
+            if val is None:
+                values.append([0.0, 0.0, 0.0])
+            else:
+                values.append(list(any_to_array(val).flatten()))
+        return {'values': values}
+
+    def set_preset_state(self, preset):
+        if 'values' in preset:
+            for i, val in enumerate(preset['values']):
+                if i < len(self.adj_inputs):
+                    self.adj_inputs[i].set(val)
+
+    def execute(self):
+        raw = self.pose_input()
+        if raw is None:
+            return
+        pose = any_to_array(raw)
+        if pose.ndim == 1:
+            pose = pose.reshape(-1, 3)
+        if pose.ndim != 2 or pose.shape[1] != 3 or pose.shape[0] < self.JOINT_COUNT:
+            return
+
+        adj_quats = [None] * self.JOINT_COUNT
+        for i, adj in enumerate(self.adj_inputs):
+            adj_val = adj()
+            if adj_val is None:
+                continue
+            aa = any_to_array(adj_val).flatten().astype(np.float64)
+            if aa.size != 3:
+                continue
+            mag = float(np.linalg.norm(aa))
+            if mag < 1e-6:
+                continue
+            half = mag * 0.5
+            s = np.sin(half) / mag
+            adj_quats[i] = np.array([np.cos(half), aa[0] * s, aa[1] * s, aa[2] * s])
+
+        result = pose.astype(np.float64).copy()
+        adj_indices = [i for i, q in enumerate(adj_quats) if q is not None]
+        if not adj_indices:
+            self.pose_output.send(result.astype(np.float32))
+            return
+
+        # Round-trip only the joints we modify, so unadjusted joints keep their
+        # exact input rotvec (scipy's canonical |r|<=pi would otherwise flip
+        # branches once per full rotation).
+        in_rvecs = result[adj_indices]
+        pose_quats = Rotation.from_rotvec(in_rvecs).as_quat(scalar_first=True)
+        for k, i in enumerate(adj_indices):
+            adj_q = adj_quats[i]
+            if i == 0:
+                pose_quats[k] = quaternion_multiply_scalar_first(pose_quats[k], adj_q)
+            else:
+                pose_quats[k] = quaternion_multiply_scalar_first(adj_q, pose_quats[k])
+        out_rvecs = Rotation.from_quat(pose_quats, scalar_first=True).as_rotvec()
+
+        # Unwrap each output rotvec to the equivalent representation closest to
+        # the input. Equivalent rotvecs differ by k * 2*pi * unit_axis.
+        two_pi = 2.0 * np.pi
+        for k, i in enumerate(adj_indices):
+            out = out_rvecs[k]
+            norm = float(np.linalg.norm(out))
+            if norm > 1e-9:
+                unit = out / norm
+                offset = round(float((in_rvecs[k] - out).dot(unit) / two_pi))
+                if offset != 0:
+                    out = out + offset * two_pi * unit
+            result[i] = out
+
+        self.pose_output.send(result.astype(np.float32))
+
+
+class SMPLMagYawCorrectionNode(SMPLNode):
+    """Corrects yaw errors in IMU-derived SMPL pose data (22-joint body).
+
+    SMPL adaptation of MagYawCorrectionNode. Two independent corrections per
+    joint, both rotations around the chosen world up-axis:
+      - Global yaw (pre-multiply in world frame): ongoing magnetometer drift
+      - Local yaw  (post-multiply in joint body frame): residual calibration offset
+
+    'sync' keeps local = global (correct when hard-iron bias produces the same
+    yaw error at all orientations). 'symmetric' mirrors left<->right joints.
+
+    Note: after Shadow->SMPL conversion the "local" correction no longer
+    literally corresponds to a per-sensor T-pose offset; it remains a useful
+    body-frame yaw DOF but should not be interpreted as fixing sensor calibration.
+    """
+
+    JOINT_COUNT = 22
+
+    # SMPL parent indices for the first 22 joints (-1 = root). Index order is
+    # already topological in SMPL since every joint's parent index < its own.
+    PARENT_INDEX = [
+        -1,  # 0  pelvis
+        0,   # 1  left_hip
+        0,   # 2  right_hip
+        0,   # 3  spine1
+        1,   # 4  left_knee
+        2,   # 5  right_knee
+        3,   # 6  spine2
+        4,   # 7  left_ankle
+        5,   # 8  right_ankle
+        6,   # 9  spine3
+        7,   # 10 left_foot
+        8,   # 11 right_foot
+        9,   # 12 neck
+        9,   # 13 left_collar
+        9,   # 14 right_collar
+        12,  # 15 head
+        13,  # 16 left_shoulder
+        14,  # 17 right_shoulder
+        16,  # 18 left_elbow
+        17,  # 19 right_elbow
+        18,  # 20 left_wrist
+        19,  # 21 right_wrist
+    ]
+    TOPO_ORDER = list(range(JOINT_COUNT))
+
+    SYMMETRIC_PAIRS = [
+        (1, 2),    # hip
+        (4, 5),    # knee
+        (7, 8),    # ankle
+        (10, 11),  # foot
+        (13, 14),  # collar
+        (16, 17),  # shoulder
+        (18, 19),  # elbow
+        (20, 21),  # wrist
+    ]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return SMPLMagYawCorrectionNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.up_axis = self.add_property('up axis', widget_type='combo', default_value='Y')
+        self.up_axis.widget.combo_items = ['Y', 'Z']
+        self.symmetric_input = self.add_input('symmetric', widget_type='checkbox', default_value=True)
+        self.sync_input = self.add_input('sync local/global', widget_type='checkbox', default_value=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_all)
+
+        self._in_propagation = False
+
+        names = self.joint_names[:self.JOINT_COUNT]
+        self.global_inputs = []
+        for joint_name in names:
+            inp = self.add_input(joint_name, widget_type='drag_float',
+                                 default_value=0.0, callback=self.on_global_changed)
+            self.global_inputs.append(inp)
+
+        self.local_inputs = []
+        for joint_name in names:
+            inp = self.add_input(joint_name + '_cal', widget_type='drag_float',
+                                 default_value=0.0, callback=self.on_local_changed)
+            self.local_inputs.append(inp)
+
+        self.pose_output = self.add_output('pose out')
+
+        self._world_quats = np.zeros((self.JOINT_COUNT, 4), dtype=np.float64)
+        self._world_quats[:, 0] = 1.0
+
+    def custom_create(self, from_file):
+        for inp in self.global_inputs:
+            inp.widget.set_speed(1.0)
+            dpg.set_item_width(inp.widget.uuid, 45)
+        for inp in self.local_inputs:
+            inp.widget.set_speed(1.0)
+            dpg.set_item_width(inp.widget.uuid, 45)
+
+    def reset_all(self):
+        self._in_propagation = True
+        for inp in self.global_inputs:
+            inp.set(0.0)
+        for inp in self.local_inputs:
+            inp.set(0.0)
+        self._in_propagation = False
+
+    def _find_input_index(self, input_list):
+        for i, inp in enumerate(input_list):
+            if inp is self.active_input:
+                return i
+        return None
+
+    def _propagate_symmetric(self, input_list, changed_idx, value):
+        for left_idx, right_idx in self.SYMMETRIC_PAIRS:
+            if changed_idx == left_idx:
+                input_list[right_idx].set(value)
+                return
+            elif changed_idx == right_idx:
+                input_list[left_idx].set(value)
+                return
+
+    def on_global_changed(self):
+        if self._in_propagation:
+            return
+        idx = self._find_input_index(self.global_inputs)
+        if idx is None:
+            return
+        self._in_propagation = True
+        value = self.global_inputs[idx]()
+        if self.sync_input():
+            self.local_inputs[idx].set(value)
+        if self.symmetric_input():
+            self._propagate_symmetric(self.global_inputs, idx, value)
+            if self.sync_input():
+                self._propagate_symmetric(self.local_inputs, idx, value)
+        self._in_propagation = False
+
+    def on_local_changed(self):
+        if self._in_propagation:
+            return
+        idx = self._find_input_index(self.local_inputs)
+        if idx is None:
+            return
+        self._in_propagation = True
+        value = self.local_inputs[idx]()
+        if self.sync_input():
+            self.global_inputs[idx].set(value)
+        if self.symmetric_input():
+            self._propagate_symmetric(self.local_inputs, idx, value)
+            if self.sync_input():
+                self._propagate_symmetric(self.global_inputs, idx, value)
+        self._in_propagation = False
+
+    def get_preset_state(self):
+        return {
+            'global_yaw': [g() for g in self.global_inputs],
+            'local_cal': [l() for l in self.local_inputs],
+            'up_axis': self.up_axis(),
+        }
+
+    def set_preset_state(self, preset):
+        self._in_propagation = True
+        if 'global_yaw' in preset:
+            for i, val in enumerate(preset['global_yaw']):
+                if i < len(self.global_inputs):
+                    self.global_inputs[i].set(float(val))
+        if 'local_cal' in preset:
+            for i, val in enumerate(preset['local_cal']):
+                if i < len(self.local_inputs):
+                    self.local_inputs[i].set(float(val))
+        if 'up_axis' in preset:
+            self.up_axis.set(preset['up_axis'])
+        self._in_propagation = False
+
+    def _yaw_quat(self, angle_deg):
+        half = np.radians(angle_deg) * 0.5
+        s = np.sin(half)
+        c = np.cos(half)
+        if self.up_axis() == 'Z':
+            return np.array([c, 0.0, 0.0, s], dtype=np.float64)
+        return np.array([c, 0.0, s, 0.0], dtype=np.float64)
+
+    @staticmethod
+    def _qinv(q):
+        return np.array([q[0], -q[1], -q[2], -q[3]], dtype=np.float64)
+
+    def execute(self):
+        raw = self.pose_input()
+        if raw is None:
+            return
+        pose = any_to_array(raw)
+        if pose.ndim == 1:
+            pose = pose.reshape(-1, 3)
+        if pose.ndim != 2 or pose.shape[1] != 3 or pose.shape[0] < self.JOINT_COUNT:
+            return
+
+        global_angles = [self.global_inputs[i]() for i in range(self.JOINT_COUNT)]
+        local_angles = [self.local_inputs[i]() for i in range(self.JOINT_COUNT)]
+        any_correction = (any(abs(a) > 0.001 for a in global_angles) or
+                          any(abs(a) > 0.001 for a in local_angles))
+
+        result = pose.astype(np.float64).copy()
+        if not any_correction:
+            self.pose_output.send(result.astype(np.float32))
+            return
+
+        in_rvecs = result[:self.JOINT_COUNT]
+        local = Rotation.from_rotvec(in_rvecs).as_quat(scalar_first=True)
+        world = self._world_quats
+
+        # FK: local -> world
+        for i in self.TOPO_ORDER:
+            p = self.PARENT_INDEX[i]
+            if p == -1:
+                world[i] = local[i]
+            else:
+                world[i] = quaternion_multiply_scalar_first(world[p], local[i])
+
+        # Apply per-joint corrections in world frame
+        # Q_corrected = Q_global(-alpha) * Q_world * Q_local(beta)
+        for i in range(self.JOINT_COUNT):
+            g = global_angles[i]
+            l = local_angles[i]
+            q = world[i]
+            if abs(g) > 0.001:
+                q = quaternion_multiply_scalar_first(self._yaw_quat(-g), q)
+            if abs(l) > 0.001:
+                q = quaternion_multiply_scalar_first(q, self._yaw_quat(l))
+            world[i] = q
+
+        # IK: world -> corrected local (uses corrected parent worlds)
+        corrected = np.zeros((self.JOINT_COUNT, 4), dtype=np.float64)
+        for i in self.TOPO_ORDER:
+            p = self.PARENT_INDEX[i]
+            if p == -1:
+                corrected[i] = world[i]
+            else:
+                corrected[i] = quaternion_multiply_scalar_first(self._qinv(world[p]), world[i])
+
+        out_rvecs = Rotation.from_quat(corrected, scalar_first=True).as_rotvec()
+
+        # Unwrap each output rotvec to the branch closest to its input rotvec,
+        # so full-rotation joints (notably pelvis) stay continuous.
+        two_pi = 2.0 * np.pi
+        for i in range(self.JOINT_COUNT):
+            out = out_rvecs[i]
+            norm = float(np.linalg.norm(out))
+            if norm > 1e-9:
+                unit = out / norm
+                offset = round(float((in_rvecs[i] - out).dot(unit) / two_pi))
+                if offset != 0:
+                    out = out + offset * two_pi * unit
+            result[i] = out
+
+        self.pose_output.send(result.astype(np.float32))
 
 
 class SMPLBodyNode(SMPLNode):
@@ -2208,6 +2578,19 @@ class SMPLBetaEditorNode(Node):
         # File path option (used by save/load if set, otherwise opens file dialog)
         self.file_path_option = self.add_option('file_path', widget_type='text_input', width=200, default_value='')
 
+        # Solve-for-β1 controls: hold limb lengths fixed while changing weight.
+        # The first solve snapshots current betas as the limb-length reference;
+        # later solves reuse it so repeated runs don't drift.
+        self.solve_target_b1 = self.add_property('solve_target β1', widget_type='drag_float',
+                                                 default_value=0.0)
+        self.solve_reg = self.add_option('solve_reg', widget_type='drag_float', default_value=1e-4)
+        self.solve_button = self.add_input('solve β1', widget_type='button', callback=self._solve_beta1)
+        self.clear_ref_button = self.add_input('clear solve ref', widget_type='button',
+                                               callback=self._clear_solve_reference)
+        self._solve_reference_betas = None
+        self._smpl_model_cache = None
+        self._smpl_model_cache_gender = None
+
         # Outputs
         self.config_output = self.add_output('config')
         self.betas_output = self.add_output('betas')
@@ -2302,6 +2685,7 @@ class SMPLBetaEditorNode(Node):
                 self.gender_prop.widget.set(data['gender'])
             if 'total_mass' in data:
                 self.total_mass_prop.widget.set(float(data['total_mass']))
+            self._solve_reference_betas = None
             self._recompute_and_send()
             print(f"SMPLBetaEditorNode: Loaded betas from {path}")
         except Exception as e:
@@ -2310,6 +2694,7 @@ class SMPLBetaEditorNode(Node):
     def _reset_betas(self):
         for prop in self.beta_props:
             prop.widget.set(0.0)
+        self._solve_reference_betas = None
         self._recompute_and_send()
 
     def custom_create(self, from_file):
@@ -2349,6 +2734,7 @@ class SMPLBetaEditorNode(Node):
             b = any_to_array(raw).flatten()
             for i in range(min(len(b), 10)):
                 self.beta_props[i].widget.set(float(b[i]))
+        self._solve_reference_betas = None
         self._recompute_and_send()
 
     def _on_param_changed(self):
@@ -2401,6 +2787,62 @@ class SMPLBetaEditorNode(Node):
             self.limb_lengths_output.send(result)
         except Exception as e:
             print(f"SMPLBetaEditorNode: Error computing limb properties: {e}")
+
+    def _clear_solve_reference(self):
+        """Forget the captured limb-length reference; next solve will recapture."""
+        self._solve_reference_betas = None
+        print("SMPLBetaEditorNode: cleared solve reference")
+
+    def _get_smpl_model(self, gender):
+        """Cache one smplx model per gender so repeated solves don't reload."""
+        if self._smpl_model_cache is not None and self._smpl_model_cache_gender == gender:
+            return self._smpl_model_cache
+        from dpg_system.smpl_utilities.solve_betas_for_weight import load_smpl_model
+        model_path = os.path.dirname(os.path.abspath(__file__))
+        self._smpl_model_cache = load_smpl_model(gender, model_path)
+        self._smpl_model_cache_gender = gender
+        return self._smpl_model_cache
+
+    def _solve_beta1(self):
+        """Hold limb lengths fixed (from the reference) and fit the other 9 betas
+        so β1 lands at solve_target β1. First call snapshots current betas as
+        the reference; subsequent calls reuse it to avoid drift."""
+        try:
+            from dpg_system.smpl_utilities.solve_betas_for_weight import solve
+        except Exception as e:
+            print(f"SMPLBetaEditorNode: solver import failed: {e}")
+            return
+
+        if self._solve_reference_betas is None:
+            self._solve_reference_betas = self._get_betas_array().copy()
+            print(f"SMPLBetaEditorNode: captured solve reference "
+                  f"(β = {np.round(self._solve_reference_betas, 3).tolist()})")
+
+        gender = self.gender_prop()
+        target_b1 = float(self.solve_target_b1())
+        reg = float(self.solve_reg())
+
+        try:
+            model = self._get_smpl_model(gender)
+        except Exception as e:
+            print(f"SMPLBetaEditorNode: failed to load SMPL model: {e}")
+            return
+
+        try:
+            new_betas, target_lengths, final_lengths = solve(
+                self._solve_reference_betas, target_b1, model, reg=reg, verbose=False)
+        except Exception as e:
+            print(f"SMPLBetaEditorNode: solve failed: {e}")
+            return
+
+        max_err = float(np.max(np.abs(final_lengths - target_lengths)))
+        rms_err = float(np.sqrt(np.mean((final_lengths - target_lengths) ** 2)))
+        print(f"SMPLBetaEditorNode: solved β1={target_b1:+.3f}  "
+              f"max bone Δ={max_err*1000:.1f}mm  rms={rms_err*1000:.1f}mm")
+
+        for i in range(10):
+            self.beta_props[i].widget.set(float(new_betas[i]))
+        self._recompute_and_send()
 
     def execute(self):
         """Triggered by betas_in input if it has triggers_execution."""
