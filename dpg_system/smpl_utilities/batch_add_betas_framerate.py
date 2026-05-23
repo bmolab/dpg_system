@@ -1,13 +1,16 @@
-"""Batch-add `betas`, `gender`, and `mocap_framerate` to a folder of npz mocap files.
+"""Batch-add `betas` (and optionally `gender` / `mocap_framerate`) to a folder
+of npz mocap files.
 
 For each input `take.npz` writes `take_beta.npz` in the same folder, copying
-all original arrays and overwriting (or adding) the two keys. Files whose
+all original arrays and overwriting (or adding) `betas`. `gender` and
+`mocap_framerate` are only written when explicitly passed on the CLI; any
+pre-existing values in the file are otherwise left untouched. Files whose
 name already ends in `_beta` are skipped so re-running is idempotent.
 
 Examples:
-    python batch_add_betas_framerate.py /path/to/folder --framerate 120
-    python batch_add_betas_framerate.py /path/to/folder --framerate 60 \\
+    python batch_add_betas_framerate.py /path/to/folder \\
         --betas 0.1,-0.2,0,0,0,0,0,0,0,0
+    python batch_add_betas_framerate.py /path/to/folder --framerate 120
     python batch_add_betas_framerate.py /path/to/folder --framerate 60 \\
         --betas-file shape.npy --recursive
 """
@@ -74,8 +77,10 @@ def process_file(path, betas, framerate, gender):
     with np.load(path, allow_pickle=True) as src:
         data = {k: src[k] for k in src.files}
     data['betas'] = betas
-    data['gender'] = gender
-    data['mocap_framerate'] = np.float64(framerate)
+    if gender is not None:
+        data['gender'] = gender
+    if framerate is not None:
+        data['mocap_framerate'] = np.float64(framerate)
     np.savez(out_path, **data)
     return f'wrote {os.path.basename(out_path)}'
 
@@ -83,10 +88,12 @@ def process_file(path, betas, framerate, gender):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument('folder', help='folder containing .npz mocap files')
-    ap.add_argument('--framerate', type=float, required=True,
-                    help='mocap_framerate to write (e.g. 60, 120)')
+    ap.add_argument('--framerate', type=float, default=None,
+                    help='mocap_framerate to write (e.g. 60, 120); '
+                         'omit to leave any existing value untouched')
     ap.add_argument('--gender', choices=['neutral', 'male', 'female'],
-                    default='neutral', help='gender string (default: neutral)')
+                    default=None,
+                    help='gender string; omit to leave any existing value untouched')
     g = ap.add_mutually_exclusive_group()
     g.add_argument('--betas', help='comma-separated floats, e.g. "0,0,0,..."')
     g.add_argument('--betas-file',
@@ -102,8 +109,8 @@ def main():
 
     betas = parse_betas(args.betas, args.betas_file)
     print(f'betas (len={len(betas)}): {betas.tolist()}')
-    print(f'gender: {args.gender}')
-    print(f'mocap_framerate: {args.framerate}')
+    print(f'gender: {args.gender if args.gender is not None else "(unchanged)"}')
+    print(f'mocap_framerate: {args.framerate if args.framerate is not None else "(unchanged)"}')
 
     n_written = n_skipped = n_failed = 0
     for path in iter_npz(args.folder, args.recursive):

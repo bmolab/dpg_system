@@ -101,12 +101,52 @@ def yup_to_zup_position(pos):
     return result
 
 
-def convert_shadow_to_smpl(shadow_path, output_path=None, fps=100.0, verbose=True):
+def _resolve_meta(data, fps, gender, betas, verbose):
+    """Fill missing fps/gender/betas from the loaded npz's own fields.
+
+    Explicit (non-None) arguments win.  Final fallbacks: 100 fps, 'neutral',
+    zeros-equivalent (None).
+    """
+    auto = []
+    if fps is None:
+        if 'mocap_framerate' in data.files:
+            fps = float(data['mocap_framerate'])
+            auto.append(f'fps={fps:g}')
+        else:
+            fps = 100.0
+    if gender is None:
+        if 'gender' in data.files:
+            g = data['gender']
+            if isinstance(g, np.ndarray):
+                g = g.item() if g.ndim == 0 else g.flat[0]
+            if isinstance(g, bytes):
+                g = g.decode('utf-8', errors='replace')
+            g = str(g).lower().strip().strip("'\"")
+            gender = g if g in ('male', 'female', 'neutral') else 'neutral'
+            auto.append(f'gender={gender}')
+        else:
+            gender = 'neutral'
+    if betas is None and 'betas' in data.files:
+        b = np.asarray(data['betas'])
+        if b.size > 0:
+            betas = b
+            auto.append(f'betas[{b.size}]')
+    if verbose and auto:
+        print(f"  Picked up from file: {', '.join(auto)}")
+    return fps, gender, betas
+
+
+def convert_shadow_to_smpl(shadow_path, output_path=None, fps=None,
+                            gender=None, betas=None, verbose=True):
     """
     Convert a Shadow mocap .npz file to AMASS-structured SMPL .npz.
 
     Shadow quaternions are LOCAL (parent-relative), wxyz format, y-up.
     Output is AMASS format with z-up axis-angle local rotations.
+
+    `fps`, `gender`, and `betas` are auto-detected from the input file's
+    `mocap_framerate` / `gender` / `betas` fields when not explicitly given;
+    an explicit argument always wins.  Final fallbacks: 100 fps, neutral, zeros.
     """
     if output_path is None:
         base = os.path.splitext(shadow_path)[0]
@@ -116,6 +156,8 @@ def convert_shadow_to_smpl(shadow_path, output_path=None, fps=100.0, verbose=Tru
 
     if 'quats' not in data or 'positions' not in data:
         raise ValueError(f"Not a Shadow file — missing 'quats' or 'positions': {shadow_path}")
+
+    fps, gender, betas = _resolve_meta(data, fps, gender, betas, verbose)
 
     quats = data['quats']          # (T, 37, 4) local wxyz y-up
     positions = data['positions']  # (T, 37, 3) world positions y-up
@@ -185,13 +227,18 @@ def convert_shadow_to_smpl(shadow_path, output_path=None, fps=100.0, verbose=Tru
     poses = poses_full.reshape(T, -1)  # (T, 156)
 
     # ── Step 5: Save ──────────────────────────────────────────────────
+    betas_out = np.zeros(16, dtype=np.float64)
+    if betas is not None:
+        b = np.array(betas, dtype=np.float64).flatten()
+        betas_out[:min(len(b), 16)] = b[:16]
+
     np.savez(
         output_path,
         poses=poses,
         trans=trans,
         mocap_framerate=np.float64(fps),
-        gender='neutral',
-        betas=np.zeros(16, dtype=np.float64),
+        gender=gender,
+        betas=betas_out,
         dmpls=np.zeros((T, 8), dtype=np.float64),
     )
 
@@ -207,16 +254,44 @@ def main():
     p = argparse.ArgumentParser(description='Convert Shadow mocap to AMASS SMPL format')
     p.add_argument('files', nargs='*', help='Shadow .npz files to convert')
     p.add_argument('--dir', help='Directory of Shadow .npz files')
-    p.add_argument('--fps', type=float, default=100.0, help='Framerate (default: 100)')
+    p.add_argument('--fps', type=float, default=None,
+                   help='Framerate.  If omitted, taken from the file\'s '
+                        '`mocap_framerate` field (else 100).')
+    p.add_argument('--gender', type=str, default=None,
+                   choices=['male', 'female', 'neutral'],
+                   help='Subject gender.  If omitted, taken from the file\'s '
+                        '`gender` field (else neutral).')
+    p.add_argument('--betas', type=str, default=None,
+                   help='Path to .npy file with SMPL beta parameters.  If '
+                        'omitted, taken from the file\'s `betas` field '
+                        '(else zeros).')
     p.add_argument('--output-dir', help='Output directory (default: same as input)')
     args = p.parse_args()
 
+    betas = None
+    if args.betas:
+        if not os.path.isfile(args.betas):
+            print(f'Error: betas file not found: {args.betas}')
+            return
+        betas = np.load(args.betas, allow_pickle=True)
+        if isinstance(betas, np.ndarray) and betas.ndim == 0:
+            betas = betas.item()
+        if isinstance(betas, dict):
+            for key in ('betas', 'mean', 'robust_mean'):
+                if key in betas:
+                    betas = betas[key]
+                    break
+            else:
+                for v in betas.values():
+                    betas = np.asarray(v)
+                    break
+        betas = np.array(betas, dtype=np.float64).flatten()
+        print(f'Loaded betas: {betas.shape[0]} values')
+
     files = list(args.files)
-    print(files)
     if args.dir:
         files += [os.path.join(args.dir, f) for f in sorted(os.listdir(args.dir))
                   if f.endswith('.npz')]
-    print(files)
     if not files:
         p.print_help()
         return
@@ -239,7 +314,8 @@ def main():
             out = None
 
         try:
-            convert_shadow_to_smpl(f, out, fps=args.fps)
+            convert_shadow_to_smpl(f, out, fps=args.fps, gender=args.gender,
+                                   betas=betas)
         except Exception as e:
             print(f"  ❌ Error: {f}: {e}")
             import traceback
