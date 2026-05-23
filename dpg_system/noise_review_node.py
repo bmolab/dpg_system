@@ -56,6 +56,7 @@ class NoiseReviewNode(Node):
         self.show_corruption = self.add_option('corruption zones', widget_type='checkbox', default_value=True,  callback=self.rebuild_issues)
         self.show_spikes     = self.add_option('spike frames',     widget_type='checkbox', default_value=True,  callback=self.rebuild_issues)
         self.show_glitches   = self.add_option('glitch clusters',  widget_type='checkbox', default_value=True,  callback=self.rebuild_issues)
+        self.show_clean      = self.add_option('clean sections',   widget_type='checkbox', default_value=False, callback=self.rebuild_issues)
         self.min_class       = self.add_option('min classification', widget_type='combo', default_value='all',  callback=self.rebuild_issues)
         self.min_class.widget.combo_items = ['all', 'moderate', 'problematic']
 
@@ -83,6 +84,7 @@ class NoiseReviewNode(Node):
         show_corruption = self.show_corruption()
         show_spikes     = self.show_spikes()
         show_glitches   = self.show_glitches()
+        show_clean      = self.show_clean()
 
         cls_rank = {'clean': 0, 'moderate': 1, 'problematic': 2}
         min_rank = {'all': 0, 'moderate': 1, 'problematic': 2}.get(self.min_class(), 0)
@@ -92,7 +94,7 @@ class NoiseReviewNode(Node):
             if cls_rank.get(report.get('classification', 'clean'), 0) < min_rank:
                 continue
 
-            filepath = report.get('filepath', report.get('filename', ''))
+            filepath = report.get('filepath') or report.get('filename', '')
             filename = os.path.basename(filepath)
 
             if show_breaks:
@@ -145,6 +147,18 @@ class NoiseReviewNode(Node):
                         'desc': f"glitch  [{s}–{e}]  {e - s + 1} frames",
                     })
 
+            if show_clean:
+                for seg in report.get('clean_segments', []):
+                    s, e = seg.get('start', 0), seg.get('end', 0)
+                    issues.append({
+                        'filepath': filepath, 'filename': filename,
+                        'type': 'clean_section', 'frame': s, 'end_frame': e,
+                        'desc': (f"clean  [{s}–{e}]"
+                                 f"  {seg.get('duration_s', 0):.1f}s"
+                                 f"  {seg.get('n_frames', e - s + 1)} frames"
+                                 f"  mean={seg.get('mean_score', 0):.2f} max={seg.get('max_score', 0):.2f}"),
+                    })
+
         self.issues = issues
         self.current_idx = 0 if issues else -1
         total = len(issues)
@@ -183,7 +197,7 @@ class NoiseReviewNode(Node):
             print(f'\n  ── {issue["filename"]} ──')
             self.current_filepath = issue['filepath']
         print(f'  [{n}/{total}] {issue["desc"]}')
-        if issue['type'] in ('corruption_zone', 'glitch_cluster') and issue['end_frame'] != issue['frame']:
+        if issue['type'] in ('corruption_zone', 'glitch_cluster', 'clean_section') and issue['end_frame'] != issue['frame']:
             print(f'         end frame: {issue["end_frame"]}')
 
         # Send outputs — path first so OpenTakeNode loads before seeking
