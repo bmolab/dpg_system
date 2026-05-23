@@ -33,6 +33,9 @@ def main():
     parser.add_argument("--json", required=True, help="Result JSON file")
     parser.add_argument("--name", default="Dataset")
     parser.add_argument("--out", default=None, help="Output image filename")
+    parser.add_argument("--xmax", type=float, default=100.0,
+                        help="Fixed x-axis max so plots are visually comparable")
+    parser.add_argument("--bins", type=int, default=60, help="Number of bins")
     args = parser.parse_args()
 
     noise, clean = load_scores(args.json)
@@ -41,10 +44,14 @@ def main():
 
     fig, ax = plt.subplots(1, 2, figsize=(12, 5))
 
+    # Shared range + bin edges so every dataset's plot is directly comparable.
+    hist_range = (0.0, args.xmax)
+
     def draw(a):
-        a.hist(noise, bins=60, alpha=0.6, label="noise_score")
+        a.hist(noise, bins=args.bins, range=hist_range, alpha=0.6, label="noise_score")
         if clean:
-            a.hist(clean, bins=60, alpha=0.6, label="clean_section_score")
+            a.hist(clean, bins=args.bins, range=hist_range, alpha=0.6, label="clean_section_score")
+        a.set_xlim(hist_range)
         a.set_xlabel("Score")
         a.legend()
 
