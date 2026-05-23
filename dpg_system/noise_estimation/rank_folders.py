@@ -41,12 +41,18 @@ def discover_json_files(args):
     """Resolve CLI args (files/dirs) to a list of JSON files.
 
     With no args, prefer the newest torque_results_* dir, else noise_reports.
+    checkpoint.json (a batch resume file, not results) is skipped when a
+    directory is scanned.
     """
+    def scan_dir(d):
+        return [f for f in sorted(glob.glob(os.path.join(d, '*.json')))
+                if os.path.basename(f) != 'checkpoint.json']
+
     if args:
         files = []
         for a in args:
             if os.path.isdir(a):
-                files.extend(sorted(glob.glob(os.path.join(a, '*.json'))))
+                files.extend(scan_dir(a))
             else:
                 files.append(a)
         return files
@@ -54,7 +60,7 @@ def discover_json_files(args):
     torque_dirs = sorted(glob.glob(os.path.join(_this_dir, 'torque_results_*')))
     torque_dirs = [d for d in torque_dirs if os.path.isdir(d)]
     if torque_dirs:
-        return sorted(glob.glob(os.path.join(torque_dirs[-1], '*.json')))
+        return scan_dir(torque_dirs[-1])
     return sorted(glob.glob(os.path.join(_this_dir, 'noise_reports', 'result_*.json')))
 
 
