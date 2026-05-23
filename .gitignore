@@ -79,3 +79,6 @@ dpg_system/*.txt
 
 # Patches directory (user patch files)
 patches/
+
+# Generated noise-estimation histograms
+dpg_system/noise_estimation/hists/
