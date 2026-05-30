@@ -50,6 +50,7 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)
     Node.app.register_node("smpl_beta_editor", SMPLBetaEditorNode.factory)
     Node.app.register_node("shadow_to_smpl", ShadowToSMPLNode.factory)
+    Node.app.register_node("floor_zero", FloorZeroNode.factory)
 
 
 class SMPLNode(Node):
@@ -1183,6 +1184,178 @@ class SMPLPoseQuatsToJointsNode(SMPLNode):
                         joint_value = incoming[index]
                         self.joint_outputs[i].set_value(joint_value)
                 self.send_all()
+
+
+class FloorZeroNode(SMPLNode):
+    """
+    One-time floor calibration for the root translation.
+
+    On 'calibrate', runs a single SMPL forward-kinematics pass on the current
+    pose (using betas/gender from the config dict, or a neutral skeleton if no
+    config is supplied) to find the lowest foot height relative to the root,
+    then stores a *constant* vertical offset that puts that foot on the floor.
+    The offset is applied to every subsequent 'trans', so real vertical motion
+    (jumps, crouches) is preserved.
+
+    Conventional wiring feeds everything Z-up: the (tracker-corrected) trans is
+    routed through shadow_to_smpl's 'positions' input, so this node's 'trans'
+    and 'pose' both come out Z-up, and 'pose' is axis-angle.  The node also
+    emits the offset as a plain float ('offset'), so the same vertical shift can
+    be added to a Y-up trans elsewhere (e.g. for Shadow-file saving).
+
+    Inputs (default Z-up; set up_axis to Y for a Y-up chain):
+        trans  : [x, y, z] root world position
+        pose   : 22x3 axis-angle OR 22x4 quaternions (wxyz), SMPL joint order
+        config : dict with 'betas'/'gender'/'framerate' (optional)
+    """
+
+    # SMPL kinematic tree (parent index) for the 22 body joints. parent < child
+    # throughout, so a single forward sweep resolves all world transforms.
+    SMPL_PARENTS = [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19]
+    FOOT_JOINTS = (10, 11)   # left_foot, right_foot
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return FloorZeroNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.trans_input = self.add_input('trans', triggers_execution=True)  # [x, y, z]
+        self.pose_input = self.add_input('pose')      # 22x3 axis-angle or 22x4 quats (wxyz)
+        self.config_input = self.add_input('config')  # gender / betas / framerate
+        self.calibrate_prop = self.add_property('calibrate', widget_type='button', callback=self.do_calibrate)
+
+        self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Z')
+        self.up_axis_prop.widget.combo_items = ['Y', 'Z']
+        self.floor_height_prop = self.add_option('floor_height', widget_type='drag_float', default_value=0.0)
+        # Distance from the foot joint down to the sole; subtracted so the sole
+        # (not the joint) lands on floor_height. Dial in for your body/model.
+        self.sole_offset_prop = self.add_option('sole_offset', widget_type='drag_float', default_value=0.0)
+
+        self.trans_output = self.add_output('trans')
+        self.offset_output = self.add_output('offset')               # plain float; reuse on a Y-up trans
+        self.foot_height_output = self.add_output('measured sole height')
+
+        self.processor = None
+        self.gender = 'neutral'
+        self.betas = None
+        self.framerate = 60.0
+        self._config_dirty = True
+
+        self.offset = 0.0
+        self.calibrated = False
+        self._calibrate_pending = False
+
+    def do_calibrate(self):
+        # Defer the FK to execute(), so it runs with the freshest trans + pose.
+        self._calibrate_pending = True
+
+    def _up_index(self):
+        return 1 if self.up_axis_prop() == 'Y' else 2
+
+    def _update_config(self):
+        if not self.config_input.fresh_input:
+            return
+        cfg = self.config_input()
+        if not isinstance(cfg, dict):
+            return
+        for k in ('motioncapture_framerate', 'mocap_framerate', 'framerate'):
+            if k in cfg:
+                fr = float(cfg[k])
+                if fr != self.framerate:
+                    self.framerate = fr
+                    self._config_dirty = True
+                break
+        if 'gender' in cfg:
+            g = str(cfg['gender'])
+            if g != self.gender:
+                self.gender = g
+                self._config_dirty = True
+        if 'betas' in cfg:
+            b = any_to_array(cfg['betas'])
+            if self.betas is None or not np.array_equal(self.betas, b):
+                self.betas = b
+                self._config_dirty = True
+
+    def _ensure_processor(self):
+        # Neutral skeleton when no betas/config were supplied.
+        if self.processor is None or self._config_dirty:
+            self.processor = SMPLProcessor(
+                framerate=self.framerate,
+                betas=self.betas,
+                gender=self.gender,
+                model_path=os.path.dirname(os.path.abspath(__file__)))
+            self._config_dirty = False
+
+    @staticmethod
+    def _pose_to_rotations(pose):
+        """Accept 22x3 axis-angle or 22x4 quats (wxyz), flat or 2D -> Rotation."""
+        arr = any_to_array(pose).astype(np.float64)
+        if arr.ndim == 1:
+            # 22 joints: axis-angle -> 66 (div by 3, not 4); quats -> 88 (div by 4).
+            if arr.size % 4 == 0 and arr.size % 3 != 0:
+                arr = arr.reshape(-1, 4)
+            elif arr.size % 3 == 0:
+                arr = arr.reshape(-1, 3)
+            else:
+                return None
+        if arr.ndim != 2:
+            return None
+        if arr.shape[-1] == 4:
+            return Rotation.from_quat(arr, scalar_first=True)
+        if arr.shape[-1] == 3:
+            return Rotation.from_rotvec(arr)
+        return None
+
+    def _lowest_foot_rel_root(self, pose_rots, up_index):
+        """Single FK pass -> lowest foot-joint up-coord relative to the root."""
+        self._ensure_processor()
+        offsets = self.processor.skeleton_offsets  # (>=22, 3) parent-frame
+        parents = self.SMPL_PARENTS
+        n = min(len(parents), len(pose_rots), offsets.shape[0])
+
+        rots = [None] * n
+        positions = np.zeros((n, 3))
+        for i in range(n):
+            p = parents[i]
+            if p < 0:
+                rots[i] = pose_rots[i]   # root: local == global orientation
+            else:
+                positions[i] = positions[p] + rots[p].apply(offsets[i])
+                rots[i] = rots[p] * pose_rots[i]
+        foot_vs = [positions[j][up_index] for j in self.FOOT_JOINTS if j < n]
+        return min(foot_vs) if foot_vs else 0.0
+
+    def execute(self):
+        self._update_config()
+
+        trans = self.trans_input()
+        if trans is None:
+            return
+        trans = any_to_array(trans).astype(np.float64).flatten()[:3]
+        up = self._up_index()
+
+        if self._calibrate_pending:
+            self._calibrate_pending = False
+            pose_rots = self._pose_to_rotations(self.pose_input())
+            if pose_rots is not None:
+                try:
+                    foot_rel = self._lowest_foot_rel_root(pose_rots, up)
+                    # World up-coord of the sole at calibration.
+                    sole = trans[up] + foot_rel - self.sole_offset_prop()
+                    self.offset = self.floor_height_prop() - sole
+                    self.calibrated = True
+                    self.foot_height_output.send(float(sole))
+                except Exception as e:
+                    print('floor_zero: calibration failed:', e)
+
+        out = trans.copy()
+        if self.calibrated:
+            out[up] += self.offset
+        self.offset_output.send(float(self.offset))
+        self.trans_output.send(out.astype(np.float32))
+
 
 # from smpl
 

@@ -1073,6 +1073,11 @@ class QuaternionRelativeNode(Node):
 
 
 class TrackerAlignNode(Node):
+    # Root (pelvis_anchor) quaternion index by pose size, mirroring
+    # MoCapNode.joint_map / active_joint_map['pelvis_anchor']:
+    #   single root quat (1) -> 0, full Shadow pose (37) -> 4, active set (20) -> 5
+    root_index_by_count = {1: 0, 20: 5, 37: 4}
+
     @staticmethod
     def factory(name, data, args=None):
         return TrackerAlignNode(name, data, args)
@@ -1080,9 +1085,9 @@ class TrackerAlignNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.imu_root_input = self.add_input('imu root quat', triggers_execution=True)  # [w, x, y, z] scalar first
+        self.imu_root_input = self.add_input('imu root quat', triggers_execution=True)  # root quat [w,x,y,z], or a full Shadow (37) / active (20) pose
         self.tracker_pos_input = self.add_input('tracker pos')  # [x, y, z]
-        self.tracker_quat_input = self.add_input('tracker quat')  # [x, y, z, w] scalar last
+        self.tracker_quat_input = self.add_input('tracker quat')  # [w, x, y, z] scalar first
         self.body_offset_input = self.add_input('body offset')  # [x, y, z] offset from IMU root to tracker in body-local coords
         self.calibrate_prop = self.add_property('calibrate', widget_type='button', callback=self.do_calibrate)
         self.continuous_opt = self.add_option('continuous', widget_type='checkbox', default_value=True)
@@ -1170,25 +1175,38 @@ class TrackerAlignNode(Node):
         if tracker_quat.size < 4 or imu_quat.size < 4:
             return
 
-        # Convert tracker quat from [x, y, z, w] scalar-last to [w, x, y, z] scalar-first
-        tracker_wxyz = np.array([tracker_quat[3], tracker_quat[0], tracker_quat[1], tracker_quat[2]])
+        # Tracker quat is already [w, x, y, z] scalar-first (matches the rest of the graph)
+        tracker_wxyz = tracker_quat[:4].copy()
+
+        # The root input may be a single root quaternion (4 values) or a full
+        # pose; pick the root (pelvis_anchor) row based on the quaternion count.
+        n_imu_quats = imu_quat.size // 4
+        root_index = self.root_index_by_count.get(n_imu_quats, 0)
+        imu_wxyz = imu_quat[root_index * 4: root_index * 4 + 4].copy()
 
         # Normalize
         tracker_wxyz /= np.linalg.norm(tracker_wxyz) + 1e-10
-        imu_wxyz = imu_quat[:4].copy()
         imu_wxyz /= np.linalg.norm(imu_wxyz) + 1e-10
 
-        # Extract yaw (Y-twist) from each quaternion independently
-        # This is more stable than computing the relative quaternion first,
-        # because the mounting offset between sensors creates a large swing
-        # component in q_rel that destabilizes twist extraction under body tilt.
-        imu_twist = self.extract_twist_around_y(imu_wxyz)
-        tracker_twist = self.extract_twist_around_y(tracker_wxyz)
-
-        imu_yaw = self.twist_to_angle(imu_twist)
-        tracker_yaw = self.twist_to_angle(tracker_twist)
-
-        current_offset = self.wrap_angle(tracker_yaw - imu_yaw)
+        # The yaw between the two world frames is the relative rotation
+        #   q_rel = q_tracker * conj(q_imu)
+        # The body's tilt/lean is shared by both sensors and cancels in this
+        # product, leaving (ideally) a pure rotation about world Y, so twist
+        # extraction is stable under body tilt. Differencing each sensor's
+        # independent Y-twist does NOT cancel the lean -- that leakage (which
+        # differs between the two sensors) is what made the old approach
+        # erratic during walking.
+        # NOTE: order assumes q_imu/q_tracker are body-to-world rotations
+        # (v_world = q * v_body * conj(q)). If your convention is mirrored,
+        # swap the two arguments below to conj(imu) * tracker.
+        q_rel = self.quat_multiply(tracker_wxyz, self.quat_conjugate(imu_wxyz))
+        # Extract yaw the same way the quaternion_relative -> quaternion_to_euler
+        # path does (scipy 'xyz' intrinsic decomposition; Y/yaw is index 1).
+        # The swing-twist projection used previously reads 2*atan2(y, w), which
+        # diverges and jitters whenever q_rel carries an off-axis (mounting)
+        # component -- this matches the stable +-8 deg reference instead.
+        rel_euler = scipy.spatial.transform.Rotation.from_quat(q_rel, scalar_first=True).as_euler('xyz')
+        current_offset = self.wrap_angle(rel_euler[1])
 
         # Smooth the offset (handles angle wrapping via angular difference)
         if not self.initialized:
