@@ -12,7 +12,7 @@ class NoiseReviewNode(Node):
     """Step through noise-report issues across a batch of NPZ files.
 
     Load a JSON produced by estimate_noise_torque.py, then use Prev/Next to
-    walk through every stream break, corruption zone, spike frame, and glitch
+    walk through every stream break, corruption zone, spike frame, and glitchcan we
     cluster.  Outputs the NPZ path and start frame so an OpenTakeNode can load
     the file and jump to the right section automatically.
     """
@@ -41,6 +41,9 @@ class NoiseReviewNode(Node):
             'prev', widget_type='button', callback=self.go_prev)
         self.next_btn = self.add_input(
             'next', widget_type='button', callback=self.go_next)
+        self.section_input = self.add_input(
+            'section', widget_type='input_int', default_value=0,
+            callback=self.jump_to_section)
 
         # ── Status labels ─────────────────────────────────────────────────
         self.counter_label = self.add_label('— / —')
@@ -48,8 +51,10 @@ class NoiseReviewNode(Node):
         self.issue_label   = self.add_label('')
 
         # ── Outputs ───────────────────────────────────────────────────────
-        self.path_out  = self.add_output('npz path')
-        self.frame_out = self.add_output('frame')
+        self.path_out      = self.add_output('npz path')
+        self.frame_out     = self.add_output('frame')
+        self.end_frame_out = self.add_output('end frame')
+        self.bang_out      = self.add_output('bang')
 
         # ── Filter options ────────────────────────────────────────────────
         self.show_breaks     = self.add_option('stream breaks',    widget_type='checkbox', default_value=True,  callback=self.rebuild_issues)
@@ -71,11 +76,34 @@ class NoiseReviewNode(Node):
             return
         try:
             with open(path, 'r') as f:
-                self.raw_data = json.load(f)
+                raw = json.load(f)
+            self.raw_data = self._normalize_reports(raw)
             print(f'NoiseReviewNode: loaded {len(self.raw_data)} reports from {os.path.basename(path)}')
             self.rebuild_issues()
         except Exception as e:
             print(f'NoiseReviewNode: failed to load {path}: {e}')
+
+    @staticmethod
+    def _normalize_reports(raw):
+        """Accept either a flat list of reports or the new per-folder dict
+        `{"dataset": ..., "files": {filepath: report, ...}}`, and return a
+        list of report dicts each carrying a `filepath` field."""
+        if isinstance(raw, list):
+            return [r for r in raw if isinstance(r, dict)]
+        if isinstance(raw, dict):
+            files = raw.get('files')
+            if isinstance(files, dict):
+                reports = []
+                for filepath, report in files.items():
+                    if not isinstance(report, dict):
+                        continue
+                    report = dict(report)
+                    report.setdefault('filepath', filepath)
+                    reports.append(report)
+                return reports
+            if isinstance(files, list):
+                return [r for r in files if isinstance(r, dict)]
+        return []
 
     # ── Issue list construction ───────────────────────────────────────────
 
@@ -165,6 +193,7 @@ class NoiseReviewNode(Node):
         self.counter_label.set(f'0 / {total}')
         self.file_label.set('')
         self.issue_label.set('')
+        self.section_input.set(0, propagate=False)
         print(f'NoiseReviewNode: {total} issues built from {len(self.raw_data)} reports')
 
     # ── Navigation ────────────────────────────────────────────────────────
@@ -182,6 +211,15 @@ class NoiseReviewNode(Node):
         self.current_idx = (self.current_idx - 1) % len(self.issues)
         self._emit_current()
 
+    def jump_to_section(self):
+        if not self.issues:
+            return
+        n = int(self.section_input())
+        total = len(self.issues)
+        n = max(1, min(total, n))
+        self.current_idx = n - 1
+        self._emit_current()
+
     def _emit_current(self):
         issue  = self.issues[self.current_idx]
         n      = self.current_idx + 1
@@ -191,6 +229,7 @@ class NoiseReviewNode(Node):
         self.counter_label.set(f'{n} / {total}')
         self.file_label.set(issue['filename'])
         self.issue_label.set(issue['desc'])
+        self.section_input.set(n, propagate=False)
 
         # Console — flag file changes clearly
         if issue['filepath'] != self.current_filepath:
@@ -200,6 +239,9 @@ class NoiseReviewNode(Node):
         if issue['type'] in ('corruption_zone', 'glitch_cluster', 'clean_section') and issue['end_frame'] != issue['frame']:
             print(f'         end frame: {issue["end_frame"]}')
 
-        # Send outputs — path first so OpenTakeNode loads before seeking
+        # Send outputs — path first so OpenTakeNode loads before seeking;
+        # bang last so downstream knows all values are settled.
         self.path_out.send(issue['filepath'])
+        self.end_frame_out.send(issue['end_frame'])
         self.frame_out.send(issue['frame'])
+        self.bang_out.send('bang')

@@ -382,6 +382,30 @@ SPIKE_SEVERITY_MIN_QUALIFYING = 2
 # p95 reference is inflated by pervasive corruption (e.g. Maritsa frame 994).
 PURE_ARM_CLUSTER_MIN_JOINTS = 3
 
+# Isolated arm-impulse gate (clean-segment fragmentation only):
+# Arm-chain spikes flanked by near-stillness on both sides are the
+# signature of out-of-context marker jumps — even at modest velocity.
+# A real arm motion peak has at least one elevated neighbour (build-up
+# or follow-through).
+#
+# To distinguish marker glitches (e.g. HumanEva ThrowCatch_3) from
+# sampling-cadence artifacts (e.g. Shadow 100→60 pulldown), a single
+# isolated impulse is given the benefit of the doubt: a frame counts as
+# disqualifying only when (a) ≥2 arm-chain joints fire isolated impulses
+# at the SAME frame, OR (b) there's another isolated-impulse frame within
+# the temporal-clustering window.
+#
+# In validation: ThrowCatch clean-region impulses cluster (median gap
+# 13-84 frames @ 120 fps); Shadow clean-region impulses are sparse
+# (median gap 115 frames @ 60 fps), so most don't pass the cluster test.
+#
+# Does NOT affect noise_score or classification — only fragmentation
+# for clean_segments and clean_section_score.
+ISOLATED_ARM_IMPULSE_VEL_FLOOR = 2.5         # rad/s — magnitude floor on v[t]
+ISOLATED_ARM_IMPULSE_NEIGHBOR_CEILING = 2.0  # rad/s — max(v[t-1], v[t+1]) ceiling
+ISOLATED_ARM_IMPULSE_CLUSTER_WINDOW_S = 1.5  # seconds — temporal-clustering window
+ISOLATED_ARM_IMPULSE_MIN_JOINTS_SAME_FRAME = 2  # multi-joint co-occurrence threshold
+
 @dataclass
 class SpikeFrame:
     """A single dropped/corrupted frame identified by the neighbour-ratio test."""
@@ -1419,10 +1443,14 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     # detection) and used for hard-glitch corroboration.  Reuse here.
     density_mask = _arm_spike_density_mask(spike_frames, T, fps)
     clean_bad_mask = structural_mask | density_mask
+    # Sparse out-of-context arm impulses — single-joint, modest velocity,
+    # both neighbours nearly stationary.  Fragments clean segments only.
+    isolated_arm_impulses = _isolated_arm_impulse_frames(spike_frames, fps)
+    fragment_spike_frames = significant_spike_frame_set | isolated_arm_impulses
     clean = _find_clean_segments(
         frame_scores, fps,
         corruption_mask=clean_bad_mask,
-        spike_frame_indices=significant_spike_frame_set,
+        spike_frame_indices=fragment_spike_frames,
     )
     
     # ── Per-joint noise profiles ──────────────────────────────────────
@@ -1681,6 +1709,56 @@ def _detect_spike_frames(poses, fps):
     # Sort by frame then joint for stable output
     spikes.sort(key=lambda s: (s.frame, s.joint_idx))
     return spikes
+
+
+def _isolated_arm_impulse_frames(spike_frames, fps):
+    """Identify isolated arm-chain spikes that disqualify clean segments.
+
+    A candidate is any arm-chain spike whose two neighbours are both
+    near-stationary (max(v[t-1], v[t+1]) <= ceiling) and whose magnitude
+    is above the velocity floor.  But a candidate is only DISQUALIFYING
+    when it co-occurs with another candidate — either at the same frame
+    (≥2 joints) or within the temporal-clustering window.  Lone
+    candidates in long clean spans are presumed sampling artifacts.
+
+    Uses values already stored on SpikeFrame: max(v[t-1], v[t+1]) is
+    recovered as velocity / neighbor_ratio.  No pose recomputation needed.
+
+    Returns a set of frame indices.  Caller is expected to union this with
+    significant_spike_frame_set when fragmenting clean segments.
+    """
+    # Per-frame joint count of candidate impulses
+    per_frame_count = {}
+    for s in spike_frames:
+        if s.joint_idx not in ARM_CHAIN_JOINT_INDICES:
+            continue
+        if s.velocity < ISOLATED_ARM_IMPULSE_VEL_FLOOR:
+            continue
+        if s.neighbor_ratio < 1e-6:
+            continue
+        neighbor_max = s.velocity / s.neighbor_ratio
+        if neighbor_max <= ISOLATED_ARM_IMPULSE_NEIGHBOR_CEILING:
+            per_frame_count[s.frame] = per_frame_count.get(s.frame, 0) + 1
+
+    if not per_frame_count:
+        return set()
+
+    candidate_frames = sorted(per_frame_count.keys())
+    window = max(1, int(ISOLATED_ARM_IMPULSE_CLUSTER_WINDOW_S * fps))
+
+    disqualifying = set()
+    n = len(candidate_frames)
+    for i, f in enumerate(candidate_frames):
+        # Multi-joint at same frame is disqualifying on its own
+        if per_frame_count[f] >= ISOLATED_ARM_IMPULSE_MIN_JOINTS_SAME_FRAME:
+            disqualifying.add(f)
+            continue
+        # Otherwise, require another candidate frame within the window
+        if i > 0 and f - candidate_frames[i - 1] <= window:
+            disqualifying.add(f)
+        elif i < n - 1 and candidate_frames[i + 1] - f <= window:
+            disqualifying.add(f)
+    return disqualifying
 
 
 def _arm_spike_density_mask(spike_frames, T, fps):

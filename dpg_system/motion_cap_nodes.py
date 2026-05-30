@@ -52,6 +52,7 @@ def register_motion_cap_nodes():
     Node.app.register_node('pose_adjust', PoseAdjustmentNode.factory)
     Node.app.register_node('active_pose', ActivePoseNode.factory)
     Node.app.register_node('mag_yaw_correct', MagYawCorrectionNode.factory)
+    Node.app.register_node('shadow_arm_correct', ShadowArmCorrectNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -424,6 +425,7 @@ class OpenTakeNode(MoCapNode):
         self.take_data_out = self.add_output('take data out')
         self.frame_out = self.add_output('frame')
         self.done_out = self.add_output('done')
+        self.path_out = self.add_output('file path')   # emits the loaded file's abs path
 
         self.load_folder = './dpg_system'
         self.load_folder_option = self.add_option('load folder', widget_type='text_input', width=200, default_value=self.load_folder)
@@ -898,6 +900,7 @@ class OpenTakeNode(MoCapNode):
             self.frame_input.set(self.current_frame)
         self.current_frame = 0
         self.pending_frame = self.current_frame
+        self.path_out.send(os.path.abspath(path))    # wire to shadow_arm_correct 'take file'
 
     def frame_widget_changed(self):
         data = self.frame_input()
@@ -3544,3 +3547,222 @@ class ActivePoseNode(Vector2DNode):
             self.input._data = values
             self.input.fresh_input = True
             self.execute()
+
+
+class ShadowArmCorrectNode(MoCapNode):
+    """Live, interactive version of correct_upper_arm_offset.py for the 37-joint
+    Shadow pose (quats + positions). Applies the same per-frame correction the
+    offline script does — a per-arm fit C plus the anatomical dials (twist /
+    abduction / flex / elbow / wrist / hand-twist) — so you tune with sliders and
+    watch the SMPL render update, instead of generating files and reloading.
+
+    Accepts the pose as 37-joint Shadow OR 20-joint active (remapped); output matches
+    the input layout. Positions are used only to derive the body LATERAL axis (for
+    abduction/flex), in the shadow world frame: shadow positions (37 or 20) if given,
+    else the chest orientation (MidVertebrae +X). Do NOT feed SMPL joint positions:
+    they live in a different post-conversion frame.
+
+    Wire: shadow quats -> 'pose in', shadow positions (optional) -> 'positions in',
+    'pose out' -> (shadow_to_smpl / render). Fit button runs the per-arm C from the
+    sym/relax anchors; export button writes _armfix.npz for the loaded take file.
+    """
+
+    # active(20) joint index -> shadow(37) index, for the joints the math reads/writes.
+    _ACT2SHA = {1: 17, 2: 1, 3: 32, 4: 31, 5: 4,
+                12: 13, 13: 5, 14: 9, 15: 10, 16: 27, 17: 19, 18: 23, 19: 24}
+    # joints the correction modifies (shadow idx -> active idx), for writing back.
+    _CORR_SHA2ACT = {5: 13, 9: 14, 10: 15, 19: 17, 23: 18, 24: 19}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShadowArmCorrectNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        from dpg_system.smpl_utilities import correct_upper_arm_offset as cuo
+        self._cuo = cuo
+        self._cl = np.zeros(3)   # per-arm upper-arm fit (rotvec); identity until fit/loaded
+        self._cr = np.zeros(3)
+        self._hy_l = np.zeros(2)  # per-arm upper-arm heading-yaw deviation curve [b, c] (rad)
+        self._hy_r = np.zeros(2)
+
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.positions_input = self.add_input('positions in')
+        # --- fit (batch) controls: load the take, fit C over the anchor frames ---
+        self.take_path = self.add_input('take file', widget_type='text_input', default_value='')
+        self.sym_field = self.add_input('sym ranges', widget_type='text_input', default_value='')
+        self.relax_field = self.add_input('relax', widget_type='text_input', default_value='')
+        self.fit_button = self.add_input('fit', widget_type='button', callback=self.do_fit)
+        self.fit_path = self.add_input('load fit npz', widget_type='text_input', default_value='',
+                                       callback=self.load_fit)
+        # symmetric (default on) ties the two abduction sliders so dialing can't break
+        # the fit's left/right symmetry; turn off only for a deliberate per-arm offset.
+        self.symmetric = self.add_input('symmetric', widget_type='checkbox', default_value=True)
+        self.twist = self.add_input('twist', widget_type='drag_float', default_value=0.0)
+        self.abduct_l = self.add_input('abduct_l', widget_type='drag_float', default_value=0.0)
+        self.abduct_r = self.add_input('abduct_r', widget_type='drag_float', default_value=0.0)
+        self.flex = self.add_input('flex', widget_type='drag_float', default_value=0.0)
+        self.elbow = self.add_input('elbow', widget_type='drag_float', default_value=0.0)
+        self.wrist = self.add_input('wrist', widget_type='drag_float', default_value=0.0)
+        self.wtwist = self.add_input('wtwist', widget_type='drag_float', default_value=0.0)
+        for w in (self.twist, self.abduct_l, self.abduct_r, self.flex,
+                  self.elbow, self.wrist, self.wtwist):
+            w.widget.speed = 1.0                       # 1 deg per drag unit
+        self.reset_input = self.add_input('reset dials', widget_type='button', callback=self.reset_dials)
+        self.export_button = self.add_input('export armfix', widget_type='button', callback=self.do_export)
+        self.pose_output = self.add_output('pose out')
+
+    # ---- helpers shared by live execute() and batch export ----
+    def _dials(self):
+        abl = float(self.abduct_l())
+        abr = abl if self.symmetric() else float(self.abduct_r())   # symmetric ties abr=abl
+        return dict(twist_deg=float(self.twist()), abduct_l=abl, abduct_r=abr,
+                    flex_deg=float(self.flex()), elbow_deg=float(self.elbow()),
+                    wrist_deg=float(self.wrist()), wtwist_deg=float(self.wtwist()))
+
+    def _embed37(self, Q):
+        """(F, nj, 4) shadow(37) or active(20) -> (F, 37, 4), plus active flag."""
+        F, nj = Q.shape[0], Q.shape[1]
+        if nj == 37:
+            return Q, False
+        Q37 = np.tile(np.array([1.0, 0, 0, 0]), (F, 37, 1))
+        for a, s in self._ACT2SHA.items():
+            Q37[:, s] = Q[:, a]
+        return Q37, True
+
+    def _pos37(self, P, F):
+        """positions (F, njp, 3) -> (F, 37, 3); zeros (orientation fallback) if unusable."""
+        P37 = np.zeros((F, 37, 3))
+        if P is None or P.ndim != 3 or P.shape[2] != 3:
+            return P37
+        if P.shape[1] == 37:
+            P37 = P
+        elif P.shape[1] == 20:
+            for a, s in self._ACT2SHA.items():
+                P37[:, s] = P[:, a]
+        return P37                                     # else (root only) -> zeros
+
+    def _correct_batch(self, Q, P):
+        """Q (F, nj, 4), P (F, njp, 3) or None -> corrected (F, nj, 4) in input layout."""
+        cuo = self._cuo
+        Q37, active = self._embed37(Q)
+        P37 = self._pos37(P, Q.shape[0])
+        G = cuo.forward_kinematics(Q37)
+        Qc = cuo.apply_correction(Q37, G, P37, self._cl, self._cr,
+                                  hy_l=self._hy_l, hy_r=self._hy_r, **self._dials())
+        if active:
+            out = Q.copy()
+            for s, a in self._CORR_SHA2ACT.items():
+                out[:, a] = Qc[:, s]
+            return out
+        return Qc
+
+    def _parse_ranges(self, txt):
+        return [tuple(int(v) for v in r.split(':')) for r in txt.split(',') if ':' in r]
+
+    @staticmethod
+    def _validate_ranges(ranges, F, kind):
+        """Drop empty/reversed ranges, clamp to [0, F); report what was dropped/clamped.
+        Returns the cleaned list of (a, b) tuples (possibly empty)."""
+        good = []
+        for a, b in ranges:
+            ca, cb = max(0, min(a, F)), max(0, min(b, F))
+            if cb <= ca:
+                print(f"shadow_arm_correct: {kind} range {a}:{b} is empty (take has {F} frames); skipped")
+                continue
+            if (ca, cb) != (a, b):
+                print(f"shadow_arm_correct: {kind} range {a}:{b} clamped to {ca}:{cb} (take has {F} frames)")
+            good.append((ca, cb))
+        return good
+
+    def load_fit(self):
+        path = self.fit_path()
+        if path:
+            try:
+                z = np.load(path)
+                self._cl, self._cr = np.asarray(z['cl']), np.asarray(z['cr'])
+                self._hy_l = np.asarray(z['hy_l']) if 'hy_l' in z.files else np.zeros(2)
+                self._hy_r = np.asarray(z['hy_r']) if 'hy_r' in z.files else np.zeros(2)
+                print(f"shadow_arm_correct: loaded fit from {path}")
+            except Exception as e:
+                print(f"shadow_arm_correct: could not load fit '{path}': {e}")
+
+    def do_fit(self):
+        """Load the take file, fit the per-arm C over the sym/relax anchor frames."""
+        path = self.take_path()
+        cuo = self._cuo
+        try:
+            d = np.load(path, allow_pickle=True)
+            Q = d['quats'].astype(np.float64)
+            P = d['positions'].astype(np.float64) if 'positions' in d.files else None
+        except Exception as e:
+            print(f"shadow_arm_correct: could not load take '{path}': {e}")
+            return
+        sym_raw = self._parse_ranges(self.sym_field())
+        rl_raw = [tuple(int(v) for v in self.relax_field().split(':'))] if ':' in self.relax_field() else []
+        if not sym_raw or not rl_raw:
+            print("shadow_arm_correct: enter sym ranges 'a:b,a:b' and relax 'a:b' before fitting")
+            return
+        F = Q.shape[0]
+        sym = self._validate_ranges(sym_raw, F, 'sym')
+        rl = self._validate_ranges(rl_raw, F, 'relax')
+        if not sym or not rl:
+            print(f"shadow_arm_correct: no valid ranges left after validation (take has {F} frames); "
+                  "check sym/relax (each 'a:b' with a<b and both within [0,F))")
+            return
+        Q37, _ = self._embed37(Q)
+        P37 = self._pos37(P, Q.shape[0])
+        # positions are optional now (precompute falls back to chest orientation for the lateral
+        # axis when shoulder positions are absent), so active-20 + trans-only files can fit too.
+        G = cuo.forward_kinematics(Q37)
+        pre = cuo.precompute(G, P37, sym, rl[0])
+        self._cl, self._cr = cuo.fit_corrections(pre, len(sym))
+        self._hy_l, self._hy_r = cuo.fit_heading_yaw(Q37, P37, self._cl, self._cr, sym)
+        cuo.report(pre, sym, rl[0], self._cl, self._cr)
+        print(f"shadow_arm_correct: fit applied  (heading-yaw amp |L|="
+              f"{np.degrees(np.hypot(*self._hy_l)):.0f}  |R|={np.degrees(np.hypot(*self._hy_r)):.0f} deg); "
+              "live preview updated")
+
+    def do_export(self):
+        """Apply the current fit + dials to the whole take file and save _armfix.npz."""
+        path = self.take_path() or self.fit_path()
+        try:
+            d = np.load(path, allow_pickle=True)
+            Q = d['quats'].astype(np.float64)
+            P = d['positions'].astype(np.float64) if 'positions' in d.files else None
+        except Exception as e:
+            print(f"shadow_arm_correct: could not load take to export '{path}': {e}")
+            return
+        out = self._correct_batch(Q, P)
+        save = {k: d[k] for k in d.files}
+        save['quats'] = out.astype(np.float32)
+        out_path = path.replace('.npz', '_armfix.npz')
+        np.savez(out_path, **save)
+        print(f"shadow_arm_correct: wrote {out_path}")
+
+    def reset_dials(self):
+        for w in (self.twist, self.abduct_l, self.abduct_r, self.flex,
+                  self.elbow, self.wrist, self.wtwist):
+            w.set(0.0)
+
+    def execute(self):
+        raw = self.pose_input()
+        if raw is None:
+            return
+        Q = any_to_array(raw).astype(np.float64)
+        if Q.ndim == 1 and Q.size % 4 == 0:
+            Q = Q.reshape(-1, 4)
+        if Q.ndim != 2 or Q.shape[1] != 4 or Q.shape[0] not in (20, 37):
+            return
+        pos = self.positions_input()
+        P = None
+        if pos is not None:
+            P = any_to_array(pos).astype(np.float64)
+            if P.ndim == 1 and P.size % 3 == 0:
+                P = P.reshape(-1, 3)
+            if P.ndim == 2 and P.shape[1] == 3:
+                P = P[None]
+            else:
+                P = None
+        out = self._correct_batch(Q[None], P)[0]
+        self.pose_output.send(out.astype(np.float32))

@@ -2010,26 +2010,25 @@ class Vector2DNode(Node):
             for uuid in self.component_properties[i].widget.uuids:
                 dpg.configure_item(uuid, width=width)
 
-    def send(self):
+    def _collect_component_array(self):
+        # Each component widget (drag_float_n) returns its value as a list of
+        # length dim2 -- even when dim2 == 1. Stacking the rows yields a
+        # (dim1, dim2) array; assigning these lists element-wise into a 1-D
+        # array raises "setting an array element with a sequence" on numpy >= 1.25.
         dim1 = self.current_dims[0]
         dim2 = self.current_dims[1] if len(self.current_dims) > 1 else 1
+        rows = [any_to_list(self.component_properties[i]()) for i in range(dim1)]
+        values = np.array(rows, dtype=float)
         if dim2 == 1:
-            output_array = np.ndarray([dim1])
-        else:
-            output_array = np.ndarray([dim1, dim2])
-        for i in range(dim1):
-            output_array[i] = self.component_properties[i]()
+            values = values.reshape(dim1)
+        return values
+
+    def send(self):
+        output_array = self._collect_component_array()
         self.output.send(output_array)
 
     def load_custom(self, container):
-        dim1 = self.current_dims[0]
-        dim2 = self.current_dims[1] if len(self.current_dims) > 1 else 1
-        if dim2 == 1:
-            values = np.ndarray([dim1])
-        else:
-            values = np.ndarray([dim1, dim2])
-        for i in range(dim1):
-            values[i] = self.component_properties[i]()
+        values = self._collect_component_array()
         vf = self.vector_format_input()
         if vf == 'torch':
             self.output_vector = torch.from_numpy(values)
@@ -2045,13 +2044,7 @@ class Vector2DNode(Node):
             t = type(value)
             if t == str:
                 if value == 'bang':
-                    if self.current_dims[1] == 1:
-                        output_array = np.ndarray([self.current_dims[0]])
-                    else:
-                        output_array = np.ndarray(self.current_dims)
-                    for i in range(self.current_dims[0]):
-                        output_array[i] = self.component_properties[i]()
-                    self.output.send(output_array)
+                    self.output.send(self._collect_component_array())
                     return
                 else:
                     if self.vector_format_input() == 'list':
