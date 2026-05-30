@@ -3031,27 +3031,31 @@ class ShadowToSMPLNode(Node):
             37 positions (Y-up) — positions[4] is extracted as root translation.
     Output: 22x4 quaternions (wxyz) or 22x3 axis-angle in SMPL joint order.
 
-    Applies per-joint rest-pose correction: q_smpl_i = C_parent(i) * q_shadow_i * C_i^-1
-    and Y-up → Z-up coordinate conversion on root orientation and translation only.
+    Uses the same translation process as
+    smpl_utilities/shadow_to_smpl_aligned.py: local quaternions are copied
+    directly per joint, fixed parent-frame bind-pose offsets correct Shadow's
+    slightly bent-elbow / shoulder-roll T-pose against SMPL's flat T-pose, and
+    a Y-up → Z-up rotation is applied to the root orientation and translation
+    only.  (The earlier change-of-basis conjugation q_smpl = C·q·C⁻¹ rotated
+    collars/shoulders off-axis and has been removed.)
     """
 
-    # SMPL parent indices
-    SMPL_PARENTS = [
-        -1, 0, 0, 0, 1, 2, 3, 4, 5, 6,
-        7, 8, 9, 9, 9, 12, 13, 14, 16, 17,
-        18, 19, 20, 21,
-    ]
-
-    # SMPL children (built from parents)
-    SMPL_CHILDREN = None  # {parent_idx: [child_idx, ...]}
-
-    @classmethod
-    def _build_children_map(cls):
-        children = {i: [] for i in range(24)}
-        for i in range(1, 24):
-            p = cls.SMPL_PARENTS[i]
-            children[p].append(i)
-        cls.SMPL_CHILDREN = children
+    # Bind-pose offsets between Shadow's rest pose and SMPL's rest pose,
+    # keyed by SMPL joint index (wxyz).  Shadow's T-pose has slightly bent
+    # elbows and a hair of shoulder roll, so a direct copy of the local quat
+    # at rest over-extends the SMPL elbows; these are pre-multiplied in the
+    # parent's local frame.  Measured by matching T-pose renderings via the
+    # pose_adjust node.  Mirrors _BIND_OFFSETS_WXYZ in shadow_to_smpl_aligned.py.
+    _BIND_OFFSETS_WXYZ = {
+        13: [1.0, 0.0,  0.025, 0.0],  # left_collar
+        14: [1.0, 0.0, -0.025, 0.0],  # right_collar
+        16: [1.0, 0.0, -0.050, 0.0],  # left_shoulder
+        17: [1.0, 0.0,  0.050, 0.0],  # right_shoulder
+        18: [1.0, 0.0, -0.100, 0.0],  # left_elbow
+        19: [1.0, 0.0,  0.100, 0.0],  # right_elbow
+        20: [1.0, 0.0,  0.050, 0.0],  # left_wrist
+        21: [1.0, 0.0, -0.050, 0.0],  # right_wrist
+    }
 
     @staticmethod
     def factory(name, data, args=None):
@@ -3066,7 +3070,6 @@ class ShadowToSMPLNode(Node):
 
         self.output_format_prop = self.add_property('output_format', widget_type='combo', default_value='quaternions')
         self.output_format_prop.widget.combo_items = ['quaternions', 'axis_angle']
-        self.corrections_prop = self.add_property('rest_pose_corrections', widget_type='checkbox', default_value=False)
         self.output_up_axis_prop = self.add_property('output_up_axis', widget_type='combo', default_value='Z-up')
         self.output_up_axis_prop.widget.combo_items = ['Y-up', 'Z-up']
         self.floor_height_prop = self.add_property('floor_height', widget_type='drag_float', default_value=0.0)
@@ -3074,221 +3077,21 @@ class ShadowToSMPLNode(Node):
         self.pose_output = self.add_output('pose')
         self.trans_output = self.add_output('trans')
 
-        if ShadowToSMPLNode.SMPL_CHILDREN is None:
-            ShadowToSMPLNode._build_children_map()
-
-        self._betas = None
-        self._gender = 'neutral'
         self._warned_no_positions = False
 
-        # C_i corrections (24 Rotation objects)
-        self._C = [Rotation.identity()] * 24
-        self._C_inv = [Rotation.identity()] * 24
-
-        # Load both skeletons and compute corrections
-        self._shadow_offsets = self._load_shadow_offsets()  # {bmolab_idx: offset_vec}
-        self._recompute_corrections()
-
-    def _load_shadow_offsets(self):
-        """Load Shadow bone offset vectors, keyed by bmolab_active index."""
-        def_path = Path(os.path.dirname(os.path.abspath(__file__))) / 'definition.xml'
-        if not def_path.exists():
-            def_path = Path('dpg_system') / 'definition.xml'
-        if not def_path.exists():
-            print("ShadowToSMPLNode: definition.xml not found")
-            return {}
-
-        # Step 1: Load all offsets keyed by body joint index (joint_name_to_bmolab_index)
-        tree = ET.parse(str(def_path.resolve()))
-        root = tree.getroot()
-        body_idx_offsets = {}
-        for node in root.iter('node'):
-            if 'translate' in node.attrib:
-                limb_name = node.attrib['id']
-                ji = JointTranslator.shadow_limb_name_to_bmolab_index(limb_name)
-                if ji != -1:
-                    vals = list(map(float, node.attrib['translate'].split(' ')))
-                    body_idx_offsets[ji] = np.array(vals) / 100.0
-
-        # Step 2: Build body_joint_index → bmolab_active_index mapping
-        # For 0-19: identical. For >= 20: diverge because body has TopOfHead at 20
-        # and different ordering. This explicit map handles the ≥20 cases.
-        body_to_active = {i: i for i in range(20)}  # 0-19 are identical
-        # body joint name (t_* index) → bmolab_active name (index)
-        body_to_active[t_TopOfHead] = -1            # 20 → no bmolab_active equivalent
-        body_to_active[t_LeftBallOfFoot] = 20        # 21 → left_foot (20)
-        body_to_active[t_LeftToeTip] = 24            # 22 → left_toe_tip (24)
-        body_to_active[t_RightBallOfFoot] = 21       # 23 → right_foot (21)
-        body_to_active[t_RightToeTip] = 25           # 24 → right_toe_tip (25)
-        body_to_active[t_LeftKnuckle] = 22           # 25 → left_hand (22)
-        body_to_active[t_LeftFingerTip] = 26         # 26 → left_finger_tip (26)
-        body_to_active[t_RightKnuckle] = 23          # 27 → right_hand (23)
-        body_to_active[t_RightFingerTip] = 27        # 28 → right_finger_tip (27)
-        body_to_active[t_LeftHeel] = 28              # 29 → left_heel (28)
-        body_to_active[t_RightHeel] = 29             # 30 → right_heel (29)
-
-        # Step 3: Re-key offsets to bmolab_active indices
-        offsets = {}
-        for body_idx, vec in body_idx_offsets.items():
-            active_idx = body_to_active.get(body_idx, body_idx)
-            offsets[active_idx] = vec
-
-        print(f"ShadowToSMPLNode: loaded {len(offsets)} shadow offsets")
-        return offsets
-
-    def _load_smpl_offsets(self):
-        """Load SMPL offset vectors from smplx model. Returns (24, 3)."""
-        try:
-            import torch
-            import smplx
-        except ImportError:
-            print("ShadowToSMPLNode: smplx/torch unavailable")
-            return None
-
-        model_path = os.path.dirname(os.path.abspath(__file__))
-        gender_map = {'male': 'MALE', 'female': 'FEMALE', 'neutral': 'MALE'}
-        g_tag = gender_map.get(self._gender, 'MALE')
-
-        try:
-            model = smplx.create(model_path=model_path, model_type='smplh',
-                                 gender=g_tag, num_betas=10, ext='pkl')
-            betas_tensor = torch.zeros(1, 10)
-            if self._betas is not None:
-                b = torch.tensor(self._betas, dtype=torch.float32).flatten()
-                n = min(len(b), 10)
-                betas_tensor[0, :n] = b[:n]
-
-            output = model(betas=betas_tensor)
-            joints = output.joints[0].detach().cpu().numpy()
-            parents = self.SMPL_PARENTS
-            offsets = np.zeros((24, 3))
-            for i in range(1, 24):
-                child_idx = i
-                if joints.shape[0] > 24 and i == 23:
-                    child_idx = 37
-                offsets[i] = joints[child_idx] - joints[parents[i]]
-            return offsets
-        except Exception as e:
-            print(f"ShadowToSMPLNode: Error loading SMPL model: {e}")
-            return None
-
-    def _bmolab_to_smpl_index(self):
-        """Build bmolab active index → SMPL index map."""
-        m = {}
-        for smpl_name, bmolab_name in JointTranslator.smpl_to_bmolab_active_joint_map.items():
-            if smpl_name in JointTranslator.smpl_joints and bmolab_name in JointTranslator.bmolab_active_joints:
-                si = JointTranslator.smpl_joints[smpl_name]
-                bi = JointTranslator.bmolab_active_joints[bmolab_name]
-                m[bi] = si
-        return m
-
-    def _smpl_to_bmolab_index(self):
-        """Build SMPL index → bmolab active index map."""
-        m = {}
-        for smpl_name, bmolab_name in JointTranslator.smpl_to_bmolab_active_joint_map.items():
-            if smpl_name in JointTranslator.smpl_joints and bmolab_name in JointTranslator.bmolab_active_joints:
-                si = JointTranslator.smpl_joints[smpl_name]
-                bi = JointTranslator.bmolab_active_joints[bmolab_name]
-                m[si] = bi
-        return m
-
-    def _recompute_corrections(self):
-        """Compute per-joint C_i corrections based on children's offset directions."""
-        smpl_offsets = self._load_smpl_offsets()
-        if smpl_offsets is None or not self._shadow_offsets:
-            print("ShadowToSMPLNode: Cannot compute corrections (missing skeleton data)")
-            return
-
-        s2b = self._smpl_to_bmolab_index()  # SMPL idx → bmolab idx
-        children = self.SMPL_CHILDREN
-        C = [Rotation.identity()] * 24
-
-        for i in range(24):
-            child_indices = children[i]
-            if not child_indices:
-                continue  # leaf: C = identity
-
-            # Gather child offset direction pairs
-            shadow_dirs = []
-            smpl_dirs = []
-            for ci in child_indices:
-                bi = s2b.get(ci, -1)
-                if bi < 0 or bi not in self._shadow_offsets:
-                    continue
-                sv = self._shadow_offsets[bi]
-                mv = smpl_offsets[ci]
-                sn = np.linalg.norm(sv)
-                mn = np.linalg.norm(mv)
-                if sn < 1e-6 or mn < 1e-6:
-                    continue
-                shadow_dirs.append(sv / sn)
-                smpl_dirs.append(mv / mn)
-
-            if not shadow_dirs:
-                continue
-
-            if len(shadow_dirs) == 1:
-                # Single child: exact rotation between directions
-                C[i] = self._rotation_between(shadow_dirs[0], smpl_dirs[0])
-            else:
-                # Multi-child: SVD best-fit rotation (Wahba's problem)
-                try:
-                    r, _ = Rotation.align_vectors(
-                        np.array(smpl_dirs),
-                        np.array(shadow_dirs)
-                    )
-                    C[i] = r
-                except Exception:
-                    C[i] = self._rotation_between(shadow_dirs[0], smpl_dirs[0])
-
-        self._C = C
-        self._C_inv = [c.inv() for c in C]
-
-        # Debug: print correction angles
-        smpl_names = list(JointTranslator.smpl_joints.keys())
-        for i in range(24):
-            angle = C[i].magnitude() * 180.0 / np.pi
-            name = smpl_names[i] if i < len(smpl_names) else f'j{i}'
-            if angle > 0.1:
-                print(f"  ShadowToSMPL C[{name}]: {angle:.1f}°")
-
-    @staticmethod
-    def _rotation_between(v_from, v_to):
-        """Rotation taking unit vector v_from to v_to."""
-        cross = np.cross(v_from, v_to)
-        dot = np.dot(v_from, v_to)
-        if dot > 0.9999:
-            return Rotation.identity()
-        if dot < -0.9999:
-            perp = np.array([1., 0., 0.])
-            if abs(np.dot(v_from, perp)) > 0.9:
-                perp = np.array([0., 1., 0.])
-            axis = np.cross(v_from, perp)
-            axis /= np.linalg.norm(axis)
-            return Rotation.from_rotvec(axis * np.pi)
-        sn = np.linalg.norm(cross)
-        axis = cross / sn
-        angle = np.arctan2(sn, dot)
-        return Rotation.from_rotvec(axis * angle)
+        # Fixed parent-frame bind-pose offsets (SMPL index → Rotation), built
+        # once from _BIND_OFFSETS_WXYZ.  These do not depend on betas/gender.
+        self._bind_offsets = {
+            j: Rotation.from_quat(q, scalar_first=True)
+            for j, q in self._BIND_OFFSETS_WXYZ.items()
+        }
 
     def execute(self):
-        # Handle config changes
+        # The 'config' input (betas/gender) no longer affects the translation:
+        # the bind-pose offsets are fixed constants.  Drain it so it doesn't
+        # accumulate, but it has no effect on the output.
         if self.config_input.fresh_input:
-            cfg = self.config_input()
-            if isinstance(cfg, dict):
-                changed = False
-                if 'betas' in cfg:
-                    b = any_to_array(cfg['betas']).flatten()
-                    if self._betas is None or not np.array_equal(self._betas, b):
-                        self._betas = b
-                        changed = True
-                if 'gender' in cfg:
-                    g = str(cfg['gender'])
-                    if g != self._gender:
-                        self._gender = g
-                        changed = True
-                if changed:
-                    self._recompute_corrections()
+            _ = self.config_input()
 
         if not self.pose_input.fresh_input:
             return
@@ -3311,35 +3114,33 @@ class ShadowToSMPLNode(Node):
         if shadow_data.shape[-1] != 4:
             return
 
-        # Re-order to SMPL (22) joint order based on input format
+        # Re-order to SMPL (22) joint order via a direct per-joint copy, the
+        # same mapping shadow_to_smpl_aligned.py uses.
         n_quats = shadow_data.shape[0]
         if n_quats == 37:
             smpl_quats = JointTranslator.translate_from_shadow_to_smpl(shadow_data)
             pelvis_idx = 4   # shadow index for PelvisAnchor
+            # The aligned script maps only the 20 active joints, leaving SMPL
+            # left_foot (10) / right_foot (11) at identity.  translate_from_
+            # shadow_to_smpl would copy Shadow's BallOfFoot rotations into them,
+            # so reset them to identity to match the script's output.
+            smpl_quats[10] = [1.0, 0.0, 0.0, 0.0]
+            smpl_quats[11] = [1.0, 0.0, 0.0, 0.0]
         elif n_quats == 20:
             smpl_quats = JointTranslator.translate_from_bmolab_active_to_smpl(shadow_data)
             pelvis_idx = 5   # bmolab active index for pelvis_anchor
         else:
             return
 
-        # Optional rest-pose corrections (C_i)
-        if self.corrections_prop():
-            parents = self.SMPL_PARENTS
-            C = self._C
-            C_inv = self._C_inv
-            # Skip spine joints: SMPL's cantilevered spine geometry
-            # differs fundamentally from Shadow's straight spine
-            skip_corrections = {0, 3, 6, 9}  # pelvis, spine1, spine2, spine3
-            for smpl_i in range(22):
-                if smpl_i in skip_corrections:
-                    continue
-                q_local = Rotation.from_quat(smpl_quats[smpl_i], scalar_first=True)
-                parent_i = parents[smpl_i]
-                if parent_i >= 0:
-                    q_corrected = C[parent_i] * q_local * C_inv[smpl_i]
-                else:
-                    q_corrected = q_local * C_inv[smpl_i]
-                smpl_quats[smpl_i] = q_corrected.as_quat(scalar_first=True)
+        # Fixed parent-frame bind-pose offsets (collar/shoulder/elbow/wrist),
+        # pre-multiplied in the parent's local frame.  Corrects Shadow's
+        # slightly bent-elbow / shoulder-roll T-pose against SMPL's flat T-pose.
+        # Always applied, matching shadow_to_smpl_aligned.py.
+        for smpl_i, offset in self._bind_offsets.items():
+            if smpl_i >= smpl_quats.shape[0]:
+                continue
+            q_local = Rotation.from_quat(smpl_quats[smpl_i], scalar_first=True)
+            smpl_quats[smpl_i] = (offset * q_local).as_quat(scalar_first=True)
 
         # Coordinate conversion (root orientation + translation)
         z_up = self.output_up_axis_prop() == 'Z-up'
