@@ -41,14 +41,19 @@ class NoiseReviewNode(Node):
             'prev', widget_type='button', callback=self.go_prev)
         self.next_btn = self.add_input(
             'next', widget_type='button', callback=self.go_next)
+        self.prev_file_btn = self.add_input(
+            'prev file', widget_type='button', callback=self.go_prev_file)
+        self.next_file_btn = self.add_input(
+            'next file', widget_type='button', callback=self.go_next_file)
         self.section_input = self.add_input(
             'section', widget_type='input_int', default_value=0,
             callback=self.jump_to_section)
 
         # ── Status labels ─────────────────────────────────────────────────
-        self.counter_label = self.add_label('— / —')
-        self.file_label    = self.add_label('')
-        self.issue_label   = self.add_label('')
+        self.counter_label    = self.add_label('— / —')
+        self.file_label       = self.add_label('')
+        self.assessment_label = self.add_label('')
+        self.issue_label      = self.add_label('')
 
         # ── Outputs ───────────────────────────────────────────────────────
         self.path_out      = self.add_output('npz path')
@@ -107,6 +112,12 @@ class NoiseReviewNode(Node):
 
     # ── Issue list construction ───────────────────────────────────────────
 
+    @staticmethod
+    def _format_assessment(classification, noise_score):
+        if noise_score is None:
+            return classification
+        return f'{classification}  (score {noise_score:.3f})'
+
     def rebuild_issues(self):
         show_breaks     = self.show_breaks()
         show_corruption = self.show_corruption()
@@ -124,17 +135,22 @@ class NoiseReviewNode(Node):
 
             filepath = report.get('filepath') or report.get('filename', '')
             filename = os.path.basename(filepath)
+            classification = report.get('classification', 'clean')
+            noise_score = report.get('noise_score')
+            assessment = self._format_assessment(classification, noise_score)
+
+            def make_issue(**kw):
+                kw.update(filepath=filepath, filename=filename, assessment=assessment)
+                return kw
 
             if show_breaks:
                 for sb in report.get('stream_breaks', []):
                     f = sb.get('frame', 0)
-                    issues.append({
-                        'filepath': filepath, 'filename': filename,
-                        'type': 'stream_break', 'frame': f, 'end_frame': f,
-                        'desc': (f"stream break  frame={f}"
-                                 f"  type={sb.get('break_type','')}"
-                                 f"  worst={sb.get('worst_joint','')}"),
-                    })
+                    issues.append(make_issue(
+                        type='stream_break', frame=f, end_frame=f,
+                        desc=(f"stream break  frame={f}"
+                              f"  type={sb.get('break_type','')}"
+                              f"  worst={sb.get('worst_joint','')}")))
 
             if show_corruption:
                 surgery  = report.get('surgery') or {}
@@ -142,14 +158,12 @@ class NoiseReviewNode(Node):
                 for z in excision.get('zones', []):
                     s, e = z.get('start', 0), z.get('end', 0)
                     joints = ', '.join((z.get('joints') or [])[:3])
-                    issues.append({
-                        'filepath': filepath, 'filename': filename,
-                        'type': 'corruption_zone', 'frame': s, 'end_frame': e,
-                        'desc': (f"corruption  [{s}–{e}]"
-                                 f"  {z.get('duration_s', 0):.1f}s"
-                                 f"  mean={z.get('mean_vel', 0):.0f} max={z.get('max_vel', 0):.0f} rad/s"
-                                 f"  {joints}"),
-                    })
+                    issues.append(make_issue(
+                        type='corruption_zone', frame=s, end_frame=e,
+                        desc=(f"corruption  [{s}–{e}]"
+                              f"  {z.get('duration_s', 0):.1f}s"
+                              f"  mean={z.get('mean_vel', 0):.0f} max={z.get('max_vel', 0):.0f} rad/s"
+                              f"  {joints}")))
 
             if show_spikes:
                 by_frame = {}
@@ -158,40 +172,35 @@ class NoiseReviewNode(Node):
                     by_frame.setdefault(f, []).append(
                         f"{sf.get('joint_name','')} {sf.get('velocity', 0):.0f}r/s ×{sf.get('neighbor_ratio', 0):.1f}")
                 for f, entries in sorted(by_frame.items()):
-                    issues.append({
-                        'filepath': filepath, 'filename': filename,
-                        'type': 'spike_frame', 'frame': f, 'end_frame': f,
-                        'desc': f"spike  frame={f}  {', '.join(entries[:4])}",
-                    })
+                    issues.append(make_issue(
+                        type='spike_frame', frame=f, end_frame=f,
+                        desc=f"spike  frame={f}  {', '.join(entries[:4])}"))
 
             if show_glitches:
                 for cluster in report.get('glitch_clusters', []):
                     if not (isinstance(cluster, (list, tuple)) and len(cluster) >= 2):
                         continue
                     s, e = int(cluster[0]), int(cluster[1])
-                    issues.append({
-                        'filepath': filepath, 'filename': filename,
-                        'type': 'glitch_cluster', 'frame': s, 'end_frame': e,
-                        'desc': f"glitch  [{s}–{e}]  {e - s + 1} frames",
-                    })
+                    issues.append(make_issue(
+                        type='glitch_cluster', frame=s, end_frame=e,
+                        desc=f"glitch  [{s}–{e}]  {e - s + 1} frames"))
 
             if show_clean:
                 for seg in report.get('clean_segments', []):
                     s, e = seg.get('start', 0), seg.get('end', 0)
-                    issues.append({
-                        'filepath': filepath, 'filename': filename,
-                        'type': 'clean_section', 'frame': s, 'end_frame': e,
-                        'desc': (f"clean  [{s}–{e}]"
-                                 f"  {seg.get('duration_s', 0):.1f}s"
-                                 f"  {seg.get('n_frames', e - s + 1)} frames"
-                                 f"  mean={seg.get('mean_score', 0):.2f} max={seg.get('max_score', 0):.2f}"),
-                    })
+                    issues.append(make_issue(
+                        type='clean_section', frame=s, end_frame=e,
+                        desc=(f"clean  [{s}–{e}]"
+                              f"  {seg.get('duration_s', 0):.1f}s"
+                              f"  {seg.get('n_frames', e - s + 1)} frames"
+                              f"  mean={seg.get('mean_score', 0):.2f} max={seg.get('max_score', 0):.2f}")))
 
         self.issues = issues
         self.current_idx = 0 if issues else -1
         total = len(issues)
         self.counter_label.set(f'0 / {total}')
         self.file_label.set('')
+        self.assessment_label.set('')
         self.issue_label.set('')
         self.section_input.set(0, propagate=False)
         print(f'NoiseReviewNode: {total} issues built from {len(self.raw_data)} reports')
@@ -211,6 +220,44 @@ class NoiseReviewNode(Node):
         self.current_idx = (self.current_idx - 1) % len(self.issues)
         self._emit_current()
 
+    def go_next_file(self):
+        if not self.issues:
+            return
+        cur = self.issues[self.current_idx]['filepath']
+        n = len(self.issues)
+        # walk forward to the first issue whose file differs, wrapping around
+        for step in range(1, n + 1):
+            idx = (self.current_idx + step) % n
+            if self.issues[idx]['filepath'] != cur:
+                self.current_idx = idx
+                self._emit_current()
+                return
+
+    def go_prev_file(self):
+        if not self.issues:
+            return
+        cur = self.issues[self.current_idx]['filepath']
+        n = len(self.issues)
+        # find the previous file, then back up to its first issue
+        prev_file = None
+        prev_idx = self.current_idx
+        for step in range(1, n + 1):
+            idx = (self.current_idx - step) % n
+            if self.issues[idx]['filepath'] != cur:
+                prev_file = self.issues[idx]['filepath']
+                prev_idx = idx
+                break
+        if prev_file is None:
+            return
+        # prev_idx is the last issue of prev_file; rewind to its first issue
+        while True:
+            back = (prev_idx - 1) % n
+            if back == self.current_idx or self.issues[back]['filepath'] != prev_file:
+                break
+            prev_idx = back
+        self.current_idx = prev_idx
+        self._emit_current()
+
     def jump_to_section(self):
         if not self.issues:
             return
@@ -228,6 +275,7 @@ class NoiseReviewNode(Node):
         # Labels
         self.counter_label.set(f'{n} / {total}')
         self.file_label.set(issue['filename'])
+        self.assessment_label.set(issue['assessment'])
         self.issue_label.set(issue['desc'])
         self.section_input.set(n, propagate=False)
 

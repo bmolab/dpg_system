@@ -579,6 +579,10 @@ class NodeProperty:
         if self.widget:
             self.widget.set_label(new_name)
 
+    def set_tooltip(self, text, delay=None):
+        if self.widget:
+            self.widget.set_tooltip(text, delay)
+
     # def set_and_callback(self, data, propagate=True):
     #     self.set(data, propagate)
     #     if self.callback is not None:
@@ -620,6 +624,13 @@ class BasePropertyWidget:
         self.wants_resize_handle = False
         self.h_group_uuid = None
 
+         # Hover tooltip (lazily created). Useful when a widget's visible text
+        # is truncated but the full value should stay accessible on hover.
+        self.tooltip_text = None
+        self.tooltip_uuid = None
+        self.tooltip_text_uuid = None
+        self.tooltip_delay = 0.5  # seconds to hover before the tooltip shows
+
         # State
         self.default_value = default_value
         self.value = None
@@ -648,6 +659,9 @@ class BasePropertyWidget:
             self._draw_widget()
             self._setup_interaction()
             self._create_trigger_button()
+        # Tooltip text may have been set before the widget was drawn.
+        if self.tooltip_text:
+            self._create_tooltip()
         if horizontal:
             dpg.bind_item_theme(self.h_group_uuid, _get_tight_group_theme())
 
@@ -693,6 +707,32 @@ class BasePropertyWidget:
         self.trigger_widget = dpg.add_button(label='', width=14, callback=cb)
         if self.active_theme:
             dpg.bind_item_theme(self.trigger_widget, self.active_theme)
+
+    def _create_tooltip(self):
+        """Create the dpg tooltip container bound to this widget's item."""
+        self.tooltip_text_uuid = dpg.generate_uuid()
+        with dpg.tooltip(parent=self.uuid, delay=self.tooltip_delay) as self.tooltip_uuid:
+            dpg.add_text(self.tooltip_text, tag=self.tooltip_text_uuid)
+
+    def set_tooltip(self, text, delay=None):
+        """Attach or update a hover tooltip on this widget.
+
+        Safe to call before the widget is drawn (the tooltip is created in
+        create()) or after (created/updated immediately). Pass '' or None to
+        clear the tooltip text. ``delay`` is the hover time in seconds before
+        the tooltip appears (defaults to self.tooltip_delay).
+        """
+        self.tooltip_text = text
+        if delay is not None:
+            self.tooltip_delay = delay
+        if not dpg.does_item_exist(self.uuid):
+            return  # deferred: created during create()
+        if self.tooltip_uuid is None or not dpg.does_item_exist(self.tooltip_uuid):
+            if text:
+                self._create_tooltip()
+        else:
+            dpg.set_value(self.tooltip_text_uuid, text if text else '')
+            dpg.configure_item(self.tooltip_uuid, delay=self.tooltip_delay)
 
     # --- Core Logic (Visibility, Themes, Execution) ---
 
@@ -1480,6 +1520,10 @@ class NodeInput:
             dpg.set_value(self.label_uuid, self._label)
         else:
             dpg.set_item_label(self.widget.uuid, self._label)
+
+    def set_tooltip(self, text, delay=None):
+        if self.widget is not None:
+            self.widget.set_tooltip(text, delay)
 
     def set_input(self, widget_input: 'NodeInput') -> None:
         self.input = widget_input

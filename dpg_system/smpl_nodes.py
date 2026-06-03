@@ -522,6 +522,10 @@ class SMPLPoseAdjustNode(SMPLNode):
     Pelvis (root, index 0) adjustments are post-multiplied so the correction is
     in the body-local frame. All other joints are pre-multiplied so the
     correction is in the parent's frame (matches PoseAdjustmentNode semantics).
+
+    The 'child frame' checkbox switches all non-root joints to post-multiply
+    instead, applying the correction in the joint's own (child bone) local frame
+    -- useful for fixing a sensor mounted on the child side of the joint.
     """
 
     JOINT_COUNT = 22
@@ -534,6 +538,7 @@ class SMPLPoseAdjustNode(SMPLNode):
         super().__init__(label, data, args)
 
         self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.child_frame_input = self.add_input('child frame', widget_type='checkbox', default_value=False)
         self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_adjustments)
 
         self.adj_inputs = []
@@ -600,13 +605,18 @@ class SMPLPoseAdjustNode(SMPLNode):
         # Round-trip only the joints we modify, so unadjusted joints keep their
         # exact input rotvec (scipy's canonical |r|<=pi would otherwise flip
         # branches once per full rotation).
+        child_frame = bool(self.child_frame_input())
         in_rvecs = result[adj_indices]
         pose_quats = Rotation.from_rotvec(in_rvecs).as_quat(scalar_first=True)
         for k, i in enumerate(adj_indices):
             adj_q = adj_quats[i]
-            if i == 0:
+            if i == 0 or child_frame:
+                # Post-multiply: adjustment is in the joint's own (child bone)
+                # local frame. For the pelvis (root) this is the body-local frame;
+                # for other joints it corrects a child-side sensor offset.
                 pose_quats[k] = quaternion_multiply_scalar_first(pose_quats[k], adj_q)
             else:
+                # Pre-multiply: adjustment is in the parent bone's frame.
                 pose_quats[k] = quaternion_multiply_scalar_first(adj_q, pose_quats[k])
         out_rvecs = Rotation.from_quat(pose_quats, scalar_first=True).as_rotvec()
 

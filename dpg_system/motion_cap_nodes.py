@@ -26,6 +26,19 @@ import random
 from dpg_system.smpl_nodes import SMPLNode
 from dpg_system.interface_nodes import Vector2DNode
 
+def display_file_name(path, max_len=28):
+    # Strip the directory and extension, then middle-ellipsis if still too
+    # long so both the meaningful prefix and suffix stay visible. Keeps the
+    # take node from stretching wide on long file names.
+    name = os.path.splitext(os.path.basename(path))[0]
+    if len(name) <= max_len:
+        return name
+    keep = max_len - 1  # room for the ellipsis
+    head = (keep + 1) // 2
+    tail = keep // 2
+    return name[:head] + '…' + name[-tail:]
+
+
 def register_motion_cap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
     Node.app.register_node('gl_simple_body', SimpleMoCapGLBody.factory)
@@ -53,6 +66,8 @@ def register_motion_cap_nodes():
     Node.app.register_node('active_pose', ActivePoseNode.factory)
     Node.app.register_node('mag_yaw_correct', MagYawCorrectionNode.factory)
     Node.app.register_node('shadow_arm_correct', ShadowArmCorrectNode.factory)
+    Node.app.register_node('shadow_sensor', ShadowSensorNode.factory)
+    Node.app.register_node('mag_offset', MagOffsetNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -224,7 +239,8 @@ class MoCapTakeNode(MoCapNode):
                 if self.load_path() == self.temp_save_name and self.temp_save_name[:15] == 'temp_mocap_take':
                     os.remove(self.load_path())
                 self.load_path.set(save_path)
-                self.file_name.set(save_path)
+                self.file_name.set(display_file_name(save_path))
+                self.file_name.set_tooltip(save_path)
                 return True
         return False
 
@@ -332,8 +348,8 @@ class MoCapTakeNode(MoCapNode):
 
     def load_take_from_npz(self, path):
         take_file = np.load(path)
-        file_name = path.split('/')[-1]
-        self.file_name.set(file_name)
+        self.file_name.set(display_file_name(path))
+        self.file_name.set_tooltip(path)
         self.load_path.set(path)
         if 'quats' in take_file:
             self.quat_buffer = take_file['quats']
@@ -619,7 +635,8 @@ class OpenTakeNode(MoCapNode):
                 if self.load_path() == self.temp_save_name and self.temp_save_name[:9] == 'temp_take':
                     os.remove(self.load_path())
                 self.load_path.set(save_path)
-                self.file_name.set(save_path)
+                self.file_name.set(display_file_name(save_path))
+                self.file_name.set_tooltip(save_path)
                 self.update_last_directory(save_path)
             except Exception as e:
                 print(e)
@@ -839,8 +856,8 @@ class OpenTakeNode(MoCapNode):
         if self.streaming:
             self.stop_button_clicked()
         take_file = np.load(path, allow_pickle=True)
-        file_name = path.split('/')[-1]
-        self.file_name.set(file_name)
+        self.file_name.set(display_file_name(path))
+        self.file_name.set_tooltip(path)
         self.load_path.set(path)
         self.update_last_directory(path)
         self.take_dict = dict(take_file)
@@ -2294,6 +2311,327 @@ class MotionShadowNode(MoCapNode):
         return name_map
 
 
+def shadow_sensor_service_loop():
+    # Dedicated service loop for ShadowSensorNode instances. Kept separate
+    # from shadow_service_loop so the purpose-built capture node and the raw
+    # sensor diagnostic node never share a connection or step on each other.
+    while True:
+        was_client = False
+        for node in ShadowSensorNode.sensor_nodes:
+            if node.client is not None:
+                node.receive_data()
+                was_client = True
+        if was_client:
+            time.sleep(.001)
+        else:
+            time.sleep(.05)
+
+
+class ShadowSensorNode(MoCapNode):
+    # Raw un-filtered sensor access from the Shadow Configurable service.
+    # Where the `shadow` node requests <Lq/><c/> (orientation + position) for
+    # motion capture, this node requests the sensor channels:
+    #   <a/> accelerometer (g), <m/> magnetometer (uT), <g/> gyroscope (deg/s)
+    # giving 9 floats per node: [ax, ay, az, mx, my, mz, gx, gy, gz].
+    # It opens its own connection so the capture node stays untouched, and is
+    # the foundation for accessing any raw sensor stream from the suit.
+    sensor_nodes = []
+    _service_thread = None
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ShadowSensorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        self.num_bodies = 1
+        super().__init__(label, data, args)
+
+        self.__mutex = threading.Lock()
+        self.client = None
+        try:
+            self.client = shadow.Client("", 32076)
+        except Exception:
+            self.client = None
+
+        # [body, shadow_joint_index, xyz]
+        self.accel = np.zeros((4, 37, 3))
+        self.mag = np.zeros((4, 37, 3))
+        self.gyro = np.zeros((4, 37, 3))
+        # Largest accelerometer magnitude seen per node. A real IMU always
+        # reads ~1 g (gravity); derived/virtual joints read ~0. Used to list
+        # only physical sensors in the dropdown.
+        self.accel_seen = np.zeros((4, 37))
+
+        self.joints_mapped = False
+        self.jointMap = [[0, 0]] * 37 * 4
+
+        self._xml_definition = \
+            "<?xml version=\"1.0\"?>" \
+            "<configurable inactive=\"1\">" \
+            "<a/>" \
+            "<m/>" \
+            "<g/>" \
+            "</configurable>"
+        self._reconnect_requested = False
+
+        if self.client:
+            if self.client.writeData(self._xml_definition):
+                print("shadow_sensor: sent sensor channel definition (a, m, g)")
+
+        self.body_index = self.add_property('body', widget_type='input_int', default_value=0, callback=self.selection_changed)
+        self.sensor_property = self.add_property('sensor', widget_type='combo', default_value='<waiting for device>', callback=self.selection_changed)
+        self.sensor_property.widget.combo_items = ['<waiting for device>']
+        self.reconnect_button = self.add_input('reconnect', widget_type='button', callback=self.request_reconnect)
+
+        self.mag_out = self.add_output('magnetometer')
+        self.accel_out = self.add_output('accelerometer')
+        self.gyro_out = self.add_output('gyroscope')
+
+        self.available_sensors = []
+        self._combo_dirty = False
+        self.selected_master_key = -1
+        self.new_data = False
+
+        ShadowSensorNode.sensor_nodes.append(self)
+        if ShadowSensorNode._service_thread is None:
+            ShadowSensorNode._service_thread = threading.Thread(target=shadow_sensor_service_loop, daemon=True)
+            ShadowSensorNode._service_thread.start()
+        self.add_frame_task()
+
+    def selection_changed(self):
+        name = self.sensor_property()
+        self.selected_master_key = JointTranslator.joint_name_to_shadow_index.get(name, -1)
+
+    def request_reconnect(self):
+        # Defer the socket op to the service thread to avoid racing readData().
+        self._reconnect_requested = True
+
+    def _perform_reconnect(self):
+        try:
+            if self.client is not None:
+                try:
+                    self.client.close()
+                except Exception:
+                    pass
+                self.client = None
+            self.client = shadow.Client("", 32076)
+            self.joints_mapped = False
+            self.jointMap = [[0, 0]] * 37 * 4
+            self.accel_seen[:] = 0.0
+            if self.client.writeData(self._xml_definition):
+                print("shadow_sensor: reconnected, re-sent sensor channel definition")
+        except Exception as e:
+            print(f"shadow_sensor: reconnect failed: {e}")
+            self.client = None
+
+    def receive_data(self):
+        if self._reconnect_requested:
+            self._reconnect_requested = False
+            self._perform_reconnect()
+            if self.client is None:
+                return
+        if self.client:
+            data = self.client.readData()
+            if data is not None:
+                if data.startswith(b'<?xml'):
+                    name_map = self.parse_name_map(data)
+                    for it in name_map:
+                        thisName = name_map[it]
+                        for idx, name_index in enumerate(JointTranslator.shadow_joint_index_to_name):
+                            shadow_name = JointTranslator.bmolab_joint_to_shadow_limb[JointTranslator.shadow_joint_index_to_name[name_index]]
+                            if thisName[0] == shadow_name:
+                                self.jointMap[it] = [idx + 1, thisName[1]]
+                                break
+                    self.joints_mapped = True
+                    return
+
+                configData = shadow.Format.Configurable(data)
+                if configData is not None:
+                    lock = ScopedLock(self.__mutex)
+                    for key in configData:
+                        master_key = self.jointMap[key][0] - 1          # keys start at 1
+                        body_index = self.jointMap[key][1]
+                        if master_key >= 0:
+                            joint_data = configData[key]
+                            # [a (0-2), m (3-5), g (6-8)] per the XML channel order
+                            a = [joint_data.value(0), joint_data.value(1), joint_data.value(2)]
+                            self.accel[body_index, master_key] = a
+                            self.mag[body_index, master_key] = [joint_data.value(3), joint_data.value(4), joint_data.value(5)]
+                            self.gyro[body_index, master_key] = [joint_data.value(6), joint_data.value(7), joint_data.value(8)]
+                            a_mag = math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
+                            if a_mag > self.accel_seen[body_index, master_key]:
+                                self.accel_seen[body_index, master_key] = a_mag
+                    self.new_data = True
+                    lock = None
+
+    def parse_name_map(self, xml_node_list):
+        name_map = {}
+        tree = XML(xml_node_list)
+        list = tree.findall(".//node")
+        for itr in list:
+            node_name = itr.get("id")
+            node_local = node_name
+            node_body = 0
+            for code in JointTranslator.shadow_joint_index_to_name:
+                node_code = JointTranslator.bmolab_joint_to_shadow_limb[JointTranslator.shadow_joint_index_to_name[code]]
+                if len(node_code) == len(node_name) - 1:
+                    if node_name.find(node_code) >= 0:
+                        node_local = node_code
+                        node_body = int(node_name[-1])
+                        break
+                elif len(node_code) == len(node_name):
+                    if node_name.find(node_code) >= 0:
+                        node_local = node_code
+                        node_body = 0
+                        break
+            name_map[int(itr.get("key"))] = [node_local, node_body]
+            if node_body >= self.num_bodies:
+                self.num_bodies = node_body + 1
+        return name_map
+
+    def _update_available_sensors(self):
+        present = []
+        for master_key in range(37):
+            if np.any(self.accel_seen[:, master_key] > 0.2):
+                present.append(JointTranslator.shadow_joint_index_to_name[master_key])
+        if present and present != self.available_sensors:
+            self.available_sensors = present
+            self._combo_dirty = True
+
+    def _refresh_sensor_combo(self):
+        items = self.available_sensors if self.available_sensors else ['<waiting for device>']
+        self.sensor_property.widget.combo_items = items
+        dpg.configure_item(self.sensor_property.widget.uuid, items=items)
+        if self.sensor_property() not in items:
+            self.sensor_property.set(items[0], propagate=False)
+            self.selection_changed()
+
+    def frame_task(self):
+        if self.joints_mapped:
+            self._update_available_sensors()
+        if self._combo_dirty:
+            self._refresh_sensor_combo()
+            self._combo_dirty = False
+        if not self.new_data:
+            return
+        self.new_data = False
+        body = int(self.body_index())
+        mk = self.selected_master_key
+        if mk < 0 or body < 0 or body >= 4:
+            return
+        lock = ScopedLock(self.__mutex)
+        m = self.mag[body, mk].copy()
+        a = self.accel[body, mk].copy()
+        g = self.gyro[body, mk].copy()
+        lock = None
+        self.mag_out.send(m)
+        self.accel_out.send(a)
+        self.gyro_out.send(g)
+
+
+class MagOffsetNode(MoCapNode):
+    # Accumulates magnetometer samples into a 3D point cloud and fits a sphere
+    # to them. As a sensor is rotated through all orientations a clean
+    # magnetometer sweeps a sphere centred on the origin; a hard-iron
+    # magnetization shifts that sphere off-centre, so the fitted centre IS the
+    # offset vector. Outputs feed mgl_point_cloud / mgl_geo_sphere for a 3D
+    # view; the 'centered cloud' output lets you verify a calibration recentres
+    # the data on the origin.
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MagOffsetNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.mag_in = self.add_input('magnetometer', triggers_execution=True)
+        self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear)
+        self.max_points = self.add_property('max points', widget_type='input_int', default_value=2000)
+        self.min_spacing = self.add_option('min point spacing', widget_type='drag_float', default_value=1.0)
+
+        self.offset_display = self.add_property('offset (uT)', widget_type='text_input', width=160, default_value='')
+        self.radius_display = self.add_property('radius (uT)', widget_type='text_input', width=160, default_value='')
+        self.residual_display = self.add_property('fit residual', widget_type='text_input', width=160, default_value='')
+        self.count_display = self.add_property('samples', widget_type='text_input', width=160, default_value='0')
+
+        self.cloud_out = self.add_output('cloud')
+        self.centered_out = self.add_output('centered cloud')
+        self.center_out = self.add_output('center')
+        self.radius_out = self.add_output('radius')
+        self.residual_out = self.add_output('residual')
+
+        self.points = np.zeros((0, 3))
+        self.center = np.zeros(3)
+        self.radius = 0.0
+        self.residual = 0.0
+
+    def clear(self):
+        self.points = np.zeros((0, 3))
+        self.center = np.zeros(3)
+        self.radius = 0.0
+        self.residual = 0.0
+        self._update_displays()
+        self.send_outputs()
+
+    def execute(self):
+        m = self.mag_in()
+        if m is None:
+            return
+        m = any_to_array(m).reshape(-1)
+        if m.size < 3:
+            return
+        m = m[:3].astype(float)
+        if np.linalg.norm(m) < 1e-6:
+            return
+        spacing = self.min_spacing()
+        if self.points.shape[0] > 0 and spacing > 0:
+            if np.linalg.norm(self.points[-1] - m) < spacing:
+                return
+        self.points = np.vstack([self.points, m])
+        max_points = int(self.max_points())
+        if max_points > 0 and self.points.shape[0] > max_points:
+            self.points = self.points[-max_points:]
+        self.fit_sphere()
+        self._update_displays()
+        self.send_outputs()
+
+    def fit_sphere(self):
+        # Linear least-squares sphere fit. |p - c|^2 = r^2 expands to
+        #   2*c.p + (r^2 - |c|^2) = |p|^2, linear in [cx, cy, cz, k].
+        p = self.points
+        n = p.shape[0]
+        if n < 8:
+            return
+        A = np.hstack([2.0 * p, np.ones((n, 1))])
+        b = np.sum(p * p, axis=1)
+        sol, *_ = np.linalg.lstsq(A, b, rcond=None)
+        c = sol[:3]
+        r2 = sol[3] + c.dot(c)
+        if r2 <= 0:
+            return
+        r = math.sqrt(r2)
+        d = np.linalg.norm(p - c, axis=1) - r
+        self.center = c
+        self.radius = r
+        self.residual = float(np.sqrt(np.mean(d * d)))
+
+    def _update_displays(self):
+        c = self.center
+        self.offset_display.set('%.2f, %.2f, %.2f' % (c[0], c[1], c[2]), propagate=False)
+        self.radius_display.set('%.2f' % self.radius, propagate=False)
+        self.residual_display.set('%.3f' % self.residual, propagate=False)
+        self.count_display.set(str(self.points.shape[0]), propagate=False)
+
+    def send_outputs(self):
+        self.residual_out.send(self.residual)
+        self.radius_out.send(self.radius)
+        self.center_out.send(self.center.copy())
+        self.centered_out.send((self.points - self.center).copy())
+        self.cloud_out.send(self.points.copy())
+
+
 class TargetPoseNode(MoCapNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -3125,7 +3463,14 @@ class SensorToRootNode(MoCapNode):
 
 
 class PoseAdjustmentNode(MoCapNode):
-    """Applies per-joint quaternion adjustments to a 20-joint active pose."""
+    """Applies per-joint quaternion adjustments to a 20-joint active pose.
+
+    By default each non-root joint is pre-multiplied so the correction is in the
+    parent bone's frame; the root (pelvis_anchor) is post-multiplied (body-local).
+    The 'child frame' checkbox switches all non-root joints to post-multiply,
+    applying the correction in the joint's own (child bone) local frame -- useful
+    for fixing a sensor mounted on the child side of the joint.
+    """
 
     JOINT_NAMES = [
         'head', 'neck', 'spine3', 'spine2', 'spine1',
@@ -3143,6 +3488,7 @@ class PoseAdjustmentNode(MoCapNode):
         super().__init__(label, data, args)
 
         self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.child_frame_input = self.add_input('child frame', widget_type='checkbox', default_value=False)
         self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_adjustments)
 
         # 20 quaternion adjustment widgets (wxyz, identity = [1, 0, 0, 0])
@@ -3189,6 +3535,7 @@ class PoseAdjustmentNode(MoCapNode):
         if pose.ndim != 2 or pose.shape[0] != 20 or pose.shape[1] != 4:
             return
 
+        child_frame = bool(self.child_frame_input())
         result = pose.copy()
         for i in range(20):
             adj_val = self.adj_inputs[i]()
@@ -3200,12 +3547,13 @@ class PoseAdjustmentNode(MoCapNode):
             # Skip if identity (optimization)
             if abs(adj_q[0] - 1.0) < 1e-6 and np.linalg.norm(adj_q[1:]) < 1e-6:
                 continue
-            if i == 5:
-                # Root (pelvis_anchor): post-multiply so adjustment is in sensor-local frame
-                # This corrects calibration error that reorients with the body
+            if i == 5 or child_frame:
+                # Post-multiply: adjustment is in the joint's own (child bone)
+                # local frame. For the root (pelvis_anchor) this is the body-local
+                # frame; for other joints it corrects a child-side sensor offset.
                 result[i] = quaternion_multiply_wxyz(result[i], adj_q)
             else:
-                # Child joints: pre-multiply (adjustment in parent frame)
+                # Pre-multiply: adjustment is in the parent bone's frame.
                 result[i] = quaternion_multiply_wxyz(adj_q, result[i])
 
         self.pose_output.send(result.astype(np.float32))

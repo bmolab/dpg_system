@@ -284,6 +284,8 @@ class MGLContextNode(Node):
         self.camera_fov_option = self.add_option('camera_fov', widget_type='drag_float', default_value=60.0)
         self.camera_pos_option = self.add_option('camera_pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], columns=3)
         self.camera_target_option = self.add_option('camera_target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], columns=3)
+        self.camera_near_option = self.add_option('camera_near', widget_type='drag_float', default_value=0.1)
+        self.camera_far_option = self.add_option('camera_far', widget_type='drag_float', default_value=100.0)
 
         self.clear_color_option = self.add_option('clear_color', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0, 1.0], columns=4)
 
@@ -643,7 +645,9 @@ class MGLContextNode(Node):
                 cam_target = _as_vec3(self.camera_target_option(), [0.0, 0.0, 0.0])
                 cam_fov = self.camera_fov_option()
                 aspect = self.width / self.height if self.height > 0 else 1.0
-                self.context.set_projection_matrix(perspective(cam_fov, aspect, 0.1, 100.0))
+                cam_near = self.camera_near_option()
+                cam_far = self.camera_far_option()
+                self.context.set_projection_matrix(perspective(cam_fov, aspect, cam_near, cam_far))
                 self.context.set_view_matrix(look_at(cam_pos, cam_target, [0.0, 1.0, 0.0]))
                 if 'view_pos' in self.context.default_shader:
                     self.context.default_shader['view_pos'].value = tuple(cam_pos)
@@ -3464,6 +3468,8 @@ class MGLCameraNode(MGLNode):
         self.pos = self.add_input('pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], speed=0.1, columns=3)
         self.target = self.add_input('target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], speed=0.1, columns=3)
         self.up = self.add_input('up', widget_type='drag_float_n', default_value=[0.0, 1.0, 0.0], columns=3)
+        self.near = self.add_option('near', widget_type='drag_float', default_value=0.1)
+        self.far = self.add_option('far', widget_type='drag_float', default_value=100.0)
 
     def custom_create(self, from_file):
         dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
@@ -3487,7 +3493,7 @@ class MGLCameraNode(MGLNode):
             # Projection
             aspect = self.ctx.width / self.ctx.height
             if aspect == 0: aspect = 1.0
-            p = perspective(self.fov(), aspect, 0.1, 100.0)
+            p = perspective(self.fov(), aspect, self.near(), self.far())
             self.ctx.set_projection_matrix(p)
 
             # View
@@ -3524,6 +3530,8 @@ class MGLOrbitCameraNode(MGLNode):
         self.distance = self.add_input('distance', widget_type='drag_float', default_value=3.0)
         self.yaw = self.add_input('yaw', widget_type='drag_float', widget_width=50, default_value=0.0)
         self.elevation = self.add_input('elevation', widget_type='drag_float', widget_width=50, default_value=20.0)
+        self.near = self.add_option('near', widget_type='drag_float', default_value=0.1)
+        self.far = self.add_option('far', widget_type='drag_float', default_value=100.0)
 
     def custom_create(self, from_file):
         dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
@@ -3563,7 +3571,7 @@ class MGLOrbitCameraNode(MGLNode):
         aspect = self.ctx.width / self.ctx.height
         if aspect == 0:
             aspect = 1.0
-        p = perspective(fov_val, aspect, 0.1, 100.0)
+        p = perspective(fov_val, aspect, self.near(), self.far())
         self.ctx.set_projection_matrix(p)
 
         # View
