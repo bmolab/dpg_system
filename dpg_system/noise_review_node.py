@@ -25,7 +25,8 @@ class NoiseReviewNode(Node):
         super().__init__(label, data, args)
 
         self.raw_data = []    # list of report dicts from JSON
-        self.issues = []      # flat list of issue dicts
+        self.files = []       # ordered per-file entries: {filepath, filename, assessment, issues}
+        self.positions = []   # flat nav order: (file_idx, issue_idx) with issue_idx == -1 for issue-free files
         self.current_idx = -1
         self.current_filepath = ''
 
@@ -128,7 +129,8 @@ class NoiseReviewNode(Node):
         cls_rank = {'clean': 0, 'moderate': 1, 'problematic': 2}
         min_rank = {'all': 0, 'moderate': 1, 'problematic': 2}.get(self.min_class(), 0)
 
-        issues = []
+        files = []
+        total_issues = 0
         for report in self.raw_data:
             if cls_rank.get(report.get('classification', 'clean'), 0) < min_rank:
                 continue
@@ -139,6 +141,8 @@ class NoiseReviewNode(Node):
             noise_score = report.get('noise_score')
             assessment = self._format_assessment(classification, noise_score)
 
+            file_issues = []
+
             def make_issue(**kw):
                 kw.update(filepath=filepath, filename=filename, assessment=assessment)
                 return kw
@@ -146,7 +150,7 @@ class NoiseReviewNode(Node):
             if show_breaks:
                 for sb in report.get('stream_breaks', []):
                     f = sb.get('frame', 0)
-                    issues.append(make_issue(
+                    file_issues.append(make_issue(
                         type='stream_break', frame=f, end_frame=f,
                         desc=(f"stream break  frame={f}"
                               f"  type={sb.get('break_type','')}"
@@ -158,7 +162,7 @@ class NoiseReviewNode(Node):
                 for z in excision.get('zones', []):
                     s, e = z.get('start', 0), z.get('end', 0)
                     joints = ', '.join((z.get('joints') or [])[:3])
-                    issues.append(make_issue(
+                    file_issues.append(make_issue(
                         type='corruption_zone', frame=s, end_frame=e,
                         desc=(f"corruption  [{s}–{e}]"
                               f"  {z.get('duration_s', 0):.1f}s"
@@ -172,7 +176,7 @@ class NoiseReviewNode(Node):
                     by_frame.setdefault(f, []).append(
                         f"{sf.get('joint_name','')} {sf.get('velocity', 0):.0f}r/s ×{sf.get('neighbor_ratio', 0):.1f}")
                 for f, entries in sorted(by_frame.items()):
-                    issues.append(make_issue(
+                    file_issues.append(make_issue(
                         type='spike_frame', frame=f, end_frame=f,
                         desc=f"spike  frame={f}  {', '.join(entries[:4])}"))
 
@@ -181,115 +185,148 @@ class NoiseReviewNode(Node):
                     if not (isinstance(cluster, (list, tuple)) and len(cluster) >= 2):
                         continue
                     s, e = int(cluster[0]), int(cluster[1])
-                    issues.append(make_issue(
+                    file_issues.append(make_issue(
                         type='glitch_cluster', frame=s, end_frame=e,
                         desc=f"glitch  [{s}–{e}]  {e - s + 1} frames"))
 
             if show_clean:
                 for seg in report.get('clean_segments', []):
                     s, e = seg.get('start', 0), seg.get('end', 0)
-                    issues.append(make_issue(
+                    file_issues.append(make_issue(
                         type='clean_section', frame=s, end_frame=e,
                         desc=(f"clean  [{s}–{e}]"
                               f"  {seg.get('duration_s', 0):.1f}s"
                               f"  {seg.get('n_frames', e - s + 1)} frames"
                               f"  mean={seg.get('mean_score', 0):.2f} max={seg.get('max_score', 0):.2f}")))
 
-        self.issues = issues
-        self.current_idx = 0 if issues else -1
-        total = len(issues)
-        self.counter_label.set(f'0 / {total}')
+            files.append({
+                'filepath': filepath,
+                'filename': filename,
+                'assessment': assessment,
+                'issues': file_issues,
+            })
+            total_issues += len(file_issues)
+
+        # Flat navigation order: one stop per issue, plus a standalone stop for
+        # any file with no flagged issues of the selected kinds, so Prev/Next
+        # File still visits it (showing 0 / 0 issues alongside its rating).
+        positions = []
+        for fi, fentry in enumerate(files):
+            if fentry['issues']:
+                positions.extend((fi, ii) for ii in range(len(fentry['issues'])))
+            else:
+                positions.append((fi, -1))
+
+        self.files = files
+        self.positions = positions
+        self.current_idx = 0 if positions else -1
+        self.counter_label.set('— / —')
         self.file_label.set('')
         self.assessment_label.set('')
         self.issue_label.set('')
         self.section_input.set(0, propagate=False)
-        print(f'NoiseReviewNode: {total} issues built from {len(self.raw_data)} reports')
+        print(f'NoiseReviewNode: {len(files)} files, {total_issues} issues '
+              f'built from {len(self.raw_data)} reports')
 
     # ── Navigation ────────────────────────────────────────────────────────
 
     def go_next(self):
-        if not self.issues:
-            print('NoiseReviewNode: no issues loaded')
+        if not self.positions:
+            print('NoiseReviewNode: no files loaded')
             return
-        self.current_idx = (self.current_idx + 1) % len(self.issues)
+        self.current_idx = (self.current_idx + 1) % len(self.positions)
         self._emit_current()
 
     def go_prev(self):
-        if not self.issues:
+        if not self.positions:
             return
-        self.current_idx = (self.current_idx - 1) % len(self.issues)
+        self.current_idx = (self.current_idx - 1) % len(self.positions)
         self._emit_current()
 
     def go_next_file(self):
-        if not self.issues:
+        if not self.positions:
             return
-        cur = self.issues[self.current_idx]['filepath']
-        n = len(self.issues)
-        # walk forward to the first issue whose file differs, wrapping around
+        cur_file = self.positions[self.current_idx][0]
+        n = len(self.positions)
+        # walk forward to the first stop whose file differs, wrapping around;
+        # because each file's stops are contiguous, this lands on the file's
+        # first stop (its first issue, or its lone issue-free stop)
         for step in range(1, n + 1):
             idx = (self.current_idx + step) % n
-            if self.issues[idx]['filepath'] != cur:
+            if self.positions[idx][0] != cur_file:
                 self.current_idx = idx
                 self._emit_current()
                 return
 
     def go_prev_file(self):
-        if not self.issues:
+        if not self.positions:
             return
-        cur = self.issues[self.current_idx]['filepath']
-        n = len(self.issues)
-        # find the previous file, then back up to its first issue
+        cur_file = self.positions[self.current_idx][0]
+        n = len(self.positions)
+        # find a stop belonging to the previous file, wrapping around
         prev_file = None
-        prev_idx = self.current_idx
         for step in range(1, n + 1):
             idx = (self.current_idx - step) % n
-            if self.issues[idx]['filepath'] != cur:
-                prev_file = self.issues[idx]['filepath']
-                prev_idx = idx
+            if self.positions[idx][0] != cur_file:
+                prev_file = self.positions[idx][0]
                 break
         if prev_file is None:
             return
-        # prev_idx is the last issue of prev_file; rewind to its first issue
-        while True:
-            back = (prev_idx - 1) % n
-            if back == self.current_idx or self.issues[back]['filepath'] != prev_file:
-                break
-            prev_idx = back
-        self.current_idx = prev_idx
+        # rewind to that file's first stop (stops are contiguous per file)
+        self.current_idx = next(i for i, p in enumerate(self.positions) if p[0] == prev_file)
         self._emit_current()
 
     def jump_to_section(self):
-        if not self.issues:
+        if not self.positions:
             return
         n = int(self.section_input())
-        total = len(self.issues)
+        total = len(self.positions)
         n = max(1, min(total, n))
         self.current_idx = n - 1
         self._emit_current()
 
     def _emit_current(self):
-        issue  = self.issues[self.current_idx]
-        n      = self.current_idx + 1
-        total  = len(self.issues)
+        file_idx, issue_idx = self.positions[self.current_idx]
+        fentry  = self.files[file_idx]
+        n_files = len(self.files)
+        ni      = len(fentry['issues'])
+
+        if issue_idx >= 0:
+            issue     = fentry['issues'][issue_idx]
+            desc      = issue['desc']
+            frame     = issue['frame']
+            end_frame = issue['end_frame']
+            itype     = issue['type']
+            issue_count = f'{issue_idx + 1} / {ni}'
+        else:
+            issue     = None
+            desc      = '(no flagged issues of the selected kinds)'
+            frame     = 0
+            end_frame = 0
+            itype     = None
+            issue_count = '0 / 0'
 
         # Labels
-        self.counter_label.set(f'{n} / {total}')
-        self.file_label.set(issue['filename'])
-        self.assessment_label.set(issue['assessment'])
-        self.issue_label.set(issue['desc'])
-        self.section_input.set(n, propagate=False)
+        self.counter_label.set(f'file {file_idx + 1}/{n_files}   issue {issue_count}')
+        self.file_label.set(fentry['filename'])
+        self.assessment_label.set(fentry['assessment'])
+        self.issue_label.set(desc)
+        self.section_input.set(self.current_idx + 1, propagate=False)
 
         # Console — flag file changes clearly
-        if issue['filepath'] != self.current_filepath:
-            print(f'\n  ── {issue["filename"]} ──')
-            self.current_filepath = issue['filepath']
-        print(f'  [{n}/{total}] {issue["desc"]}')
-        if issue['type'] in ('corruption_zone', 'glitch_cluster', 'clean_section') and issue['end_frame'] != issue['frame']:
-            print(f'         end frame: {issue["end_frame"]}')
+        if fentry['filepath'] != self.current_filepath:
+            print(f'\n  ── {fentry["filename"]} ──  {fentry["assessment"]}')
+            self.current_filepath = fentry['filepath']
+        if issue is not None:
+            print(f'  [{issue_idx + 1}/{ni}] {desc}')
+            if itype in ('corruption_zone', 'glitch_cluster', 'clean_section') and end_frame != frame:
+                print(f'         end frame: {end_frame}')
+        else:
+            print(f'  {desc}')
 
         # Send outputs — path first so OpenTakeNode loads before seeking;
         # bang last so downstream knows all values are settled.
-        self.path_out.send(issue['filepath'])
-        self.end_frame_out.send(issue['end_frame'])
-        self.frame_out.send(issue['frame'])
+        self.path_out.send(fentry['filepath'])
+        self.end_frame_out.send(end_frame)
+        self.frame_out.send(frame)
         self.bang_out.send('bang')

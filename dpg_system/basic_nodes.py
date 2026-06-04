@@ -2125,8 +2125,16 @@ class TypeNode(Node):
         # If label is 'type', we want brief info. If 'info', we want detailed info.
         is_detailed = (self.label != 'type')
 
-        type_string = print_info(input_)
-        self.type_property.set(type_string)
+        # print_info() returns a (type, value) tuple — unpack it. Setting the
+        # whole tuple into the text widget would stringify it via
+        # any_to_string()/list_to_string(), whose ' '.join(s.split()) collapses
+        # runs of spaces and corrupts e.g. file paths with double spaces.
+        # Setting a plain string preserves internal whitespace.
+        type_string, value_string = print_info(input_)
+        if is_detailed and value_string != '':
+            self.type_property.set(f'{type_string}: {value_string}')
+        else:
+            self.type_property.set(type_string)
 
 
 class LengthNode(Node):

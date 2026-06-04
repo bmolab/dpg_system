@@ -33,10 +33,10 @@ def display_file_name(path, max_len=28):
     name = os.path.splitext(os.path.basename(path))[0]
     if len(name) <= max_len:
         return name
-    keep = max_len - 1  # room for the ellipsis
+    keep = max_len - 3  # room for the '...' ellipsis
     head = (keep + 1) // 2
     tail = keep // 2
-    return name[:head] + '…' + name[-tail:]
+    return name[:head] + '...' + name[-tail:]
 
 
 def register_motion_cap_nodes():
