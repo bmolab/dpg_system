@@ -2328,13 +2328,19 @@ def shadow_sensor_service_loop():
 
 
 class ShadowSensorNode(MoCapNode):
-    # Raw un-filtered sensor access from the Shadow Configurable service.
+    # Per-sensor signal access from the Shadow Configurable service (port 32076).
     # Where the `shadow` node requests <Lq/><c/> (orientation + position) for
-    # motion capture, this node requests the sensor channels:
-    #   <a/> accelerometer (g), <m/> magnetometer (uT), <g/> gyroscope (deg/s)
-    # giving 9 floats per node: [ax, ay, az, mx, my, mz, gx, gy, gz].
-    # It opens its own connection so the capture node stays untouched, and is
-    # the foundation for accessing any raw sensor stream from the suit.
+    # motion capture, this node requests the per-sensor channels, selectable via
+    # the 'data' dropdown:
+    #   'a / m / g'           -> <a/><m/><g/>  (the original explicit request)
+    #   'sensor (calibrated)' -> <sensor/>     suit-calibrated (bias/scale
+    #                                          corrected; should centre on the
+    #                                          origin at Earth-field magnitude)
+    #   'raw'                 -> <raw/>         uncalibrated integer counts
+    # All three deliver 9 values per node in [ax, ay, az, mx, my, mz, gx, gy, gz]
+    # order. Reading both calibrated and raw lets us check whether the suit's own
+    # magnetometer calibration removes the hard-iron offsets we measured.
+    # It opens its own connection so the capture node stays untouched.
     sensor_nodes = []
     _service_thread = None
 
@@ -2362,24 +2368,34 @@ class ShadowSensorNode(MoCapNode):
         # reads ~1 g (gravity); derived/virtual joints read ~0. Used to list
         # only physical sensors in the dropdown.
         self.accel_seen = np.zeros((4, 37))
+        # In raw mode the accelerometer is an integer count (no ~1 g cue), so
+        # presence is tracked by any non-zero sensor reading instead.
+        self.data_seen = np.zeros((4, 37), dtype=bool)
 
         self.joints_mapped = False
         self.jointMap = [[0, 0]] * 37 * 4
 
-        self._xml_definition = \
-            "<?xml version=\"1.0\"?>" \
-            "<configurable inactive=\"1\">" \
-            "<a/>" \
-            "<m/>" \
-            "<g/>" \
-            "</configurable>"
+        # Selectable Configurable channel sets (see class comment). Each yields
+        # 9 values per key in [a, m, g] order, so the value(0..8) unpacking in
+        # receive_data is identical for all three. Default to the original
+        # '<a/><m/><g/>' request so existing behaviour is unchanged.
+        self._data_modes = {
+            'a / m / g': "<a/><m/><g/>",
+            'sensor (calibrated)': "<sensor/>",
+            'raw': "<raw/>",
+        }
+        self._data_mode = 'a / m / g'
+        self._raw_mode = False
+        self._xml_definition = self._build_xml()
         self._reconnect_requested = False
 
         if self.client:
             if self.client.writeData(self._xml_definition):
-                print("shadow_sensor: sent sensor channel definition (a, m, g)")
+                print(f"shadow_sensor: sent '{self._data_mode}' channel definition")
 
         self.body_index = self.add_property('body', widget_type='input_int', default_value=0, callback=self.selection_changed)
+        self.data_mode_property = self.add_property('data', widget_type='combo', default_value=self._data_mode, callback=self.change_data_mode)
+        self.data_mode_property.widget.combo_items = list(self._data_modes.keys())
         self.sensor_property = self.add_property('sensor', widget_type='combo', default_value='<waiting for device>', callback=self.selection_changed)
         self.sensor_property.widget.combo_items = ['<waiting for device>']
         self.reconnect_button = self.add_input('reconnect', widget_type='button', callback=self.request_reconnect)
@@ -2407,6 +2423,25 @@ class ShadowSensorNode(MoCapNode):
         # Defer the socket op to the service thread to avoid racing readData().
         self._reconnect_requested = True
 
+    def _build_xml(self):
+        channels = self._data_modes.get(self._data_mode, "<a/><m/><g/>")
+        return (
+            "<?xml version=\"1.0\"?>"
+            "<configurable inactive=\"1\">"
+            f"{channels}"
+            "</configurable>"
+        )
+
+    def change_data_mode(self):
+        # Switching the channel set requires re-sending the channel definition.
+        # Defer to the service thread (reconnect) so we don't race readData();
+        # the reconnect also clears the joint map / presence so the dropdown
+        # rebuilds for the new stream.
+        self._data_mode = self.data_mode_property()
+        self._raw_mode = (self._data_mode == 'raw')
+        self._xml_definition = self._build_xml()
+        self._reconnect_requested = True
+
     def _perform_reconnect(self):
         try:
             if self.client is not None:
@@ -2419,8 +2454,10 @@ class ShadowSensorNode(MoCapNode):
             self.joints_mapped = False
             self.jointMap = [[0, 0]] * 37 * 4
             self.accel_seen[:] = 0.0
+            self.data_seen[:] = False
+            self._xml_definition = self._build_xml()
             if self.client.writeData(self._xml_definition):
-                print("shadow_sensor: reconnected, re-sent sensor channel definition")
+                print(f"shadow_sensor: reconnected, sent '{self._data_mode}' channel definition")
         except Exception as e:
             print(f"shadow_sensor: reconnect failed: {e}")
             self.client = None
@@ -2462,6 +2499,8 @@ class ShadowSensorNode(MoCapNode):
                             a_mag = math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
                             if a_mag > self.accel_seen[body_index, master_key]:
                                 self.accel_seen[body_index, master_key] = a_mag
+                            if a_mag != 0.0 or np.any(self.mag[body_index, master_key] != 0.0):
+                                self.data_seen[body_index, master_key] = True
                     self.new_data = True
                     lock = None
 
@@ -2493,7 +2532,14 @@ class ShadowSensorNode(MoCapNode):
     def _update_available_sensors(self):
         present = []
         for master_key in range(37):
-            if np.any(self.accel_seen[:, master_key] > 0.2):
+            if self._raw_mode:
+                # Raw accel is an integer count, not g — fall back to any
+                # reporting sensor; virtual joints stay all-zero and drop out.
+                visible = np.any(self.data_seen[:, master_key])
+            else:
+                # Physical IMUs read ~1 g; virtual/derived joints read ~0.
+                visible = np.any(self.accel_seen[:, master_key] > 0.2)
+            if visible:
                 present.append(JointTranslator.shadow_joint_index_to_name[master_key])
         if present and present != self.available_sensors:
             self.available_sensors = present
