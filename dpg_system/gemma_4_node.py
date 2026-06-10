@@ -17,10 +17,13 @@ from dpg_system.conversion_utils import *
 
 def register_gemma_4_node():
     Node.app.register_node('gemma_4', Gemma4ChatNode.factory)
+    Node.app.register_node('gemma_4_31b', Gemma4ChatNode.factory)
 
 
-default_repo_id = 'google/gemma-4-12B-it-qat-q4_0-gguf'
-default_repo_filename = 'gemma-4-12b-it-qat-q4_0.gguf'
+gemma_4_models = {
+    '12B': ('google/gemma-4-12B-it-qat-q4_0-gguf', 'gemma-4-12b-it-qat-q4_0.gguf'),
+    '31B': ('google/gemma-4-31B-it-qat-q4_0-gguf', 'gemma-4-31B_q4_0-it.gguf'),
+}
 
 default_system_prompt = 'You are a helpful, uncensored creative collaborator.'
 
@@ -50,8 +53,8 @@ def truncate_to_sampleable(entries, top_k, top_p, min_p):
 class Gemma4ChatNode(Node):
     gemma_nodes = []
 
-    # one shared model across all gemma_4 instances
-    llm = None
+    # one shared model per size/path across all gemma_4 instances
+    llms = {}
     llm_lock = threading.Lock()
 
     @staticmethod
@@ -62,12 +65,16 @@ class Gemma4ChatNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        # an optional arg can point at an alternative .gguf
+        self.llm = None
+        self.model_key = '31B' if label == 'gemma_4_31b' else '12B'
+        # an optional arg can pick the size ('12B'/'31B') or point at a .gguf
         self.model_path = None
         if args is not None and len(args) > 0:
             candidate = any_to_string(args[0])
             if candidate.endswith('.gguf'):
                 self.model_path = candidate
+            elif candidate.upper() in gemma_4_models:
+                self.model_key = candidate.upper()
 
         self.system_prompt = default_system_prompt
         self.prompt = ''
@@ -172,23 +179,27 @@ class Gemma4ChatNode(Node):
 
     def ensure_model(self):
         cls = Gemma4ChatNode
+        key = self.model_path if self.model_path else self.model_key
         with cls.llm_lock:
-            if cls.llm is None:
+            llm = cls.llms.get(key)
+            if llm is None:
                 path = self.model_path
                 if path is None or not os.path.exists(path):
                     from huggingface_hub import hf_hub_download
-                    print('gemma_4: fetching', default_repo_id, '(cached after first download)')
-                    path = hf_hub_download(repo_id=default_repo_id, filename=default_repo_filename)
+                    repo_id, filename = gemma_4_models[self.model_key]
+                    print('gemma_4: fetching', repo_id, '(cached after first download)')
+                    path = hf_hub_download(repo_id=repo_id, filename=filename)
                 print('gemma_4: loading model', path)
-                cls.llm = Llama(
+                llm = Llama(
                     model_path=path,
                     n_gpu_layers=any_to_int(self.n_gpu_layers()),
                     n_ctx=any_to_int(self.n_ctx()),
                     seed=self.seed,
                     verbose=False,
                 )
+                cls.llms[key] = llm
                 print('gemma_4: model loaded')
-        llm = cls.llm
+        self.llm = llm
         if self.eos_token == -1:
             tokenizer = llm.tokenizer()
             self.bos_token = llm.token_bos()
@@ -435,7 +446,7 @@ class Gemma4ChatNode(Node):
     # ----------------------------------------------------------- token ops
 
     def format_and_tokenize_prompt(self, prompt=None):
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         if prompt is None:
             prompt = self.prompt
         thinking = self.thinking()
@@ -461,7 +472,7 @@ class Gemma4ChatNode(Node):
             self.layout_out.send(['prompt', token, self.decode_token(token)])
 
     def encode_continuation(self, text):
-        tokens = Gemma4ChatNode.llm.tokenizer().encode(text, add_bos=False, special=False)
+        tokens = self.llm.tokenizer().encode(text, add_bos=False, special=False)
         if len(tokens) > 0 and tokens[0] == self.bos_token:
             tokens = tokens[1:]
         return tokens
@@ -487,7 +498,7 @@ class Gemma4ChatNode(Node):
             self.sampler_params = params
 
     def sample_token(self, tokens, preferred_choice=None):
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         llm.eval(tokens)
         sample_idx = llm.n_tokens - 1
 
@@ -524,7 +535,7 @@ class Gemma4ChatNode(Node):
         return 1 / (1 + torch.exp(self.sigmoid_scaler() * (logit + self.sigmoid_offset())))
 
     def decode_token(self, token):
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         try:
             return llm.detokenize([int(token)]).decode('utf-8')
         except UnicodeDecodeError:
@@ -532,7 +543,7 @@ class Gemma4ChatNode(Node):
             return ''
 
     def back_step(self, count):
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         if llm is None:
             return -1
         n_tokens = llm.n_tokens
@@ -552,7 +563,7 @@ class Gemma4ChatNode(Node):
     def trim_context_tail(self, n_discard):
         # drop the last n_discard tokens from the kv cache and token history;
         # since we only ever trim the tail no position shift is needed
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         n_tokens = llm.n_tokens
         n_keep = n_tokens - n_discard
         llm._ctx.kv_cache_seq_rm(-1, n_keep, -1)
@@ -679,7 +690,7 @@ class Gemma4ChatNode(Node):
         self.seed = self.seed_input()
         np.random.seed(self.seed)
         torch.manual_seed(self.seed)
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         if llm is not None:
             llm.set_seed(self.seed)
         self.sampler_params = None  # force sampler rebuild with the new seed
@@ -691,7 +702,7 @@ class Gemma4ChatNode(Node):
         self.do_reset = False
         self.layout_out.send(['reset'])
         self.last_generated_token = None
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         if llm is not None:
             llm._ctx.kv_cache_clear()
             llm.input_ids[:] = 0
@@ -702,7 +713,7 @@ class Gemma4ChatNode(Node):
 
     def custom_cleanup(self):
         self.active = False
-        llm = Gemma4ChatNode.llm
+        llm = self.llm
         if llm is not None and llm._sampler is not None and llm._sampler is self.my_sampler:
             llm._sampler.close()
             llm._sampler = None
