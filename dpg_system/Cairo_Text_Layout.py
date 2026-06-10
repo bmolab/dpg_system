@@ -243,7 +243,7 @@ class LLMLayout:
                     if previous_end[0] + advance > self.frame[0] + self.frame[2]:
                         self.layout[-1][0][0] = 0
                         self.layout[-1][0][1] += self.leading
-                        element[0] = previous_end.copy()
+                        element[0] = [previous_extents.x_advance, self.layout[-1][0][1]]
                         wrapped = True
             elif element[0][0] + advance > self.frame[0] + self.frame[2]:
                 element[0] = [0, element[0][1] + self.leading]
@@ -719,7 +719,7 @@ class CairoTextLayout:
                         if previous_end[0] + advance > self.frame[0] + self.frame[2]:
                             self.layout[-1][0][0] = 0
                             self.layout[-1][0][1] += self.leading
-                            element[0] = previous_end.copy()
+                            element[0] = [previous_extents.x_advance, self.layout[-1][0][1]]
                             wrapped = True
             elif element[0][0] + advance > self.frame[0] + self.frame[2]:
                 if self.wrap_text:
