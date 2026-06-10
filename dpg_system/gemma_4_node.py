@@ -20,9 +20,10 @@ def register_gemma_4_node():
     Node.app.register_node('gemma_4_31b', Gemma4ChatNode.factory)
 
 
+# repo, filename, default n_ctx (31B + 4096 ctx exceeds 32GB M1 Max Metal memory)
 gemma_4_models = {
-    '12B': ('google/gemma-4-12B-it-qat-q4_0-gguf', 'gemma-4-12b-it-qat-q4_0.gguf'),
-    '31B': ('google/gemma-4-31B-it-qat-q4_0-gguf', 'gemma-4-31B_q4_0-it.gguf'),
+    '12B': ('google/gemma-4-12B-it-qat-q4_0-gguf', 'gemma-4-12b-it-qat-q4_0.gguf', 8192),
+    '31B': ('google/gemma-4-31B-it-qat-q4_0-gguf', 'gemma-4-31B_q4_0-it.gguf', 2048),
 }
 
 default_system_prompt = 'You are a helpful, uncensored creative collaborator.'
@@ -131,7 +132,8 @@ class Gemma4ChatNode(Node):
         self.show_probs = self.add_input('show_probs', widget_type='checkbox', default_value=False, callback=self.show_probs_changed)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_text)
 
-        self.n_ctx = self.add_option('n_ctx', widget_type='drag_int', default_value=8192)
+        default_ctx = gemma_4_models[self.model_key][2] if self.model_path is None else 8192
+        self.n_ctx = self.add_option('n_ctx', widget_type='drag_int', default_value=default_ctx)
         self.n_gpu_layers = self.add_option('n_gpu_layers', widget_type='drag_int', default_value=-1)
         self.thinking = self.add_option('thinking', widget_type='checkbox', default_value=False,
                                         callback=self.thinking_changed)
@@ -186,7 +188,7 @@ class Gemma4ChatNode(Node):
                 path = self.model_path
                 if path is None or not os.path.exists(path):
                     from huggingface_hub import hf_hub_download
-                    repo_id, filename = gemma_4_models[self.model_key]
+                    repo_id, filename = gemma_4_models[self.model_key][:2]
                     print('gemma_4: fetching', repo_id, '(cached after first download)')
                     path = hf_hub_download(repo_id=repo_id, filename=filename)
                 print('gemma_4: loading model', path)
@@ -194,6 +196,7 @@ class Gemma4ChatNode(Node):
                     model_path=path,
                     n_gpu_layers=any_to_int(self.n_gpu_layers()),
                     n_ctx=any_to_int(self.n_ctx()),
+                    flash_attn=True,
                     seed=self.seed,
                     verbose=False,
                 )
@@ -423,6 +426,9 @@ class Gemma4ChatNode(Node):
 
         except Exception as e:
             print('gemma_4:', e)
+            if 'returned -3' in str(e):
+                print('gemma_4: llama_decode -3 usually means Metal ran out of memory'
+                      ' — reduce n_ctx or close other GPU-heavy apps')
         self.active = False
         self.active_out.send(self.active)
         sys.exit()
