@@ -1,5 +1,6 @@
 
 import sys
+import time
 import ctypes
 import ctypes.util
 import moderngl
@@ -87,6 +88,58 @@ def _glfw():
     return _GLFW_LIB
 
 
+# ---------------------------------------------------------------------------
+# UI event capture — shared helpers for MGLNativeWindow / MGLDisplayWindow.
+#
+# Both window classes queue events into self.ui_events; MGLContextNode drains
+# the queue once per execute() and forwards each event out its 'ui' output.
+# Key codes are normalized to match gl_context's ui output (GLFW key codes,
+# with the same shift/case mapping), so patches behave identically whether
+# they listen to a gl_context or an mgl_context.
+# ---------------------------------------------------------------------------
+
+_UI_EVENT_QUEUE_MAX = 256
+
+_GLFW_KEY_ESCAPE = 256
+
+# same shifted-punctuation map gl_context uses
+_SHIFTED_KEYS = {
+    '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&',
+    '8': '*', '9': '(', '0': ')', '`': '~', '-': '_', '=': '+', '[': '{',
+    ']': '}', '\\': '|', ';': ':', "'": '"', ',': '<', '.': '>', '/': '?',
+}
+
+
+def _char_code_with_shift(char, shift):
+    """gl_context's shift/case mapping: return the code of the character
+    actually typed, given the unshifted key character (either case)."""
+    if shift:
+        if 'a' <= char <= 'z':
+            return ord(char.upper())
+        return ord(_SHIFTED_KEYS.get(char, char))
+    if 'A' <= char <= 'Z':
+        return ord(char.lower())
+    return ord(char)
+
+
+if _HAS_PYGLET:
+    from pyglet.window import key as _pkey, mouse as _pmouse
+
+    # pyglet key symbols → GLFW key codes for the common non-printing keys
+    _PYGLET_TO_GLFW_KEY = {
+        _pkey.ESCAPE: 256, _pkey.ENTER: 257, _pkey.TAB: 258,
+        _pkey.BACKSPACE: 259, _pkey.INSERT: 260, _pkey.DELETE: 261,
+        _pkey.RIGHT: 262, _pkey.LEFT: 263, _pkey.DOWN: 264, _pkey.UP: 265,
+        _pkey.PAGEUP: 266, _pkey.PAGEDOWN: 267, _pkey.HOME: 268,
+        _pkey.END: 269,
+    }
+    for _i in range(12):
+        _PYGLET_TO_GLFW_KEY[getattr(_pkey, 'F%d' % (_i + 1))] = 290 + _i
+
+    # pyglet button constants are a bitmask; GLFW numbers 0=left 1=right 2=middle
+    _PYGLET_TO_GLFW_BUTTON = {_pmouse.LEFT: 0, _pmouse.RIGHT: 1, _pmouse.MIDDLE: 2}
+
+
 class MGLNativeWindow:
     """A second GLFW window that shares DPG's GL context.
 
@@ -105,6 +158,16 @@ class MGLNativeWindow:
     _GLFW_DOUBLEBUFFER     = 0x00021010
     _GLFW_RESIZABLE        = 0x00020003
 
+    # callback signatures for UI event capture
+    _KEY_CB_TYPE = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int)
+    _MOUSE_BTN_CB_TYPE = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_int,
+                                          ctypes.c_int, ctypes.c_int)
+    _CURSOR_CB_TYPE = ctypes.CFUNCTYPE(None, ctypes.c_void_p,
+                                       ctypes.c_double, ctypes.c_double)
+    _SCROLL_CB_TYPE = ctypes.CFUNCTYPE(None, ctypes.c_void_p,
+                                       ctypes.c_double, ctypes.c_double)
+
     def __init__(self, dpg_glfw_win):
         """
         dpg_glfw_win: raw void* handle of DPG's GLFW window
@@ -116,6 +179,9 @@ class MGLNativeWindow:
         self._blit_prog = None
         self._blit_vao  = None
         self._visible = False
+        self.ui_events = []             # drained by the owning MGLContextNode
+        self._buttons_down = set()
+        self._last_cursor = (0, 0)
 
         gfw = _glfw()
         if gfw is None:
@@ -162,6 +228,8 @@ class MGLNativeWindow:
             print('[MGLNativeWindow] glfwCreateWindow failed (all attempts)')
             return
 
+        self._install_event_callbacks(gfw)
+
         # Make our window current to compile blit shader
         gfw.glfwMakeContextCurrent.argtypes = [ctypes.c_void_p]
         gfw.glfwMakeContextCurrent(self._win)
@@ -200,6 +268,58 @@ class MGLNativeWindow:
         # Return context to DPG
         gfw.glfwMakeContextCurrent(self._dpg_win)
 
+    def _install_event_callbacks(self, gfw):
+        # The CFUNCTYPE wrappers must outlive the window: GLFW keeps only the
+        # raw pointer, and a GC'd wrapper means a segfault on the next event.
+        self._key_cb = self._KEY_CB_TYPE(self._on_glfw_key)
+        self._mouse_btn_cb = self._MOUSE_BTN_CB_TYPE(self._on_glfw_mouse_button)
+        self._cursor_cb = self._CURSOR_CB_TYPE(self._on_glfw_cursor)
+        self._scroll_cb = self._SCROLL_CB_TYPE(self._on_glfw_scroll)
+        try:
+            for name, cb_type, cb in (
+                    ('glfwSetKeyCallback', self._KEY_CB_TYPE, self._key_cb),
+                    ('glfwSetMouseButtonCallback', self._MOUSE_BTN_CB_TYPE, self._mouse_btn_cb),
+                    ('glfwSetCursorPosCallback', self._CURSOR_CB_TYPE, self._cursor_cb),
+                    ('glfwSetScrollCallback', self._SCROLL_CB_TYPE, self._scroll_cb)):
+                fn = getattr(gfw, name)
+                fn.argtypes = [ctypes.c_void_p, cb_type]
+                fn(self._win, cb)
+        except Exception as e:
+            print(f'[MGLNativeWindow] event callback setup failed: {e}')
+
+    def _push_ui_event(self, event):
+        if len(self.ui_events) < _UI_EVENT_QUEUE_MAX:
+            self.ui_events.append(event)
+
+    def _on_glfw_key(self, win, key, scancode, action, mods):
+        if action not in (1, 2):  # GLFW_PRESS or GLFW_REPEAT
+            return
+        if 32 <= key < 127:
+            code = _char_code_with_shift(chr(key), bool(mods & 1))
+        else:
+            code = key
+        self._push_ui_event(['key', code])
+
+    def _on_glfw_mouse_button(self, win, button, action, mods):
+        x, y = self._last_cursor
+        if action == 1:
+            self._buttons_down.add(button)
+            self._push_ui_event(['mouse_down', x, y, button])
+        else:
+            self._buttons_down.discard(button)
+            self._push_ui_event(['mouse_up', x, y, button])
+
+    def _on_glfw_cursor(self, win, x, y):
+        x, y = int(x), int(y)
+        self._last_cursor = (x, y)
+        if self._buttons_down:
+            self._push_ui_event(['mouse_drag', x, y, min(self._buttons_down)])
+        else:
+            self._push_ui_event(['mouse_move', x, y])
+
+    def _on_glfw_scroll(self, win, dx, dy):
+        self._push_ui_event(['scroll', float(dx), float(dy)])
+
     @property
     def available(self):
         return self._win is not None and self._blit_vao is not None
@@ -228,6 +348,8 @@ class MGLNativeWindow:
         gfw.glfwHideWindow.argtypes = [ctypes.c_void_p]
         gfw.glfwHideWindow(self._win)
         self._visible = False
+        self._buttons_down.clear()
+        self.ui_events = []
 
     def set_pos(self, x, y):
         if not self._win:
@@ -370,6 +492,27 @@ class MGLDisplayWindow:
         self._blit_vao = None
         self._visible = False
         self._fullscreen = False
+        self.ui_events = []   # drained by the owning MGLContextNode
+        self._focused = False
+
+        # Synthetic key repeat: pyglet's Cocoa view drops repeat keyDown
+        # events (isARepeat) and nothing else surfaces them, so we re-emit
+        # the held key ourselves from poll_repeats(), called by the node
+        # each frame. Use the OS repeat timing when we can get it.
+        self._held_key_symbol = None
+        self._held_key_code = None
+        self._repeat_next_time = 0.0
+        self._repeat_delay, self._repeat_interval = 0.5, 0.085
+        if sys.platform == 'darwin':
+            try:
+                from pyglet.libs.darwin.cocoapy import ObjCClass as _ObjCClass
+                _NSEvent = _ObjCClass('NSEvent')
+                delay = float(_NSEvent.keyRepeatDelay())
+                interval = float(_NSEvent.keyRepeatInterval())
+                if 0.05 <= delay <= 2.0 and 0.01 <= interval <= 1.0:
+                    self._repeat_delay, self._repeat_interval = delay, interval
+            except Exception:
+                pass
 
         if not _HAS_PYGLET or master._pyglet_window is None:
             return
@@ -392,6 +535,27 @@ class MGLDisplayWindow:
             self._win = pyglet.window.Window(
                 width=1, height=1, visible=False, resizable=True,
                 context=shared_pg_ctx, caption='MGL Output')
+
+            # Capture UI events from this window. Cocoa/Win32 deliver input
+            # straight to the focused window's view even though DPG owns the
+            # event pump — BUT with no pyglet EventLoop running, BaseWindow
+            # queues every event into _event_queue instead of dispatching it,
+            # and nothing ever drains that queue. Disable the queue so events
+            # dispatch to our handlers at delivery time (they only append to
+            # a Python list, so this is safe inside DPG's pump).
+            self._win._enable_event_queue = False
+            self._win.push_handlers(
+                on_activate=self._on_activate,
+                on_deactivate=self._on_deactivate,
+                on_key_press=self._on_key_press,
+                on_key_release=self._on_key_release,
+                on_mouse_press=self._on_mouse_press,
+                on_mouse_release=self._on_mouse_release,
+                on_mouse_motion=self._on_mouse_motion,
+                on_mouse_drag=self._on_mouse_drag,
+                on_mouse_scroll=self._on_mouse_scroll,
+                on_close=self._on_close,
+            )
 
             # Build the blit shader + VAO on OUR context. Programs/buffers
             # built here live in the shared group; the VAO does not, so we
@@ -426,6 +590,105 @@ class MGLDisplayWindow:
                     master._pyglet_window.switch_to()
                 except Exception:
                     pass
+
+    def _push_ui_event(self, event):
+        if len(self.ui_events) < _UI_EVENT_QUEUE_MAX:
+            self.ui_events.append(event)
+
+    def _mouse_xy(self, x, y):
+        # pyglet's origin is bottom-left; ui output uses top-left like GLFW
+        try:
+            h = self._win.get_size()[1]
+        except Exception:
+            return int(x), int(y)
+        return int(x), int(h - y)
+
+    def _on_activate(self):
+        self._focused = True
+
+    def _on_deactivate(self):
+        self._focused = False
+        self._held_key_symbol = None
+        self._held_key_code = None
+
+    def _on_close(self):
+        # Block pyglet's default handler, which would destroy the window out
+        # from under the owning node; the node controls window lifetime via
+        # its display_mode option.
+        return pyglet.event.EVENT_HANDLED
+
+    def _on_key_press(self, symbol, modifiers):
+        # key events only reach the front (key) window, so no focus gate;
+        # also use them to resync _focused in case on_activate was missed
+        self._focused = True
+        if 32 <= symbol < 127:
+            code = _char_code_with_shift(chr(symbol),
+                                         bool(modifiers & _pkey.MOD_SHIFT))
+        else:
+            code = _PYGLET_TO_GLFW_KEY.get(symbol)
+        if code is not None:
+            self._push_ui_event(['key', code])
+            # arm synthetic repeat; like the OS, only the last pressed
+            # key repeats
+            self._held_key_symbol = symbol
+            self._held_key_code = code
+            self._repeat_next_time = time.monotonic() + self._repeat_delay
+        if symbol == _pkey.ESCAPE:
+            # block pyglet's default ESC-closes-window handler; the node
+            # decides what ESC means (e.g. exit fullscreen)
+            return pyglet.event.EVENT_HANDLED
+
+    def _on_key_release(self, symbol, modifiers):
+        if symbol == self._held_key_symbol:
+            self._held_key_symbol = None
+            self._held_key_code = None
+
+    def poll_repeats(self):
+        """Emit synthetic key-repeat events for the held key. Called once per
+        frame by the owning MGLContextNode before it drains ui_events."""
+        if self._held_key_code is None or not self._focused:
+            return
+        now = time.monotonic()
+        if now >= self._repeat_next_time:
+            self._push_ui_event(['key', self._held_key_code])
+            # one repeat per frame; never accumulate a backlog after a stall
+            self._repeat_next_time = max(
+                self._repeat_next_time + self._repeat_interval,
+                now + self._repeat_interval * 0.5)
+
+    def _on_mouse_press(self, x, y, button, modifiers):
+        self._focused = True  # clicking the window fronts it
+        x, y = self._mouse_xy(x, y)
+        self._push_ui_event(['mouse_down', x, y,
+                             _PYGLET_TO_GLFW_BUTTON.get(button, 0)])
+
+    def _on_mouse_release(self, x, y, button, modifiers):
+        x, y = self._mouse_xy(x, y)
+        self._push_ui_event(['mouse_up', x, y,
+                             _PYGLET_TO_GLFW_BUTTON.get(button, 0)])
+
+    def _on_mouse_motion(self, x, y, dx, dy):
+        if not self._focused:
+            return
+        x, y = self._mouse_xy(x, y)
+        self._push_ui_event(['mouse_move', x, y])
+
+    def _on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        if not self._focused:
+            return
+        x, y = self._mouse_xy(x, y)
+        if buttons & _pmouse.RIGHT:
+            btn = 1
+        elif buttons & _pmouse.MIDDLE:
+            btn = 2
+        else:
+            btn = 0
+        self._push_ui_event(['mouse_drag', x, y, btn])
+
+    def _on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if not self._focused:
+            return
+        self._push_ui_event(['scroll', float(scroll_x), float(scroll_y)])
 
     @property
     def available(self):
@@ -481,6 +744,10 @@ class MGLDisplayWindow:
                 print(f'[MGLDisplayWindow] hide error: {e}')
             self._visible = False
             self._fullscreen = False
+            self._focused = False
+            self._held_key_symbol = None
+            self._held_key_code = None
+            self.ui_events = []
 
     def destroy(self):
         if self._win is None:

@@ -260,6 +260,7 @@ class MGLContextNode(Node):
         self.render_trigger = self.add_input('render', triggers_execution=True)
         self.mgl_chain_output = self.add_output('mgl_chain')
         self.texture_output = self.add_output('texture_tag')
+        self.ui_output = self.add_output('ui')
 
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.width, callback=self.resize)
         self.height_option = self.add_option('height', widget_type='drag_int', default_value=self.height, callback=self.resize)
@@ -544,8 +545,27 @@ class MGLContextNode(Node):
     def execute(self):
         mode = self.display_mode_option()
 
-        # Escape Exits Fullscreen
-        if mode == 'fullscreen' and dpg.is_key_pressed(dpg.mvKey_Escape):
+        # Forward mouse/keyboard events captured by this node's native display
+        # window (window/fullscreen modes) out the ui output.
+        ui_events = None
+        if self._native_win is not None:
+            # pyglet path only: Cocoa never delivers key repeats to pyglet's
+            # handlers, so the window synthesizes them at the OS repeat rate
+            poll_repeats = getattr(self._native_win, 'poll_repeats', None)
+            if poll_repeats is not None:
+                poll_repeats()
+            ui_events = getattr(self._native_win, 'ui_events', None)
+            if ui_events:
+                self._native_win.ui_events = []
+                for event in ui_events:
+                    self.ui_output.send(event)
+
+        # Escape Exits Fullscreen. When the native window has focus, DPG never
+        # sees the key, so also check the events captured from that window.
+        escape_pressed = dpg.is_key_pressed(dpg.mvKey_Escape)
+        if not escape_pressed and ui_events:
+            escape_pressed = any(e[0] == 'key' and e[1] == 256 for e in ui_events)
+        if mode == 'fullscreen' and escape_pressed:
             mode = 'window'
             self.display_mode_option.set('window')
             dpg.set_value(self.display_mode_option.widget.uuid, 'window')
