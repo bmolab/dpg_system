@@ -84,6 +84,8 @@ class Gemma4ChatNode(Node):
         self.bos_token = -1
         self.eos_token = -1
         self.end_of_turn_token = -1
+        self.channel_open_token = -1
+        self.channel_close_token = -1
         self.stop_tokens = []
         self.return_token = -1
         self.double_return_token = -1
@@ -124,9 +126,14 @@ class Gemma4ChatNode(Node):
 
         self.n_ctx = self.add_option('n_ctx', widget_type='drag_int', default_value=8192)
         self.n_gpu_layers = self.add_option('n_gpu_layers', widget_type='drag_int', default_value=-1)
-        self.thinking = self.add_option('thinking', widget_type='checkbox', default_value=False)
+        self.thinking = self.add_option('thinking', widget_type='checkbox', default_value=False,
+                                        callback=self.thinking_changed)
+        # off: layout token list stays aligned with context tokens only for the
+        # visible text, so back-stepping will pass through invisible thought tokens
+        self.thinking_in_layout = self.add_option('thinking in layout', widget_type='checkbox', default_value=True)
 
         self.output = self.add_output('output')
+        self.thinking_out = self.add_output('thinking')
         self.output_end_of_text = self.add_output('end')
         self.token_out = self.add_output('token_out')
         self.layout_out = self.add_output('layout_out')
@@ -138,6 +145,8 @@ class Gemma4ChatNode(Node):
         self.active = False
         self.stepping = False
         self.in_step = False
+        self.in_thinking = False
+        self.thinking_header = False
         self.take_step = 0
         self.stopping = False
         self.output_string = ''
@@ -187,6 +196,8 @@ class Gemma4ChatNode(Node):
             # gemma 4 turn structure: <|turn>role\n ... <turn|>\n  with optional
             # <|channel>thought ... <channel|> thinking blocks inside model turns
             self.end_of_turn_token = tokenizer.encode('<turn|>', add_bos=False, special=True)[-1]
+            self.channel_open_token = tokenizer.encode('<|channel>', add_bos=False, special=True)[-1]
+            self.channel_close_token = tokenizer.encode('<channel|>', add_bos=False, special=True)[-1]
             self.stop_tokens = [self.eos_token, self.end_of_turn_token]
             self.return_token = tokenizer.encode('\n', add_bos=False)[-1]
             self.double_return_token = tokenizer.encode('\n\n', add_bos=False)[-1]
@@ -312,6 +323,8 @@ class Gemma4ChatNode(Node):
         start_of_action = False
         self.force_token = None
         preferred_id = None
+        self.in_thinking = False
+        self.thinking_header = False
         try:
             llm = self.ensure_model()
             self.logits_processor.set_new_response()
@@ -326,36 +339,44 @@ class Gemma4ChatNode(Node):
                 token_string, token_id = self.sample_token(tokens, preferred_id)
                 preferred_id = None
                 if token_string is not None:
-                    if '*' in token_string:
-                        if not in_action:
-                            start_of_action = True
-                            in_action = True
-                    if not in_action:
-                        output_text += token_string
-
                     self.token_out.send(token_id)
-                    if self.separate_actions() and in_action:
-                        self.actions_out.send(token_string)
-                        if '*' in token_string and not start_of_action:
-                            in_action = False
-                            self.actions_out.send('\n')
+
+                    if token_id == self.channel_open_token:
+                        # model is opening its thinking channel
+                        self.in_thinking = True
+                        self.thinking_header = True
+                        if self.thinking_in_layout():
+                            self.send_to_layout(token_id, token_string)
+                    elif token_id == self.channel_close_token:
+                        self.in_thinking = False
+                        if self.thinking_in_layout():
+                            self.send_to_layout(token_id, token_string)
+                    elif self.in_thinking:
+                        if self.thinking_header:
+                            # swallow the channel name line ('thought\n')
+                            if '\n' in token_string:
+                                self.thinking_header = False
+                        else:
+                            self.thinking_out.send(token_string)
+                        if self.thinking_in_layout():
+                            self.send_to_layout(token_id, token_string)
                     else:
-                        in_action = False
-                        self.output.send(token_string)
-                        if self.show_probs():
-                            self.chosen_index = self.build_poss_dict(token_id)
-                            self.layout_out.send(['choice_list', self.poss_dict, self.chosen_index])
-                        mode = self.display_mode()
-                        toner = 255
-                        if mode == 'temperature':
-                            toner = self.temperature()
-                        elif mode == 'entropy':
-                            toner = self.entropy
-                        elif mode == 'probability':
-                            toner = self.probability
-                        elif mode == 'unnormed_probability':
-                            toner = self.unnormed_probability
-                        self.layout_out.send(['add', int(token_id), token_string, toner])
+                        if '*' in token_string:
+                            if not in_action:
+                                start_of_action = True
+                                in_action = True
+                        if not in_action:
+                            output_text += token_string
+
+                        if self.separate_actions() and in_action:
+                            self.actions_out.send(token_string)
+                            if '*' in token_string and not start_of_action:
+                                in_action = False
+                                self.actions_out.send('\n')
+                        else:
+                            in_action = False
+                            self.output.send(token_string)
+                            self.send_to_layout(token_id, token_string)
 
                     tokens = [self.last_generated_token]
                     start_of_action = False
@@ -394,6 +415,22 @@ class Gemma4ChatNode(Node):
         self.active = False
         self.active_out.send(self.active)
         sys.exit()
+
+    def send_to_layout(self, token_id, token_string):
+        if self.show_probs():
+            self.chosen_index = self.build_poss_dict(token_id)
+            self.layout_out.send(['choice_list', self.poss_dict, self.chosen_index])
+        mode = self.display_mode()
+        toner = 255
+        if mode == 'temperature':
+            toner = self.temperature()
+        elif mode == 'entropy':
+            toner = self.entropy
+        elif mode == 'probability':
+            toner = self.probability
+        elif mode == 'unnormed_probability':
+            toner = self.unnormed_probability
+        self.layout_out.send(['add', int(token_id), token_string, toner])
 
     # ----------------------------------------------------------- token ops
 
@@ -559,6 +596,10 @@ class Gemma4ChatNode(Node):
         self.active_out.send(False)
         self.layout_out.send(['add', 0, '\n\n'])
         self.output_end_of_text.send('bang')
+
+    def thinking_changed(self):
+        # <|think|> lives in the system turn, so re-emit it with the next prompt
+        self.new_system_prompt = True
 
     def system_prompt_received(self):
         self.system_prompt = any_to_string(self.system_prompt_input())
