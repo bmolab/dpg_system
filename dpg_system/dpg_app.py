@@ -79,6 +79,7 @@ optional_import = [
     'context_tracker_nodes',
     'mgl_shaders_nodes',
     'noise_review_node',
+    'gemma_4_node',
 ]
 
 imported = []

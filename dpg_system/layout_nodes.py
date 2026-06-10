@@ -122,6 +122,16 @@ class TextLayoutNode(Node):
                         self.chosen_index = any_to_int(data[1])
                         self.layout.choose_from_next_word_list(self.chosen_index)
                         self.display_layout()
+                elif command == 'temperature':
+                    if len(data) > 1:
+                        self.temp = max(any_to_float(data[1]), 0.01)
+                        self.layout.temp = self.temp
+                        # re-render the visible candidate list so the probability
+                        # spread tracks the temperature slider between tokens
+                        if self.showing_poss_dict and len(self.poss_dict) > 0 and self.layout.show_list:
+                            self.layout.clear_list()
+                            self.layout.display_next_word_list_all(self.poss_dict, self.chosen_index)
+                            self.display_layout()
                 elif command == 'show_probs':
                     if len(data) > 1:
                         self.showing_poss_dict = any_to_bool(data[1])

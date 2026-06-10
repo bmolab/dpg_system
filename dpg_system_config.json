@@ -35,5 +35,6 @@
   "context_tracker_nodes": true,
   "mgl_shaders_node": true,
   "noise_review_node": true,
+  "gemma_4_node": true,
   "default_ip_base": "10.1.1.0"
 }
