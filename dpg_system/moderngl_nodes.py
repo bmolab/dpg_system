@@ -3,7 +3,7 @@ import numpy as np
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
-from dpg_system.moderngl_base import MGLContext
+from dpg_system.moderngl_base import MGLContext, _char_code_with_shift
 import moderngl
 import threading
 import math
@@ -225,6 +225,46 @@ class MGLImageNode(MGLNode):
         # Re-enable depth test for subsequent 3D nodes
         inner_ctx.enable(moderngl.DEPTH_TEST)
 
+# --- DPG key → ui 'key' code translation, for the readback display path ---
+# DPG 2.x handlers deliver ImGuiKey codes; convert them to the GLFW-style
+# codes the ui output uses so patches behave the same on every display path.
+_DPG_UI_KEY_MAPS = None
+
+
+def _dpg_ui_key_maps():
+    global _DPG_UI_KEY_MAPS
+    if _DPG_UI_KEY_MAPS is None:
+        char_map = {}
+        for i in range(26):
+            char_map[dpg.mvKey_A + i] = chr(ord('a') + i)
+        for i in range(10):
+            char_map[dpg.mvKey_0 + i] = chr(ord('0') + i)
+        char_map[dpg.mvKey_Spacebar] = ' '
+        # ImGuiKey punctuation block (Apostrophe..GraveAccent). Several of
+        # DPG's named aliases for these are stale legacy values (mvKey_Quote,
+        # mvKey_Plus, mvKey_Tilde), so anchor on mvKey_Comma (which matches
+        # ImGuiKey_Comma) and fill the block by enum position.
+        base = dpg.mvKey_Comma
+        char_map.update({
+            base - 1: "'", base: ',', base + 1: '-', base + 2: '.',
+            base + 3: '/', base + 4: ';', base + 5: '=', base + 6: '[',
+            base + 7: '\\', base + 8: ']', base + 9: '`',
+        })
+        special = {
+            dpg.mvKey_Escape: 256, dpg.mvKey_Return: 257, dpg.mvKey_Tab: 258,
+            dpg.mvKey_Back: 259, dpg.mvKey_Insert: 260, dpg.mvKey_Delete: 261,
+            dpg.mvKey_Right: 262, dpg.mvKey_Left: 263, dpg.mvKey_Down: 264,
+            dpg.mvKey_Up: 265,
+            dpg.mvKey_Tab + 5: 266,   # ImGuiKey_PageUp (mvKey_Prior is stale)
+            dpg.mvKey_Tab + 6: 267,   # ImGuiKey_PageDown
+            dpg.mvKey_Home: 268, dpg.mvKey_End: 269,
+        }
+        for i in range(12):
+            special[dpg.mvKey_F1 + i] = 290 + i
+        _DPG_UI_KEY_MAPS = (char_map, special)
+    return _DPG_UI_KEY_MAPS
+
+
 class MGLContextNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -245,6 +285,10 @@ class MGLContextNode(Node):
 
         # Per-node native window for direct-to-screen display on Linux
         self._native_win = None
+
+        # UI event capture for the DPG-window (readback) display path
+        self._dpg_ui_events = []
+        self._dpg_ui_registry = None
 
         # PBO double-buffer state for async readback
         self._pbo = [None, None]   # two Buffer objects
@@ -300,6 +344,103 @@ class MGLContextNode(Node):
         else:
             self.remove_frame_tasks()
 
+    # --- UI event capture for the DPG-window (readback) display path ---
+    # DPG handlers are global, so each callback gates on this node's display
+    # window being focused (keys) or hovered (mouse) before queueing.
+
+    def _dpg_ui_window(self):
+        mode = self.display_mode_option()
+        if mode == 'window':
+            win = self.external_window
+        elif mode == 'fullscreen':
+            win = self.fullscreen_window
+        else:
+            win = None
+        if win is not None and dpg.does_item_exist(win):
+            return win
+        return None
+
+    def _push_dpg_ui_event(self, event):
+        if len(self._dpg_ui_events) < 256:
+            self._dpg_ui_events.append(event)
+
+    def _dpg_ui_mouse_xy(self, win):
+        # report positions relative to the displayed image's top-left, so
+        # coordinates land in the same space as the native-window path
+        x, y = dpg.get_mouse_pos(local=False)
+        origin = None
+        children = dpg.get_item_children(win, slot=1)
+        if children:
+            for child in children:
+                if dpg.get_item_type(child) == "mvAppItemType::mvImage":
+                    origin = dpg.get_item_rect_min(child)
+                    break
+        if origin is None:
+            origin = dpg.get_item_rect_min(win)
+        return int(x - origin[0]), int(y - origin[1])
+
+    def _dpg_ui_key(self, sender, key):
+        win = self._dpg_ui_window()
+        if win is None or not dpg.is_item_focused(win):
+            return
+        char_map, special = _dpg_ui_key_maps()
+        if key in char_map:
+            shift = (dpg.is_key_down(dpg.mvKey_LShift)
+                     or dpg.is_key_down(dpg.mvKey_RShift))
+            code = _char_code_with_shift(char_map[key], shift)
+        else:
+            code = special.get(key)
+        if code is not None:
+            self._push_dpg_ui_event(['key', code])
+
+    def _dpg_ui_mouse_click(self, sender, button):
+        win = self._dpg_ui_window()
+        if win is None or not dpg.is_item_hovered(win):
+            return
+        x, y = self._dpg_ui_mouse_xy(win)
+        self._push_dpg_ui_event(['mouse_down', x, y, int(button)])
+
+    def _dpg_ui_mouse_release(self, sender, button):
+        # gate on focus, not hover, so the release that ends a drag outside
+        # the window is still reported
+        win = self._dpg_ui_window()
+        if win is None or not dpg.is_item_focused(win):
+            return
+        x, y = self._dpg_ui_mouse_xy(win)
+        self._push_dpg_ui_event(['mouse_up', x, y, int(button)])
+
+    def _dpg_ui_mouse_move(self, sender, app_data):
+        win = self._dpg_ui_window()
+        if win is None or not dpg.is_item_hovered(win):
+            return
+        x, y = self._dpg_ui_mouse_xy(win)
+        for button in (0, 1, 2):
+            if dpg.is_mouse_button_down(button):
+                self._push_dpg_ui_event(['mouse_drag', x, y, button])
+                return
+        self._push_dpg_ui_event(['mouse_move', x, y])
+
+    def _dpg_ui_mouse_wheel(self, sender, delta):
+        win = self._dpg_ui_window()
+        if win is None or not dpg.is_item_hovered(win):
+            return
+        self._push_dpg_ui_event(['scroll', 0.0, float(delta)])
+
+    def _ensure_dpg_ui_handlers(self, enable):
+        if enable and self._dpg_ui_registry is None:
+            with dpg.handler_registry() as registry:
+                dpg.add_key_press_handler(callback=self._dpg_ui_key)
+                dpg.add_mouse_click_handler(callback=self._dpg_ui_mouse_click)
+                dpg.add_mouse_release_handler(callback=self._dpg_ui_mouse_release)
+                dpg.add_mouse_move_handler(callback=self._dpg_ui_mouse_move)
+                dpg.add_mouse_wheel_handler(callback=self._dpg_ui_mouse_wheel)
+            self._dpg_ui_registry = registry
+        elif not enable and self._dpg_ui_registry is not None:
+            if dpg.does_item_exist(self._dpg_ui_registry):
+                dpg.delete_item(self._dpg_ui_registry)
+            self._dpg_ui_registry = None
+            self._dpg_ui_events = []
+
     def _ensure_texture(self):
         # Pre-create a zero-filled raw texture so Metal has time to upload it before
         # any dpg.add_image widget samples it. Without this, the texture is created
@@ -329,6 +470,8 @@ class MGLContextNode(Node):
 
     def custom_cleanup(self):
         self.remove_frame_tasks()
+        if self._dpg_ui_registry is not None and dpg.does_item_exist(self._dpg_ui_registry):
+            dpg.delete_item(self._dpg_ui_registry)
         if self.texture_tag:
             dpg.delete_item(self.texture_tag)
         if self.external_window:
@@ -545,8 +688,8 @@ class MGLContextNode(Node):
     def execute(self):
         mode = self.display_mode_option()
 
-        # Forward mouse/keyboard events captured by this node's native display
-        # window (window/fullscreen modes) out the ui output.
+        # Forward mouse/keyboard events captured by this node's display window
+        # (native window or DPG fallback window) out the ui output.
         ui_events = None
         if self._native_win is not None:
             # pyglet path only: Cocoa never delivers key repeats to pyglet's
@@ -557,8 +700,12 @@ class MGLContextNode(Node):
             ui_events = getattr(self._native_win, 'ui_events', None)
             if ui_events:
                 self._native_win.ui_events = []
-                for event in ui_events:
-                    self.ui_output.send(event)
+        if self._dpg_ui_events:
+            ui_events = (ui_events or []) + self._dpg_ui_events
+            self._dpg_ui_events = []
+        if ui_events:
+            for event in ui_events:
+                self.ui_output.send(event)
 
         # Escape Exits Fullscreen. When the native window has focus, DPG never
         # sees the key, so also check the events captured from that window.
@@ -579,6 +726,10 @@ class MGLContextNode(Node):
         else:
             use_direct = (mode in ('window', 'fullscreen') and
                           self.context.has_direct_window)
+
+        # DPG fallback windows need global DPG handlers to capture ui events;
+        # only keep them installed while that display path is active.
+        self._ensure_dpg_ui_handlers(not use_direct and mode in ('window', 'fullscreen'))
 
         # 0. Sync DPG Window Image Size (only when using readback path)
         if not use_direct:
