@@ -154,8 +154,11 @@ class Gemma4ChatNode(Node):
         self.active = False
         self.stepping = False
         self.in_step = False
+        self.last_key_was_enter = False
+        self.suppress_prompt_layout = False
         self.in_thinking = False
         self.thinking_header = False
+        self.pending_utf8 = b''
         self.take_step = 0
         self.stopping = False
         self.output_string = ''
@@ -230,8 +233,19 @@ class Gemma4ChatNode(Node):
         if type(input_data) == list:
             if input_data[0] == 'key':
                 key = any_to_int(input_data[1])
+                if key in (257, 335):   # return / numpad enter
+                    if self.last_key_was_enter:
+                        self.last_key_was_enter = False
+                        self.submit_streaming_prompt()
+                    else:
+                        self.last_key_was_enter = True
+                        self.handle_streaming_prompt('\n')
+                    return
+                self.last_key_was_enter = False
                 if key < 256:
-                    if key == 32 and self.on_off() and self.active:
+                    # space is the pause gesture only when no text is being composed
+                    if (key == 32 and self.on_off() and self.active
+                            and len(self.streaming_prompt) == 0):
                         self.on_off.set(0)
                         return
                     self.handle_streaming_prompt(chr(key))
@@ -254,13 +268,13 @@ class Gemma4ChatNode(Node):
                         self.chosen_index += 1
                         self.choose_possibility(self.chosen_index)
                 elif key == 259:    # backspace
-                    if self.on_off():
-                        self.on_off.set(0)
                     if len(self.streaming_prompt) > 0:
+                        # editing composed text: not a step-back gesture
                         self.streaming_prompt = self.streaming_prompt[:-1]
                         self.layout_out.send(['backspace_streaming_prompt'])
                     else:
-                        self.streaming_prompt = ''
+                        if self.on_off():
+                            self.on_off.set(0)
                         if self.in_step:
                             self.take_step = -1
                         else:
@@ -341,6 +355,7 @@ class Gemma4ChatNode(Node):
         preferred_id = None
         self.in_thinking = False
         self.thinking_header = False
+        self.pending_utf8 = b''
         try:
             llm = self.ensure_model()
             self.logits_processor.set_new_response()
@@ -475,9 +490,12 @@ class Gemma4ChatNode(Node):
         add_bos = (llm.n_tokens == 0)
         self.prompt_tokens = llm.tokenizer().encode(self.formatted_prompt, add_bos=add_bos, special=True)
 
-        just_prompt_tokens = self.encode_continuation(prompt)
-        for token in just_prompt_tokens:
-            self.layout_out.send(['prompt', token, self.decode_token(token)])
+        if self.suppress_prompt_layout:
+            self.suppress_prompt_layout = False
+        else:
+            just_prompt_tokens = self.encode_continuation(prompt)
+            for token in just_prompt_tokens:
+                self.layout_out.send(['prompt', token, self.decode_token(token)])
 
     def encode_continuation(self, text):
         tokens = self.llm.tokenizer().encode(text, add_bos=False, special=False)
@@ -522,9 +540,7 @@ class Gemma4ChatNode(Node):
             return None, None
 
         self.new_response = False
-        out_string = self.decode_token(out_token)
-        if len(out_string) == 0:
-            out_string = '+'
+        out_string = self.decode_stream_token(out_token)
 
         if out_string in ['.', '?', '!']:
             self.logits_processor.set_possible_stop()
@@ -543,12 +559,29 @@ class Gemma4ChatNode(Node):
         return 1 / (1 + torch.exp(self.sigmoid_scaler() * (logit + self.sigmoid_offset())))
 
     def decode_token(self, token):
+        # stateless decode for display lists; partial multibyte tokens show empty
         llm = self.llm
         try:
             return llm.detokenize([int(token)]).decode('utf-8')
         except UnicodeDecodeError:
-            print('gemma_4: unicode decode error on token', token)
             return ''
+
+    def decode_stream_token(self, token):
+        # sequential decode: hold incomplete utf-8 tails until the next token
+        # completes the character, instead of emitting mojibake per token
+        llm = self.llm
+        buf = self.pending_utf8 + llm.detokenize([int(token)])
+        try:
+            out = buf.decode('utf-8')
+            self.pending_utf8 = b''
+            return out
+        except UnicodeDecodeError:
+            if len(buf) < 8:
+                self.pending_utf8 = buf
+                return ''
+            out = buf.decode('utf-8', errors='replace')
+            self.pending_utf8 = b''
+            return out
 
     def back_step(self, count):
         llm = self.llm
@@ -621,21 +654,41 @@ class Gemma4ChatNode(Node):
         self.new_system_prompt = True
 
     def system_prompt_received(self):
-        self.system_prompt = any_to_string(self.system_prompt_input())
+        self.system_prompt = any_to_string(self.system_prompt_input(), strip_returns=False)
         self.new_system_prompt = True
 
     def preprompt_received(self):
-        self.preprompt = any_to_string(self.pre_prompt_input())
+        self.preprompt = any_to_string(self.pre_prompt_input(), strip_returns=False)
 
     def prompt_received(self):
-        prompt = any_to_string(self.prompt_input())
+        prompt = any_to_string(self.prompt_input(), strip_returns=False)
         if self.preprompt != '':
             prompt = self.preprompt + prompt
             self.preprompt = ''
         self.queue.put(prompt, block=False)
 
+    def submit_streaming_prompt(self):
+        # double-Enter: drop the newline the first Enter inserted, then submit
+        if self.streaming_prompt.endswith('\n'):
+            self.streaming_prompt = self.streaming_prompt[:-1]
+            self.layout_out.send(['backspace_streaming_prompt'])
+        if len(self.streaming_prompt.strip()) == 0:
+            return
+        if self.active:
+            # generation thread is parked in the step-wait loop: accepting is a step
+            self.stepping = True
+            self.take_step = 1
+        else:
+            # idle: the typed text becomes the next prompt; its preview is already
+            # in the layout, so skip the prompt burst for this one generation
+            text = self.streaming_prompt
+            self.streaming_prompt = ''
+            self.layout_out.send(['accept_streamed_prompt'])
+            self.suppress_prompt_layout = True
+            self.queue.put(text, block=False)
+
     def streaming_prompt_received(self):
-        self.handle_streaming_prompt(any_to_string(self.streaming_prompt_input()))
+        self.handle_streaming_prompt(any_to_string(self.streaming_prompt_input(), strip_returns=False))
 
     def handle_streaming_prompt(self, streaming_prompt_string):
         if streaming_prompt_string == '<backspace>':
@@ -713,6 +766,9 @@ class Gemma4ChatNode(Node):
         self.streaming_prompt = ''
         self.in_thinking = False
         self.thinking_header = False
+        self.pending_utf8 = b''
+        self.last_key_was_enter = False
+        self.suppress_prompt_layout = False
         self.stepping = False
         self.take_step = 0
         llm = self.llm

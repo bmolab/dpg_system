@@ -35,6 +35,30 @@ def make_printable(s):
     # that map to None from the string
     return s.translate(NOPRINT_TRANS_TABLE)
 
+
+# substitutions for characters commonly emitted by LLMs but absent from the
+# layout font (Inconsolata-g lacks em/en dashes, for example)
+FONT_FALLBACK_CHARS = {
+    '—': '-',    # em dash
+    '–': '-',    # en dash
+    '―': '-',    # horizontal bar
+    '−': '-',    # minus sign
+    '‘': "'", '’': "'",
+    '“': '"', '”': '"',
+    '…': '...',  # ellipsis
+    ' ': ' ',    # no-break space
+}
+
+
+def load_font_cmap(font_path):
+    """Set of codepoints the font can render, or None if unknown."""
+    try:
+        from fontTools.ttLib import TTFont
+        return set(TTFont(font_path).getBestCmap().keys())
+    except Exception:
+        return None
+
+
 class LLMLayout:
     def __init__(self, frame, font_file_path=''):
         global paragraph_indent_scaler
@@ -106,6 +130,21 @@ class LLMLayout:
         if self.face:
             self.cr.set_font_face(self.face[0])
         self.cr.set_font_size(self.font_size)
+        self.font_cmap = load_font_cmap(target)
+
+    def sanitize_for_font(self, s):
+        # swap characters the font has no glyph for, instead of drawing tofu boxes
+        if self.font_cmap is None:
+            return s
+        if all(c in '\n\t' or ord(c) in self.font_cmap for c in s):
+            return s
+        out = []
+        for c in s:
+            if c in '\n\t' or ord(c) in self.font_cmap:
+                out.append(c)
+            else:
+                out.append(FONT_FALLBACK_CHARS.get(c, ''))
+        return ''.join(out)
 
     def clear_layout(self):
         del self.layout
@@ -153,6 +192,7 @@ class LLMLayout:
         self.add_word(word, spread_color, token_id)
 
     def add_word(self, word, color, token_id, speech_in_progress=False):
+        word = self.sanitize_for_font(word)
         new_element = [self.cursor_position.copy(), word, color, token_id]
         self.add_element_to_layout(new_element)
         if not speech_in_progress:
@@ -272,6 +312,7 @@ class LLMLayout:
         self.add_word_to_list(word, spread_color, pos, token_id)
 
     def add_word_to_list(self, word, color, pos, token_id):
+        word = self.sanitize_for_font(word)
         new_element = [pos.copy(), word, color, token_id]  #  pos.copy() relative to reference
         self.add_element_to_list(new_element)
 

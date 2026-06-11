@@ -230,7 +230,16 @@ def widget_deactive_after_edit(source, data, user_data):
         if dpg.does_item_exist(data):
             item = dpg.get_item_user_data(data)
             if item is not None:
-                item.value_changed(data, force=True)
+                trigger = getattr(item, 'trigger_widget', None)
+                if (trigger is not None and dpg.does_item_exist(trigger)
+                        and dpg.is_item_hovered(trigger)):
+                    # the click that deactivated this widget landed on its own
+                    # trigger button: take the edited value but let the button's
+                    # callback do the send, otherwise the node executes twice
+                    if hasattr(item, '_update_value_from_dpg'):
+                        item._update_value_from_dpg()
+                else:
+                    item.value_changed(data, force=True)
     Node.app.active_widget = -1
     Node.app.focussed_widget = -1
 
