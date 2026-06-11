@@ -259,14 +259,18 @@ class Gemma4ChatNode(Node):
                         self.on_off.set(0)
                     self.stepping = True
                     self.take_step = -1
-                elif key == 264:    # down arrow - previous possibility
+                elif key == 264:    # down arrow - previous possibility / scroll
                     if self.show_probs():
                         self.chosen_index -= 1
                         self.choose_possibility(self.chosen_index)
-                elif key == 265:    # up arrow - next possibility
+                    else:
+                        self.layout_out.send(['scroll_down'])
+                elif key == 265:    # up arrow - next possibility / scroll
                     if self.show_probs():
                         self.chosen_index += 1
                         self.choose_possibility(self.chosen_index)
+                    else:
+                        self.layout_out.send(['scroll_up'])
                 elif key == 259:    # backspace
                     if len(self.streaming_prompt) > 0:
                         # editing composed text: not a step-back gesture
