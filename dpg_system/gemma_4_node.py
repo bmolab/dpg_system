@@ -310,6 +310,8 @@ class Gemma4ChatNode(Node):
                 self.stepping = True
 
     def frame_task(self):
+        if self.do_reset and not self.active:
+            self.reset()
         self.process_next_prompt()
 
     def process_next_prompt(self):
@@ -348,7 +350,7 @@ class Gemma4ChatNode(Node):
             tokens = self.prompt_tokens
             token_string = ''
             while token_string is not None:
-                if self.active == False:
+                if self.active == False or self.do_reset:
                     break
                 token_string, token_id = self.sample_token(tokens, preferred_id)
                 preferred_id = None
@@ -397,7 +399,7 @@ class Gemma4ChatNode(Node):
 
                 if not self.on_off():
                     if self.stepping:
-                        while self.take_step == 0 and not self.on_off():
+                        while self.take_step == 0 and not self.on_off() and not self.do_reset:
                             self.in_step = True
                             time.sleep(0.005)
                         self.in_step = False
@@ -708,6 +710,11 @@ class Gemma4ChatNode(Node):
         self.do_reset = False
         self.layout_out.send(['reset'])
         self.last_generated_token = None
+        self.streaming_prompt = ''
+        self.in_thinking = False
+        self.thinking_header = False
+        self.stepping = False
+        self.take_step = 0
         llm = self.llm
         if llm is not None:
             llm._ctx.kv_cache_clear()
