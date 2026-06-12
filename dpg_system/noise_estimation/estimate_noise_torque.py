@@ -406,6 +406,16 @@ ISOLATED_ARM_IMPULSE_NEIGHBOR_CEILING = 2.0  # rad/s — max(v[t-1], v[t+1]) cei
 ISOLATED_ARM_IMPULSE_CLUSTER_WINDOW_S = 1.5  # seconds — temporal-clustering window
 ISOLATED_ARM_IMPULSE_MIN_JOINTS_SAME_FRAME = 2  # multi-joint co-occurrence threshold
 
+# Spike-frame consolidation: many spikes packed into a short span are one
+# contaminated section, not that many independent dropped frames — reporting
+# them individually buries the structure.  Spike frames separated by
+# <= SPIKE_CLUSTER_GAP_S are merged into one cluster; a cluster with
+# >= SPIKE_CLUSTER_CONTAMINATED_MIN distinct spike frames is reported as a
+# contaminated section (one issue), the rest as isolated spikes.
+# Reporting/JSON only — does not affect noise_score or classification.
+SPIKE_CLUSTER_GAP_S = 0.25            # merge gap (≈30 frames @ 120 fps)
+SPIKE_CLUSTER_CONTAMINATED_MIN = 3    # distinct spike frames → contaminated
+
 @dataclass
 class SpikeFrame:
     """A single dropped/corrupted frame identified by the neighbour-ratio test."""
@@ -414,6 +424,25 @@ class SpikeFrame:
     joint_name: str
     velocity: float        # rad/s at the spike frame
     neighbor_ratio: float  # vel[t] / max(vel[t-1], vel[t+1])
+
+
+@dataclass
+class SpikeCluster:
+    """A group of spike frames in close temporal proximity.
+
+    Dense clusters (contaminated=True) represent a contaminated section
+    of the capture; sparse clusters are genuinely isolated dropped frames.
+    """
+    start: int               # first spike frame in cluster
+    end: int                 # last spike frame in cluster
+    n_frames: int            # span (end - start + 1)
+    duration_s: float
+    n_spike_frames: int      # distinct frames with spike entries
+    n_spike_records: int     # per-joint spike entries
+    spike_density: float     # n_spike_frames / n_frames
+    joints: List[str]        # affected joints, most spike records first
+    max_velocity: float      # peak spike velocity in cluster (rad/s)
+    contaminated: bool       # n_spike_frames >= SPIKE_CLUSTER_CONTAMINATED_MIN
 
 
 @dataclass
@@ -490,12 +519,26 @@ class TorqueFileReport:
     clean_segments: List[CleanSegment] = field(default_factory=list)
     stream_breaks: List[StreamBreak] = field(default_factory=list)
     spike_frames: List[SpikeFrame] = field(default_factory=list)
+    spike_clusters: List[SpikeCluster] = field(default_factory=list)
     surgery: Optional[SurgeryInfo] = None
     cadence: Optional[CadenceInfo] = None
     motion_profile: Optional['MotionProfile'] = None
     ground_contact: Optional['GroundContactInfo'] = None
     classification_detail: str = ''    # multi-dimensional summary line
     recommendations: Optional[dict] = None  # suggested filter params
+
+    # Kinematic pose-level lenses (operate on raw arm-joint motion, separate
+    # from the torque scorer): teleport (non-physical jump), flicker (synced
+    # marker jitter), zigzag (buzz on a moving joint), ROM (candy-wrapper).
+    teleport_max_arm_vel: float = 0.0       # peak arm-joint angular velocity (rad/s)
+    teleport_inconsistent_rate: float = 0.0 # sub-60 inconsistent-frame rate (diagnostic only)
+    n_teleport_frames: int = 0              # excised non-physical (>40 rad/s) frames
+    flicker_rate: float = 0.0               # synchronized-flicker frames / second
+    flicker_peak: int = 0                   # max flicker frames in any 1-second window
+    n_flicker_frames: int = 0
+    zigzag_severity: float = 0.0            # peak windowed zigzag intensity (0-1)
+    zigzag_contribution: float = 0.0        # points it added to noise_score
+    n_rom_frames: int = 0                   # impossible-rotation (candy-wrapper) frames
 
 
 @dataclass
@@ -897,12 +940,33 @@ def _build_classification(report):
             parts.append(f"✂️🔪 {s.n_breaks} break(s) + {ex.n_zones} corruption zone(s)")
         elif s.recommendation == 'discard':
             parts.append(f"⚡ {s.n_breaks} break(s) → discard")
-    
-    # Single-frame spikes
+
+    # Kinematic pose-level lenses (teleport / flicker / zigzag / candy-wrapper)
+    if report.teleport_max_arm_vel > TELEPORT_VEL_DEFINITE:
+        parts.append(f"🛰️ teleport: {report.teleport_max_arm_vel:.0f} rad/s arm jump (non-physical)")
+    if report.flicker_rate >= FLICKER_RATE_LOCK or report.flicker_peak >= FLICKER_PEAK_LOCK:
+        parts.append(f"📳 flicker: {report.flicker_rate:.1f}/s synchronized arm jitter")
+    if report.zigzag_contribution >= 8:
+        parts.append(f"〰️ zigzag buzz (intensity {report.zigzag_severity:.2f})")
+    if report.n_rom_frames >= ROM_MIN_FRAMES:
+        parts.append(f"🥨 candy-wrapper: {report.n_rom_frames} impossible wrist-rotation frame(s)")
+
+    # Single-frame spikes — consolidated: dense clusters become
+    # contaminated sections, the remainder are isolated spikes
     if report.spike_frames:
-        n_sf = len({s.frame for s in report.spike_frames})
-        joints = ', '.join(sorted({s.joint_name for s in report.spike_frames}))
-        parts.append(f"⚡ {n_sf} spike frame(s) ({joints})")
+        contaminated = [c for c in report.spike_clusters if c.contaminated]
+        n_isolated = sum(c.n_spike_frames for c in report.spike_clusters
+                         if not c.contaminated)
+        bits = []
+        if contaminated:
+            total_s = sum(c.duration_s for c in contaminated)
+            bits.append(f"{len(contaminated)} contaminated section(s) "
+                        f"({total_s:.1f}s)")
+        if n_isolated:
+            bits.append(f"{n_isolated} isolated spike(s)")
+        joint_set = sorted({s.joint_name for s in report.spike_frames})
+        joints = ', '.join(joint_set) if len(joint_set) <= 6 else f"{len(joint_set)} joints"
+        parts.append(f"⚡ {' + '.join(bits)} ({joints})")
 
     # Cadence
     if report.cadence and report.cadence.detected:
@@ -1000,9 +1064,16 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     
     # ── Detect single-frame spikes (dropped/corrupted frames) ────────────
     spike_frames = _detect_spike_frames(poses, fps)
+    teleport_mask, teleport_score, teleport_rate, max_arm_vel = _detect_teleports(poses, fps)
+    flicker_mask, flicker_rate, flicker_peak = _detect_flicker(poses, fps)
+    zigzag_Z, zigzag_peak, zigzag_frame = _detect_zigzag(poses, fps)
+    rom_mask, n_rom = _detect_rom(poses, fps)
+    spike_clusters = _cluster_spike_frames(spike_frames, fps)
     if verbose and spike_frames:
         unique_frames = len({s.frame for s in spike_frames})
-        print(f"  Detected {unique_frames} spike frame(s) "
+        n_contaminated = sum(1 for c in spike_clusters if c.contaminated)
+        print(f"  Detected {unique_frames} spike frame(s) in "
+              f"{len(spike_clusters)} cluster(s), {n_contaminated} contaminated "
               f"({', '.join(sorted({s.joint_name for s in spike_frames}))})")
 
     # Significant spike frames — used both for clean-segment fragmentation
@@ -1019,6 +1090,10 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     # Frames in either category are STRUCTURAL issues, not motion quality
     # issues, and must be excluded from torque-based noise scoring.
     structural_mask = break_mask | corruption_mask
+    structural_mask = structural_mask | teleport_mask  # TELEPORT: excise non-physical arm frames
+    structural_mask = structural_mask | flicker_mask  # FLICKER: excise synchronized jitter frames
+    structural_mask = structural_mask | (zigzag_Z > ZIGZAG_FLOOR)  # ZIGZAG: exclude sustained buzz
+    structural_mask = structural_mask | rom_mask  # ROM: excise impossible wrist poses
     
     # ── Detect cadence pattern ────────────────────────────────────────
     cadence = _detect_cadence(poses, fps)
@@ -1554,6 +1629,11 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     ns += score_corruption
     ns = min(100.0, ns)
 
+    # Zigzag (buzz) — continuous contribution, soft ramp above a dead-band floor.
+    zigzag_contribution = min(max(0.0, (zigzag_peak - ZIGZAG_FLOOR) * ZIGZAG_SCALE), ZIGZAG_CAP)
+    ns += zigzag_contribution
+    ns = min(100.0, ns)
+
     # Component 7: Single-frame spike fraction.  Each spike is a real
     # dropped frame.  Scaled by spike density (fraction of file affected)
     # rather than absolute count, so long files with many spikes are
@@ -1595,6 +1675,20 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     # Corruption fraction also bumps classification.
     # >10% arm corruption means the file is structurally compromised.
     if corruption_frac > 0.10:
+        cls = 'problematic'
+
+    # Teleportation -> problematic (plausibility-ceiling lens): either a single
+    # near-certain (non-physical) jump, or pervasive moderate teleportation.
+    # Sub-60 inconsistency dropped from the lock: it added 0 DanceDB recall
+    # (>60 + flicker + zigzag + ROM cover it) and was the sole source of FPs on
+    # fast REPETITIVE actions (shake/clap/punch), which are kinematically
+    # indistinguishable from sub-60 teleports.  Only the physical-ceiling
+    # criterion locks; teleport_rate stays exposed as a diagnostic.
+    if max_arm_vel > TELEPORT_VEL_DEFINITE:
+        cls = 'problematic'
+    if flicker_rate >= FLICKER_RATE_LOCK or flicker_peak >= FLICKER_PEAK_LOCK:
+        cls = 'problematic'
+    if n_rom >= ROM_MIN_FRAMES:
         cls = 'problematic'
 
     # Low clean fraction on a long file is also automatically problematic.
@@ -1650,12 +1744,22 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         clean_segments=clean,
         stream_breaks=stream_breaks,
         spike_frames=spike_frames,
+        spike_clusters=spike_clusters,
         surgery=surgery,
         cadence=cadence,
         motion_profile=motion_profile,
         ground_contact=ground_contact,
     )
     
+    report.teleport_max_arm_vel = round(float(max_arm_vel), 1)
+    report.teleport_inconsistent_rate = round(float(teleport_rate), 2)
+    report.n_teleport_frames = int(teleport_mask.sum())
+    report.flicker_rate = round(float(flicker_rate), 2)
+    report.flicker_peak = int(flicker_peak)
+    report.n_flicker_frames = int(flicker_mask.sum())
+    report.zigzag_severity = round(float(zigzag_peak), 3)
+    report.zigzag_contribution = round(float(zigzag_contribution), 1)
+    report.n_rom_frames = int(n_rom)
     # Build multi-dimensional classification
     report.classification_detail, report.recommendations = _build_classification(report)
     
@@ -1666,6 +1770,205 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────
+
+# ── Plausibility-ceiling teleport lens ────────────────────────────────
+# A human arm joint cannot rotate faster than ~20-30 rad/s.  Per-frame arm
+# angular velocity beyond DEFINITE (60) is non-physical -> locks problematic.
+# The sub-60 inconsistency rate (narrow, unfilled hump from a slow baseline)
+# is computed as a diagnostic only: it is kinematically indistinguishable
+# from fast repetitive motion (shake/clap/punch) so it does NOT lock.
+TELEPORT_ARM_JOINTS  = {13, 14, 16, 17, 18, 19, 20, 21}
+TELEPORT_VEL_CAND    = 30.0   # rad/s — only evaluate frames above this (below = plausible)
+TELEPORT_VEL_HARD    = 40.0   # rad/s — frames above this excised
+TELEPORT_VEL_DEFINITE= 60.0   # rad/s — physically impossible -> lock regardless of shape
+TELEPORT_WINDOW      = 8      # frames each side for the consistency window
+TELEPORT_HMW_MAX     = 4      # half-max hump width <= this AND ...
+TELEPORT_FILL_MAX    = 0.28   # ... hump fill < this AND ...
+TELEPORT_BASE_MAX    = 8.0    # ... local baseline velocity < this (out-of-character) => teleport
+TELEPORT_RATE_LOCK   = 0.3    # inconsistent-frame rate (/s) to force "problematic"
+
+
+def _detect_teleports(poses, fps):
+    """Physical-plausibility teleport lens on the arm chain.
+
+    A teleport is a high-velocity DISCONTINUITY; a real fast move (throw, punch)
+    is high velocity that is CONTINUOUS — the peak is reached through a gradual
+    accel ramp and left through a decel ramp, so it sits atop a multi-frame
+    velocity hump.  We measure that hump with two WINDOW-INTEGRATED quantities
+    (robust, not a fragile +/-1 ratio): HMW = half-max width (#frames near peak)
+    and fill = hump area / (excess * window).  A candidate frame is teleport-like
+    only when BOTH are small (narrow, unfilled hump).
+
+    Returns (teleport_mask, n_inconsistent, inconsistent_rate, max_arm_vel).
+    """
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    if T < 3:
+        return mask, 0.0, 0.0, 0.0
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    v = np.linalg.norm(np.diff(P, axis=0), axis=2) * fps   # (T-1, J)
+    arm = [j for j in TELEPORT_ARM_JOINTS if j < v.shape[1]]
+    if not arm:
+        return mask, 0.0, 0.0, 0.0
+    v_arm = v[:, arm].max(axis=1)                          # (T-1,)
+    L = len(v_arm)
+    W = TELEPORT_WINDOW
+    n_inconsistent = 0
+    for t in np.where(v_arm > TELEPORT_VEL_CAND)[0]:
+        j = arm[int(v[t, arm].argmax())]
+        vj = v[:, j]
+        a = max(0, t - W); b = min(L, t + W + 1)
+        win = vj[a:b]; pk = vj[t]; pkpos = t - a
+        # robust local baseline: window median excluding the peak +/-2
+        m = np.ones(len(win), dtype=bool)
+        for k in range(pkpos - 2, pkpos + 3):
+            if 0 <= k < len(m):
+                m[k] = False
+        base = float(np.median(win[m])) if m.any() else 0.0
+        exc = pk - base
+        if exc < 1e-6:
+            continue
+        hmw = int(((win - base) >= 0.5 * exc).sum())
+        fill = float(np.clip(win - base, 0.0, None).sum() / (exc * len(win)))
+        # teleport-like = narrow, unfilled hump AND out of character: the spike
+        # erupts from a slow local baseline.  A real fast action (throw, punch)
+        # has a fast baseline around its peak, so it is spared.
+        if hmw <= TELEPORT_HMW_MAX and fill < TELEPORT_FILL_MAX and base < TELEPORT_BASE_MAX:
+            n_inconsistent += 1  # diagnostic only; sub-60 frames are NOT excised (may be real motion)
+    # also excise clearly-impossible frames (so a smooth-looking but >40 rad/s
+    # candy-wrapper unwind is still removed)
+    for t in np.where(v_arm > TELEPORT_VEL_HARD)[0]:
+        mask[t] = True
+        if t + 1 < T:
+            mask[t + 1] = True
+    dur = T / float(fps) if fps > 0 else 0.0
+    inconsistent_rate = n_inconsistent / dur if dur > 0 else 0.0
+    return mask, float(n_inconsistent), float(inconsistent_rate), float(v_arm.max())
+
+
+# ── Flicker lens ──────────────────────────────────────────────────────
+# Low-amplitude marker jitter: a bad mocap-solve frame perturbs SEVERAL
+# arm joints on the SAME single frame (a relative-velocity spike from a
+# near-still baseline).  Real motion recruits joints in sequence, so it
+# never synchronises spikes across joints.  Absolute velocity stays low
+# (these are NOT teleports), so the teleport lens is blind to them.
+FLICKER_FLOOR = 2.0    # rad/s — guard against numerical noise
+FLICKER_RATIO = 3.0    # vel[t] / max(neighbours) — relative spike
+FLICKER_VCAP  = 25.0   # rad/s — flicker is LOW absolute velocity (teleport lens has the rest)
+FLICKER_SYNC  = 3      # >= this many arm joints spiking on one frame = a bad-solve frame
+FLICKER_RATE_LOCK = 2.0  # synchronized-flicker frames / second to force "problematic"
+FLICKER_PEAK_LOCK = 8    # ... or this many within any 1-second window (localized burst)
+
+
+def _detect_flicker(poses, fps):
+    """Synchronized low-amplitude arm flicker (marker jitter).
+
+    Returns (flicker_mask, flicker_rate, flicker_peak):
+      flicker_mask  (T,) bool — frames where >= FLICKER_SYNC arm joints spike
+      flicker_rate  float    — flicker frames per second
+      flicker_peak  int      — max flicker frames within any 1-second window
+    """
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    if T < 5:
+        return mask, 0.0, 0
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    v = np.linalg.norm(np.diff(P, axis=0), axis=2) * fps   # (T-1, J)
+    arm = [j for j in TELEPORT_ARM_JOINTS if j < v.shape[1]]
+    L = v.shape[0]
+    spk = np.zeros((L, len(arm)), dtype=bool)
+    for jj, j in enumerate(arm):
+        vj = v[:, j]
+        nm = np.maximum(vj[:-2], vj[2:])
+        cond = (vj[1:-1] >= FLICKER_FLOOR) & (vj[1:-1] < FLICKER_VCAP) & (nm > 1e-6) & \
+               (vj[1:-1] / np.maximum(nm, 1e-9) >= FLICKER_RATIO)
+        spk[1:-1, jj] = cond
+    sync = spk.sum(axis=1) >= FLICKER_SYNC          # (L,) bad-solve frames
+    mask[:L] = sync
+    dur = T / float(fps) if fps > 0 else 0.0
+    flicker_rate = int(sync.sum()) / dur if dur > 0 else 0.0
+    idx = np.where(sync)[0]; w = int(fps); peak = 0
+    for f in idx:
+        peak = max(peak, int(((idx >= f) & (idx < f + w)).sum()))
+    return mask, float(flicker_rate), int(peak)
+
+
+# ── Zigzag lens ───────────────────────────────────────────────────────
+# High-frequency direction reversal on a MOVING joint (the wrist buzzing /
+# zigzagging while it travels) — flicker superimposed on real motion, which
+# the sync-flicker lens (needs a still baseline) and the teleport lens (needs
+# a smooth high-velocity jump) both miss.  Built as a CONTINUOUS, window-
+# integrated intensity, not a threshold: per frame, a reversal weight
+# (1-cos)/2 (0=smooth, 1=full reversal) times a soft motion weight, smoothed
+# over a window so one legit turning-point washes out but a sustained buzz
+# accumulates.  Contributes to noise_score on a soft ramp above a dead-band.
+ZIGZAG_W     = 8
+ZIGZAG_V0    = 8.0     # rad/s — soft motion-weight knee (reversals on a still joint = noise, ignored)
+ZIGZAG_VS    = 3.0
+ZIGZAG_FLOOR = 0.12    # dead-band: clean motion sits below this (clean p90~0.08)
+ZIGZAG_SCALE = 50.0    # noise_score points per unit intensity above the floor
+ZIGZAG_CAP   = 30.0
+
+
+def _detect_zigzag(poses, fps):
+    """Continuous arm zigzag intensity Z[t] (windowed soft reversal x motion).
+    Returns (Z, peak_Z, peak_frame)."""
+    T = poses.shape[0]
+    Zall = np.zeros(T)
+    if T < 5:
+        return Zall, 0.0, 0
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    arm = [j for j in TELEPORT_ARM_JOINTS if j < P.shape[1]]
+    kern = np.ones(2 * ZIGZAG_W + 1) / (2 * ZIGZAG_W + 1)
+    for j in arm:
+        dv = np.diff(P[:, j, :], axis=0)
+        n = np.linalg.norm(dv, axis=1)
+        spd = n * fps
+        if len(dv) < 3:
+            continue
+        num = (dv[:-1] * dv[1:]).sum(axis=1)
+        den = n[:-1] * n[1:]
+        c = np.where(den > 1e-12, num / np.maximum(den, 1e-12), 0.0)
+        rw = (1.0 - c) / 2.0                                  # reversal weight, continuous
+        mspd = np.minimum(spd[:-1], spd[1:])                  # both sides must move
+        mw = 1.0 / (1.0 + np.exp(-(mspd - ZIGZAG_V0) / ZIGZAG_VS))
+        z = rw * mw
+        Z = np.convolve(z, kern, mode='same')
+        Zall[1:1 + len(Z)] = np.maximum(Zall[1:1 + len(Z)], Z)
+    return Zall, float(Zall.max()), int(Zall.argmax())
+
+
+# ── ROM / static-pose lens ────────────────────────────────────────────
+# A wrist cannot be >150 deg from neutral (anatomical max ~90-100; trusted-
+# clean p99=98, never >150).  A SUSTAINED impossible wrist rotation is a
+# candy-wrapper twist artifact — invisible to every velocity lens when it
+# does not correct.  Excise the impossible span; lock if sustained.
+ROM_WRIST_JOINTS = (20, 21)
+ROM_MAX_DEG      = 150.0
+ROM_MIN_FRAMES   = 3       # sustained -> lock
+
+
+def _detect_rom(poses, fps):
+    """Sustained anatomically-impossible wrist rotation (candy-wrapper).
+    Returns (rom_mask, n_impossible_frames)."""
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    for j in ROM_WRIST_JOINTS:
+        if j >= P.shape[1]:
+            continue
+        mag = np.degrees(np.linalg.norm(P[:, j, :], axis=1))
+        mask |= (mag > ROM_MAX_DEG)
+    return mask, int(mask.sum())
+
 
 def _detect_spike_frames(poses, fps):
     """Detect single dropped/corrupted frames via the neighbour-ratio test.
@@ -1709,6 +2012,52 @@ def _detect_spike_frames(poses, fps):
     # Sort by frame then joint for stable output
     spikes.sort(key=lambda s: (s.frame, s.joint_idx))
     return spikes
+
+
+def _cluster_spike_frames(spike_frames, fps):
+    """Consolidate spike frames into temporal clusters.
+
+    Spike frames separated by <= SPIKE_CLUSTER_GAP_S merge into one
+    cluster; clusters with >= SPIKE_CLUSTER_CONTAMINATED_MIN distinct
+    spike frames are flagged as contaminated sections.
+
+    Returns a list of SpikeCluster ordered by start frame.
+    """
+    if not spike_frames:
+        return []
+
+    gap = max(1, int(round(SPIKE_CLUSTER_GAP_S * fps)))
+    by_frame = {}
+    for s in spike_frames:
+        by_frame.setdefault(s.frame, []).append(s)
+
+    frames = sorted(by_frame)
+    groups = [[frames[0]]]
+    for f in frames[1:]:
+        if f - groups[-1][-1] <= gap:
+            groups[-1].append(f)
+        else:
+            groups.append([f])
+
+    clusters = []
+    for g in groups:
+        entries = [s for f in g for s in by_frame[f]]
+        joint_counts = {}
+        for s in entries:
+            joint_counts[s.joint_name] = joint_counts.get(s.joint_name, 0) + 1
+        span = g[-1] - g[0] + 1
+        clusters.append(SpikeCluster(
+            start=g[0], end=g[-1],
+            n_frames=span,
+            duration_s=round(span / fps, 2),
+            n_spike_frames=len(g),
+            n_spike_records=len(entries),
+            spike_density=round(len(g) / span, 3),
+            joints=sorted(joint_counts, key=lambda n: -joint_counts[n]),
+            max_velocity=round(max(s.velocity for s in entries), 1),
+            contaminated=len(g) >= SPIKE_CLUSTER_CONTAMINATED_MIN,
+        ))
+    return clusters
 
 
 def _isolated_arm_impulse_frames(spike_frames, fps):
@@ -2261,13 +2610,34 @@ def print_report(r):
         # Fallback: show raw breaks if no surgery info
         print(f"\n  ⚡ Stream breaks: {len(r.stream_breaks)} detected")
 
-    # ── Single-frame spikes ────────────────────────────────────────────
+    # ── Single-frame spikes (consolidated) ─────────────────────────────
     if r.spike_frames:
+        clusters = r.spike_clusters or _cluster_spike_frames(r.spike_frames, r.fps)
+        contaminated = [c for c in clusters if c.contaminated]
+        isolated = [c for c in clusters if not c.contaminated]
         n_sf = len({s.frame for s in r.spike_frames})
-        print(f"\n  ⚡ Spike frames: {n_sf} dropped/corrupted frame(s)")
-        print(f"    {'Frame':>7s}  {'Joint':<16s}  {'Vel (rad/s)':>11s}  {'NeighbourRatio':>14s}")
-        for s in r.spike_frames:
-            print(f"    {s.frame:7d}  {s.joint_name:<16s}  {s.velocity:11.1f}  {s.neighbor_ratio:14.1f}×")
+        print(f"\n  ⚡ Spike frames: {n_sf} dropped/corrupted frame(s) → "
+              f"{len(contaminated)} contaminated section(s) + "
+              f"{sum(c.n_spike_frames for c in isolated)} isolated")
+        if contaminated:
+            print(f"    Contaminated sections:")
+            print(f"    {'Frames':>17s}  {'Dur':>6s}  {'Spikes':>6s}  "
+                  f"{'Density':>7s}  {'MaxVel':>7s}  Joints")
+            for c in contaminated:
+                joints_str = ', '.join(c.joints[:4])
+                if len(c.joints) > 4:
+                    joints_str += f' +{len(c.joints) - 4}'
+                print(f"    [{c.start:>6d}–{c.end:>6d}]  {c.duration_s:5.1f}s  "
+                      f"{c.n_spike_frames:6d}  {c.spike_density:7.2f}  "
+                      f"{c.max_velocity:7.1f}  {joints_str}")
+        if isolated:
+            iso_frames = {f for c in isolated
+                          for f in range(c.start, c.end + 1)}
+            print(f"    Isolated spikes:")
+            print(f"    {'Frame':>7s}  {'Joint':<16s}  {'Vel (rad/s)':>11s}  {'NeighbourRatio':>14s}")
+            for s in r.spike_frames:
+                if s.frame in iso_frames:
+                    print(f"    {s.frame:7d}  {s.joint_name:<16s}  {s.velocity:11.1f}  {s.neighbor_ratio:14.1f}×")
     
     # ── Cadence ────────────────────────────────────────────────────────
     if r.cadence and r.cadence.detected:
