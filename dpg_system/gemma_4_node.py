@@ -128,6 +128,10 @@ class Gemma4ChatNode(Node):
         self.display_mode.widget.combo_items = ['temperature', 'entropy', 'probability', 'unnormed_probability']
         self.sigmoid_scaler = self.add_input('sigmoid scaler', widget_type='drag_float', default_value=0.2)
         self.sigmoid_offset = self.add_input('sigmoid offset', widget_type='drag_float', default_value=0)
+        # eval incoming text token-by-token, scoring each token against the
+        # model's standing prediction (in/out-of-distribution measure)
+        self.score_input = self.add_input('score_incoming_text', widget_type='checkbox', default_value=False)
+        self.reset_score_input = self.add_input('reset_input_score', widget_type='button', callback=self.reset_input_score)
 
         self.show_probs = self.add_input('show_probs', widget_type='checkbox', default_value=False, callback=self.show_probs_changed)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_text)
@@ -148,6 +152,8 @@ class Gemma4ChatNode(Node):
         self.layout_out = self.add_output('layout_out')
         self.actions_out = self.add_output('actions_out')
         self.active_out = self.add_output('active')
+        self.input_score_out = self.add_output('input_token_score')
+        self.input_cumulative_out = self.add_output('input_cumulative_score')
 
         self.new_response = True
         self.queue = Queue(maxsize=16)
@@ -176,6 +182,10 @@ class Gemma4ChatNode(Node):
         self.entropy = 0.1
         self.probability = 0.0
         self.unnormed_probability = 0.0
+        self.prompt_user_span = None
+        self.input_logprob_sum = 0.0
+        self.input_unnormed_sum = 0.0
+        self.input_token_count = 0
 
         Gemma4ChatNode.gemma_nodes.append(self)
         self.add_frame_task()
@@ -367,6 +377,14 @@ class Gemma4ChatNode(Node):
 
             self.format_and_tokenize_prompt()
             tokens = self.prompt_tokens
+            if self.prompt_user_span is not None:
+                # batch-eval the turn header, then consume the user's words
+                # one-by-one so each gets scored; the turn close + generation
+                # header go to sample_token as usual
+                start, end = self.prompt_user_span
+                llm.eval(self.prompt_tokens[:start])
+                self.eval_and_score(self.prompt_tokens[start:end])
+                tokens = self.prompt_tokens[end:]
             token_string = ''
             while token_string is not None:
                 if self.active == False or self.do_reset:
@@ -428,6 +446,11 @@ class Gemma4ChatNode(Node):
                             for token in streaming_tokens:
                                 pairs += [[token, self.decode_token(token)]]
                             tokens = streaming_tokens
+                            if self.score_input():
+                                # consume scored; sample_token then gets an
+                                # empty eval and samples from the last logits
+                                self.eval_and_score(streaming_tokens)
+                                tokens = []
                             self.output.send(self.streaming_prompt)
                             self.layout_out.send(['streaming_prompt', pairs])
                             self.layout_out.send(['accept_streamed_prompt'])
@@ -492,7 +515,19 @@ class Gemma4ChatNode(Node):
                                  + '<turn|>\n' + gen_prompt)
 
         add_bos = (llm.n_tokens == 0)
-        self.prompt_tokens = llm.tokenizer().encode(self.formatted_prompt, add_bos=add_bos, special=True)
+        if self.score_input():
+            # segment the encoding so the user's words can be eval'd and
+            # scored token-by-token; concatenated segments can differ from
+            # whole-string encoding by a merge at the two text boundaries
+            tokenizer = llm.tokenizer()
+            pre_tokens = tokenizer.encode(prefix + sys_block + '<|turn>user\n', add_bos=add_bos, special=True)
+            user_tokens = self.encode_continuation(prompt)
+            post_tokens = tokenizer.encode('<turn|>\n' + gen_prompt, add_bos=False, special=True)
+            self.prompt_tokens = pre_tokens + user_tokens + post_tokens
+            self.prompt_user_span = (len(pre_tokens), len(pre_tokens) + len(user_tokens))
+        else:
+            self.prompt_tokens = llm.tokenizer().encode(self.formatted_prompt, add_bos=add_bos, special=True)
+            self.prompt_user_span = None
 
         if self.suppress_prompt_layout:
             self.suppress_prompt_layout = False
@@ -561,6 +596,49 @@ class Gemma4ChatNode(Node):
 
     def unnormalized_probability(self, logit):
         return 1 / (1 + torch.exp(self.sigmoid_scaler() * (logit + self.sigmoid_offset())))
+
+    def current_logits(self):
+        # raw logits left by the most recent decode: the model's standing
+        # prediction for the next position
+        llm = self.llm
+        if llm is None or llm.n_tokens == 0:
+            return None
+        ptr = llm._ctx.get_logits()
+        if not ptr:
+            return None
+        return np.ctypeslib.as_array(ptr, shape=(llm.n_vocab(),))
+
+    def eval_and_score(self, tokens):
+        # consume incoming tokens one at a time so each can be scored against
+        # the prediction the model held before consuming it; the statement's
+        # first token is reported but kept out of the cumulative — the model
+        # has no settled prediction for an opening word, so it scores as
+        # artificially surprising
+        llm = self.llm
+        for i, token in enumerate(tokens):
+            logits = self.current_logits()
+            if logits is not None:
+                self.score_incoming_token(int(token), logits, accumulate=(i > 0))
+            llm.eval([int(token)])
+
+    def score_incoming_token(self, token, logits, accumulate=True):
+        logits = torch.from_numpy(logits.copy())
+        logprob = float(torch.log_softmax(logits, dim=-1)[token])
+        unnormed = float(self.unnormalized_probability(logits[token]))
+        self.input_score_out.send([self.decode_token(token), logprob, unnormed])
+        if not accumulate:
+            return
+        self.input_logprob_sum += logprob
+        self.input_unnormed_sum += unnormed
+        self.input_token_count += 1
+        count = self.input_token_count
+        self.input_cumulative_out.send([self.input_logprob_sum / count,
+                                        self.input_unnormed_sum / count, count])
+
+    def reset_input_score(self):
+        self.input_logprob_sum = 0.0
+        self.input_unnormed_sum = 0.0
+        self.input_token_count = 0
 
     def decode_token(self, token):
         # stateless decode for display lists; partial multibyte tokens show empty
@@ -762,6 +840,7 @@ class Gemma4ChatNode(Node):
 
     def reset(self):
         self.next_period_counter = 0
+        self.reset_input_score()
         if self.logits_processor is not None:
             self.logits_processor.reset()
         self.do_reset = False
