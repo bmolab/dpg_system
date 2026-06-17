@@ -1,0 +1,1201 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "id": 205,
+    "name": "magnetization_checker",
+    "path": "/Users/drokeby/dpg_system/dpg_system/magnetometer_assessment/magnetization_checker.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 236,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "shadow_sensor",
+            "id": 338,
+            "sid": 7,
+            "position_x": 95,
+            "position_y": 146,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "reconnect",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "body",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "sensor",
+                    "value": "LeftWrist",
+                    "value_type": "string"
+                }
+            }
+        },
+        "2": {
+            "name": "mag_offset",
+            "id": 355,
+            "sid": 9,
+            "position_x": 254,
+            "position_y": 182,
+            "width": 246,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "clear",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "max points",
+                    "value": 8000,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "offset (uT)",
+                    "value": "0.14, -2.27, -10.43",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "radius (uT)",
+                    "value": "324.75",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "fit residual",
+                    "value": "93.795",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "samples",
+                    "value": "8000",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "min point spacing",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 391,
+            "sid": 11,
+            "position_x": 11,
+            "position_y": 399,
+            "width": 92,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_display_width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "match_texture_to_window",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "display_mode",
+                    "value": "window",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "samples",
+                    "value": "4",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "default_light",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "9": {
+                    "name": "light_pos",
+                    "value": [
+                        2.0,
+                        5.0,
+                        5.0
+                    ],
+                    "value_type": "list"
+                },
+                "10": {
+                    "name": "light_intensity",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "default_camera",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "12": {
+                    "name": "camera_fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "camera_pos",
+                    "value": [
+                        0.0,
+                        0.0,
+                        3.0
+                    ],
+                    "value_type": "list"
+                },
+                "14": {
+                    "name": "camera_target",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "15": {
+                    "name": "camera_near",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "camera_far",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "clear_color",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                },
+                "18": {
+                    "name": "win_size",
+                    "value": [
+                        640.0,
+                        640.0
+                    ],
+                    "value_type": "list"
+                },
+                "19": {
+                    "name": "win_pos",
+                    "value": [
+                        1354.0,
+                        298.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_point_cloud",
+            "id": 476,
+            "sid": 13,
+            "position_x": 792,
+            "position_y": 377,
+            "width": 124,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "mode",
+                    "value": "points",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "cull",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "point_size",
+                    "value": 80.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "round",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 501,
+            "sid": 15,
+            "position_x": 354,
+            "position_y": 422,
+            "width": 188,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 80.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "target",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "2": {
+                    "name": "distance",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "yaw",
+                    "value": 63.95030212402344,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "elevation",
+                    "value": 20.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "near",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "far",
+                    "value": 1000.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "mgl_geo_sphere",
+            "id": 531,
+            "sid": 17,
+            "position_x": 1013,
+            "position_y": 576,
+            "width": 166,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "radius",
+                    "value": 324.7451477050781,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "subdivisions",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "mode",
+                    "value": "wireframe",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "cull",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "point_size",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "round",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 559,
+            "sid": 18,
+            "position_x": 625,
+            "position_y": 248,
+            "width": 466,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[-33.87748591436166, -215.3947082875772, 148.76683225877895]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 436,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "info",
+            "id": 585,
+            "sid": 20,
+            "position_x": 819,
+            "position_y": 186,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "array[8000, 3] float64",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "mgl_light",
+            "id": 593,
+            "sid": 22,
+            "position_x": 540,
+            "position_y": 16,
+            "width": 201,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "position",
+                    "value": [
+                        0.0,
+                        5.0,
+                        5.0
+                    ],
+                    "value_type": "list"
+                },
+                "1": {
+                    "name": "ambient",
+                    "value": [
+                        255.0,
+                        254.97254943847656,
+                        254.97254943847656,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "2": {
+                    "name": "diffuse",
+                    "value": [
+                        255.0,
+                        254.97254943847656,
+                        254.97254943847656,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "3": {
+                    "name": "specular",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "4": {
+                    "name": "intensity",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "name": "mgl_material",
+            "id": 617,
+            "sid": 24,
+            "position_x": 801,
+            "position_y": 24,
+            "width": 148,
+            "height": 206,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "ambient",
+                    "value": [
+                        255.0,
+                        254.97254943847656,
+                        254.97254943847656,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "1": {
+                    "name": "diffuse",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "2": {
+                    "name": "specular",
+                    "value": [
+                        0.49803921580314636,
+                        0.49803921580314636,
+                        0.49803921580314636,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "3": {
+                    "name": "shininess",
+                    "value": 32.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "mgl_material",
+            "id": 666,
+            "sid": 26,
+            "position_x": 617,
+            "position_y": 537,
+            "width": 148,
+            "height": 206,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "ambient",
+                    "value": [
+                        170.31764221191406,
+                        23.207843780517578,
+                        23.207843780517578,
+                        217.0196075439453
+                    ],
+                    "value_type": "list"
+                },
+                "1": {
+                    "name": "diffuse",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "2": {
+                    "name": "specular",
+                    "value": [
+                        0.49803921580314636,
+                        0.49803921580314636,
+                        0.49803921580314636,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "3": {
+                    "name": "shininess",
+                    "value": 32.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "name": "signal",
+            "id": 695,
+            "sid": 28,
+            "position_x": 92,
+            "position_y": 519,
+            "width": 160,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "13": {
+            "name": "info",
+            "id": 726,
+            "sid": 30,
+            "position_x": 550,
+            "position_y": 369,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "float 93.795",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "name": "info",
+            "id": 735,
+            "sid": 31,
+            "position_x": 610,
+            "position_y": 326,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "float 324.745",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "vector",
+            "id": 752,
+            "sid": 33,
+            "position_x": 934,
+            "position_y": 336,
+            "width": 160,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "[0]",
+                    "value": -33.87748718261719,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "[1]",
+                    "value": -215.39471435546875,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "[2]",
+                    "value": 148.76683044433594,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "[3]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "[4]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "[5]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "[6]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "[7]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "[8]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "[9]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "[10]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "[11]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "[12]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "[13]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "[14]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "[15]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "[16]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "[17]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "[18]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "[19]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "[20]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "[21]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "[22]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "[23]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "[24]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "[25]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "[26]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "[27]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "[28]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "[29]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "[30]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "[31]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "[32]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "33": {
+                    "name": "[33]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "34": {
+                    "name": "[34]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "35": {
+                    "name": "[35]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "36": {
+                    "name": "[36]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "37": {
+                    "name": "[37]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "38": {
+                    "name": "[38]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "39": {
+                    "name": "[39]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "40": {
+                    "name": "[40]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "41": {
+                    "name": "[41]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "42": {
+                    "name": "[42]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "43": {
+                    "name": "[43]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "44": {
+                    "name": "[44]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "45": {
+                    "name": "[45]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "46": {
+                    "name": "[46]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "47": {
+                    "name": "[47]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "48": {
+                    "name": "[48]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "49": {
+                    "name": "[49]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "50": {
+                    "name": "[50]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "51": {
+                    "name": "[51]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "52": {
+                    "name": "[52]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "53": {
+                    "name": "[53]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "54": {
+                    "name": "[54]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "55": {
+                    "name": "[55]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "56": {
+                    "name": "[56]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "57": {
+                    "name": "[57]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "58": {
+                    "name": "[58]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "59": {
+                    "name": "[59]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "60": {
+                    "name": "[60]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "61": {
+                    "name": "[61]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "62": {
+                    "name": "[62]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "63": {
+                    "name": "[63]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "64": {
+                    "name": "zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "65": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "string"
+                },
+                "66": {
+                    "name": "component count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "67": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "68": {
+                    "name": "all inputs trigger",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "69": {
+                    "name": "width",
+                    "value": 45,
+                    "value_type": "int"
+                },
+                "70": {
+                    "name": "save",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "71": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 338,
+            "source_node_name": "shadow_sensor",
+            "source_output_index": 0,
+            "source_output_name": "magnetometer",
+            "dest_node": 355,
+            "dest_node_name": "mag_offset",
+            "dest_input_index": 0,
+            "dest_input_name": "magnetometer"
+        },
+        "1": {
+            "source_node": 355,
+            "source_node_name": "mag_offset",
+            "source_output_index": 0,
+            "source_output_name": "cloud",
+            "dest_node": 476,
+            "dest_node_name": "mgl_point_cloud",
+            "dest_input_index": 1,
+            "dest_input_name": "points"
+        },
+        "2": {
+            "source_node": 355,
+            "source_node_name": "mag_offset",
+            "source_output_index": 0,
+            "source_output_name": "cloud",
+            "dest_node": 585,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 355,
+            "source_node_name": "mag_offset",
+            "source_output_index": 2,
+            "source_output_name": "center",
+            "dest_node": 559,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 355,
+            "source_node_name": "mag_offset",
+            "source_output_index": 2,
+            "source_output_name": "center",
+            "dest_node": 752,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 355,
+            "source_node_name": "mag_offset",
+            "source_output_index": 3,
+            "source_output_name": "radius",
+            "dest_node": 531,
+            "dest_node_name": "mgl_geo_sphere",
+            "dest_input_index": 1,
+            "dest_input_name": "radius"
+        },
+        "6": {
+            "source_node": 355,
+            "source_node_name": "mag_offset",
+            "source_output_index": 3,
+            "source_output_name": "radius",
+            "dest_node": 735,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 355,
+            "source_node_name": "mag_offset",
+            "source_output_index": 4,
+            "source_output_name": "residual",
+            "dest_node": 726,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 391,
+            "source_node_name": "mgl_context",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 593,
+            "dest_node_name": "mgl_light",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "9": {
+            "source_node": 501,
+            "source_node_name": "mgl_orbit_camera",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 476,
+            "dest_node_name": "mgl_point_cloud",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "10": {
+            "source_node": 501,
+            "source_node_name": "mgl_orbit_camera",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 666,
+            "dest_node_name": "mgl_material",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "11": {
+            "source_node": 593,
+            "source_node_name": "mgl_light",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 617,
+            "dest_node_name": "mgl_material",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "12": {
+            "source_node": 617,
+            "source_node_name": "mgl_material",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 501,
+            "dest_node_name": "mgl_orbit_camera",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "13": {
+            "source_node": 666,
+            "source_node_name": "mgl_material",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 531,
+            "dest_node_name": "mgl_geo_sphere",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "14": {
+            "source_node": 695,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 501,
+            "dest_node_name": "mgl_orbit_camera",
+            "dest_input_index": 4,
+            "dest_input_name": "yaw"
+        }
+    }
+}

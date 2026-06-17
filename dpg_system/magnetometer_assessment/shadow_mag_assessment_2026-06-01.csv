@@ -1,0 +1,52 @@
+suit,sensor,joint_name,cx_uT,cy_uT,cz_uT,offset_mag_uT,offset_pct_radius,radius_uT,residual_uT,residual_pct_radius,flag,notes
+1,chest,MidVertebrae,0.934373629830721,-0.13995383016712787,1.139389500249565,1.480,2.71,54.560,0.423,0.78,clean,reference clean sensor; radius matches Toronto field
+1,base of skull,Head,-0.7886514675822253,0.8528426794235151,-3.9686350364556926,4.135,7.45,55.497,0.657,1.18,offset,Z-dominated hard-iron ~2.8x chest
+1,pelvis anchor,PelvisAnchor,0.40,-0.45,0.27,0.660,1.23,53.560,0.558,1.04,clean,clean; contrast w/ suit-2 pelvis (3.50uT) -> pelvis offset is suit-specific not mount pattern
+1,right hip,RightHip,0.62,-0.45,-0.01,0.766,1.43,53.430,0.315,0.59,clean,clean; closely matches suit-2 right hip (0.79uT)
+1,right knee,RightKnee,1.43,-4.02,-1.66,4.578,8.61,53.180,0.458,0.86,offset,moderate Y-dominated hard-iron; clean sphere; suit-specific (suit-2 knee pristine 0.31uT)
+1,right ankle,RightAnkle,0.37,-0.31,0.22,0.531,0.99,53.840,0.441,0.82,clean,clean
+1,left hip,LeftHip,0.47,-0.25,1.16,1.276,2.42,52.840,0.467,0.88,clean,clean
+1,left ankle,LeftAnkle,-0.21,-0.28,-0.15,0.381,0.72,53.290,1.302,2.44,residual,REDO w/ full sweep; radius recovered to 53.29 (prior 50.48 was incomplete coverage, NOT scale); offset pristine; residual elevated 2.44% -> soft-iron or noise
+1,left knee,LeftKnee,0.31,-0.58,0.41,0.775,1.48,52.230,0.593,1.14,clean,clean (redo after node reset); contrast suit-1 right knee 4.58uT -> right-knee sensor specific
+1,left shoulderblade base,LeftShoulderBladeBase,-1.29,-0.74,1.52,2.127,3.97,53.530,0.326,0.61,clean,clean but high side (spread X/Z, not single-axis); suit-2 counterpart pristine 0.18uT
+1,left shoulder,LeftShoulder,-0.36,0.10,-2.90,2.924,5.41,54.030,0.393,0.73,offset,minor Z-dominated hard-iron; clean sphere; suit-2 left shoulder opposite profile (lower offset, high residual)
+1,left elbow,LeftElbow,-1.16,-1.70,1.50,2.547,4.80,53.010,0.348,0.66,clean,clean-high (offset spread all axes not single); part of suit-1 left-arm elevated cluster (sbb 3.97/sh 5.41/elb 4.80%)
+1,left wrist,LeftWrist,0.96,-0.32,-0.78,1.278,2.45,52.250,0.889,1.70,clean,clean -> suit-2 left-wrist outlier (10.68uT) is suit-specific; suit-1 left-arm cluster does NOT continue distally to wrist
+1,right shoulderblade base,RightShoulderBladeBase,0.76,-0.15,-0.54,0.944,1.77,53.460,0.253,0.47,clean,clean; lowest residual measured; right proximal arm clean vs left (3.97%) -> suit-1 upper-arm cluster is left-specific
+1,right shoulder,RightShoulder,0.02,-0.78,-0.21,0.808,1.50,53.900,0.699,1.30,clean,clean; vs suit-1 left shoulder 5.41% -> left-specific confirmed
+1,right elbow,RightElbow,0.04,0.09,-0.48,0.490,0.93,52.560,0.411,0.78,clean,clean; vs suit-1 left elbow 4.80% -> left-specific holds whole arm
+1,right wrist,RightWrist,15.28,-3.03,1.46,15.646,30.44,51.400,0.775,1.51,OFFSET-OUTLIER,severe X-dominated hard-iron; #2 worst overall; clean sphere shape; radius mildly low (~4%); WRIST PATTERN (each suit has 1 bad wrist: s1-right X, s2-left Z)
+2,right shoulderblade base,RightShoulderBladeBase,0.424350184398721,-0.5485094802419628,-0.4398564397027592,0.821,1.55,53.041,0.345,0.65,clean,evenly spread; lowest residual
+2,right hip,RightHip,0.14189762690937946,-0.2758694935135577,-0.7235313580475726,0.787,1.47,53.613,0.530,0.99,clean,
+2,right knee,RightKnee,0.19547666281427287,-0.023051007750901582,-0.23755269961962,0.309,0.57,53.758,0.682,1.27,clean,
+2,right ankle,RightAnkle,1.04,-0.07,0.80,1.314,2.48,53.000,0.741,1.40,clean,
+2,right shoulder,RightShoulder,0.07,0.35,-0.38,0.521,0.98,53.190,1.200,2.26,residual,elevated residual; arm sensor
+2,right elbow,RightElbow,0.55,0.39,-0.14,0.689,1.28,53.980,0.685,1.27,clean,
+2,right wrist,RightWrist,0.16,-0.67,-0.88,1.118,2.05,54.410,0.741,1.36,clean,
+2,left shoulderblade base,LeftShoulderBladeBase,0.01,-0.18,0.01,0.181,0.33,54.410,0.544,1.00,clean,smallest offset measured
+2,left shoulder,LeftShoulder,-0.26,-0.43,1.33,1.422,2.67,53.280,1.057,1.98,residual,elevated residual; arm sensor; Z-weighted
+2,left elbow,LeftElbow,-0.51,-0.10,-1.01,1.136,2.06,55.030,1.081,1.96,residual,elevated residual; arm sensor; Z-weighted
+2,left wrist,LeftWrist,0.14,-2.27,-10.43,10.675,20.18,52.890,0.752,1.42,OFFSET-OUTLIER,clear hard-iron on Z; clean sphere shape but center displaced; ~7x base-of-skull
+2,pelvis anchor,PelvisAnchor,-1.40,-3.21,0.04,3.502,6.48,54.040,0.815,1.51,offset,moderate Y-dominated hard-iron; 2nd largest offset on suit 2; clean sphere shape
+2,base of skull,Head,-5.92,-16.66,0.94,17.706,33.11,53.470,0.631,1.18,OFFSET-OUTLIER,WORST sensor measured; severe Y-dominated hard-iron; clean sphere shape; head-mount pattern (suit 1 head also high)
+2,chest,MidVertebrae,-0.66,-0.03,-1.07,1.258,2.37,53.050,0.255,0.48,clean,lowest residual measured; matches suit-1 chest offset
+2,left hip,LeftHip,0.07,-0.47,1.01,1.116,2.09,53.310,0.439,0.82,clean,clean
+2,left knee,LeftKnee,0.04,-0.66,0.31,0.730,1.36,53.630,0.531,0.99,clean,clean
+2,left ankle,LeftAnkle,0.02,-0.50,-0.11,0.512,0.96,53.480,0.380,0.71,clean,clean
+3,pelvis anchor,PelvisAnchor,0.78,-0.59,-0.12,0.985,1.82,54.270,0.356,0.66,clean,clean; suits 1&3 pelvis clean vs suit-2 moderate (3.50) -> suit-2 pelvis suit-specific
+3,left hip,LeftHip,-0.95,-0.98,1.16,1.791,3.30,54.350,0.870,1.60,clean,clean (high side, spread across axes)
+3,left knee,LeftKnee,-0.10,-0.57,0.05,0.581,1.08,53.800,0.421,0.78,clean,clean
+3,left ankle,LeftAnkle,0.11,-0.86,-0.01,0.867,1.62,53.460,0.444,0.83,clean,clean
+3,right hip,RightHip,-0.57,-0.45,-0.14,0.740,1.39,53.320,0.261,0.49,clean,clean
+3,right knee,RightKnee,0.52,-0.62,-0.70,1.070,2.01,53.260,0.264,0.50,clean,clean; suits 2&3 right knee clean -> suit-1 right knee (8.61%) suit-specific
+3,right ankle,RightAnkle,-5.59,-3.76,6.70,9.501,17.91,53.040,0.310,0.58,OFFSET-OUTLIER,severe hard-iron #4 overall; spread all 3 axes (not single); clean sphere; FIRST foot outlier -> breaks heads/wrists-only pattern; extremity contamination (footwear/strap hardware?)
+3,right shoulder,RightShoulder,0.17,0.09,0.12,0.227,0.42,53.620,0.238,0.44,clean,pristine; 2nd-smallest offset measured
+3,right elbow,RightElbow,0.08,0.03,0.05,0.099,0.19,53.330,0.228,0.43,clean,pristine; smallest offset measured
+3,right wrist,RightWrist,0.04,-0.01,0.14,0.146,0.27,53.420,0.291,0.55,clean,pristine; right wrists s1=30%(outlier)/s2=2.05%/s3=0.27% -> suit-1 right-wrist contamination suit-specific
+3,left shoulder,LeftShoulder,-0.22,-0.21,0.18,0.353,0.66,53.920,0.256,0.48,clean,pristine; s1 left shoulder 5.41% & s2 residual 1.98% were suit-specific
+3,left elbow,LeftElbow,-0.10,0.19,0.16,0.268,0.50,53.510,0.329,0.62,clean,pristine
+3,left wrist,LeftWrist,-0.17,-0.02,0.14,0.221,0.41,53.500,0.299,0.56,clean,pristine; left wrists s1=2.45%/s2=20.2%(outlier)/s3=0.41% -> suit-2 left-wrist suit-specific; suit-3 both wrists clean
+3,left shoulderblade base,LeftShoulderBladeBase,-1.18,8.59,0.59,8.691,16.29,53.340,0.441,0.83,OFFSET-OUTLIER,severe Y-dominated hard-iron #5 overall; clean sphere; UPPER BACK not extremity -> breaks extremity framing; scattered per-sensor contamination; suit-specific (s1 3.97/s2 0.33%)
+3,right shoulderblade base,RightShoulderBladeBase,0.02,0.02,0.33,0.331,0.62,53.090,0.647,1.22,clean,pristine; vs suit-3 LEFT shoulderblade 16.3% outlier -> individual-sensor not shoulderblade type
+3,chest,MidVertebrae,-0.46,-1.47,1.92,2.461,4.68,52.640,0.432,0.82,clean,REDO full sweep; radius recovered 51.09->52.64 (prior low = coverage); offset clean-high (spread Y/Z), genuinely a bit above suits 1&2 chest
+3,base of skull,Head,0.84,3.22,-4.07,5.257,10.09,52.090,0.831,1.60,offset,elevated Y/Z hard-iron; clean-ish shape; HEAD elevated on ALL 3 suits (s1 7.5/s2 33/s3 10%) -> head-mount hardware systematic
