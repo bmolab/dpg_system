@@ -18,8 +18,9 @@ not share any mutable state with each other or the main process.
 
 Usage:
     python batch_noise_torque.py [--amass-root PATH] [--output-dir PATH]
-                                  [--workers N] [--resume] [--limit N]
+                                  [--workers N] [--resume] [--limit N] [--skip-torque]
 """
+
 
 import os
 import json
@@ -85,32 +86,54 @@ def save_checkpoint(path, data):
     os.replace(tmp, path)
 
 
-def save_result_by_folder(filepath, report_dict, amass_root, results_dir):
-    """Append a single report to the per-dataset JSON file.
-    Only safe to call from the main process (no cross-process locking)."""
-    os.makedirs(results_dir, exist_ok=True)
+def buffer_result(folder_cache, filepath, report_dict, amass_root, results_dir):
+    """Stage a result in the in-memory per-dataset cache (no disk write).
+
+    Accumulate in memory and flush periodically via flush_folder_cache()
+    rather than re-reading, re-sorting, and rewriting the entire dataset JSON
+    on EVERY file — the latter is O(n^2) and serialized in the main process,
+    and dominated wall-clock once a dataset accumulated a few hundred
+    (multi-KB) reports.  On first touch of a dataset we load any existing JSON
+    so --resume runs append rather than clobber.
+    """
     dataset = get_dataset_name(filepath, amass_root)
-    out_path = os.path.join(results_dir, f"{dataset}.json")
+    cache = folder_cache.get(dataset)
+    if cache is None:
+        out_path = os.path.join(results_dir, f"{dataset}.json")
+        if os.path.exists(out_path):
+            with open(out_path, "r") as f:
+                cache = json.load(f)
+        else:
+            cache = {"dataset": dataset, "files": {}}
+        cache["files"] = cache.get("files", {})
+        folder_cache[dataset] = cache
+    cache["files"][filepath] = report_dict
+    cache["_dirty"] = True
 
-    if os.path.exists(out_path):
-        with open(out_path, "r") as f:
-            folder_data = json.load(f)
-    else:
-        folder_data = {"dataset": dataset, "files": {}}
 
-    folder_data["files"][filepath] = report_dict
+def flush_folder_cache(folder_cache, results_dir):
+    """Write every dirty dataset cache to disk (sorted by descending noise)."""
+    os.makedirs(results_dir, exist_ok=True)
+    for dataset, cache in folder_cache.items():
+        if not cache.get("_dirty"):
+            continue
+        sorted_items = sorted(
+            cache["files"].items(),
+            key=lambda x: (-x[1].get("noise_score", 0), x[0]),
+        )
+        out = {"dataset": dataset, "files": dict(sorted_items)}
+        out_path = os.path.join(results_dir, f"{dataset}.json")
+        tmp_path = out_path + ".tmp"
+        with open(tmp_path, "w") as f:
+            json.dump(out, f, indent=2)
+        os.replace(tmp_path, out_path)
+        cache["_dirty"] = False
 
-    # Sort by descending noise_score so noisiest files surface first
-    sorted_items = sorted(
-        folder_data["files"].items(),
-        key=lambda x: (-x[1].get("noise_score", 0), x[0]),
-    )
-    folder_data["files"] = dict(sorted_items)
 
-    tmp_path = out_path + ".tmp"
-    with open(tmp_path, "w") as f:
-        json.dump(folder_data, f, indent=2)
-    os.replace(tmp_path, out_path)
+# Flush staged results to disk every this many successful files.  A crash
+# between flushes only costs redundant re-processing on --resume (the folder
+# JSONs are the resume source of truth), never correctness.
+FOLDER_FLUSH_INTERVAL = 100
 
 
 def load_processed_from_folder_jsons(results_dir):
@@ -162,7 +185,7 @@ def _worker_analyze(args):
     SMPLProcessor instance per call, so EMAs and sequential-filter
     state reset between files even within the same worker.
     """
-    filepath, smooth_window = args
+    filepath, smooth_window, skip_torque = args
     t0 = time.time()
     try:
         # Imported inside the function so it's also imported per-worker
@@ -174,6 +197,7 @@ def _worker_analyze(args):
             filepath,
             smooth_input_window=smooth_window,
             verbose=False,
+            skip_torque=skip_torque,
         )
         report_dict = ent._to_jsonable(asdict(report))
         return filepath, report_dict, None, time.time() - t0
@@ -182,7 +206,7 @@ def _worker_analyze(args):
 
 
 def _sequential_loop(remaining, smooth_window, results_dir, amass_root,
-                     checkpoint_path, done):
+                     checkpoint_path, done, skip_torque=False):
     """Run files one at a time in this process (workers=1 path)."""
     import estimate_noise_torque as ent
 
@@ -190,6 +214,7 @@ def _sequential_loop(remaining, smooth_window, results_dir, amass_root,
     n_ok = 0
     n_fail = 0
     failures = []
+    folder_cache = {}
 
     for i, filepath in enumerate(remaining, 1):
         elapsed = time.time() - start_time
@@ -201,7 +226,8 @@ def _sequential_loop(remaining, smooth_window, results_dir, amass_root,
         try:
             t0 = time.time()
             report = ent.analyze_file(
-                filepath, smooth_input_window=smooth_window, verbose=False)
+                filepath, smooth_input_window=smooth_window, verbose=False,
+                skip_torque=skip_torque)
             dt = time.time() - t0
         except KeyboardInterrupt:
             print("\nInterrupted by user.")
@@ -221,20 +247,24 @@ def _sequential_loop(remaining, smooth_window, results_dir, amass_root,
             print(f"  SERIALIZE FAILED: {e}")
             continue
 
-        save_result_by_folder(filepath, report_dict, amass_root, results_dir)
+        buffer_result(folder_cache, filepath, report_dict, amass_root, results_dir)
         done[filepath] = {"noise_score": report_dict.get("noise_score", 0)}
-        save_checkpoint(checkpoint_path, {"processed_files": done})
+        if n_ok % FOLDER_FLUSH_INTERVAL == 0:
+            flush_folder_cache(folder_cache, results_dir)
+            save_checkpoint(checkpoint_path, {"processed_files": done})
 
         n_ok += 1
         print(f"  OK  cls={report.classification:11s}  "
               f"noise={report.noise_score:6.2f}  "
               f"clean_sec={report.clean_section_score:6.2f}  ({dt:.1f}s)")
 
+    flush_folder_cache(folder_cache, results_dir)
+    save_checkpoint(checkpoint_path, {"processed_files": done})
     return n_ok, n_fail, failures, time.time() - start_time
 
 
 def _parallel_loop(remaining, smooth_window, n_workers, results_dir,
-                   amass_root, checkpoint_path, done):
+                   amass_root, checkpoint_path, done, skip_torque=False):
     """Run files in parallel across N worker subprocesses.
 
     Workers stream results back via imap_unordered; the main process
@@ -245,13 +275,14 @@ def _parallel_loop(remaining, smooth_window, n_workers, results_dir,
     print(f"(First file per worker pays the smplx-model load cost ~5-10s; "
           f"subsequent files in that worker hit the cache.)\n")
 
-    work_items = [(f, smooth_window) for f in remaining]
+    work_items = [(f, smooth_window, skip_torque) for f in remaining]
 
     start_time = time.time()
     n_ok = 0
     n_fail = 0
     n_done = 0
     failures = []
+    folder_cache = {}
 
     try:
         with Pool(processes=n_workers) as pool:
@@ -270,11 +301,13 @@ def _parallel_loop(remaining, smooth_window, n_workers, results_dir,
                           f"FAILED: {filepath}\n  {err}", flush=True)
                     continue
 
-                save_result_by_folder(filepath, report_dict, amass_root, results_dir)
+                buffer_result(folder_cache, filepath, report_dict, amass_root, results_dir)
                 done[filepath] = {"noise_score": report_dict.get("noise_score", 0)}
-                # Save checkpoint every 10 successful files to avoid
-                # disk thrash at high parallelism.
-                if n_ok % 10 == 0:
+                # Flush staged results + checkpoint periodically to bound the
+                # work redone on --resume after a crash, without paying an
+                # O(n^2) full-folder rewrite on every file.
+                if n_ok % FOLDER_FLUSH_INTERVAL == 0:
+                    flush_folder_cache(folder_cache, results_dir)
                     save_checkpoint(checkpoint_path, {"processed_files": done})
 
                 n_ok += 1
@@ -288,7 +321,8 @@ def _parallel_loop(remaining, smooth_window, n_workers, results_dir,
     except KeyboardInterrupt:
         print("\nInterrupted by user.")
 
-    # Final checkpoint save
+    # Final flush + checkpoint save
+    flush_folder_cache(folder_cache, results_dir)
     save_checkpoint(checkpoint_path, {"processed_files": done})
     return n_ok, n_fail, failures, time.time() - start_time
 
@@ -310,6 +344,10 @@ def main():
                    help="Process at most N files this run (for testing).")
     p.add_argument("--smooth-window", type=int, default=0,
                    help="Input smoothing window (0=off, 3/5/7).")
+    p.add_argument("--skip-torque", action="store_true",
+                   help="Lenses-only fast path: skip the SMPL/torque pass "
+                        "(~4x faster; full-corpus ablation proved identical "
+                        "classification & excision — torque adds no decision value).")
     args = p.parse_args()
 
     today = datetime.date.today().isoformat()
@@ -334,6 +372,7 @@ def main():
     print(f"Checkpoint:    {checkpoint_path}")
     print(f"Workers:       {args.workers}")
     print(f"Resume mode:   {args.resume}")
+    print(f"Skip torque:   {args.skip_torque}  {'(LENSES-ONLY fast path)' if args.skip_torque else ''}")
     print()
 
     if not os.path.isdir(amass_root):
@@ -372,11 +411,11 @@ def main():
     if args.workers == 1:
         n_ok, n_fail, failures, elapsed = _sequential_loop(
             remaining, args.smooth_window, results_dir, amass_root,
-            checkpoint_path, done)
+            checkpoint_path, done, args.skip_torque)
     else:
         n_ok, n_fail, failures, elapsed = _parallel_loop(
             remaining, args.smooth_window, args.workers, results_dir,
-            amass_root, checkpoint_path, done)
+            amass_root, checkpoint_path, done, args.skip_torque)
 
     print()
     print(f"Run finished in {format_eta(elapsed)}")

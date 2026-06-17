@@ -84,6 +84,38 @@ _(Update at end of each session — one short paragraph)_
   the corruption detector's approach). 23 → 5 breaks, all real
   recalibrations preserved, clean total 97.5 → 98.6 %, no impact
   on AMASS calibration files. Ready for AMASS re-batch.
+- **2026-06-14:** Reviewed the first full lens run (06-13, lenses-only). Long
+  investigation into spike significance on rub100/0022_throwing_hard1 (f211 vs
+  f215) — see the dated section "Spike significance, impact metrics, and the
+  severity/dial architecture" below for the full reasoning. Headline:
+  physical impact (exact SMPLH mesh displacement) does NOT separate a visible
+  glitch from an imperceptible one (both ~0.5 cm); the visible one is
+  kinematically indistinguishable from legitimate fast motion, so that class
+  shouldn't be chased. Built and shipped a severity/dial architecture instead:
+  per-cluster lens severity in the run, an offline `clean_segment_tools`
+  re-derivation (tunable tolerance + segment-joining, no re-run), and live
+  dials in NoiseReviewNode. Fresh full run in
+  `noise_results_lenses_2026_06_14/` (14,182 files, 0 fail). At the default
+  dial, 81.5% of flagged files recover a usable clean middle.
+- **2026-06-14 (continued — very long session):** After the severity/dial work,
+  the session continued through: flicker is NOT the over-firing culprit (the
+  moderate flood is the single-significant-spike rule; tuned it → +1,023 files
+  recovered to clean, recall held); severity-aware join fix (never bridge a hard
+  glitch); dev×speed corruption lens (diagnostic, complementary); the
+  **excursion lens** (off_dev + regime_change — the first real glitch-vs-
+  ballistic-motion discriminator; built, complementary not redundant); a long
+  **perceptibility investigation** concluding perceptibility must be LOCALIZED
+  per-limb and is DIRECTIONAL not a global scalar (do NOT wire a threshold
+  filter — it can't separate the subtle regime); and an **attribution pass**
+  (region + corrected frame + source joint, `attribution.py`, wired + re-run,
+  100% coverage, frame moved in 35% of clusters). The product goal is
+  re-centred: extract motion-valid SUBSEQUENCES (clean-section excision), not
+  just classify files — so excursion is now in the clean-segment bad-mask
+  (prevents glitch leak). See the dated sections below for full reasoning.
+  **Where we ARE:** attribution corpus-wide in `noise_results_lenses_2026_06_14/`.
+  **Next:** node navigation (emit peak_frame + region); re-validate the localized
+  ~0.30 cm perceptibility line now that flags are attributed; extend attribution
+  to spike_clusters; (future) repair-in-place for repairable excursions.
 
 ## Spike severity metric (proposed 2026-05-22)
 
@@ -896,6 +928,30 @@ To apply: edit `_detect_corruption_zones` (estimate_noise_torque.py
 around line 1462) and re-run the batch. Need to verify it still
 catches the real corruption cases (e.g. shadow planted-foot files).
 
+### 2026-06-11 — spike-frame consolidation into contaminated sections
+
+Assessment of the June 1 batch (`noise_estimation_results_June_1_2026/`)
+showed spike frames cluster heavily: 2.86M per-joint spike records →
+920K distinct spike frames → 210K clusters at gap ≤ 30 frames (4.4×).
+17.8% of clusters contain ≥ 5 spike frames; extreme cases (DanceDB
+`Theodora_Mix`: 2,938 spike frames → 8 sections covering 97% of file)
+are clearly contaminated sections, not independent dropped frames.
+
+Added `SpikeCluster` + `_cluster_spike_frames()`: spike frames within
+`SPIKE_CLUSTER_GAP_S = 0.25 s` merge into one cluster; clusters with
+≥ `SPIKE_CLUSTER_CONTAMINATED_MIN = 3` distinct spike frames are
+reported as contaminated sections (start/end/duration/density/joints/
+max_velocity), the rest as isolated spikes. New `spike_clusters` field
+in the report JSON (raw `spike_frames` retained for compatibility);
+`classification_detail` now reads "N contaminated section(s) (Xs) +
+M isolated spike(s)" instead of enumerating every spike frame.
+Reporting/JSON only — noise_score and classification are unchanged.
+
+Validated on Maritsa (1,574 spike frames → 64 contaminated sections
++ 47 isolated; sections align with the known corruption zones) and
+ACCAD Walk B17 (29 → 4 sections + 8 isolated, including the frame-4
+multi-joint onset spike correctly kept as one isolated event).
+
 ## Known noise types
 
 What we expect the script to catch (and what it should NOT flag):
@@ -944,6 +1000,523 @@ What we expect the script to catch (and what it should NOT flag):
   null on C6 (period 3, strength 0.19). Does its `strength` field
   correlate with severity-of-spike-events as an independent quality
   signal? Worth a scatter plot across the whole dataset.
+
+## 2026-06-14 — Spike significance, impact metrics, and the severity/dial architecture
+
+Long session driven by reviewing the first full lens run
+(`noise_results_lenses_2026_06_13/`, lenses-only via `--skip-torque`).
+Worked from one file —
+`AMASS/BioMotionLab_NTroje/rub100/0022_throwing_hard1_poses.npz`
+(470 f @120, "problematic": heavy flicker bracketing a fast throw) — out to
+a corpus-wide design change. Findings, in order:
+
+**1. Spike frames are kinematic, not torque-derived (corrects a prior
+assumption).** `_detect_spike_frames` runs on the pose stream (neighbour-ratio
+on joint angular velocity) *before* the torque pass, so it is unaffected by
+`--skip-torque`. The torque scorer produces glitch/suspect frames, surprise,
+effort — all zero under skip-torque. So "spike frames" were never the torque
+pipeline's output. `n_spike_frames` is not a serialized scalar (only
+`spike_clusters[].n_spike_frames` and the `spike_frames` list), hence `None`
+on `.get`.
+
+**2. The neighbour-ratio is anti-correlated with perceptibility.** Two
+ground-truthed frames in the throw's "clean" middle:
+- f211 (real, visible sudden wrist rotation): wrist 18.9 rad/s, ratio 4.0
+  (LOW — a real fast move has moving neighbours).
+- f215 (a real but imperceptible artifact): 5 right-side joints, ratios
+  3.1–11.3 (HIGH — isolated 1-frame pops against a still baseline).
+So raising `SPIKE_NEIGHBOR_RATIO` would drop the visible one and keep the
+imperceptible one. The `SPIKE_VEL_FLOOR=2.0` is also low enough that
+sub-perceptual micro-jitter clears it. Ratio finds the *isolated-frame shape*
+but says nothing about magnitude or perceptibility.
+
+**3. Physical IMPACT does NOT separate f211 from f215 — they are equal.**
+Tested with exact manual SMPLH skinning (LBS from `SMPLH_NEUTRAL.npz`:
+v_template + shapedirs·β, posedirs, J_regressor, weights), measuring rendered
+mesh-vertex displacement of each frame vs a quadratic-predicted clean pose
+(neighbours excluding the frame; root removed → body-local):
+- f211: 0.64 cm worst-vertex, 0.20 cm mean
+- f215: 0.48 cm worst-vertex, 0.25 cm mean (clean neighbour frames ~0.15 cm)
+Essentially identical. **The user's parent/child compensation insight is
+confirmed**: at f215 the right-leg chain (ankle 5.75, knee 4.62 rad/s) spikes
+hard in angular terms yet the foot barely moves — the chain rotations cancel.
+f211 is small for the opposite reason: a huge wrist twist of a small distal
+segment (big angle × tiny lever). The composed full-chain skinning captures
+both automatically — making mesh/descendant-displacement the correct
+"significance" weighting (unifies leverage + compensation), but it does not
+discriminate these two because they are genuinely equally low-impact.
+Per-joint isolated `ω × downstream-reach` is wrong: it double-counts (ignores
+that descendants also rotate) and inverts the ranking.
+
+**4. What DOES discriminate (per the user): "a sudden deviation from a FAST
+trajectory."** Tested across controls (the throw file; DanceDB
+`Sophie_Excited` as genuine corruption; ACCAD `E15 body-jab` + BML
+`0021_throwing_hard1` as clean fast motion):
+- Reversal-at-speed FAILS — f211 is an *acceleration* (cos 0.95), not a
+  reversal; the reversal lens flags f215's ankle instead.
+- Speed-weighted jerk `|Δω|·√(|ω_in|·|ω_out|)` separates f211 (137) from f215
+  (45), 3×. BUT on the full controls, **clean punches/throws score HIGHER**
+  (740–943 raw; 2.9–3.9 on the transience-weighted dev×speed) than the f211
+  glitch (137 / 0.57). The transience gate (deviation from a quadratic arc ×
+  speed) did not save it — a real throw release genuinely deviates from a
+  smooth fit too.
+- **Conclusion:** f211 is kinematically indistinguishable from — milder than
+  — legitimate vigorous arm motion. This is the wall already noted for the
+  teleport lens. Any threshold catching f211 floods on clean punches/throws.
+  Since f211/f215 are not severe (~0.5 cm), the right call is NOT to chase
+  this class. Speed-weighted-jerk / dev×speed IS, however, an excellent
+  high-threshold **corruption detector**: DanceDB sits 100–1000× above
+  everything (dev×speed 359 vs 0.5–3.9; raw swj 88,386 vs hundreds). Candidate
+  lens if a high threshold (e.g. dev×speed > 20) is used.
+
+**5. "Dirty-clean-dirty" is one mode of a general clean/glitch/clean problem,
+common in long files.** Across the 11,974 flagged files in the 06-13 run,
+~50% had a recoverable clean run (≥2 s and ≥40% of file); the specific
+edge-bracketed pattern (≥60% of bad frames in the outer 15%/15%) was 14.6%
+(1,753 files). Edge-bracketing is physically expected (T-pose calibration /
+sensor settling / actor entry-exit at capture boundaries). Example: longest
+CMU file (22,948 f ≈ 191 s) has an 8.5 s clean opening then scattered
+single-frame flickers — clean/glitch/clean. So file-level dropping discards a
+usable middle in ~half of flagged files.
+
+### Architecture built this session (all three + a fresh run)
+
+**(a) Per-cluster lens severity** (`estimate_noise_torque.py`). New
+`LensCluster` dataclass `{start, end, n_frames, peak, severity}`. Each lens
+detector (teleport/flicker/ROM/reversal; zigzag already) now returns a
+per-frame severity track; `_lens_clusters()` gap-merges flagged frames and
+attaches the run's peak severity, normalised to the lens flag threshold
+(`severity ≈ peak/ref`; ~1.0 = just flag-worthy). Refs: teleport
+`TELEPORT_VEL_HARD=40`, flicker `FLICKER_SYNC=3`, zigzag `ZIGZAG_FLOOR=0.12`,
+ROM `ROM_SEVERITY_REF=45°`, reversal `REVERSAL_HARD=25`. **zigzag now also
+emits clusters** (it had none — was continuous-only). Cluster fields changed
+`List[Tuple]` → `List[LensCluster]`. (Bug fixed post-run: `_detect_reversals`
+short-file `T<4` early-return missed `sev_track` → arity crash on 2 sub-4-frame
+files; fixed and reprocessed.)
+
+**(b) Offline re-derivation** (`clean_segment_tools.py`, NEW).
+`rederive_clean_segments(report, lens_severity_tol, spike_density_tol,
+join_gap_s, min_clean_s, margin)` — a pure function over the serialized JSON
+(ms per file, no pipeline re-run). Tunes how much minor spiking is tolerated
+inside a clean segment and joins segments across sub-tolerance breaks. **Key
+design split:** HARD lenses (teleport/ROM/reversal — physically-impossible
+excisions) ALWAYS break; SOFT lenses (flicker/zigzag — graded "minor spiking")
+are absorbed when `severity ≤ lens_severity_tol`. Backward-compatible with
+old bare `[start,end]` tuples (treated as hard breaks). `clean_fraction()`
+helper.
+
+**(c) Live dials in NoiseReviewNode.** Four `drag_float` options — `lens
+severity tol` (default 1.25), `spike density tol` (1.0), `clean join gap (s)`
+(0.0), `clean min dur (s)` (1.0) — re-derive clean segments live from the
+loaded JSON. Lens-flag display shows per-cluster severity; handles dict + old
+tuple clusters. (Imports `clean_segment_tools` by adding the non-package
+`noise_estimation/` dir to `sys.path`.)
+
+**Calibration of the default `lens severity tol = 1.25`:**
+- clean punch E15 → 100% clean (zigzag sev 1.17 absorbed)
+- rub100/0022 → recovers its clean throw sections as TWO honest segments
+  `[107–181]` and `[218–372]`; the contaminated spike at 184–215 (the real
+  f211 region) is a HARD boundary that join_gap must never bridge (see the
+  severity-aware-join fix below — an earlier version wrongly bridged it).
+- DanceDB Sophie → 0% clean (hard teleport/reversal always break)
+
+**Fresh full run:** `noise_results_lenses_2026_06_14/` (14,182 files, 0 fail,
+~5 min @ 8 workers `--skip-torque`). 100,436 severity-bearing soft clusters
+corpus-wide. At the default dial (tol 1.25, join 0.3 s, min 2 s), **81.5% of
+flagged files (9,755 / 11,974) recover a ≥40% clean middle** — vs the ~50%
+length-only estimate, because severity-aware joining absorbs minor
+flicker/zigzag.
+
+### Flicker is NOT the over-firing culprit — the moderate flood is single-spike (resolved)
+
+Investigated "tune the over-firing flicker thresholds" and the premise was
+wrong. Measured on the 06-14 run:
+- The "81% active" figure is the harmless per-frame flicker MASK (excises
+  individual frames; does not change the label). The flicker LOCK
+  (`rate≥2` or `peak≥8` → problematic) fires on only **4.4%** of files.
+- Of 10,342 `moderate` files, **exactly 1** has a flicker lock — flicker
+  drives `moderate` essentially never. 99.9% of moderate files have spike
+  clusters; 53% have a contaminated cluster.
+- The 172 flicker-locked files in clean-expected datasets (CMU/BMLmovi/…) sit
+  on a **still baseline (p50 0.6 rad/s)** — the textbook jitter signature, so
+  most are likely REAL marker jitter, not FPs. Clean-ish `flicker_rate` p99
+  (2.23) overlaps DanceDB's median (2.22): no safe threshold gap, and a
+  still-baseline gate would invert (DanceDB jitter sits at p50 1.6). So
+  flicker was left as-is.
+
+**The real `clean→moderate` driver is line ~1720**: a SINGLE significant
+spike frame (`n_pose_anomalies ≥ 1`) demoted the file. That is the f211/f215
+case — a sub-perceptual ~0.5 cm single-frame event — and it alone demoted
+~17% of moderate files.
+
+**Fix applied:** spike contribution to `moderate` now requires SUSTAINED
+evidence — `len(significant_spike_frame_set) >= SIGNIFICANT_SPIKE_MIN_FRAMES`
+(=2) OR a contaminated spike cluster. Corruption zones / stream breaks still
+demote on a single occurrence. Applied to both `cls` and `cls_lenses_only`.
+Re-ran the corpus (06-14, in place):
+
+```
+            BEFORE     AFTER
+clean        2,207  →  3,230   (+1,023)
+moderate    10,342  →  9,308   (-1,034)
+problematic  1,632  →  1,632   (unchanged — recall fully preserved)
+DanceDB                98.7% problematic (151/153) — corruption recall intact
+```
+
+1,023 genuinely-clean files (single harmless spike) recovered from moderate to
+clean; zero problematic lost; DanceDB unaffected. Conservative — a `>=3`
+threshold would recover more but risks dropping real multi-spike contamination.
+
+### Severity-dial sweep — 1.25 confirmed (but it's a weak knob)
+
+Swept `lens_severity_tol` against the full 06-14 corpus:
+- **Soft-cluster severity does NOT separate quality classes.** flicker/zigzag
+  cluster severity p50 is ~1.67 (clean) / 1.36 (moderate) / 1.33 (problematic)
+  — essentially the same range across all three. (Flicker problematic-ness is
+  rate/density via the lock, not per-cluster severity; severity is quantized
+  sync_count/3.) So there is no clean/problematic gap to pin the default to.
+- **Clean-fraction response is nearly flat in `lens_severity_tol`**: clean
+  files re-derive to 0.95→0.98 across tol 0.5→2.0; moderate 0.69→0.77. So 1.25
+  is safe and non-critical — keep it (absorbs the weakest 3-joint flicker at
+  sev 1.0, breaks on denser).
+- **The dominant recovery lever is `join_gap_s`, not lens tol** — but
+  SEVERITY-AWARE (see fix below). Mean clean_fraction of moderate files
+  (tol 1.25, min 2 s): join_gap 0.0 → 0.53, 0.3 s → 0.69, plateau at 0.69
+  beyond 0.3 s (soft gaps are short; the rest are hard boundaries).
+  lens_tol 0.5→2.0 only ~+0.15. So for recovering clean middles, reach for
+  **join gap** first, then lens severity as a fine-trim.
+
+### Severity-aware join fix (join must NOT bridge regardless of severity)
+
+The first `join_gap` bridged ANY gap shorter than the threshold — including a
+brief genuine glitch (teleport / corruption / contaminated spike) — pulling it
+into a "clean" segment. That was wrong (and was inflating the recovery numbers
+above: the old unsafe version reached 0.85 on moderate files; ~16 points of
+that was bridging real glitches, e.g. rub100/0022's contaminated f211 region
+at 184–215). Fixed: `clean_segment_tools` now tracks a HARD mask (teleport /
+ROM / reversal / corruption zones / stream breaks / contaminated spikes / old
+tuple clusters with no severity) separately from a SOFT mask (above-tolerance
+flicker / zigzag / uncontaminated spikes). `join_gap` bridges a gap only if it
+is short AND contains zero HARD frames — so a genuine glitch is never swallowed
+no matter how brief. rub100/0022 now stays as two honest segments
+`[107–181]` + `[218–372]` at every join_gap. Node `join_gap` default left at
+0.0 (purity-first; raising it trades purity for coverage, the user's call).
+
+**Remaining follow-ups:**
+- DONE: `keep contaminated spikes` exposed as a NoiseReviewNode checkbox
+  (default On = contaminated regions are hard boundaries; Off = absorbable).
+
+### dev×speed lens built + disagreement analysis (keep diagnostic, do NOT lock)
+
+Built `_detect_dev_speed` (signature-agnostic gross-corruption lens): per-joint
+geodesic deviation from a quadratic-predicted smooth arc × local speed, full
+body; serialized as `dev_speed_max` / `dev_speed_rate` / `dev_speed_clusters`
+(DIAGNOSTIC — not wired into classification or clean-segment derivation).
+`DEVSPEED_HARD=20`. Re-ran corpus (06-14). `dev_speed_max` by class:
+clean p50 0.17 / p99 4.2; moderate p50 0.81 / p99 9.8; problematic p50 11.0
+/ p99 402; DanceDB p50 148. It tracks the verdict strongly.
+
+Disagreement analysis (gate τ=20, where clean is essentially all below):
+- **99% of high-dev×speed files (542/548) are ALREADY problematic** — it
+  corroborates, it doesn't find new corruption.
+- **Set A (high dev×speed but NOT problematic) = only 6 files** (5 moderate,
+  1 clean), all low-rate (0.03–0.33/s) isolated events on FAST LOCOMOTION
+  (CMU 111_21 dev 53.6; run-backwards / shuffle-forward / run). Almost
+  certainly dev×speed's own fast-motion borderline, not dramatic missed
+  corruption. So the existing lenses already have full recall on gross
+  trajectory corruption.
+- **Set B (problematic but dev×speed < 5) = 547 files** — but these are NOT
+  over-flags. They're flagged by ORTHOGONAL signatures dev×speed structurally
+  can't see: flicker (337; low-amplitude jitter by design, FLICKER_VCAP=25),
+  teleport ceiling (62; >60 rad/s, a different signature), reversal (3). Low
+  dev×speed here means "not gross trajectory deviation", not "clean".
+- dev×speed agrees with only 33% of problematic files; the other 67% are the
+  orthogonal-signature set above. So the lens is **complementary, not
+  redundant** — but it adds essentially no NEW detection.
+
+**Verdict:** keep dev×speed as a DIAGNOSTIC (serialized) — its value is a
+CONTINUOUS corruption-severity ranking (0→1000+) for prioritising review and
+the AMASS-filter, plus independent corroboration of the gross-corruption
+subset. Do NOT promote it to a classification lock: 99% overlap = no recall
+gain, and its 6 unique hits are fast-motion FPs that a lock would wrongly flag.
+DONE: surfaced as a NoiseReviewNode `sort by` key ('dev×speed' ranks
+worst-corruption-first; also 'noise score' / 'classification' / 'file order'),
+and `dev×speed N.N` is shown on each file's console line.
+- `NoiseReviewNode` resolves stored absolute `.npz` paths with an `amass root`
+  fallback (re-root by dataset tail / AMASS anchor / basename+n_frames) and a
+  path FILTER (all whitespace terms must substring-match the path); both added
+  this session.
+
+### Excursion discriminator — glitch vs legitimate ballistic motion (BREAKTHROUGH, prototype validated)
+
+The first signal all session that actually separates a glitch from legitimate
+fast motion. From the user's morphology of BMLNTroje glitches: a GLITCH is a
+local EXCURSION from a trajectory that is self-consistent before AND after the
+event (remove the bad frame(s) and the motion continues unchanged — reversals,
+kinks-with-continuation, pops in minimal movement). A real maneuver (throw
+release) is the BOUNDARY between two regimes (fast forward → follow-through),
+so the motion after is genuinely NOT a continuation of the motion before.
+
+Formalised with two per-joint geodesic quantities at a candidate pose t:
+- `off_dev` = residual of R[t] from the geodesic midpoint of R[t-1],R[t+1]
+  (×fps) — how far OFF the smooth path the pose is (direction-aware; catches
+  reversals the magnitude neighbour-ratio misses, drops the f58-style settling
+  tails and smooth fast motion).
+- `regime_change` = |mean angular-velocity vector AFTER the event − mean BEFORE|
+  (skipping the event frames) — did the motion regime actually shift?
+- A glitch = HIGH off_dev with LOW regime_change (big excursion, motion
+  recovers). excursion_ratio = off_dev / (regime_change + 2).
+
+Prototype validation (per-file glitch-frame counts, off_dev≥8 & ratio≥4):
+clean punch E15 = 0, clean front kick = 0 (NO firing on real ballistic motion —
+the wall every prior metric hit); walk rub036 catches f56 (f13/f114 just under
+at ratio 3.3 → drop ratio to ≥3); DanceDB = 999 (rate 10.9/s); jump
+rub056/0029_jumping2 (264f) flags left_wrist f75/104/109/114 — **user confirmed
+ALL true reversal glitches**, in a file the current lenses classed "clean".
+Cross-check: of 67 same-named jump files, only rub056 shows the f104 off_dev
+spike (others 0.1–1.8) — so it is a real arm glitch, NOT a universal
+jump-landing artifact (which would appear across files at the landing frame).
+
+Status: discriminator validated on a handful of files; NOT yet built into the
+pipeline. To do: tune ratio→3, recast `_detect_spike_frames` (or add a new
+lens) to emit excursion events keyed by full path (navigable in
+NoiseReviewNode), re-run + corpus-validate (clean-file rate, DanceDB recall,
+classification stability). Open question to watch: does it fire on genuine
+high-impact ground contact (landings/foot-strikes on LEG joints)? — needs an
+impact/ground-contact guard if so (the jump hits were arm, not leg, so clear).
+
+### FUTURE: repairable glitches (user idea, 2026-06-14)
+
+The excursion definition IS a repairability test. Because an excursion is a
+deviation from a trajectory that is self-consistent before and after, the
+glitch frame(s) can be REPLACED by the geodesic interpolation of their
+neighbours WITHOUT destroying real motion — the real motion is, by definition,
+recoverable across the event. (A regime-change event is NOT repairable: you'd
+be deleting genuine motion.) So `off_dev` high + `regime_change` low flags
+exactly the glitches that are safe to repair in place.
+
+Implication for the AMASS-filtering goal: files with isolated repairable
+excursions (e.g. rub056's 4 left-wrist reversals in an otherwise-clean jump)
+need not be TRASHED — repair the excursion frames (LERP/SLERP the joint
+rotations across the event) and keep the file. This would recover far more
+usable training data than excise-and-segment, and goes beyond the
+clean-segment recovery work (repair-in-place vs route-around). Not built;
+captured for future thinking.
+
+### Excursion lens BUILT + redundancy analysis (complementary, not consolidating)
+
+Built `_detect_excursion` into the pipeline (off_dev = geodesic residual from
+the quadratic-predicted smooth arc; regime_change = |mean ang-vel after − before|
+skipping the event; flag = high off_dev AND low regime_change, ratio ≥ 3).
+Serialized `excursion_max/rate/clusters`. DIAGNOSTIC (not in classification).
+Tuned ratio 4→3 to catch walk f13/f114 (not just f56).
+
+Checked whether it makes existing lenses redundant — **confirm-before-retiring
+caught a mistake.** Surface overlap looked like redundancy (reversal 88% frame
+recall, dev×speed 90%), but focused confirmation showed otherwise:
+- Reversal: of the frames excursion misses, **93% are high-off_dev
+  REGIME-CHANGE events** — excursion's regime gate fails in CHAOTIC corruption
+  (DanceDB), where everything is regime-change. So excursion does NOT replace
+  reversal.
+- Significant spikes: excursion covers only **18%** — doesn't subsume them.
+So excursion is **complementary, not consolidating** — its niche is isolated
+recovering glitches in otherwise-clean content (found real left-wrist reversals
+in rub056/0029_jumping2, a file the suite called "clean"; user confirmed all
+true). Nothing retired.
+
+### Perceptibility is LOCALIZED + DIRECTIONAL, not a global scalar (the big lesson)
+
+Long investigation into "which flagged spikes actually matter" for extracting
+motion-valid sequences (the real product goal — excellent clean-section
+excision matters as much as classification). Conclusions, each forced by user
+correction:
+
+1. **Perceptibility ≠ velocity.** First proxy (single-joint, vel<12 = "sub-
+   perceptual") was leverage-blind and **wrong 38% of the time** vs the mesh
+   measure (a low-velocity shoulder spike IS perceptible; the lever matters).
+2. **Perceptibility ≠ a global scalar.** Exact SMPLH mesh-vertex displacement
+   (LBS, actual vs quadratic-predicted clean pose, cm) calibrated cleanly on 11
+   obvious frames (~0.55 cm line) — but on a diverse 16-frame adjudication
+   batch it FAILED: perceptible frames at 0.35 cm interleaved with imperceptible
+   at 0.47 cm. Root causes (user diagnosed): (a) **global MAX over all 6890
+   vertices = background noise** — a frame flagged on l_hip scored on an *arm*
+   vertex elsewhere; (b) **the scalar discards direction** — any movement makes
+   displacement; the glitch signature is the displacement DIRECTION wobbling.
+3. **Localizing fixes it.** Scoping the mesh measure to the flagged joint's
+   kinematic SUBTREE collapsed the imperceptibles (l_shoulder 0.45→0.26,
+   l_hip 0.47→0.29) below the perceptibles (≥0.33) — a clean ~0.30 cm line
+   reappeared. So perceptibility must be measured PER-LIMB, not globally.
+4. **Direction-wobble alone also fails** (real motion changes direction too —
+   a salute reverses). The working discriminator is direction-deviation from the
+   SMOOTH path + transience — which excursion already encodes; but excursion is
+   tuned for bigger events and fires on none of the small ones.
+5. **The discriminator works once LOCALIZED + ATTRIBUTED (verdict updated).**
+   First pass (global mesh, flagged joint/frame) failed to separate the 16-frame
+   batch — but that was the global scalar + wrong attribution. After building
+   attribution, re-ran it: attribute each frame → (limb, source joint, corrected
+   frame), then measure localized subtree-max mesh displacement THERE. Result:
+   imperceptibles (f313 0.27, f1608 0.26) drop cleanly below perceptibles
+   (0.40–1.78); a **~0.30 cm localized line separates 15/16** (only miss: f17,
+   "just perceptible", 0.27). (Note f606 was a mislabel on my part — the user
+   said 603–604 IS perceptible; attribution moved it to f604, measure reads 0.69
+   = perceptible, correct.) So a perceptibility filter IS viable — but ONLY as a
+   per-limb, attributed, positional measure, NEVER the global scalar. Caveats:
+   16 frames, thin 0.27→0.40 margin, f17 a genuine miss → firm with more
+   boundary frames before trusting the exact threshold.
+7. **FIRMING FAILED — the threshold does NOT generalize (final verdict).** A
+   second, region-diverse boundary batch (14 frames, leg/spine-heavy: handball,
+   beam, locomotion) overlapped almost completely: imperceptible localized
+   0.23–0.45, perceptible 0.23–0.44; the HIGHEST value (knee, 0.45) was
+   imperceptible; spine 0.33 (P) vs 0.34 (I) tied with opposite calls. Root
+   cause: fast CURVED leg/spine motion leaves a localized residual the quadratic
+   prediction can't remove, so real motion mimics glitch displacement — a
+   region/activity-dependent real-motion floor that no fixed (or per-region)
+   threshold separates. The earlier 15/16 was an ARM-BIASED sample. And the user
+   "seems like real movement" call (f552) is the crux: displacement MAGNITUDE
+   cannot separate a perceptible glitch from perceptible real motion. **FINAL:
+   do NOT wire a fixed-threshold perceptibility filter** — keep the localized
+   mesh measure only as a soft severity/ranking signal; lens DETECTION is the
+   relevance. (Also surfaced: attribution's ±3 window missed f665's event at
+   660–661, ~5 frames off — widen the window.)
+6. **Orientation axis validated then demoted.** Tested an axial/orientation
+   axis for the mesh blind spot (axial bone twist → low vertex displacement).
+   Empirically the axial blind spot is RARE (3/806 frames; corr(mesh,orient)
+   = 0.86) — real twists still swing offset descendants. The WORSE gap is the
+   other way: orient (local rotation) is leverage-blind (29% mesh-perceptible
+   but orient-low). So **mesh (leverage-aware) is the better single axis**;
+   orient is at most a cheap backstop. Sustained ROM is invisible to BOTH
+   vs-neighbour measures → stays on its absolute anatomical cap (ungated).
+
+Net: perceptibility/validity is NOT a single global number. Mesh displacement
+is meaningful only LOCALIZED to the flagged limb and is one (positional) axis;
+direction/transience is the other (= what the lenses already compute). For the
+product, keep lens flags as fragmenting (most are real), trim only the f7-class
+tiny tail. (`mesh ≠ validity`: an axial joint-angle error can be invalid
+training data even when mesh-imperceptible — the lenses, in rotation space,
+catch those.)
+
+### Attribution pass — region + corrected frame (BUILT)
+
+The adjudication exposed two attribution bugs independent of perceptibility:
+a **±2–3 frame wobble** between the flag and the perceived event (f606 flagged
+606, real 603–604), and **joint mis-attribution** (f577 "shoulder not elbow";
+f432 flagged head, event on the arm). New `attribution.py`: re-attributes a
+flag to the (region, source joint, frame) maximising `rotation_deviation ×
+bone_length` (the joint whose glitch swings the most limb), reported as LIMB
+REGION (sidesteps the ill-posed elbow-vs-shoulder call) with the peak joint as
+sub-detail. Pure rotation math, no model/LBS dependency. Exact-joint
+attribution is genuinely ambiguous (the user's own f577 call was tentative);
+region + corrected frame is what navigation, localization, and clean-segment
+boundaries actually need.
+
+Wired as a pipeline pass over all lens clusters (LensCluster gains
+`region`/`peak_frame`/`peak_joint`); re-ran corpus (06-14, 14,182 files, 0
+fail). 100% of excursion clusters attributed; **78% are arm** (right 24,300 /
+left 23,906 — confirms arm-marker glitches dominate); **attribution moved the
+frame in 35% of clusters** (mean 0.92, p90 3) — the wobble was real and is now
+corrected at source.
+
+**Open follow-ups (end of 2026-06-14):**
+- DONE: NoiseReviewNode shows the excursion lens (was missing), displays each
+  lens flag's `region/peak_joint @peak_frame`, and navigates Prev/Next to the
+  corrected `peak_frame` (not the cluster start).
+- Re-validate the localized ~0.30 cm perceptibility line now that flags are
+  attributed (f432/f606 confounds should resolve) — or confirm it's only good
+  for trimming the < ~0.25 cm tail.
+- DONE: attribution extended to `spike_clusters`; NoiseReviewNode now shows
+  attributed spike CLUSTERS (not noisy per-frame flags) navigating to the
+  corrected peak frame — e.g. the rub036 cluster [7-58] (spanning the trivial
+  f7/f58) now lands on f56, the substantive reversal.
+- Repairable-excursion repair-in-place (see FUTURE section) — highest-leverage
+  for dataset yield.
+
+### Off-trajectory contextual residual — the perceptibility dial (RESOLVED + built)
+
+The perceptibility saga resolved, reversing the earlier "no threshold" verdict
+— that verdict was a methodological artifact (the user caught it): both
+adjudication batches had been SELECTED on the metric's own margin (borderline
+mesh / localized 0.22–0.45), so testing separation there was circular. Across
+the FULL range the metric works.
+
+The final metric (`perceptibility.py`): **off-trajectory contextual residual** —
+per-vertex deviation of the actual mesh from a QUADRATIC fit of each vertex's
+position trajectory (the quadratic absorbs smooth acceleration/curvature, so
+the **direction fit is baked into the prediction** — a glitch deviates off the
+smooth path; smooth fast motion is absorbed), localized to the attributed
+joint's subtree, p90, **absolute cm**. Two corrections the user forced:
+- Direction is NOT discarded — it's the decomposition that fixes the f1732
+  case (smooth knee: residual 0.45 cm but it's ALONG the path / real
+  acceleration; magnitude alone wrongly flagged it). The quadratic-position
+  prediction encodes direction.
+- Activity-normalisation HURTS (over-corrects low-activity smooth motion) — use
+  ABSOLUTE residual; the contextual fit is already in the quadratic.
+
+Full-range validation: gross corruption 15.8 cm, clear glitches (f56, jump)
+2.0–2.5, smooth-fast / clean / imperceptible 0.0–0.7. **~1 cm separates them**;
+0.7–1.5 is the acknowledged fuzzy margin (where the user's own perception is
+angle-dependent, so no metric should be crisp).
+
+Built + wired: serialized as `off_traj_cm` per spike + excursion cluster (hard
+lenses ungated). `clean_segment_tools` gains `off_traj_cm_tol` (default 1.0 cm)
+as the PRIMARY spike/excursion relevance dial — fragment iff residual ≥ dial,
+else absorbed; falls back to contaminated/severity when off_traj_cm is -1.
+`keep_contaminated_spikes` is now an OVERRIDE on the off-traj dial: On (default)
+= a contaminated (dense-jitter) cluster fragments even if its off-traj residual
+is below the dial (dense jitter = motion-invalid regardless); Off = trust
+off-traj alone, recovering contaminated-but-imperceptible regions (e.g. walk
+rub036 [232-252], off_traj 0.4 cm: On → clean stops at 229 / 0.29; Off → clean
+extends through to 285 / 0.43).  NoiseReviewNode exposes the dial and shows
+`off=N.NNcm` per event. Verified:
+walk rub036 goes 0 → 43% → 95% clean as the dial moves 0 → 1 → 2, with the
+real glitches fragmenting and the imperceptible (incl. a contaminated-but-tiny
+0.13 cm cluster) absorbed.
+
+**Performance (the dial needs LBS — stalled, then fixed).** Computing mesh for
+EVERY cluster stalled the corpus run: full-body (6890-vertex) LBS at 26 s on
+cluster-heavy DanceDB files (600 excursions/file), plus a posedir precache that
+blew worker memory. Fixed three ways: (1) skin only the attributed subtree's
+vertices; (2) slice posedirs on the fly (no precache); (3) **short-circuit the
+mesh** (the user's idea — "if a spike is large enough we needn't dig deeper").
+
+**Short-circuit v1 (retired) — bone-length score.** First cut gated on the
+cheap attribution score (rotation_dev × *bone length*): score<0.5 → skip as
+imperceptible, score≥2.0 → skip as glitch, ambiguous middle → mesh. corr(score,
+off_traj)=0.68; DanceDB worst 26 s → 4.2 s. **Bug found in review (rub011 f419):**
+a clear elbow glitch (mesh 1.04 cm) scored 0.34 and was wrongly absorbed as 0.4.
+Bone length (elbow→forearm, 0.25 m) misses the forearm+hand lever the mesh sees,
+so distal-subtree joints (elbow/shoulder/hip) systematically UNDER-read → the
+low band false-negatives perceptible glitches. The flat 0.4/2.5 sentinels were
+also misleading in the node.
+
+**Short-circuit v2 (current) — leverage-aware geometric proxy.**
+`perceptibility.proxy_cm` = max over body joints of (geodesic-dev from the
+quadratic prediction) × (VERTEX subtree reach, incl. hand/foot mesh) × 100. This
+is a strict UPPER BOUND on the mesh off-traj residual (skinning blend + child
+compensation only reduce it — validated proxy ≥ mesh on all 7 test cases:
+419 1.05/1.04, f56 3.64/1.97, f1732 0.50/0.44, f215-compensation 2.03/0.77, f7
+1.05/0.68, gross 29.6/15.8, jump 3.84/2.50). So **proxy < 0.5 cm ⟹ mesh < 0.5
+guaranteed → absorb with no LBS and ZERO risk of missing a glitch** (`SC_OFFTRAJ_
+ABSORB=0.5`, safe for any dial ≥0.5). proxy ≥ 0.5 → exact mesh — including the
+compensation cases (high proxy, low mesh: f215 2.03→0.77) that a *high*
+short-circuit would mis-fragment, so there is NO high short-circuit. f419 now
+correctly reads 1.038 cm. Stored off_traj is the real proxy/mesh value (no
+sentinels). Cost: DanceDB worst 7.5 s (600/603 mesh — corrupt file, most are
+real); clean CMU 0.7 s (9/13 absorbed by proxy). Corpus est. ~12–15 min.
+
+Corpus re-run v1 (bone-length) DONE 2026-06-15, 14,182 files, 9m29s: 43% low /
+13% high / 43% mesh; 39% fragment at the 1 cm dial. **v2 (leverage-aware proxy)
+DONE 2026-06-15, 14,182 files, 0 fail, 11m22s → noise_results_lenses_2026_06_15/**
+(~2 min slower than v1: no high short-circuit + a provably-safe absorb band skip
+only 37% of LBS vs v1's 56%). 173,903 clusters: 37% proxy-absorbed (<0.5 cm, no
+LBS) / 63% exact mesh. At the 1 cm dial: **42% fragment / 58% absorb** — the
+extra ~3% over v1 (~5,200 clusters) are the recovered false negatives, distal-
+limb glitches v1 wrongly absorbed at the 0.4 sentinel (e.g. rub011 f419: v1 0.40
+→ v2 1.038 cm). This run is what the node reads; clean-segment derivation is now
+correct. **Clean-recovery payoff:** flagged (moderate/problematic)
+files recover mean clean_frac 0.78 at tol=1.0 (vs 0.28 at tol=0), and 84% yield
+a usable ≥40% clean section — the perceptibility dial recovers most clean motion
+from flagged files instead of discarding them. The off-trajectory dial is the
+working resolution of the whole magnitude-vs-direction / perceptibility thread.
 
 ## References
 

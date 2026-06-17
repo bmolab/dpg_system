@@ -20,12 +20,36 @@ Usage:
 """
 
 import numpy as np
+from scipy.spatial.transform import Rotation
+from scipy.ndimage import median_filter, gaussian_filter1d
 import argparse
 import os
 import sys
 import json
 from dataclasses import dataclass, field, asdict
 from typing import List, Tuple, Optional
+
+try:
+    import attribution as _attribution            # run from inside this dir
+except Exception:
+    try:
+        from dpg_system.noise_estimation import attribution as _attribution
+    except Exception:
+        _attribution = None
+try:
+    import perceptibility as _perceptibility
+except Exception:
+    try:
+        from dpg_system.noise_estimation import perceptibility as _perceptibility
+    except Exception:
+        _perceptibility = None
+try:
+    import movement_combiner as _movement_combiner
+except Exception:
+    try:
+        from dpg_system.noise_estimation import movement_combiner as _movement_combiner
+    except Exception:
+        _movement_combiner = None
 
 
 def _to_jsonable(obj):
@@ -374,6 +398,15 @@ SPIKE_SEVERITY_QUALIFY_CONTRIB = 2.0
 SPIKE_SEVERITY_STRONG_THRESHOLD = 10.0
 SPIKE_SEVERITY_MIN_QUALIFYING = 2
 
+# Classification gate: how many significant (isolated) spike frames are needed
+# to demote an otherwise-clean file to "moderate".  A SINGLE isolated
+# significant spike is a sub-perceptual single-frame event (validated ~0.5 cm
+# mesh displacement on the rub100/0022 f211/f215 pair) and previously demoted
+# ~17% of moderate files on its own — the dominant clean->moderate driver.
+# Require repeated evidence; a dense (contaminated) spike cluster still demotes
+# on its own, as do corruption zones / stream breaks (real capture failures).
+SIGNIFICANT_SPIKE_MIN_FRAMES = 2
+
 # Pure-arm-cluster gate: a frame with N+ arm-chain joint entries AND zero
 # non-arm-chain entries is the signature of one-side marker failure.
 # Real coordinated motion (running, side step, gesture) involves the
@@ -416,6 +449,13 @@ ISOLATED_ARM_IMPULSE_MIN_JOINTS_SAME_FRAME = 2  # multi-joint co-occurrence thre
 SPIKE_CLUSTER_GAP_S = 0.25            # merge gap (≈30 frames @ 120 fps)
 SPIKE_CLUSTER_CONTAMINATED_MIN = 3    # distinct spike frames → contaminated
 
+# Off-trajectory short-circuit: a spike/excursion cluster whose cheap geometric
+# proxy (perceptibility.proxy_cm — an UPPER BOUND on the mesh off-traj residual)
+# is below this many cm is absorbed without computing the LBS, since the true
+# value is provably below it too.  Kept under any dial a reviewer would use
+# (default dial 1.0 cm) so the absorb is safe across the tunable range.
+SC_OFFTRAJ_ABSORB = 0.5
+
 @dataclass
 class SpikeFrame:
     """A single dropped/corrupted frame identified by the neighbour-ratio test."""
@@ -443,6 +483,45 @@ class SpikeCluster:
     joints: List[str]        # affected joints, most spike records first
     max_velocity: float      # peak spike velocity in cluster (rad/s)
     contaminated: bool       # n_spike_frames >= SPIKE_CLUSTER_CONTAMINATED_MIN
+    # Re-attribution (attribution.py): limb region, source joint, corrected frame.
+    region: str = ''
+    peak_frame: int = -1
+    peak_joint: str = ''
+    # Off-trajectory contextual residual (cm) at the peak — the relevance dial.
+    off_traj_cm: float = -1.0
+    # Movement-vs-glitch combiner probability (0..1, higher = real movement);
+    # -1 = not computed.  Used by clean_segment_tools as a movement-rescue valve.
+    movement_prob: float = -1.0
+
+
+@dataclass
+class LensCluster:
+    """A contiguous run of frames flagged by a kinematic lens, carrying the
+    severity of that run so a downstream consumer can re-threshold offline.
+
+    peak is the raw peak of the lens's native driving signal over the span
+    (rad/s for teleport/reversal, synced-joint count for flicker, windowed
+    intensity for zigzag, degrees-over-cap for ROM).  severity normalises peak
+    to the lens's flag reference, so severity ~1.0 means "just at the flagging
+    threshold" and a clean-segment dial can read as "tolerate severity <= X".
+    """
+    start: int
+    end: int
+    n_frames: int
+    peak: float          # raw peak severity, lens-native units
+    severity: float      # peak / lens flag reference (>= ~1.0 == flag-worthy)
+    # Re-attribution (see attribution.py): the limb region, peak source joint,
+    # and corrected frame where the event actually originates — for navigation
+    # and for localising the perceptibility check to the right subtree.
+    region: str = ''
+    peak_frame: int = -1
+    peak_joint: str = ''
+    # Off-trajectory contextual residual (cm) at the peak (perceptibility.py);
+    # the relevance dial. -1 = not computed (model unavailable / hard lens).
+    off_traj_cm: float = -1.0
+    # Movement-vs-glitch combiner probability (0..1, higher = real movement);
+    # -1 = not computed.  Used by clean_segment_tools as a movement-rescue valve.
+    movement_prob: float = -1.0
 
 
 @dataclass
@@ -539,6 +618,40 @@ class TorqueFileReport:
     zigzag_severity: float = 0.0            # peak windowed zigzag intensity (0-1)
     zigzag_contribution: float = 0.0        # points it added to noise_score
     n_rom_frames: int = 0                   # impossible-rotation (candy-wrapper) frames
+    rom_max_joint: int = -1                 # joint index of the worst candy-wrapper (region locator)
+    reversal_max_speed: float = 0.0         # peak reversal-at-speed severity (rad/s) — geodesic ω
+    reversal_rate: float = 0.0              # >=HARD reversals / second
+    reversal_contribution: float = 0.0      # points it added to noise_score
+    n_reversal_frames: int = 0              # excised returning-glitch frames
+    reversal_max_joint: int = -1            # joint index of the peak reversal (region locator)
+    # Per-frame locations of the lens flags as gap-merged LensClusters, each
+    # carrying the run's peak severity so a reviewer can navigate to them AND
+    # a downstream consumer can re-threshold (clean_segment_tools).  Empty when
+    # the corresponding lens found nothing.
+    teleport_clusters: List[LensCluster] = field(default_factory=list)
+    flicker_clusters: List[LensCluster] = field(default_factory=list)
+    rom_clusters: List[LensCluster] = field(default_factory=list)
+    reversal_clusters: List[LensCluster] = field(default_factory=list)
+    sfglitch_clusters: List[LensCluster] = field(default_factory=list)
+    instability_clusters: List[LensCluster] = field(default_factory=list)
+    zigzag_clusters: List[LensCluster] = field(default_factory=list)
+    # Trajectory-deviation-at-speed lens (signature-agnostic gross-corruption);
+    # diagnostic only — serialized for cross-checking, not in classification.
+    dev_speed_max: float = 0.0              # peak dev*speed (rad^2/s); the severity dial
+    dev_speed_rate: float = 0.0             # frames >= DEVSPEED_HARD per second
+    n_dev_speed_frames: int = 0
+    dev_speed_joint: int = -1               # joint index of the peak deviation
+    dev_speed_clusters: List[LensCluster] = field(default_factory=list)
+    # Excursion lens (isolated recovering glitch vs regime change); diagnostic.
+    excursion_max: float = 0.0              # peak off-path deviation among flagged frames (rad/s)
+    excursion_rate: float = 0.0             # flagged excursion frames per second
+    n_excursion_frames: int = 0
+    excursion_joint: int = -1               # joint index of the peak excursion
+    excursion_clusters: List[LensCluster] = field(default_factory=list)
+    # Torque-ablation comparison: verdict from the torque base-rule alone, and
+    # from the kinematic/structural lenses alone (torque removed).
+    classification_torque_base: str = ''
+    classification_lenses_only: str = ''
 
 
 @dataclass
@@ -587,8 +700,39 @@ def _rolling_median_mad(data, window):
         m = np.median(chunk)
         median[t] = m
         mad[t] = np.median(np.abs(chunk - m))
-    
+
     return median, mad
+
+
+def _centered_rolling_median(v, half):
+    """Centered rolling median over a clamped [t-half, t+half] window (axis 0).
+
+    Accepts a 1D ``(T,)`` array or a 2D ``(T, K)`` array (median is taken along
+    axis 0 independently per column).  Bit-exact replacement for the per-frame
+    ``np.median`` loop, but ~200x faster: scipy.ndimage.median_filter (C-level)
+    handles the interior in one call, and the (few) edge frames — where the
+    reference shrinks the window while median_filter would pad — are recomputed
+    with the exact clamped window so the output matches the naive loop everywhere.
+    """
+    v = np.asarray(v, dtype=float)
+    n = v.shape[0]
+    if n == 0:
+        return v.copy()
+    size = 2 * half + 1
+    fp_size = size if v.ndim == 1 else (size,) + (1,) * (v.ndim - 1)
+    if size >= n:
+        out = np.empty_like(v)
+        for t in range(n):
+            lo = max(0, t - half)
+            hi = min(n, t + half + 1)
+            out[t] = np.median(v[lo:hi], axis=0)
+        return out
+    out = median_filter(v, size=fp_size, mode='nearest')
+    for t in set(range(half)) | set(range(n - half, n)):
+        lo = max(0, t - half)
+        hi = min(n, t + half + 1)
+        out[t] = np.median(v[lo:hi], axis=0)
+    return out
 
 
 def _compute_angular_velocity(poses_aa, fps, n_joints=22):
@@ -678,12 +822,7 @@ def _detect_stream_breaks(poses, trans, fps):
     # values are elevated, raising the local threshold accordingly.
     w_local = max(3, int(JOINT_BREAK_LOCAL_WINDOW_S * fps))
     half_w = w_local // 2
-    n_frames_for_local = pose_disp.shape[0]
-    local_joint_medians = np.empty_like(pose_disp)
-    for t in range(n_frames_for_local):
-        lo = max(0, t - half_w)
-        hi = min(n_frames_for_local, t + half_w + 1)
-        local_joint_medians[t] = np.median(pose_disp[lo:hi], axis=0)
+    local_joint_medians = _centered_rolling_median(pose_disp, half_w)
     local_joint_thresholds = local_joint_medians * JOINT_BREAK_LOCAL_FACTOR
     # Effective threshold at each frame = max of global and local
     joint_thresholds = np.maximum(joint_thresholds_global[None, :], local_joint_thresholds)
@@ -949,7 +1088,13 @@ def _build_classification(report):
     if report.zigzag_contribution >= 8:
         parts.append(f"〰️ zigzag buzz (intensity {report.zigzag_severity:.2f})")
     if report.n_rom_frames >= ROM_MIN_FRAMES:
-        parts.append(f"🥨 candy-wrapper: {report.n_rom_frames} impossible wrist-rotation frame(s)")
+        j = report.rom_max_joint
+        reg = 'arm' if j in ROM_ARM_JOINTS else 'leg' if j in ROM_LEG_JOINTS else 'spine' if j >= 0 else ''
+        parts.append(f"🥨 candy-wrapper: {report.n_rom_frames} impossible {reg} rotation frame(s)".replace('  ', ' '))
+    if report.reversal_max_speed >= REVERSAL_LOCK or report.reversal_rate >= REVERSAL_RATE_LOCK:
+        j = report.reversal_max_joint
+        reg = 'arm' if j in REVERSAL_ARM else 'leg' if j in REVERSAL_LEG else 'spine'
+        parts.append(f"🪃 reversal: {report.reversal_max_speed:.0f} rad/s {reg} at-speed direction flip (non-physical)")
 
     # Single-frame spikes — consolidated: dense clusters become
     # contaminated sections, the remainder are isolated spikes
@@ -1001,7 +1146,7 @@ def _build_classification(report):
 
 
 def analyze_file(filepath, total_mass=75.0, gender_override=None,
-                 smooth_input_window=0, verbose=True):
+                 smooth_input_window=0, verbose=True, skip_torque=False):
     """
     Run torque-based noise analysis on a single .npz file.
     
@@ -1064,10 +1209,15 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     
     # ── Detect single-frame spikes (dropped/corrupted frames) ────────────
     spike_frames = _detect_spike_frames(poses, fps)
-    teleport_mask, teleport_score, teleport_rate, max_arm_vel = _detect_teleports(poses, fps)
-    flicker_mask, flicker_rate, flicker_peak = _detect_flicker(poses, fps)
+    teleport_mask, teleport_score, teleport_rate, max_arm_vel, teleport_sev = _detect_teleports(poses, fps)
+    flicker_mask, flicker_rate, flicker_peak, flicker_sev = _detect_flicker(poses, fps)
     zigzag_Z, zigzag_peak, zigzag_frame = _detect_zigzag(poses, fps)
-    rom_mask, n_rom = _detect_rom(poses, fps)
+    rom_mask, n_rom, rom_joint, rom_sev = _detect_rom(poses, fps)
+    reversal_mask, reversal_max, reversal_rate, n_reversal, reversal_joint, reversal_sev = _detect_reversals(poses, fps)
+    sfg_mask, sfg_max, sfg_rate, n_sfg, sfg_joint, sfg_sev = _detect_single_frame_glitch(poses, fps)
+    inst_mask, inst_max, inst_rate, n_inst, inst_joint, inst_sev = _detect_instability(poses, fps)
+    devspeed_mask, devspeed_max, devspeed_rate, n_devspeed, devspeed_joint, devspeed_sev = _detect_dev_speed(poses, fps)
+    exc_mask, exc_max, exc_rate, n_exc, exc_joint, exc_sev = _detect_excursion(poses, fps)
     spike_clusters = _cluster_spike_frames(spike_frames, fps)
     if verbose and spike_frames:
         unique_frames = len({s.frame for s in spike_frames})
@@ -1094,6 +1244,12 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     structural_mask = structural_mask | flicker_mask  # FLICKER: excise synchronized jitter frames
     structural_mask = structural_mask | (zigzag_Z > ZIGZAG_FLOOR)  # ZIGZAG: exclude sustained buzz
     structural_mask = structural_mask | rom_mask  # ROM: excise impossible wrist poses
+    structural_mask = structural_mask | reversal_mask  # REVERSAL: excise returning-glitch frames
+    structural_mask = structural_mask | sfg_mask  # SINGLE-FRAME: excise isolated 1-frame glitches
+    structural_mask = structural_mask | inst_mask  # INSTABILITY: excise sustained-disorder regions
+    # (above-noise-floor reversals only — locomotion is separated by frequency/
+    # scale, the noise floor strips per-rig static jitter, so it no longer
+    # over-fires on clean walking/running or noisy-rig stillness.)
     
     # ── Detect cadence pattern ────────────────────────────────────────
     cadence = _detect_cadence(poses, fps)
@@ -1116,14 +1272,23 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     # ── Initialize SMPLProcessor ──────────────────────────────────────
     # model_path must contain smplh/ directory with SMPLH_{GENDER}.pkl
     model_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # dpg_system/
-    processor = SMPLProcessor(
-        framerate=fps,
-        betas=betas,
-        gender=gender,
-        total_mass_kg=total_mass,
-        model_path=model_path,
-    )
-    processor.set_axis_permutation('x, z, -y')
+    # Lenses-only fast path: a full-corpus ablation (14,179 files) proved the
+    # torque pass changes no classification and no excision — the kinematic
+    # lenses + structural detection carry the entire keep/cut decision.  When
+    # skip_torque is set we bypass the (~2000x heavier) SMPL/torque streaming;
+    # every torque-derived signal then computes to zero (dyn/net torques stay at
+    # their zero init), the base rule yields 'clean', and the lenses drive the
+    # verdict — identical to the full pass, in minutes instead of hours.
+    processor = None
+    if not skip_torque:
+        processor = SMPLProcessor(
+            framerate=fps,
+            betas=betas,
+            gender=gender,
+            total_mass_kg=total_mass,
+            model_path=model_path,
+        )
+        processor.set_axis_permutation('x, z, -y')
     
     # Options matching smpl_torque node defaults (as of 2026-05-06).
     # These must mirror the node's live widget values, NOT the
@@ -1191,9 +1356,13 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     )
     
     # Get max torque array for effort computation
-    max_torque_arr = processor.max_torque_array[:N_JOINTS]  # (22, 3)
-    max_torque_mag = np.linalg.norm(max_torque_arr, axis=-1)  # (22,)
-    max_torque_mag = np.maximum(max_torque_mag, 1.0)  # avoid div-by-zero
+    if skip_torque:
+        max_torque_arr = np.zeros((N_JOINTS, 3))
+        max_torque_mag = np.ones(N_JOINTS)
+    else:
+        max_torque_arr = processor.max_torque_array[:N_JOINTS]  # (22, 3)
+        max_torque_mag = np.linalg.norm(max_torque_arr, axis=-1)  # (22,)
+        max_torque_mag = np.maximum(max_torque_mag, 1.0)  # avoid div-by-zero
     
     # ── Stream frames through processor ───────────────────────────────
     if verbose:
@@ -1202,8 +1371,8 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     dyn_torques = np.zeros((T, N_JOINTS, 3))    # dynamic torque vectors
     net_torques = np.zeros((T, N_JOINTS, 3))     # net torque vectors
     contact_forces = np.zeros((T, N_CONTACT_JOINTS))  # contact pressure per joint (N)
-    
-    for t in range(T):
+
+    for t in (range(T) if not skip_torque else range(0)):
         # Reshape single frame: (1, 24, 3) for poses, (1, 3) for trans
         frame_pose = poses[t:t+1]  # (1, 72) or (1, J, 3)
         frame_trans = trans[t:t+1]  # (1, 3)
@@ -1252,203 +1421,216 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     min_torque_per_joint = max_torque_mag * MIN_DYN_TORQUE_FRAC  # (J,)
     torque_gate = dyn_mag >= min_torque_per_joint[np.newaxis, :]  # (T, J) boolean
     
-    # --- Signal 1: Torque surprise (rolling median/MAD) ---
-    surprise = np.zeros((T, N_JOINTS))
-    for j in range(N_JOINTS):
-        med, mad = _rolling_median_mad(dyn_mag[:, j], window_frames)
-        # MAD-based z-score, gated by minimum torque magnitude.
-        # The epsilon (0.5) prevents tiny MAD from inflating surprise at low baselines.
-        raw_surprise = np.abs(dyn_mag[:, j] - med) / (mad + 0.5)
-        surprise[:, j] = raw_surprise * torque_gate[:, j]
+    if skip_torque:
+        # Lenses-only fast path: with no SMPL pass, every torque-derived
+        # signal (surprise / tv-ratio / effort / jitter) and all contact /
+        # airborne discounts are identically zero.  Skip the whole rolling-
+        # median + per-frame discount machinery -- it is pure wasted work on
+        # zero arrays and dominates runtime on long files.  The kinematic
+        # lenses + structural detection below carry the keep/cut decision.
+        surprise = np.zeros((T, N_JOINTS))
+        tv_ratio = np.zeros((T, N_JOINTS))
+        effort_spike = np.zeros((T, N_JOINTS))
+        jitter_rate = np.zeros((T, N_JOINTS))
+        joint_scores = np.zeros((T, N_JOINTS))
+    else:
+        # --- Signal 1: Torque surprise (rolling median/MAD) ---
+        surprise = np.zeros((T, N_JOINTS))
+        for j in range(N_JOINTS):
+            med, mad = _rolling_median_mad(dyn_mag[:, j], window_frames)
+            # MAD-based z-score, gated by minimum torque magnitude.
+            # The epsilon (0.5) prevents tiny MAD from inflating surprise at low baselines.
+            raw_surprise = np.abs(dyn_mag[:, j] - med) / (mad + 0.5)
+            surprise[:, j] = raw_surprise * torque_gate[:, j]
     
-    # --- Signal 2: Torque/velocity ratio ---
-    tv_ratio = np.zeros((T, N_JOINTS))
-    for j in range(N_JOINTS):
-        vel_j = np.maximum(ang_vel[:, j], TV_VELOCITY_FLOOR)
-        raw_tv = dyn_mag[:, j] / vel_j
-        tv_ratio[:, j] = raw_tv * torque_gate[:, j]  # gate by min torque
+        # --- Signal 2: Torque/velocity ratio ---
+        tv_ratio = np.zeros((T, N_JOINTS))
+        for j in range(N_JOINTS):
+            vel_j = np.maximum(ang_vel[:, j], TV_VELOCITY_FLOOR)
+            raw_tv = dyn_mag[:, j] / vel_j
+            tv_ratio[:, j] = raw_tv * torque_gate[:, j]  # gate by min torque
     
-    # --- Signal 3: Effort spike relative to local baseline ---
-    effort_spike = np.zeros((T, N_JOINTS))
-    for j in range(N_JOINTS):
-        med, mad = _rolling_median_mad(effort[:, j], window_frames)
-        # Ratio: current effort / local median, gated by min torque
-        raw_effort_spike = effort[:, j] / (med + 0.01)
-        effort_spike[:, j] = raw_effort_spike * torque_gate[:, j]
+        # --- Signal 3: Effort spike relative to local baseline ---
+        effort_spike = np.zeros((T, N_JOINTS))
+        for j in range(N_JOINTS):
+            med, mad = _rolling_median_mad(effort[:, j], window_frames)
+            # Ratio: current effort / local median, gated by min torque
+            raw_effort_spike = effort[:, j] / (med + 0.01)
+            effort_spike[:, j] = raw_effort_spike * torque_gate[:, j]
     
-    # --- Signal 4: Torque direction jitter ---
-    # Only meaningful when torque magnitude is above baseline —
-    # sign flips in near-zero torques are just numerical noise.
-    jitter_rate = np.zeros((T, N_JOINTS))
-    sign_history = np.zeros((JITTER_WINDOW, N_JOINTS, 3))
-    hist_idx = 0
-    for t in range(T):
-        curr_signs = np.sign(dyn_torques[t, :N_JOINTS])
-        sign_history[hist_idx] = curr_signs
-        hist_idx = (hist_idx + 1) % JITTER_WINDOW
-        
-        if t >= JITTER_WINDOW - 1:
-            # Count sign changes per joint (across all 3 axes)
-            changes = np.sum(
-                np.abs(np.diff(sign_history, axis=0)) > 0,
-                axis=(0, 2)
-            )  # (J,)
-            jitter_rate[t] = (changes / (JITTER_WINDOW - 1)) * torque_gate[t]
-    
-    # ── Combine into per-frame scores ─────────────────────────────────
-    
-    # Per-joint scores (normalized to 0-1 range, then weighted)
-    s_surprise = np.maximum(0, (surprise - SURPRISE_WARN) / SURPRISE_WARN) * W_SURPRISE
-    s_tv = np.maximum(0, (tv_ratio - TV_RATIO_WARN) / TV_RATIO_WARN) * W_TV_RATIO
-    s_effort = np.maximum(0, (effort_spike - EFFORT_SPIKE_WARN) / EFFORT_SPIKE_WARN) * W_EFFORT
-    s_jitter = np.maximum(0, (jitter_rate - JITTER_THRESH) / (1.0 - JITTER_THRESH + 1e-6)) * W_JITTER
-    
-    # ── Velocity-gated effort discount ─────────────────────────────────
-    # Noise glitches produce high effort at LOW angular velocity (the joint
-    # isn't actually moving).  Real dynamic maneuvers (cartwheels, jumps)
-    # produce high effort at HIGH angular velocity (the joint IS moving).
-    # Discount the effort signal when velocity is above a threshold.
-    EFFORT_VEL_GATE = 3.0     # rad/s — above this, effort is expected
-    EFFORT_VEL_SCALE = 10.0   # rad/s — at this velocity, full discount
-    vel_discount = np.clip(
-        1.0 - (ang_vel[:, :N_JOINTS] - EFFORT_VEL_GATE) / EFFORT_VEL_SCALE,
-        0.1, 1.0
-    )  # (T, J): 1.0 when slow (suspicious), 0.1 when fast (expected)
-    s_effort *= vel_discount
-    
-    # Per-joint combined score: (T, J)
-    joint_scores = s_surprise + s_tv + s_effort + s_jitter
-    
-    # ── Transience filter ─────────────────────────────────────────────
-    # Noise glitches are brief bursts; real movement produces sustained torque.
-    # Discount scores for frames where elevated torque persists continuously.
-    # For each joint, compute the run-length of consecutive non-zero scores.
-    for j in range(N_JOINTS):
-        elevated = joint_scores[:, j] > 0
-        run_len = np.zeros(T)
-        count = 0
+        # --- Signal 4: Torque direction jitter ---
+        # Only meaningful when torque magnitude is above baseline —
+        # sign flips in near-zero torques are just numerical noise.
+        jitter_rate = np.zeros((T, N_JOINTS))
+        sign_history = np.zeros((JITTER_WINDOW, N_JOINTS, 3))
+        hist_idx = 0
         for t in range(T):
-            if elevated[t]:
-                count += 1
-            else:
-                count = 0
-            run_len[t] = count
-        # Discount frames that are part of long runs
-        sustained = run_len > TRANSIENCE_WINDOW
-        joint_scores[sustained, j] *= TRANSIENCE_DISCOUNT
-    
-    # ── Dynamic motion discount ───────────────────────────────────────
-    # When the whole body is in fast motion (cartwheels, flips, jumps),
-    # high torque across joints is expected physics.  Noise glitches
-    # happen at ANY activity level, but legitimate dynamics only at high
-    # activity.  Discount scores proportionally to how far above median
-    # the per-frame total body velocity is.
-    body_vel_total = np.sum(ang_vel[:, :N_JOINTS], axis=1)  # (T,) rad/s
-    vel_p50 = np.percentile(body_vel_total, 50) if T > 0 else 0
-    vel_p90 = np.percentile(body_vel_total, 90) if T > 0 else 0
-    # Gate: starts discounting at p75 of the file's velocity distribution
-    vel_gate = np.percentile(body_vel_total, 75) if T > 0 else 0
-    vel_range = max(vel_p90 - vel_gate, 5.0)  # avoid div-by-zero
-    # Discount: 1.0 at vel_gate, 0.15 at vel_p90+
-    DYNAMIC_MOTION_DISCOUNT_MIN = 0.15
-    dynamic_discount = np.clip(
-        1.0 - (body_vel_total - vel_gate) / vel_range * (1.0 - DYNAMIC_MOTION_DISCOUNT_MIN),
-        DYNAMIC_MOTION_DISCOUNT_MIN, 1.0
-    )  # (T,)
-    joint_scores *= dynamic_discount[:, np.newaxis]  # broadcast to (T, J)
-    
-    # ── Contact-event discount ────────────────────────────────────────
-    # Torque spikes during contact state changes (touchdown, liftoff, hand plant)
-    # are expected physics.  Detect transitions in frame-evaluator forces
-    # and discount scores for joints in the affected kinetic chain.
-    contact_active = contact_forces > CONTACT_FORCE_THRESH  # (T, J) boolean
-    contact_event_mask = np.ones((T, N_JOINTS))  # 1.0 = no discount
-    
-    for contact_j, chain_joints in CONTACT_CHAIN.items():
-        if contact_j >= N_CONTACT_JOINTS:
-            continue
-        # Detect transitions: diff in contact state
-        transitions = np.zeros(T, dtype=bool)
-        for t in range(1, T):
-            if contact_active[t, contact_j] != contact_active[t-1, contact_j]:
-                transitions[t] = True
+            curr_signs = np.sign(dyn_torques[t, :N_JOINTS])
+            sign_history[hist_idx] = curr_signs
+            hist_idx = (hist_idx + 1) % JITTER_WINDOW
         
-        # Expand to window around each transition
-        transition_window = np.zeros(T, dtype=bool)
-        for t in range(T):
-            if transitions[t]:
-                lo = max(0, t - CONTACT_EVENT_WINDOW)
-                hi = min(T, t + CONTACT_EVENT_WINDOW + 1)
-                transition_window[lo:hi] = True
-        
-        # Also mark frames where contact is actively changing force significantly
-        # (force ramp-up/down, not just the boolean transition)
-        if np.any(contact_active[:, contact_j]):
-            force_diff = np.abs(np.diff(contact_forces[:, contact_j], prepend=0))
-            force_changing = force_diff > CONTACT_FORCE_THRESH * 0.5
-            transition_window |= force_changing
-        
-        # Apply discount to all joints in the kinetic chain
-        for chain_j in chain_joints:
-            if chain_j < N_JOINTS:
-                contact_event_mask[transition_window, chain_j] = CONTACT_EVENT_DISCOUNT
+            if t >= JITTER_WINDOW - 1:
+                # Count sign changes per joint (across all 3 axes)
+                changes = np.sum(
+                    np.abs(np.diff(sign_history, axis=0)) > 0,
+                    axis=(0, 2)
+                )  # (J,)
+                jitter_rate[t] = (changes / (JITTER_WINDOW - 1)) * torque_gate[t]
     
-    # ── Load-bearing discount ─────────────────────────────────────────
-    # When a contact joint is actively bearing weight (not just transitioning),
-    # high torque in the kinetic chain is expected physics (e.g., shoulder
-    # torque during a cartwheel hand plant).  Apply a proportional discount
-    # based on the fraction of body weight carried by that chain.
-    LOAD_BEARING_THRESH = 20.0     # N — minimum force for load-bearing
-    LOAD_BEARING_DISCOUNT = 0.1    # score multiplier when bearing full weight
+        # ── Combine into per-frame scores ─────────────────────────────────
     
-    for contact_j, chain_joints in CONTACT_CHAIN.items():
-        if contact_j >= N_CONTACT_JOINTS:
-            continue
+        # Per-joint scores (normalized to 0-1 range, then weighted)
+        s_surprise = np.maximum(0, (surprise - SURPRISE_WARN) / SURPRISE_WARN) * W_SURPRISE
+        s_tv = np.maximum(0, (tv_ratio - TV_RATIO_WARN) / TV_RATIO_WARN) * W_TV_RATIO
+        s_effort = np.maximum(0, (effort_spike - EFFORT_SPIKE_WARN) / EFFORT_SPIKE_WARN) * W_EFFORT
+        s_jitter = np.maximum(0, (jitter_rate - JITTER_THRESH) / (1.0 - JITTER_THRESH + 1e-6)) * W_JITTER
+    
+        # ── Velocity-gated effort discount ─────────────────────────────────
+        # Noise glitches produce high effort at LOW angular velocity (the joint
+        # isn't actually moving).  Real dynamic maneuvers (cartwheels, jumps)
+        # produce high effort at HIGH angular velocity (the joint IS moving).
+        # Discount the effort signal when velocity is above a threshold.
+        EFFORT_VEL_GATE = 3.0     # rad/s — above this, effort is expected
+        EFFORT_VEL_SCALE = 10.0   # rad/s — at this velocity, full discount
+        vel_discount = np.clip(
+            1.0 - (ang_vel[:, :N_JOINTS] - EFFORT_VEL_GATE) / EFFORT_VEL_SCALE,
+            0.1, 1.0
+        )  # (T, J): 1.0 when slow (suspicious), 0.1 when fast (expected)
+        s_effort *= vel_discount
+    
+        # Per-joint combined score: (T, J)
+        joint_scores = s_surprise + s_tv + s_effort + s_jitter
+    
+        # ── Transience filter ─────────────────────────────────────────────
+        # Noise glitches are brief bursts; real movement produces sustained torque.
+        # Discount scores for frames where elevated torque persists continuously.
+        # For each joint, compute the run-length of consecutive non-zero scores.
+        for j in range(N_JOINTS):
+            elevated = joint_scores[:, j] > 0
+            run_len = np.zeros(T)
+            count = 0
+            for t in range(T):
+                if elevated[t]:
+                    count += 1
+                else:
+                    count = 0
+                run_len[t] = count
+            # Discount frames that are part of long runs
+            sustained = run_len > TRANSIENCE_WINDOW
+            joint_scores[sustained, j] *= TRANSIENCE_DISCOUNT
+    
+        # ── Dynamic motion discount ───────────────────────────────────────
+        # When the whole body is in fast motion (cartwheels, flips, jumps),
+        # high torque across joints is expected physics.  Noise glitches
+        # happen at ANY activity level, but legitimate dynamics only at high
+        # activity.  Discount scores proportionally to how far above median
+        # the per-frame total body velocity is.
+        body_vel_total = np.sum(ang_vel[:, :N_JOINTS], axis=1)  # (T,) rad/s
+        vel_p50 = np.percentile(body_vel_total, 50) if T > 0 else 0
+        vel_p90 = np.percentile(body_vel_total, 90) if T > 0 else 0
+        # Gate: starts discounting at p75 of the file's velocity distribution
+        vel_gate = np.percentile(body_vel_total, 75) if T > 0 else 0
+        vel_range = max(vel_p90 - vel_gate, 5.0)  # avoid div-by-zero
+        # Discount: 1.0 at vel_gate, 0.15 at vel_p90+
+        DYNAMIC_MOTION_DISCOUNT_MIN = 0.15
+        dynamic_discount = np.clip(
+            1.0 - (body_vel_total - vel_gate) / vel_range * (1.0 - DYNAMIC_MOTION_DISCOUNT_MIN),
+            DYNAMIC_MOTION_DISCOUNT_MIN, 1.0
+        )  # (T,)
+        joint_scores *= dynamic_discount[:, np.newaxis]  # broadcast to (T, J)
+    
+        # ── Contact-event discount ────────────────────────────────────────
+        # Torque spikes during contact state changes (touchdown, liftoff, hand plant)
+        # are expected physics.  Detect transitions in frame-evaluator forces
+        # and discount scores for joints in the affected kinetic chain.
+        contact_active = contact_forces > CONTACT_FORCE_THRESH  # (T, J) boolean
+        contact_event_mask = np.ones((T, N_JOINTS))  # 1.0 = no discount
+    
+        for contact_j, chain_joints in CONTACT_CHAIN.items():
+            if contact_j >= N_CONTACT_JOINTS:
+                continue
+            # Detect transitions: diff in contact state
+            transitions = np.zeros(T, dtype=bool)
+            for t in range(1, T):
+                if contact_active[t, contact_j] != contact_active[t-1, contact_j]:
+                    transitions[t] = True
         
-        force_j = contact_forces[:, contact_j]  # (T,)
-        bearing = force_j > LOAD_BEARING_THRESH  # (T,) boolean
+            # Expand to window around each transition
+            transition_window = np.zeros(T, dtype=bool)
+            for t in range(T):
+                if transitions[t]:
+                    lo = max(0, t - CONTACT_EVENT_WINDOW)
+                    hi = min(T, t + CONTACT_EVENT_WINDOW + 1)
+                    transition_window[lo:hi] = True
         
-        if np.any(bearing):
-            # Discount proportional to force fraction (normalized to total mass)
-            total_weight = 75.0 * 9.81  # ~735 N
-            force_frac = np.clip(force_j / total_weight, 0, 1)  # (T,)
-            # Blend: full weight → LOAD_BEARING_DISCOUNT, zero weight → 1.0
-            load_discount = 1.0 - force_frac * (1.0 - LOAD_BEARING_DISCOUNT)
-            
+            # Also mark frames where contact is actively changing force significantly
+            # (force ramp-up/down, not just the boolean transition)
+            if np.any(contact_active[:, contact_j]):
+                force_diff = np.abs(np.diff(contact_forces[:, contact_j], prepend=0))
+                force_changing = force_diff > CONTACT_FORCE_THRESH * 0.5
+                transition_window |= force_changing
+        
+            # Apply discount to all joints in the kinetic chain
             for chain_j in chain_joints:
                 if chain_j < N_JOINTS:
-                    # Take the minimum of existing discount and load-bearing discount
-                    contact_event_mask[bearing, chain_j] = np.minimum(
-                        contact_event_mask[bearing, chain_j],
-                        load_discount[bearing]
-                    )
+                    contact_event_mask[transition_window, chain_j] = CONTACT_EVENT_DISCOUNT
     
-    joint_scores *= contact_event_mask
+        # ── Load-bearing discount ─────────────────────────────────────────
+        # When a contact joint is actively bearing weight (not just transitioning),
+        # high torque in the kinetic chain is expected physics (e.g., shoulder
+        # torque during a cartwheel hand plant).  Apply a proportional discount
+        # based on the fraction of body weight carried by that chain.
+        LOAD_BEARING_THRESH = 20.0     # N — minimum force for load-bearing
+        LOAD_BEARING_DISCOUNT = 0.1    # score multiplier when bearing full weight
     
-    # ── Airborne discount ────────────────────────────────────────────
-    # When total contact force is zero, the performer is airborne.
-    # Torque anomalies during freefall are expected (unmodeled contacts, inertia)
-    # not noise.  Discount all joints during airborne + transition frames.
-    total_contact = np.sum(contact_forces, axis=1)  # (T,)
-    airborne = total_contact < CONTACT_FORCE_THRESH  # (T,) boolean
+        for contact_j, chain_joints in CONTACT_CHAIN.items():
+            if contact_j >= N_CONTACT_JOINTS:
+                continue
+        
+            force_j = contact_forces[:, contact_j]  # (T,)
+            bearing = force_j > LOAD_BEARING_THRESH  # (T,) boolean
+        
+            if np.any(bearing):
+                # Discount proportional to force fraction (normalized to total mass)
+                total_weight = 75.0 * 9.81  # ~735 N
+                force_frac = np.clip(force_j / total_weight, 0, 1)  # (T,)
+                # Blend: full weight → LOAD_BEARING_DISCOUNT, zero weight → 1.0
+                load_discount = 1.0 - force_frac * (1.0 - LOAD_BEARING_DISCOUNT)
+            
+                for chain_j in chain_joints:
+                    if chain_j < N_JOINTS:
+                        # Take the minimum of existing discount and load-bearing discount
+                        contact_event_mask[bearing, chain_j] = np.minimum(
+                            contact_event_mask[bearing, chain_j],
+                            load_discount[bearing]
+                        )
     
-    # Expand airborne mask with transition window
-    airborne_expanded = airborne.copy()
-    for t in range(T):
-        if airborne[t]:
-            lo = max(0, t - AIRBORNE_WINDOW)
-            hi = min(T, t + AIRBORNE_WINDOW + 1)
-            airborne_expanded[lo:hi] = True
+        joint_scores *= contact_event_mask
     
-    # Apply discount to ALL joints during airborne phases
-    joint_scores[airborne_expanded] *= AIRBORNE_DISCOUNT
+        # ── Airborne discount ────────────────────────────────────────────
+        # When total contact force is zero, the performer is airborne.
+        # Torque anomalies during freefall are expected (unmodeled contacts, inertia)
+        # not noise.  Discount all joints during airborne + transition frames.
+        total_contact = np.sum(contact_forces, axis=1)  # (T,)
+        airborne = total_contact < CONTACT_FORCE_THRESH  # (T,) boolean
     
-    # ── Structural exclusion (breaks + corruption) ─────────────────────
-    # Stream breaks and corruption zones are STRUCTURAL issues, not
-    # motion quality issues.  Exclude them entirely from the noise
-    # score computation.  They are reported separately via SurgeryInfo.
-    if np.any(structural_mask):
-        joint_scores[structural_mask] = 0
+        # Expand airborne mask with transition window
+        airborne_expanded = airborne.copy()
+        for t in range(T):
+            if airborne[t]:
+                lo = max(0, t - AIRBORNE_WINDOW)
+                hi = min(T, t + AIRBORNE_WINDOW + 1)
+                airborne_expanded[lo:hi] = True
+    
+        # Apply discount to ALL joints during airborne phases
+        joint_scores[airborne_expanded] *= AIRBORNE_DISCOUNT
+    
+        # ── Structural exclusion (breaks + corruption) ─────────────────────
+        # Stream breaks and corruption zones are STRUCTURAL issues, not
+        # motion quality issues.  Exclude them entirely from the noise
+        # score computation.  They are reported separately via SurgeryInfo.
+        if np.any(structural_mask):
+            joint_scores[structural_mask] = 0
     
     # Apply joint importance weighting
     weighted_scores = joint_scores * JOINT_IMPORTANCE[np.newaxis, :]
@@ -1605,17 +1787,26 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         cls = 'moderate'
     else:
         cls = 'problematic'
+    # Torque-only base verdict (before any lens/structural escalation) — kept
+    # for the torque-ablation comparison (is the torque pass redundant?).
+    cls_torque_base = cls
 
     # If the file is classified clean but has real pose-level anomalies
     # (significant spike events, corruption zones, or stream breaks),
     # bump to moderate.  These are real events even if the torque scorer
     # didn't elevate at those frames.
-    n_pose_anomalies = (
-        len(significant_spike_frame_set)
-        + len(corruption_zones)
-        + len(stream_breaks)
-    )
-    if cls == 'clean' and n_pose_anomalies >= 1:
+    # Spike contribution requires SUSTAINED/REPEATED evidence — a single
+    # isolated significant spike is sub-perceptual and no longer demotes (it
+    # was the dominant clean->moderate driver).  A dense (contaminated) spike
+    # cluster still demotes on its own.  Structural failures (corruption zones,
+    # stream breaks) demote on a single occurrence — they are not isolated pops.
+    n_contaminated_clusters = sum(1 for c in spike_clusters if c.contaminated)
+    spike_demotes = (len(significant_spike_frame_set) >= SIGNIFICANT_SPIKE_MIN_FRAMES
+                     or n_contaminated_clusters >= 1)
+    pose_anomaly_escalation = (spike_demotes
+                               or len(corruption_zones) >= 1
+                               or len(stream_breaks) >= 1)
+    if cls == 'clean' and pose_anomaly_escalation:
         cls = 'moderate'
     
     # ── Surgery analysis (uses corruption zones computed earlier) ─────────
@@ -1632,6 +1823,13 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     # Zigzag (buzz) — continuous contribution, soft ramp above a dead-band floor.
     zigzag_contribution = min(max(0.0, (zigzag_peak - ZIGZAG_FLOOR) * ZIGZAG_SCALE), ZIGZAG_CAP)
     ns += zigzag_contribution
+    ns = min(100.0, ns)
+
+    # Reversal-at-speed (returning glitch) — continuous contribution, soft ramp
+    # above a dead-band floor.  Severity is the rad/s carried through a direction
+    # flip; mild jitter (jog ~16) contributes little, clear glitches ramp up.
+    reversal_contribution = min(max(0.0, (reversal_max - REVERSAL_FLOOR) * REVERSAL_SCALE), REVERSAL_CAP)
+    ns += reversal_contribution
     ns = min(100.0, ns)
 
     # Component 7: Single-frame spike fraction.  Each spike is a real
@@ -1666,9 +1864,19 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     clean_total = sum(s.n_frames for s in clean)
     clean_frac = clean_total / max(T, 1)
     file_seconds = T / float(fps) if fps > 0 else 0.0
+    # Corroboration gate: the problematic ESCALATION and the score penalty run
+    # off a STRUCTURAL-only clean fraction — clean segments cut by breaks /
+    # corruption / lens (teleport/flicker/zigzag/ROM) / sustained density, but
+    # NOT by individual significant or isolated spikes.  Isolated spike
+    # contamination is real but recoverable, so it drives EXCISION (contaminated
+    # sections, below) rather than rejecting the whole file.  Pervasive cases
+    # still escalate via the density mask, the lenses, or corruption_frac.
+    clean_struct = _find_clean_segments(
+        frame_scores, fps, corruption_mask=clean_bad_mask, spike_frame_indices=None)
+    clean_frac_structural = sum(s.n_frames for s in clean_struct) / max(T, 1)
     if (file_seconds >= CLEAN_FRAC_PENALTY_MIN_DURATION_S
-            and clean_frac < CLEAN_FRAC_PENALTY_THRESHOLD):
-        score_fragmentation = (CLEAN_FRAC_PENALTY_THRESHOLD - clean_frac) * CLEAN_FRAC_PENALTY_SCALE
+            and clean_frac_structural < CLEAN_FRAC_PENALTY_THRESHOLD):
+        score_fragmentation = (CLEAN_FRAC_PENALTY_THRESHOLD - clean_frac_structural) * CLEAN_FRAC_PENALTY_SCALE
         ns += score_fragmentation
         ns = min(100.0, ns)
 
@@ -1690,11 +1898,43 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         cls = 'problematic'
     if n_rom >= ROM_MIN_FRAMES:
         cls = 'problematic'
-
-    # Low clean fraction on a long file is also automatically problematic.
-    if (file_seconds >= CLEAN_FRAC_PENALTY_MIN_DURATION_S
-            and clean_frac < CLEAN_FRAC_PROBLEMATIC_THRESHOLD):
+    # Returning glitch (reversal-at-speed): a single fast direction flip is
+    # non-physical (above plausible contact reversals), or pervasive moderate
+    # flips.  Catches the 35-60 rad/s returning band the teleport ceiling (60)
+    # misses.  Conservative: shake (8.8)/jog (16.7)/contact (~25) stay below.
+    if reversal_max >= REVERSAL_LOCK or reversal_rate >= REVERSAL_RATE_LOCK:
         cls = 'problematic'
+
+    # Low STRUCTURAL clean fraction on a long file is problematic (corroboration
+    # gate: structural/lens/density fragmentation only; isolated spikes excise).
+    if (file_seconds >= CLEAN_FRAC_PENALTY_MIN_DURATION_S
+            and clean_frac_structural < CLEAN_FRAC_PROBLEMATIC_THRESHOLD):
+        cls = 'problematic'
+
+    # ── Lenses-only verdict (torque ablation) ─────────────────────────
+    # Reproduce the classification with the TORQUE base-rule REMOVED: start
+    # 'clean' and apply only the kinematic/structural escalations (pose-anomaly
+    # bump + the same problematic locks).  Note the structural_mask excision,
+    # the noise_score lens contributions, and every lock above are already
+    # torque-independent; only the base rule above used torque.  Diffing
+    # cls_lenses_only against cls shows exactly what the torque pass uniquely
+    # flags — the answer to whether it is redundant.
+    cls_lenses_only = 'clean'
+    if pose_anomaly_escalation:
+        cls_lenses_only = 'moderate'
+    if corruption_frac > 0.10:
+        cls_lenses_only = 'problematic'
+    if max_arm_vel > TELEPORT_VEL_DEFINITE:
+        cls_lenses_only = 'problematic'
+    if flicker_rate >= FLICKER_RATE_LOCK or flicker_peak >= FLICKER_PEAK_LOCK:
+        cls_lenses_only = 'problematic'
+    if n_rom >= ROM_MIN_FRAMES:
+        cls_lenses_only = 'problematic'
+    if reversal_max >= REVERSAL_LOCK or reversal_rate >= REVERSAL_RATE_LOCK:
+        cls_lenses_only = 'problematic'
+    if (file_seconds >= CLEAN_FRAC_PENALTY_MIN_DURATION_S
+            and clean_frac_structural < CLEAN_FRAC_PROBLEMATIC_THRESHOLD):
+        cls_lenses_only = 'problematic'
 
     # ── Clean-section score ───────────────────────────────────────────
     # Rates noise level WITHIN the clean segments.  Tells the user: if
@@ -1760,6 +2000,103 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     report.zigzag_severity = round(float(zigzag_peak), 3)
     report.zigzag_contribution = round(float(zigzag_contribution), 1)
     report.n_rom_frames = int(n_rom)
+    report.rom_max_joint = int(rom_joint)
+    report.reversal_max_speed = round(float(reversal_max), 1)
+    report.reversal_rate = round(float(reversal_rate), 2)
+    report.reversal_contribution = round(float(reversal_contribution), 1)
+    report.n_reversal_frames = int(n_reversal)
+    report.reversal_max_joint = int(reversal_joint)
+    # Trajectory-deviation-at-speed (signature-agnostic gross-corruption lens);
+    # diagnostic only — serialized, not (yet) wired into classification.
+    report.dev_speed_max = round(float(devspeed_max), 2)
+    report.dev_speed_rate = round(float(devspeed_rate), 3)
+    report.n_dev_speed_frames = int(n_devspeed)
+    report.dev_speed_joint = int(devspeed_joint)
+    # Excursion lens (isolated recovering glitch vs regime change); diagnostic.
+    report.excursion_max = round(float(exc_max), 2)
+    report.excursion_rate = round(float(exc_rate), 3)
+    report.n_excursion_frames = int(n_exc)
+    report.excursion_joint = int(exc_joint)
+    # Per-frame locations for navigation — gap-merge each lens mask into
+    # contiguous LensClusters carrying the run's peak severity, so the
+    # clean-segment derivation can be re-thresholded offline (see
+    # clean_segment_tools.rederive_clean_segments).
+    report.teleport_clusters = _lens_clusters(
+        np.where(teleport_mask)[0], teleport_sev, TELEPORT_VEL_HARD)
+    report.flicker_clusters = _lens_clusters(
+        np.where(flicker_mask)[0], flicker_sev, FLICKER_SYNC)
+    report.rom_clusters = _lens_clusters(
+        np.where(rom_mask)[0], rom_sev, ROM_SEVERITY_REF)
+    report.reversal_clusters = _lens_clusters(
+        np.where(reversal_mask)[0], reversal_sev, REVERSAL_HARD)
+    report.sfglitch_clusters = _lens_clusters(
+        np.where(sfg_mask)[0], sfg_sev, SFGLITCH_REL_HARD)
+    report.instability_clusters = _lens_clusters(
+        np.where(inst_mask)[0], inst_sev, INSTABILITY_DECISIVE)
+    report.zigzag_clusters = _lens_clusters(
+        np.where(zigzag_Z > ZIGZAG_FLOOR)[0], zigzag_Z, ZIGZAG_FLOOR)
+    report.dev_speed_clusters = _lens_clusters(
+        np.where(devspeed_mask)[0], devspeed_sev, DEVSPEED_HARD)
+    report.excursion_clusters = _lens_clusters(
+        np.where(exc_mask)[0], exc_sev, EXCURSION_OFF_FLOOR)
+    # ── Attribution pass ──────────────────────────────────────────────
+    # Re-attribute each lens cluster to the (limb region, source joint,
+    # corrected frame) where it actually originates — fixes the flag-vs-event
+    # frame wobble and the proximal/distal joint mis-attribution.
+    if _attribution is not None:
+        # off_traj_cm (perceptibility/relevance dial) is computed only for the
+        # SOFT events the dial governs — spike + excursion clusters; the hard
+        # lenses (teleport/ROM/reversal) always fragment, no perceptibility veto.
+        soft_fields = (id(report.spike_clusters), id(report.excursion_clusters))
+        for fld in (report.teleport_clusters, report.flicker_clusters,
+                    report.rom_clusters, report.reversal_clusters,
+                    report.sfglitch_clusters, report.instability_clusters,
+                    report.zigzag_clusters, report.dev_speed_clusters,
+                    report.excursion_clusters, report.spike_clusters):
+            is_soft = id(fld) in soft_fields
+            for c in fld:
+                a = _attribution.attribute(poses, c.start, c.end)
+                if a:
+                    c.region = a['region']
+                    c.peak_frame = a['frame']
+                    c.peak_joint = a['joint_name']
+                    if is_soft and _perceptibility is not None:
+                        # Leverage-aware short-circuit on the expensive mesh LBS.
+                        # The cheap geometric proxy (max joint geodesic-dev x
+                        # vertex reach) is a strict UPPER BOUND on the mesh
+                        # off-traj residual (skinning blend + child compensation
+                        # only reduce it).  So proxy < SC_ABSORB guarantees the
+                        # true value is below it -> absorb for free, no LBS, with
+                        # ZERO risk of missing a perceptible glitch.  Everything
+                        # at/above SC_ABSORB gets the exact mesh — including the
+                        # compensation cases (high proxy, low mesh) the old
+                        # bone-length score mis-read in both directions (e.g. an
+                        # elbow glitch under-read because bone length misses the
+                        # forearm+hand lever).  No high short-circuit: a large
+                        # proxy can still mesh down to imperceptible.
+                        proxy = _perceptibility.proxy_cm(poses, a['frame'])
+                        if proxy is not None and proxy < SC_OFFTRAJ_ABSORB:
+                            c.off_traj_cm = proxy        # safe absorb (no LBS)
+                        else:
+                            cm = _perceptibility.off_traj_cm(
+                                poses, betas if betas is not None else np.zeros(10),
+                                a['frame'], a['joint'])
+                            if cm is not None:
+                                c.off_traj_cm = cm
+                            elif proxy is not None:
+                                c.off_traj_cm = proxy    # mesh edge -> use bound
+                    if is_soft and _movement_combiner is not None:
+                        # Movement-vs-glitch combiner score (panel of complementary
+                        # physical specialists).  clean_segment_tools uses it as a
+                        # rescue valve: a perceptible spike/excursion that the
+                        # combiner is confident is real movement is absorbed rather
+                        # than fragmenting the clean segment.
+                        mp = _movement_combiner.movement_prob(
+                            poses, trans, a['frame'], c.off_traj_cm)
+                        if mp is not None:
+                            c.movement_prob = mp
+    report.classification_torque_base = cls_torque_base
+    report.classification_lenses_only = cls_lenses_only
     # Build multi-dimensional classification
     report.classification_detail, report.recommendations = _build_classification(report)
     
@@ -1803,16 +2140,18 @@ def _detect_teleports(poses, fps):
     """
     T = poses.shape[0]
     mask = np.zeros(T, dtype=bool)
+    sev_track = np.zeros(T)
     if T < 3:
-        return mask, 0.0, 0.0, 0.0
+        return mask, 0.0, 0.0, 0.0, sev_track
     nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
     nj = min(nj, N_JOINTS)
     P = poses.reshape(T, -1, 3)[:, :nj, :]
     v = np.linalg.norm(np.diff(P, axis=0), axis=2) * fps   # (T-1, J)
     arm = [j for j in TELEPORT_ARM_JOINTS if j < v.shape[1]]
     if not arm:
-        return mask, 0.0, 0.0, 0.0
+        return mask, 0.0, 0.0, 0.0, sev_track
     v_arm = v[:, arm].max(axis=1)                          # (T-1,)
+    sev_track[:len(v_arm)] = v_arm                         # per-frame arm velocity
     L = len(v_arm)
     W = TELEPORT_WINDOW
     n_inconsistent = 0
@@ -1845,7 +2184,7 @@ def _detect_teleports(poses, fps):
             mask[t + 1] = True
     dur = T / float(fps) if fps > 0 else 0.0
     inconsistent_rate = n_inconsistent / dur if dur > 0 else 0.0
-    return mask, float(n_inconsistent), float(inconsistent_rate), float(v_arm.max())
+    return mask, float(n_inconsistent), float(inconsistent_rate), float(v_arm.max()), sev_track
 
 
 # ── Flicker lens ──────────────────────────────────────────────────────
@@ -1872,8 +2211,9 @@ def _detect_flicker(poses, fps):
     """
     T = poses.shape[0]
     mask = np.zeros(T, dtype=bool)
+    sev_track = np.zeros(T)
     if T < 5:
-        return mask, 0.0, 0
+        return mask, 0.0, 0, sev_track
     nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
     nj = min(nj, N_JOINTS)
     P = poses.reshape(T, -1, 3)[:, :nj, :]
@@ -1887,14 +2227,16 @@ def _detect_flicker(poses, fps):
         cond = (vj[1:-1] >= FLICKER_FLOOR) & (vj[1:-1] < FLICKER_VCAP) & (nm > 1e-6) & \
                (vj[1:-1] / np.maximum(nm, 1e-9) >= FLICKER_RATIO)
         spk[1:-1, jj] = cond
-    sync = spk.sum(axis=1) >= FLICKER_SYNC          # (L,) bad-solve frames
+    sync_count = spk.sum(axis=1)                    # (L,) #arm joints spiking per frame
+    sync = sync_count >= FLICKER_SYNC               # bad-solve frames
     mask[:L] = sync
+    sev_track[:L] = sync_count                      # severity = synced-joint count
     dur = T / float(fps) if fps > 0 else 0.0
     flicker_rate = int(sync.sum()) / dur if dur > 0 else 0.0
     idx = np.where(sync)[0]; w = int(fps); peak = 0
     for f in idx:
         peak = max(peak, int(((idx >= f) & (idx < f + w)).sum()))
-    return mask, float(flicker_rate), int(peak)
+    return mask, float(flicker_rate), int(peak), sev_track
 
 
 # ── Zigzag lens ───────────────────────────────────────────────────────
@@ -1925,7 +2267,13 @@ def _detect_zigzag(poses, fps):
     nj = min(nj, N_JOINTS)
     P = poses.reshape(T, -1, 3)[:, :nj, :]
     arm = [j for j in TELEPORT_ARM_JOINTS if j < P.shape[1]]
-    kern = np.ones(2 * ZIGZAG_W + 1) / (2 * ZIGZAG_W + 1)
+    # Clamp the smoothing kernel to the data length.  Each arm joint's signal
+    # z has length T-2; np.convolve(..., mode='same') returns max(len(z),
+    # len(kern)), so a kernel longer than z (very short clips) would yield an
+    # over-length Z and break the assignment below.  eff_w guarantees
+    # 2*eff_w+1 <= T-2 so the convolution stays 'same'-length.
+    eff_w = max(0, min(ZIGZAG_W, (T - 3) // 2))
+    kern = np.ones(2 * eff_w + 1) / (2 * eff_w + 1)
     for j in arm:
         dv = np.diff(P[:, j, :], axis=0)
         n = np.linalg.norm(dv, axis=1)
@@ -1945,29 +2293,430 @@ def _detect_zigzag(poses, fps):
 
 
 # ── ROM / static-pose lens ────────────────────────────────────────────
-# A wrist cannot be >150 deg from neutral (anatomical max ~90-100; trusted-
-# clean p99=98, never >150).  A SUSTAINED impossible wrist rotation is a
-# candy-wrapper twist artifact — invisible to every velocity lens when it
-# does not correct.  Excise the impossible span; lock if sustained.
-ROM_WRIST_JOINTS = (20, 21)
-ROM_MAX_DEG      = 150.0
+# A joint held beyond its physiological rotation limit is a candy-wrapper
+# twist artifact — the joint wound past its ROM — invisible to every velocity
+# lens when it does not correct.  Per-joint caps on the raw axis-angle
+# magnitude (degrees from neutral): each set ~1.4x the joint's corpus p99.9,
+# validated to give ZERO clean-file hits (flagged files are DanceDB /
+# problematic).  Whole-body, not just wrists: the worst real cases are DanceDB
+# ankles wound to ~378 deg sustained for hundreds of frames.  Excise the
+# impossible span; lock if sustained.
+ROM_JOINT_CAPS = {
+    20: 150.0, 21: 150.0,            # wrists (original: anatomical ~90-100, clean p99=98)
+    1: 160.0, 2: 160.0,              # hips (p99.9 120)
+    4: 175.0, 5: 175.0,              # knees (high legit flexion ~150 -> high cap)
+    7: 140.0, 8: 140.0,              # ankles (p99.9 ~85; the worst candy-wrappers)
+    10: 130.0, 11: 130.0,            # feet
+    3: 140.0, 6: 100.0, 9: 100.0,    # spine1 / spine2 / spine3
+    12: 130.0, 15: 120.0,            # neck, head
+}
+ROM_ARM_JOINTS   = {13, 14, 16, 17, 18, 19, 20, 21}
+ROM_LEG_JOINTS   = {1, 2, 4, 5, 7, 8, 10, 11}
 ROM_MIN_FRAMES   = 3       # sustained -> lock
 
 
 def _detect_rom(poses, fps):
-    """Sustained anatomically-impossible wrist rotation (candy-wrapper).
-    Returns (rom_mask, n_impossible_frames)."""
+    """Sustained anatomically-impossible joint rotation (candy-wrapper twist).
+    Whole-body, per-joint caps.  Returns (rom_mask, n_impossible_frames, rom_joint)."""
     T = poses.shape[0]
     mask = np.zeros(T, dtype=bool)
     nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
     nj = min(nj, N_JOINTS)
     P = poses.reshape(T, -1, 3)[:, :nj, :]
-    for j in ROM_WRIST_JOINTS:
+    rom_joint = -1
+    worst_excess = 0.0
+    sev_track = np.zeros(T)            # per-frame max degrees-over-cap
+    for j, cap in ROM_JOINT_CAPS.items():
         if j >= P.shape[1]:
             continue
         mag = np.degrees(np.linalg.norm(P[:, j, :], axis=1))
-        mask |= (mag > ROM_MAX_DEG)
-    return mask, int(mask.sum())
+        over = mag > cap
+        if over.any():
+            mask |= over
+            sev_track = np.maximum(sev_track, np.where(over, mag - cap, 0.0))
+            excess = float(mag[over].max() - cap)
+            if excess > worst_excess:
+                worst_excess = excess
+                rom_joint = j
+    return mask, int(mask.sum()), int(rom_joint), sev_track
+
+
+# ── Reversal-at-speed lens ─────────────────────────────────────────────
+# A real limb cannot carry high angular velocity through a full direction
+# reversal in a single frame — bounded joint torque forces it to decelerate
+# through ~zero first.  So an angular-velocity SIGN-FLIP where BOTH sides are
+# fast is non-physical: a glitch that pops out and snaps back (a RETURNING
+# teleport / flicker).  This is the complement of the one-way teleport ceiling
+# (_detect_teleports), which is blind to events that reverse (its peak velocity
+# never has to exceed the ceiling).  Validated: catches 215 returning glitches
+# the magnitude ceiling misses; DanceDB (genuinely corrupt) lights up 98.7%.
+#
+# Measured on the GEODESIC angular velocity omega[t] = log(R[t+1]·R[t]^-1) via
+# quaternion/rotation log (true rotation angle, bounded [0,pi]; no axis-angle
+# +/-pi wraparound that would inflate severity or fabricate a reversal between
+# two fast frames; direction = the true rotation axis).  At a reversal
+# (dir·dir < REVERSAL_DOT) the severity is min(|omega[t]|,|omega[t-1]|) — the
+# speed CARRIED THROUGH the reversal — kept as a CONTINUOUS soft valve, not a
+# gate.  Real contact reversals are magnitude-bounded (tissue/muscle) and sit
+# below the lock; unbounded glitches clear it.
+#
+# FULL BODY (not just arms): validated to transfer with the SAME thresholds.
+# Valid leg/spine motion is even quieter than arms (p95 ~10 rad/s) — the
+# footstrike decelerates to zero (a stop, not a reversal) and a kick is a
+# one-directional follow-through (no reversal), so legs don't false-positive.
+# Real leg/spine glitches sit at 47-345 rad/s (DanceDB legs 79%, spine 19%).
+REVERSAL_JOINTS = set(range(1, 22))   # all body joints except the global root (0)
+REVERSAL_ARM    = {13, 14, 16, 17, 18, 19, 20, 21}
+REVERSAL_LEG    = {1, 2, 4, 5, 7, 8, 10, 11}
+REVERSAL_DOT        = -0.3    # consecutive motion-direction dot below this = a reversal
+REVERSAL_FLOOR      = 14.0    # rad/s dead-band: below = subtle jitter (kept), clean p<8
+REVERSAL_HARD       = 25.0    # rad/s — excise frames at/above (clear non-physical, above contact)
+REVERSAL_SCALE      = 1.2     # noise_score points per rad/s of severity above the floor
+REVERSAL_CAP        = 30.0
+REVERSAL_LOCK       = 35.0    # rad/s — a single reversal this fast locks problematic
+REVERSAL_RATE_LOCK  = 1.0     # ... or this many >=HARD reversals per second (pervasive)
+
+
+def _detect_reversals(poses, fps):
+    """Returning-glitch lens: angular-velocity reversals carried at speed.
+
+    Returns (reversal_mask, reversal_max, reversal_rate, n_reversal_frames, reversal_joint):
+      reversal_mask      (T,) bool — frames at/above REVERSAL_HARD severity (excised)
+      reversal_max       float     — peak reversal severity (rad/s), the severity dial
+      reversal_rate      float     — reversals >= REVERSAL_HARD per second
+      n_reversal_frames  int
+      reversal_joint     int       — joint index of the peak reversal (-1 if none)
+    """
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    if T < 4:
+        return mask, 0.0, 0.0, 0, -1, np.zeros(T)
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    joints = [j for j in REVERSAL_JOINTS if j < P.shape[1]]
+    rev_max = 0.0
+    rev_joint = -1
+    n_hard = 0
+    sev_track = np.zeros(T)                               # per-frame reversal severity
+    for j in joints:
+        Rj = Rotation.from_rotvec(P[:, j, :])
+        w = (Rj[1:] * Rj[:-1].inv()).as_rotvec()          # (T-1, 3) geodesic log-map
+        spd = np.linalg.norm(w, axis=1) * fps
+        u = w / (np.linalg.norm(w, axis=1, keepdims=True) + 1e-9)
+        dots = np.einsum('ij,ij->i', u[1:], u[:-1])       # dir[t]·dir[t-1]
+        idx = np.where(dots < REVERSAL_DOT)[0] + 1        # transition index of the reversal
+        if not len(idx):
+            continue
+        sev = np.minimum(spd[idx], spd[idx - 1])          # speed carried through the flip
+        for f, s in zip(idx, sev):
+            ff = min(int(f), T - 1)
+            sev_track[ff] = max(sev_track[ff], float(s))
+        jmax = float(sev.max())
+        if jmax > rev_max:
+            rev_max = jmax
+            rev_joint = j
+        hard = idx[sev >= REVERSAL_HARD]
+        n_hard += len(hard)
+        for f in hard:                                    # excise pivot pose frame + neighbour
+            mask[min(int(f), T - 1)] = True
+            mask[min(int(f) + 1, T - 1)] = True
+    dur = T / float(fps) if fps > 0 else 0.0
+    rate = n_hard / dur if dur > 0 else 0.0
+    return mask, float(rev_max), float(rate), int(n_hard), int(rev_joint), sev_track
+
+
+# ── Isolated single-frame-glitch lens (validated against hand-adjudicated data) ──
+# One off-trajectory frame on otherwise-CONTINUOUS motion — the most common
+# residual glitch (single-frame shift + moderate 2-frame reversal) that slips the
+# seam below the reversal lens (it returns / is isolated, not carried at speed).
+# Three parts, each validated on the labeled movement-vs-glitch set:
+#   spike  = |w_in - w_out|/2  — the symmetric away/back displacement of one frame
+#            (w_in = step into the frame, w_out = step out; for a single bad frame
+#            they are u+delta and u-delta, so their difference isolates 2*delta).
+#   regime = |w_before - w_after| — does the UNDERLYING motion stay continuous?
+#            A real reversal (clap, direction-change) changes regime (motion after
+#            != motion before) so regime >= spike and it is REJECTED.  Only a true
+#            blip-on-continuous-motion passes (regime < spike).
+#   relevance = spike / (local_activity + eps) — PERCEPTIBILITY scaling: a spike
+#            is discounted by the scale of the actual movement (a blip that wrecks
+#            a gentle motion is masked in a dynamic one).  eps is tiny (avoids
+#            div-by-zero in still sections); it must NOT be a large floor, or it
+#            desensitises exactly the gentle sections where spikes are most
+#            perceptible.  This ratio is the severity dial.
+# The NOISE FLOOR is a SEPARATE, absolute, LEVERAGE-SCALED gate: spike_cm =
+#   radians(spike) * subtree_reach * 100 (surface displacement) must exceed a cm
+#   threshold.  This both rejects sub-perceptual jitter (the noise floor) AND
+#   captures that a small PROXIMAL rotation (hip/shoulder) is a large visible swing
+#   of the limb — so proximal glitches clear it while distal jitter does not.
+# deg/frame for the ratio (frame-to-frame, fps-independent); cm for the floor.
+SFGLITCH_REL_HARD       = 2.5    # perceptibility ratio at/above = excised
+SFGLITCH_EPS            = 0.5    # deg/frame — tiny, NOT a desensitising floor
+SFGLITCH_NOISE_FLOOR_CM = 0.5    # leverage-scaled spike floor (surface cm)
+
+
+def _detect_single_frame_glitch(poses, fps):
+    """Isolated single-frame-glitch lens.  Returns
+    (mask, rel_max, rate, n_hard, joint, sev_track) like the other lenses —
+    mask = frames at/above SFGLITCH_REL_HARD relevance, sev_track = per-frame
+    relevance (the severity dial)."""
+    from scipy.ndimage import median_filter
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    sev_track = np.zeros(T)
+    if T < 8:
+        return mask, 0.0, 0.0, 0, -1, sev_track
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS, 22)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    # Per-joint subtree surface reach (m) for the leverage-scaled noise floor —
+    # a small proximal rotation is a large visible displacement.  0.4 m fallback.
+    reach = None
+    if _perceptibility is not None:
+        _m = _perceptibility._load()
+        if _m:
+            reach = _m['reach']
+    rel_max = 0.0; rel_joint = -1; n_hard = 0
+    t = np.arange(2, T - 2)
+    for j in range(1, nj):
+        rj = float(reach[j]) if reach is not None and j < len(reach) else 0.4
+        Rj = Rotation.from_rotvec(P[:, j, :])
+        w = (Rj[1:] * Rj[:-1].inv()).as_rotvec()          # (T-1,3); w[k] = step k->k+1
+        spd = np.degrees(np.linalg.norm(w, axis=1))       # (T-1,) deg/frame
+        activity = median_filter(spd, size=11, mode='nearest')
+        # frame t:  w_in=w[t-1], w_out=w[t], w_before=w[t-2], w_after=w[t+1]
+        spike = np.degrees(np.linalg.norm(w[t - 1] - w[t], axis=1)) / 2.0
+        regime = np.degrees(np.linalg.norm(w[t - 2] - w[t + 1], axis=1))
+        spike_cm = np.radians(spike) * rj * 100.0         # leverage-scaled displacement
+        # noise floor (absolute, leverage-scaled) AND continuity gate, THEN the
+        # perceptibility ratio with a tiny eps (full sensitivity in gentle motion)
+        ok = (regime < spike) & (spike > 0) & (spike_cm >= SFGLITCH_NOISE_FLOOR_CM)
+        rel = np.where(ok, spike / (activity[t] + SFGLITCH_EPS), 0.0)
+        sev_track[t] = np.maximum(sev_track[t], rel)
+        if rel.size and rel.max() > rel_max:
+            rel_max = float(rel.max()); rel_joint = j
+        for f in t[rel >= SFGLITCH_REL_HARD]:
+            mask[min(int(f), T - 1)] = True
+            n_hard += 1
+    dur = T / float(fps) if fps > 0 else 0.0
+    rate = n_hard / dur if dur > 0 else 0.0
+    return mask, float(rel_max), float(rate), int(n_hard), int(rel_joint), sev_track
+
+
+# ── Sustained-instability (region-disorder) lens — cascade Tier-1, decisive ──
+# A measurable STRETCH of instability (zigzag / oscillation / jitter / continuous
+# corruption) is a decisive glitch: it carries a high density of direction-
+# reversals across a neighbourhood at some joint.  off_traj/accom are BLIND to it
+# (the corrupted baseline makes the deviation read ~0), and the soft combiner
+# waters it down (accom calls "sustained" = movement, fighting the disorder
+# signal).  So it must be a HARD lens: above the decisive density (calibrated
+# above any real movement's region-disorder) it fragments absolutely, no
+# arbitration.  This is the Tier-1 "any strong single detector wins" principle.
+INSTABILITY_DECISIVE = 6.0    # direction-reversals within a +-12 window = excised
+
+# INSTABILITY = INCOHERENT reversal disorder.  A direction-reversal is evidence of
+# instability only if it is large relative to the COHERENT (underlying, directed)
+# motion — not if it is small wobble riding on a fast-but-smooth trajectory.  Fast
+# coordinated movement (a hard arm swing) is COHERENT: low-pass the angular-velocity
+# vector and the anti-parallel wobble cancels, leaving a high coherent speed, so its
+# reversals are proportionally small.  Instability buzz is INCOHERENT: the smoothed
+# velocity cancels to ~0, so the reversals dominate.  This is dynamic-intensity
+# adaptation done right — normalise by the coherent motion, NOT by raw local speed
+# (the reversals inflate that equally in both cases) and NOT via a fat additive eps
+# (which crushes slow real instabilities like a jittering hip).  Validated: fast
+# coherent movement (coherent speed ~2.5) reads ~2 incoherent reversals; real
+# instabilities (coherent ~0.1-0.5) read 19-159.
+INSTABILITY_COH_SIGMA   = 3.0   # frames; low-pass timescale that defines "coherent"
+INSTABILITY_COH_EPS     = 0.3   # deg/frame; small denominator regulariser, NOT a floor
+INSTABILITY_INCOH_RATIO = 2.5   # reversal mag / coherent speed above this = incoherent
+INSTABILITY_MIN_MAG_DEG = 0.15  # deg/frame; quantisation guard (reject sub-noise jitter)
+
+
+def _detect_instability(poses, fps):
+    """Sustained-instability lens.  Returns
+    (mask, density_max, rate, n_hard, joint, sev_track) — mask = frames whose
+    +-12 neighbourhood carries >= INSTABILITY_DECISIVE *incoherent* reversals at any
+    joint (a reversal large relative to the joint's coherent, low-pass motion)."""
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    sev_track = np.zeros(T)
+    half = 12
+    if T < 2 * half + 1:      # shorter than the +-half disorder window: no analysis
+        return mask, 0.0, 0.0, 0, -1, sev_track
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS, 22)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    kernel = np.ones(2 * half + 1)
+    dis_max = 0.0; dis_joint = -1
+    for j in range(1, nj):
+        Rj = Rotation.from_rotvec(P[:, j, :])
+        w = (Rj[1:] * Rj[:-1].inv()).as_rotvec()           # (T-1,3) angular velocity
+        nr = np.linalg.norm(w, axis=1)                     # rad/frame
+        n = np.degrees(nr)                                 # deg/frame
+        # coherent (low-pass) speed: anti-parallel wobble cancels in the smoothed
+        # velocity vector, leaving the underlying directed motion.
+        coh = np.degrees(np.linalg.norm(
+            gaussian_filter1d(w, INSTABILITY_COH_SIGMA, axis=0, mode='nearest'), axis=1))
+        cos = np.einsum('ij,ij->i', w[:-1], w[1:]) / (nr[:-1] * nr[1:] + 1e-12)  # (T-2,)
+        mag = np.minimum(n[:-1], n[1:])                    # reversal leg magnitude (deg/f)
+        incoh = mag / (coh[:-1] + INSTABILITY_COH_EPS)     # reversal vs coherent motion
+        # an INCOHERENT direction-reversal at frame k+1: anti-parallel AND large
+        # relative to the coherent motion (not fast wobble on a coherent trajectory)
+        sig = (cos < -0.2) & (incoh > INSTABILITY_INCOH_RATIO) & (mag > INSTABILITY_MIN_MAG_DEG)
+        turn = np.zeros(T); turn[1:T - 1] = sig.astype(float)
+        dens = np.convolve(turn, kernel, mode='same')      # reversals in +-half per frame
+        sev_track = np.maximum(sev_track, dens)
+        if dens.max() > dis_max:
+            dis_max = float(dens.max()); dis_joint = j
+        mask |= (dens >= INSTABILITY_DECISIVE)
+    n_hard = int(mask.sum())
+    dur = T / float(fps) if fps > 0 else 0.0
+    rate = n_hard / dur if dur > 0 else 0.0
+    return mask, float(dis_max), float(rate), int(n_hard), int(dis_joint), sev_track
+
+
+# ── Trajectory-deviation-at-speed lens (signature-agnostic corruption) ──
+# How far each frame's pose deviates from the SMOOTH (quadratic-predicted)
+# trajectory through its neighbours, scaled by the SPEED at which the deviation
+# happens: dev(rad) * sqrt(|w_in|*|w_out|)(rad/s).  Signature-agnostic — unlike
+# teleport (velocity ceiling), reversal (direction flip), flicker (sync jitter)
+# or ROM (over-rotation), it just measures "the trajectory did something abrupt
+# while moving fast", so it catches gross corruption that fits no specific
+# template (incl. the sudden-acceleration mechanism reversal misses).
+#
+# VALIDATED as a HIGH-threshold gross-corruption gate only: DanceDB (genuine
+# corruption) peaks ~360-560, while clean fast motion (punch/throw/kick) and
+# the subtle f211 case sit at 0.8-3.8 (~100x margin).  It does NOT separate
+# subtle single-frame events from legitimate fast motion (kinematically
+# identical) — do not use it in the ambiguous middle.  Diagnostic only for now
+# (serialized, not wired into classification or clean-segment derivation).
+DEVSPEED_JOINTS = set(range(1, 22))   # full body except global root
+DEVSPEED_HARD   = 20.0   # rad^2/s — frames at/above (clean peak ~4, DanceDB ~360)
+
+
+def _detect_dev_speed(poses, fps):
+    """Trajectory-deviation-at-speed (signature-agnostic gross-corruption lens).
+
+    Returns (mask, devspeed_max, devspeed_rate, n_frames, joint, sev_track):
+      mask          (T,) bool — frames at/above DEVSPEED_HARD
+      devspeed_max  float     — peak dev*speed over the file (the severity dial)
+      devspeed_rate float     — frames >= DEVSPEED_HARD per second
+      sev_track     (T,)      — per-frame peak dev*speed (for cluster severity)
+    """
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    sev_track = np.zeros(T)
+    if T < 6:
+        return mask, 0.0, 0.0, 0, -1, sev_track
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    joints = [j for j in DEVSPEED_JOINTS if j < P.shape[1]]
+    # quadratic-fit value-at-centre weights for neighbour offsets x=[-2,-1,1,2]
+    xs = np.array([-2.0, -1.0, 1.0, 2.0])
+    wts = np.linalg.pinv(np.vstack([xs ** 2, xs, np.ones(4)]).T)[2]
+    best_max = 0.0
+    best_joint = -1
+    for j in joints:
+        aa = P[:, j, :]
+        R = Rotation.from_rotvec(aa)
+        w = (R[1:] * R[:-1].inv()).as_rotvec()          # geodesic angular vel
+        spd = np.linalg.norm(w, axis=1) * fps           # (T-1,)
+        # predicted pose at frame t from its 4 neighbours (excludes t itself)
+        pred = (wts[0] * aa[:-4] + wts[1] * aa[1:-3]
+                + wts[2] * aa[3:-1] + wts[3] * aa[4:])   # frames t = 2 .. T-3
+        dev = (Rotation.from_rotvec(aa[2:-2])
+               * Rotation.from_rotvec(pred).inv()).magnitude()   # geodesic rad
+        speed = np.sqrt(np.maximum(spd[1:-2], 0) * np.maximum(spd[2:-1], 0))
+        ds = dev * speed                                # (T-4,)
+        seg = sev_track[2:T - 2]
+        np.maximum(seg, ds, out=seg)
+        if len(ds):
+            m = float(ds.max())
+            if m > best_max:
+                best_max = m
+                best_joint = j
+    mask = sev_track >= DEVSPEED_HARD
+    n_hard = int(mask.sum())
+    dur = T / float(fps) if fps > 0 else 0.0
+    rate = n_hard / dur if dur > 0 else 0.0
+    return mask, float(best_max), float(rate), n_hard, int(best_joint), sev_track
+
+
+# ── Excursion lens (isolated recovering glitch in otherwise-clean motion) ──
+# The discriminator that separates a glitch from legitimate ballistic motion
+# (validated: 0 on clean punch/kick where every prior metric false-fired).
+# A glitch is a LOCAL EXCURSION from a trajectory that is self-consistent
+# before AND after the event — reversals, kinks-with-continuation, pops in
+# minimal movement — so the motion recovers.  A real maneuver (throw release)
+# is a REGIME CHANGE: the motion after is genuinely not a continuation of the
+# motion before.  Two per-joint geodesic quantities at pose t:
+#   off_dev      = residual of R[t] from the geodesic midpoint of R[t-1],R[t+1]
+#                  (direction-aware: catches reversals the magnitude spike
+#                  neighbour-ratio misses; ~0 on smooth fast motion).
+#   regime_change= |mean ang-vel AFTER the event - mean ang-vel BEFORE| (skips
+#                  the event frames) — did the motion regime actually shift?
+# Flag = high off_dev AND low regime_change (big excursion, motion recovers).
+#
+# COMPLEMENTARY, not a replacement: confirmed it does NOT subsume reversal
+# (misses regime-changing reversals in chaotic corruption — 93% of its reversal
+# misses are high-off_dev regime changes) nor the significant-spike detector
+# (covers only 18% of significant spikes).  Its niche is isolated glitches in
+# otherwise-clean files (the high-value "is this near-clean file really clean?"
+# case) — e.g. rub056/0029_jumping2 left-wrist reversals the suite called clean.
+# Diagnostic only for now: serialized + navigable, not in classification.
+EXCURSION_JOINTS       = set(range(1, 22))   # full body except global root
+EXCURSION_OFF_FLOOR    = 8.0    # rad/s — minimum off-path deviation to consider
+EXCURSION_RATIO        = 3.0    # off_dev/(regime_change+REGIME_FLOOR) >= this = recovering excursion
+EXCURSION_REGIME_FLOOR = 2.0    # rad/s — softens the ratio for near-still baselines
+EXCURSION_K            = 3      # frames each side for the pre/post regime windows
+
+
+def _detect_excursion(poses, fps):
+    """Isolated-recovering-glitch lens (excursion vs regime change).
+
+    Returns (mask, excursion_max, excursion_rate, n_frames, joint, sev_track):
+      mask           (T,) bool — flagged excursion pose frames
+      excursion_max  float     — peak off_dev among flagged frames (severity dial)
+      excursion_rate float     — flagged frames per second
+      sev_track      (T,)      — per-frame peak off_dev (for cluster severity)
+    """
+    T = poses.shape[0]
+    mask = np.zeros(T, dtype=bool)
+    sev_track = np.zeros(T)
+    if T < 2 * EXCURSION_K + 2:
+        return mask, 0.0, 0.0, 0, -1, sev_track
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    P = poses.reshape(T, -1, 3)[:, :nj, :]
+    joints = [j for j in EXCURSION_JOINTS if j < P.shape[1]]
+    best_max = 0.0
+    best_joint = -1
+    for j in joints:
+        R = Rotation.from_rotvec(P[:, j, :])
+        w = (R[1:] * R[:-1].inv()).as_rotvec() * fps          # ang-vel vectors
+        rel = (R[2:] * R[:-2].inv()).as_rotvec()
+        mid = Rotation.from_rotvec(0.5 * rel) * R[:-2]         # geodesic midpoint
+        dev = (R[1:-1] * mid.inv()).magnitude() * fps          # off_dev at pose t=1..T-2
+        for ti in np.where(dev >= EXCURSION_OFF_FLOOR)[0]:
+            t = ti + 1
+            pre = w[max(0, t - 1 - EXCURSION_K):t - 1]
+            post = w[t + 1:t + 1 + EXCURSION_K]
+            if len(pre) == 0 or len(post) == 0:
+                continue
+            regime_change = np.linalg.norm(post.mean(0) - pre.mean(0))
+            od = float(dev[ti])
+            if od / (regime_change + EXCURSION_REGIME_FLOOR) >= EXCURSION_RATIO:
+                mask[t] = True
+                if od > sev_track[t]:
+                    sev_track[t] = od
+                if od > best_max:
+                    best_max = od
+                    best_joint = j
+    dur = T / float(fps) if fps > 0 else 0.0
+    n = int(mask.sum())
+    rate = n / dur if dur > 0 else 0.0
+    return mask, float(best_max), float(rate), n, int(best_joint), sev_track
 
 
 def _detect_spike_frames(poses, fps):
@@ -2246,15 +2995,11 @@ def _detect_corruption_zones(poses, fps):
         short_mean = np.convolve(v, short_kernel, mode='same')
 
         # Long-term rolling median: captures local baseline.
-        # Uses a strided approach for efficiency on long files.
-        # For each frame, the local baseline is the median velocity over
-        # the surrounding w_long frames.
+        # For each frame, the local baseline is the median velocity over the
+        # surrounding w_long frames.  Vectorized (median_filter) — ~200x faster
+        # than a per-frame np.median loop, bit-identical output.
         half_long = w_long // 2
-        long_median = np.empty_like(v)
-        for t in range(len(v)):
-            lo = max(0, t - half_long)
-            hi = min(len(v), t + half_long + 1)
-            long_median[t] = np.median(v[lo:hi])
+        long_median = _centered_rolling_median(v, half_long)
 
         # Floor the local baseline to avoid division by zero and to avoid
         # flagging noise during near-stillness
@@ -2446,6 +3191,33 @@ def _find_clusters(frames, gap=5):
             start = end = f
     clusters.append((start, end))
     return clusters
+
+
+def _lens_clusters(frames, severity_track, ref, gap=5):
+    """Gap-merge flagged frame indices into LensClusters carrying severity.
+
+    severity_track is the lens's per-frame native driving signal (T,).  Each
+    cluster's peak is the max of that signal over its span; severity is peak/ref
+    (ref = the lens flag threshold), so a downstream tolerance dial can absorb
+    sub-threshold clusters and join clean segments across them.
+    """
+    ranges = _find_clusters(list(frames), gap=gap)
+    out = []
+    ref = float(ref) if ref else 1.0
+    track = np.asarray(severity_track, dtype=float)
+    n = len(track)
+    for start, end in ranges:
+        a, b = int(start), int(min(end, n - 1))
+        peak = float(track[a:b + 1].max()) if b >= a and n else 0.0
+        out.append(LensCluster(
+            start=int(start), end=int(end), n_frames=int(end - start + 1),
+            peak=round(peak, 3), severity=round(peak / ref, 3)))
+    return out
+
+
+# Per-lens reference levels for severity normalisation (the value at/above which
+# the lens considers a frame flag-worthy).  severity = peak / ref.
+ROM_SEVERITY_REF = 45.0   # degrees of excess over the per-joint ROM cap
 
 
 def _find_clean_segments(scores, fps, margin=3, corruption_mask=None,
