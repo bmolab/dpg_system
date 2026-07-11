@@ -1146,7 +1146,8 @@ def _build_classification(report):
 
 
 def analyze_file(filepath, total_mass=75.0, gender_override=None,
-                 smooth_input_window=0, verbose=True, skip_torque=False):
+                 smooth_input_window=0, verbose=True, skip_torque=False,
+                 frontend_overrides=None):
     """
     Run torque-based noise analysis on a single .npz file.
     
@@ -1354,7 +1355,13 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         com_acc_min_cutoff=5.0,     # Acceleration
         com_acc_beta=0.8,
     )
-    
+
+    # Optional front-end overrides (e.g. adaptive_frontend regression test).
+    # Default None → options unchanged → detector behaves exactly as before.
+    if frontend_overrides:
+        for _k, _v in frontend_overrides.items():
+            setattr(options, _k, _v)
+
     # Get max torque array for effort computation
     if skip_torque:
         max_torque_arr = np.zeros((N_JOINTS, 3))

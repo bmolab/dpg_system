@@ -1987,6 +1987,10 @@ class SMPLTorqueNode(SMPLNode):
         self.output_limb_lengths = self.add_output('limb_lengths')
         self.noise_score_output = self.add_output('noise_score')
         self.noise_report_output = self.add_output('noise_report')
+        # Diagnostic: per-joint coherence gate [0,1] (only sent while the gate
+        # or adaptive front-end is enabled) — wire to a heatmap to see where
+        # the pipeline is opening up for ballistic motion.
+        self.coherence_gate_output = self.add_output('coherence_gate')
         self.floor_level_output = self.add_output('floor_level')
 
         
@@ -1999,7 +2003,12 @@ class SMPLTorqueNode(SMPLNode):
         
         # Noise stats controls
         self.reset_noise_stats_input = self.add_input('reset_noise_stats', widget_type='button', callback=self._reset_noise_stats)
-        
+        # Trigger on a new take/file: clears all per-frame streaming state so a
+        # new sequence does not difference against the previous one's last frame
+        # (frame-0 spike) or, with the adaptive front-end, get normalised against
+        # the previous file's speed statistics.
+        self.reset_state_input = self.add_input('reset_state', widget_type='button', callback=self._reset_state)
+
 
         self.zero_root_torque = self.add_option('zero_root_torque', widget_type='checkbox', default_value=True)
         self.add_gravity_prop = self.add_option('add_gravity', widget_type='checkbox', default_value=True)
@@ -2069,9 +2078,43 @@ class SMPLTorqueNode(SMPLNode):
         self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=5.0)
         self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
+        # Trans-only MA window in ms (fps-scaled), decoupled from pose
+        # smoothing — the trans sensor is a projecting mass that flops during
+        # extreme movement, and trans tolerates filtering far better than
+        # pose. 0 = trans follows smooth_input_window (legacy).
+        self.smooth_trans_window_ms_prop = self.add_property('smooth_trans_window_ms', widget_type='drag_float', default_value=50.0)
         self.zmp_sg_window_prop = self.add_property('zmp_sg_window', widget_type='drag_int', default_value=0)
         self.acc_smooth_window_prop = self.add_property('acc_smooth_window', widget_type='drag_int', default_value=0)
         self.torque_smooth_window_prop = self.add_property('torque_smooth_window', widget_type='drag_int', default_value=0)
+
+        # --- Coherence gate / adaptive front-end (popping response) ---
+        # Masters + headline knobs only; the calibrated valve thresholds
+        # (coh/env/abs lo-hi, smooth_ms) stay at SMPLProcessingOptions defaults.
+        self.coherence_gate_enable_prop = self.add_option('coherence_gate_enable', widget_type='checkbox', default_value=False)
+        self.coherence_gate_strength_prop = self.add_option('coherence_gate_strength', widget_type='drag_float', default_value=1.0)
+        self.adaptive_frontend_prop = self.add_option('adaptive_frontend', widget_type='checkbox', default_value=False)
+        self.adaptive_frontend_cutoff_lo_prop = self.add_option('adaptive_frontend_cutoff_lo', widget_type='drag_float', default_value=4.0)
+        # Node defaults = validated live config (2026-07-11, popping_1 +
+        # Eyes_Japan nail): Hill n=3/p50=0.15 @ strength 1, attack/release
+        # 5/50 ms, cutoff_hi 30. Processor dataclass defaults stay
+        # conservative (hill off, symmetric EMA) for the detector pipeline.
+        self.adaptive_frontend_cutoff_hi_prop = self.add_option('adaptive_frontend_cutoff_hi', widget_type='drag_float', default_value=30.0)
+        # Asymmetric gate EMA: fast attack opens the cutoff during a 1-2 frame
+        # accent; slow release ramps down smoothly. -1 = symmetric (25 ms).
+        self.coherence_gate_attack_prop = self.add_option('coherence_gate_attack_ms', widget_type='drag_float', default_value=5.0)
+        self.coherence_gate_release_prop = self.add_option('coherence_gate_release_ms', widget_type='drag_float', default_value=50.0)
+        # Hill sharpening of the 3-valve product: gate = p^n/(p^n+p50^n).
+        # Decisive on real accents without strength-saturation's flicker
+        # pass-through; use with strength=1. n=0 disables (legacy path).
+        self.coherence_gate_hill_n_prop = self.add_option('coherence_gate_hill_n', widget_type='drag_float', default_value=3.0)
+        self.coherence_gate_hill_p50_prop = self.add_option('coherence_gate_hill_p50', widget_type='drag_float', default_value=0.15)
+        # Valve thresholds (soft-ramp lo→hi per valve; calibrated defaults).
+        self.coherence_gate_coh_lo_prop = self.add_option('coherence_gate_coh_lo', widget_type='drag_float', default_value=0.7)
+        self.coherence_gate_coh_hi_prop = self.add_option('coherence_gate_coh_hi', widget_type='drag_float', default_value=1.8)
+        self.coherence_gate_env_lo_prop = self.add_option('coherence_gate_env_lo', widget_type='drag_float', default_value=0.30)
+        self.coherence_gate_env_hi_prop = self.add_option('coherence_gate_env_hi', widget_type='drag_float', default_value=0.65)
+        self.coherence_gate_abs_lo_prop = self.add_option('coherence_gate_abs_lo', widget_type='drag_float', default_value=400.0)
+        self.coherence_gate_abs_hi_prop = self.add_option('coherence_gate_abs_hi', widget_type='drag_float', default_value=1000.0)
 
         
         # --- Spine Geometry ---
@@ -2099,6 +2142,13 @@ class SMPLTorqueNode(SMPLNode):
         """Reset noise statistics for a new file evaluation."""
         if self.processor:
             self.processor.reset_noise_stats()
+
+    def _reset_state(self):
+        """Clear all per-frame streaming state — call when a new take/file
+        begins so its first frame starts from a fresh processor (no cross-take
+        seam, no adaptive-front-end normalisation carryover)."""
+        if self.processor:
+            self.processor.reset_physics_state()
 
     def _reset_floor(self):
         """Reset the adaptive floor height estimate back to the configured floor_height."""
@@ -2274,7 +2324,25 @@ class SMPLTorqueNode(SMPLNode):
                 com_acc_min_cutoff=self.com_acc_mc_prop() if hasattr(self, 'com_acc_mc_prop') else 2.0,
                 com_acc_beta=self.com_acc_beta_prop() if hasattr(self, 'com_acc_beta_prop') else 0.8,
                 smooth_input_window=self.smooth_input_window_prop() if hasattr(self, 'smooth_input_window_prop') else 0,
+                smooth_trans_window_ms=self.smooth_trans_window_ms_prop() if hasattr(self, 'smooth_trans_window_ms_prop') else 0.0,
                 zmp_sg_window=self.zmp_sg_window_prop() if hasattr(self, 'zmp_sg_window_prop') else 0,
+
+                # Coherence gate / adaptive front-end (popping response)
+                coherence_gate_enable=self.coherence_gate_enable_prop() if hasattr(self, 'coherence_gate_enable_prop') else False,
+                coherence_gate_strength=self.coherence_gate_strength_prop() if hasattr(self, 'coherence_gate_strength_prop') else 1.0,
+                adaptive_frontend=self.adaptive_frontend_prop() if hasattr(self, 'adaptive_frontend_prop') else False,
+                adaptive_frontend_cutoff_lo=self.adaptive_frontend_cutoff_lo_prop() if hasattr(self, 'adaptive_frontend_cutoff_lo_prop') else 4.0,
+                adaptive_frontend_cutoff_hi=self.adaptive_frontend_cutoff_hi_prop() if hasattr(self, 'adaptive_frontend_cutoff_hi_prop') else 18.0,
+                coherence_gate_attack_ms=self.coherence_gate_attack_prop() if hasattr(self, 'coherence_gate_attack_prop') else -1.0,
+                coherence_gate_release_ms=self.coherence_gate_release_prop() if hasattr(self, 'coherence_gate_release_prop') else -1.0,
+                coherence_gate_hill_n=self.coherence_gate_hill_n_prop() if hasattr(self, 'coherence_gate_hill_n_prop') else 0.0,
+                coherence_gate_hill_p50=self.coherence_gate_hill_p50_prop() if hasattr(self, 'coherence_gate_hill_p50_prop') else 0.15,
+                coherence_gate_coh_lo=self.coherence_gate_coh_lo_prop() if hasattr(self, 'coherence_gate_coh_lo_prop') else 0.7,
+                coherence_gate_coh_hi=self.coherence_gate_coh_hi_prop() if hasattr(self, 'coherence_gate_coh_hi_prop') else 1.8,
+                coherence_gate_env_lo=self.coherence_gate_env_lo_prop() if hasattr(self, 'coherence_gate_env_lo_prop') else 0.30,
+                coherence_gate_env_hi=self.coherence_gate_env_hi_prop() if hasattr(self, 'coherence_gate_env_hi_prop') else 0.65,
+                coherence_gate_abs_lo=self.coherence_gate_abs_lo_prop() if hasattr(self, 'coherence_gate_abs_lo_prop') else 400.0,
+                coherence_gate_abs_hi=self.coherence_gate_abs_hi_prop() if hasattr(self, 'coherence_gate_abs_hi_prop') else 1000.0,
 
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
 
@@ -2370,7 +2438,11 @@ class SMPLTorqueNode(SMPLNode):
                 # self.torques_output.send(torques) - Removed
 
                 self.combined_effort_output.send(efforts_net)
-                
+
+                gate = getattr(self.processor, '_cg_gate', None)
+                if gate is not None:
+                    self.coherence_gate_output.send(gate)
+
                 if 'torques_dyn_vec' in res:
                     self.output_torque_vectors.send(torques_vec)
 

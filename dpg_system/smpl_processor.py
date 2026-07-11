@@ -381,6 +381,67 @@ class SMPLProcessingOptions:
     adaptive_effort_change_window: int = 5   # K: sliding window for median |Δeff|
     adaptive_effort_change_lo: float = 0.02  # |Δeff|/frame: below this → no change boost
     adaptive_effort_change_hi: float = 0.10  # |Δeff|/frame: above this → full change boost
+    # Coherence gate (opt-in, default OFF): lift the per-joint adaptive-effort
+    # alpha_max cap toward 1.0 for coordinated, ballistic (popping-like) limb
+    # motion, so genuine sharp accents survive the EMA without opening the gate
+    # to spatially-local noise (soft-tissue ringing, per-IMU magnetometer jitter)
+    # or temporally-isolated spikes (sensor glitches, cadence steps). Two soft
+    # valves multiplied: coherence (min normalised angular speed across the
+    # joint's kinematic neighbours) × envelope (trailing windowed-mean/peak
+    # angular speed). Only limb joints are gated; others stay canonical.
+    # See PIPELINE_INVESTIGATION_NOTES.md (2026-07-06).
+    coherence_gate_enable: bool = False   # master on/off
+    coherence_gate_strength: float = 1.0  # scale on the lift [0,1]
+    coherence_gate_coh_lo: float = 0.7    # min-neighbour normalised speed → gate opens
+    coherence_gate_coh_hi: float = 1.8    # → full coherence vote
+    coherence_gate_env_lo: float = 0.30   # trailing mean/peak speed → gate opens
+    coherence_gate_env_hi: float = 0.65   # → full envelope vote
+    coherence_gate_env_window: int = 5    # (deprecated; superseded by _env_window_ms)
+    coherence_gate_env_window_ms: float = 50.0  # envelope window duration (fps-scaled)
+    coherence_gate_abs_lo: float = 400.0  # deg/s: own-speed floor below which gate→0
+    coherence_gate_abs_hi: float = 1000.0 # deg/s: full absolute-speed vote
+    # Hill sharpening on the 3-valve product (opt-in): gate = p^n/(p^n+p50^n).
+    # The product of three partial valves compresses (a real accent yields
+    # ~0.3-0.5, quiet-material flicker ~0.01-0.12), so at strength 1 the lift
+    # is subtle; strength>1 "fixes" this by linear-clamp saturation, which
+    # also passes the largest flickers (isolated OEF transients on quiet
+    # 250 fps material). The Hill valve instead steepens the mapping around
+    # p50: decisive on real accents, still soft, suppresses the flicker band.
+    # Use with strength=1. n=0 disables (legacy linear strength path).
+    coherence_gate_hill_n: float = 0.0    # Hill coefficient; 0 = off, try 3
+    coherence_gate_hill_p50: float = 0.15 # product value mapping to gate 0.5
+    coherence_gate_smooth_ms: float = 25.0  # gate EMA time constant (fps-aware); 0=off
+    # Asymmetric gate EMA (opt-in): separate attack (gate rising) and release
+    # (gate falling) time constants. A 1-2 frame pop at 100 fps is over before
+    # a symmetric 25 ms EMA opens the gate, so the front-end cutoff is still
+    # low during the frames that carry the accent's energy. Fast attack lets
+    # the cutoff open DURING the impulse; slow release keeps the ramp-down
+    # smooth (the OEF-transient concern that motivated the EMA). Negative →
+    # fall back to the symmetric coherence_gate_smooth_ms (validated default).
+    coherence_gate_attack_ms: float = -1.0   # gate-rising time constant; <0 = symmetric
+    coherence_gate_release_ms: float = -1.0  # gate-falling time constant; <0 = symmetric
+    # Adaptive front-end filter (opt-in, default OFF → legacy fixed-window
+    # pipeline is byte-identical). Replaces the fixed `smooth_input_window`
+    # moving-average with a per-joint One Euro Filter on the pose whose cutoff
+    # is driven by the coherence gate (NOT by raw speed — speed alone can't tell
+    # a 1-frame optical glitch from a real accent; both are fast). gate 0 → low
+    # cutoff (heavy smoothing, glitch-safe); gate 1 → high cutoff (accent
+    # preserved, no double-pipeline / state-continuity issue since it is one
+    # recursive filter with a moving cutoff). Requires the gate; auto-enables
+    # its computation. See PIPELINE_INVESTIGATION_NOTES.md (2026-07-06).
+    adaptive_frontend: bool = False       # master on/off for the gated OEF front-end
+    # Calibrated (2026-07-06) so the gate-CLOSED baseline matches the legacy
+    # (5-frame MA, ~10 Hz passband) quiet/clean-section torque statistics
+    # (RMS + jitter) while still suppressing 1-frame glitches; cutoff_hi set so
+    # full-gate popping recovery stays >= legacy peak. Raising cutoff_lo past
+    # ~6 Hz starts leaking 1-frame glitches (single-pole OEF rejects impulses
+    # less than legacy's boxcar MA at matched passband).
+    adaptive_frontend_cutoff_lo: float = 4.0    # Hz cutoff at gate=0 (~legacy clean baseline)
+    adaptive_frontend_cutoff_hi: float = 18.0   # Hz cutoff at gate=1 (accent passes)
+    adaptive_frontend_beta: float = 0.0         # OEF speed term; keep 0 so cutoff is gate-driven only
+    adaptive_frontend_trans_window: int = 5     # trans MA window when the OEF replaces pose smoothing
+                                                # (trans is never OEF-gated; without this, setting
+                                                # smooth_input_window=0 would leave trans unsmoothed)
     smooth_contact_forces: bool = False  # proximity-adaptive contact force smoothing
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
@@ -448,6 +509,15 @@ class SMPLProcessingOptions:
     com_acc_min_cutoff: float = 2.0    # Base One Euro min_cutoff for CoM acceleration filter (999 = disabled)
     com_acc_beta: float = 0.8          # Base One Euro beta — high for adaptive responsiveness during impacts
     smooth_input_window: int = 0       # Causal moving average window for pose+trans input (0 = off, 3 = recommended for 33Hz cadence removal)
+    # Independent trans smoothing window, in ms (fps-scaled). The trans sensor
+    # is a body-mounted projecting mass that oscillates ("flops") during
+    # extreme — especially vertical — movement, and trans tolerates filtering
+    # far better than joint rotations do. So trans gets its own fixed window,
+    # decoupled from the pose MA and NEVER driven by the coherence gate (the
+    # flop occurs exactly when the gate is open). 0 = legacy: trans follows
+    # smooth_input_window / adaptive_frontend_trans_window. When set (>0) it
+    # supersedes both for trans in every mode (streaming and batch).
+    smooth_trans_window_ms: float = 0.0
     zmp_sg_window: int = 0             # SG derivative window for ZMP acceleration (0 = off/use One Euro chain, 11+ = SG window).
                                        # When enabled, gets acceleration directly from COM position via Savitzky-Golay
                                        # 2nd derivative, bypassing the noisy pos→vel→acc finite difference chain.
@@ -665,6 +735,16 @@ class SMPLProcessor:
         self.perm_basis = None
         self.perm_basis_rot = None
         self.reset_physics_state()
+
+        # Snapshot the attribute set of a freshly-initialised processor. Every
+        # per-frame streaming state holder (kinematics rings, CoM/gravity/contact
+        # filters, coherence-gate normalisation, OEF, ...) is created lazily on
+        # the first frame, so anything NOT in this set was created by streaming
+        # and must be removed on reset — otherwise a new sequence differences
+        # against the previous sequence's state (large frame-0 torque spike) or,
+        # for the gate's cumulative-mean normalisation, is scored against the
+        # previous file's statistics. Robust to state names changing.
+        self._init_attr_snapshot = frozenset(self.__dict__)
 
     def _compute_limb_properties_from_model(self):
         """
@@ -3788,6 +3868,44 @@ class SMPLProcessor:
         if hasattr(self, '_consensus'):
             self._consensus.reset()
 
+        # --- Coherence-gate / adaptive-front-end state ---
+        # These carry cross-frame memory and MUST be cleared per file/sequence.
+        # The cumulative-mean normalisation (_cg_speed_sum/_cnt) is the critical
+        # one: unlike the short-window rings it NEVER self-corrects, so a second
+        # file loaded into the same processor would be normalised against the
+        # previous file's speed statistics. Each read site re-inits on None /
+        # shape-mismatch, so clearing the holders is sufficient.
+        self._cg_prev_aa = None
+        self._cg_speed_sum = None
+        self._cg_speed_cnt = 0
+        self._cg_env_ring = None
+        self._cg_env_ptr = 0
+        self._cg_env_cnt = 0
+        self._cg_gate_smooth = None
+        self._cg_gate = None
+        self._frontend_oef = None
+        self._frontend_oef_n = 0
+        self._input_smooth_ring = None
+
+        # --- Adaptive-effort EMA state (same cross-file concern) ---
+        self._adapt_smooth_tv = None
+        self._adapt_smooth_en = None
+        self._adapt_smooth_deff_ring = None
+        self._adapt_smooth_deff_ptr = 0
+        self._adapt_smooth_deff_cnt = 0
+        self._per_joint_alpha_max = None
+
+        # Robust catch-all: remove every attribute created since __init__ (all
+        # per-frame streaming state — kinematics rings, CoM/gravity/contact
+        # filters, coherence-gate normalisation, OEF, precomputed lazy tables).
+        # Each re-inits lazily on the next frame, so the processor becomes
+        # indistinguishable from a fresh one. Subsumes the explicit clears above
+        # (kept for documentation of the load-bearing gate-normalisation reset).
+        snap = getattr(self, '_init_attr_snapshot', None)
+        if snap is not None:
+            for _k in [k for k in self.__dict__ if k not in snap]:
+                delattr(self, _k)
+
     def reset_noise_stats(self):
         """Reset noise statistics for a new file evaluation."""
         if hasattr(self, 'noise_stats') and self.noise_stats is not None:
@@ -5494,6 +5612,146 @@ class SMPLProcessor:
 
 
 
+    # Kinematic neighbourhoods for the coherence gate (SMPL 22-joint layout):
+    # {proximal, self, distal}. Only limbs are listed — a joint absent here
+    # gets gate=0 (never lifted, stays canonical). Arm chains are validated
+    # (2026-07-06 Subject10 popping); leg chains follow the same pattern but
+    # are not yet validated for footwork.
+    _COH_NEIGH = {
+        16: (13, 16, 18), 17: (14, 17, 19),   # shoulders: collar, self, elbow
+        18: (16, 18, 20), 19: (17, 19, 21),   # elbows:    shoulder, self, wrist
+        20: (18, 20),     21: (19, 21),         # wrists:    elbow, self
+        1: (0, 1, 4),     2: (0, 2, 5),         # hips:      pelvis, self, knee
+        4: (1, 4, 7),     5: (2, 5, 8),         # knees:     hip, self, ankle
+        7: (4, 7, 10),    8: (5, 8, 11),        # ankles:    knee, self, foot
+    }
+
+    def _coherence_envelope_gate(self, pose_aa, options, n_j):
+        """Per-joint soft gate in [0,1] flagging coordinated, ballistic
+        (popping-like) motion, for lifting the adaptive-effort alpha_max cap.
+
+        pose_aa: (>=22, 3) local axis-angle for the current frame.
+        Three NON-LOCAL soft valves in [0,1], multiplied:
+          coherence — min normalised angular speed across the joint's
+                      kinematic neighbourhood. Rejects spatially-local noise
+                      (soft-tissue ringing, per-IMU magnetometer jitter),
+                      which does not co-activate the whole chain.
+          envelope  — trailing windowed-mean / windowed-peak angular speed.
+                      Rejects temporally-isolated 1-frame events (sensor
+                      spikes, 2,2,1 cadence steps). Window scales with fps
+                      (`_env_window_ms`) so a real accent fills it at any rate.
+          abs floor — the joint's OWN absolute speed in deg/s (fps-independent).
+                      Rejects the cumulative-mean normalisation firing on
+                      absolutely-slow motion in low-energy files (a modest
+                      move looks "fast" relative to a quiet baseline). Uses
+                      OWN speed, not min-neighbour, so distal flicks (fast
+                      wrist, slower elbow) still pass.
+        The gate is then EMA-smoothed with an fps-aware time constant
+        (`_smooth_ms`) so its cutoff ramps instead of snapping (avoids OEF
+        transient spikes at high fps). Normalisation uses a cumulative
+        per-joint mean speed (causal analogue of the prototype's whole-file
+        mean). Returns (n_j,); zeros outside _COH_NEIGH and during warm-up.
+        """
+        from scipy.spatial.transform import Rotation as _R
+        n = min(n_j, 24)
+        aa = np.asarray(pose_aa[:n], dtype=np.float64)
+
+        prev = getattr(self, '_cg_prev_aa', None)
+        self._cg_prev_aa = aa.copy()
+        if prev is None or prev.shape != aa.shape:
+            return np.zeros(n_j)
+
+        # Per-joint geodesic angular speed (deg/frame).
+        rel = _R.from_rotvec(aa) * _R.from_rotvec(prev).inv()
+        speed = np.degrees(np.linalg.norm(rel.as_rotvec(), axis=1))  # (n,)
+
+        # Cumulative per-joint mean → normalisation scale (floored).
+        s_sum = getattr(self, '_cg_speed_sum', None)
+        s_cnt = getattr(self, '_cg_speed_cnt', 0)
+        if s_sum is None or s_sum.shape != speed.shape:
+            s_sum = np.zeros_like(speed); s_cnt = 0
+        s_sum = s_sum + speed; s_cnt += 1
+        self._cg_speed_sum = s_sum; self._cg_speed_cnt = s_cnt
+        scale = np.maximum(s_sum / s_cnt, 0.5)   # floor 0.5 deg/frame
+        norm_sp = speed / scale
+
+        # Trailing envelope ring of raw speed (per joint). Window scales with
+        # fps from a duration (ms) so it captures a real accent at any rate.
+        env_ms = float(getattr(options, 'coherence_gate_env_window_ms', 50.0))
+        W = max(3, int(round(env_ms / 1000.0 * self.framerate)))
+        ring = getattr(self, '_cg_env_ring', None)
+        rptr = getattr(self, '_cg_env_ptr', 0)
+        rcnt = getattr(self, '_cg_env_cnt', 0)
+        if ring is None or ring.shape != (W, n):
+            ring = np.zeros((W, n)); rptr = 0; rcnt = 0
+        ring[rptr] = speed; rptr = (rptr + 1) % W; rcnt = min(rcnt + 1, W)
+        self._cg_env_ring = ring; self._cg_env_ptr = rptr; self._cg_env_cnt = rcnt
+
+        coh_lo = getattr(options, 'coherence_gate_coh_lo', 0.7)
+        coh_hi = getattr(options, 'coherence_gate_coh_hi', 1.8)
+        env_lo = getattr(options, 'coherence_gate_env_lo', 0.30)
+        env_hi = getattr(options, 'coherence_gate_env_hi', 0.65)
+        abs_lo = getattr(options, 'coherence_gate_abs_lo', 400.0)   # deg/s
+        abs_hi = getattr(options, 'coherence_gate_abs_hi', 1000.0)  # deg/s
+        strength = float(getattr(options, 'coherence_gate_strength', 1.0))
+        speed_degps = speed * self.framerate   # (n,) fps-independent absolute speed
+
+        gate = np.zeros(n_j)
+        if rcnt >= 3:
+            win = ring[:rcnt]
+            for j, nb in self._COH_NEIGH.items():
+                if j >= n:
+                    continue
+                nb = [k for k in nb if k < n]
+                coh_raw = float(np.min(norm_sp[nb]))
+                coh_v = np.clip((coh_raw - coh_lo) / max(coh_hi - coh_lo, 1e-6), 0.0, 1.0)
+                w_j = win[:, j]
+                env_raw = float(w_j.mean() / (w_j.max() + 1e-6))
+                env_v = np.clip((env_raw - env_lo) / max(env_hi - env_lo, 1e-6), 0.0, 1.0)
+                # abs floor uses the MAX speed over the joint's neighbourhood
+                # (deg/s), so a proximal joint whose torque is driven by fast
+                # distal motion still passes, while a limb that is uniformly
+                # slow (low-energy false-open) is rejected.
+                abs_nb = float(np.max(speed_degps[nb]))
+                abs_v = np.clip((abs_nb - abs_lo) / max(abs_hi - abs_lo, 1e-6), 0.0, 1.0)
+                gate[j] = coh_v * env_v * abs_v
+        # Optional Hill sharpening of the valve product (see options doc):
+        # decisive on real accents without saturating quiet-material flicker.
+        hill_n = float(getattr(options, 'coherence_gate_hill_n', 0.0))
+        if hill_n > 0.0:
+            p50 = max(float(getattr(options, 'coherence_gate_hill_p50', 0.15)), 1e-6)
+            pn = np.power(gate, hill_n)
+            gate = pn / (pn + p50 ** hill_n)
+        gate *= strength
+        # strength is documented [0,1] but not enforced; gate > 1 would push
+        # alpha_max past 1 (unstable EMA) and cutoffs past cutoff_hi — clamp.
+        np.clip(gate, 0.0, 1.0, out=gate)
+
+        # Temporal EMA on the gate (fps-aware time constant) so the cutoff
+        # ramps up/down instead of snapping — avoids OEF transient spikes when
+        # the gate opens for only 1-2 frames at high fps. Optionally
+        # asymmetric: a fast attack lets the cutoff open during a 1-2 frame
+        # accent (a symmetric 25 ms EMA opens only after the impulse energy
+        # has passed) while a slow release keeps the ramp-down smooth.
+        smooth_ms = float(getattr(options, 'coherence_gate_smooth_ms', 25.0))
+        attack_ms = float(getattr(options, 'coherence_gate_attack_ms', -1.0))
+        release_ms = float(getattr(options, 'coherence_gate_release_ms', -1.0))
+        if attack_ms < 0.0:
+            attack_ms = smooth_ms
+        if release_ms < 0.0:
+            release_ms = smooth_ms
+        if attack_ms > 0.0 or release_ms > 0.0:
+            dt = 1.0 / self.framerate
+            a_att = 1.0 if attack_ms <= 0.0 else 1.0 - np.exp(-dt / (attack_ms / 1000.0))
+            a_rel = 1.0 if release_ms <= 0.0 else 1.0 - np.exp(-dt / (release_ms / 1000.0))
+            prev_g = getattr(self, '_cg_gate_smooth', None)
+            if prev_g is None or prev_g.shape != gate.shape:
+                prev_g = np.zeros_like(gate)
+            a = np.where(gate > prev_g, a_att, a_rel)
+            gate = a * gate + (1.0 - a) * prev_g
+            self._cg_gate_smooth = gate
+        return gate
+
     def _compute_angular_kinematics(self, F, pose_data_aa, quats, options, use_filter=True, state_suffix=''):
         """
         Computes angular velocity and acceleration.
@@ -6028,7 +6286,7 @@ class SMPLProcessor:
                 acc = np.zeros((n_joints, 3))
             else:
                 acc = (smooth_vel - prev_vel) / dt
-        
+
         # Update state
         setattr(self, name_prev_composed, composed_q.copy())
         setattr(self, name_prev_vel, smooth_vel.copy())
@@ -7094,56 +7352,133 @@ class SMPLProcessor:
             self.skeleton_offsets = self._compute_skeleton_offsets()
             self.reset_physics_state()  # Prevent torque spikes from geometry change
         
+        # --- Coherence gate (opt-in): compute ONCE per frame from the RAW
+        # pose (before any smoothing), then reuse at the adaptive-effort EMA
+        # alpha_max lift and (if enabled) the adaptive front-end filter.
+        # gate[j] in [0,1]: 0 = full smoothing (noise floor protected — e.g.
+        # quiet-period magnetometer jitter / 1-frame optical glitch), 1 =
+        # lighter smoothing (ballistic accent recovered).
+        # Geodesic speed is permutation-invariant, so raw pre-permutation
+        # pose is fine here. axis_angle input only; else no gating (safe). ---
+        self._cg_gate = None
+        if (getattr(options, 'coherence_gate_enable', False)
+                or getattr(options, 'adaptive_frontend', False)) \
+                and getattr(options, 'input_type', 'axis_angle') == 'axis_angle':
+            aa_raw = np.asarray(pose_data, dtype=np.float64).reshape(-1, 3)
+            if aa_raw.shape[0] >= 1:
+                self._cg_gate = self._coherence_envelope_gate(
+                    aa_raw, options, min(24, aa_raw.shape[0]))
+
+        # --- Adaptive Front-End Filter (opt-in) ---
+        # Single per-joint One Euro Filter on the pose whose cutoff is driven
+        # by the coherence gate (gate 0 → low cutoff = heavy smoothing =
+        # glitch-safe; gate 1 → high cutoff = accent passes). Replaces the
+        # fixed moving-average below; one recursive state, so no dual-pipeline
+        # / state-continuity issue. Trans keeps the fixed MA (see below).
+        used_adaptive_frontend = False
+        _af_stream = (np.ndim(pose_data) <= 2) or (np.ndim(pose_data) == 3 and np.shape(pose_data)[0] == 1)
+        if getattr(options, 'adaptive_frontend', False) and self._cg_gate is not None \
+                and _af_stream \
+                and getattr(options, 'input_type', 'axis_angle') == 'axis_angle':
+            pose_data = np.array(pose_data, dtype=np.float64)
+            p_flat = pose_data.reshape(-1)
+            n_dof = p_flat.size
+            g = self._cg_gate
+            clo = float(getattr(options, 'adaptive_frontend_cutoff_lo', 1.0))
+            chi = float(getattr(options, 'adaptive_frontend_cutoff_hi', 12.0))
+            njg = min(g.shape[0], n_dof // 3)
+            cutoff = np.full(n_dof, clo, dtype=np.float64)
+            if njg > 0:
+                cutoff[:njg * 3] = np.repeat(clo + g[:njg] * (chi - clo), 3)
+            oef = getattr(self, '_frontend_oef', None)
+            if oef is None or getattr(self, '_frontend_oef_n', 0) != n_dof:
+                oef = OneEuroFilter(min_cutoff=cutoff,
+                                    beta=float(getattr(options, 'adaptive_frontend_beta', 0.0)),
+                                    framerate=self.framerate)
+                self._frontend_oef = oef
+                self._frontend_oef_n = n_dof
+            oef._mincutoff = cutoff
+            oef._beta = float(getattr(options, 'adaptive_frontend_beta', 0.0))
+            pose_data = oef(p_flat).reshape(pose_data.shape)
+            used_adaptive_frontend = True
+
         # --- Optional Input Smoothing ---
         # Causal moving average for general-purpose smoothing.
         # A 3-frame window naturally nulls the 33.3Hz magnetometer cadence
         # artifact present in Shadow IMU data.
+        # In adaptive-front-end mode the pose is already filtered above; the MA
+        # then only smooths trans (root translation). Force an effective trans
+        # window in that mode — otherwise smooth_input_window=0 (the candidate
+        # adaptive config) would silently leave trans completely unsmoothed.
         win = options.smooth_input_window
-        
-        if win >= 2:
+        if used_adaptive_frontend:
+            win = max(win, int(getattr(options, 'adaptive_frontend_trans_window', 5)))
+
+        # Independent trans window (ms → frames at this fps). 0 = legacy:
+        # trans follows the pose/front-end window above. See the option doc —
+        # the trans sensor flops during extreme movement, so its window is
+        # fixed and never gate-driven.
+        trans_ms = float(getattr(options, 'smooth_trans_window_ms', 0.0))
+        if trans_ms > 0.0:
+            trans_win = max(2, int(round(trans_ms / 1000.0 * self.framerate)))
+        else:
+            trans_win = win
+
+        if win >= 2 or trans_win >= 2:
             pose_data = np.array(pose_data, dtype=np.float64)
             trans_data = np.array(trans_data, dtype=np.float64)
-            
+
             # Determine if streaming (single-frame) or batch
             p_flat = pose_data.reshape(-1) if pose_data.ndim > 0 else pose_data
             t_flat = trans_data.reshape(-1) if trans_data.ndim > 0 else trans_data
             n_pose = p_flat.size
             n_trans = t_flat.size
-            
+
             # Check if this is streaming mode (single frame input)
             is_streaming = (pose_data.ndim <= 2) or (pose_data.ndim == 3 and pose_data.shape[0] == 1)
-            
+
             if is_streaming:
-                # Ring buffer for streaming
-                if not hasattr(self, '_input_smooth_ring') or self._input_smooth_ring is None \
-                        or self._input_smooth_ring.get('n_pose') != n_pose \
-                        or self._input_smooth_ring.get('win') != win:
-                    self._input_smooth_ring = {
+                # Ring buffers for streaming (pose and trans windows may differ)
+                ring = getattr(self, '_input_smooth_ring', None)
+                if ring is None \
+                        or ring.get('n_pose') != n_pose \
+                        or ring.get('win') != win \
+                        or ring.get('trans_win') != trans_win:
+                    ring = {
                         'win': win,
+                        'trans_win': trans_win,
                         'n_pose': n_pose,
                         'n_trans': n_trans,
-                        'pose_buf': np.tile(p_flat, (win, 1)),
-                        'trans_buf': np.tile(t_flat, (win, 1)),
+                        'pose_buf': np.tile(p_flat, (win, 1)) if win >= 2 else None,
+                        'trans_buf': np.tile(t_flat, (trans_win, 1)) if trans_win >= 2 else None,
                         'idx': 0,
+                        'trans_idx': 0,
                     }
-                ring = self._input_smooth_ring
-                ring['pose_buf'][ring['idx']] = p_flat
-                ring['trans_buf'][ring['idx']] = t_flat
-                ring['idx'] = (ring['idx'] + 1) % win
-                
-                pose_data = np.mean(ring['pose_buf'], axis=0).reshape(pose_data.shape)
-                trans_data = np.mean(ring['trans_buf'], axis=0).reshape(trans_data.shape)
+                    self._input_smooth_ring = ring
+                if ring['pose_buf'] is not None:
+                    ring['pose_buf'][ring['idx']] = p_flat
+                    ring['idx'] = (ring['idx'] + 1) % win
+                    # Skip the pose MA when the adaptive front-end already
+                    # filtered the pose (avoid double smoothing).
+                    if not used_adaptive_frontend:
+                        pose_data = np.mean(ring['pose_buf'], axis=0).reshape(pose_data.shape)
+                if ring['trans_buf'] is not None:
+                    ring['trans_buf'][ring['trans_idx']] = t_flat
+                    ring['trans_idx'] = (ring['trans_idx'] + 1) % trans_win
+                    trans_data = np.mean(ring['trans_buf'], axis=0).reshape(trans_data.shape)
             else:
                 # Batch mode: causal moving average with edge padding
                 F_in = pose_data.shape[0] if pose_data.ndim >= 2 else 1
                 if F_in > 1:
-                    p2d = pose_data.reshape(F_in, -1)
-                    t2d = trans_data.reshape(F_in, -1)
-                    p_pad = np.concatenate([np.tile(p2d[0:1], (win - 1, 1)), p2d], axis=0)
-                    t_pad = np.concatenate([np.tile(t2d[0:1], (win - 1, 1)), t2d], axis=0)
                     from numpy.lib.stride_tricks import sliding_window_view
-                    pose_data = np.mean(sliding_window_view(p_pad, win, axis=0), axis=-1).reshape(pose_data.shape)
-                    trans_data = np.mean(sliding_window_view(t_pad, win, axis=0), axis=-1).reshape(trans_data.shape)
+                    if win >= 2:
+                        p2d = pose_data.reshape(F_in, -1)
+                        p_pad = np.concatenate([np.tile(p2d[0:1], (win - 1, 1)), p2d], axis=0)
+                        pose_data = np.mean(sliding_window_view(p_pad, win, axis=0), axis=-1).reshape(pose_data.shape)
+                    if trans_win >= 2:
+                        t2d = trans_data.reshape(F_in, -1)
+                        t_pad = np.concatenate([np.tile(t2d[0:1], (trans_win - 1, 1)), t2d], axis=0)
+                        trans_data = np.mean(sliding_window_view(t_pad, trans_win, axis=0), axis=-1).reshape(trans_data.shape)
         
         # Prepare Data (Reshape, Permute, Convert)
         trans_data, pose_data_aa, quats = self._prepare_trans_and_pose(
@@ -7825,7 +8160,18 @@ class SMPLProcessor:
 
                 # ─── Combine: either condition opens the gate ───
                 blend = np.maximum(eff_blend, chg_blend)
-                alpha = alpha_min + blend * (_PER_JOINT_ALPHA_MAX[:n_j] - alpha_min)  # (J,)
+
+                # ─── Coherence gate (opt-in): lift alpha_max toward 1.0 for
+                # coordinated ballistic (popping-like) limb motion, so genuine
+                # sharp accents survive without opening the gate to local noise
+                # or isolated spikes. gate=0 → canonical cap unchanged. ───
+                amax_j = _PER_JOINT_ALPHA_MAX[:n_j]
+                if getattr(options, 'coherence_gate_enable', False):
+                    gate = getattr(self, '_cg_gate', None)
+                    if gate is not None:
+                        amax_j = amax_j + gate[:n_j] * (1.0 - amax_j)
+
+                alpha = alpha_min + blend * (amax_j - alpha_min)  # (J,)
                 alpha_3 = alpha[:, np.newaxis]  # (J, 1) for broadcasting
 
                 tv_smooth = alpha_3 * tv_cur + (1.0 - alpha_3) * prev_tv

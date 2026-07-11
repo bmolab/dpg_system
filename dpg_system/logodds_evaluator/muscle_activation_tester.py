@@ -473,6 +473,258 @@ def test_lower_limb_filtering(path, start, end):
     }, title='Lower-Limb', input_smooth=3)
 
 
+# ─────────────────────────────────────────────────────────────────────
+# Coherence-gated adaptive-effort prototype (2026-07-06 popping work)
+# ─────────────────────────────────────────────────────────────────────
+#
+# Hypothesis: the per-joint alpha_max cap (0.5 on shoulders) over-
+# attenuates genuine popping accents (Subject10: R_shoulder f1137
+# 106 Nm → 0.33 Nm filtered). Raising the cap globally would re-admit
+# the noise we deliberately filter (soft-tissue ringing, magnetometer
+# jitter, single-frame spikes, cadence steps). Instead, lift the cap
+# per-frame-per-joint ONLY when two NON-LOCAL features agree:
+#   coherence — the joint's fast motion is corroborated by simultaneous
+#               fast motion in its kinematic neighbours. Real popping is a
+#               coordinated whole-chain hit; ringing / per-IMU jitter are
+#               spatially LOCAL, so a min-across-the-neighbourhood stays
+#               low for them.
+#   envelope  — the motion is a multi-frame ballistic ramp, not a 1-frame
+#               spike. Sensor spikes and 2,2,1 cadence steps are temporally
+#               ISOLATED (high instantaneous speed, low windowed mean).
+# Both are soft valves in [0,1] (per soft-valving-over-gating); the gate
+# is their product. gate=0 leaves the canonical cap untouched; gate=1
+# lifts it to 1.0. Forward net-displacement / "commitment" was tried and
+# REJECTED as a feature — it scores strike-and-recoil pops as low and
+# collides with the reversal-at-speed glitch signature.
+#
+# NOTE ON CAUSALITY: the envelope window here is symmetric (±_ENV_HALF)
+# for characterisation. A live/streaming port needs either a trailing
+# window or a small (~2-3 frame / 20-30 ms) look-ahead latency.
+
+# Kinematic neighbourhoods (SMPL 24-joint layout): {proximal, self, distal}
+_ARM_NEIGH = {
+    16: [13, 16, 18], 17: [14, 17, 19],   # shoulders: collar, self, elbow
+    18: [16, 18, 20], 19: [17, 19, 21],   # elbows:    shoulder, self, wrist
+    20: [18, 20],     21: [19, 21],        # wrists:    elbow, self
+}
+# Soft-valve knee points (tuned from the 2026-07-06 Subject10 popping scan:
+# quiet-frame coherence baseline ~0.30, pop accents 1.6-2.7).
+_COH_LO, _COH_HI = 0.7, 1.8      # min neighbour normalised speed
+_ENV_LO, _ENV_HI = 0.30, 0.65    # windowed-mean / windowed-peak speed
+_ENV_HALF = 2                    # symmetric ±frames for the envelope window
+
+
+def _arm_kinematic_gate(poses, target_joints):
+    """Per-frame coherence*envelope gate in [0,1] for each target joint.
+
+    Features come from raw pose kinematics (deg/frame), independent of the
+    torque pipeline. Returns (gates, coh_raw, env_raw), each a dict
+    joint -> (N,) array.
+    """
+    from scipy.spatial.transform import Rotation as R_sp
+    N = poses.shape[0]
+    aa = poses[:, :72].reshape(N, 24, 3)
+    r = R_sp.from_rotvec(aa.reshape(-1, 3)).as_matrix().reshape(N, 24, 3, 3)
+
+    def _ang(a, b):
+        m = np.matmul(a, np.swapaxes(b, -1, -2))
+        tr = np.clip((m[..., 0, 0] + m[..., 1, 1] + m[..., 2, 2] - 1) / 2, -1, 1)
+        return np.degrees(np.arccos(tr))
+
+    speed = np.zeros((N, 24))
+    speed[1:] = _ang(r[1:], r[:-1])            # (N, 24) deg/frame
+    mean_sp = speed[1:].mean(axis=0) + 1e-6    # per-joint normalisation scale
+    norm_sp = speed / mean_sp
+
+    gates, coh_out, env_out = {}, {}, {}
+    for j in target_joints:
+        nb = _ARM_NEIGH[j]
+        coh_raw = norm_sp[:, nb].min(axis=1)   # whole neighbourhood co-active
+        coh_v = np.clip((coh_raw - _COH_LO) / (_COH_HI - _COH_LO), 0.0, 1.0)
+        s = speed[:, j]
+        env_raw = np.zeros(N)
+        for f in range(N):
+            w = s[max(0, f - _ENV_HALF):f + _ENV_HALF + 1]
+            env_raw[f] = w.mean() / (w.max() + 1e-6)
+        env_v = np.clip((env_raw - _ENV_LO) / (_ENV_HI - _ENV_LO), 0.0, 1.0)
+        gates[j] = coh_v * env_v
+        coh_out[j] = coh_raw
+        env_out[j] = env_raw
+    return gates, coh_out, env_out
+
+
+def test_coherence_gated_filtering(path, start, end):
+    """Prototype: coherence+envelope-gated lift of the adaptive-effort
+    alpha_max cap, vs the canonical EMA, referenced to the pre-EMA torque.
+
+    Runs the processor once with the EMA OFF (front-end smoothing still on)
+    to get the pre-EMA torque, then re-implements the exact adaptive-effort
+    EMA in-tester two ways: canonical cap vs gated cap. The canonical
+    reconstruction is validated against the processor's own full-pipeline
+    output (sanity line — should be ~0).
+    """
+    joints = {'L_shoulder': 16, 'R_shoulder': 17,
+              'L_elbow': 18, 'R_elbow': 19,
+              'L_wrist': 20, 'R_wrist': 21}
+    poses, trans, fps, betas, gender = load_data(path)
+    end = min(end, len(poses))
+    n_j = 22  # processor emits 22 body joints (target_joint_count)
+
+    # Pass PRE: front-end smoothing ON, adaptive-effort EMA OFF.
+    pr_pre = make_processor(fps, betas, gender)
+    opts_pre = make_options(fps, adaptive_effort_smooth=False)
+    # Pass A: full canonical pipeline, for reconstruction sanity check.
+    pr_A = make_processor(fps, betas, gender)
+    opts_A = make_options(fps)
+
+    tv_pre = np.zeros((end, n_j, 3))
+    en_pre = np.zeros((end, n_j, 3))
+    tvA_mag = {n: np.zeros(end) for n in joints}
+    for f in range(end):
+        pose_f = reshape_pose(poses[f]); trans_f = trans[f:f + 1]
+        rp = pr_pre.process_frame(pose_f, trans_f, opts_pre)
+        ra = pr_A.process_frame(pose_f, trans_f, opts_A)
+        tv_pre[f] = rp['torques_vec'][0]
+        en_pre[f] = rp['efforts_net'][0]
+        for n, j in joints.items():
+            tvA_mag[n][f] = float(np.linalg.norm(ra['torques_vec'][0][j]))
+
+    gates, coh_raw, env_raw = _arm_kinematic_gate(poses[:end], list(joints.values()))
+    gate_arr = np.zeros((end, n_j))
+    for j, g in gates.items():
+        gate_arr[:, j] = g
+
+    # Canonical EMA constants (match make_options / processor defaults).
+    LO, HI, AMIN = 0.1, 0.5, 0.05
+    K, CLO, CHI = 5, 0.02, 0.10
+    Amax = np.array([_PER_JOINT_ALPHA_MAX.get(j, 0.5) for j in range(n_j)])
+
+    def run_ema(gate_lift):
+        """Replicate the adaptive-effort EMA. gate_lift: (end, n_j) alpha_max
+        lift factor in [0,1], or None for canonical."""
+        tv_sm = np.zeros((end, n_j, 3))
+        en_sm = np.zeros((end, n_j, 3))
+        ring = np.zeros((K, n_j)); rptr = 0; rcnt = 0
+        for f in range(end):
+            if f == 0:
+                tv_sm[f] = tv_pre[f]; en_sm[f] = en_pre[f]
+                continue
+            eff_mags = np.linalg.norm(en_pre[f], axis=-1)
+            eff_blend = np.clip((eff_mags - LO) / (HI - LO), 0.0, 1.0)
+            deff = np.linalg.norm(en_pre[f] - en_sm[f - 1], axis=-1)
+            ring[rptr] = deff; rptr = (rptr + 1) % K; rcnt = min(rcnt + 1, K)
+            deff_med = np.median(ring[:rcnt], axis=0) if rcnt >= 3 else np.zeros(n_j)
+            chg_blend = np.clip((deff_med - CLO) / (CHI - CLO), 0.0, 1.0)
+            blend = np.maximum(eff_blend, chg_blend)
+            amax = Amax.copy()
+            if gate_lift is not None:
+                amax = amax + gate_lift[f] * (1.0 - amax)
+            alpha = (AMIN + blend * (amax - AMIN))[:, None]
+            tv_sm[f] = alpha * tv_pre[f] + (1.0 - alpha) * tv_sm[f - 1]
+            en_sm[f] = alpha * en_pre[f] + (1.0 - alpha) * en_sm[f - 1]
+        return tv_sm
+
+    tv_canon = run_ema(None)
+    tv_gated = run_ema(gate_arr)
+
+    # Sanity: canonical reconstruction vs processor over the reported range.
+    max_dev = 0.0
+    for n, j in joints.items():
+        rec = np.linalg.norm(tv_canon[start:end, j], axis=-1)
+        max_dev = max(max_dev, float(np.max(np.abs(rec - tvA_mag[n][start:end]))))
+
+    print(f'\n=== Coherence-Gated Adaptive-Effort Prototype (frames {start}-{end}) ===')
+    print(f'fps={fps:.1f}  coh_knee=[{_COH_LO},{_COH_HI}]  env_knee=[{_ENV_LO},{_ENV_HI}]')
+    print(f'sanity: max|canon_recon - processor| = {max_dev:.2e} Nm  (should be ~0)')
+    print(f'{"joint":>10s} | {"preEMA":>7s} {"canon":>6s} {"gated":>6s}'
+          f' | {"can_ret%":>8s} {"gat_ret%":>8s} | {"can_jit%":>8s} {"gat_jit%":>8s}'
+          f' | {"gate_mn":>7s} {"gate>.1":>7s}')
+    print('-' * 118)
+    summ = {}
+    for n, j in joints.items():
+        pre = np.linalg.norm(tv_pre[start:end, j], axis=-1)
+        can = np.linalg.norm(tv_canon[start:end, j], axis=-1)
+        gat = np.linalg.norm(tv_gated[start:end, j], axis=-1)
+        g = gate_arr[start:end, j]
+        pre_rms = float(np.sqrt(np.mean(pre ** 2)))
+        can_rms = float(np.sqrt(np.mean(can ** 2)))
+        gat_rms = float(np.sqrt(np.mean(gat ** 2)))
+        can_djit = float(np.std(np.diff(can))); gat_djit = float(np.std(np.diff(gat)))
+        pre_djit = float(np.std(np.diff(pre))) + 1e-9
+        print(f'{n:>10s} | {pre_rms:7.2f} {can_rms:6.2f} {gat_rms:6.2f}'
+              f' | {100 * can_rms / (pre_rms + 1e-9):8.0f} {100 * gat_rms / (pre_rms + 1e-9):8.0f}'
+              f' | {100 * can_djit / pre_djit:8.0f} {100 * gat_djit / pre_djit:8.0f}'
+              f' | {float(np.mean(g)):7.3f} {100 * float(np.mean(g > 0.1)):6.0f}%')
+        summ[n] = dict(j=j, pre=pre, can=can, gat=gat, g=g)
+
+    K_top = 6
+    print(f'\n=== Top {K_top} pre-vs-canon gap frames: canon vs gated recovery ===')
+    for n, s in summ.items():
+        gap = np.abs(s['pre'] - s['can'])
+        order = np.argsort(-gap)[:K_top]
+        print(f'\n  {n}:')
+        print(f'    {"frame":>6s}  {"preEMA":>6s}  {"canon":>6s}  {"gated":>6s}'
+              f'  {"gate":>5s}  {"coh":>5s}  {"env":>5s}')
+        for idx in order:
+            f = start + idx
+            print(f'    {f:>6d}  {s["pre"][idx]:6.2f}  {s["can"][idx]:6.2f}'
+                  f'  {s["gat"][idx]:6.2f}  {s["g"][idx]:5.2f}'
+                  f'  {coh_raw[s["j"]][f]:5.2f}  {env_raw[s["j"]][f]:5.2f}')
+
+
+# Candidate adaptive-front-end config (2026-07-06). Kept here so the compare
+# test and any tuning share one definition. Legacy = plain make_options(fps).
+ADAPTIVE_FRONTEND_CFG = dict(
+    adaptive_frontend=True,
+    coherence_gate_enable=True,
+    smooth_input_window=0,   # pose smoothing replaced by the gated OEF
+    acc_smooth_window=3,     # light fixed accel cleanup (keeps quiet clean)
+)
+
+
+def test_frontend_compare(path, start, end):
+    """Legacy fixed-window front-end vs the gated adaptive OEF front-end.
+
+    Reports per-joint torque RMS, peak, and frame-to-frame jitter for both,
+    plus the mean gate. Adaptive should lift peak/jitter on limbs where the
+    gate opens (real accents) while leaving low-gate joints ~unchanged.
+    """
+    joints = {'L_shoulder': 16, 'R_shoulder': 17,
+              'L_elbow': 18, 'R_elbow': 19,
+              'L_wrist': 20, 'R_wrist': 21}
+    poses, trans, fps, betas, gender = load_data(path)
+    end = min(end, len(poses))
+
+    def run(overrides):
+        pr = make_processor(fps, betas, gender)
+        opts = make_options(fps, **overrides)
+        mags = {n: np.zeros(end) for n in joints}
+        gate = {n: np.zeros(end) for n in joints}
+        for f in range(end):
+            r = pr.process_frame(reshape_pose(poses[f]), trans[f:f + 1], opts)
+            tv = r['torques_vec'][0]
+            g = getattr(pr, '_cg_gate', None)
+            for n, j in joints.items():
+                mags[n][f] = np.linalg.norm(tv[j])
+                if g is not None:
+                    gate[n][f] = g[j]
+        return mags, gate
+
+    leg, _ = run({})
+    adp, gt = run(ADAPTIVE_FRONTEND_CFG)
+
+    print(f'\n=== Front-end compare: legacy vs adaptive (frames {start}-{end}) ===')
+    print(f'cfg: {ADAPTIVE_FRONTEND_CFG}')
+    print(f'{"joint":>10s} | {"leg_rms":>7s} {"adp_rms":>7s} | {"leg_pk":>7s} {"adp_pk":>7s}'
+          f' | {"leg_jit":>7s} {"adp_jit":>7s} | {"gate_mn":>7s}')
+    print('-' * 90)
+    for n in joints:
+        l = leg[n][start:end]; a = adp[n][start:end]; g = gt[n][start:end]
+        print(f'{n:>10s} | {np.sqrt((l**2).mean()):7.2f} {np.sqrt((a**2).mean()):7.2f}'
+              f' | {l.max():7.1f} {a.max():7.1f}'
+              f' | {np.std(np.diff(l)):7.3f} {np.std(np.diff(a)):7.3f} | {g.mean():7.3f}')
+
+
 def test_logodds_streams(path, start, end):
     """Per-stream log-odds increments for each group."""
     poses, trans, fps, betas, gender = load_data(path)
@@ -513,6 +765,8 @@ TESTS = {
     'logodds_streams': test_logodds_streams,
     'upper_limb_filtering': test_upper_limb_filtering,
     'lower_limb_filtering': test_lower_limb_filtering,
+    'coherence_gated': test_coherence_gated_filtering,
+    'frontend_compare': test_frontend_compare,
 }
 
 

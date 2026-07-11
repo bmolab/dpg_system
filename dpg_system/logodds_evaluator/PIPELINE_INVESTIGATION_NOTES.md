@@ -60,6 +60,11 @@ This script is the model for all pipeline investigation. It:
 - `zmp_pipeline` — ZMP decomposition: position vs. acceleration noise.
 - `pressure` — per-joint contact pressure (kg equivalent).
 - `logodds_streams` — per-stream log-odds increments per group.
+- `coherence_gated` — prototype: coherence+envelope-gated lift of the
+  adaptive-effort `alpha_max` cap vs canonical, referenced to pre-EMA
+  torque. Re-implements the EMA in-tester (bit-exact to the processor —
+  see sanity line) so `alpha_max` gating can be tried without touching
+  `smpl_processor.py`. Kinematic gate helper: `_arm_kinematic_gate`.
 
 **When to add a new test:** if a question needs internals not exposed by
 the existing tests. Keep new tests in the same file under the `TESTS`
@@ -69,6 +74,216 @@ registry so they're invocable as `python muscle_activation_tester.py
 ## Where we left off
 
 _(Update at end of each session — one short paragraph)_
+
+- **2026-07-11 (live responsiveness + asymmetric gate EMA):** User live-tested
+  the gate on popping_1 in the smpl_torque node: gate fires, subtle at
+  strength 1, clear at 8-16, and engaging the front-end CRUSHED the gate
+  peaks. Diagnosed (quantified, frames 500-1000, R_shoulder exemplar):
+  (1) node runs `smooth_input_window=0` (RAW pose), so the front-end —
+  calibrated to REPLACE the detector-legacy MA-5 — instead ADDS smoothing in
+  live use and can only pull peaks down (raw pk 63.2, gate-only s8 90.1,
+  fe s8 31.8). (2) strength>1 saturates the 3-valve product against the
+  [0,1] clamp → near-binary gate; that's why 8-16 feels qualitatively
+  different (and hints valve thresholds are too shallow for this material if
+  binary is what feels right). (3) the symmetric 25 ms gate EMA opens the
+  cutoff only AFTER a 1-2 frame pop's energy has passed. ADDED asymmetric
+  attack/release gate EMA (`coherence_gate_attack_ms`/`_release_ms`, default
+  -1 = symmetric fallback, byte-identical — verified by exact reproduction of
+  all pre-edit configs) + exposed both on the node. Results (R_shoulder pk):
+  fe s8 sym 31.8 → asym(5/50) 50.4; with cutoff_hi=40 → 79.9 (above raw,
+  near gate-only 90.1). Eyes_Japan nail re-check (takiguchi 250 fps + aita
+  120 fps): shipped config (s1, 4/18) with asym = numerically identical to
+  symmetric (gate never opens on quiet) → NO regression; aggressive combo
+  (s8+hi40+asym) reintroduces small isolated transients on takiguchi
+  (L_elbow pk 3.5→9.5, 3 frames) — cause is s8 saturating marginal gate
+  flickers × wide cutoff, not the asymmetry. Also: popping elbow/wrist pk in
+  the s8+hi40+asym config EXCEED gate-only raw-pose peaks (L_elbow 30.3 vs
+  18.3) → some OEF slew-artifact energy in the aggressive config's peaks.
+  Live guidance: clean input → gate-only high strength; front-end live →
+  asym 5/50 + moderate cutoff_hi (~25-30), keep strength moderate. OPEN:
+  scratchpad tests (live_config_compare / nail_transient_check) not yet
+  folded into muscle_activation_tester TESTS.
+  SAME-DAY FOLLOW-UP — Hill sharpening replaces strength saturation:
+  added `coherence_gate_hill_n` (0=off, legacy path byte-identical) +
+  `coherence_gate_hill_p50` — Hill valve on the 3-valve product,
+  gate = p^n/(p^n+p50^n), applied before strength/clamp. Rationale: real
+  pops yield product ~0.3-0.5, quiet flicker ~0.01-0.12; strength 8 is a
+  linear clamp fully open at 0.125 (passes the biggest flickers), Hill
+  n=3/p50=0.15 maps 0.4→0.95 but 0.1→0.23. VALIDATED on popping_1
+  (gate-only asym: hill s1 pk 92.7 ≈ s8's 96.4, ambient gate duty 0.20 vs
+  0.28) and takiguchi nail 250 fps (fe asym hi40: L_elbow transient pk
+  9.5→4.7, excess 6.9→2.2, flagged frames 3→1, gate_mn 0.013→0.003; aita
+  unchanged). Same responsiveness, ~3× less quiet-material artifact →
+  Hill n=3, p50=0.15, strength=1 is the recommended decisive-gate config.
+  ALSO exposed on the smpl_torque node: hill_n, hill_p50, and all six
+  valve thresholds (coh/env/abs lo-hi) — previously processor-only.
+  REMAINING: fe+cutoff_hi 40 configs still carry some OEF slew energy in
+  elbow/wrist peaks (popping L_elbow ~30 vs gate-only 18) regardless of
+  hill vs s8 — inherent to wide-cutoff slew after fast attack; prefer
+  cutoff_hi 25-30 live if wrist/elbow flicker visible.
+  NODE DEFAULTS updated to the live config (hill_n=3, p50=0.15, strength 1,
+  attack/release 5/50 ms, cutoff_hi 30); masters still default OFF, and
+  SMPLProcessingOptions dataclass defaults stay conservative (hill 0,
+  symmetric EMA, cutoff_hi 18) so the detector pipeline is untouched.
+  TRANS DECOUPLED (same day): David clarified the trans sensor is a
+  body-mounted projecting mass that flops in extreme (esp. vertical)
+  movement — trans noise is worst exactly when the gate is open, and trans
+  tolerates filtering far better than pose. So trans filtering must be
+  fixed, separate from pose, and NEVER gate-driven. Added
+  `smooth_trans_window_ms` (ms-denominated → fps-scaled; 0 = legacy: trans
+  follows smooth_input_window / adaptive_frontend_trans_window; >0
+  supersedes both, streaming + batch; split pose/trans ring buffers).
+  Processor default 0 → verified byte-identical (max Δ = 0.0 exactly over
+  400 popping_1 frames). Node default 50 ms so live patches protect trans
+  out of the box. Effect profile at 50 ms as intended: pelvis/hips/knees
+  torque shifts (pelvis meanΔ ~20 Nm — trans noise leaving root dynamics/
+  contact), arms untouched (meanΔ 0.37 Nm). Also fps-fixes the old 5-frame
+  fe trans window (was 20 ms at 250 fps). NOTE batch mode: pre-existing
+  crash (unrelated to this change, verified on pure legacy options) —
+  multi-frame process_frame with the canonical contact config dies at
+  `_global_rot_mats` broadcast (smpl_processor.py ~7505, streaming-only
+  assumption in world-frame dynamics); adds detail to open issue (e).
+
+- **2026-07-06 (audit + 3 fixes):** Fresh audit of the adaptive-front-end
+  work. APPLIED 3 quick fixes: (1) trans was left UNSMOOTHED by the candidate
+  config (MA block gated by `win>=2`, but `smooth_input_window=0`) — now forces
+  a trans MA via `adaptive_frontend_trans_window` (default 5) when the OEF
+  replaces pose smoothing; this drops Subject10 f1137 recovery 21.3→16.0 (the
+  previous value was inflated by raw-trans noise into CoM/contact — 16.0 is the
+  correct number). (2) clamp gate to [0,1] (strength>1 would push alpha_max>1 /
+  cutoffs>cutoff_hi). (4) VERIFIED `frontend_overrides` genuinely engage inside
+  `analyze_file` via a process_frame spy: detector-internal torque changes on
+  845/846 frames (max 217 Nm) while report metrics stay byte-identical — the
+  clean-regression guarantee is now proven, not assumed. Default-off still
+  byte-identical.
+  OPEN ISSUES FLAGGED (not yet fixed), priority order:
+  HIGH — (a) everything downstream of the pose is unvalidated (contact, ZMP,
+  logodds, balance, render, LEG gates during footwork); only arm torque tested.
+  (b) [RESOLVED 2026-07-06] clean-section torque distribution shift. Two parts:
+  fix-1 (trans smoothing) removed the gross RMS gap; then CALIBRATED cutoff_lo
+  1→4 Hz + cutoff_hi 12→18 Hz against legacy (5,7) quiet/clean-moving stats.
+  Result on a Subj13 clean-moving segment: RMS adp/leg=1.01, jitter adp/leg=1.05
+  (was ~0.80 at cutoff_lo=1); glitch still suppressed (−0.06); Subject10 burst
+  peak 19.0 >= legacy 17.6 (recovery preserved). Fundamental limit found:
+  single-pole OEF can't match BOTH legacy jitter AND legacy 1-frame-glitch
+  rejection (boxcar MA rejects impulses harder at matched passband) — cutoff_lo
+  >6 Hz starts leaking glitches, so 4 Hz is the jitter-match/glitch-safe knee.
+  cutoff_hi paired at 18 to hold recovery above legacy with the higher baseline.
+  MED — (c) [RESOLVED 2026-07-06] state reset. reset_physics_state now fully
+  restores a fresh processor via a SNAPSHOT approach: __init__ records
+  `_init_attr_snapshot = frozenset(self.__dict__)` after fresh init, and reset
+  deletes every attribute created since (all per-frame streaming state re-inits
+  lazily). Verified max|reset-fresh|=0.00 (byte-identical) vs
+  max|contaminated-fresh|=232 Nm without reset. This also fixed a PRE-EXISTING
+  incompleteness — reset_physics_state never cleared prev_pose_q, CoM/gravity/
+  prob-contact filters, or the world-kinematics rings, so calling it used to
+  inject a ~1290 Nm frame-0 spike. WIRING GAP (still open): the smpl_torque
+  node reuses the processor across same-framerate takes and never calls reset
+  (execute() rebuilds only when framerate changes) → cross-take seam +
+  (adaptive) normalization carryover. Seam is pre-existing for legacy; adaptive
+  adds the longer-lived cumulative-mean channel. WIRING RESOLVED 2026-07-06:
+  added a `reset_state` button input to the smpl_torque node (smpl_nodes.py,
+  parallels reset_noise_stats) → `_reset_state` → processor.reset_physics_state().
+  Being an input, it can be clicked or wired to an upstream new-take/load
+  signal; user connects their take-loader to it. (d) cumulative-mean normalization is nonstationary-
+  hostile (quiet-then-active files mis-scale; never stabilises for open-ended
+  live perf) — a long-window EMA mean would be better; also the 0.5 deg/FRAME
+  norm floor is fps-dependent (should be deg/s like abs_lo). (e) batch mode
+  silently gets NO pose smoothing with the candidate config (OEF streaming-only
+  + MA win=0). (f) segment teleports still open the gate (~29% of DanceDB
+  flagged clusters at gate>0.3, some verified true teleports) — safe for
+  training (excluded) but open for live viz; likely also amplifies post-impact
+  soft-tissue ringing (impacts are real coordinated fast motion → gate opens,
+  25ms closing lag lets 15-25Hz through sharpened). (g) axis-angle componentwise
+  OEF filtering can flip near theta=pi with long (~30-frame) memory → transient.
+  (h) frozen-collar SMPL fits → shoulder coherence min includes ~0 collar speed
+  → shoulder gate never opens for that dataset.
+  LOW — SMPL-X finger joints crushed at 1Hz (only first 24 get gate cutoffs);
+  frontend_overrides setattr accepts typos silently; tester `coherence_gated`
+  prototype gate now out of sync with shipped gate; L_shoulder adaptive peak
+  overshoots raw ceiling at gate transitions; EMA-only mode (coherence_gate_
+  enable without adaptive_frontend) not re-validated after the gate refactor;
+  guard-band ~50-frame recommendation rests on ONE boundary (multi-boundary
+  sweep not run).
+
+- **2026-07-06 (campaign):** Started cross-AMASS regression campaign for the
+  adaptive front-end (candidate list = 16 files across 3 buckets: noisy-quiet,
+  problematic, clean; from `noise_results_lenses_2026_06_17` + `/AMASS`). The
+  two hardest files each surfaced a tuning need: DanceDB Vasso_Tired (120 fps,
+  low-energy) — cumulative-mean normalisation over-fired on absolutely-slow
+  motion; Eyes_Japan nail (250 fps) — gate opened too briefly → isolated OEF
+  transient spikes. Teleport safety otherwise held (jump-and-return teleports
+  carry little torque, stay suppressed). FIXED both: (1) absolute speed floor
+  (`coherence_gate_abs_lo/_hi`, deg/s, max-over-neighbourhood so proximal
+  joints driven by distal motion pass); (2) fps-scaled envelope window
+  (`_env_window_ms=50`) + gate temporal EMA (`_smooth_ms=25`). Re-test:
+  Subject10 recovery preserved (f1137 0.3→21.3, glitch −0.05, regression 0),
+  DanceDB gate_mn 0.10→0.02 (adaptive≈legacy, f1203 0.88→0.00), Eyes_Japan
+  peaks tamed + quiet protected.
+  CLEAN-REGRESSION TEST (the priority — clean training segments must not
+  regress to noisy): ran the real detector `estimate_noise_torque.analyze_file`
+  legacy vs adaptive (added a `frontend_overrides` hook, default None = no-op).
+  Result: BYTE-IDENTICAL clean-segment metrics (noise_score, clean_fraction,
+  clean_section_score, classification, n clean segments) on a clean file
+  (Subj61), a noisy-quiet file (Subj13, despite a 112 Nm torque change), and
+  the popping file (Subject10: 95% clean / 19 segments unchanged despite
+  f1137 0.3→21.3). STRUCTURAL REASON: the detector's clean marking runs on
+  raw-pose lenses (spike/corruption/teleport, estimate_noise_torque.py:1270),
+  which the front-end cannot touch → the adaptive front-end can never change
+  which sections are clean, only the torque output of clean sections (sharper
+  only where the gate opens on real motion; on clean segments gate=0 →
+  adaptive≈legacy).
+  BREADTH BATCH DONE: 10 files total (clean / noisy-quiet / problematic,
+  100-250 fps) through the detector legacy vs adaptive — ALL clean-segment
+  metrics byte-identical, including tennis/scamper where the gate DOES open
+  and torque DOES change. Clean-regression guarantee confirmed at breadth.
+  Milestone: adaptive front-end implemented + switchable (default OFF, legacy
+  byte-identical) + tuned on the two hardest files + proven safe for the
+  training-data pipeline. OPEN (optional): abs_lo=400 may be too conservative
+  for mid-range (400-1000 deg/s) gestures; live-viz spot-check of cutoff_hi
+  overshoot at gate transitions.
+
+- **2026-07-06:** Popping over-filtering investigation on Subject10
+  (Shadow, 100 fps, genuine — no 2,2,1 cadence). Built + validated the
+  `coherence_gated` prototype (in-tester EMA reconstruction bit-exact to
+  the processor). Key finding: the adaptive-effort `alpha_max` cap is
+  NOT the dominant filter for popping — it accounts for only ~4-8% of
+  the attenuation; the **front-end smoothing windows**
+  (`smooth_input_window=5`, `acc_smooth_window=7`, sized for 60 fps,
+  running on a 100 fps file where a pop is 1-2 frames) do ~45%. The
+  coherence+envelope gate is validated as SAFE and SELECTIVE (fires
+  37-52% of popping frames, real recovery where coherence is high) but
+  is currently pointed at the minor stage. SHIPPED the EMA gate into the
+  processor opt-in (`coherence_gate_*`, default OFF, regression byte-
+  identical; gate-on R_shoulder jitter +13%). NEXT (high-value, not yet
+  done): apply the same gate to the front-end windows
+  (`smooth_input_window`/`acc_smooth_window`) and/or fps-scale them —
+  that stage holds ~45% of the popping attenuation vs the EMA's ~4%.
+
+- **2026-07-06 (cont.):** Front-end gating. Ruled out an intermediate
+  crossfade (heavy↔light of pose/accel): it can't recover, because a
+  light derivative can't be reconstructed from a heavy history buffer
+  (state continuity). Then reframed the target — verified f1137 is a
+  REAL popping accent (clean ballistic ramp, ~10-frame torque burst
+  peaking 106 Nm raw), NOT noise; canonical crushes it 27× AND phase-lags
+  it ~4 frames. Global-light was ruled out too: on marker-based files
+  (which have 1-frame optical glitches in quiet sections, unlike this
+  clean IMU file) a large glitch leaks past light+EMA (+3.2 Nm) but heavy
+  fully suppresses. So gating IS required. SHIPPED (per David's design)
+  an **adaptive front-end filter** as a switchable opt-in
+  (`adaptive_frontend`, default OFF → legacy byte-identical): one
+  per-joint One Euro Filter on the pose whose cutoff is driven by the
+  coherence gate (NOT by speed — speed can't tell glitch from accent).
+  One recursive state → no dual pipeline, no state-continuity issue.
+  Validated config `adaptive_frontend + coherence_gate +
+  smooth_input=0 + acc_smooth=3`: f1137 0.3→19.1 (peak at the RIGHT
+  frame), 50° glitch fully suppressed (excess −0.05 vs legacy −0.34),
+  quiet +4%; region-wide peaks +2-3.3×, jitter +3-3.5×. NEXT: regression-
+  test across noise types using the AMASS per-file/per-joint noise
+  assessment at `dpg_system/noise_estimation/noise_results_lenses_2026_06_17/`
+  (19 sub-datasets, `classification`/`glitch_fraction`/`joint_profiles`);
+  AMASS files at `/Users/drokeby/dpg_system/AMASS`. Pick glitch-heavy
+  (marker), sustained-noise, and clean files; tune cutoff_lo/hi + accSG.
 
 - **2026-05-19:** Three changes applied in one session. (1) Upper-limb
   over-filtering fixed via effort-based threshold in
@@ -314,6 +529,74 @@ Even null results matter — they document validated behaviors.
   that the wrist's local axis convention differs from shoulder/elbow
   (wrist: Y=Abd/Add, Z=Flex/Ext).
 
+### 2026-07-06 — Popping over-filtering + coherence-gated prototype (Subject10)
+- File: `/Users/drokeby/Projects/BMO_Lab/GRANTS/NFRF_2023/Anonomized_shadow/Subject10_Popping/Subject10_take1_beta_smpl_poses_aligned.npz`
+  (Shadow, 100 fps, 14688 frames, male)
+- Frames: sustained popping 900–1700 (9–17 s); sharpest single accent
+  ~4113 (~6500°/s). Popping-dense windows found via an arm angular-jerk
+  scan (frames 900–1700, 1600–1700, 2600–2700, 4100–4200).
+- Question: is the canonical filter stack smoothing out the real
+  intensity of the dancer's popping? If so, can we recover it WITHOUT
+  re-admitting the noise (soft-tissue ringing, magnetometer jitter,
+  single-frame spikes, 2,2,1 cadence steps) we deliberately filter?
+- Diagnostics: `upper_limb_filtering` (raw vs canonical); a cadence /
+  duplicate-frame check; a coherence + forward-commitment feature scan;
+  new `coherence_gated` test (canonical vs gated EMA `alpha_max`).
+- Observations:
+  1. **Cadence ruled out.** 1 near-duplicate frame in 14688; low-delta
+     autocorrelation decays smoothly with no periodic spikes. This file
+     is genuine (or already-reconstructed) 100 Hz — the sharp hits are
+     real coordinated whole-body ballistic ramps (e.g. body delta around
+     f4113: 35→57→73→91→67→58 deg/frame), NOT cadence artifacts.
+  2. **Canonical over-filters popping.** `upper_limb_filtering`
+     (900–1700): shoulders retain ~50% rms, ~18–21% of frame-to-frame
+     jitter; single accents crushed (R_shoulder f1137 raw 106 Nm →
+     0.33 Nm, α already pinned at its 0.5 cap).
+  3. **Discriminator findings.** Cross-chain **coherence** separates
+     cleanly (pop frames 1.6–2.7 vs quiet baseline 0.30). Forward
+     **commitment / net-displacement was REJECTED** — high everywhere
+     (baseline 0.88), low at the sharpest recoil pops (f4112=0.05), and
+     collides with the reversal-at-speed glitch signature. Kept features:
+     coherence (spatial) + ballistic-envelope smoothness (temporal).
+  4. **Prototype attribution — the key result.** The `coherence_gated`
+     EMA reconstruction is **bit-exact** to the processor (sanity
+     `max|Δ| = 0.00e+00`). But decomposing the attenuation (L_shoulder,
+     900–1700): raw 15.19 → **front-end (input+acc smoothing) 8.30
+     (−45%)** → **EMA canonical 7.67 (−4% of raw)**. The adaptive-effort
+     `alpha_max` cap the gate modulates accounts for only ~1/11th of the
+     popping attenuation; the **front-end windows dominate**. Gating the
+     EMA therefore yields only marginal recovery (rms 92→95%, jit 82→89%
+     on shoulders), even though the gate fires correctly on 37–52% of
+     popping frames and gives real boosts where coherence is high
+     (R_shoulder f963 10.69→16.98, f1146 11.30→15.63, f1611 21.18→24.08).
+- Judgement: AMBIGUOUS→partial. The gate MECHANISM is validated (safe,
+  selective, sanity-exact) but INCORRECTLY TARGETED. Root cause of the
+  popping loss is the front-end smoothing windows (`smooth_input_window=5`
+  = 50 ms, `acc_smooth_window=7` = 70 ms), sized around this project's
+  60 fps files and applied to a 100 fps file where a pop is 1–2 frames
+  (10–20 ms) — wider than the accent itself.
+- Action: (1) PROTOTYPE COMMITTED to the tester (`test_coherence_gated`
+  + `_arm_kinematic_gate`, registered in `TESTS`). (2) SHIPPED the EMA
+  gate into the live processor as an opt-in `coherence_gate_*` option set
+  (default OFF — regression-verified byte-identical when disabled). The
+  live gate is causal: cumulative per-joint mean for normalisation and a
+  trailing envelope window (vs the prototype's whole-file mean + symmetric
+  window). Gate-on reproduces the predicted modest recovery (R_shoulder
+  filt_rms 9.04→9.43, jitter 1.55→1.76 = +13% of fast accents surviving,
+  frames 900–1700). Only limb joints are gated; trunk/head stay canonical.
+- STILL OPEN (the high-value work): the EMA is only ~1/11th of the
+  attenuation. Apply the same coherence+envelope gate to the FRONT-END
+  windows (`smooth_input_window`, `acc_smooth_window`) and/or fps-scale
+  them (5→3 at 100 fps). That is where the bulk of popping intensity is
+  recoverable.
+- Files touched:
+  `dpg_system/logodds_evaluator/muscle_activation_tester.py`
+  (added `_arm_kinematic_gate`, `test_coherence_gated_filtering`,
+  `_ARM_NEIGH` + soft-valve constants; registered `coherence_gated`);
+  `dpg_system/smpl_processor.py` (7 `coherence_gate_*` option fields,
+  `_COH_NEIGH` + `_coherence_envelope_gate` method, gate applied to
+  `amax_j` in the adaptive-effort EMA block).
+
 ## Open follow-ups from this investigation
 
 - `acc_smooth_window` is a global SG window applied uniformly to all
@@ -430,6 +713,58 @@ Pending work — things we noticed but haven't resolved.
   oscillation overwhelms the median and triggers.
 - Motivated by: 2026-05-19 R_knee oscillation investigation
   (take 3 frames 5492-5532).
+
+### 2026-07-06 — coherence gate lifts adaptive-effort alpha_max (opt-in)
+- Files: `dpg_system/smpl_processor.py`
+- What: new opt-in `coherence_gate_*` option set (7 fields, all default
+  OFF/no-op) + `_coherence_envelope_gate` method + `_COH_NEIGH` limb
+  neighbourhood map. When enabled, the adaptive-effort EMA lifts the
+  per-joint `alpha_max` cap toward 1.0 by `gate*(1-alpha_max)`, where
+  `gate = coherence_vote * envelope_vote * strength` in [0,1]. Coherence
+  = min normalised angular speed across the joint's kinematic neighbours
+  (spatial); envelope = trailing windowed-mean/peak angular speed
+  (temporal). Only limb joints (arms validated, legs analogous) are
+  gated; all others stay canonical. Causal: cumulative per-joint mean for
+  normalisation, trailing envelope window.
+- Why: the per-joint `alpha_max` cap (0.5 on shoulders) crushes genuine
+  popping accents (Subject10 R_shoulder f1137 106→0.33 Nm). A global cap
+  raise would re-admit soft-tissue ringing, magnetometer jitter, spikes
+  and cadence steps; the gate opens only for coordinated, ballistic
+  motion those noise sources don't produce. Modest effect (the EMA is
+  ~1/11th of the total popping attenuation — front-end windows dominate)
+  but establishes the validated gating machinery for the front-end work.
+- Verification: gate-off byte-identical to prior output (regression); the
+  in-tester EMA reconstruction (`coherence_gated`) is bit-exact to the
+  processor; gate-on reproduces the predicted recovery.
+- Motivated by: 2026-07-06 popping over-filtering investigation.
+
+### 2026-07-06 — adaptive front-end filter (switchable opt-in)
+- Files: `dpg_system/smpl_processor.py`,
+  `dpg_system/logodds_evaluator/muscle_activation_tester.py`
+- What: new opt-in `adaptive_frontend` (+ `adaptive_frontend_cutoff_lo`
+  /`_hi`/`_beta`, all default OFF/no-op). When enabled, replaces the fixed
+  `smooth_input_window` moving-average with a per-joint One Euro Filter on
+  the pose whose per-DOF cutoff is `cutoff_lo + gate·(cutoff_hi-cutoff_lo)`
+  — driven by the coherence gate, `beta=0` so speed does NOT open it. One
+  recursive state, streaming-only, main path; trans keeps the fixed MA.
+  The two failed intermediate light-window crossfades (input + accel) were
+  reverted. Tester: `frontend_compare` test + `ADAPTIVE_FRONTEND_CFG`.
+- Why: the front-end windows destroy real popping accents (f1137 crushed
+  27× and phase-lagged 4 frames) but are needed to suppress 1-frame
+  optical glitches on marker files. A single adaptive filter recovers the
+  accent (gate high → high cutoff) while staying glitch-safe (gate=0 on a
+  lone-joint spike → low cutoff → suppressed), with no dual-pipeline /
+  state-continuity problem. Speed-driven adaptivity (native OEF) can't do
+  this — a glitch is also fast; the coherence gate is the discriminator.
+- Verification (Subject10, config `adaptive_frontend + coherence_gate +
+  smooth_input=0 + acc_smooth=3`): default-off byte-identical (regression);
+  f1137 0.3→19.1 Nm with the peak at the correct frame; 50° injected
+  optical glitch fully suppressed (excess −0.05 vs legacy −0.34); quiet
+  region +4%; region-wide limb peaks +2-3.3×, jitter +3-3.5×.
+- Open: tune `cutoff_lo/_hi` + `acc_smooth_window`; regression-test across
+  AMASS noise types (see "Where we left off"). L_shoulder peak can slightly
+  overshoot raw at gate transitions — watch during tuning.
+- Motivated by: 2026-07-06 front-end gating investigation.
 
 Code changes made as a direct result of investigations. Date, file,
 what changed, why, and which investigation entry motivated it.
