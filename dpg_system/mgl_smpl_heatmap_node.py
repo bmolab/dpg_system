@@ -524,7 +524,8 @@ class MGLSMPLHeatmapNode(Node):
         self.last_vertices = None
         self.last_joint_positions = None  # (24, 3) from forward pass
         self.last_global_rotations = None  # (24, 3, 3) per-joint global rotation matrices
-        self.torques_data = None
+        self._torques_raw = None           # parent-local torque as received from smpl_torque
+        self.torques_data = None           # world-frame torque (derived) used for directional muscle activation
 
         self.ctx = None
         self.vbo = None
@@ -961,6 +962,37 @@ class MGLSMPLHeatmapNode(Node):
             global_rots[j] = global_rots[parent]
 
         return vertices, joint_positions, global_rots
+
+    # Axis permutation applied to the pose before FK (must match _run_forward).
+    _AXIS_PERM_BASIS = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]], dtype=np.float64)
+
+    def _to_world_frame_torques(self, t_raw):
+        """Align parent-local joint torques with the flex_axis frame.
+
+        smpl_torque outputs torque in joint j's PARENT-local frame, but the
+        per-muscle flex_axis is authored in world/anatomical (T-pose) axes, so
+        dotting them is a frame mismatch (≈90deg at the shoulder from the
+        collar's rest orientation) that mis-selected muscles away from T-pose.
+
+        At the SMPL rest pose every joint's global rotation equals the root
+        axis-permutation (all local rotations are identity), so the mismatch is
+        a SINGLE CONSTANT rotation shared by all joints — the same permutation
+        _run_forward applies to the pose. Applying that constant keeps the
+        result facing-invariant (a constant transform of a facing-invariant
+        parent-local torque), unlike a per-frame parent rotation which would
+        re-introduce facing dependence. Magnitude is unchanged.
+
+        Only the validated 'Y' up-axis / 'x,z,-y' path is corrected; other
+        configs pass through unchanged (prior behavior).
+        """
+        if t_raw is None:
+            return None
+        t = np.asarray(t_raw)
+        if t.ndim != 2 or t.shape[1] != 3:
+            return t_raw
+        if self.up_axis_prop() != 'Y':
+            return t_raw
+        return (t @ self._AXIS_PERM_BASIS.T).astype(t.dtype)   # row j: BASIS @ t[j]
 
     def _compute_normals(self, vertices, faces):
         normals = np.zeros_like(vertices)
@@ -2083,7 +2115,7 @@ class MGLSMPLHeatmapNode(Node):
             if data is not None:
                 data = any_to_array(data)
                 if data is not None and data.ndim == 2 and data.shape[1] == 3:
-                    self.torques_data = data.astype(np.float32)
+                    self._torques_raw = data.astype(np.float32)
 
         if self.pose_input.fresh_input:
             pose = self.pose_input()
@@ -2095,6 +2127,12 @@ class MGLSMPLHeatmapNode(Node):
             if result is None:
                 return
             self.last_vertices, self.last_joint_positions, self.last_global_rotations = result
+
+        # Align parent-local torque with the flex_axis frame before directional
+        # use (constant permutation; see _to_world_frame_torques). Fixes the
+        # ~90deg shoulder frame mismatch that mis-selected pec/deltoid away from
+        # T-pose, while staying facing-invariant. Magnitude-only modes unchanged.
+        self.torques_data = self._to_world_frame_torques(self._torques_raw)
 
         # Handle gl chain 'draw' message
         if self.gl_input.fresh_input:
