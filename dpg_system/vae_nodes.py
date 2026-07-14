@@ -750,6 +750,9 @@ class VPoserNode(Node):
             else:
                 data = any_to_tensor(data, self.device, torch.float32)
 
+            if data.numel() == 156:
+                # SMPL-H (52 joints): keep root + 21 body joints, drop the 30 hand joints
+                data = data.reshape(52, 3)[:22]
             if data.shape[0] == 22:
                 root_data = data[0].clone().unsqueeze(0)
                 data = data[1:]
@@ -1203,6 +1206,9 @@ class VPoser6DNode(Node):
             else:
                 data = any_to_tensor(data, self.device, torch.float32)
 
+            if data.numel() == 156:
+                # SMPL-H (52 joints): keep root + 21 body joints, drop the 30 hand joints
+                data = data.reshape(52, 3)[:22]
             if data.shape[0] == 22:
                 root_data = data[0].clone().unsqueeze(0)
                 data = data[1:]
