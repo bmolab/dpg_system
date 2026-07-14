@@ -686,6 +686,11 @@ class MGLContextNode(Node):
                 self.fullscreen_window = None
 
     def execute(self):
+        # GL context creation is deferred when the node was created off the
+        # main thread (Cocoa constraint); skip rendering until the main loop's
+        # frame task can create it.
+        if not self.context.ensure_ready():
+            return
         mode = self.display_mode_option()
 
         # Forward mouse/keyboard events captured by this node's display window

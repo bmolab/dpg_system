@@ -3,6 +3,7 @@ import sys
 import time
 import ctypes
 import ctypes.util
+import threading
 import moderngl
 import numpy as np
 from dpg_system.matrix_utils import *
@@ -1330,6 +1331,13 @@ class MGLContext:
         Safe to call multiple times; does nothing once successful."""
         if self._gl_initialized:
             return
+        # Cocoa (and pyglet's GIL handling) require window creation on the main
+        # thread. DPG item/global handler callbacks run on its internal worker
+        # thread even with manual_callback_management, and creating the window
+        # there corrupts that thread's Python thread-state and aborts the
+        # process. Defer: __enter__/ensure_ready retry from the main loop.
+        if threading.current_thread() is not threading.main_thread():
+            return
         try:
             config = pyglet.gl.Config(
                 double_buffer=True, depth_size=24,
@@ -1381,6 +1389,20 @@ class MGLContext:
         except Exception as e:
             print(f'[MGLContext] _ensure_initialized failed: {e}')
             import traceback; traceback.print_exc()
+
+    def ensure_ready(self):
+        """Return True once the GL context exists, creating it if possible.
+        On macOS/Windows creation is deferred when first requested off the
+        main thread (Cocoa constraint); callers should skip GL work until
+        this returns True — the main loop's next frame task completes it."""
+        if sys.platform.startswith('linux'):
+            # Lazy init happens inside __enter__ while DPG's context is current.
+            return True
+        if not self._gl_initialized:
+            self._try_create_pyglet_context()
+            if self._gl_initialized:
+                self._gl_init()
+        return self._gl_initialized
 
     # ------------------------------------------------------------------ #
     #  Context manager protocol                                           #
