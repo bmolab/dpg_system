@@ -526,6 +526,7 @@ class MGLSMPLHeatmapNode(Node):
         self.last_global_rotations = None  # (24, 3, 3) per-joint global rotation matrices
         self._torques_raw = None           # parent-local torque as received from smpl_torque
         self.torques_data = None           # world-frame torque (derived) used for directional muscle activation
+        self._ma_framerate = 60.0          # fps for the moment-arm axis EMA (set from config)
 
         self.ctx = None
         self.vbo = None
@@ -586,6 +587,26 @@ class MGLSMPLHeatmapNode(Node):
         self.muscle_offset_prop = self.add_option('muscle offset', widget_type='drag_float',
                                                    default_value=0.4, speed=0.01)
         self.normalize_prop = self.add_option('normalize', widget_type='checkbox', default_value=True)
+        # Tier-2 (muscle_v4 only): per-pose moment-arm axes instead of the fixed
+        # authored flex_axis. Tracks the muscle's actual line of action as the
+        # limb moves (fixes the fixed-axis error at extreme arm elevation).
+        self.moment_arm_prop = self.add_option('moment_arm_axes', widget_type='checkbox', default_value=False)
+        self.moment_arm_insert_t_prop = self.add_option('moment_arm_insert_t', widget_type='drag_float', default_value=0.15, speed=0.01)
+        # The per-pose moment-arm axis carries its own frame-to-frame jitter and
+        # degenerates when the bone runs nearly along the muscle line (lateral
+        # deltoids swing >100 deg/frame). sin_min rejects those ill-conditioned
+        # frames (hold last good axis); smooth_ms is an fps-aware EMA on the axis
+        # direction. Without these the raw moment-arm axis adds more flicker than
+        # the fixed axis it replaces on ~half the shoulder muscles.
+        self.moment_arm_sin_min_prop = self.add_option('moment_arm_sin_min', widget_type='drag_float', default_value=0.30, speed=0.01)
+        self.moment_arm_smooth_ms_prop = self.add_option('moment_arm_smooth_ms', widget_type='drag_float', default_value=25.0, speed=1.0)
+        # Leverage window (muscle_v4 only): softly fade a muscle where it has lost
+        # mechanical leverage (active/passive insufficiency near its length
+        # extremes), from the tendon-excursion moment arm |dL/dtheta|. Continuous
+        # floored envelope, never a hard gate. Default OFF (activation unchanged).
+        # First enable triggers a one-time per-joint calibration sweep.
+        self.leverage_window_prop = self.add_option('leverage_window', widget_type='checkbox', default_value=False)
+        self.leverage_window_floor_prop = self.add_option('leverage_window_floor', widget_type='drag_float', default_value=0.15, speed=0.01)
         self.emit_activations_prop = self.add_option('emit activations', widget_type='checkbox', default_value=False)
 
         self.gl_output = self.add_output('gl chain out')
@@ -720,6 +741,8 @@ class MGLSMPLHeatmapNode(Node):
                     uniform vec3 u_torques[22];      // per-joint torque vectors
                     uniform vec3 u_flex_axes[{n_muscles}]; // per-muscle flex axis
                     uniform int u_muscle_joints[{n_muscles}]; // joint index per muscle
+                    uniform float u_muscle_window[{n_muscles}]; // per-muscle leverage window [0,1]
+                    uniform int u_window_enable;     // 0 = window off (multiplier = 1)
                     uniform float u_dir_bias;
                     uniform int u_dir_bias_smooth;   // 0=hard knife-edge, 1=smooth linear
                     uniform float u_max_torque;
@@ -802,8 +825,9 @@ class MGLSMPLHeatmapNode(Node):
                                 }}
                             }}
 
+                            float win = (u_window_enable != 0) ? u_muscle_window[m] : 1.0;
                             float w = texelFetch(u_atlas, ivec2(m, vid), 0).r;
-                            intensity += w * mag;
+                            intensity += w * mag * win;
                         }}
 
                         // Normalize and clamp
@@ -993,6 +1017,124 @@ class MGLSMPLHeatmapNode(Node):
         if self.up_axis_prop() != 'Y':
             return t_raw
         return (t @ self._AXIS_PERM_BASIS.T).astype(t.dtype)   # row j: BASIS @ t[j]
+
+    def _render_frame_torques(self):
+        """Parent-local torque expressed in the render/world frame, per-frame
+        (tau_render[j] = R_parent_render[j] @ tau_local[j]). Used by the tier-2
+        moment-arm path, whose axes are computed live in the render frame; both
+        co-rotate under body yaw so activation stays facing-invariant. Root
+        (j=0) has no parent. Falls back to the tier-1 torque if rotations are
+        unavailable."""
+        t_raw = self._torques_raw
+        if t_raw is None:
+            return None
+        gr = self.last_global_rotations
+        t = np.asarray(t_raw)
+        if gr is None or t.ndim != 2 or t.shape[1] != 3:
+            return self._to_world_frame_torques(t_raw)
+        out = t.copy()
+        n = min(t.shape[0], len(gr), len(SMPL_PARENT))
+        for j in range(1, n):
+            p = SMPL_PARENT[j]
+            if 0 <= p < len(gr):
+                out[j] = (gr[p].astype(np.float64) @ t[j].astype(np.float64)).astype(t.dtype)
+        return out
+
+    def _v4_moment_arm_axes(self):
+        """Per-pose muscle action axes (M,3) in the render frame for muscle_v4.
+
+        Valid muscles: axis = (I-J) x unit(O-I), with O = posed origin-belly
+        centroid, J = joint, I = point a fraction t along the child bone. This
+        tracks the muscle's line of action as the limb moves. Invalid muscles
+        fall back to the authored flex axis converted into the render frame
+        (R_parent_render @ BASIS^T @ flex) so it matches the render-frame torque
+        used here and stays facing-invariant. Returns None if geometry missing.
+        """
+        verts = self.last_vertices
+        joints = self.last_joint_positions
+        gr = self.last_global_rotations
+        if verts is None or joints is None or gr is None:
+            return None
+        if not hasattr(self, '_v4_ma_valid') or self._v4_ma_valid is None:
+            return None
+
+        # Per-frame cache: a live frame computes the axes twice (shader draw +
+        # activation emit). Return the cached result for the same forward pass so
+        # the temporal EMA below advances exactly once per frame. last_vertices is
+        # a fresh array each forward, so identity ('is') distinguishes frames.
+        if self._v4_ma_cache is not None and self._v4_ma_last_verts is verts:
+            return self._v4_ma_cache
+
+        n_m = self._v4_prebaked_atlas.shape[1]
+        axes = np.zeros((n_m, 3), dtype=np.float32)
+        t_ins = float(self.moment_arm_insert_t_prop())
+        sin_min = float(self.moment_arm_sin_min_prop())      # degeneracy threshold
+        smooth_ms = float(self.moment_arm_smooth_ms_prop())  # axis EMA time constant
+        fps = float(getattr(self, '_ma_framerate', 60.0)) or 60.0
+        alpha = 1.0 - np.exp(-(1.0 / fps) / (smooth_ms / 1000.0)) if smooth_ms > 1e-6 else 1.0
+        Bt = self._AXIS_PERM_BASIS.T
+
+        prev = self._v4_ma_smoothed
+        if prev is None or prev.shape != (n_m, 3):
+            prev = np.zeros((n_m, 3), dtype=np.float64)
+        smoothed = prev.copy()
+
+        for m in range(n_m):
+            J = int(self._v4_muscle_joints[m])
+            if not self._v4_ma_valid[m] or J >= len(joints):
+                # invalid geometry: legacy fixed fallback (non-unit), no smoothing
+                p = SMPL_PARENT[J] if 0 <= J < len(SMPL_PARENT) else -1
+                flex = self._v4_flex_axes[m].astype(np.float64)
+                axes[m] = ((gr[p] @ (Bt @ flex)) if 0 <= p < len(gr) else (Bt @ flex)).astype(np.float32)
+                smoothed[m] = 0.0
+                continue
+
+            # Geometric candidate with a conditioning check. The axis is
+            # cross(bone, muscle_line); |cross| = |bone|*sin(angle), so when the
+            # bone runs nearly along the muscle line (small sin) the normalised
+            # axis direction is ill-conditioned and swings wildly frame-to-frame
+            # (the lateral-deltoid degeneracy). Reject those and hold the last
+            # good axis instead of admitting the swing.
+            child = int(self._v4_ma_child[m])
+            O = np.average(verts[self._v4_ma_origin_vids[m]], axis=0,
+                           weights=self._v4_ma_origin_w[m])
+            Jp = joints[J]
+            bone = t_ins * (joints[child] - Jp)      # I - Jp
+            oi = O - (Jp + bone)
+            no = np.linalg.norm(oi); nb = np.linalg.norm(bone)
+            cand = None
+            if no > 1e-9 and nb > 1e-9:
+                a = np.cross(bone, oi / no)
+                na = np.linalg.norm(a)
+                if na > 1e-9 and (na / nb) >= sin_min:
+                    cand = a / na
+
+            has_prev = np.linalg.norm(prev[m]) > 0.5
+            if cand is not None:
+                target = cand
+            elif has_prev:
+                target = prev[m]           # hold last good axis through degeneracy
+            else:
+                # cold start with untrustworthy geometry: fixed fallback (unit)
+                p = SMPL_PARENT[J] if 0 <= J < len(SMPL_PARENT) else -1
+                fb = (gr[p] @ (Bt @ self._v4_flex_axes[m].astype(np.float64))) \
+                    if 0 <= p < len(gr) else (Bt @ self._v4_flex_axes[m].astype(np.float64))
+                nf = np.linalg.norm(fb)
+                target = fb / nf if nf > 1e-9 else fb
+
+            if has_prev:
+                blend = prev[m] + alpha * (target - prev[m])
+                nbl = np.linalg.norm(blend)
+                ax = blend / nbl if nbl > 1e-9 else target
+            else:
+                ax = target
+            smoothed[m] = ax
+            axes[m] = ax.astype(np.float32)
+
+        self._v4_ma_smoothed = smoothed
+        self._v4_ma_cache = axes
+        self._v4_ma_last_verts = verts
+        return axes
 
     def _compute_normals(self, vertices, faces):
         normals = np.zeros_like(vertices)
@@ -1524,6 +1666,187 @@ class MGLSMPLHeatmapNode(Node):
         n_muscles = meta['n_muscles']
         names = meta['muscle_names']
         self._v4_muscle_names = list(names)
+        self._init_v4_moment_arm(self._v4_prebaked_atlas, self._v4_muscle_joints)
+
+    def _init_v4_moment_arm(self, atlas, joints):
+        """Precompute per-muscle data for tier-2 moment-arm axes.
+
+        origin = the muscle's atlas vertices on the PROXIMAL side of its joint
+        (dominant SMPL skinning NOT in the joint's subtree) — the muscle belly,
+        which the atlas represents well. insertion is taken at runtime as a
+        point along the child bone (the atlas has few distal-insertion verts).
+        Muscles with too small an origin cluster or no child fall back to the
+        (frame-corrected) authored flex axis.
+        """
+        n_m = atlas.shape[1]
+        self._v4_ma_origin_vids = [None] * n_m
+        self._v4_ma_origin_w = [None] * n_m
+        # Distal (insertion) atlas verts — the atlas has few of these, so they
+        # are NOT good enough for the moment-arm DIRECTION, but the origin->
+        # insertion DISTANCE (muscle length) is robust and drives the leverage
+        # window (see _v4_leverage_windows).
+        self._v4_ma_insert_vids = [None] * n_m
+        self._v4_ma_insert_w = [None] * n_m
+        self._v4_ma_child = np.full(n_m, -1, dtype=np.int32)
+        self._v4_ma_valid = np.zeros(n_m, dtype=bool)
+        skin = getattr(self, 'skinning_weights', None)
+        if skin is None:
+            return
+        # subtree membership per joint
+        def subtree(j):
+            out, stack = {j}, [j]
+            while stack:
+                c = stack.pop()
+                for k, p in enumerate(SMPL_PARENT):
+                    if p == c:
+                        out.add(k); stack.append(k)
+            return out
+        for m in range(n_m):
+            J = int(joints[m])
+            w = atlas[:, m]
+            vids = np.where(w > 0.05)[0]
+            if len(vids) < 8:
+                continue
+            child_set = subtree(J)
+            dom = skin[vids].argmax(1)
+            in_child = np.array([d in child_set for d in dom])
+            prox = vids[~in_child]
+            dist = vids[in_child]
+            if len(prox) < 5 or len(dist) < 1:
+                continue
+            # child joint for the insertion ray: the SMPL child of J (the distal
+            # bone the muscle acts across). Single child for limbs; first child
+            # for multi-child torso joints.
+            children = [k for k, p in enumerate(SMPL_PARENT) if p == J]
+            if not children:
+                continue
+            self._v4_ma_origin_vids[m] = prox
+            self._v4_ma_origin_w[m] = w[prox].astype(np.float64)
+            self._v4_ma_insert_vids[m] = dist
+            self._v4_ma_insert_w[m] = w[dist].astype(np.float64)
+            self._v4_ma_child[m] = children[0]
+            self._v4_ma_valid[m] = True
+        # Temporal-smoothing state for the moment-arm axes (see
+        # _v4_moment_arm_axes): last EMA-smoothed axis per muscle, plus a
+        # per-frame cache so a frame that computes the axes twice (shader draw +
+        # activation emit) advances the EMA only once. Cleared on (re)load.
+        self._v4_ma_smoothed = None
+        self._v4_ma_cache = None
+        self._v4_ma_last_verts = None
+        # Leverage-window calibration (per-muscle length->leverage curve); built
+        # lazily on first use, invalidated here on model (re)load.
+        self._lw_calib = None
+
+    def _lw_muscle_length(self, verts, m):
+        """Origin-centroid to insertion-centroid distance = muscle length proxy.
+        Robust (uses the well-sampled belly + whatever distal verts exist); the
+        DISTANCE is stable even where the insertion-DIRECTION is not."""
+        O = np.average(verts[self._v4_ma_origin_vids[m]], axis=0, weights=self._v4_ma_origin_w[m])
+        I = np.average(verts[self._v4_ma_insert_vids[m]], axis=0, weights=self._v4_ma_insert_w[m])
+        return float(np.linalg.norm(O - I))
+
+    def _ensure_leverage_calib(self):
+        """Lazily build the per-muscle leverage GRID.
+
+        For each joint with valid muscles, sample muscle length L on a coarse 3D
+        grid over the joint's local rotvec, take |m| = |grad_theta L| (the
+        tendon-excursion moment-arm magnitude) via grid differences, and store a
+        trilinear interpolant of |m| normalised to the muscle's 90th-percentile
+        leverage. Indexing by POSE (not by scalar length) keeps the leverage
+        direction-aware: a muscle stays at full window while it has leverage in
+        ANY direction, and only fades at true insufficiency — the scalar-length
+        version wrongly faded muscles (e.g. posterior deltoid) whose primary
+        action differed from the current motion. One-time cost (N^3 SMPL fwds per
+        joint); cached until model reload."""
+        if self._lw_calib is not None:
+            return self._lw_calib
+        if self.smpl_model is None or getattr(self, '_v4_ma_valid', None) is None:
+            return None
+        from collections import defaultdict
+        from scipy.interpolate import RegularGridInterpolator
+        by_joint = defaultdict(list)
+        for m in range(len(self._v4_ma_valid)):
+            if self._v4_ma_valid[m]:
+                by_joint[int(self._v4_muscle_joints[m])].append(m)
+        N, R = 5, 2.5
+        ax = np.linspace(-R, R, N)
+        zt = np.zeros(3, dtype=np.float32)
+        calib = {}
+        print(f"MGLSMPLHeatmapNode: building leverage-window calibration "
+              f"({len(by_joint)} joints x {N**3} poses, one-time)...")
+        for J, ms in by_joint.items():
+            if J < 1:
+                continue
+            base = 3 + (J - 1) * 3
+            Lg = {m: np.full((N, N, N), np.nan) for m in ms}
+            for ix, tx in enumerate(ax):
+                for iy, ty in enumerate(ax):
+                    for iz, tz in enumerate(ax):
+                        pose = np.zeros(72, dtype=np.float32)
+                        pose[base:base + 3] = (tx, ty, tz)
+                        res = self._run_forward(pose.reshape(24, 3), zt)
+                        verts = res[0] if res is not None else None
+                        if verts is None:
+                            continue
+                        for m in ms:
+                            Lg[m][ix, iy, iz] = self._lw_muscle_length(verts, m)
+            for m in ms:
+                g = Lg[m]
+                if not np.all(np.isfinite(g)):
+                    continue
+                gx, gy, gz = np.gradient(g, ax, ax, ax)
+                mag = np.sqrt(gx ** 2 + gy ** 2 + gz ** 2)     # |moment arm| grid
+                peak = float(np.percentile(mag, 90))            # robust peak (ignore outliers)
+                if peak < 1e-9:
+                    continue
+                norm = np.clip(mag / peak, 0.0, 1.0)
+                calib[m] = RegularGridInterpolator(
+                    (ax, ax, ax), norm, bounds_error=False, fill_value=None)
+        self._lw_calib = calib
+        print(f"MGLSMPLHeatmapNode: leverage-window calibration done ({len(calib)} muscles).")
+        return calib
+
+    def _lw_pose_aa(self):
+        """self.last_pose parsed to per-joint native axis-angle (>=24, 3), or
+        None. Mirrors the wxyz-quaternion detection in _run_forward."""
+        pose = any_to_array(self.last_pose) if self.last_pose is not None else None
+        if pose is None:
+            return None
+        pose = np.asarray(pose)
+        is_quat = (pose.ndim == 2 and pose.shape[-1] == 4) or \
+                  (pose.ndim == 1 and pose.size in (88, 96, 208))
+        if is_quat:
+            from scipy.spatial.transform import Rotation as _R
+            q = pose.reshape(-1, 4)
+            xyzw = np.empty_like(q, dtype=np.float64)
+            xyzw[:, :3] = q[:, 1:4]; xyzw[:, 3] = q[:, 0]
+            return _R.from_quat(xyzw).as_rotvec()
+        return pose.reshape(-1, 3).astype(np.float64)
+
+    def _v4_leverage_windows(self):
+        """Per-muscle leverage window W in [floor,1] for the CURRENT pose. Looks
+        up the moment-arm magnitude at the muscle's joint rotvec in the
+        calibrated grid, then a floored smoothstep envelope (soft, never a hard
+        gate). Returns (n_muscles,), 1.0 for muscles without a calibration."""
+        if getattr(self, '_v4_ma_valid', None) is None:
+            return None
+        aa = self._lw_pose_aa()
+        if aa is None:
+            return None
+        calib = self._ensure_leverage_calib()
+        if not calib:
+            return None
+        n_m = self._v4_prebaked_atlas.shape[1]
+        floor = float(self.leverage_window_floor_prop())
+        R = 2.5
+        W = np.ones(n_m, dtype=np.float32)
+        for m, interp in calib.items():
+            J = int(self._v4_muscle_joints[m])
+            rv = aa[J] if J < len(aa) else np.zeros(3)
+            q = np.clip(np.asarray(rv, dtype=np.float64), -R, R)
+            x = float(np.clip(interp([q])[0], 0.0, 1.0))
+            W[m] = floor + (1.0 - floor) * (3.0 * x * x - 2.0 * x * x * x)
+        return W
 
     def _build_v3_atlas(self, spread, edge_threshold):
         """Re-bake the atlas via subprocess with mesh smoothing + edge subtraction."""
@@ -1681,6 +2004,8 @@ class MGLSMPLHeatmapNode(Node):
             pass
 
         # Scalar uniforms
+        if 'u_window_enable' in prog:
+            prog['u_window_enable'].value = 0   # leverage window is muscle_v4 only
         if 'u_dir_bias' in prog:
             prog['u_dir_bias'].value = self.dir_bias_prop()
         if 'u_dir_bias_smooth' in prog:
@@ -1770,8 +2095,14 @@ class MGLSMPLHeatmapNode(Node):
         if 'u_emissive' in prog:
             prog['u_emissive'].value = 1.0 if self.lighting_mode_prop() == 'emissive' else 0.0
 
+        # Tier-2 moment-arm mode: use render-frame torque + per-pose axes so the
+        # muscle's line of action tracks the limb (fixes fixed-axis error at
+        # extreme elevation). Otherwise the tier-1 (frame-corrected) torque +
+        # static authored flex axes.
+        ma_axes = self._v4_moment_arm_axes() if self.moment_arm_prop() else None
+
         # Torques
-        torques = self.torques_data
+        torques = self._render_frame_torques() if ma_axes is not None else self.torques_data
         n_j = min(torques.shape[0], 22)
         padded = np.zeros((22, 3), dtype='f4')
         padded[:n_j] = torques[:n_j]
@@ -1783,9 +2114,10 @@ class MGLSMPLHeatmapNode(Node):
         # V4 flex axes and joints
         n_muscles = self._v4_prebaked_atlas.shape[1]
         n_shader = len(MUSCLE_GROUP_DEFS)
+        axes_src = ma_axes if ma_axes is not None else self._v4_flex_axes
         try:
             padded_axes = np.zeros((n_shader, 3), dtype='f4')
-            padded_axes[:n_muscles] = self._v4_flex_axes[:n_muscles]
+            padded_axes[:n_muscles] = axes_src[:n_muscles]
             prog['u_flex_axes'].write(padded_axes.tobytes())
         except Exception:
             pass
@@ -1795,6 +2127,18 @@ class MGLSMPLHeatmapNode(Node):
             prog['u_muscle_joints'].write(padded_joints.tobytes())
         except Exception:
             pass
+
+        # Leverage window (soft per-muscle attenuation near length extremes)
+        win = self._v4_leverage_windows() if self.leverage_window_prop() else None
+        if 'u_window_enable' in prog:
+            prog['u_window_enable'].value = 1 if win is not None else 0
+        if win is not None and 'u_muscle_window' in prog:
+            try:
+                padded_win = np.ones(n_shader, dtype='f4')
+                padded_win[:n_muscles] = win[:n_muscles]
+                prog['u_muscle_window'].write(padded_win.tobytes())
+            except Exception:
+                pass
 
         # Scalar uniforms
         if 'u_dir_bias' in prog:
@@ -1889,13 +2233,20 @@ class MGLSMPLHeatmapNode(Node):
         mode = self.weight_mode_prop()
         max_torque = max(self.max_torque_prop(), 0.01)
         dir_bias = self.dir_bias_prop()
-        n_j = torques.shape[0]
 
         # Select muscle definitions based on mode
         if mode == 'muscle_v4' and hasattr(self, '_v4_prebaked_atlas') and self._v4_prebaked_atlas is not None:
             names = getattr(self, '_v4_muscle_names', [])
             joints = self._v4_muscle_joints
             flex_axes = self._v4_flex_axes
+            # tier-2: per-pose axes + render-frame torque (match the shader path)
+            if self.moment_arm_prop():
+                ma = self._v4_moment_arm_axes()
+                if ma is not None:
+                    flex_axes = ma
+                    rt = self._render_frame_torques()
+                    if rt is not None:
+                        torques = rt
         elif mode == 'muscle_v3' and hasattr(self, '_v3_prebaked_atlas') and self._v3_prebaked_atlas is not None:
             names = getattr(self, '_v3_muscle_names', [])
             joints = self._v3_muscle_joints
@@ -1907,7 +2258,12 @@ class MGLSMPLHeatmapNode(Node):
             flex_axes = self._v2_flex_axes if hasattr(self, '_v2_flex_axes') and self._v2_flex_axes is not None else np.zeros((len(names), 3))
 
         n_muscles = len(names)
+        n_j = torques.shape[0]
         result = {}
+
+        # Leverage window (muscle_v4 only): soft attenuation near length extremes.
+        win = (self._v4_leverage_windows()
+               if mode == 'muscle_v4' and self.leverage_window_prop() else None)
 
         for i in range(n_muscles):
             j = int(joints[i]) if i < len(joints) else 0
@@ -1931,7 +2287,10 @@ class MGLSMPLHeatmapNode(Node):
                     else:
                         mag = tau_mag * (1.0 - dir_bias + dir_bias * max(0.0, flex) * 2.0)
 
-            result[names[i]] = float(np.clip(mag / max_torque, 0.0, 1.0))
+            act = float(np.clip(mag / max_torque, 0.0, 1.0))
+            if win is not None and i < len(win):
+                act *= float(win[i])
+            result[names[i]] = act
 
         return result
 
@@ -2078,6 +2437,15 @@ class MGLSMPLHeatmapNode(Node):
 
     def _apply_config(self, config):
         needs_reload = False
+
+        fr = config.get('framerate', None)
+        if fr is not None:
+            try:
+                fr = float(np.asarray(fr).reshape(-1)[0])
+                if fr > 1.0:
+                    self._ma_framerate = fr
+            except (ValueError, TypeError, IndexError):
+                pass
 
         gender = config.get('gender', None)
         if gender is not None:
@@ -2263,6 +2631,8 @@ class MGLSMPLHeatmapNode(Node):
                     prog[mj_key].value = int(self.muscle_joints[m])
 
         # Scalar uniforms
+        if 'u_window_enable' in prog:
+            prog['u_window_enable'].value = 0   # leverage window is muscle_v4 only
         if 'u_dir_bias' in prog:
             prog['u_dir_bias'].value = self.dir_bias_prop()
         if 'u_dir_bias_smooth' in prog:

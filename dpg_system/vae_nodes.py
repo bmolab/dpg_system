@@ -705,10 +705,14 @@ class VPoserNode(Node):
         # self.forward_in = self.add_input('forward in', triggers_execution=True)
         self.latent_in = self.add_input('latent in', triggers_execution=True)
 
+        # default checked: vposer historically always decoded the mean
+        self.sample_or_mean_in = self.add_input('mean of dist', widget_type='checkbox', default_value=True)
+        self.pass_root = self.add_input('pass root orientation', widget_type='checkbox')
+
         self.model_path_in = self.add_input('model path', callback=self.load_model)
         self.latents_out = self.add_output('latents out')
         self.decoded_out = self.add_output('decoded out')
-
+        self.default_root = torch.tensor([[0.0, 0.0, 0.0]], device=self.device)
         self.dataloader = None
         self.optimizer = None
         config = vposer_config(self.num_neurons, self.latent_dim)
@@ -726,6 +730,7 @@ class VPoserNode(Node):
             print(f'VPoserNode: failed to load model from {path}: {e}')
 
     def execute(self):
+        self.model.calc_mean = self.sample_or_mean_in()
         if self.active_input == self.latent_in:
             self.decode_input()
         elif self.active_input == self.input_in:
@@ -737,6 +742,7 @@ class VPoserNode(Node):
         with torch.no_grad():
             data = self.input_in()
             t = type(data)
+            root_data = None
             if t == torch.Tensor:
                 data = data.to(device=self.device, dtype=torch.float32)
             elif t == np.ndarray:
@@ -744,11 +750,19 @@ class VPoserNode(Node):
             else:
                 data = any_to_tensor(data, self.device, torch.float32)
 
+            if data.shape[0] == 22:
+                root_data = data[0].clone().unsqueeze(0)
+                data = data[1:]
             try:
                 data = data.view(-1, self.input_dim)
                 results = self.model(data)
+                decoded = results['pose_body'][0]
+                if root_data is not None and self.pass_root():
+                    decoded = torch.cat([root_data, decoded], dim=0)
+                else:
+                    decoded = torch.cat([self.default_root, decoded], dim=0)
                 self.latents_out.send(results['q_z_sample'])
-                self.decoded_out.send(results['pose_body'])
+                self.decoded_out.send(decoded)
             except Exception as e:
                 print(e)
 
@@ -768,8 +782,10 @@ class VPoserNode(Node):
             try:
                 data = data.view(-1, self.latent_dim)
                 output = self.model.decode(data)
+                decoded = output['pose_body'][0]
+                decoded = torch.cat([self.default_root, decoded], dim=0)
                 self.latents_out.send(data)
-                self.decoded_out.send(output['pose_body'])
+                self.decoded_out.send(decoded)
             except Exception as e:
                 print(e)
             # data should be in shape(<batch>, <input_dim>)
@@ -823,6 +839,7 @@ class VPoser(nn.Module):
             self.device = torch.device('mps')
         self.num_joints = 21
         n_features = self.num_joints * 3
+        self.calc_mean = True
 
         self.encoder_net = nn.Sequential(
             BatchFlatten(),
@@ -873,7 +890,10 @@ class VPoser(nn.Module):
         '''
         with torch.no_grad():
             q_z = self.encode(pose_body)
-            q_z_sample = q_z.mean  # q_z.rsample()  #  #
+            if self.calc_mean:
+                q_z_sample = q_z.mean
+            else:
+                q_z_sample = q_z.rsample()
             decode_results = self.decode(q_z_sample)
             decode_results.update({'poZ_body_mean': q_z.mean, 'poZ_body_std': q_z.scale, 'q_z': q_z, 'q_z_sample': q_z_sample})
         return decode_results

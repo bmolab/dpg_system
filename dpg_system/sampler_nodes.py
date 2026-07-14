@@ -11,6 +11,7 @@ import platform
 import numpy as np
 import threading
 import os
+import json
 import torchaudio
 import math
 import time
@@ -28,6 +29,7 @@ def register_sampler_nodes():
     Node.app.register_node('scratch_sampler', ScratchSamplerNode.factory)
     Node.app.register_node('crossfade_scanner', CrossfadeScannerNode.factory)
     Node.app.register_node('muscle_activation_fader', MuscleActivationFaderNode.factory)
+    Node.app.register_node('effort_fader', EffortFaderNode.factory)
 
 
 class SamplerEngineNode(Node):
@@ -981,6 +983,8 @@ class PolyphonicSamplerNode(Node):
         self.trigger_input = self.add_input('trigger', callback=self.on_trigger)
         self.stop_input = self.add_input('stop', callback=self.on_stop)
         self.load_input = self.add_input('load', widget_type='button', callback=self.on_load)
+        self.load_set_input = self.add_input('load_set', widget_type='button', callback=self.on_load_set)
+        self.message_handlers['load_set'] = self._load_set_message
         
         # Helper props
         self.voice_range_start = self.add_property('start_voice', widget_type='input_int', default_value=64, callback=self.on_config_change)
@@ -2789,3 +2793,181 @@ class MuscleActivationFaderNode(Node):
     def load_custom(self, container):
         if 'muscle_to_sid' in container:
             self.muscle_to_sid = {str(k): int(v) for k, v in container['muscle_to_sid'].items()}
+
+
+class EffortFaderNode(Node):
+    """
+    Converts the smpl_torque node's 'combined_effort' output into a fade list
+    [[sid, level], ...] for the PolyphonicSamplerNode 'fade' input. combined_effort
+    is (J, 3) per-joint effort vectors whose magnitude is capacity-relative
+    (fraction of max torque). Modes:
+      'magnitude'         one fader per joint: the vector norm.
+                          sid = start_sid + joint
+      'components'        three faders per joint: |component| per axis.
+                          sid = start_sid + joint * 3 + axis
+      'signed components' six faders per joint: each axis splits into a
+                          positive and a negative fader (x+, x-, y+, y-, z+, z-),
+                          since torque direction along an axis is a distinct
+                          kind of engagement.
+                          sid = start_sid + joint * 6 + axis * 2 + (0 pos / 1 neg)
+    A 1-D input of per-joint scalars is accepted (signed mode then yields two
+    faders per joint). Levels are shaped by threshold/curve/gain before being
+    emitted. If top_n > 0, the strongest excluded level (the (n+1)th) is
+    subtracted from all levels as a 0 baseline, so at most n voices sound and
+    faders enter/leave the top n continuously through 0.
+    Output is sparse: a fader is sent while nonzero, sends a single 0.0 the
+    frame it falls silent (so the voice stops), and is then omitted until it
+    becomes active again.
+    """
+    SMPL_JOINT_NAMES = [
+        'pelvis', 'left_hip', 'right_hip', 'spine1', 'left_knee', 'right_knee',
+        'spine2', 'left_ankle', 'right_ankle', 'spine3', 'left_foot', 'right_foot',
+        'neck', 'left_collar', 'right_collar', 'head', 'left_shoulder', 'right_shoulder',
+        'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist', 'left_hand', 'right_hand'
+    ]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = EffortFaderNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.last_input_time = 0.0
+        self.last_sent_nonzero = False
+        self.last_sid_count = 0
+        self.prev_levels = None  # last sent (rounded) levels, for sparse output
+
+        self.effort_input = self.add_input('effort', callback=self.on_effort)
+        self.mode_input = self.add_input('mode', widget_type='combo', default_value='magnitude', callback=self.on_mode_change)
+        self.mode_input.widget.combo_items = ['magnitude', 'components', 'signed components']
+        self.start_sid_input = self.add_input('start_sid', widget_type='input_int', default_value=0)
+        self.gain_input = self.add_input('gain', widget_type='drag_float', default_value=1.0, min=0.0, max=10.0)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=0.0, min=0.0, max=1.0)
+        self.curve_input = self.add_input('curve', widget_type='drag_float', default_value=1.0, min=0.1, max=4.0)
+        self.top_n_input = self.add_input('top_n', widget_type='input_int', default_value=0, min=0)
+        self.stale_timeout_input = self.add_input('stale_timeout', widget_type='drag_float', default_value=0.25, min=0.0, max=5.0)
+
+        self.fade_out = self.add_output('fade')
+        self.mapping_out = self.add_output('mapping')
+
+    def _joint_name(self, index):
+        if index < len(self.SMPL_JOINT_NAMES):
+            return self.SMPL_JOINT_NAMES[index]
+        return 'joint_' + str(index)
+
+    def on_mode_change(self):
+        # Zero out any still-active faders so no voices are left hanging when
+        # the sid assignments change, then force the mapping to re-emit.
+        self._send_zeros_for_active()
+        self.last_sid_count = 0
+        self.prev_levels = None
+
+    def _send_zeros_for_active(self):
+        if self.last_sid_count <= 0:
+            return
+        base = int(self.start_sid_input())
+        if self.prev_levels is not None and len(self.prev_levels) == self.last_sid_count:
+            zero_list = [[base + i, 0.0] for i in range(self.last_sid_count) if self.prev_levels[i] > 0.0]
+        else:
+            zero_list = [[base + i, 0.0] for i in range(self.last_sid_count)]
+        if zero_list:
+            self.fade_out.send(zero_list)
+
+    def on_effort(self):
+        data = self.effort_input()
+        efforts = any_to_array(data)
+        if efforts is None or efforts.size == 0:
+            return
+        efforts = np.atleast_1d(np.asarray(efforts, dtype=np.float64))
+        if efforts.ndim > 2:
+            efforts = efforts.reshape(-1, efforts.shape[-1])
+
+        mode = self.mode_input()
+        if efforts.ndim == 2:
+            axes = ('x', 'y', 'z')[:efforts.shape[1]]
+            if mode == 'components':
+                names = [self._joint_name(j) + '_' + axis
+                         for j in range(efforts.shape[0]) for axis in axes]
+                efforts = np.abs(efforts).ravel()
+            elif mode == 'signed components':
+                names = [self._joint_name(j) + '_' + axis + sign
+                         for j in range(efforts.shape[0]) for axis in axes for sign in ('+', '-')]
+                pos = np.clip(efforts, 0.0, None)
+                neg = np.clip(-efforts, 0.0, None)
+                efforts = np.stack([pos, neg], axis=-1).ravel()
+            else:
+                names = [self._joint_name(j) for j in range(efforts.shape[0])]
+                efforts = np.linalg.norm(efforts, axis=-1)
+        else:
+            # Per-joint scalars; only sign can be split.
+            if mode == 'signed components':
+                names = [self._joint_name(j) + sign
+                         for j in range(efforts.shape[0]) for sign in ('+', '-')]
+                pos = np.clip(efforts, 0.0, None)
+                neg = np.clip(-efforts, 0.0, None)
+                efforts = np.stack([pos, neg], axis=-1).ravel()
+            else:
+                names = [self._joint_name(j) for j in range(efforts.shape[0])]
+                efforts = np.abs(efforts)
+
+        base = int(self.start_sid_input())
+        gain = float(self.gain_input())
+        thresh = float(self.threshold_input())
+        curve = float(self.curve_input())
+
+        levels = efforts
+        if curve != 1.0:
+            levels = levels ** curve
+        levels = np.minimum(levels * gain, 1.0)
+        levels[efforts < thresh] = 0.0
+
+        # Restrict to the n strongest: subtract the strongest excluded level
+        # as a 0 baseline so faders cross into/out of the top n continuously.
+        top_n = int(self.top_n_input())
+        if 0 < top_n < len(levels):
+            baseline = np.partition(levels, -(top_n + 1))[-(top_n + 1)]
+            if baseline > 0.0:
+                levels = np.maximum(levels - baseline, 0.0)
+
+        levels = np.round(levels, 4)
+        any_nonzero = bool(np.any(levels > 0.0))
+
+        # Sparse output: send nonzero levels, plus one 0.0 for each fader that
+        # just fell silent; faders that stay at zero are omitted.
+        prev = self.prev_levels
+        if prev is None or len(prev) != len(levels):
+            prev = np.zeros(len(levels))
+        fade_list = []
+        for i, a in enumerate(levels):
+            a = float(a)
+            if a > 0.0 or prev[i] > 0.0:
+                fade_list.append([base + i, a])
+        self.prev_levels = levels
+
+        if fade_list:
+            self.fade_out.send(fade_list)
+        if len(efforts) != self.last_sid_count:
+            self.last_sid_count = len(efforts)
+            self.mapping_out.send({names[i]: base + i for i in range(len(efforts))})
+
+        self.last_input_time = time.time()
+        self.last_sent_nonzero = any_nonzero
+        if any_nonzero:
+            # Watch for the source going silent so we can release voices.
+            self.add_frame_task()
+
+    def frame_task(self):
+        if not self.last_sent_nonzero:
+            self.remove_frame_tasks()
+            return
+        timeout = float(self.stale_timeout_input())
+        if (time.time() - self.last_input_time) < timeout:
+            return
+        # Source has gone silent while voices were still up. Emit one zero
+        # for each fader still active so auto_stop can fire.
+        self._send_zeros_for_active()
+        self.prev_levels = None
+        self.last_sent_nonzero = False
+        self.remove_frame_tasks()
