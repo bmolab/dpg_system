@@ -561,7 +561,7 @@ class MGLSMPLHeatmapNode(Node):
         self.gender_prop = self.add_input('gender', widget_type='combo', default_value='male')
         self.gender_prop.widget.combo_items = ['male', 'female']
         self.model_path_prop = self.add_input('model_path', widget_type='text_input',
-                                                  default_value='dpg_system/')
+                                                  default_value='assets/')
         self.up_axis_prop = self.add_input('up_axis', widget_type='combo', default_value='Y')
         self.up_axis_prop.widget.combo_items = ['Y', 'Z']
 
@@ -627,7 +627,7 @@ class MGLSMPLHeatmapNode(Node):
 
         gender_map = {'male': 'MALE', 'female': 'FEMALE'}
         g_tag = gender_map.get(self.gender_prop(), 'MALE')
-        model_path = self.model_path_prop() or 'dpg_system/'
+        model_path = self.model_path_prop() or 'assets/'
 
         try:
             self.smpl_model = smplx.create(
@@ -1858,7 +1858,7 @@ class MGLSMPLHeatmapNode(Node):
         
         model_path = self.model_path_prop()
         if not model_path:
-            model_path = 'dpg_system/'  # fallback
+            model_path = 'assets/'  # fallback
 
         import sys
         cmd = [

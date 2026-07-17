@@ -56,7 +56,7 @@ class MGLSMPLMeshNode(MGLShapeNode):
         self.opacity_prop = self.add_property('opacity', widget_type='drag_float',
                                               default_value=1.0)
         self.model_path_prop = self.add_property('model_path', widget_type='text_input',
-                                                  default_value='dpg_system/')
+                                                  default_value='assets/')
         self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
         self.up_axis_prop.widget.combo_items = ['Y', 'Z']
         # Config input: dict with {gender, betas, mocap_framerate} from NPZ
@@ -82,7 +82,7 @@ class MGLSMPLMeshNode(MGLShapeNode):
         
         gender_map = {'male': 'MALE', 'female': 'FEMALE'}
         g_tag = gender_map.get(self.gender_prop(), 'MALE')
-        model_path = self.model_path_prop() or 'dpg_system/'
+        model_path = self.model_path_prop() or 'assets/'
         
         try:
             self.smpl_model = smplx.create(
