@@ -1657,7 +1657,7 @@ class NumpyEditNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.dim_list = None
-        self.value = 0
+        self.value = None
         index_string = ''
         self.edited_array = None
         for i in range(len(args)):
@@ -1690,6 +1690,10 @@ class NumpyEditNode(Node):
         dpg.set_item_width(self.edit_values_input.widget.uuid, w)
 
     def edit_section_changed(self):
+        self.parse_indices()
+        self.edit_array_and_output()
+
+    def parse_indices(self):
         dim_text = any_to_string(self.indices_input())
 
         dim_split = dim_text.split(',')
@@ -1719,7 +1723,6 @@ class NumpyEditNode(Node):
             dimmers.append(dim_nums)
 
         self.dim_list = dimmers
-        self.edit_array_and_output()
 
     def edit_value_changed(self):
         self.value = self.edit_values_input()
@@ -1729,7 +1732,7 @@ class NumpyEditNode(Node):
         input_array = any_to_array(self.input())
         if input_array is not None:
             if self.dim_list is None:
-                self.edit_section_changed()
+                self.parse_indices()
             if len(self.dim_list) == 0:
                 self.output.send(input_array)
             else:
@@ -1737,8 +1740,17 @@ class NumpyEditNode(Node):
                 self.edit_array_and_output()
 
     def edit_array_and_output(self):
+        if self.in_loading_process:
+            return
+        if self.dim_list is None:
+            self.parse_indices()
         if self.edited_array is None:
-            self.edited_array = any_to_array(self.input())
+            input_array = any_to_array(self.input())
+            if input_array is None:
+                return
+            self.edited_array = input_array.copy()
+        if self.value is None:
+            self.value = self.edit_values_input()
         dim_list_now = []
         if len(self.dim_list) <= len(self.edited_array.shape):
             for i in range(len(self.dim_list)):
@@ -1758,7 +1770,7 @@ class NumpyEditNode(Node):
             value_array = None
             if isinstance(self.value, str):
                 self.value = string_to_array(self.value)
-            if isinstance(self.value, float):
+            if isinstance(self.value, (int, float)):
                 if len(dim_list_now) == 2:
                     self.edited_array[dim_list_now[0]:dim_list_now[1]] = self.value
                 elif len(dim_list_now) == 4:
