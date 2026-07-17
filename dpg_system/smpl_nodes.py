@@ -47,6 +47,7 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_pose_adjust", SMPLPoseAdjustNode.factory)
     Node.app.register_node("smpl_mag_yaw_correct", SMPLMagYawCorrectionNode.factory)
     Node.app.register_node("quats_flip_y_z", QuatFlipYZAxesNode.factory)
+    Node.app.register_node("smpl_trans_to_y_up", SMPLTransToYUpNode.factory)
     Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)
     Node.app.register_node("smpl_beta_editor", SMPLBetaEditorNode.factory)
     Node.app.register_node("shadow_to_smpl", ShadowToSMPLNode.factory)
@@ -1950,6 +1951,33 @@ class QuatFlipYZAxesNode(Node):
         # Convert the resulting Rotation object back to a quaternion numpy array
         original_quats[self.rotate_joint] = new_rot.as_quat(scalar_first=True)
         self.quats_output.send(original_quats)
+
+class SMPLTransToYUpNode(Node):
+    """
+    Convert an SMPL root translation from SMPL's Z-up frame to a normal Y-up
+    frame: [x, y, z] -> [x, z, -y].  This is the same conversion smpl_torque
+    applies by default (axis_permutation 'x, z, -y').  Accepts a single
+    [x, y, z] vector or an (F, 3) array of frames; extra trailing components
+    beyond the first 3 are passed through unchanged.
+    """
+    @staticmethod
+    def factory(name, data, args=None):
+        return SMPLTransToYUpNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.trans_input = self.add_input('z-up trans', triggers_execution=True)
+        self.trans_output = self.add_output('y-up trans')
+
+    def execute(self):
+        trans = any_to_array(self.trans_input()).astype(np.float64)
+        if trans.shape[-1] < 3:
+            return
+        out = trans.copy()
+        out[..., 1] = trans[..., 2]
+        out[..., 2] = -trans[..., 1]
+        self.trans_output.send(out)
+
 
 class SMPLTorqueNode(SMPLNode):
     @staticmethod
