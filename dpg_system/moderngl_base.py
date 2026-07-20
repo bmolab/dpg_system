@@ -1130,6 +1130,12 @@ class MGLContext:
         self.point_shader    = None
         self.current_shader  = None
 
+        # GL objects queued for release at the next render block. Node deletion
+        # runs from DPG handler callbacks (worker thread, no GL context current),
+        # so releasing there segfaults — nodes must defer_release() instead.
+        self._pending_releases = []
+        self._pending_releases_lock = threading.Lock()
+
         if self._gl_initialized:
             # macOS/Windows: GL context exists, do full init now.
             self._gl_init(init_width, init_height, init_samples)
@@ -1410,6 +1416,25 @@ class MGLContext:
     #  On Linux: no context switching — we share DPG's GLFW context.    #
     #  On macOS/Windows: uses NativeGLContextManager + pyglet.          #
     # ------------------------------------------------------------------ #
+    def defer_release(self, *objs):
+        """Queue moderngl objects for release at the start of the next render
+        block, when the GL context is guaranteed current on the render thread."""
+        with self._pending_releases_lock:
+            for obj in objs:
+                if obj is not None:
+                    self._pending_releases.append(obj)
+
+    def _drain_pending_releases(self):
+        if not self._pending_releases:
+            return
+        with self._pending_releases_lock:
+            pending, self._pending_releases = self._pending_releases, []
+        for obj in pending:
+            try:
+                obj.release()
+            except Exception:
+                pass
+
     def __enter__(self):
         if sys.platform.startswith('linux'):
             # Lazy-init: wrap DPG's current context if we haven't yet.
@@ -1425,6 +1450,8 @@ class MGLContext:
                     self._gl_init()
             self._native_cm = NativeGLContextManager(self._pyglet_window)
             self._native_cm.__enter__()
+        if self.ctx is not None:
+            self._drain_pending_releases()
         return self
 
     def __exit__(self, *args):

@@ -1,5 +1,6 @@
 import os
 import logging
+import threading
 import traceback
 import numpy as np
 from dpg_system.node import Node
@@ -1072,7 +1073,13 @@ class MGLBodyNode(MGLNode):
                 self._last_limb_data = limb_data
                 self._apply_limb_lengths(limb_data)
 
-        if self.mgl_input.fresh_input:
+        # Main thread only: a pose/orientation frame arriving on a streaming
+        # thread triggers execute() and can race the main-thread gl chain,
+        # which has just set mgl_input.fresh_input. Consuming the 'draw' here
+        # would run this node's GL - and, via the forward below, the whole
+        # downstream chain's - on the streaming thread with no GL context
+        # current, segfaulting in libGL (see MGLNode.execute).
+        if self.mgl_input.fresh_input and threading.current_thread() is threading.main_thread():
             msg = self.mgl_input()
             if msg == 'draw':
                 self.ctx = MGLContext.get_instance()

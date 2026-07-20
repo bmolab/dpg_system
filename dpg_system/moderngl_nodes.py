@@ -69,6 +69,14 @@ class MGLNode(Node):
         self.mgl_output = self.add_output('mgl chain out')
 
     def execute(self):
+        # GL work must stay on the main thread. A data input (points, pose,
+        # contacts...) can trigger execute() on a streaming thread just as the
+        # main-thread gl chain sets mgl_input.fresh_input; consuming the
+        # 'draw' here would run draw() off-thread with no GL context current
+        # and segfault in libGL. Leave the message unconsumed - the gl chain's
+        # own main-thread trigger processes it immediately after.
+        if threading.current_thread() is not threading.main_thread():
+            return
         if self.mgl_input.fresh_input:
             input_list = self.mgl_input()
             do_draw = False
@@ -300,6 +308,11 @@ class MGLContextNode(Node):
         # Pre-allocated pixel buffer for zero-allocation readback
         self._pixel_buf = None
 
+        # Set when execute() is triggered off the main thread (e.g. a mocap
+        # receive/playback thread banging 'render'); the frame task performs
+        # the actual render on the main thread on the next tick.
+        self._render_requested = False
+
         self.auto_render_input = self.add_input('auto_render', widget_type='checkbox', default_value=False, callback=self.toggle_auto_render)
         self.render_trigger = self.add_input('render', triggers_execution=True)
         self.mgl_chain_output = self.add_output('mgl_chain')
@@ -339,10 +352,10 @@ class MGLContextNode(Node):
 
 
     def toggle_auto_render(self):
-        if self.auto_render_input():
-            self.add_frame_task()
-        else:
-            self.remove_frame_tasks()
+        # The frame task is always registered (it also services renders
+        # deferred from off-main-thread triggers); frame_task reads
+        # auto_render directly, so there is nothing to toggle here.
+        pass
 
     # --- UI event capture for the DPG-window (readback) display path ---
     # DPG handlers are global, so each callback gates on this node's display
@@ -460,13 +473,16 @@ class MGLContextNode(Node):
             )
 
     def custom_create(self, from_file):
-        if from_file and self.auto_render_input():
-            self.add_frame_task()
+        # Always registered: renders auto_render frames and replays renders
+        # requested from off-main threads (GL work must stay on this thread).
+        self.add_frame_task()
         self.camera_fov_option.widget.set_speed(1.0)
         self._ensure_texture()
 
     def frame_task(self):
-        self.execute()
+        if self._render_requested or self.auto_render_input():
+            self._render_requested = False
+            self.execute()
 
     def custom_cleanup(self):
         self.remove_frame_tasks()
@@ -686,6 +702,15 @@ class MGLContextNode(Node):
                 self.fullscreen_window = None
 
     def execute(self):
+        # GL calls are only valid on the main thread (the GL context is
+        # current there; moderngl is not thread-safe). A trigger arriving on
+        # any other thread - e.g. a mocap streaming chain banging 'render' -
+        # latches a request that frame_task replays on the main thread next
+        # tick. Rendering off-thread segfaults in libGL (glUseProgram /
+        # glDeleteBuffers) at unpredictable moments.
+        if threading.current_thread() is not threading.main_thread():
+            self._render_requested = True
+            return
         # GL context creation is deferred when the node was created off the
         # main thread (Cocoa constraint); skip rendering until the main loop's
         # frame task can create it.
@@ -1459,8 +1484,9 @@ class MGLTextureNode(MGLNode):
         if self.texture:
             self.texture_output.send(self.texture)
 
-        # Handle Chain Propagation
-        if self.mgl_input.fresh_input:
+        # Handle Chain Propagation (main thread only - a racing consume here
+        # would forward 'draw' onto a streaming thread; see MGLNode.execute)
+        if self.mgl_input.fresh_input and threading.current_thread() is threading.main_thread():
             msg = self.mgl_input()
             self.mgl_output.send(msg)
 
@@ -3839,14 +3865,14 @@ class MGLOrientationDisksNode(MGLNode):
                     self.colors[i] = val.astype(np.float32)
 
     def _invalidate_ring(self):
-        """Called when slices or ring_width change — forces ring rebuild."""
+        """Called when slices or ring_width change — forces ring rebuild.
+        Widget callback: no GL context current here, so defer the release."""
+        ctx = MGLContext._instance
+        if ctx is not None:
+            ctx.defer_release(self._vao, self._ring_vbo, self._ring_ibo)
         self._vao = None
-        if self._ring_vbo is not None:
-            self._ring_vbo.release()
-            self._ring_vbo = None
-        if self._ring_ibo is not None:
-            self._ring_ibo.release()
-            self._ring_ibo = None
+        self._ring_vbo = None
+        self._ring_ibo = None
 
     def _get_shader(self):
         """Instanced shader: per-vertex position from unit ring, per-instance
@@ -4066,11 +4092,19 @@ class MGLOrientationDisksNode(MGLNode):
         inner_ctx.enable(moderngl.CULL_FACE)
 
     def custom_cleanup(self):
-        for buf in (self._ring_vbo, self._ring_ibo, self._inst_vbo):
-            if buf is not None:
-                buf.release()
-        if self._vao is not None:
-            self._vao.release()
+        # Deletion runs from a DPG handler callback with no GL context current;
+        # releasing here segfaults. Hand the objects to the context to release
+        # at the start of its next render block. (_instance, not get_instance():
+        # never create a context during teardown.)
+        ctx = MGLContext._instance
+        if ctx is not None:
+            ctx.defer_release(self._vao, self._ring_vbo, self._ring_ibo,
+                              self._inst_vbo, self._shader)
+        self._vao = None
+        self._ring_vbo = None
+        self._ring_ibo = None
+        self._inst_vbo = None
+        self._shader = None
 
     def save_custom(self, container):
         for i in range(self.count):

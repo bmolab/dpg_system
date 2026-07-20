@@ -1,5 +1,6 @@
 import os
 import math
+import threading
 import numpy as np
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -2502,8 +2503,10 @@ class MGLSMPLHeatmapNode(Node):
         # T-pose, while staying facing-invariant. Magnitude-only modes unchanged.
         self.torques_data = self._to_world_frame_torques(self._torques_raw)
 
-        # Handle gl chain 'draw' message
-        if self.gl_input.fresh_input:
+        # Handle gl chain 'draw' message. Main thread only: consuming a
+        # racing 'draw' on a streaming thread would run GL calls with no
+        # context current and segfault (see MGLNode.execute).
+        if self.gl_input.fresh_input and threading.current_thread() is threading.main_thread():
             msg = self.gl_input()
             do_draw = False
             if isinstance(msg, str) and msg == 'draw':
