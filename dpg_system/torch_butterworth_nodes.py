@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from dpg_system.torch_base_nodes import TorchDeviceDtypeNode
+from dpg_system.rotation_band_pipeline import RotationBandPipeline
 import scipy
 
 # import torch_kf
@@ -25,6 +26,7 @@ def register_torch_butterworth_nodes():
     Node.app.register_node("t.hybrid_quat_kf", TorchHybridQuaternionKFNode.factory)
     Node.app.register_node("t.persistence_quat_kf", TorchPersistenceKFNode.factory)
     Node.app.register_node("t.jerk_aware_quat_kf", TorchJerkAwareQuatKFNode.factory)
+    Node.app.register_node("t.rotation_band_diff", TorchRotationBandDiffNode.factory)
 
 
 # class TorchKalmanFilterNode(TorchDeviceDtypeNode):
@@ -242,6 +244,157 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         # skip the send rather than pushing None downstream.
         if signal_out is not None:
             self.output.send(signal_out)
+
+
+class TorchRotationBandDiffNode(TorchDeviceDtypeNode):
+    """Wraps RotationBandPipeline: per-joint rotations in (axis-angle or
+    quaternion), gain-scaled per-band axis-angle rotation differences out,
+    shaped [num_joints, num_bands, 3]."""
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRotationBandDiffNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.setup_dtype_device_grad(args)
+        self.dtype = torch.float32
+        self.pipeline = None
+        self.band_gains = None  # None -> RotationBandPipeline default ladder
+        self.device_mismatch_warned = False
+
+        self.input = self.add_input('rotations', triggers_execution=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
+        self.input_format_property = self.add_property('input format', widget_type='combo', default_value='auto', callback=self.params_changed)
+        self.input_format_property.widget.combo_items = ['auto', 'axis-angle', 'quaternion']
+        self.sample_frequency_property = self.add_property('sample freq', widget_type='drag_float', default_value=60.0, callback=self.params_changed)
+        self.num_bands_property = self.add_property('number of bands', widget_type='input_int', default_value=8, callback=self.params_changed)
+        self.low_cut_property = self.add_property('low', widget_type='drag_float', default_value=0.01, callback=self.params_changed)
+        self.high_cut_property = self.add_property('high', widget_type='drag_float', default_value=8.0, callback=self.params_changed)
+        self.order_property = self.add_property('order', widget_type='input_int', default_value=1, min=1, max=8, callback=self.params_changed)
+        self.band_scaling_property = self.add_property('band scaling', widget_type='combo', default_value='log', callback=self.params_changed)
+        self.band_scaling_property.widget.combo_items = ['log', 'linear']
+        self.overlap_property = self.add_property('overlap fraction', widget_type='drag_float', default_value=0.0, callback=self.params_changed)
+        self.output = self.add_output('banded rotation diffs')
+        self.create_dtype_device_grad_properties(option=True)
+        self.message_handlers['band_gains'] = self.band_gains_message
+        self.message_handlers['report_bands'] = self.report_bands
+
+    def custom_create(self, from_file):
+        self.params_changed()
+
+    def params_changed(self):
+        if self.sample_frequency_property() <= 0:
+            print(f'{self.label}: sample frequency must be > 0, got {self.sample_frequency_property()}')
+            self.pipeline = None
+            return
+        if self.low_cut_property() <= 0:
+            print(f'{self.label}: low cutoff must be > 0, got {self.low_cut_property()}')
+            self.pipeline = None
+            return
+        if self.num_bands_property() < 1:
+            print(f'{self.label}: number of bands must be >= 1, got {self.num_bands_property()}')
+            self.pipeline = None
+            return
+        try:
+            gains = self.band_gains
+            num_output_bands = max(1, self.num_bands_property() - 1)
+            if gains is not None and len(gains) != num_output_bands:
+                print(f'{self.label}: dropping {len(gains)} band gains for {num_output_bands} bands, reverting to default gains')
+                gains = None
+                self.band_gains = None
+            # build fully, then swap atomically - execute() may be running on
+            # a streaming thread and must only ever see a complete pipeline
+            new_pipeline = RotationBandPipeline(
+                sample_frequency=self.sample_frequency_property(),
+                num_bands=self.num_bands_property(),
+                low_cut=self.low_cut_property(),
+                high_cut=self.high_cut_property(),
+                order=self.order_property(),
+                band_scaling=self.band_scaling_property(),
+                overlap=self.overlap_property(),
+                band_gains=gains,
+                device=self.device, dtype=self.dtype)
+            self.pipeline = new_pipeline
+        except Exception as e:
+            print(f'{self.label}: failed to build pipeline: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            self.pipeline = None
+
+    def device_changed(self):
+        super().device_changed()
+        self.params_changed()
+
+    def reset(self):
+        if self.pipeline is not None:
+            self.pipeline.reset()
+
+    def band_gains_message(self, command, data):
+        gains = any_to_list(data)
+        try:
+            self.band_gains = [float(g) for g in gains]
+        except (TypeError, ValueError):
+            print(f'{self.label}: band_gains expects a list of numbers, got {data}')
+            return
+        self.params_changed()
+
+    def report_bands(self, command, data):
+        if self.pipeline is None:
+            return
+        for index, band in enumerate(self.pipeline.bands):
+            band_center = float(band[0] + band[1]) / 2
+            print(index, float(band[0]), float(band_center), float(band[1]))
+
+    def shape_rotations(self, data):
+        # flat vectors (e.g. an SMPL pose) need joint structure before the
+        # pipeline can tell axis-angle from quaternion
+        if data.ndim >= 2:
+            return data
+        width = data.shape[-1]
+        input_format = self.input_format_property()
+        if input_format == 'axis-angle':
+            if width % 3 != 0:
+                print(f'{self.label}: axis-angle input width {width} is not a multiple of 3')
+                return None
+            return data.reshape(-1, 3)
+        if input_format == 'quaternion':
+            if width % 4 != 0:
+                print(f'{self.label}: quaternion input width {width} is not a multiple of 4')
+                return None
+            return data.reshape(-1, 4)
+        if width % 3 == 0 and width % 4 != 0:
+            return data.reshape(-1, 3)
+        if width % 4 == 0 and width % 3 != 0:
+            return data.reshape(-1, 4)
+        print(f'{self.label}: flat input of width {width} is ambiguous - set input format to axis-angle or quaternion')
+        return None
+
+    def execute(self):
+        data = self.input()
+        pipeline = self.pipeline
+        if data is None or pipeline is None:
+            return
+        try:
+            if type(data) not in [torch.Tensor, np.ndarray]:
+                data = any_to_tensor(data, device=self.device)
+            elif (type(data) is torch.Tensor and not self.device_mismatch_warned
+                    and data.device.type != torch.device(self.device).type):
+                self.device_mismatch_warned = True
+                print(f'{self.label}: input tensors arrive on {data.device.type} but this node runs on '
+                      f'{torch.device(self.device).type} - every frame pays a device transfer. '
+                      f'Set both to the same device (cpu is fastest for per-frame joint data).')
+            data = self.shape_rotations(data)
+            if data is None:
+                return
+            banded = pipeline.process_frame(data)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            return
+        # first frame after reset has no previous frame to difference against
+        if banded is not None:
+            self.output.send(banded)
 
 
 class TorchIIR2Filter:
