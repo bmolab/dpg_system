@@ -288,6 +288,8 @@ SITE_NOUNS = {
     'cave', 'valley', 'canyon', 'gorge', 'field', 'meadow', 'swamp', 'marsh',
     'prairie', 'tundra', 'steppe', 'savanna', 'island', 'glacier', 'volcano',
     # Built environments
+    'house', 'home', 'cottage', 'mansion', 'cabin', 'hut', 'farmhouse',
+    'barn', 'shed', 'shack', 'apartment', 'bungalow', 'villa', 'lodge',
     'castle', 'cathedral', 'church', 'temple', 'mosque', 'shrine', 'palace',
     'tower', 'dungeon', 'fortress', 'citadel', 'ruin', 'ruins', 'courtyard',
     'alley', 'alleyway', 'street', 'market',
@@ -304,6 +306,8 @@ SITE_NOUNS = {
     'waterfall', 'fountain', 'harbor', 'harbour', 'port', 'wharf',
     # Vessels-as-places
     'ship', 'boat', 'deck',
+    # Extraterrestrial
+    'outer space',
     # Other
     'graveyard', 'cemetery', 'garden', 'orchard', 'vineyard', 'farm',
     'space station', 'spaceship', 'submarine', 'train station', 'airport',
@@ -311,7 +315,7 @@ SITE_NOUNS = {
     'dance hall', 'guildhall',
 }
 INTERIOR_NOUNS = {
-    'bedroom', 'kitchen', 'basement', 'attic', 'hallway', 'corridor', 'hall',
+    'room', 'bedroom', 'kitchen', 'basement', 'attic', 'hallway', 'corridor', 'hall',
     'ballroom', 'throne room', 'cellar', 'crypt', 'chamber', 'parlor',
     'parlour', 'salon', 'study', 'nursery',
 }
@@ -322,12 +326,13 @@ PLACE_NOUNS = SETTLEMENT_NOUNS | SITE_NOUNS | INTERIOR_NOUNS
 _PLACE_PREPOSITIONS = {
     'in', 'at', 'on', 'by', 'near', 'inside', 'within', 'under',
     'beneath', 'along', 'beside', 'across', 'outside', 'among', 'amid',
-    'amidst', 'upon', 'over', 'from', 'through',
+    'amidst', 'upon', 'over', 'from',
 }
 # Motion prepositions are normalized to 'in' when composing — the register
 # describes where the scene is, not how it was entered. 'of' arrives from
 # phrases like 'the mountains of Bavaria'.
-_MOTION_PREPOSITIONS = {'to', 'into', 'onto', 'toward', 'towards', 'of'}
+_MOTION_PREPOSITIONS = {'to', 'into', 'onto', 'toward', 'towards', 'of',
+                        'through'}
 # Known country for gazetteer regions. Used only for a consistency check:
 # a new region whose country conflicts with the current country slot clears
 # it (we never fabricate a country that wasn't mentioned). Regions with
@@ -396,6 +401,7 @@ STYLE_VOCAB = {
 # mood, lighting). One medium at a time; a new one replaces the old.
 MEDIUM_VOCAB = {
     # Painting / drawing techniques
+    'painting', 'drawing', 'sketch', 'illustration',
     'watercolor', 'watercolour', 'oil painting', 'gouache', 'acrylic',
     'tempera', 'fresco', 'mural', 'charcoal', 'pencil sketch', 'ink drawing',
     'pen and ink', 'pastel', 'illuminated manuscript', 'icon painting',
@@ -458,6 +464,60 @@ ACTOR_ROLE_WEIGHTS = {
     'nsubj': 1.0, 'nsubjpass': 1.0, 'dobj': 0.6, 'conj': 0.6,
     'iobj': 0.5, 'attr': 0.5, 'appos': 0.5, 'pobj': 0.35, 'poss': 0.35,
 }
+# Verbs whose predicate reads as a visible attribute of their subject
+# ('wearing a green dress', 'carrying a lantern') rather than a plot event
+ACTOR_ATTRIBUTE_VERBS = {
+    'wear', 'hold', 'carry', 'ride', 'wield', 'brandish', 'clutch',
+    'dress', 'drape', 'adorn', 'don', 'sport', 'smoke', 'play',
+}
+# Attribute slot categories, keyed by the object noun of the attribute
+# phrase (matched by lemma, so plurals fold in). A new attribute replaces
+# any earlier one in the same slot ('wearing a red dress' knocks out
+# 'wearing a green dress' but leaves 'carrying a lantern' alone).
+ATTRIBUTE_SLOT_NOUNS = {
+    'garment': {
+        'dress', 'gown', 'robe', 'coat', 'jacket', 'suit', 'uniform',
+        'cloak', 'cape', 'shirt', 'blouse', 'sweater', 'tunic', 'toga',
+        'kimono', 'sari', 'skirt', 'trousers', 'pants', 'jeans', 'shorts',
+        'apron', 'vest', 'waistcoat', 'armor', 'armour', 'frock',
+        'nightgown', 'raincoat', 'overcoat', 'parka', 'cardigan',
+        'hoodie', 'costume', 'outfit',
+    },
+    'headwear': {
+        'hat', 'cap', 'crown', 'helmet', 'hood', 'veil', 'bonnet',
+        'turban', 'wreath', 'tiara', 'headscarf', 'beret', 'fedora',
+        'sombrero', 'headdress',
+    },
+    'footwear': {
+        'shoe', 'boot', 'sandal', 'slipper', 'sneaker', 'moccasin',
+        'clog', 'stiletto',
+    },
+    'eyewear': {
+        'glasses', 'spectacles', 'sunglasses', 'goggles', 'monocle',
+        'mask',
+    },
+    'neckwear': {
+        'scarf', 'necklace', 'tie', 'cravat', 'pendant', 'amulet',
+        'medallion',
+    },
+    'held': {
+        'lantern', 'sword', 'umbrella', 'cane', 'staff', 'torch',
+        'basket', 'book', 'bouquet', 'candle', 'knife', 'dagger', 'gun',
+        'rifle', 'pistol', 'shield', 'spear', 'scythe', 'sickle',
+        'hammer', 'axe', 'wand', 'sceptre', 'scepter', 'violin',
+        'guitar', 'flute', 'trumpet', 'cigarette', 'pipe', 'cigar',
+        'fan', 'parasol', 'mirror', 'cup', 'goblet', 'chalice', 'lamp',
+        'flag', 'banner', 'letter', 'scroll',
+    },
+    'mount': {
+        'horse', 'rocket', 'bicycle', 'bike', 'motorcycle', 'donkey',
+        'mule', 'camel', 'elephant', 'broomstick', 'broom', 'carriage',
+        'sleigh', 'skateboard', 'scooter', 'unicycle', 'dragon',
+    },
+}
+_ATTRIBUTE_NOUN_CATEGORY = {noun: cat
+                            for cat, nouns in ATTRIBUTE_SLOT_NOUNS.items()
+                            for noun in nouns}
 # Nouns that can create an actor entry from object position (subjects create
 # unconditionally — actorhood is functional: things that act are actors)
 ANIMATE_NOUNS = {
@@ -613,18 +673,20 @@ class ContextTrackerNode(Node):
             except (ImportError, AttributeError):
                 pass
             if self.__class__.nlp is None:
+                # Prefer lg: sm's NER mislabels people as places
+                # ('the Virgin Mary' -> GPE)
                 try:
-                    self.__class__.nlp = spacy.load('en_core_web_sm')
-                    print('ContextTrackerNode: loaded en_core_web_sm')
+                    self.__class__.nlp = spacy.load('en_core_web_lg')
+                    print('ContextTrackerNode: loaded en_core_web_lg')
                 except OSError:
                     try:
-                        self.__class__.nlp = spacy.load('en_core_web_lg')
-                        print('ContextTrackerNode: loaded en_core_web_lg')
+                        self.__class__.nlp = spacy.load('en_core_web_sm')
+                        print('ContextTrackerNode: loaded en_core_web_sm')
                     except OSError:
                         print('ContextTrackerNode: No spaCy model found! '
                               'Install with: python -m spacy download en_core_web_sm')
         # --- Context slot state ---
-        self.slot_names = ['time_of_day', 'time_of_year', 'era', 'place', 'weather', 'style', 'medium', 'actors', 'artist']
+        self.slot_names = ['time_of_day', 'time_of_year', 'era', 'place', 'weather', 'props', 'style', 'medium', 'actors', 'artist']
         self.slots = {name: '' for name in self.slot_names}
         self.slot_ages = {name: 0 for name in self.slot_names}  # chunks since last update
         self.chunk_count = 0
@@ -640,6 +702,9 @@ class ContextTrackerNode(Node):
         # composed top-of-roster; emit_output sends each actor separately
         # with salience-scaled weight.
         self.actors = []
+        # Scene props ('a roaring fireplace in the corner') — furnishings
+        # bound to the current place; ejected wholesale on a genuine move.
+        self.props = []
         # --- Loadable vocabularies ---
         self.time_vocab = set(TIME_OF_DAY_WORDS)
         self.era_vocab = set(ERA_WORDS)
@@ -674,6 +739,7 @@ class ContextTrackerNode(Node):
         self.era_weight = self.add_property('era weight', widget_type='drag_float', default_value=0.5)
         self.place_weight = self.add_property('place weight', widget_type='drag_float', default_value=0.5)
         self.weather_weight = self.add_property('weather weight', widget_type='drag_float', default_value=0.3)
+        self.props_weight = self.add_property('props weight', widget_type='drag_float', default_value=0.4)
         self.style_weight = self.add_property('style weight', widget_type='drag_float', default_value=0.5)
         self.medium_weight = self.add_property('medium weight', widget_type='drag_float', default_value=0.5)
         self.actor_weight = self.add_property('actor weight', widget_type='drag_float', default_value=0.5)
@@ -696,6 +762,7 @@ class ContextTrackerNode(Node):
             'era': self.era_weight,
             'place': self.place_weight,
             'weather': self.weather_weight,
+            'props': self.props_weight,
             'style': self.style_weight,
             'medium': self.medium_weight,
             'actors': self.actor_weight,
@@ -807,6 +874,9 @@ class ContextTrackerNode(Node):
                             phrase = self._with_modifiers(doc, phrase)
                         return phrase
         for token in doc:
+            if token.pos_ == 'VERB':
+                # 'a painting' is a medium; 'she was painting' is not
+                continue
             match = None
             if token.text.lower() in vocab:
                 match = token.text.lower()
@@ -916,6 +986,7 @@ class ContextTrackerNode(Node):
             self.time_slots[scale] = ''
             self.time_ages[scale] = 0
         self.actors = []
+        self.props = []
         self.chunk_count = 0
         self.update_status()
         self.emit_output()
@@ -962,6 +1033,8 @@ class ContextTrackerNode(Node):
                     if finer not in place_dets and self.place_slots[finer] != '':
                         self.place_slots[finer] = ''
                         self.place_ages[finer] = 0
+                # Furnishings belong to the departed place
+                self.clear_props()
             self.detected_output.send([f'place.{scale}', value])
             changed = True
         if changed:
@@ -988,6 +1061,32 @@ class ContextTrackerNode(Node):
                 value = 'in ' + value
             parts.append(value)
         self.slots['place'] = ', '.join(parts)
+    # --- Scene props ---
+    def apply_props(self, texts, max_props=5):
+        """Add extracted prop phrases; a re-mention refreshes age instead.
+        Returns True if the props register changed."""
+        changed = False
+        for text in texts:
+            existing = next((p for p in self.props
+                             if p['text'].lower() == text.lower()), None)
+            if existing is not None:
+                existing['age'] = 0
+                continue
+            self.props.append({'text': text, 'age': 0})
+            del self.props[:-max_props]
+            self.detected_output.send(['prop', text])
+            changed = True
+        if changed:
+            self.compose_props()
+        return changed
+    def compose_props(self):
+        self.slots['props'] = ', '.join(p['text'] for p in self.props)
+    def clear_props(self):
+        """Eject all props — the scene moved out from under them."""
+        for p in self.props:
+            self.detected_output.send(['prop.drop', p['text']])
+        self.props = []
+        self.compose_props()
     # --- Time ladder ---
     def apply_time_detections(self, time_dets):
         """Apply scale-tagged detections {scale: phrase} to the time ladder.
@@ -1126,10 +1225,11 @@ class ContextTrackerNode(Node):
                     self.update_status()
                     self.emit_output()
                 elif slot_name == 'place':
-                    # Plain 'place' replaces the whole ladder
+                    # Plain 'place' replaces the whole ladder — a move
                     for scale in PLACE_SCALES:
                         self.place_slots[scale] = ''
                         self.place_ages[scale] = 0
+                    self.clear_props()
                     self.place_slots['site'] = value
                     self.compose_place()
                     self.detected_output.send(['place', self.slots['place']])
@@ -1157,7 +1257,8 @@ class ContextTrackerNode(Node):
                 return
             self.chunk_count += 1
             # Age all slots (place and time are aged per-scale below)
-            ladder_managed = ('place', 'era', 'time_of_year', 'time_of_day', 'actors')
+            ladder_managed = ('place', 'era', 'time_of_year', 'time_of_day',
+                              'actors', 'props')
             for name in self.slot_names:
                 if name not in ladder_managed and self.slots[name] != '':
                     self.slot_ages[name] += 1
@@ -1167,6 +1268,8 @@ class ContextTrackerNode(Node):
             for scale in TIME_SCALES:
                 if self.time_slots[scale] != '':
                     self.time_ages[scale] += 1
+            for p in self.props:
+                p['age'] += 1
             # Optional decay — ladder scales decay slower the coarser they are
             decay = self.decay_chunks()
             if decay > 0:
@@ -1192,6 +1295,11 @@ class ContextTrackerNode(Node):
                         expired = True
                 if expired:
                     self.compose_time()
+                # Props are as transient as rooms (interior-rate decay)
+                fresh = [p for p in self.props if p['age'] <= decay]
+                if len(fresh) != len(self.props):
+                    self.props = fresh
+                    self.compose_props()
             # Actor salience decays every chunk — it's the core mechanic,
             # independent of the optional slot decay
             self.decay_actors()
@@ -1206,6 +1314,10 @@ class ContextTrackerNode(Node):
             time_dets = detections.pop('time', None)
             if time_dets:
                 if self.apply_time_detections(time_dets):
+                    changed = True
+            prop_texts = detections.pop('props', None)
+            if prop_texts:
+                if self.apply_props(prop_texts):
                     changed = True
             actor_mentions = detections.pop('actor_mentions', None)
             if actor_mentions:
@@ -1261,6 +1373,85 @@ class ContextTrackerNode(Node):
                 if entry['number'] == 'plur':
                     return entry
         return None
+    @staticmethod
+    def _span_text(doc, start, end):
+        """doc[start:end+1].text with trailing punctuation trimmed."""
+        while end > start and doc[end].is_punct:
+            end -= 1
+        return doc[start:end + 1].text
+    @staticmethod
+    def _attribute_category(verb):
+        """Slot category of a verb attribute phrase — from the first known
+        object noun in its subtree ('dress' -> garment); falls back to the
+        verb lemma, so unknown-object phrases still replace same-verb ones."""
+        for t in verb.subtree:
+            if t.i <= verb.i:
+                continue
+            cat = _ATTRIBUTE_NOUN_CATEGORY.get(t.lemma_.lower())
+            if cat is None:
+                cat = _ATTRIBUTE_NOUN_CATEGORY.get(t.text.lower())
+            if cat is not None:
+                return cat
+        return 'verb:' + verb.lemma_.lower()
+    def _mention_attributes(self, token):
+        """Attribute phrases evidenced at a mention site: attributive-verb
+        predicates ('wearing a green dress', 'carried a lantern') via
+        subject or reduced relative, and adjectival complements
+        ('she was radiant'). Returns [{'text', 'cat'}, ...]."""
+        doc = token.doc
+        attrs = []
+        head = token.head
+        if token.dep_ in ('nsubj', 'nsubjpass') and head.pos_ in ('VERB', 'AUX'):
+            if head.lemma_.lower() in ACTOR_ATTRIBUTE_VERBS:
+                attrs.append({
+                    'text': self._span_text(doc, head.i, head.right_edge.i),
+                    'cat': self._attribute_category(head)})
+            for child in head.children:
+                if child.dep_ == 'acomp':
+                    attrs.append({
+                        'text': self._span_text(
+                            doc, child.left_edge.i, child.right_edge.i),
+                        'cat': 'state'})
+        for child in token.children:
+            if (child.dep_ in ('acl', 'relcl')
+                    and child.lemma_.lower() in ACTOR_ATTRIBUTE_VERBS):
+                attrs.append({
+                    'text': self._span_text(doc, child.i, child.right_edge.i),
+                    'cat': self._attribute_category(child)})
+        return attrs
+    def _extract_props(self, doc):
+        """Existential scene furnishings: 'There was a roaring fireplace in
+        the corner'. Place nouns land here too ('There was a fountain' is
+        scenery, not a move); nouns claimed by other registers (actors,
+        weather, media, time words) are left to them."""
+        texts = []
+        for token in doc:
+            if token.dep_ != 'expl' or token.head.lemma_.lower() != 'be':
+                continue
+            for noun in token.head.children:
+                if noun.dep_ != 'attr' or noun.pos_ != 'NOUN':
+                    continue
+                chain = [noun] + [c for c in noun.conjuncts
+                                  if c.pos_ == 'NOUN']
+                for t in chain:
+                    lemma = t.lemma_.lower()
+                    if (lemma in ANIMATE_NOUNS
+                            or lemma in self.medium_vocab
+                            or lemma in self.time_vocab
+                            or lemma in self.weather_lemmas
+                            or t.text.lower() in self.weather_vocab
+                            or lemma in SEASON_WORDS or lemma in MONTH_WORDS
+                            or lemma in WEEKDAY_WORDS):
+                        continue
+                    start = t.left_edge.i
+                    end = t.right_edge.i
+                    # Each conjunct is its own prop — cut before the chain
+                    for child in t.children:
+                        if child.dep_ in ('cc', 'conj'):
+                            end = min(end, child.left_edge.i - 1)
+                    if end >= start:
+                        texts.append(self._span_text(doc, start, end))
+        return texts
     def extract_actor_mentions(self, doc):
         """Collect actor mentions in document order. Pure — roster is only
         consulted (for the reinforce gate), never modified here."""
@@ -1281,7 +1472,8 @@ class ContextTrackerNode(Node):
                 mentions.append({
                     'kind': 'name', 'name': name, 'display': name,
                     'role': ACTOR_ROLE_WEIGHTS.get(ent.root.dep_, 0.3),
-                    'number': 'sing', 'gender': gender, 'human': True})
+                    'number': 'sing', 'gender': gender, 'human': True,
+                    'attrs': self._mention_attributes(ent.root)})
                 continue
             if token.pos_ == 'PRON':
                 if token.dep_ == 'expl':
@@ -1294,14 +1486,16 @@ class ContextTrackerNode(Node):
                     continue  # 'it rained'
                 mentions.append({
                     'kind': 'pron', 'class': pron_class, 'text': token.lower_,
-                    'role': ACTOR_ROLE_WEIGHTS.get(token.dep_, 0.3)})
+                    'role': ACTOR_ROLE_WEIGHTS.get(token.dep_, 0.3),
+                    'attrs': self._mention_attributes(token)})
                 continue
             if (token.pos_ == 'PROPN' and token.ent_type_ == ''
                     and token.dep_ in ('nsubj', 'nsubjpass')):
                 # Un-NER'd proper-noun subject still reads as a named actor
                 mentions.append({
                     'kind': 'name', 'name': token.text, 'display': token.text,
-                    'role': 1.0, 'number': 'sing', 'gender': None, 'human': None})
+                    'role': 1.0, 'number': 'sing', 'gender': None, 'human': None,
+                    'attrs': self._mention_attributes(token)})
                 continue
             if token.pos_ == 'NOUN' and token.ent_type_ == '':
                 lemma = token.lemma_.lower()
@@ -1337,7 +1531,8 @@ class ContextTrackerNode(Node):
                     'role': ACTOR_ROLE_WEIGHTS.get(dep, 0.3),
                     'number': 'plur' if 'Plur' in token.morph.get('Number') else 'sing',
                     'gender': GENDERED_NOUNS.get(lemma), 'human': human,
-                    'appos_name': appos_name})
+                    'appos_name': appos_name,
+                    'attrs': self._mention_attributes(token)})
         return mentions
     def apply_actor_mentions(self, mentions):
         """Apply a chunk's mentions to the roster. Returns True if the
@@ -1366,6 +1561,7 @@ class ContextTrackerNode(Node):
                     entry['human'] = False
                 self.detected_output.send(
                     ['actor.ref', f"{m['text']} -> {entry['display']}"])
+                self._absorb_attrs(entry, m)
                 continue
             if m['kind'] == 'name':
                 entry = self._find_actor_by_name(m['name'])
@@ -1375,6 +1571,7 @@ class ContextTrackerNode(Node):
                     entry['name_tokens'] |= {w.lower() for w in m['name'].split()}
                     if m['gender'] is not None and entry['gender'] is None:
                         entry['gender'] = m['gender']
+                    self._absorb_attrs(entry, m)
                     continue
             else:
                 if m['appos_name'] is not None:
@@ -1386,12 +1583,14 @@ class ContextTrackerNode(Node):
                         entry['age'] = 0
                         if m['gender'] is not None and entry['gender'] is None:
                             entry['gender'] = m['gender']
+                        self._absorb_attrs(entry, m)
                         continue
                 entry = self._find_actor_by_lemma(m['lemma'])
                 if entry is not None:
                     entry['salience'] += m['role']
                     entry['age'] = 0
                     entry['display'] = m['display']
+                    self._absorb_attrs(entry, m)
                     continue
             entry = {
                 'name': m.get('name'),
@@ -1400,18 +1599,46 @@ class ContextTrackerNode(Node):
                 'lemmas': {m['lemma']} if m['kind'] == 'noun' else set(),
                 'display': m['display'], 'number': m['number'],
                 'gender': m['gender'], 'human': m['human'],
-                'salience': m['role'], 'age': 0,
+                'salience': m['role'], 'age': 0, 'attrs': [],
             }
             self.actors.append(entry)
             self.detected_output.send(['actor', m['display']])
+            self._absorb_attrs(entry, m)
         self.actors.sort(key=lambda a: a['salience'], reverse=True)
         del self.actors[self.max_actors():]
         old = self.slots['actors']
         self.compose_actors()
         return self.slots['actors'] != old
+    def _absorb_attrs(self, entry, m, max_attrs=4):
+        """Attach a mention's attribute phrases to its roster entry. A new
+        attribute knocks out earlier ones in the same slot category; the
+        cap then bounds what conflicts can't clear (newest kept)."""
+        attrs = entry.setdefault('attrs', [])
+        for a in m.get('attrs', ()):
+            if any(a['text'].lower() == have['text'].lower()
+                   for have in attrs):
+                continue
+            for have in attrs:
+                if have['cat'] == a['cat']:
+                    self.detected_output.send(
+                        ['actor.attr.drop',
+                         f"{entry['display']}: {have['text']}"])
+            attrs[:] = [have for have in attrs if have['cat'] != a['cat']]
+            attrs.append(a)
+            del attrs[:-max_attrs]
+            self.detected_output.send(
+                ['actor.attr', f"{entry['display']}: {a['text']}"])
+    @staticmethod
+    def actor_display(a):
+        """Display name with its attribute phrases appended."""
+        attrs = a.get('attrs')
+        if attrs:
+            return a['display'] + ', ' + ', '.join(h['text'] for h in attrs)
+        return a['display']
     def compose_actors(self):
         """Top of the roster, most salient first."""
-        top = [a['display'] for a in self.actors if a['salience'] >= 0.1][:3]
+        top = [self.actor_display(a)
+               for a in self.actors if a['salience'] >= 0.1][:3]
         self.slots['actors'] = ', '.join(top)
     def decay_actors(self):
         """Geometric salience decay each chunk; evict the faded."""
@@ -1583,13 +1810,22 @@ class ContextTrackerNode(Node):
                 # Handled at the compound head ('city' in 'city hall' is not
                 # a settlement mention)
                 continue
-            # Classify the full compound first ('city hall' -> site), then
-            # the bare token
-            compound_parts = [c.text.lower() for c in token.children
-                              if c.dep_ == 'compound']
+            if (token.dep_ == 'attr' and token.head.lemma_.lower() == 'be'
+                    and any(c.dep_ == 'expl' for c in token.head.children)):
+                # 'There was a fountain' introduces scenery within the
+                # current scene, not a move — the props register takes it
+                continue
+            # Classify the modified noun first ('city hall' -> site,
+            # 'outer space' -> site), trying progressively shorter
+            # suffixes so 'old city hall' still finds 'city hall'
+            modifier_parts = [c.text.lower() for c in token.children
+                              if c.dep_ in ('compound', 'amod')]
+            words = modifier_parts + [token.text.lower()]
             scale = None
-            if compound_parts:
-                scale = self.noun_scale(' '.join(compound_parts + [token.text.lower()]))
+            for i in range(len(words) - 1):
+                scale = self.noun_scale(' '.join(words[i:]))
+                if scale is not None:
+                    break
             if scale is None:
                 scale = self.noun_scale(token.text.lower())
             if scale is None:
@@ -1636,6 +1872,10 @@ class ContextTrackerNode(Node):
         actor_mentions = self.extract_actor_mentions(doc)
         if actor_mentions:
             detections['actor_mentions'] = actor_mentions
+        # --- 7. Scene props (existential furnishings) ---
+        props = self._extract_props(doc)
+        if props:
+            detections['props'] = props
         return detections
     # --- Output ---
     def emit_output(self):
@@ -1651,7 +1891,8 @@ class ContextTrackerNode(Node):
                     weight = self.actor_weight() * strength
                     for a in self.actors[:3]:
                         prompt_list.append(
-                            [a['display'], weight * a['salience'] / max_salience])
+                            [self.actor_display(a),
+                             weight * a['salience'] / max_salience])
                 continue
             value = self.slots[slot_name]
             if value != '':
@@ -1673,7 +1914,8 @@ class ContextTrackerNode(Node):
         for i, a in enumerate(self.actors):
             features = [f for f in (a['gender'], a['number'],
                                     'human' if a['human'] else None) if f]
-            out[f'actor.{i}'] = f"{a['display']} ({a['salience']:.2f} {' '.join(features)})"
+            out[f'actor.{i}'] = (f"{self.actor_display(a)} "
+                                 f"({a['salience']:.2f} {' '.join(features)})")
         self.dict_output.send(out)
     # --- Status display ---
     def update_status(self):
