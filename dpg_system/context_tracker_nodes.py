@@ -333,6 +333,27 @@ _PLACE_PREPOSITIONS = {
 # phrases like 'the mountains of Bavaria'.
 _MOTION_PREPOSITIONS = {'to', 'into', 'onto', 'toward', 'towards', 'of',
                         'through'}
+# Prepositions that read as locating a following named entity. 'to' and
+# 'of' are handled specially in _ent_locative_governor: dative 'to' ('gave
+# the flowers to Henrietta') and appositional 'of' don't locate.
+_ENT_LOCATIVE_PREPS = ((_PLACE_PREPOSITIONS | _MOTION_PREPOSITIONS)
+                       - {'to', 'of'}) | {'behind', 'beyond', 'around',
+                                          'past', 'between'}
+# Motion verbs whose 'to'-phrase locates ('walked to Verona')
+_MOTION_TO_VERBS = {
+    'go', 'walk', 'run', 'travel', 'drive', 'fly', 'return', 'come',
+    'move', 'head', 'ride', 'sail', 'journey', 'march', 'wander', 'flee',
+    'escape', 'arrive', 'descend', 'climb', 'hike', 'retreat', 'migrate',
+    'race', 'hurry', 'rush', 'creep', 'crawl', 'stroll', 'trek',
+}
+# Verbs whose GPE subject still reads as scenery rather than agency
+# ('Paris lay under fog'). A GPE subject of any other verb is treated as
+# a mislabeled character ('Henrietta smiled', 'King Kong roared').
+_STATIVE_SUBJECT_VERBS = {
+    'be', 'lie', 'sit', 'stand', 'stretch', 'sprawl', 'remain', 'seem',
+    'appear', 'become', 'loom', 'rise', 'overlook', 'border', 'surround',
+    'boast', 'have',
+}
 # Known country for gazetteer regions. Used only for a consistency check:
 # a new region whose country conflicts with the current country slot clears
 # it (we never fabricate a country that wasn't mentioned). Regions with
@@ -825,6 +846,30 @@ class ContextTrackerNode(Node):
         if n in self.regions:
             return 'region'
         return 'settlement'
+    def _gpe_in_gazetteer(self, name):
+        """True when a GPE name is a known country or region."""
+        n = name.lower()
+        if n.startswith('the '):
+            n = n[4:]
+        return n in self.countries or n in self.regions
+    def _ent_locative_governor(self, ent):
+        """True when the entity sits under a preposition that locates it.
+        Gates gazetteer-unknown GPEs: spaCy labels many person names as
+        GPE (Henrietta, Charlotte and Florence are all towns), so a bare
+        unknown GPE is disbelieved without a locating preposition."""
+        head = ent.root.head
+        if head.pos_ != 'ADP' or head.i >= ent.start:
+            return False
+        prep = head.text.lower()
+        if prep == 'to':
+            return head.head.lemma_.lower() in _MOTION_TO_VERBS
+        if prep == 'of':
+            # 'the streets of Verona' locates; 'the Duchess of Henrietta'
+            # doesn't. 'out of' / 'north of' chain through another ADP/ADV.
+            grand = head.head
+            return (grand.pos_ in ('ADP', 'ADV')
+                    or grand.lemma_.lower() in self.place_nouns)
+        return prep in _ENT_LOCATIVE_PREPS
     def _is_anaphoric_repeat(self, new_value, current_value):
         """True when a new same-scale phrase is a back-reference to the
         current value rather than a move: a definite generic ('the city',
@@ -1452,15 +1497,21 @@ class ContextTrackerNode(Node):
                     if end >= start:
                         texts.append(self._span_text(doc, start, end))
         return texts
-    def extract_actor_mentions(self, doc):
+    def extract_actor_mentions(self, doc, extra_person_ents=()):
         """Collect actor mentions in document order. Pure — roster is only
-        consulted (for the reinforce gate), never modified here."""
+        consulted (for the reinforce gate), never modified here.
+        extra_person_ents are non-PERSON NER spans upstream has judged to
+        be characters (place-labeled person names like 'Henrietta'); they
+        are treated exactly like PERSON entities."""
         mentions = []
         person_token_ents = {}
         for ent in doc.ents:
             if ent.label_ == 'PERSON':
                 for t in ent:
                     person_token_ents[t.i] = ent
+        for ent in extra_person_ents:
+            for t in ent:
+                person_token_ents[t.i] = ent
         seen_ents = set()
         for token in doc:
             ent = person_token_ents.get(token.i)
@@ -1662,6 +1713,10 @@ class ContextTrackerNode(Node):
         doc = self.__class__.nlp(text)
         # Reconstruct hyphenated compounds for weather/style matching
         hyphenated = reconstruct_hyphenated(doc)
+        # Place-labeled NER spans rerouted to the actor pass: spaCy's NER
+        # reads many person names as places or orgs (Henrietta, Charlotte
+        # and Florence are all towns; King Kong ~ Hong Kong)
+        actor_ents = []
         # --- 1. spaCy NER ---
         for ent in doc.ents:
             if ent.label_ in ('TIME',):
@@ -1676,11 +1731,33 @@ class ContextTrackerNode(Node):
                     grains[finest] = get_ent_phrase(ent)
                     for grain, value in grains.items():
                         time_dets.setdefault(grain, value)
-            elif ent.label_ in ('GPE', 'LOC', 'FAC'):
+            elif ent.label_ in ('GPE', 'LOC', 'FAC', 'ORG'):
+                root = ent.root
+                # A name already on the actor roster stays a character
+                # even when NER reads it as a place
+                if self._find_actor_by_name(ent.text) is not None:
+                    actor_ents.append(ent)
+                    continue
+                # A GPE/ORG doing person things — subject of an agentive
+                # verb — is a mislabeled character ('Henrietta smiled',
+                # 'King Kong roared'). LOC/FAC subjects stay scenery
+                # ('the mountains loomed').
+                if (ent.label_ in ('GPE', 'ORG')
+                        and root.dep_ in ('nsubj', 'nsubjpass')
+                        and root.head.pos_ == 'VERB'
+                        and root.head.lemma_.lower()
+                            not in _STATIVE_SUBJECT_VERBS):
+                    actor_ents.append(ent)
+                    continue
+                if ent.label_ == 'ORG':
+                    continue  # organizations are never places
                 # Full entity span with its governing preposition
                 phrase = get_ent_phrase(ent)
                 if ent.label_ == 'GPE':
                     scale = self.classify_gpe(ent.text)
+                    if (not self._gpe_in_gazetteer(ent.text)
+                            and not self._ent_locative_governor(ent)):
+                        continue
                 else:
                     scale = 'site'
                 place_dets.setdefault(scale, phrase)
@@ -1869,7 +1946,7 @@ class ContextTrackerNode(Node):
         if time_dets:
             detections['time'] = time_dets
         # --- 6. Actor mentions (named, nominal, pronominal) ---
-        actor_mentions = self.extract_actor_mentions(doc)
+        actor_mentions = self.extract_actor_mentions(doc, actor_ents)
         if actor_mentions:
             detections['actor_mentions'] = actor_mentions
         # --- 7. Scene props (existential furnishings) ---
