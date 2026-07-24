@@ -1,0 +1,488 @@
+"""Numpy-native point-cloud processing nodes for the depth-sensor pipeline.
+
+These sit between a depth source (``femto`` / ``femto_bolt``) and a renderer
+(``mgl_point_cloud`` / ``gl_vertex_buffer``) and operate on camera-agnostic
+``(N, 3)`` float32 clouds. They are deliberately numpy-native rather than torch:
+for these ops well-vectorised numpy lowers to SIMD C loops and avoids torch's
+per-frame tensor-conversion + kernel-dispatch overhead, which dominates at 30fps
+with a few hundred-thousand points. See torch_voxel_nodes.py for the torch
+equivalents of crop/voxelise.
+
+The shared engine is a dense voxel grid: every point is mapped to an integer
+voxel via a precomputed linear index, then all the work (occupancy, density,
+background model, temporal persistence) is gather/scatter on flat arrays with
+``np.bincount`` — no hashing, no kd-tree, no per-point python.
+
+Nodes:
+  pc_crop        axis-aligned box crop (+ invert)
+  pc_voxel       voxel-grid downsample -> occupied voxel centres / centroids
+  pc_background  static background subtraction (learn N frames, then remove)
+  pc_denoise     density + temporal-persistence speckle/flicker removal
+  pc_info        report point count / bounds / centroid (bounds-tuning aid)
+"""
+
+import numpy as np
+from dpg_system.node import Node
+from dpg_system.conversion_utils import any_to_array
+
+# A dense voxel grid of this many cells or more is refused: the state arrays
+# (occupancy / background / persistence) and the bincount minlength would each
+# allocate one entry per cell, so a mis-set voxel size + wide bounds could ask
+# for gigabytes. At/above the cap the node passes its input through untouched
+# and warns once — the fix is a coarser voxel size or tighter bounds.
+MAX_VOXEL_CELLS = 40_000_000
+
+
+def register_point_cloud_nodes():
+    Node.app.register_node('pc_crop', PointCloudCropNode.factory)
+    Node.app.register_node('pc_voxel', PointCloudVoxelNode.factory)
+    Node.app.register_node('pc_background', PointCloudBackgroundNode.factory)
+    Node.app.register_node('pc_denoise', PointCloudDenoiseNode.factory)
+    Node.app.register_node('pc_info', PointCloudInfoNode.factory)
+
+
+class _VoxelGrid:
+    """Maps points to integer voxels over an axis-aligned volume.
+
+    Rebuilt (via ``configure``) only when the bounds or voxel size actually
+    change, so steady-state capture pays nothing. ``index`` is the hot path:
+    a floor + compare + linear-combination, fully vectorised."""
+
+    def __init__(self):
+        self.lo = np.zeros(3, dtype=np.float32)
+        self.dims = np.ones(3, dtype=np.int64)   # (nx, ny, nz)
+        self.inv = 1.0
+        self.ncells = 1
+        self._key = None
+
+    def configure(self, lo, hi, voxel_size):
+        """(Re)build the grid. Returns True if the geometry changed. Raises
+        ValueError if the resulting grid would exceed MAX_VOXEL_CELLS."""
+        lo = np.asarray(lo, dtype=np.float32)
+        hi = np.asarray(hi, dtype=np.float32)
+        lo, hi = np.minimum(lo, hi), np.maximum(lo, hi)
+        voxel_size = float(voxel_size)
+        if voxel_size <= 1e-6:
+            voxel_size = 1e-6
+        key = (tuple(lo.tolist()), tuple(hi.tolist()), voxel_size)
+        if key == self._key:
+            return False
+        dims = np.ceil((hi - lo) / voxel_size).astype(np.int64)
+        dims = np.maximum(dims, 1)
+        ncells = int(dims[0] * dims[1] * dims[2])
+        if ncells > MAX_VOXEL_CELLS:
+            raise ValueError(
+                f'voxel grid too large: {dims.tolist()} = {ncells:,} cells '
+                f'(> {MAX_VOXEL_CELLS:,}); use a coarser voxel size or tighter bounds')
+        self.lo = lo
+        self.dims = dims
+        self.inv = 1.0 / voxel_size
+        self.voxel_size = voxel_size
+        self.ncells = ncells
+        self._key = key
+        return True
+
+    def index(self, pts):
+        """Return (lin, valid): lin is the (N,) int64 linear voxel index (only
+        meaningful where valid), valid is the (N,) bool in-bounds mask."""
+        vi = np.floor((pts - self.lo) * self.inv).astype(np.int64)   # (N, 3)
+        valid = ((vi[:, 0] >= 0) & (vi[:, 0] < self.dims[0]) &
+                 (vi[:, 1] >= 0) & (vi[:, 1] < self.dims[1]) &
+                 (vi[:, 2] >= 0) & (vi[:, 2] < self.dims[2]))
+        nx, ny = self.dims[0], self.dims[1]
+        lin = vi[:, 0] + vi[:, 1] * nx + vi[:, 2] * (nx * ny)
+        return lin, valid
+
+    def centres(self, lin_indices):
+        """Voxel centres (M, 3) float32 for an array of linear voxel indices."""
+        nx, ny = self.dims[0], self.dims[1]
+        iz = lin_indices // (nx * ny)
+        rem = lin_indices - iz * (nx * ny)
+        iy = rem // nx
+        ix = rem - iy * nx
+        ijk = np.stack((ix, iy, iz), axis=1).astype(np.float32)
+        return (self.lo + (ijk + 0.5) * self.voxel_size).astype(np.float32)
+
+
+class PointCloudNode(Node):
+    """Shared plumbing: pull an (N, 3) float32 cloud off the trigger input."""
+
+    def _get_cloud(self):
+        data = any_to_array(self.input())
+        if data is None or not isinstance(data, np.ndarray) or data.size == 0:
+            return None
+        if data.ndim == 1 and data.size % 3 == 0:
+            data = data.reshape(-1, 3)
+        if data.ndim != 2 or data.shape[1] != 3:
+            if self.app.verbose:
+                print(f'{self.label}: expected (N, 3) point cloud, got shape {data.shape}')
+            return None
+        if data.dtype != np.float32:
+            data = data.astype(np.float32)
+        return data
+
+    def _vec3(self, node_input, fallback):
+        try:
+            v = np.asarray(any_to_array(node_input()), dtype=np.float32).reshape(-1)
+        except Exception:
+            return np.asarray(fallback, dtype=np.float32)
+        if v.size < 3:
+            return np.asarray(fallback, dtype=np.float32)
+        return v[:3]
+
+
+class PointCloudCropNode(PointCloudNode):
+    """Keep only points inside an axis-aligned box (or, inverted, outside it)."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PointCloudCropNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('point cloud', triggers_execution=True)
+        self.min_input = self.add_input('min (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[-3.0, -3.0, 0.0], columns=3, widget_width=60)
+        self.max_input = self.add_input('max (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[3.0, 3.0, 6.0], columns=3, widget_width=60)
+        self.invert_input = self.add_input('invert', widget_type='checkbox', default_value=False)
+        self.output = self.add_output('cropped')
+
+    def execute(self):
+        pts = self._get_cloud()
+        if pts is None:
+            return
+        lo = self._vec3(self.min_input, [-3.0, -3.0, 0.0])
+        hi = self._vec3(self.max_input, [3.0, 3.0, 6.0])
+        lo, hi = np.minimum(lo, hi), np.maximum(lo, hi)
+        # Column-wise with in-place &= : ~8x faster than
+        # np.all((pts >= lo) & (pts <= hi), axis=1), which allocates (N,3)
+        # temporaries and reduces over a 3-wide axis.
+        x, y, z = pts[:, 0], pts[:, 1], pts[:, 2]
+        mask = x >= lo[0]
+        mask &= x <= hi[0]
+        mask &= y >= lo[1]
+        mask &= y <= hi[1]
+        mask &= z >= lo[2]
+        mask &= z <= hi[2]
+        if self.invert_input():
+            np.invert(mask, out=mask)
+        self.output.send(np.compress(mask, pts, axis=0))
+
+
+class PointCloudVoxelNode(PointCloudNode):
+    """Voxel-grid downsample: collapse each occupied voxel to one point (its
+    centre or the centroid of the points it holds). ``min points`` doubles as a
+    density floor, dropping sparse speckle voxels."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PointCloudVoxelNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.grid = _VoxelGrid()
+        self._warned_large = False
+        self.input = self.add_input('point cloud', triggers_execution=True)
+        self.min_input = self.add_input('min (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[-3.0, -3.0, 0.0], columns=3, widget_width=60)
+        self.max_input = self.add_input('max (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[3.0, 3.0, 6.0], columns=3, widget_width=60)
+        self.voxel_input = self.add_input('voxel size (m)', widget_type='drag_float',
+                                          default_value=0.05, min=1e-4)
+        self.reduce_input = self.add_input('reduce', widget_type='combo', default_value='center')
+        self.reduce_input.widget.combo_items = ['center', 'centroid']
+        self.min_points_input = self.add_input('min points', widget_type='drag_int',
+                                               default_value=1, min=1)
+        self.output = self.add_output('voxel cloud')
+        self.count_output = self.add_output('counts')
+
+    def _ensure_grid(self):
+        lo = self._vec3(self.min_input, [-3.0, -3.0, 0.0])
+        hi = self._vec3(self.max_input, [3.0, 3.0, 6.0])
+        try:
+            self.grid.configure(lo, hi, self.voxel_input())
+            self._warned_large = False
+            return True
+        except ValueError as e:
+            if not self._warned_large:
+                print(f'{self.label}: {e}')
+                self._warned_large = True
+            return False
+
+    def execute(self):
+        pts = self._get_cloud()
+        if pts is None:
+            return
+        if not self._ensure_grid():
+            self.output.send(np.ascontiguousarray(pts))   # pass through unfiltered
+            return
+        lin, valid = self.grid.index(pts)
+        lin_v = lin[valid]
+        if lin_v.size == 0:
+            self.output.send(np.empty((0, 3), dtype=np.float32))
+            self.count_output.send(np.empty((0,), dtype=np.int64))
+            return
+        counts = np.bincount(lin_v, minlength=self.grid.ncells)
+        min_points = max(1, int(self.min_points_input()))
+        occupied = np.nonzero(counts >= min_points)[0]
+        if occupied.size == 0:
+            self.output.send(np.empty((0, 3), dtype=np.float32))
+            self.count_output.send(np.empty((0,), dtype=np.int64))
+            return
+
+        if self.reduce_input() == 'centroid':
+            pts_v = pts[valid]
+            sx = np.bincount(lin_v, weights=pts_v[:, 0], minlength=self.grid.ncells)
+            sy = np.bincount(lin_v, weights=pts_v[:, 1], minlength=self.grid.ncells)
+            sz = np.bincount(lin_v, weights=pts_v[:, 2], minlength=self.grid.ncells)
+            denom = counts[occupied].astype(np.float32)
+            out = np.stack((sx[occupied], sy[occupied], sz[occupied]), axis=1).astype(np.float32)
+            out /= denom[:, None]
+        else:
+            out = self.grid.centres(occupied)
+
+        self.count_output.send(counts[occupied].astype(np.int64))
+        self.output.send(np.ascontiguousarray(out))
+
+
+class PointCloudBackgroundNode(PointCloudNode):
+    """Static background subtraction. Press ``learn`` with the scene empty to
+    accumulate an occupancy model over ``frames`` captures; a voxel occupied in
+    at least ``min hits`` of them becomes background. Thereafter, points landing
+    in a background voxel are removed; out-of-bounds points pass through."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PointCloudBackgroundNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.grid = _VoxelGrid()
+        self._warned_large = False
+        self.hits = None            # (ncells,) int32 accumulator during learning
+        self.bg_mask = None         # (ncells,) bool background occupancy
+        self.learn_remaining = 0
+        self.learn_total = 0
+
+        self.input = self.add_input('point cloud', triggers_execution=True)
+        self.min_input = self.add_input('min (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[-3.0, -3.0, 0.0], columns=3, widget_width=60)
+        self.max_input = self.add_input('max (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[3.0, 3.0, 6.0], columns=3, widget_width=60)
+        self.voxel_input = self.add_input('voxel size (m)', widget_type='drag_float',
+                                          default_value=0.05, min=1e-4)
+        self.learn_input = self.add_input('learn', widget_type='button', callback=self.start_learning)
+        self.frames_input = self.add_input('frames', widget_type='drag_int', default_value=60, min=1)
+        self.min_hits_input = self.add_input('min hits', widget_type='drag_int', default_value=20, min=1)
+        self.dilate_input = self.add_input('dilate (voxels)', widget_type='drag_int',
+                                           default_value=0, min=0)
+        self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear_background)
+        self.output = self.add_output('foreground')
+
+    def _ensure_grid(self):
+        lo = self._vec3(self.min_input, [-3.0, -3.0, 0.0])
+        hi = self._vec3(self.max_input, [3.0, 3.0, 6.0])
+        try:
+            changed = self.grid.configure(lo, hi, self.voxel_input())
+            self._warned_large = False
+        except ValueError as e:
+            if not self._warned_large:
+                print(f'{self.label}: {e}')
+                self._warned_large = True
+            return False
+        if changed:
+            # Geometry moved: any learned model no longer maps to these cells.
+            self.hits = None
+            self.bg_mask = None
+            self.learn_remaining = 0
+        return True
+
+    def start_learning(self):
+        if not self._ensure_grid():
+            return
+        self.learn_total = max(1, int(self.frames_input()))
+        self.learn_remaining = self.learn_total
+        self.hits = np.zeros(self.grid.ncells, dtype=np.int32)
+        self.bg_mask = None
+        print(f'{self.label}: learning background over {self.learn_total} frames '
+              f'(keep the volume empty)')
+
+    def clear_background(self):
+        self.hits = None
+        self.bg_mask = None
+        self.learn_remaining = 0
+        print(f'{self.label}: background cleared')
+
+    def _finalize_background(self):
+        min_hits = min(int(self.min_hits_input()), self.learn_total)
+        self.bg_mask = self.hits >= max(1, min_hits)
+        dilate = int(self.dilate_input())
+        if dilate > 0:
+            self._dilate_background(dilate)
+        self.hits = None
+        print(f'{self.label}: background learned ({int(self.bg_mask.sum()):,} '
+              f'of {self.grid.ncells:,} voxels occupied)')
+
+    def _dilate_background(self, iterations):
+        """Grow the background by N voxels so points skimming a learned surface
+        are still suppressed. Uses scipy if present; otherwise a cheap 6-neighbour
+        shift dilation on the reshaped grid."""
+        nx, ny, nz = (int(self.grid.dims[0]), int(self.grid.dims[1]), int(self.grid.dims[2]))
+        vol = self.bg_mask.reshape(nz, ny, nx)
+        try:
+            from scipy.ndimage import binary_dilation
+            vol = binary_dilation(vol, iterations=iterations)
+        except Exception:
+            for _ in range(iterations):
+                grown = vol.copy()
+                grown[1:, :, :] |= vol[:-1, :, :]
+                grown[:-1, :, :] |= vol[1:, :, :]
+                grown[:, 1:, :] |= vol[:, :-1, :]
+                grown[:, :-1, :] |= vol[:, 1:, :]
+                grown[:, :, 1:] |= vol[:, :, :-1]
+                grown[:, :, :-1] |= vol[:, :, 1:]
+                vol = grown
+        self.bg_mask = np.ascontiguousarray(vol).reshape(-1)
+
+    def execute(self):
+        pts = self._get_cloud()
+        if pts is None:
+            return
+        if not self._ensure_grid():
+            self.output.send(np.ascontiguousarray(pts))
+            return
+        lin, valid = self.grid.index(pts)
+        lin_v = lin[valid]
+
+        if self.learn_remaining > 0:
+            if self.hits is not None and lin_v.size:
+                # count each occupied voxel once per frame
+                occ = np.unique(lin_v)
+                self.hits[occ] += 1
+            self.learn_remaining -= 1
+            if self.learn_remaining == 0:
+                self._finalize_background()
+            self.output.send(np.ascontiguousarray(pts))   # show the scene while learning
+            return
+
+        if self.bg_mask is None or lin_v.size == 0:
+            self.output.send(np.ascontiguousarray(pts))
+            return
+
+        is_bg = self.bg_mask[lin_v]
+        keep = np.ones(pts.shape[0], dtype=bool)
+        keep[np.nonzero(valid)[0][is_bg]] = False   # remove in-bounds background hits
+        self.output.send(np.compress(keep, pts, axis=0))
+
+
+class PointCloudDenoiseNode(PointCloudNode):
+    """Voxel-based speckle/flicker removal, kd-tree-free.
+
+    ``min points`` drops voxels holding fewer than k points this frame (spatial
+    density / statistical-outlier surrogate). ``persistence`` (0 disables) keeps
+    an exponential-moving-average occupancy per voxel and drops voxels whose EMA
+    is below the threshold — i.e. voxels that only flicker on briefly. Both
+    filters apply only inside the volume; out-of-bounds points pass through."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PointCloudDenoiseNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.grid = _VoxelGrid()
+        self._warned_large = False
+        self.persist = None         # (ncells,) float32 EMA occupancy
+
+        self.input = self.add_input('point cloud', triggers_execution=True)
+        self.min_input = self.add_input('min (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[-5.0, -5.0, -1.0], columns=3, widget_width=60)
+        self.max_input = self.add_input('max (x,y,z)', widget_type='drag_float_n',
+                                        default_value=[5.0, 5.0, 10.0], columns=3, widget_width=60)
+        self.voxel_input = self.add_input('voxel size (m)', widget_type='drag_float',
+                                          default_value=0.04, min=1e-4)
+        self.min_points_input = self.add_input('min points', widget_type='drag_int',
+                                               default_value=2, min=1)
+        self.persistence_input = self.add_input('persistence', widget_type='drag_float',
+                                                default_value=0.0, min=0.0, max=1.0)
+        self.decay_input = self.add_input('decay', widget_type='drag_float',
+                                          default_value=0.7, min=0.0, max=0.999)
+        self.output = self.add_output('denoised')
+
+    def _ensure_grid(self):
+        lo = self._vec3(self.min_input, [-5.0, -5.0, -1.0])
+        hi = self._vec3(self.max_input, [5.0, 5.0, 10.0])
+        try:
+            changed = self.grid.configure(lo, hi, self.voxel_input())
+            self._warned_large = False
+        except ValueError as e:
+            if not self._warned_large:
+                print(f'{self.label}: {e}')
+                self._warned_large = True
+            return False
+        if changed:
+            self.persist = None
+        return True
+
+    def execute(self):
+        pts = self._get_cloud()
+        if pts is None:
+            return
+        if not self._ensure_grid():
+            self.output.send(np.ascontiguousarray(pts))
+            return
+        lin, valid = self.grid.index(pts)
+        lin_v = lin[valid]
+        if lin_v.size == 0:
+            self.output.send(np.ascontiguousarray(pts))
+            return
+
+        counts = np.bincount(lin_v, minlength=self.grid.ncells)
+        min_points = max(1, int(self.min_points_input()))
+        voxel_ok = counts >= min_points
+
+        persistence = float(self.persistence_input())
+        if persistence > 0.0:
+            if self.persist is None or self.persist.shape[0] != self.grid.ncells:
+                self.persist = np.zeros(self.grid.ncells, dtype=np.float32)
+            decay = float(self.decay_input())
+            occ = (counts > 0).astype(np.float32)
+            # EMA in [0, 1]: steady occupancy -> 1, brief flicker stays low.
+            self.persist *= decay
+            self.persist += (1.0 - decay) * occ
+            voxel_ok &= self.persist >= persistence
+
+        is_ok = voxel_ok[lin_v]
+        keep = np.ones(pts.shape[0], dtype=bool)
+        keep[np.nonzero(valid)[0][~is_ok]] = False   # drop in-bounds noise voxels
+        self.output.send(np.compress(keep, pts, axis=0))
+
+
+class PointCloudInfoNode(PointCloudNode):
+    """Report count / axis-aligned bounds / centroid of the incoming cloud, to
+    help set crop and voxel bounds. Passes the cloud through unchanged."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PointCloudInfoNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('point cloud', triggers_execution=True)
+        self.count_output = self.add_output('count')
+        self.min_output = self.add_output('min')
+        self.max_output = self.add_output('max')
+        self.centroid_output = self.add_output('centroid')
+        self.passthrough_output = self.add_output('cloud out')
+
+    def execute(self):
+        pts = self._get_cloud()
+        if pts is None:
+            self.count_output.send(0)
+            return
+        self.passthrough_output.send(pts)
+        self.centroid_output.send(pts.mean(axis=0).astype(np.float32))
+        self.max_output.send(pts.max(axis=0).astype(np.float32))
+        self.min_output.send(pts.min(axis=0).astype(np.float32))
+        self.count_output.send(int(pts.shape[0]))

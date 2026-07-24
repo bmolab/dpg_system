@@ -69,6 +69,7 @@ optional_import = [
     'monitor_nodes',
     'eos_nodes',
     'orbbec_nodes',
+    'point_cloud_nodes',
     'sampler_nodes',
     'visca_nodes',
     'pjlink_nodes',
