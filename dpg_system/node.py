@@ -9,6 +9,7 @@ from fuzzywuzzy import fuzz
 import sys
 import os
 import threading
+import textwrap
 from pathlib import Path
 
 
@@ -596,7 +597,7 @@ class NodeProperty:
             if len(data) == 1:
                 data = data[0]
             else:
-                if self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor']:
+                if self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor', 'text_display']:
                     data = any_to_string(data)
                 else:
                     data = data[0]
@@ -686,7 +687,8 @@ class BasePropertyWidget:
 
     def _setup_interaction(self):
         """Binds callbacks to the generated UUIDs."""
-        if self.widget in ['spacer', 'label', 'table']:
+        # text_display's uuid is a child_window, which takes no value callback.
+        if self.widget in ['spacer', 'label', 'table', 'text_display']:
             return
 
         # Specific widgets use 'clickable_changed', others 'value_changed'
@@ -773,7 +775,7 @@ class BasePropertyWidget:
         # Apply to main widget(s)
         for uid in self.uuids:
             dpg.bind_item_theme(uid, item_theme)
-            if self.widget != 'label':
+            if self.widget not in ('label', 'text_display'):
                 if enable_item:
                     dpg.enable_item(uid)
                 else:
@@ -1212,12 +1214,245 @@ class TextInput(StringWidget):
 
 
 class TextEditor(StringWidget):
+    """Editable multiline text.
+
+    ImGui's InputTextMultiline cannot word-wrap, so long incoming strings run
+    off to the right. We fake it by inserting hard newlines into what the
+    widget *displays*, while self.value keeps the original unwrapped string.
+    Downstream readers go through self.value, so they never see the inserted
+    breaks. If the user edits the field, whatever they typed becomes the value
+    verbatim (their newlines are real from then on).
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wrap_enabled = True
+        self._font = 0
+        self._raw = ''      # unwrapped value
+        self._shown = ''    # exactly what we last pushed into the widget
+
     def _draw_widget(self):
         dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node,
                            default_value=self.default_value, on_enter=False, multiline=True)
+        self._raw = self.default_value
+        self._shown = self.default_value
 
     def _convert_and_set(self, data):
         super()._convert_and_set(data, strip=False)
+        self._raw = self.value
+        self._shown = self._wrap(self.value)
+        if self._shown != self.value and dpg.does_item_exist(self.uuid):
+            dpg.set_value(self.uuid, self._shown)
+
+    def _update_value_from_dpg(self):
+        # Called when the user edits the widget. If the contents still match
+        # what we pushed, nothing was typed and the unwrapped original stands.
+        shown = dpg.get_value(self.uuid)
+        if shown == self._shown:
+            self.value = self._raw
+        else:
+            self.value = shown
+            self._raw = shown
+            self._shown = shown
+
+    def _glyph_width(self):
+        """On-screen advance of one character, in item-width units.
+
+        get_text_size reports *unscaled* font metrics when given an explicit
+        font, but render-space metrics when given none -- while item widths are
+        always in globally-scaled units. On macOS the app loads Inconsolata at
+        24pt with global_font_scale 0.5 for hiDPI, so the explicit-font reading
+        is 2x too wide and has to be scaled down to match.
+        """
+        # Measured over a run because DPG rounds a single glyph to whole
+        # pixels, which would cost ~6% of the usable width.
+        run = 'M' * 64
+        font_id = dpg.get_item_font(self.uuid) or self._font
+        try:
+            if font_id:
+                size = dpg.get_text_size(run, font=font_id)
+                scale = dpg.get_global_font_scale() or 1.0
+            else:
+                size = dpg.get_text_size(run)  # already in render units
+                scale = 1.0
+        except Exception:
+            return 0  # get_text_size is unavailable before the first frame
+        if not size or size[0] <= 0:
+            return 0
+        return (size[0] / len(run)) * scale
+
+    def _wrap_columns(self):
+        """Character columns that fit the current widget width.
+
+        The app binds Inconsolata-g (monospace), so a single glyph advance
+        gives an exact column count rather than an estimate.
+        """
+        if not self.wrap_enabled or not dpg.does_item_exist(self.uuid):
+            return 0
+        glyph = self._glyph_width()
+        if glyph <= 0:
+            return 0
+        width = dpg.get_item_width(self.uuid) or self.widget_width
+        return max(8, int((width - 24) / glyph))  # frame padding + scrollbar
+
+    def _wrap(self, text):
+        cols = self._wrap_columns()
+        if not cols or not text:
+            return text
+        out = []
+        for para in text.split('\n'):
+            if len(para) <= cols:
+                out.append(para)
+            else:
+                out.extend(textwrap.wrap(para, cols, break_long_words=True,
+                                         break_on_hyphens=False,
+                                         replace_whitespace=False,
+                                         drop_whitespace=False) or [''])
+        return '\n'.join(out)
+
+    def rewrap(self):
+        """Re-flow the displayed text. Call after a width or font change."""
+        if not dpg.does_item_exist(self.uuid):
+            return
+        shown = self._wrap(self._raw)
+        if shown != self._shown:
+            self._shown = shown
+            dpg.set_value(self.uuid, shown)
+
+    def set_wrap_enabled(self, enabled):
+        self.wrap_enabled = enabled
+        if not enabled and dpg.does_item_exist(self.uuid):
+            self._shown = self._raw
+            dpg.set_value(self.uuid, self._raw)
+        else:
+            self.rewrap()
+
+    def set_font(self, font):
+        self._font = font
+        super().set_font(font)
+        self.rewrap()
+
+    def save(self, widget_container):
+        # Save the unwrapped text -- otherwise display-only line breaks would
+        # get baked into the patch file.
+        super().save(widget_container)
+        widget_container['value'] = self._raw
+
+
+class TextDisplay(StringWidget):
+    """Read-only wrapped text view: child_window + add_text(wrap=).
+
+    Used instead of an input_text because DPG cannot scroll an input_text
+    programmatically (set_y_scroll raises on it), so auto-scroll-to-bottom is
+    only possible inside a real scrolling container. ImGui wraps natively here,
+    which also means no column math and free re-flow on resize.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text_uuid = dpg.generate_uuid()
+        self.widget_height = kwargs.get('height', 200)
+        self.max_lines = 500      # 0 disables capping
+        self.autoscroll = True
+        self._pin_pending = False
+        self._raw = ''
+
+    def _draw_widget(self):
+        # The label is what restore_properties matches on at load time, so it
+        # has to be carried even though a child_window never displays one.
+        with dpg.child_window(label=self._label, tag=self.uuid, width=self.widget_width,
+                              height=self.widget_height, user_data=self.node):
+            dpg.add_text(self.default_value, tag=self.text_uuid, wrap=self._wrap_px())
+        self._raw = self.default_value
+        self.value = self.default_value
+
+    def _wrap_px(self):
+        width = self.widget_width
+        if dpg.does_item_exist(self.uuid):
+            width = dpg.get_item_width(self.uuid) or width
+        return max(32, width - 20)  # window padding + scrollbar
+
+    def _tail(self, text):
+        """Keep the last max_lines lines -- console behaviour."""
+        if not self.max_lines or self.max_lines <= 0:
+            return text
+        lines = text.split('\n')
+        if len(lines) <= self.max_lines:
+            return text
+        return '\n'.join(lines[-self.max_lines:])
+
+    def _convert_and_set(self, data):
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+            val = str(data)
+        elif isinstance(data, str):
+            val = data
+        else:
+            val = any_to_string(data, strip_returns=False)
+
+        # value stays the full string; the tail cap is display-only so the
+        # node still outputs everything it received.
+        self._raw = val
+        self.value = val
+        shown = self._tail(val)
+        if dpg.does_item_exist(self.text_uuid):
+            dpg.set_value(self.text_uuid, shown)
+            if self.autoscroll:
+                # Deferred to frame_task: input can arrive off the main thread.
+                self._pin_pending = True
+        else:
+            self.default_value = shown
+
+    def _update_value_from_dpg(self):
+        # Read-only: self.uuid is a child_window and has no value of its own,
+        # so the base implementation would clobber self.value with None. The
+        # value only ever arrives through set().
+        pass
+
+    def pin_to_bottom(self):
+        """Main thread only. -1.0 resolves at layout time, so it stays correct
+        even though get_y_scroll_max is a frame stale after content grows."""
+        self._pin_pending = False
+        if dpg.does_item_exist(self.uuid):
+            dpg.set_y_scroll(self.uuid, -1.0)
+
+    def service_scroll(self):
+        if self._pin_pending and self.autoscroll:
+            self.pin_to_bottom()
+
+    def refit(self):
+        """Re-apply the wrap width. Call after a resize."""
+        if dpg.does_item_exist(self.text_uuid):
+            dpg.configure_item(self.text_uuid, wrap=self._wrap_px())
+            if self.autoscroll:
+                self._pin_pending = True
+
+    # ImGui re-flows add_text on its own, so the TextEditor entry point for
+    # "the width changed" just needs to update the wrap column.
+    rewrap = refit
+
+    def set_wrap_enabled(self, enabled):
+        pass  # always wrapped
+
+    def set_max_lines(self, count):
+        self.max_lines = count
+        if dpg.does_item_exist(self.text_uuid):
+            dpg.set_value(self.text_uuid, self._tail(self._raw))
+            if self.autoscroll:
+                self._pin_pending = True
+
+    def copy_to_clipboard(self):
+        dpg.set_clipboard_text(self._raw)
+
+    def set_font(self, font):
+        if dpg.does_item_exist(self.text_uuid):
+            dpg.bind_item_font(self.text_uuid, font)
+
+    def save(self, widget_container):
+        # self.uuid is a child_window; dpg.get_value on it returns None, so the
+        # base implementation cannot be used here.
+        widget_container['name'] = self._label.strip('#')
+        widget_container['value'] = self._raw
+        widget_container['value_type'] = 'string'
 
 
 class SelectorWidget(StringWidget):
@@ -1427,6 +1662,7 @@ class WidgetFactory:
         'checkbox': CheckboxWidget,
         'text_input': TextInput,
         'text_editor': TextEditor,
+        'text_display': TextDisplay,
         'combo': Combo,
         'radio_group': RadioGroup,
         'list_box': ListBox,
@@ -1781,7 +2017,7 @@ class NodeInput:
             if len(data) == 1:
                 data = data[0]
             else:
-                if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor']:
+                if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor', 'text_display']:
                     data = any_to_string(data)
                 elif self.widget is not None and self.widget.widget == 'drag_float_n':
                     pass
@@ -2571,12 +2807,12 @@ class Node:
 
     def add_handler_to_widgets(self):
         for input_ in self.inputs:
-            if input_.widget and input_.widget.widget not in['checkbox', 'button', 'combo', 'knob_float', 'label', 'table']:
+            if input_.widget and input_.widget.widget not in['checkbox', 'button', 'combo', 'knob_float', 'label', 'table', 'text_display']:
                 for uuid in input_.widget.uuids:
                     dpg.bind_item_handler_registry(uuid, "widget handler")
 
         for property_ in self.properties:
-            if property_.widget is not None and property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table']:
+            if property_.widget is not None and property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table', 'text_display']:
                 for uuid in property_.widget.uuids:
                     dpg.bind_item_handler_registry(uuid, "widget handler")
 
@@ -3588,7 +3824,6 @@ class PlaceholderNameNode(Node):
             v = None
             action = False
             if self.current_name in self.node_list:
-                found = True
                 node_model = Node.app.node_factory_container.locate_node_by_name(self.current_name)
                 pos = dpg.get_item_pos(self.uuid)
 
@@ -3599,6 +3834,11 @@ class PlaceholderNameNode(Node):
                 editor = self.my_editor
                 if editor is not None:
                     editor.remove_node(self)
+                # A registered node name wins outright. Without returning here a
+                # name that is also a patcher (patch_library/<name>.json) would
+                # fall through to the patcher branch below and use this
+                # placeholder after it had already been removed.
+                return
 
             elif self.current_name in self.variable_list:
                 v = self.app.find_variable(self.current_name)

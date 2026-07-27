@@ -30,6 +30,10 @@ def register_interface_nodes():
     Node.app.register_node("slider", ValueNode.factory)
     Node.app.register_node("message", ValueNode.factory)
     Node.app.register_node("text", ValueNode.factory)
+    # NOT 'display' -- that collides with patch_library/display.json, and
+    # PlaceholderNameNode.execute() would run both the node and patcher
+    # branches, using the placeholder after it had already been removed.
+    Node.app.register_node("text_display", ValueNode.factory)
     Node.app.register_node("string", ValueNode.factory)
     Node.app.register_node("list", ValueNode.factory)
     Node.app.register_node("knob", ValueNode.factory)
@@ -1034,6 +1038,8 @@ class ValueNode(Node):
             return StringNode(name, data, args)
         elif base_name == 'text':
             return TextEditorNode(name, data, args)
+        elif base_name == 'display':
+            return TextDisplayNode(name, data, args)
         else:
             return StringNode(name, data, args)
 
@@ -1574,16 +1580,24 @@ class TextEditorNode(StringNode):
 
         self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
                                              callback=self.options_changed)
+        self.wrap_option = self.add_option('wrap', widget_type='checkbox', default_value=True,
+                                           callback=self.options_changed)
 
     def custom_create(self, from_file):
         dpg.set_item_height(self.input.widget.uuid, self.height_option())
         super().custom_create(from_file)
+        self.input.widget.rewrap()
 
     def install_resize_handle(self):
         self.resize_handle = self.add_resize_handle(
             self.input.widget, axis='xy',
-            width_option=self.width_option, height_option=self.height_option
+            width_option=self.width_option, height_option=self.height_option,
+            on_resize=self.on_resized
         )
+
+    def on_resized(self, new_w, new_h):
+        # Hard-wrapped text does not re-flow on its own.
+        self.input.widget.rewrap()
 
     def options_changed(self):
         super().options_changed()
@@ -1592,6 +1606,58 @@ class TextEditorNode(StringNode):
             dpg.set_item_height(self.input.widget.uuid, h)
             if getattr(self, 'resize_handle', None) and dpg.does_item_exist(self.resize_handle.uuid):
                 dpg.set_item_height(self.resize_handle.uuid, h)
+        if getattr(self, 'wrap_option', None):
+            self.input.widget.set_wrap_enabled(self.wrap_option())
+
+
+class TextDisplayNode(TextEditorNode):
+    """Read-only wrapped text view. Keeps the tail of long input and scrolls
+    to the bottom as new text arrives."""
+
+    def setup_specific_ui(self, args):
+        self.widget_type = 'text_display'
+        self.widget_width = 400
+        self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=self.widget_type,
+                                           widget_uuid=self.value, widget_width=self.widget_width)
+        self.input.set_strip_returns(False)
+        if self.param_name is not None:
+            self.output = self.add_output(self.param_name + ' out')
+        else:
+            self.output = self.add_string_output('string out')
+            self.output.set_strip_returns(False)
+
+        self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
+                                             callback=self.options_changed)
+        self.max_lines_option = self.add_option('max_lines', widget_type='drag_int', default_value=500,
+                                                callback=self.options_changed)
+        self.autoscroll_option = self.add_option('autoscroll', widget_type='checkbox', default_value=True,
+                                                 callback=self.options_changed)
+        self.add_option('copy to clipboard', widget_type='button', callback=self.copy_text)
+        # wrap is native here (ImGui wraps add_text), so there is no wrap option.
+        self.wrap_option = None
+
+    def custom_create(self, from_file):
+        super().custom_create(from_file)
+        self.add_frame_task()
+
+    def frame_task(self):
+        # Scroll pinning has to happen on the main thread; incoming text may
+        # arrive on another one.
+        self.input.widget.service_scroll()
+
+    def on_resized(self, new_w, new_h):
+        self.input.widget.refit()
+
+    def copy_text(self):
+        self.input.widget.copy_to_clipboard()
+
+    def options_changed(self):
+        super().options_changed()
+        if getattr(self, 'max_lines_option', None):
+            self.input.widget.set_max_lines(any_to_int(self.max_lines_option()))
+        if getattr(self, 'autoscroll_option', None):
+            self.input.widget.autoscroll = any_to_bool(self.autoscroll_option())
+        self.input.widget.refit()
 
 
 # class VectorNode(Node):

@@ -576,14 +576,20 @@ class TextFileNode(Node):
         dpg.set_item_height(self.text_editor.widget.uuid, self.editor_height())
         if getattr(self, 'resize_handle', None) and dpg.does_item_exist(self.resize_handle.uuid):
             dpg.set_item_height(self.resize_handle.uuid, self.editor_height())
+        self.text_editor.widget.rewrap()
+
+    def on_editor_resized(self, new_w, new_h):
+        self.text_editor.widget.rewrap()
 
     def custom_create(self, from_file):
         dpg.set_item_width(self.text_editor.widget.uuid, self.editor_width())
         dpg.set_item_height(self.text_editor.widget.uuid, self.editor_height())
         self.resize_handle = self.add_resize_handle(
             self.text_editor.widget, axis='xy',
-            width_option=self.editor_width, height_option=self.editor_height
+            width_option=self.editor_width, height_option=self.editor_height,
+            on_resize=self.on_editor_resized
         )
+        self.text_editor.widget.rewrap()
 
     def post_load_callback(self):
         if self.file_name_property() != '':
