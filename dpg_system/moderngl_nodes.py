@@ -1545,9 +1545,26 @@ class MGLShapeNode(MGLNode):
     def render_geometry(self, vertices, indices=None):
         if self.ctx is not None and vertices is not None and len(vertices) > 0:
             inner_ctx = self.ctx.ctx
+
+            # moderngl's default gc_mode is None: GPU objects are NOT freed on
+            # Python GC, so rebinding self.vbo/ibo/vao without releasing the
+            # previous ones leaks GPU memory every call. For streaming geometry
+            # (e.g. a live point cloud updated per frame) that leak grows
+            # unbounded and eventually crashes the process. Release the old
+            # objects first — vao before the buffers it references.
+            if self.vao is not None:
+                self.vao.release()
+                self.vao = None
+            if self.vbo is not None:
+                self.vbo.release()
+                self.vbo = None
+            if self.ibo is not None:
+                self.ibo.release()
+                self.ibo = None
+
             data = np.array(vertices, dtype='f4')
             self.vbo = inner_ctx.buffer(data.tobytes())
-            
+
             if indices is not None:
                 ind_data = np.array(indices, dtype='i4')
                 self.ibo = inner_ctx.buffer(ind_data.tobytes())
