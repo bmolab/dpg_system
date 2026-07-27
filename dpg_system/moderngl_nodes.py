@@ -1522,6 +1522,7 @@ class MGLShapeNode(MGLNode):
         self.mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
         self.cull_input = self.add_input('cull', widget_type='checkbox', default_value=True)
         self.point_size_input = self.add_input('point_size', widget_type='drag_float', widget_width=50, default_value=4.0, min_value=1.0)
+        self.point_size_input.widget.speed = 0.1
         self.round_input = self.add_input('round', widget_type='checkbox', default_value=True)
         self.texture_input = self.add_input('texture')
         self.vbo = None

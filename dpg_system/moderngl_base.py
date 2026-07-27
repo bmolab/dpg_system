@@ -1154,6 +1154,7 @@ class MGLContext:
                 out vec3 v_normal;
                 out vec3 v_pos;
                 out vec2 v_texcoord;
+                out float v_point_px;
                 void main() {
                     vec4 world_pos = M * vec4(in_position, 1.0);
                     gl_Position = P * V * world_pos;
@@ -1163,6 +1164,7 @@ class MGLContext:
                     } else {
                         gl_PointSize = max(1.0, perspective_size);
                     }
+                    v_point_px = gl_PointSize;
                     mat3 normal_matrix = transpose(inverse(mat3(M)));
                     v_normal = normal_matrix * in_normal;
                     v_pos = world_pos.xyz;
@@ -1178,6 +1180,7 @@ class MGLContext:
                 uniform float point_size;
                 uniform bool point_culling;
                 uniform bool round_points;
+                in float v_point_px;
                 
                 // Texturing
                 uniform sampler2D diffuse_map;
@@ -1224,11 +1227,15 @@ class MGLContext:
                         alpha *= texColor.a;
                     }
                     
-                    // Round Points
+                    // Round Points. The sprite is the perspective-scaled size
+                    // plus a 2px pad (see vertex shader), so the circle's
+                    // fraction of the sprite must use the actual rasterized
+                    // size — the world-space uniform overestimates it at
+                    // distance, which clipped far points into rounded squares.
                     if (round_points && point_size > 1.5) {
                         vec2 cxy = 2.0 * gl_PointCoord - 1.0;
                         float dist = length(cxy);
-                        float limit = point_size / (point_size + 2.0);
+                        float limit = max(v_point_px - 2.0, 1.0) / v_point_px;
                         if (dist > limit) discard;
                     }
                     
