@@ -2568,39 +2568,53 @@ class GLNumpyLines(GLNode):
             super().execute()
 
     def draw(self):
-        if self.line_array is not None:
-            number_of_lines = self.line_array.shape[1]
-            number_of_points = self.line_array.shape[0]
-            select_list = any_to_list(self.selected_joints())
-            if len(select_list) == 0:
-                selected = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
-            else:
-                selected = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
-                for select in select_list:
-                    select_int = any_to_int(select)
-                    if 0 <= select_int < number_of_points:
-                        selected[select_int] = True
-            accent_scale = self.accent_scale()
+        if self.line_array is None:
+            return
+        # draw() expects a 3D array shaped (points, lines, coords).
+        # Anything else (empty axis, 2D scalar-per-cell, wrong rank) would make
+        # glVertex() raise mid glBegin/glEnd, corrupting GL state (GLXBadContextState).
+        if self.line_array.ndim != 3:
+            return
+        number_of_points = self.line_array.shape[0]
+        number_of_lines = self.line_array.shape[1]
+        coord_dim = self.line_array.shape[2]
+        if number_of_points == 0 or number_of_lines == 0 or coord_dim < 2:
+            return
+        select_list = any_to_list(self.selected_joints())
+        if len(select_list) == 0:
+            selected = [True] * number_of_lines
+        else:
+            selected = [False] * number_of_lines
+            for select in select_list:
+                select_int = any_to_int(select)
+                if 0 <= select_int < number_of_lines:
+                    selected[select_int] = True
+        accent_scale = self.accent_scale()
+        have_motion = self.motion_accent() and self.motion_array is not None \
+            and self.motion_array.shape == (number_of_points, number_of_lines)
 
-            gl.glLineWidth(self.line_width())
-            for i in range(number_of_lines):
-                if selected[i]:
-                    color = self.colors[i]
-                    gl.glBegin(GL_LINE_STRIP)
-                    for j in range(number_of_points):
-                        alpha = 1.0
-                        if self.motion_accent() and self.motion_array is not None:
-                            alpha = self.motion_array[j, i]
-                            if alpha > 1.0:
-                                alpha = 1.0
-                            if self.accent_color():
-                                color = _viridis_data[int(alpha * 255.0)]
-                                alpha = 1.0
-                        if self.alpha_fade():
-                            alpha = (number_of_points - j) / number_of_points * alpha
-                        gl.glColor4f(color[0], color[1], color[2], alpha)
-                        gl.glVertex(self.line_array[j, i])
-                    gl.glEnd()
+        gl.glLineWidth(self.line_width())
+        for i in range(number_of_lines):
+            if not selected[i]:
+                continue
+            color = self.colors[i] if i < len(self.colors) else self.colors[-1]
+            gl.glBegin(GL_LINE_STRIP)
+            try:
+                for j in range(number_of_points):
+                    alpha = 1.0
+                    if have_motion:
+                        alpha = self.motion_array[j, i]
+                        if alpha > 1.0:
+                            alpha = 1.0
+                        if self.accent_color():
+                            color = _viridis_data[int(alpha * 255.0)]
+                            alpha = 1.0
+                    if self.alpha_fade():
+                        alpha = (number_of_points - j) / number_of_points * alpha
+                    gl.glColor4f(color[0], color[1], color[2], alpha)
+                    gl.glVertex(self.line_array[j, i])
+            finally:
+                gl.glEnd()
 
 class GLLight:
     def __init__(self):
