@@ -3242,7 +3242,12 @@ class GLVertexBufferNode(GLNode):
             vertex_data: numpy.ndarray - The vertex data to upload to GPU
         """
         if self.vertex_data_input.fresh_input:
-            self.vertex_data = any_to_array(self.vertex_data_input()).copy().astype(np.float32)
+            data = self.vertex_data_input()
+            if isinstance(data, dict):
+                data = data.get('point_cloud')   # cloud-frame convention (point_cloud_nodes)
+                if data is None:
+                    return
+            self.vertex_data = any_to_array(data).copy().astype(np.float32)
             if not self.vertex_data.flags['C_CONTIGUOUS']:
                 self.vertex_data = np.ascontiguousarray(self.vertex_data, dtype=np.float32)
 

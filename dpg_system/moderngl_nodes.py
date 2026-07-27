@@ -2393,6 +2393,8 @@ class MGLPointCloudNode(MGLShapeNode):
     def execute(self):
         if self.points_input.fresh_input:
             data = self.points_input()
+            if isinstance(data, dict):
+                data = data.get('point_cloud')   # cloud-frame convention (point_cloud_nodes)
             if data is not None:
                 # Convert to numpy float32
                 if isinstance(data, list):
@@ -2463,6 +2465,8 @@ class MGLSurfaceNode(MGLShapeNode):
     def execute(self):
         if self.points_input.fresh_input:
             data = self.points_input()
+            if isinstance(data, dict):
+                data = data.get('point_cloud')   # cloud-frame convention (point_cloud_nodes)
             if data is not None:
                 # Convert to numpy float32
                 if isinstance(data, list):
