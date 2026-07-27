@@ -1541,6 +1541,20 @@ class MGLContext:
         # Reset stacks
         self.model_matrix_stack = [np.identity(4, dtype=np.float32)]
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.BLEND | moderngl.PROGRAM_POINT_SIZE)
+        # Compatibility-profile contexts (e.g. when attached to DPG's GLFW
+        # context) leave gl_PointCoord undefined (all zeros) unless the legacy
+        # GL_POINT_SPRITE enable is set — which makes the round-points shader
+        # discard every fragment, so point clouds vanish with 'round' checked.
+        # Core profiles reject the enum (benign); probe once and remember.
+        GL_POINT_SPRITE = 0x8861
+        state = getattr(self, '_point_sprite_state', None)
+        if state is None:
+            self.ctx.error                          # clear stale error state
+            self.ctx.enable_direct(GL_POINT_SPRITE)
+            state = 'skip' if self.ctx.error == 'GL_INVALID_ENUM' else 'enable'
+            self._point_sprite_state = state
+        elif state == 'enable':
+            self.ctx.enable_direct(GL_POINT_SPRITE)
 
     def get_pixel_data(self):
         if self.active_target is None:
