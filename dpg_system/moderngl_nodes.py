@@ -265,6 +265,24 @@ def _dpg_ui_key_maps():
     return _DPG_UI_KEY_MAPS
 
 
+_NODE_IMAGE_BUTTON_THEME = None
+
+
+def _get_node_image_button_theme():
+    # image_button styled to look exactly like a plain image: no padding,
+    # no hover/active tint
+    global _NODE_IMAGE_BUTTON_THEME
+    if _NODE_IMAGE_BUTTON_THEME is None:
+        with dpg.theme() as theme:
+            with dpg.theme_component(dpg.mvImageButton):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, [0, 0, 0, 0])
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, [0, 0, 0, 0])
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, [0, 0, 0, 0])
+                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 0, 0)
+        _NODE_IMAGE_BUTTON_THEME = theme
+    return _NODE_IMAGE_BUTTON_THEME
+
+
 class MGLContextNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -289,6 +307,7 @@ class MGLContextNode(Node):
         # UI event capture for the DPG-window (readback) display path
         self._dpg_ui_events = []
         self._dpg_ui_registry = None
+        self._dpg_mouse_captured = False
 
         # PBO double-buffer state for async readback
         self._pbo = [None, None]   # two Buffer objects
@@ -317,6 +336,10 @@ class MGLContextNode(Node):
         self.node_resize_handle = None
         self.display_mode_option = self.add_option('display_mode', widget_type='combo', default_value='node')
         self.display_mode_option.widget.combo_items = ['off', 'node', 'window', 'fullscreen']
+        # When on, the in-node display captures mouse events (down/drag/up/scroll)
+        # and sends them out the ui output — e.g. to drive mgl_orbit_camera. The
+        # image becomes an image_button so dragging on it doesn't move the node.
+        self.node_mouse_events_option = self.add_option('node_mouse_events', widget_type='checkbox', default_value=False)
         
         self.samples_option = self.add_option('samples', widget_type='combo', default_value='4')
         self.samples_option.widget.combo_items = ['0', '2', '4', '6', '8', '16']
@@ -354,6 +377,8 @@ class MGLContextNode(Node):
             win = self.external_window
         elif mode == 'fullscreen':
             win = self.fullscreen_window
+        elif mode == 'node' and self.node_mouse_events_option():
+            win = self.image_item
         else:
             win = None
         if win is not None and dpg.does_item_exist(win):
@@ -397,14 +422,17 @@ class MGLContextNode(Node):
         win = self._dpg_ui_window()
         if win is None or not dpg.is_item_hovered(win):
             return
+        self._dpg_mouse_captured = True
         x, y = self._dpg_ui_mouse_xy(win)
         self._push_dpg_ui_event(['mouse_down', x, y, int(button)])
 
     def _dpg_ui_mouse_release(self, sender, button):
-        # gate on focus, not hover, so the release that ends a drag outside
-        # the window is still reported
+        # gate on capture or focus, not hover, so the release that ends a
+        # drag outside the window is still reported
+        captured = self._dpg_mouse_captured
+        self._dpg_mouse_captured = False
         win = self._dpg_ui_window()
-        if win is None or not dpg.is_item_focused(win):
+        if win is None or not (captured or dpg.is_item_focused(win)):
             return
         x, y = self._dpg_ui_mouse_xy(win)
         self._push_dpg_ui_event(['mouse_up', x, y, int(button)])
@@ -416,7 +444,11 @@ class MGLContextNode(Node):
         x, y = self._dpg_ui_mouse_xy(win)
         for button in (0, 1, 2):
             if dpg.is_mouse_button_down(button):
-                self._push_dpg_ui_event(['mouse_drag', x, y, button])
+                # only report drags whose press landed on this display, so a
+                # drag that began elsewhere (e.g. moving another node across
+                # the image) doesn't register as a drag here
+                if self._dpg_mouse_captured:
+                    self._push_dpg_ui_event(['mouse_drag', x, y, button])
                 return
         self._push_dpg_ui_event(['mouse_move', x, y])
 
@@ -512,6 +544,23 @@ class MGLContextNode(Node):
             self.height_option.set(int(new_h))
             self.resize()
 
+    def _create_node_image(self, w, h, before=None):
+        kwargs = {}
+        if before is not None:
+            kwargs['before'] = before
+        if self.node_mouse_events_option():
+            item = dpg.add_image_button(
+                self.texture_tag, parent=self.image_attribute,
+                width=w, height=h, **kwargs,
+            )
+            dpg.bind_item_theme(item, _get_node_image_button_theme())
+        else:
+            item = dpg.add_image(
+                self.texture_tag, parent=self.image_attribute,
+                width=w, height=h, **kwargs,
+            )
+        return item
+
     def _install_node_resize_handle(self, bar_width):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn = dpg.add_button(parent=self.image_attribute, label='', width=int(bar_width), height=4)
@@ -560,18 +609,25 @@ class MGLContextNode(Node):
         # ... (Node display logic omitted for brevity if unchanged, but I need to include context to replace correctly)
         # Handle Node Display
         if mode == 'node':
-            # Check if we need to recreate image (missing or wrong texture)
+            # Interactive display uses an image_button (captures the mouse, so
+            # dragging on it orbits/interacts instead of moving the node).
+            desired_type = ("mvAppItemType::mvImageButton"
+                            if self.node_mouse_events_option()
+                            else "mvAppItemType::mvImage")
+            # Check if we need to recreate image (missing, wrong texture or wrong type)
             recreate = False
             if self.image_item is None:
                 recreate = True
             elif not dpg.does_item_exist(self.image_item):
+                recreate = True
+            elif dpg.get_item_type(self.image_item) != desired_type:
                 recreate = True
             else:
                 # Check if texture matches
                 current_conf = dpg.get_item_configuration(self.image_item)
                 if current_conf.get('texture_tag') != self.texture_tag:
                     recreate = True
-            
+
             if recreate:
                 if self.image_item and dpg.does_item_exist(self.image_item):
                     dpg.delete_item(self.image_item)
@@ -595,17 +651,11 @@ class MGLContextNode(Node):
                 # is reallocated.
                 rh = self.node_resize_handle
                 if rh is not None and dpg.does_item_exist(rh.uuid):
-                    self.image_item = dpg.add_image(
-                        self.texture_tag, parent=self.image_attribute,
-                        width=disp_w, height=disp_h, before=rh.uuid,
-                    )
+                    self.image_item = self._create_node_image(disp_w, disp_h, before=rh.uuid)
                     rh.target_uuid = self.image_item
                 else:
                     self.node_resize_handle = None
-                    self.image_item = dpg.add_image(
-                        self.texture_tag, parent=self.image_attribute,
-                        width=disp_w, height=disp_h,
-                    )
+                    self.image_item = self._create_node_image(disp_w, disp_h)
                     self._install_node_resize_handle(disp_w)
         else:
             if self.image_item:
@@ -733,8 +783,11 @@ class MGLContextNode(Node):
                           self.context.has_direct_window)
 
         # DPG fallback windows need global DPG handlers to capture ui events;
-        # only keep them installed while that display path is active.
-        self._ensure_dpg_ui_handlers(not use_direct and mode in ('window', 'fullscreen'))
+        # only keep them installed while that display path is active. Node-mode
+        # display also uses them when node_mouse_events is on.
+        self._ensure_dpg_ui_handlers(
+            (not use_direct and mode in ('window', 'fullscreen'))
+            or (mode == 'node' and self.node_mouse_events_option()))
 
         # 0. Sync DPG Window Image Size (only when using readback path)
         if not use_direct:
@@ -3766,8 +3819,13 @@ class MGLOrbitCameraNode(MGLNode):
         self.distance = self.add_input('distance', widget_type='drag_float', default_value=3.0)
         self.yaw = self.add_input('yaw', widget_type='drag_float', widget_width=50, default_value=0.0)
         self.elevation = self.add_input('elevation', widget_type='drag_float', widget_width=50, default_value=20.0)
+        # wire mgl_context's ui output here: left-drag orbits, scroll zooms
+        self.ui_input = self.add_input('ui', callback=self.ui_event_in)
         self.near = self.add_option('near', widget_type='drag_float', default_value=0.1)
         self.far = self.add_option('far', widget_type='drag_float', default_value=100.0)
+        self.drag_speed = self.add_option('drag_speed', widget_type='drag_float', default_value=0.3)
+        self.zoom_speed = self.add_option('zoom_speed', widget_type='drag_float', default_value=1.0)
+        self._drag_last = None
 
     def custom_create(self, from_file):
         dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
@@ -3778,6 +3836,38 @@ class MGLOrbitCameraNode(MGLNode):
         dpg.configure_item(self.target.widget.uuids[0], width=45)
         dpg.configure_item(self.target.widget.uuids[1], width=45)
         dpg.configure_item(self.target.widget.uuids[2], width=45)
+
+    def ui_event_in(self):
+        """Consume ui events from mgl_context (mouse_down/drag/up/move, scroll).
+
+        Left-drag orbits (yaw/elevation follow the mouse), scroll wheel zooms
+        the distance. Deltas are computed between consecutive events, so a
+        missed mouse_up (possible on the DPG readback path) can't cause a jump.
+        """
+        event = self.ui_input()
+        if not isinstance(event, (list, tuple)) or len(event) == 0:
+            return
+        kind = event[0]
+        if kind == 'mouse_drag' and len(event) >= 4:
+            if int(event[3]) != 0:  # left button only
+                self._drag_last = None
+                return
+            x, y = float(event[1]), float(event[2])
+            if self._drag_last is not None:
+                speed = self.drag_speed()
+                dx = x - self._drag_last[0]
+                dy = y - self._drag_last[1]
+                self.yaw.set(self.yaw() + dx * speed)
+                elev = self.elevation() - dy * speed
+                self.elevation.set(max(-89.0, min(89.0, elev)))
+            self._drag_last = (x, y)
+        elif kind == 'mouse_down' and len(event) >= 4:
+            self._drag_last = (float(event[1]), float(event[2])) if int(event[3]) == 0 else None
+        elif kind in ('mouse_up', 'mouse_move'):
+            self._drag_last = None
+        elif kind == 'scroll' and len(event) >= 3:
+            dist = self.distance() * (0.9 ** (float(event[2]) * self.zoom_speed()))
+            self.distance.set(max(0.01, dist))
 
     def draw(self):
         if self.ctx is None:
