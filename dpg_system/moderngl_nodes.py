@@ -1641,6 +1641,9 @@ class MGLShapeNode(MGLNode):
                 self.prog['point_culling'].value = (mode == 'points' and cull)
             if 'round_points' in self.prog:
                 self.prog['round_points'].value = (mode == 'points' and self.round_input())
+            if 'point_weight_mode' in self.prog:
+                flags = getattr(self, '_point_weight_flags', 0)
+                self.prog['point_weight_mode'].value = flags if mode == 'points' else 0
 
             # Texturing
             tex = self.texture_input()
@@ -1673,7 +1676,19 @@ class MGLShapeNode(MGLNode):
             elif mode == 'points':
                 if 'point_size' in self.prog:
                     self.prog['point_size'].value = self.point_size_input()
-                self.vao.render(mode=moderngl.POINTS)
+                if getattr(self, '_points_additive', False):
+                    # Order-independent additive accumulation: depth writes off
+                    # (test stays on, so solid geometry still occludes) and
+                    # contributions sum, so a sparse near point no longer hides
+                    # a brighter one behind it.
+                    inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE)
+                    fbo = inner_ctx.fbo
+                    fbo.depth_mask = False
+                    self.vao.render(mode=moderngl.POINTS)
+                    fbo.depth_mask = True
+                    inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
+                else:
+                    self.vao.render(mode=moderngl.POINTS)
             else:
                 self.vao.render()
 
@@ -2379,11 +2394,20 @@ class MGLPointCloudNode(MGLShapeNode):
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
 
+    WEIGHT_MODE_FLAGS = {'off': 0, 'size': 1, 'brightness': 2, 'size + brightness': 3}
+
     def initialize(self, args):
         super().initialize(args)
         self.points_input = self.add_input('points', triggers_execution=True)
+        self.weights_input = self.add_input('weights', widget_type='combo',
+                                            default_value='size + brightness')
+        self.weights_input.widget.combo_items = list(self.WEIGHT_MODE_FLAGS.keys())
+        self.blend_input = self.add_input('blend', widget_type='combo',
+                                          default_value='additive')
+        self.blend_input.widget.combo_items = ['normal', 'additive']
         self.end_initialization()
         self.points_data = None
+        self.weights_data = None
         self.dirty = False
 
     def custom_create(self, from_file):
@@ -2394,8 +2418,12 @@ class MGLPointCloudNode(MGLShapeNode):
     def execute(self):
         if self.points_input.fresh_input:
             data = self.points_input()
+            weights = None
             if isinstance(data, dict):
-                data = data.get('point_cloud')   # cloud-frame convention (point_cloud_nodes)
+                # cloud-frame convention (point_cloud_nodes): per-point 0..1
+                # weights (e.g. pc_voxel occupancy) ride alongside the points
+                weights = data.get('weights')
+                data = data.get('point_cloud')
             if data is not None:
                 # Convert to numpy float32
                 if isinstance(data, list):
@@ -2404,36 +2432,46 @@ class MGLPointCloudNode(MGLShapeNode):
                     data = data.astype(np.float32)
                 elif self.app.torch_available and isinstance(data, torch.Tensor):
                     data = data.detach().cpu().numpy().astype(np.float32)
-                
+
                 # Reshape if flat [N*3] -> [N, 3]
                 if data.ndim == 1 and data.size % 3 == 0:
                     data = data.reshape(-1, 3)
-                
+
                 if data.ndim == 2 and data.shape[1] == 3:
                      self.points_data = data
+                     self.weights_data = None
+                     if weights is not None:
+                         w = np.asarray(weights, dtype=np.float32).reshape(-1)
+                         if w.size == data.shape[0]:
+                             self.weights_data = np.clip(w, 0.0, 1.0)
                      self.dirty = True
-        
+
         super().execute()
 
     def draw(self):
         if self.ctx and self.dirty and self.points_data is not None:
             # Prepare interleaved data [x,y,z, nx,ny,nz, u,v]
             count = self.points_data.shape[0]
-            
+
             # Dummy Normals (0, 1, 0)
             normals = np.tile([0.0, 1.0, 0.0], (count, 1)).astype(np.float32)
-            
-            # Dummy UVs (0, 0)
+
+            # UVs: u carries the per-point weight for the shader (v unused)
             uvs = np.zeros((count, 2), dtype=np.float32)
-            
+            if self.weights_data is not None and self.weights_data.size == count:
+                uvs[:, 0] = self.weights_data
+
             # Combine
             # [N, 8]
             vertices = np.hstack([self.points_data, normals, uvs]).flatten().astype(np.float32)
-            
+
             # Update Geometry
             self.render_geometry(vertices, indices=None)
             self.dirty = False
-            
+
+        self._point_weight_flags = (self.WEIGHT_MODE_FLAGS.get(self.weights_input(), 0)
+                                    if self.weights_data is not None else 0)
+        self._points_additive = self.blend_input() == 'additive'
         super().draw()
 
     def create_geometry(self):

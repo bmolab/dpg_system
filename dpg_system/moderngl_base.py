@@ -1148,6 +1148,7 @@ class MGLContext:
                 uniform mat4 V;
                 uniform mat4 P;
                 uniform float point_size;
+                uniform int point_weight_mode;   // bit 1: size, bit 2: brightness
                 in vec3 in_position;
                 in vec3 in_normal;
                 in vec2 in_texcoord;
@@ -1163,6 +1164,12 @@ class MGLContext:
                         gl_PointSize = perspective_size + 2.0;
                     } else {
                         gl_PointSize = max(1.0, perspective_size);
+                    }
+                    // Per-point weight (0..1, carried in texcoord.x) scales the
+                    // core size, keeping the 2px antialias pad.
+                    if ((point_weight_mode & 1) != 0) {
+                        float w = clamp(in_texcoord.x, 0.0, 1.0);
+                        gl_PointSize = max(1.0, (gl_PointSize - 2.0) * w + 2.0);
                     }
                     v_point_px = gl_PointSize;
                     mat3 normal_matrix = transpose(inverse(mat3(M)));
@@ -1180,6 +1187,7 @@ class MGLContext:
                 uniform float point_size;
                 uniform bool point_culling;
                 uniform bool round_points;
+                uniform int point_weight_mode;   // bit 1: size, bit 2: brightness
                 in float v_point_px;
                 
                 // Texturing
@@ -1274,7 +1282,14 @@ class MGLContext:
                         // Specular = Specular (Additive, not multiplied by alpha)
                         final_rgb = (total_ambient + total_diffuse) * base_color.rgb * alpha + total_specular;
                     }
-                    
+
+                    // Per-point weight (0..1, in texcoord.x) dims sparse points.
+                    if ((point_weight_mode & 2) != 0) {
+                        float w = clamp(v_texcoord.x, 0.0, 1.0);
+                        final_rgb *= w;
+                        alpha *= w;
+                    }
+
                     f_color = vec4(final_rgb, alpha);
                 }
             '''

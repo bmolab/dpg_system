@@ -240,7 +240,15 @@ class PointCloudCropNode(PointCloudNode):
 class PointCloudVoxelNode(PointCloudNode):
     """Voxel-grid downsample: collapse each occupied voxel to one point (its
     centre or the centroid of the points it holds). ``min points`` doubles as a
-    density floor, dropping sparse speckle voxels."""
+    density floor, dropping sparse speckle voxels.
+
+    The output frame carries per-voxel ``weights`` (count / ``weight scale``,
+    clamped to 0..1) for count-reflecting rendering in ``mgl_point_cloud``.
+    ``distance compensation`` multiplies the count by the voxel's distance from
+    the sensor (linear) or its square (squared, matching the physics: a voxel
+    at 2x distance subtends 1/4 the depth pixels) before scaling — radial
+    distance is used rather than the C++ code's z so it survives leveling/yaw
+    rotations, which preserve |p| but not z."""
 
     @staticmethod
     def factory(name, data, args=None):
@@ -260,6 +268,11 @@ class PointCloudVoxelNode(PointCloudNode):
         self.output = self.add_output('voxel cloud')
         self.count_output = self.add_output('counts')
         self._add_bounds_options([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
+        self.distcomp_option = self.add_option('distance compensation', widget_type='combo',
+                                               default_value='squared')
+        self.distcomp_option.widget.combo_items = ['none', 'linear', 'squared']
+        self.weight_scale_option = self.add_option('weight scale', widget_type='drag_float',
+                                                   default_value=100.0, min=1e-3)
 
     def _ensure_grid(self):
         lo, hi = self._bounds([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
@@ -306,8 +319,16 @@ class PointCloudVoxelNode(PointCloudNode):
             out = self.grid.centres(occupied)
 
         self.count_output.send(counts[occupied].astype(np.int64))
+
+        weights = counts[occupied].astype(np.float32)
+        distcomp = self.distcomp_option()
+        if distcomp != 'none':
+            d = np.sqrt(out[:, 0] ** 2 + out[:, 1] ** 2 + out[:, 2] ** 2)
+            weights *= d if distcomp == 'linear' else d * d
+        weights = np.clip(weights / max(1e-3, float(self.weight_scale_option())), 0.0, 1.0)
+
         self._send(self.output, np.ascontiguousarray(out),
-                   voxel_size=float(self.grid.voxel_size))
+                   voxel_size=float(self.grid.voxel_size), weights=weights)
 
 
 class PointCloudBackgroundNode(PointCloudNode):
