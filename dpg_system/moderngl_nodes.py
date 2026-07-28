@@ -10,6 +10,7 @@ import math
 from ctypes import c_void_p
 from dpg_system.matrix_utils import *
 from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount, quaternion_to_R3_rotation, rotation_matrix_from_vectors
+from dpg_system.colormaps import _viridis_data
 try:
     from pyquaternion import Quaternion
 except ImportError:
@@ -2987,6 +2988,13 @@ class MGLTextNode(MGLNode):
 
 
 class MGLLineArrayNode(MGLNode):
+    # Width is added in pixels while motion is a per-frame distance in whatever
+    # units the source uses — typically a few thousandths per frame. Without a
+    # unit factor the scale widget would only be useful in the thousands, so it
+    # is calibrated to keep accent_width_scale in the same order as the other
+    # accent scales.
+    width_scale_unit = 1000.0
+
     @staticmethod
     def factory(name, data, args=None):
         return MGLLineArrayNode(name, data, args)
@@ -2998,11 +3006,89 @@ class MGLLineArrayNode(MGLNode):
         super().initialize(args)
         self.array_input = self.add_input('array', triggers_execution=True)
         self.line_width_input = self.add_input('line_width', widget_type='drag_float', widget_width=50, default_value=1.0, min_value=1.0)
+        # Trails are stored newest-first, so fading by index makes the tail decay.
+        self.alpha_fade_input = self.add_input('alpha_fade', widget_type='checkbox', default_value=False)
+        # Exponent on the fade ramp: 1 is linear, >1 drops off near the head
+        # leaving a long faint tail, <1 holds the trail bright then cuts away.
+        self.fade_rate_input = self.add_input('fade_rate', widget_type='drag_float', widget_width=50,
+                                              default_value=1.0, min_value=0.01)
+        self.perspective_width_input = self.add_input('perspective_width', widget_type='checkbox', default_value=False)
+        self.motion_accent_input = self.add_input('accent_motion', widget_type='checkbox', default_value=False)
+        # Each accent target has its own enable and its own scale on the raw
+        # motion, so none of them silently switches another one off.
+        self.accent_brightness_input = self.add_input('accent_brightness', widget_type='checkbox', default_value=True)
+        self.accent_scale_input = self.add_input('accent_scale', widget_type='drag_float', widget_width=50, default_value=50.0)
+        self.accent_color_input = self.add_input('accent_colour', widget_type='checkbox', default_value=False)
+        self.accent_colour_scale_input = self.add_input('accent_colour_scale', widget_type='drag_float',
+                                                        widget_width=50, default_value=50.0)
+        # Fraction of the top of the ramp that pushes on past viridis' yellow
+        # into white. 0 leaves the colormap untouched.
+        self.white_hot_input = self.add_input('white_hot', widget_type='drag_float', widget_width=50,
+                                              default_value=0.0, min_value=0.0, max_value=0.95)
+        self.accent_width_input = self.add_input('accent_width', widget_type='checkbox', default_value=False)
+        self.accent_width_scale_input = self.add_input('accent_width_scale', widget_type='drag_float',
+                                                       widget_width=50, default_value=50.0)
+        # Exponent on the width response: 2 spreads the range out, so slow
+        # stretches stay near the base width and fast ones swell hard.
+        self.accent_width_curve_input = self.add_input('accent_width_curve', widget_type='drag_float',
+                                                       widget_width=50, default_value=1.0, min_value=0.01)
+        # A ceiling on the accented width, not a rescale of it.
+        self.accent_width_max_input = self.add_input('accent_width_max', widget_type='drag_float', widget_width=50,
+                                                     default_value=8.0, min_value=0.0)
+        self.selected_lines_input = self.add_input('selected_lines', widget_type='text_input', default_value='')
+        self.use_line_colors_input = self.add_input('use_line_colors', widget_type='checkbox', default_value=False)
+        self.color_index_input = self.add_input('color index', widget_type='input_int', default_value=0)
+        self.color_control = self.add_input('color_control', widget_type='color_picker',
+                                            default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
+
         self.line_array = None
+        self.previous_array = None
+        self.motion_array = None
+        # (positions, motion) published as one value for the render thread.
+        self.frame = None
+        self.default_line_color = [1.0, 1.0, 1.0]
+        self.colors = []
+        self.viridis_lut = np.array(_viridis_data, dtype=np.float32)
+        self.accent_lut = self.viridis_lut
+        self.accent_lut_white_hot = 0.0
         self.vbo = None
         self.vao = None
         self.prog = None
         self.line_shader = None
+        self.thick_line_shader = None
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.color_control.widget.uuid, no_alpha=True)
+        dpg.configure_item(self.color_control.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+
+    def ensure_color_count(self, count):
+        while len(self.colors) < count:
+            self.colors.append(list(self.default_line_color))
+
+    def color_changed(self):
+        c = self.color_control()
+        if max(c) > 1.0:
+            c = [v / 255.0 for v in c]
+        rgb = [float(c[0]), float(c[1]), float(c[2])]
+        index = any_to_int(self.color_index_input())
+        if index < 0:
+            # -1 recolours every line, including ones not allocated yet.
+            self.default_line_color = rgb
+            for i in range(len(self.colors)):
+                self.colors[i] = list(rgb)
+            return
+        self.ensure_color_count(index + 1)
+        self.colors[index] = rgb
+
+    def save_custom(self, container):
+        container['default_line_color'] = list(self.default_line_color)
+        container['line_colors'] = [list(c) for c in self.colors]
+
+    def load_custom(self, container):
+        if 'default_line_color' in container:
+            self.default_line_color = list(container['default_line_color'])
+        if 'line_colors' in container:
+            self.colors = [list(c) for c in container['line_colors']]
 
     def get_line_shader(self):
         """Simple unlit shader for colored lines."""
@@ -3027,16 +3113,138 @@ class MGLLineArrayNode(MGLNode):
                     in vec4 v_color;
                     out vec4 f_color;
                     void main() {
-                        f_color = v_color;
+                        f_color = vec4(v_color.rgb * v_color.a, v_color.a);
                     }
                 '''
             )
         return self.line_shader
 
+    def get_thick_line_shader(self):
+        """Expands each line segment into a screen-space quad.
+
+        glLineWidth is capped at 1.0 in an OpenGL core profile (which is all
+        macOS offers), so wide lines have to be built as geometry.
+        """
+        if self.thick_line_shader is None:
+            ctx = MGLContext.get_instance().ctx
+            self.thick_line_shader = ctx.program(
+                vertex_shader='''
+                    #version 330
+                    uniform mat4 M;
+                    uniform mat4 V;
+                    uniform mat4 P;
+                    in vec3 in_position;
+                    in vec4 in_color;
+                    in float in_width;
+                    out vec4 v_color;
+                    out float v_width;
+                    void main() {
+                        gl_Position = P * V * M * vec4(in_position, 1.0);
+                        v_color = in_color;
+                        v_width = in_width;
+                    }
+                ''',
+                geometry_shader='''
+                    #version 330
+                    layout(lines_adjacency) in;
+                    layout(triangle_strip, max_vertices = 4) out;
+                    uniform vec2 viewport;
+                    uniform bool perspective_width;
+                    in vec4 v_color[];
+                    in float v_width[];
+                    out vec4 g_color;
+
+                    // Clip w is the view-space depth, so dividing by it makes a
+                    // width behave like a physical thickness that recedes.
+                    // line_width then reads as pixels at unit distance. Capped
+                    // so a point grazing the camera can't emit a vast quad.
+                    float depth_scale(float w) {
+                        if (!perspective_width) return 1.0;
+                        return min(1.0 / max(w, 1e-4), 100.0);
+                    }
+
+                    // Normal of the bisector between two segment directions,
+                    // scaled so the joint keeps a constant width. Falls back to
+                    // the segment normal on a near-reversal, where the true
+                    // miter would shoot off to infinity.
+                    vec2 joint_offset(vec2 d_in, vec2 d_out, vec2 nrm, float half_width) {
+                        vec2 t = d_in + d_out;
+                        if (length(t) < 1e-6) return nrm * half_width;
+                        t = normalize(t);
+                        vec2 m = vec2(-t.y, t.x);
+                        float k = dot(m, nrm);
+                        if (abs(k) < 0.25) return nrm * half_width;
+                        return m * (half_width / k);
+                    }
+
+                    void main() {
+                        vec4 cp = gl_in[0].gl_Position;   // point before the segment
+                        vec4 c0 = gl_in[1].gl_Position;
+                        vec4 c1 = gl_in[2].gl_Position;
+                        vec4 cn = gl_in[3].gl_Position;   // point after the segment
+                        // Segments crossing the near plane can't be divided safely.
+                        if (c0.w <= 0.0 || c1.w <= 0.0) return;
+
+                        // Pixel space, so widths are in pixels at any depth.
+                        vec2 half_vp = viewport * 0.5;
+                        vec2 s0 = (c0.xy / c0.w) * half_vp;
+                        vec2 s1 = (c1.xy / c1.w) * half_vp;
+                        vec2 seg = s1 - s0;
+                        float seg_len = length(seg);
+                        if (seg_len < 1e-6) return;
+                        vec2 d = seg / seg_len;
+                        vec2 nrm = vec2(-d.y, d.x);
+                        // Per-vertex, so the ribbon can taper along its length.
+                        // Both segments at a joint read the same vertex width,
+                        // so their shared edge still matches exactly.
+                        float half_width0 = max(v_width[1], 0.0) * 0.5 * depth_scale(c0.w);
+                        float half_width1 = max(v_width[2], 0.0) * 0.5 * depth_scale(c1.w);
+
+                        // Neighbour directions; at the ends of the strip the
+                        // adjacency vertex is a duplicate, giving a butt cap.
+                        vec2 d_prev = d;
+                        if (cp.w > 0.0) {
+                            vec2 v = s0 - (cp.xy / cp.w) * half_vp;
+                            if (length(v) > 1e-6) d_prev = normalize(v);
+                        }
+                        vec2 d_next = d;
+                        if (cn.w > 0.0) {
+                            vec2 v = (cn.xy / cn.w) * half_vp - s1;
+                            if (length(v) > 1e-6) d_next = normalize(v);
+                        }
+
+                        // Both segments meeting at a joint derive the same offset
+                        // here, so their quads share that edge exactly — no gap to
+                        // show through and no overlap to double-blend.
+                        vec2 off0 = joint_offset(d_prev, d, nrm, half_width0);
+                        vec2 off1 = joint_offset(d, d_next, nrm, half_width1);
+
+                        g_color = v_color[1];
+                        gl_Position = vec4((s0 + off0) / half_vp * c0.w, c0.z, c0.w); EmitVertex();
+                        gl_Position = vec4((s0 - off0) / half_vp * c0.w, c0.z, c0.w); EmitVertex();
+                        g_color = v_color[2];
+                        gl_Position = vec4((s1 + off1) / half_vp * c1.w, c1.z, c1.w); EmitVertex();
+                        gl_Position = vec4((s1 - off1) / half_vp * c1.w, c1.z, c1.w); EmitVertex();
+                        EndPrimitive();
+                    }
+                ''',
+                fragment_shader='''
+                    #version 330
+                    in vec4 g_color;
+                    out vec4 f_color;
+                    void main() {
+                        f_color = vec4(g_color.rgb * g_color.a, g_color.a);
+                    }
+                '''
+            )
+        return self.thick_line_shader
+
     def execute(self):
         if self.array_input.fresh_input:
             incoming = self.array_input()
-            if incoming is not None:
+            if incoming is None:
+                self.clear()
+            else:
                 if isinstance(incoming, list):
                     incoming = np.array(incoming, dtype=np.float32)
                 elif isinstance(incoming, np.ndarray):
@@ -3044,22 +3252,183 @@ class MGLLineArrayNode(MGLNode):
                 elif self.app.torch_available and isinstance(incoming, torch.Tensor):
                     incoming = incoming.detach().cpu().numpy().astype(np.float32)
 
-                if incoming.ndim == 2 and incoming.shape[1] == 3:
-                    # Single line strip: (N, 3) -> (N, 1, 3)
-                    incoming = incoming[:, np.newaxis, :]
-                if incoming.ndim == 3 and incoming.shape[2] == 3:
-                    self.line_array = incoming
+                if incoming.size == 0:
+                    # An emptied source (e.g. a reset rolling buffer) must take
+                    # the old trail down with it, not leave it frozen on screen.
+                    self.clear()
+                else:
+                    if incoming.ndim == 2 and incoming.shape[1] == 3:
+                        # Single line strip: (N, 3) -> (N, 1, 3)
+                        incoming = incoming[:, np.newaxis, :]
+                    if incoming.ndim == 3 and incoming.shape[2] == 3:
+                        self.line_array = incoming
+                        self.motion_array = self.update_motion()
+                        # Publish both halves in one assignment. draw() runs on
+                        # the render thread and would otherwise be able to pair
+                        # this frame's positions with the next frame's motion —
+                        # their lengths differ while a rolling buffer refills.
+                        self.frame = (incoming, self.motion_array)
 
         super().execute()
 
+    def clear(self):
+        self.line_array = None
+        self.previous_array = None
+        self.motion_array = None
+        self.frame = None
+
+    def update_motion(self):
+        """Per-vertex distance moved since the previous frame, used to accent
+        the moving parts of a trail."""
+        if not self.motion_accent_input():
+            self.previous_array = None
+            return None
+        previous = self.previous_array
+        self.previous_array = self.line_array.copy()
+        # Only a change in the number of lines breaks the correspondence. The
+        # window itself grows sample by sample while a rolling buffer refills,
+        # and those frames still differ meaningfully over their shared prefix —
+        # requiring equal lengths would drop the accent for the whole refill.
+        if previous is None or previous.shape[1:] != self.line_array.shape[1:]:
+            return None
+        overlap = min(previous.shape[0], self.line_array.shape[0])
+        motion = np.zeros(self.line_array.shape[:2], dtype=np.float32)
+        # Raw distance moved — each accent applies its own scale later.
+        motion[:overlap] = np.linalg.norm(
+            self.line_array[:overlap] - previous[:overlap], axis=2)
+        return motion
+
+    def selection_mask(self, num_lines):
+        """Line indices listed in 'selected_lines'; empty means draw them all."""
+        select_list = any_to_list(self.selected_lines_input())
+        if len(select_list) == 0:
+            return None
+        selected = np.zeros(num_lines, dtype=bool)
+        for select in select_list:
+            index = any_to_int(select)
+            if 0 <= index < num_lines:
+                selected[index] = True
+        return selected
+
+    def colour_lut(self):
+        """Viridis, optionally with its top fraction pushed on into white.
+
+        The result stays 256 entries, so the colours below the white tail are
+        the same viridis ramp just compressed into the space left for them.
+        """
+        amount = min(max(any_to_float(self.white_hot_input()), 0.0), 0.95)
+        if amount == self.accent_lut_white_hot and self.accent_lut is not None:
+            return self.accent_lut
+
+        if amount <= 0.0:
+            lut = self.viridis_lut
+        else:
+            base = self.viridis_lut
+            n = len(base)
+            position = np.linspace(0.0, 1.0, n, dtype=np.float32)
+            lut = np.empty((n, 3), dtype=np.float32)
+            knee = 1.0 - amount
+
+            head = position <= knee
+            source = (position[head] / knee) * (n - 1)
+            lut[head] = base[np.clip(source, 0, n - 1).astype(np.int32)]
+
+            tail = ~head
+            t = ((position[tail] - knee) / amount)[:, np.newaxis]
+            lut[tail] = base[-1] * (1.0 - t) + t
+
+        self.accent_lut = lut
+        self.accent_lut_white_hot = amount
+        return lut
+
+    def line_motion(self, motion_array, index, num_points):
+        """Raw motion magnitude per point for one line, or None when not accenting."""
+        if not self.motion_accent_input() or motion_array is None:
+            return None
+        if motion_array.shape[0] != num_points:
+            # Should not happen now that the pair is published atomically; drop
+            # the accent rather than throw out of the render loop if it does.
+            return None
+        return motion_array[:, index].astype(np.float32)
+
+    def line_colors(self, motion_array, index, num_points, base_color):
+        """Build the (num_points, 4) RGBA for one line."""
+        base_alpha = base_color[3] if len(base_color) > 3 else 1.0
+        if self.use_line_colors_input():
+            rgb = np.array(self.colors[index], dtype=np.float32)
+        else:
+            rgb = np.array(base_color[:3], dtype=np.float32)
+
+        alpha = np.full(num_points, base_alpha, dtype=np.float32)
+        motion = self.line_motion(motion_array, index, num_points)
+        if motion is not None:
+            if self.accent_color_input():
+                # Colour indexes a fixed ramp, so it has to normalise to 0..1.
+                lut = self.colour_lut()
+                level = np.clip(motion * any_to_float(self.accent_colour_scale_input()), 0.0, 1.0)
+                rgb = lut[(level * (len(lut) - 1)).astype(np.int32)]
+            if self.accent_brightness_input():
+                alpha = alpha * np.clip(motion * any_to_float(self.accent_scale_input()), 0.0, 1.0)
+        rgb = np.broadcast_to(rgb, (num_points, 3))
+
+        if self.alpha_fade_input():
+            # Point 0 is the newest sample, so the tail fades out. The exponent
+            # bends the ramp without moving its ends: still 1 at the head, 0 at
+            # the tail, whatever the rate.
+            ramp = (num_points - np.arange(num_points, dtype=np.float32)) / num_points
+            rate = any_to_float(self.fade_rate_input())
+            if rate != 1.0:
+                ramp = np.power(ramp, max(rate, 0.01), dtype=np.float32)
+            alpha = alpha * ramp
+        return np.hstack([rgb, alpha[:, np.newaxis]]).astype(np.float32)
+
+    def line_widths(self, motion_array, index, num_points, base_width):
+        """Build the (num_points,) per-point width for one line."""
+        motion = self.line_motion(motion_array, index, num_points)
+        if motion is None or not self.accent_width_input():
+            return np.full(num_points, base_width, dtype=np.float32)
+        # Motion adds width on top of the base rather than interpolating toward
+        # a target, so it is not pinned to 0..1 and keeps its full range.
+        # The curve shapes the raw motion and the scale then sets the gain —
+        # applying the exponent after the scale would instead pivot around
+        # whatever motion happens to land at gain 1.0. Raising the curve
+        # usually means raising the scale to compensate.
+        gain = np.maximum(motion, 0.0)
+        curve = any_to_float(self.accent_width_curve_input())
+        if curve != 1.0:
+            gain = np.power(gain, max(curve, 0.01), dtype=np.float32)
+        gain = gain * any_to_float(self.accent_width_scale_input()) * self.width_scale_unit
+        # A ceiling, so raising it lets the fastest points grow without
+        # rescaling everything below it. Never below the unaccented width.
+        ceiling = max(any_to_float(self.accent_width_max_input()), base_width)
+        return np.minimum(base_width + gain, ceiling).astype(np.float32)
+
     def draw(self):
-        if self.ctx is None or self.line_array is None:
+        # One read of the published pair: execute() runs on the data thread and
+        # can replace it at any point, so everything below works off this
+        # snapshot rather than re-reading and mixing two frames together.
+        frame = self.frame
+        if self.ctx is None or frame is None:
             return
+        line_array, motion_array = frame
 
         inner_ctx = self.ctx.ctx
-        prog = self.get_line_shader()
         color = self.ctx.current_color
-        num_points, num_lines, _ = self.line_array.shape
+        num_points, num_lines, _ = line_array.shape
+        if num_points < 2:
+            return
+        self.ensure_color_count(num_lines)
+
+        line_width = any_to_float(self.line_width_input())
+        # Accented widths can swell past 1 even when the base width is 1, and
+        # perspective can do the same up close, so the geometry path has to
+        # handle both cases too.
+        accent_width = self.motion_accent_input() and self.accent_width_input()
+        perspective_width = self.perspective_width_input()
+        thick = (line_width > 1.0
+                 or perspective_width
+                 or (accent_width and any_to_float(self.accent_width_max_input()) > 1.0))
+        prog = self.get_thick_line_shader() if thick else self.get_line_shader()
 
         if 'M' in prog:
             model = self.ctx.get_model_matrix()
@@ -3068,21 +3437,57 @@ class MGLLineArrayNode(MGLNode):
             prog['V'].write(self.ctx.view_matrix.tobytes())
         if 'P' in prog:
             prog['P'].write(self.ctx.projection_matrix.tobytes())
+        if thick:
+            vp = inner_ctx.viewport
+            width, height = max(vp[2], 1), max(vp[3], 1)
+            prog['viewport'].value = (float(width), float(height))
+            prog['perspective_width'].value = bool(perspective_width)
 
         inner_ctx.disable(moderngl.CULL_FACE)
+        # Earlier nodes in the chain leave the blend func wherever they set it,
+        # so pin it here — faded trails blend visibly wrong otherwise. This is
+        # the context's own default (premultiplied), matched by both fragment
+        # shaders, so nothing downstream sees an unexpected state.
+        inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
+
+        selected = self.selection_mask(num_lines)
+        mode = moderngl.LINE_STRIP_ADJACENCY if thick else moderngl.LINE_STRIP
 
         for i in range(num_lines):
-            line = self.line_array[:, i, :]  # (N, 3)
-            n = line.shape[0]
-            # Build vertices with per-vertex color: [x,y,z, r,g,b,a]
-            colors = np.tile(np.array(color, dtype=np.float32), (n, 1))
-            verts = np.hstack([line, colors]).flatten().astype(np.float32)
+            if selected is not None and not selected[i]:
+                continue
+            line = line_array[:, i, :]  # (N, 3)
+            colors = self.line_colors(motion_array, i, num_points, color)
+            widths = self.line_widths(motion_array, i, num_points, line_width)[:, np.newaxis]
+
+            # Duplicate the end points so the geometry shader always has the
+            # adjacency it needs; the thin path just skips them.
+            positions = np.vstack([line[:1], line, line[-1:]])
+            colors = np.vstack([colors[:1], colors, colors[-1:]])
+            widths = np.vstack([widths[:1], widths, widths[-1:]])
+            verts = np.hstack([positions, colors, widths]).flatten().astype(np.float32)
 
             vbo = inner_ctx.buffer(verts.tobytes())
-            vao = inner_ctx.vertex_array(prog, [(vbo, '3f 4f', 'in_position', 'in_color')])
-            vao.render(mode=moderngl.LINE_STRIP)
+            if thick:
+                vao = inner_ctx.vertex_array(
+                    prog, [(vbo, '3f 4f 1f', 'in_position', 'in_color', 'in_width')])
+                vao.render(mode=mode)
+            else:
+                # The thin shader has no width attribute; pad past that column.
+                vao = inner_ctx.vertex_array(
+                    prog, [(vbo, '3f 4f 4x', 'in_position', 'in_color')])
+                vao.render(mode=mode, vertices=num_points, first=1)
             vbo.release()
             vao.release()
+
+    def custom_cleanup(self):
+        # No GL context is current during node deletion; hand the programs to
+        # the context to release at the start of its next render block.
+        ctx = MGLContext._instance
+        if ctx is not None:
+            ctx.defer_release(self.line_shader, self.thick_line_shader)
+        self.line_shader = None
+        self.thick_line_shader = None
 
 
 class MGLQuaternionRotateNode(MGLTransformNode):

@@ -461,6 +461,20 @@ class TorchRollingBuffer:
             self.in_get_buffer = False
             self.lock.release()
 
+    def clear(self):
+        """Zero the contents and rewind the write position, keeping the current
+        allocation (and so the shape every consumer is already bound to)."""
+        self.lock.acquire(blocking=True)
+        try:
+            if self.buffer is not None:
+                # The buffer is a leaf tensor that may have requires_grad set,
+                # which forbids in-place writes outside no_grad.
+                with torch.no_grad():
+                    self.buffer.zero_()
+            self.write_pos = 0
+        finally:
+            self.lock.release()
+
     def allocate(self, shape):
         self.lock.acquire(blocking=True)
         try:
@@ -521,6 +535,7 @@ class TorchRollingBufferNode(TorchDeviceDtypeNode):
 
         self.rolling_buffer = TorchRollingBuffer(self.sample_count, dtype=self.dtype, device=self.device)
         self.input = self.add_input('input', triggers_execution=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
         self.output = self.add_output('output')
         self.sample_count_option = self.add_option('sample count', widget_type='drag_int', default_value=self.sample_count)
         self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250, callback=self.update_style_changed)
@@ -542,6 +557,16 @@ class TorchRollingBufferNode(TorchDeviceDtypeNode):
     def requires_grad_changed(self):
         super().requires_grad_changed()
         self.rolling_buffer.buffer.requires_grad = self.requires_grad
+
+    def reset(self):
+        self.rolling_buffer.clear()
+        # Send the cleared buffer so downstream displays clear immediately
+        # rather than holding the old contents until the next sample arrives.
+        output_buffer = self.rolling_buffer.get_buffer()
+        if output_buffer is not None:
+            snapshot = output_buffer.clone()
+            self.rolling_buffer.release_buffer()
+            self.output.send(snapshot)
 
     def execute(self):
         self.rolling_buffer.sample_count = self.sample_count_option()
