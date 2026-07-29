@@ -1444,10 +1444,22 @@ class NumpyRollingBufferNode(Node):
         self.buffer_shape[0] = self.buffer_shape[0] * 2
         self.buffer = np.zeros(self.buffer_shape)
         self.pointer = 0
+        # Samples received since the last reset. The output window is only this
+        # long, so unwritten slots are never emitted as spurious zero entries.
+        self.count = 0
 
         self.input = self.add_input('input', triggers_execution=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
 
         self.output = self.add_output('out')
+
+    def reset(self):
+        self.buffer[:] = 0
+        self.pointer = 0
+        self.count = 0
+        # Send the now-empty window so downstream displays clear immediately
+        # rather than holding the old contents until the next sample arrives.
+        self.output.send(self.buffer[0:0])
 
     def execute(self):
         input = any_to_array(self.input())
@@ -1460,7 +1472,9 @@ class NumpyRollingBufferNode(Node):
                     self.pointer = self.shape[0] - 1
                 self.buffer[self.pointer] = input
                 self.buffer[self.pointer + self.shape[0]] = input
-                self.output.send(self.buffer[self.pointer:self.pointer + self.shape[0]])
+                if self.count < self.shape[0]:
+                    self.count += 1
+                self.output.send(self.buffer[self.pointer:self.pointer + self.count])
 
 
 class NumpySubtensorNode(Node):

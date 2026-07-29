@@ -1009,7 +1009,10 @@ class App:
 
     def create_node_by_name(self, node_name, placeholder, args=[], pos=None):
         node_model = self.node_factory_container.locate_node_by_name(node_name)
-        if placeholder:
+        # Reading state off a deleted item raises SystemError from the DPG C
+        # layer and can take the process down, so never assume the placeholder
+        # is still alive.
+        if placeholder and dpg.does_item_exist(placeholder.uuid):
             pos = dpg.get_item_pos(placeholder.uuid)
         if not pos:
             pos = dpg.get_mouse_pos()
