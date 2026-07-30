@@ -150,7 +150,7 @@ class SamplerVoiceNode(Node):
     def request_load_file(self):
         # Assuming LoadDialog exists in the environment
         try:
-            from dpg_system.element_loader import LoadDialog
+            from dpg_system.node import LoadDialog
             LoadDialog(self, self.load_file_callback, extensions=['.wav', '.mp3', '.aif', '.flac'])
         except ImportError:
             pass
@@ -471,7 +471,7 @@ class SamplerMultiVoiceNode(Node):
 
     def request_load_file(self, *args):
         try:
-            from dpg_system.element_loader import LoadDialog
+            from dpg_system.node import LoadDialog
             LoadDialog(self, self.load_file_callback, extensions=['.wav', '.mp3', '.aif', '.flac'])
         except ImportError:
             pass
@@ -955,6 +955,9 @@ class Sound:
         self.sample.crossfade_frames = int(float(self.params.get("crossfade", 0.0)) * loop_len)
 
 
+AUDIO_FILE_EXTENSIONS = ('.wav', '.aif', '.aiff', '.mp3', '.flac', '.ogg', '.m4a')
+
+
 class PolyphonicSamplerNode(Node):
     """
     Dynamically allocates voices to play sounds.
@@ -1027,6 +1030,15 @@ class PolyphonicSamplerNode(Node):
         
         self.mono_mode_input = self.add_input('mono', widget_type='checkbox', default_value=False)
         self.stop_all_input = self.add_input('stop_all', widget_type='button', callback=self._stop_all_voices)
+
+        # Kept last: saved patches rebind links by input index, so new inputs must
+        # be appended rather than grouped with load / load_set.
+        self.clear_input = self.add_input('clear', widget_type='button', callback=self.on_clear)
+        self.message_handlers['clear'] = self._clear_message
+        self.clear_sound_input = self.add_input('clear_sound', widget_type='button', callback=self.on_clear_sound)
+        self.message_handlers['clear_sound'] = self._clear_sound_message
+        self.save_set_input = self.add_input('save_set', widget_type='button', callback=self.on_save_set)
+        self.message_handlers['save_set'] = self._save_set_message
 
         # Output
         self.active_out = self.add_output('active_voices')
@@ -1105,7 +1117,7 @@ class PolyphonicSamplerNode(Node):
 
     def request_load_file(self):
         try:
-            from dpg_system.element_loader import LoadDialog
+            from dpg_system.node import LoadDialog
             LoadDialog(self, self.load_file_callback, extensions=['.wav', '.mp3', '.aif', '.flac'])
         except ImportError:
             pass
@@ -1123,6 +1135,276 @@ class PolyphonicSamplerNode(Node):
                   self.sync_ui_to_sound(sid)
         except Exception as e:
              print(f"Error loading sample file: {e}")
+
+    def on_load_set(self):
+        data = self.load_set_input()
+        if data == 'bang' or (isinstance(data, list) and not data) or data is None:
+            self.request_load_set()
+            return
+        self.load_set_from(data)
+
+    def _load_set_message(self, message, args):
+        # Message: ["load_set"], ["load_set", path] or ["load_set", start_sid, path]
+        if len(args) == 0:
+            self.request_load_set()
+            return
+        if len(args) == 1 and isinstance(args[0], list):
+            args = args[0]
+        self.load_set_from(list(args))
+
+    def request_load_set(self):
+        # No folder picker exists in the dialog layer, so pick any file in the
+        # target folder and load that folder's samples.
+        from dpg_system.node import LoadDialog
+        print('load_set: choose any audio file in the folder you want to load')
+        LoadDialog(self, self.load_set_callback, extensions=list(AUDIO_FILE_EXTENSIONS))
+
+    def load_set_callback(self, path):
+        self.load_set_from(path)
+
+    def load_set_from(self, data):
+        # Accepts a folder path, a path to any file inside the folder, or
+        # [start_sid, path] / [path, start_sid] to place the set elsewhere.
+        start_sid = None
+        path = None
+        if isinstance(data, str):
+            path = data
+        elif isinstance(data, (list, tuple)):
+            items = list(data)
+            if len(items) >= 2:
+                try:
+                    start_sid = int(items[0])
+                    path = items[1]
+                except (TypeError, ValueError):
+                    path = items[0]
+                    try:
+                        start_sid = int(items[1])
+                    except (TypeError, ValueError):
+                        start_sid = None
+            elif len(items) == 1:
+                path = items[0]
+
+        if not isinstance(path, str) or not path:
+            return
+        path = os.path.expanduser(path)
+
+        if os.path.isdir(path):
+            self.load_set_from_folder(path, start_sid)
+        elif os.path.exists(path):
+            if path.lower().endswith('.json'):
+                self.load_set_from_file(path, start_sid)
+            else:
+                self.load_set_from_folder(os.path.dirname(os.path.abspath(path)), start_sid)
+        else:
+            print(f'load_set: no such path {path}')
+
+    def load_set_from_folder(self, folder, start_sid=None):
+        # Samples are assigned consecutive sids in sorted filename order, so the
+        # mapping is reproducible and matches what effort_fader / muscle_activation_fader emit.
+        if start_sid is None:
+            try:
+                start_sid = int(self.current_inspect_id)
+            except (TypeError, ValueError):
+                start_sid = 0
+        try:
+            names = sorted(os.listdir(folder))
+        except OSError as e:
+            print(f'load_set: cannot read {folder}: {e}')
+            return
+
+        files = [n for n in names if n.lower().endswith(AUDIO_FILE_EXTENSIONS)]
+        if not files:
+            print(f'load_set: no audio files in {folder}')
+            return
+
+        loaded = 0
+        for offset, name in enumerate(files):
+            sid = start_sid + offset
+            try:
+                # Index-based sids: a file that fails to load leaves one gap
+                # rather than shifting every sid after it.
+                self.sounds[sid] = Sound(os.path.join(folder, name))
+                loaded += 1
+            except Exception as e:
+                print(f'load_set: error loading {name} as sound {sid}: {e}')
+
+        print(f'load_set: loaded {loaded}/{len(files)} sounds from {folder} into sids {start_sid}..{start_sid + len(files) - 1}')
+        self.sync_ui_to_sound(self.current_inspect_id)
+
+    def load_set_from_file(self, path, start_sid=None):
+        # A set file preserves what a folder scan cannot: per-sound params and the
+        # exact sid assignment, gaps included.
+        try:
+            with open(path, 'r') as f:
+                container = json.load(f)
+        except (OSError, ValueError) as e:
+            print(f'load_set: cannot read {path}: {e}')
+            return
+
+        sounds_data = container.get('sounds', {})
+        if not isinstance(sounds_data, dict) or not sounds_data:
+            print(f'load_set: no sounds in {path}')
+            return
+
+        entries = []
+        for sid_str, entry in sounds_data.items():
+            try:
+                entries.append((int(sid_str), entry))
+            except (TypeError, ValueError):
+                print(f'load_set: skipping non-numeric sound id {sid_str!r}')
+        if not entries:
+            return
+        entries.sort(key=lambda kv: kv[0])
+
+        # Saved sids are absolute; start_sid re-bases the whole set, keeping gaps.
+        offset = 0
+        if start_sid is not None:
+            try:
+                offset = int(start_sid) - entries[0][0]
+            except (TypeError, ValueError):
+                offset = 0
+
+        loaded = 0
+        for sid, entry in entries:
+            sound_path = entry.get('path', '') if isinstance(entry, dict) else ''
+            params = entry.get('params', {}) if isinstance(entry, dict) else {}
+            if not sound_path or not os.path.exists(sound_path):
+                print(f'load_set: missing audio for sound {sid + offset}: {sound_path}')
+                continue
+            try:
+                self.sounds[sid + offset] = Sound(sound_path, params)
+                loaded += 1
+            except Exception as e:
+                print(f'load_set: error loading sound {sid + offset}: {e}')
+
+        print(f'load_set: loaded {loaded}/{len(entries)} sounds from {path}')
+        self.sync_ui_to_sound(self.current_inspect_id)
+
+    def on_save_set(self):
+        if getattr(self, 'in_loading_process', False):
+            return
+        data = self.save_set_input()
+        if data == 'bang' or (isinstance(data, list) and not data) or data is None:
+            self.request_save_set()
+            return
+        self.save_set_to(data)
+
+    def _save_set_message(self, message, args):
+        # Message: ["save_set"] opens the dialog, ["save_set", path] writes directly.
+        if len(args) == 0:
+            self.request_save_set()
+            return
+        if len(args) == 1 and isinstance(args[0], list):
+            args = args[0]
+        self.save_set_to(list(args))
+
+    def request_save_set(self):
+        from dpg_system.node import SaveDialog
+        SaveDialog(self, self.save_set_callback, extensions=['.json'],
+                   default_filename='sampler_set.json')
+
+    def save_set_callback(self, path):
+        self.save_set_to(path)
+
+    def save_set_to(self, data):
+        path = None
+        if isinstance(data, str):
+            path = data
+        elif isinstance(data, (list, tuple)) and data:
+            path = data[0]
+        if not isinstance(path, str) or not path:
+            return
+        path = os.path.expanduser(path)
+        if not path.lower().endswith('.json'):
+            path += '.json'
+
+        if not self.sounds:
+            print('save_set: sampler is empty, nothing to save')
+            return
+
+        # Same {sid: {path, params}} table save_custom writes into the patch, so a
+        # set file is that table standing on its own rather than a new format.
+        sounds_data = {}
+        for sid, snd in sorted(self.sounds.items(), key=lambda kv: kv[0]):
+            sounds_data[str(sid)] = {'path': snd.path, 'params': snd.params}
+
+        try:
+            with open(path, 'w') as f:
+                json.dump({'sampler_set': 1, 'sounds': sounds_data}, f, indent=2)
+        except (OSError, TypeError) as e:
+            print(f'save_set: cannot write {path}: {e}')
+            return
+        print(f'save_set: wrote {len(sounds_data)} sounds to {path}')
+
+    def on_clear(self):
+        # load_custom restores sounds from the patch; a callback fired during that
+        # restore would wipe them before the patch finished loading.
+        if getattr(self, 'in_loading_process', False):
+            return
+        self.clear_all_sounds()
+
+    def _clear_message(self, message, args):
+        self.clear_all_sounds()
+
+    def clear_all_sounds(self):
+        # Stop the voices but leave active_allocations alone: frame_task reaps them
+        # and that is what drives the active_voices grid back to zeros.
+        count = len(self.sounds)
+        self._stop_all_voices()
+        for alloc in self.active_allocations:
+            alloc['fade'] = 0.0
+            alloc['fade_zero_since'] = None
+        self.sounds.clear()
+        self.sync_ui_to_sound(self.current_inspect_id)
+        print(f'clear: released {count} sounds')
+
+    def on_clear_sound(self):
+        if getattr(self, 'in_loading_process', False):
+            return
+        data = self.clear_sound_input()
+        if data == 'bang' or (isinstance(data, list) and not data) or data is None:
+            self.clear_sound(self.current_inspect_id)
+            return
+        self._clear_sounds_from(data)
+
+    def _clear_sound_message(self, message, args):
+        # Message: ["clear_sound"] clears the inspected id, ["clear_sound", sid, ...] clears those.
+        if len(args) == 0:
+            self.clear_sound(self.current_inspect_id)
+            return
+        if len(args) == 1 and isinstance(args[0], list):
+            args = args[0]
+        self._clear_sounds_from(list(args))
+
+    def _clear_sounds_from(self, data):
+        if isinstance(data, (int, float, str)):
+            data = [data]
+        if not isinstance(data, (list, tuple)):
+            return
+        for item in data:
+            try:
+                self.clear_sound(int(item))
+            except (TypeError, ValueError):
+                print(f'clear_sound: not a sound id: {item}')
+
+    def clear_sound(self, sid):
+        # Stop anything currently sounding this sid before dropping it, so a voice
+        # is never left playing a sample the node no longer lists.
+        if sid is None:
+            return
+        if SamplerEngineNode.engine:
+            for alloc in self.active_allocations:
+                if alloc['sid'] == sid:
+                    SamplerEngineNode.engine.stop_voice(alloc['idx'])
+                    alloc['fade'] = 0.0
+                    alloc['fade_zero_since'] = None
+        if sid in self.sounds:
+            del self.sounds[sid]
+            print(f'clear_sound: released sound {sid}')
+        else:
+            print(f'clear_sound: no sound at id {sid}')
+        if sid == self.current_inspect_id:
+            self.sync_ui_to_sound(sid)
 
     def on_inspect_change(self):
         val = self.inspect_id_input()
