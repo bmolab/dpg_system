@@ -217,6 +217,12 @@ class OrbbecFemtoNode(Node):
                                                 default_value=30, min=1, callback=self.filters_changed)
         self.bg_guard_option = self.add_option('background guard (mm)', widget_type='drag_float',
                                                default_value=50.0, min=0.0, callback=self.filters_changed)
+        # Serve the most recent frame (k4a-style latency minimization): after
+        # receiving a frameset, drain anything the SDK queued behind it and
+        # process only the newest. Off = process every frameset in order, at
+        # the cost of up to a full queue of latency when the host falls behind.
+        self.min_latency_option = self.add_option('minimize latency', widget_type='checkbox',
+                                                  default_value=True, callback=self.filters_changed)
         # Prints capture-thread and output gaps > 80ms with a thread tag, to
         # tell SDK-side stalls from main-thread (render loop) stalls.
         self.report_gaps_option = self.add_option('report frame gaps', widget_type='checkbox',
@@ -260,6 +266,7 @@ class OrbbecFemtoNode(Node):
         self.median_enabled = False
         self.fill_holes_enabled = False
         self.undistort_enabled = True
+        self.low_latency = True
         self.report_gaps = False
         self._last_capture_t = None     # capture-thread frame arrival times
         self._last_output_t = None      # main-thread send times
@@ -325,6 +332,7 @@ class OrbbecFemtoNode(Node):
         self.fill_holes_enabled = bool(self.fill_holes_option())
         self.bg_guard_mm = float(self.bg_guard_option())
         self.bg_capture_frames = max(1, int(self.bg_frames_option()))
+        self.low_latency = bool(self.min_latency_option())
         self.report_gaps = bool(self.report_gaps_option())
         self.auto_reset_enabled = bool(self.auto_reset_option())
         undistort = bool(self.undistort_option())
@@ -513,20 +521,22 @@ class OrbbecFemtoNode(Node):
                 frames = self.pipeline.wait_for_frames(200)
                 if frames is None:
                     continue
+                self._note_frame_arrival()
+                if self.low_latency:
+                    # Drain to the newest queued frameset so a host that fell
+                    # behind serves the live frame, not the back of a queue.
+                    # 1ms (not 0) in case the binding treats 0 as 'wait forever'.
+                    # Drained framesets still feed the gap stats: the burst
+                    # detector needs the delivery cadence, not what we process.
+                    while True:
+                        newer = self.pipeline.wait_for_frames(1)
+                        if newer is None:
+                            break
+                        frames = newer
+                        self._note_frame_arrival()
                 depth_frame = frames.get_depth_frame()
                 if depth_frame is None:
                     continue
-                now = time.perf_counter()
-                if self._last_capture_t is not None:
-                    gap = now - self._last_capture_t
-                    if self.report_gaps and gap > 0.08:
-                        print(f'{self.label}: capture gap {gap * 1000:.0f}ms (SDK side)')
-                    self._gap_window.append(gap)
-                    self._gap_frames += 1
-                    if self._gap_frames >= 120:
-                        self._gap_frames = 0
-                        self._check_burst_state()
-                self._last_capture_t = now
                 self._process_frames(frames, depth_frame)
             except Exception as e:
                 if self.keep_running:
@@ -565,6 +575,22 @@ class OrbbecFemtoNode(Node):
             self.latest_depth = depth_out
             self.latest_pc = pc
             self.new_data = True
+
+    def _note_frame_arrival(self):
+        """Record the inter-frameset gap for the burst detector (capture
+        thread). Called once per frameset pulled from the SDK, including
+        stale ones consumed by the minimize-latency drain."""
+        now = time.perf_counter()
+        if self._last_capture_t is not None:
+            gap = now - self._last_capture_t
+            if self.report_gaps and gap > 0.08:
+                print(f'{self.label}: capture gap {gap * 1000:.0f}ms (SDK side)')
+            self._gap_window.append(gap)
+            self._gap_frames += 1
+            if self._gap_frames >= 120:
+                self._gap_frames = 0
+                self._check_burst_state()
+        self._last_capture_t = now
 
     # ------------------------------------------------------ bursty-USB recovery
 
