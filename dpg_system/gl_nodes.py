@@ -242,12 +242,19 @@ class GLContextNode(Node):
         self.ui_output = self.add_output('ui')
         self.fov_option = self.add_option('fov', widget_type='drag_float', default_value=self.fov, callback=self.fov_changed)
         self.fov_option.widget.speed = 0.5
+        # off by default: a vsync'd swap here stacks on the dpg viewport's
+        # vsync and can halve the main loop rate (see MyGLContext)
+        self.vsync_option = self.add_option('vsync', widget_type='checkbox', default_value=False, callback=self.vsync_changed)
 
     def execute(self):
         if self.command_input.fresh_input:
             data = self.command_input()
             if type(data) == list:
                 self.pending_commands.append(data)
+
+    def vsync_changed(self):
+        if self.context:
+            self.context.set_vsync(self.vsync_option())
 
     def fov_changed(self):
         self.fov = self.fov_option()
@@ -280,6 +287,7 @@ class GLContextNode(Node):
         self.context = MyGLContext(self.title, self.width, self.height, self.samples)
         self.context_list.append(self)
         self.context.node = self
+        self.context.set_vsync(self.vsync_option())
         self.ready = True
 
     def custom_cleanup(self):

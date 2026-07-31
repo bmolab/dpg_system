@@ -35,6 +35,8 @@ class MyGLContext:
         self.last_key = -1
         self.last_mods = 0
         self.clear_color = [0.0, 0.0, 0.0, 1.0]
+        self.vsync = False
+        self.vsync_dirty = False
 
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
         if samples != 1 and samples < 8:
@@ -47,6 +49,11 @@ class MyGLContext:
         if self.window:
             # print('window created')
             glfw.make_context_current(self.window)
+            # Default vsync off: the dpg viewport swap already paces the main
+            # render loop, and a second blocking swap here can halve it.
+            # Toggleable per-window via the gl_context node's 'vsync' option
+            # for cases where tear-free output matters more than loop rate.
+            glfw.swap_interval(1 if self.vsync else 0)
             glfw.set_key_callback(self.window, self.on_key)
 
             gl.glEnable(gl.GL_DEPTH_TEST)
@@ -73,9 +80,21 @@ class MyGLContext:
         #     glfw.terminate()
 
 
+    def set_vsync(self, on):
+        # May be called from a dpg callback while another GL context is
+        # current; defer the swap_interval call to prepare_draw, where this
+        # window's context is guaranteed current.
+        on = bool(on)
+        if on != self.vsync:
+            self.vsync = on
+            self.vsync_dirty = True
+
     def prepare_draw(self):
         if self.window:
             glfw.make_context_current(self.window)
+            if self.vsync_dirty:
+                glfw.swap_interval(1 if self.vsync else 0)
+                self.vsync_dirty = False
             gl.glClearColor(self.clear_color[0], self.clear_color[1], self.clear_color[2], self.clear_color[3])
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
