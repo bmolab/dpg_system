@@ -1661,6 +1661,12 @@ class MGLShapeNode(MGLNode):
     def handle_shape_params(self):
         pass
 
+    def get_point_size(self):
+        """Point-sprite size in pixels (pre perspective divide — the shader
+        divides by gl_Position.w). Subclasses may derive it from world-space
+        data instead of the widget."""
+        return self.point_size_input()
+
     def _update_internal_texture(self, data):
         """Convert a numpy array (or torch tensor) to an internal moderngl.Texture."""
         if self.ctx is None:
@@ -1772,7 +1778,7 @@ class MGLShapeNode(MGLNode):
                 inner_ctx.wireframe = False
             elif mode == 'points':
                 if 'point_size' in self.prog:
-                    self.prog['point_size'].value = self.point_size_input()
+                    self.prog['point_size'].value = self.get_point_size()
                 if getattr(self, '_points_additive', False):
                     # Order-independent additive accumulation: depth writes off
                     # (test stays on, so solid geometry still occludes) and
@@ -2502,9 +2508,14 @@ class MGLPointCloudNode(MGLShapeNode):
         self.blend_input = self.add_input('blend', widget_type='combo',
                                           default_value='additive')
         self.blend_input.widget.combo_items = ['normal', 'additive']
+        # When the frame carries a voxel size (attached by pc_voxel), draw
+        # each point at that world size instead of the point_size widget.
+        self.voxel_size_draw_input = self.add_input('draw at voxel size', widget_type='checkbox',
+                                                    default_value=True)
         self.end_initialization()
         self.points_data = None
         self.weights_data = None
+        self.voxel_size_m = None
         self.dirty = False
 
     def custom_create(self, from_file):
@@ -2516,10 +2527,13 @@ class MGLPointCloudNode(MGLShapeNode):
         if self.points_input.fresh_input:
             data = self.points_input()
             weights = None
+            voxel_size = None
             if isinstance(data, dict):
                 # cloud-frame convention (point_cloud_nodes): per-point 0..1
-                # weights (e.g. pc_voxel occupancy) ride alongside the points
+                # weights (e.g. pc_voxel occupancy) and the voxel size (metres,
+                # float or (x, y, z)) ride alongside the points
                 weights = data.get('weights')
+                voxel_size = data.get('voxel_size')
                 data = data.get('point_cloud')
             if data is not None:
                 # Convert to numpy float32
@@ -2541,6 +2555,16 @@ class MGLPointCloudNode(MGLShapeNode):
                          w = np.asarray(weights, dtype=np.float32).reshape(-1)
                          if w.size == data.shape[0]:
                              self.weights_data = np.clip(w, 0.0, 1.0)
+                     self.voxel_size_m = None
+                     if voxel_size is not None:
+                         try:
+                             v = np.asarray(voxel_size, dtype=np.float32).reshape(-1)
+                             if v.size in (1, 3) and np.all(v > 0):
+                                 # sprites are square, so anisotropic voxels
+                                 # draw at the mean of their axes
+                                 self.voxel_size_m = float(v.mean())
+                         except (TypeError, ValueError):
+                             pass
                      self.dirty = True
 
         super().execute()
@@ -2570,6 +2594,19 @@ class MGLPointCloudNode(MGLShapeNode):
                                     if self.weights_data is not None else 0)
         self._points_additive = self.blend_input() == 'additive'
         super().draw()
+
+    def get_point_size(self):
+        if (self.voxel_size_m is not None and self.voxel_size_draw_input()
+                and self.ctx is not None):
+            target = self.ctx.active_target or self.ctx.default_target
+            height = getattr(target, 'height', 0)
+            if height:
+                # world size -> pixels before the shader's divide by
+                # gl_Position.w: P[1,1] is the vertical focal scale
+                # (1/tan(fov/2)), height/2 maps NDC to pixels.
+                return float(self.voxel_size_m
+                             * self.ctx.projection_matrix[1, 1] * height * 0.5)
+        return self.point_size_input()
 
     def create_geometry(self):
         # Fallback if draw called without data
