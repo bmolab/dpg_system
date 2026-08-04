@@ -2079,6 +2079,27 @@ def print_info(input_):
         dtype_str = input_.dtype.name
         type_string = f"array[{shape_str}] {dtype_str}"
 
+    # 5b. Handle audio-rate Signals from the modular synth layer.
+    # Duck-typed rather than imported, so basic_nodes stays independent of
+    # synth_core (which is an optional module). A Signal never travels down a
+    # patch cord -- the info node fetches it from the outlet it is connected
+    # to -- so this branch is reached only by that deliberate lookup.
+    elif (isinstance(getattr(input_, 'data', None), np.ndarray)
+          and hasattr(input_, 'constant') and hasattr(input_, 'value')):
+        if input_.constant:
+            type_string = 'signal (constant)'
+            value_string = f'{input_.value:.4f}'
+        else:
+            # The producing unit's block size is not carried on the Signal, so
+            # summarise a nominal window. It is a live meter, not a capture --
+            # use capture~ if the exact block matters.
+            window = input_.data[:512]
+            peak = float(np.max(np.abs(window)))
+            rms = float(np.sqrt(np.mean(window.astype(np.float64) ** 2)))
+            type_string = 'signal (audio rate)'
+            value_string = (f'peak {peak:.3f}  rms {rms:.3f}  '
+                            f'last {float(window[-1]):.3f}')
+
     # 6. Handle Numpy Scalars (e.g. np.float32(1.0))
     elif isinstance(input_, (np.number, np.bool_)):
         type_string = f"numpy.{input_.dtype.name}"
@@ -2118,6 +2139,69 @@ class TypeNode(Node):
         # 'info' usually requires more space for the detailed string
         width = 192 if label == 'info' else 128
         self.type_property = self.add_property(self.label, widget_type='text_input', width=width)
+        # Puts the widget in a horizontal group so the resize handle can sit
+        # beside it, and lets the user drag the display wider for long strings.
+        self.type_property.widget.wants_resize_handle = True
+        self.width_option = self.add_option('width', widget_type='drag_int',
+                                            default_value=width, callback=self.width_changed)
+
+        # Signal cords (the ~ objects in synth_nodes) declare topology and
+        # never carry data, so execute() would never fire for them. Poll the
+        # upstream outlet instead. The check is a getattr over the input's
+        # parents, so it costs nothing on the ordinary control-rate path.
+        self._signal_text = None
+        self.add_frame_task()
+
+    def width_changed(self):
+        dpg.set_item_width(self.type_property.widget.uuid, self.width_option())
+
+    def custom_create(self, from_file):
+        self.add_resize_handle(self.type_property.widget, axis='x',
+                               width_option=self.width_option)
+        # A restored width that matches the widget's default does not fire the
+        # option callback, so apply it here rather than relying on the restore.
+        dpg.set_item_width(self.type_property.widget.uuid, self.width_option())
+
+    def _connected_signal(self):
+        """The Signal feeding this input, if it is patched to a ~ outlet."""
+        for parent in self.input._parents:
+            signal = getattr(parent, 'synth_signal', None)
+            if signal is not None:
+                return parent, signal
+        return None, None
+
+    def frame_task(self):
+        parent, signal = self._connected_signal()
+
+        if signal is None:
+            if self._signal_text is not None:
+                # A signal cord was removed; stop showing its stale reading.
+                self._signal_text = None
+                self.type_property.set('')
+            return
+
+        type_string, value_string = print_info(signal)
+
+        if self.label == 'type':
+            text = type_string
+        else:
+            parts = [type_string]
+            source = parent.node.label if parent.node is not None else ''
+            if source:
+                parts.append('from ' + source)
+            unit = getattr(parent, 'synth_unit', None)
+            rate = getattr(unit, 'sample_rate', None)
+            if rate:
+                parts.append(f'{rate:g} Hz')
+            text = ' '.join(parts)
+            if value_string:
+                text += ': ' + value_string
+
+        # Only touch the widget when the string actually changes, so a resting
+        # signal does not push a dpg update every frame.
+        if text != self._signal_text:
+            self._signal_text = text
+            self.type_property.set(text)
 
     def execute(self):
         input_ = self.input()

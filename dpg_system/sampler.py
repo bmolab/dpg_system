@@ -1010,6 +1010,10 @@ class SamplerEngine:
         self.active = True
         self.master_volume = 1.0
         self.output_level = 0.0
+        # Compiled modular synth graph (see synth_core.py), or None. Assigned
+        # from the main thread as a whole object so the audio thread always
+        # sees a consistent program; it is read once per callback.
+        self.program = None
 
     def start(self):
         try:
@@ -1129,6 +1133,16 @@ class SamplerEngine:
                     continue
                 mix += voice_out
                 active_voices += 1
+
+        # Modular synth graph shares this stream so both worlds land on one
+        # device. A failure here disables the graph rather than killing audio.
+        program = self.program
+        if program is not None:
+            try:
+                program.render(mix, frames)
+            except Exception as e:
+                self.program = None
+                print(f"SamplerEngine: synth program exception, disabled ({e})")
 
         mix *= self.master_volume
 

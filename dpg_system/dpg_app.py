@@ -71,6 +71,7 @@ optional_import = [
     'orbbec_nodes',
     'point_cloud_nodes',
     'sampler_nodes',
+    'synth_nodes',
     'visca_nodes',
     'pjlink_nodes',
     'moderngl_nodes',
