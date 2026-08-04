@@ -12,11 +12,14 @@ value), a CV inlet (patch a signal to it), and an attenuverter in the options
 there is no penalty for exposing all of them.
 """
 
+import dearpygui.dearpygui as dpg
+
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
     synth_graph, start_filter_warm_up,
-    SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit,
+    SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
+    ShaperUnit,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -32,15 +35,21 @@ AUDIO_FILE_EXTENSIONS = ('.wav', '.aif', '.aiff', '.mp3', '.flac', '.ogg', '.m4a
 def register_synth_nodes():
     Node.app.register_node('audio_out~', AudioOutNode.factory)
     Node.app.register_node('sig~', SigNode.factory)
+    Node.app.register_node('ramp~', RampNode.factory)
+    Node.app.register_node('line~', RampNode.factory)
     Node.app.register_node('vco~', VcoNode.factory)
     Node.app.register_node('vcf~', VcfNode.factory)
     Node.app.register_node('vca~', VcaNode.factory)
     Node.app.register_node('adsr~', AdsrNode.factory)
     Node.app.register_node('lfo~', LfoNode.factory)
+    Node.app.register_node('phasor~', LfoNode.factory)
     Node.app.register_node('clock~', ClockNode.factory)
     Node.app.register_node('metro~', ClockNode.factory)
     Node.app.register_node('mix~', MixNode.factory)
     Node.app.register_node('pan~', PanNode.factory)
+    Node.app.register_node('shaper~', ShaperNode.factory)
+    Node.app.register_node('lookup~', ShaperNode.factory)
+    Node.app.register_node('envelope~', ShaperNode.factory)
     Node.app.register_node('scaler~', ScalerNode.factory)
     Node.app.register_node('scale~', ScalerNode.factory)
     Node.app.register_node('mult~', MultNode.factory)
@@ -287,6 +296,86 @@ class SigNode(SynthNode):
 
     def execute(self):
         self.unit.target = any_to_float(self.value_input())
+
+
+# ----------------------------------------------------------------------------
+# ramp~
+# ----------------------------------------------------------------------------
+
+class RampNode(SynthNode):
+    """Linear ramp to a target over a set time. Also registered as line~.
+
+    Send a value to 'target' and the output leaves where it is and arrives at
+    the new value exactly `time` seconds later. Re-aim it mid-move and it
+    starts a fresh line from wherever it had got to, so a stream of targets
+    never steps.
+
+    This is the counterpart to sig~, not a replacement: sig~'s glide is a
+    one-pole approach, which never quite arrives and is the right tool for
+    de-zippering a control stream. Reach for ramp~ when the timing of the move
+    matters -- a step from shape_seq stretched across the beat, a filter sweep
+    that must land with the next hit, a fade of a stated length.
+
+    The 'done' outlet bangs on arrival, so ramps can be chained or used to
+    time anything else. 'time' is read when a move begins; changing it affects
+    the next move rather than the one in flight.
+
+    Arguments: ramp~ <time in seconds> <starting value>, e.g. 'ramp~ 0.25'.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RampNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = RampUnit(synth_graph.sample_rate)
+        self._last_arrive_count = 0
+
+        numbers = []
+        if args is not None:
+            for arg in args:
+                try:
+                    numbers.append(float(arg))
+                except (ValueError, TypeError):
+                    continue
+        if len(numbers) > 0:
+            self.unit.time_in.base = max(0.0, numbers[0])
+        if len(numbers) > 1:
+            # A starting value the output already holds, so the first target
+            # ramps from it rather than from zero.
+            self.unit.current = numbers[1]
+            self.unit._goal = numbers[1]
+            self.unit.target_in.base = numbers[1]
+
+        self.add_modulation_input('target', self.unit.target_in, speed=0.01)
+        self.add_modulation_input('time', self.unit.time_in,
+                                  default_value=self.unit.time_in.base,
+                                  minimum=0.0, speed=0.001, attenuverter=False)
+        self.add_trigger_signal_input('trigger', self.unit.trigger_in,
+                                      self.restart)
+
+        self.jump_option = self.add_option('jump to target',
+                                           widget_type='button', width=110,
+                                           callback=self.jump_now)
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.done_output = self.add_output('done')
+        self.finish_synth_node()
+
+    def restart(self):
+        self.unit.restart()
+
+    def jump_now(self):
+        self.unit.jump()
+
+    def synth_frame_task(self):
+        # Several short ramps can land between GUI frames; report each arrival
+        # rather than only the most recent state.
+        count = self.unit.arrive_count
+        if count != self._last_arrive_count:
+            self._last_arrive_count = count
+            self.done_output.send('bang')
 
 
 # ----------------------------------------------------------------------------
@@ -572,6 +661,10 @@ class LfoNode(SynthNode):
 
     Nothing stops the rate from reaching the audio range, where it becomes an
     ordinary (unbandlimited) modulator for FM and AM.
+
+    Registered as phasor~ as well, which starts as a unipolar 0..1 ramp. That
+    is the shape to index a table or drive shaper~ with -- not vco~'s saw,
+    whose band limiting is what makes it a good oscillator and a bad index.
     """
 
     @staticmethod
@@ -583,7 +676,14 @@ class LfoNode(SynthNode):
         self.unit = LfoUnit(synth_graph.sample_rate)
 
         rate = 1.0
-        shape = 'sine'
+        # phasor~ is the same oscillator wearing the name it is wanted under:
+        # a unipolar 0..1 ramp for indexing tables and driving shaper~. It has
+        # to be this one rather than vco~'s saw, because band limiting spreads
+        # the wrap over a couple of samples with intermediate values, and a
+        # lookup maps those through the middle of the curve -- a spike at every
+        # cycle even when the curve's endpoints match.
+        phasor = label == 'phasor~'
+        shape = 'ramp' if phasor else 'sine'
         if args is not None:
             for arg in args:
                 if arg in LFO_SHAPES:
@@ -609,8 +709,9 @@ class LfoNode(SynthNode):
                                           callback=self.parameters_changed)
         self.shape_input.widget.combo_items = list(LFO_SHAPES)
 
+        # A phasor runs 0..1, which lines up with shaper~'s default input range.
         self.bipolar_option = self.add_option('bipolar', widget_type='checkbox',
-                                              default_value=True,
+                                              default_value=not phasor,
                                               callback=self.parameters_changed)
         self.phase_option = self.add_option('start phase', widget_type='drag_float',
                                             default_value=0.0, min=0.0, max=1.0,
@@ -885,6 +986,258 @@ class ScalerNode(SynthNode):
         if mode in ScalerNode.MODES:
             self.unit.mode = ScalerNode.MODES.index(mode)
         self.unit.clip = any_to_bool(self.clip_option())
+
+
+class ShaperNode(SynthNode):
+    """A breakpoint curve as a transfer function, applied to every sample.
+
+    This is the envelope node's lookup at audio rate: where envelope maps one
+    x to one y per message, shaper~ maps every sample of every block. Draw the
+    curve on the node itself -- drag a point to move it, right-click to add or
+    remove one, shift + left-drag a segment to bend it -- and the table behind
+    it is rebuilt as you draw, so the sound follows the mouse. An envelope
+    node's 'points out' patched into the 'points' inlet loads a curve too, for
+    when the shape is being made or sequenced elsewhere.
+
+    What it is for depends on what you feed it. On a control signal it is an
+    arbitrary response curve: effort into a shape and out to a filter cutoff,
+    with the exact bend you drew rather than a choice of linear or exponential.
+    On an audio signal it is a waveshaper -- a curve that is not a straight
+    line adds harmonics, and a hand-drawn one adds whatever you draw. Expect
+    aliasing when shaping bright material; that is the operation, not the
+    implementation.
+
+    Sweep it with phasor~ to play the curve as a waveform. Use that rather
+    than vco~'s saw: a band-limited saw crosses its wrap over a couple of
+    samples at intermediate values, and a lookup maps those through the middle
+    of the curve, so every cycle ends in a spike however well the endpoints
+    match. Band limiting is a linear repair fitted to that one waveform, and
+    nothing survives being bent afterwards.
+
+    The curve's x axis is the input, from 'in low' to 'in high'; its y axis is
+    the output, bounded by the 'out low' and 'out high' options. Input outside
+    the range is held at the ends ('clip'), taken modulo the range ('wrap'), or
+    reflected back and forth across it ('fold') -- the last two are worth
+    trying with a signal that overshoots.
+
+    Also registered as lookup~ and envelope~.
+
+    Arguments: shaper~ <in low> <in high> and/or a range mode.
+    """
+
+    RANGE_MODES = ('clip', 'wrap', 'fold')
+    TABLE_SAMPLES_PER_SEGMENT = 256
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShaperNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = ShaperUnit(synth_graph.sample_rate)
+
+        mode = 'clip'
+        numbers = []
+        if args is not None:
+            for arg in args:
+                if arg in ShaperNode.RANGE_MODES:
+                    mode = arg
+                else:
+                    try:
+                        numbers.append(float(arg))
+                    except (ValueError, TypeError):
+                        continue
+        in_low, in_high = 0.0, 1.0
+        if len(numbers) > 0:
+            in_low = numbers[0]
+        if len(numbers) > 1:
+            in_high = numbers[1]
+        self.unit.in_low_in.base = in_low
+        self.unit.in_high_in.base = in_high
+        self.unit.range_mode = ShaperNode.RANGE_MODES.index(mode)
+
+        self.plot_width = 200
+        self.plot_height = 100
+        # The editor lives in the interface module. Imported here rather than
+        # at module scope: the DSP nodes otherwise have no business depending
+        # on the GUI layer, and this node is the one place the two meet.
+        from dpg_system.interface_nodes import BreakpointEditor
+        # x is the input position across the range, so the editor's x axis is
+        # always 0..1; y is the output value.
+        self.editor = BreakpointEditor(x_max=1.0, y_min=0.0, y_max=1.0,
+                                       width=self.plot_width,
+                                       height=self.plot_height,
+                                       on_change=self.curve_changed,
+                                       name=label)
+        # 'point 1 0.5 0.8' and friends, so the curve can be moved from a patch
+        # rather than only by hand. See BreakpointEditor.handle_message.
+        for name in BreakpointEditor.MESSAGES:
+            self.message_handlers[name] = self.curve_message
+
+        self.add_signal_input('in', self.unit.signal_in)
+        self.add_modulation_input('in low', self.unit.in_low_in,
+                                  default_value=in_low,
+                                  speed=0.01, attenuverter=False)
+        self.add_modulation_input('in high', self.unit.in_high_in,
+                                  default_value=in_high,
+                                  speed=0.01, attenuverter=False)
+        self.points_input = self.add_input('points', callback=self.points_received)
+
+        self.mode_input = self.add_input('range', widget_type='combo',
+                                         default_value=mode,
+                                         callback=self.parameters_changed)
+        self.mode_input.widget.combo_items = list(ShaperNode.RANGE_MODES)
+
+        self.curve_display = self.add_display('')
+        self.curve_display.submit_callback = self.submit_display
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.points_output = self.add_output('points out')
+
+        self.out_low_option = self.add_option('out low', widget_type='drag_float',
+                                              default_value=0.0,
+                                              callback=self.ranges_changed)
+        self.out_high_option = self.add_option('out high', widget_type='drag_float',
+                                               default_value=1.0,
+                                               callback=self.ranges_changed)
+        for option in (self.out_low_option, self.out_high_option):
+            if option.widget is not None:
+                option.widget.speed = 0.01
+        self.reset_option = self.add_option('straight line',
+                                            widget_type='button', width=110,
+                                            callback=self.reset_curve)
+        self.width_option = self.add_option('width', widget_type='drag_int',
+                                            default_value=self.plot_width,
+                                            callback=self.size_changed)
+        self.height_option = self.add_option('height', widget_type='drag_int',
+                                             default_value=self.plot_height,
+                                             callback=self.size_changed)
+        self.finish_synth_node()
+
+    # -- display ------------------------------------------------------------
+
+    def submit_display(self):
+        self.editor.submit(self.curve_display.uuid,
+                           width_option=self.width_option,
+                           height_option=self.height_option)
+
+    def custom_create(self, from_file):
+        # Options only hold their real values once every element has been
+        # created, so anything that reads one waits until here.
+        self.editor.set_ranges(y_min=any_to_float(self.out_low_option()),
+                               y_max=any_to_float(self.out_high_option()),
+                               notify=False)
+        self.editor.set_size(any_to_int(self.width_option()),
+                             any_to_int(self.height_option()))
+        self.build_table()
+
+    def size_changed(self):
+        self.editor.set_size(any_to_int(self.width_option()),
+                             any_to_int(self.height_option()))
+
+    def ranges_changed(self):
+        low = any_to_float(self.out_low_option())
+        high = any_to_float(self.out_high_option())
+        if high <= low:
+            high = low + 1.0
+        self.editor.set_ranges(y_min=low, y_max=high, notify=False)
+        self.build_table()
+
+    def reset_curve(self):
+        self.editor.set_points(self.editor.straight_line())
+
+    # -- curve --------------------------------------------------------------
+
+    def curve_message(self, message='', message_data=[]):
+        self.editor.handle_message(message, message_data)
+
+    def curve_changed(self):
+        """The editor moved: rebake the table and pass the points on."""
+        self.build_table()
+        self.points_output.send(self.editor.get_points())
+
+    def build_table(self):
+        """Sample the drawn curve onto the unit's uniform table.
+
+        breakpoint_line_data owns what a curved segment means, so sampling it
+        rather than reimplementing the easing is what keeps shaper~, envelope
+        and shape_seq agreeing about the same curve.
+        """
+        xs, ys = self.editor.line_data(ShaperNode.TABLE_SAMPLES_PER_SEGMENT)
+        if len(xs) < 2:
+            return
+        # The table spans the editor's whole x axis, not the extent of the
+        # points. A curve whose last point sits short of the right edge holds
+        # its end value across the gap, exactly as reading the breakpoints
+        # would -- which is what np.interp does outside its x range. Spanning
+        # the points instead would stretch the curve to fill the input range
+        # and move every other point's meaning with it.
+        grid = np.linspace(0.0, self.editor.x_max, ShaperUnit.TABLE_SIZE + 1)
+        self.unit.set_table(np.interp(grid, xs, ys))
+
+    def points_received(self):
+        """A breakpoint list from elsewhere -- an envelope node, a preset.
+
+        The incoming x span is normalised onto the editor's 0..1, and the out
+        range grows to fit the incoming y values, so a curve drawn against any
+        ranges arrives looking like itself.
+        """
+        points = self.editor_points_from(self.points_input())
+        if not points:
+            return
+        low = min(point[1] for point in points)
+        high = max(point[1] for point in points)
+        if high <= low:
+            high = low + 1.0
+        if low < self.editor.y_min or high > self.editor.y_max:
+            self.out_low_option.widget.set(min(low, self.editor.y_min))
+            self.out_high_option.widget.set(max(high, self.editor.y_max))
+            self.editor.set_ranges(y_min=any_to_float(self.out_low_option()),
+                                   y_max=any_to_float(self.out_high_option()),
+                                   notify=False)
+        self.editor.set_points(points)
+
+    @staticmethod
+    def editor_points_from(data):
+        """[[x, y, curve], ...] as the editor wants it, x normalised to 0..1."""
+        points = []
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        if not isinstance(data, (list, tuple)):
+            return points
+        for entry in data:
+            if isinstance(entry, np.ndarray):
+                entry = entry.tolist()
+            if not isinstance(entry, (list, tuple)) or len(entry) < 2:
+                continue
+            points.append([any_to_float(entry[0]), any_to_float(entry[1]),
+                           any_to_float(entry[2]) if len(entry) > 2 else 0.0])
+        if len(points) < 2:
+            return []
+        span_low = min(p[0] for p in points)
+        span_high = max(p[0] for p in points)
+        span = span_high - span_low
+        if span <= 0.0:
+            return []
+        for point in points:
+            point[0] = (point[0] - span_low) / span
+        return points
+
+    def sync_options(self):
+        mode = any_to_string(self.mode_input())
+        if mode in ShaperNode.RANGE_MODES:
+            self.unit.range_mode = ShaperNode.RANGE_MODES.index(mode)
+
+    def synth_frame_task(self):
+        self.editor.poll()
+
+    def save_custom(self, container):
+        container['shaper_points'] = self.editor.get_points()
+
+    def load_custom(self, container):
+        if 'shaper_points' in container:
+            self.editor.set_points(container['shaper_points'], notify=False)
+            self.build_table()
 
 
 class MultNode(SynthNode):

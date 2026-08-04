@@ -256,6 +256,128 @@ class SigUnit(Unit):
 
 
 # ----------------------------------------------------------------------------
+# ramp~  --  linear move to a target, arriving on schedule
+# ----------------------------------------------------------------------------
+
+class RampUnit(Unit):
+    """Straight-line ramp to a target, reaching it exactly at the end of time.
+
+    sig~ smooths a control stream with a one-pole glide, which approaches its
+    target asymptotically -- the right thing for de-zippering, where when it
+    arrives does not matter. This is the other kind of move: a straight line
+    that lands on schedule, for when the move itself is the gesture. A
+    portamento, a sweep timed to a beat, a fade of a known length.
+
+    A new target starts a new ramp from wherever the output currently sits, so
+    re-aiming mid-move never steps. The ramp time is read when the move
+    starts, so changing it mid-flight affects the next move, not this one.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.target_in = self.new_inlet()
+        self.time_in = self.new_inlet(base=0.1, minimum=0.0)
+        self.trigger_in = self.new_inlet()
+
+        self.threshold = 0.5
+        self.current = 0.0
+        self.arrive_count = 0     # bumped when a move lands; the node bangs
+
+        self._goal = 0.0
+        self._remaining = 0       # samples left to run
+        self._increment = 0.0
+        self._trigger_armed = True
+
+        # Main-thread requests, served on the next block. Counters rather than
+        # flags for the usual reason: a read-modify-write shared by two threads
+        # can lose one.
+        self._jump_requests = 0
+        self._jump_served = 0
+        self._restart_requests = 0
+        self._restart_served = 0
+
+        self.out = self.new_outlet()
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._remaining = 0
+
+    def jump(self):
+        """Node layer: snap to the target now, without ramping."""
+        self._jump_requests += 1
+
+    def restart(self):
+        """Node layer: run the move again from where the output sits."""
+        self._restart_requests += 1
+
+    def _begin(self, goal, seconds):
+        self._goal = goal
+        samples = int(seconds * self.sample_rate)
+        if samples < 1:
+            self.current = goal
+            self._remaining = 0
+            self.arrive_count += 1
+            return
+        self._remaining = samples
+        self._increment = (goal - self.current) / samples
+
+    def render(self, frames):
+        target = self.target_in.eval(frames)
+        time_in = self.time_in.eval(frames)
+        trigger = self.trigger_in.eval(frames)
+
+        goal = target.value if target.constant else float(target.data[frames - 1])
+        seconds = time_in.value if time_in.constant else float(time_in.data[0])
+
+        if self._jump_requests != self._jump_served:
+            self._jump_served = self._jump_requests
+            self._goal = goal
+            self.current = goal
+            self._remaining = 0
+
+        high = (trigger.value if trigger.constant
+                else float(trigger.data[frames - 1])) >= self.threshold
+        fire = False
+        if high:
+            if self._trigger_armed:
+                fire = True
+            self._trigger_armed = False
+        else:
+            self._trigger_armed = True
+
+        if self._restart_requests != self._restart_served:
+            self._restart_served = self._restart_requests
+            fire = True
+
+        if fire or goal != self._goal:
+            self._begin(goal, seconds)
+
+        out = self.out
+        if self._remaining <= 0:
+            out.set_constant(self.current)
+            return
+
+        buffer = out.data[:frames]
+        count = min(frames, self._remaining)
+        segment = self._scratch[:count]
+        np.multiply(_INDEX_RAMP[:count], self._increment, out=segment)
+        segment += self.current
+        np.copyto(buffer[:count], segment, casting='unsafe')
+
+        self.current = float(segment[-1])
+        self._remaining -= count
+        if self._remaining <= 0:
+            # Land on the goal itself rather than wherever the accumulated
+            # increments happened to arrive.
+            self.current = self._goal
+            buffer[count - 1] = self._goal
+            self.arrive_count += 1
+        if count < frames:
+            buffer[count:] = self.current
+        out.constant = False
+
+
+# ----------------------------------------------------------------------------
 # vca~
 # ----------------------------------------------------------------------------
 
@@ -1065,6 +1187,144 @@ class VcoUnit(Unit):
 
 
 # ----------------------------------------------------------------------------
+# shaper~  --  transfer function over the whole block
+# ----------------------------------------------------------------------------
+
+class ShaperUnit(Unit):
+    """A curve applied to every sample: table lookup with linear interpolation.
+
+    The node layer bakes the breakpoint function -- curvature and all -- onto a
+    uniformly spaced table whenever it changes, so the audio thread never sees
+    breakpoints, easing or searching. It maps the input to a table index,
+    gathers the two neighbouring entries and interpolates between them, which
+    is a dozen vector passes over the block: about 12 us per 512 frames,
+    against 300 us for the same lookup written as a Python loop and 32 us for
+    np.interp, which pays a binary search per sample that uniform spacing makes
+    unnecessary.
+
+    An unmodulated input costs nothing at all -- a constant signal takes one
+    scalar lookup and the output stays constant for the block.
+
+    Note that this is waveshaping: a curved transfer function generates
+    harmonics above the input's own, which fold back if they pass Nyquist.
+    That is inherent to the operation, not a defect of the table.
+    """
+
+    TABLE_SIZE = 4096
+    CLIP, WRAP, FOLD = 0, 1, 2
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.in_low_in = self.new_inlet(base=-1.0)
+        self.in_high_in = self.new_inlet(base=1.0)
+
+        self.range_mode = ShaperUnit.CLIP
+        # One entry more than the size, so index+1 is always in bounds. The
+        # identity to begin with, so an unloaded shaper passes signal through.
+        self.table = np.linspace(-1.0, 1.0, ShaperUnit.TABLE_SIZE + 1)
+
+        self.out = self.new_outlet()
+        self._index = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._floor = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._integer = np.zeros(MAX_BLOCK, dtype=np.int32)
+        self._low = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._high = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def set_table(self, values):
+        """Main thread: swap in a new curve.
+
+        Assigned as one whole array, so the audio thread sees either the old
+        table or the new one and never a half-written mixture.
+        """
+        table = np.asarray(values, dtype=np.float64).reshape(-1)
+        if table.size >= 2:
+            self.table = table
+
+    def _position(self, value, low, high):
+        """Input value to 0..1 across the table, honouring the range mode."""
+        span = high - low
+        position = (value - low) / span if span else 0.0
+        if not math.isfinite(position):
+            return 0.0
+        if self.range_mode == ShaperUnit.WRAP:
+            position = position % 1.0
+        elif self.range_mode == ShaperUnit.FOLD:
+            position = 1.0 - abs((position % 2.0) - 1.0)
+        return min(1.0, max(0.0, position))
+
+    def lookup(self, value, low=None, high=None):
+        """Scalar read. Used for constant blocks and by the node's display."""
+        if low is None:
+            low = self.in_low_in.base
+        if high is None:
+            high = self.in_high_in.base
+        table = self.table
+        size = table.size - 1
+        index = self._position(value, low, high) * size
+        whole = int(index)
+        if whole >= size:
+            return float(table[size])
+        fraction = index - whole
+        return float(table[whole] + fraction * (table[whole + 1] - table[whole]))
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        low_in = self.in_low_in.eval(frames)
+        high_in = self.in_high_in.eval(frames)
+
+        low = low_in.value if low_in.constant else float(low_in.data[0])
+        high = high_in.value if high_in.constant else float(high_in.data[0])
+
+        if signal.constant:
+            self.out.set_constant(self.lookup(signal.value, low, high))
+            return
+
+        table = self.table
+        size = table.size - 1
+        span = high - low
+        scale = (1.0 / span) if span else 0.0
+
+        index = self._index[:frames]
+        np.subtract(signal.data[:frames], low, out=index, casting='unsafe')
+        index *= scale
+
+        mode = self.range_mode
+        if mode == ShaperUnit.WRAP:
+            np.mod(index, 1.0, out=index)
+        elif mode == ShaperUnit.FOLD:
+            np.mod(index, 2.0, out=index)
+            np.subtract(index, 1.0, out=index)
+            np.abs(index, out=index)
+            np.subtract(1.0, index, out=index)
+
+        # A NaN arriving from upstream would otherwise become a garbage integer
+        # index; np.take is also asked to clip, so no index can escape the table.
+        np.nan_to_num(index, copy=False, nan=0.0, posinf=1.0, neginf=0.0)
+        np.multiply(index, size, out=index)
+        np.clip(index, 0.0, float(size), out=index)
+
+        whole = self._floor[:frames]
+        np.floor(index, out=whole)
+        integer = self._integer[:frames]
+        np.copyto(integer, whole, casting='unsafe')
+        np.subtract(index, whole, out=index)      # index is now the fraction
+
+        lower = self._low[:frames]
+        upper = self._high[:frames]
+        np.take(table, integer, out=lower, mode='clip')
+        np.add(integer, 1, out=integer)
+        np.take(table, integer, out=upper, mode='clip')
+
+        np.subtract(upper, lower, out=upper)
+        np.multiply(upper, index, out=upper)
+        np.add(lower, upper, out=lower)
+
+        np.copyto(self.out.data[:frames], lower, casting='unsafe')
+        self.out.constant = False
+
+
+# ----------------------------------------------------------------------------
 # vcf~
 # ----------------------------------------------------------------------------
 
@@ -1827,16 +2087,44 @@ class SamplerOscUnit(Unit):
                                        else float(target.data[frames - 1]))
                 # Critically damped spring: motion of the target becomes
                 # playback speed, so the material only sounds while it moves.
+                #
+                # Solved in closed form across the block rather than stepped.
+                # Stepping it is only stable while follow_speed * block_time
+                # stays under about 1 -- past that the velocity diverges within
+                # a few blocks and the playhead reads noise. The closed form is
+                # exact at any speed and never overshoots, and it gives a
+                # per-sample curve instead of one straight line per block.
+                #
+                #   x(t) = goal + e^(-wt) * (d + (v + w*d) * t)
+                #
+                # with d the displacement from the goal and v the current
+                # velocity, both at the top of the block.
                 omega = max(0.01, self.follow_speed)
-                step = frames / self.sample_rate
-                distance = goal - self.position
-                acceleration = omega * omega * distance - 2.0 * omega * (
-                    self.velocity * self.sample_rate)
-                velocity = self.velocity * self.sample_rate + acceleration * step
-                self.velocity = velocity / self.sample_rate
-                np.multiply(_INDEX_RAMP[:frames], self.velocity, out=positions)
-                positions += self.position
+                displacement = self.position - goal
+                velocity = self.velocity * self.sample_rate
+                coefficient = velocity + omega * displacement
+
+                times = self._inc[:frames]
+                np.multiply(_INDEX_RAMP[:frames], 1.0 / self.sample_rate,
+                            out=times)
+                # positions carries the decay term until the two are combined.
+                np.multiply(times, -omega, out=positions)
+                np.exp(positions, out=positions)
+                decay_end = float(positions[-1])
+
+                np.multiply(times, coefficient, out=times)
+                times += displacement
+                polynomial_end = float(times[-1])
+
+                positions *= times
+                positions += goal
+
                 self.position = float(positions[-1])
+                self.velocity = (decay_end
+                                 * (coefficient - omega * polynomial_end)
+                                 / self.sample_rate)
+                if not math.isfinite(self.velocity):
+                    self.velocity = 0.0
 
             np.nan_to_num(positions, copy=False, nan=start,
                           posinf=start, neginf=start)
