@@ -73,6 +73,9 @@ def register_interface_nodes():
     Node.app.register_node('momentary_xy', XYPadNode.factory)
     Node.app.register_node('joy_stick', XYPadNode.factory)
     Node.app.register_node('envelope', EnvelopeNode.factory)
+    Node.app.register_node('shape_seq', ShapeSequencerNode.factory)
+    Node.app.register_node('shape_sequencer', ShapeSequencerNode.factory)
+    Node.app.register_node('function_sequencer', ShapeSequencerNode.factory)
 
 
 _view_button_chromeless_theme = None
@@ -3311,21 +3314,627 @@ class XYPadNode(Node):
             dpg.bind_item_theme(self.scatter_tag, self.scatter_theme_tag)
 
 
+def breakpoint_ease(t, curve_val):
+    """Segment shape, as the Schlick bias function.
+
+    f(t) = t / (t + (1 - t) * k)
+
+    Curvature is nonzero at t=0, so a segment never starts flat.
+      curve_val = 0: k=1, linear
+      curve_val > 0: k<1, convex (f(t) > t, bows above the straight line)
+      curve_val < 0: k>1, concave (f(t) < t, bows below it)
+    """
+    if abs(curve_val) < 0.001:
+        return t
+    if t <= 0.0:
+        return 0.0
+    if t >= 1.0:
+        return 1.0
+    if curve_val > 0:
+        k = 1.0 / (1.0 + curve_val)
+    else:
+        k = 1.0 - curve_val
+    return t / (t + (1.0 - t) * k)
+
+
+# Slack around a breakpoint plot's range, in pixels. A control point sitting
+# exactly on a boundary would otherwise straddle the edge of the plot rect, and
+# the half that gets clipped is the half you have to click -- which made corner
+# points nearly impossible to pick up.
+BREAKPOINT_GRAB_PADDING = 9
+
+
+def breakpoint_axis_limits(x_max, y_min, y_max, plot_width, plot_height,
+                           pixels=BREAKPOINT_GRAB_PADDING):
+    """(x_low, x_high, y_low, y_high) for a plot framed with grab slack.
+
+    The slack is derived from the plot's pixel size, so it stays the same few
+    pixels whatever the ranges are and however the plot is resized.
+    """
+    span_x = abs(x_max) or 1.0
+    span_y = abs(y_max - y_min) or 1.0
+    pad_x = span_x * pixels / max(plot_width, 1)
+    pad_y = span_y * pixels / max(plot_height, 1)
+    return -pad_x, x_max + pad_x, y_min - pad_y, y_max + pad_y
+
+
+def breakpoint_point_color(curve_val):
+    """Control point color: yellow (linear) -> green (curved)."""
+    blend = min(1.0, abs(curve_val) / 2.0)
+    r = int(255 * (1 - blend))
+    g = 255
+    b = int(100 * blend)
+    return (r, g, b, 255)
+
+
+def breakpoint_value_at(points, x_val):
+    """Read a breakpoint function at x_val, respecting per-segment curvature.
+
+    `points` is a list of {'x', 'y', 'curve'} dicts in any order; outside the
+    span the end values are held, which is what makes a function usable as a
+    lookup for an input that can wander past its range.
+    """
+    sorted_pts = sorted(points, key=lambda p: p['x'])
+    n = len(sorted_pts)
+    if n == 0:
+        return 0.0
+    if x_val <= sorted_pts[0]['x']:
+        return sorted_pts[0]['y']
+    if x_val >= sorted_pts[-1]['x']:
+        return sorted_pts[-1]['y']
+
+    for i in range(n - 1):
+        if sorted_pts[i]['x'] <= x_val <= sorted_pts[i + 1]['x']:
+            dx = sorted_pts[i + 1]['x'] - sorted_pts[i]['x']
+            if dx == 0:
+                return sorted_pts[i]['y']
+            t = (x_val - sorted_pts[i]['x']) / dx
+            curve_val = sorted_pts[i].get('curve', 0.0)
+            # Flip curve direction for descending segments, so dragging up
+            # always bows the curve upward on screen
+            effective_curve = (curve_val if sorted_pts[i + 1]['y'] >= sorted_pts[i]['y']
+                               else -curve_val)
+            eased = breakpoint_ease(t, effective_curve)
+            return sorted_pts[i]['y'] + eased * (sorted_pts[i + 1]['y'] - sorted_pts[i]['y'])
+
+    return sorted_pts[-1]['y']
+
+
+def breakpoint_line_data(points, samples_per_curve=32):
+    """x/y arrays for drawing a breakpoint function, curved segments sampled."""
+    sorted_pts = sorted(points, key=lambda p: p['x'])
+    n = len(sorted_pts)
+    if n == 0:
+        return [], []
+    if n == 1:
+        return [sorted_pts[0]['x']], [sorted_pts[0]['y']]
+
+    x_data = []
+    y_data = []
+
+    for i in range(n - 1):
+        p_cur = sorted_pts[i]
+        p_next = sorted_pts[i + 1]
+        curve_val = p_cur.get('curve', 0.0)
+
+        if abs(curve_val) > 0.001:
+            y0 = p_cur['y']
+            y1 = p_next['y']
+            x0 = p_cur['x']
+            x1 = p_next['x']
+            effective_curve = curve_val if y1 >= y0 else -curve_val
+            for s in range(samples_per_curve):
+                t = s / float(samples_per_curve)
+                eased = breakpoint_ease(t, effective_curve)
+                x_data.append(x0 + t * (x1 - x0))
+                y_data.append(y0 + eased * (y1 - y0))
+        else:
+            # Linear: just the start point
+            x_data.append(p_cur['x'])
+            y_data.append(p_cur['y'])
+
+    x_data.append(sorted_pts[-1]['x'])
+    y_data.append(sorted_pts[-1]['y'])
+
+    return x_data, y_data
+
+
+class BreakpointEditor:
+    """An editable breakpoint curve on its own plot.
+
+    Owns the plot, the control points and the mouse handling; the host node
+    owns where the plot sits and what the curve means. The gestures are the
+    envelope node's: drag a point to move it, right-click to add one or, near
+    an existing point, to remove it, shift + left-drag a segment to bend it.
+
+    A host builds one in __init__, calls submit() from a display's
+    submit_callback, poll() from its frame task, and hears about edits through
+    on_change.
+    """
+
+    SAMPLES_PER_CURVE = 32
+    REMOVE_THRESHOLD = 0.08
+
+    def __init__(self, x_max=1.0, y_min=0.0, y_max=1.0, width=200, height=100,
+                 on_change=None, on_resize=None, line_color=(80, 140, 255),
+                 name='curve'):
+        self.name = name        # only used to name the node in diagnostics
+        self.x_max = float(x_max)
+        self.y_min = float(y_min)
+        self.y_max = float(y_max)
+        self.width = int(width)
+        self.height = int(height)
+        self.on_change = on_change
+        self.on_resize = on_resize
+        self.line_color = line_color
+
+        self.points = self.straight_line()
+        self.point_tags = []
+        self.ready = False
+
+        self.plot_tag = dpg.generate_uuid()
+        self.x_axis_tag = dpg.generate_uuid()
+        self.y_axis_tag = dpg.generate_uuid()
+        self.line_tag = dpg.generate_uuid()
+        self.resize_handle = None
+
+        self.left_was_down = False
+        self.right_was_down = False
+        self.curving = False
+        self.curving_index = -1
+        self.curve_drag_start_screen_y = 0.0
+        self.curve_drag_start_val = 0.0
+
+    def straight_line(self):
+        """The identity: an untouched editor passes its input through."""
+        return [{'x': 0.0, 'y': self.y_min, 'curve': 0.0},
+                {'x': self.x_max, 'y': self.y_max, 'curve': 0.0}]
+
+    # -- construction --------------------------------------------------------
+
+    def submit(self, display_uuid, width_option=None, height_option=None):
+        """Build the plot. Call inside the host display's submit_callback."""
+        with dpg.theme() as self.line_theme:
+            with dpg.theme_component(dpg.mvLineSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Line, self.line_color,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, 2.0,
+                                    category=dpg.mvThemeCat_Plots)
+
+        with dpg.plot(label='', tag=self.plot_tag,
+                      height=self.height, width=self.width,
+                      no_title=True, no_menus=True, no_box_select=True,
+                      no_mouse_pos=True):
+            dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.x_axis_tag,
+                              no_tick_labels=True)
+            dpg.add_plot_axis(dpg.mvYAxis, label='', tag=self.y_axis_tag,
+                              no_tick_labels=True)
+            dpg.add_line_series([], [], parent=self.y_axis_tag, tag=self.line_tag)
+            dpg.bind_item_theme(self.line_tag, self.line_theme)
+
+        self.ready = True
+        self.apply_axis_limits()
+        self.rebuild_points()
+        if width_option is not None or height_option is not None:
+            self.install_resize_handle(display_uuid, width_option, height_option)
+
+    def install_resize_handle(self, display_uuid, width_option, height_option):
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
+        btn_uuid = dpg.add_button(parent=display_uuid, label='',
+                                  width=self.width, height=4)
+        handle = ResizeHandle(
+            btn_uuid, self.plot_tag, axis='xy',
+            width_option=width_option, height_option=height_option,
+            sync_width=True, sync_height=False,
+            on_resize=self.handle_resized
+        )
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
+        self.resize_handle = handle
+
+    def handle_resized(self, new_w, new_h):
+        # The handle sizes the plot itself but does not fire the size options'
+        # callbacks, and the grab slack is measured in pixels.
+        self.width = int(new_w)
+        self.height = int(new_h)
+        self.apply_axis_limits()
+        if self.on_resize is not None:
+            self.on_resize(self.width, self.height)
+
+    def set_size(self, width, height):
+        self.width = int(width)
+        self.height = int(height)
+        if not self.ready:
+            return
+        dpg.set_item_width(self.plot_tag, self.width)
+        dpg.set_item_height(self.plot_tag, self.height)
+        if self.resize_handle is not None and dpg.does_item_exist(self.resize_handle.uuid):
+            dpg.set_item_width(self.resize_handle.uuid, self.width)
+        self.apply_axis_limits()
+
+    def set_ranges(self, x_max=None, y_min=None, y_max=None, notify=True):
+        """Change the axes, pulling any out-of-range points back inside."""
+        if x_max is not None:
+            self.x_max = float(x_max)
+        if y_min is not None:
+            self.y_min = float(y_min)
+        if y_max is not None:
+            self.y_max = float(y_max)
+        moved = False
+        for point in self.points:
+            x = max(0.0, min(self.x_max, point['x']))
+            y = max(self.y_min, min(self.y_max, point['y']))
+            if x != point['x'] or y != point['y']:
+                point['x'], point['y'] = x, y
+                moved = True
+        self.apply_axis_limits()
+        self.rebuild_points()
+        if moved and notify:
+            self.changed()
+
+    def apply_axis_limits(self):
+        if not self.ready:
+            return
+        x_low, x_high, y_low, y_high = breakpoint_axis_limits(
+            self.x_max, self.y_min, self.y_max, self.width, self.height)
+        dpg.set_axis_limits(self.x_axis_tag, x_low, x_high)
+        dpg.set_axis_limits(self.y_axis_tag, y_low, y_high)
+
+    # -- the curve -----------------------------------------------------------
+
+    def set_points(self, points, notify=True):
+        """Replace the curve. Accepts dicts or [x, y, curve] sequences."""
+        parsed = []
+        for entry in points or ():
+            if isinstance(entry, dict):
+                parsed.append({'x': any_to_float(entry.get('x', 0.0)),
+                               'y': any_to_float(entry.get('y', 0.0)),
+                               'curve': any_to_float(entry.get('curve', 0.0))})
+                continue
+            if isinstance(entry, np.ndarray):
+                entry = entry.tolist()
+            if not isinstance(entry, (list, tuple)) or len(entry) < 2:
+                continue
+            parsed.append({'x': any_to_float(entry[0]),
+                           'y': any_to_float(entry[1]),
+                           'curve': any_to_float(entry[2]) if len(entry) > 2 else 0.0})
+        if len(parsed) < 2:
+            return False
+        self.points = sorted(parsed, key=lambda p: p['x'])
+        self.rebuild_points()
+        if notify:
+            self.changed()
+        return True
+
+    def get_points(self):
+        return [[p['x'], p['y'], p.get('curve', 0.0)]
+                for p in sorted(self.points, key=lambda p: p['x'])]
+
+    def value_at(self, x):
+        return breakpoint_value_at(self.points, x)
+
+    def line_data(self, samples_per_curve=None):
+        return breakpoint_line_data(
+            self.points,
+            samples_per_curve or self.SAMPLES_PER_CURVE)
+
+    def changed(self):
+        self.update_line()
+        if self.on_change is not None:
+            self.on_change()
+
+    def update_line(self):
+        if not self.ready:
+            return
+        x_data, y_data = self.line_data()
+        dpg.set_value(self.line_tag, [x_data, y_data])
+
+    # -- control points ------------------------------------------------------
+
+    def rebuild_points(self):
+        if not self.ready:
+            return
+        for tag in self.point_tags:
+            if dpg.does_item_exist(tag):
+                dpg.delete_item(tag)
+        self.point_tags = [self.create_point_widget(p) for p in self.points]
+        self.update_line()
+
+    def create_point_widget(self, point):
+        tag = dpg.generate_uuid()
+        dpg.add_drag_point(tag=tag, default_value=(point['x'], point['y']),
+                           color=breakpoint_point_color(point.get('curve', 0.0)),
+                           parent=self.plot_tag)
+        return tag
+
+    def update_point_color(self, index):
+        if index >= len(self.point_tags):
+            return
+        tag = self.point_tags[index]
+        if dpg.does_item_exist(tag):
+            dpg.configure_item(tag, color=breakpoint_point_color(
+                self.points[index].get('curve', 0.0)))
+
+    def add_point(self, x, y, curve=0.0):
+        point = {'x': max(0.0, min(self.x_max, x)),
+                 'y': max(self.y_min, min(self.y_max, y)),
+                 'curve': curve}
+        self.points.append(point)
+        self.point_tags.append(self.create_point_widget(point))
+        return point
+
+    def remove_point(self, index):
+        if len(self.points) <= 2 or not 0 <= index < len(self.points):
+            return False
+        self.points.pop(index)
+        tag = self.point_tags.pop(index)
+        if dpg.does_item_exist(tag):
+            dpg.delete_item(tag)
+        return True
+
+    def x_bounds(self, index):
+        """How far a point may travel in x: up to its neighbours, not past.
+
+        A breakpoint function has to be single-valued in x, and letting points
+        cross also makes their indices meaningless -- move point 3 past point 4
+        and the next message addressed to 'point 3' lands on a different point,
+        so a run of them piles several points onto one spot. Neighbours may
+        meet (a vertical step is a legitimate shape) but never swap.
+        """
+        if not 0 <= index < len(self.points):
+            return 0.0, self.x_max
+        order = sorted(range(len(self.points)),
+                       key=lambda i: self.points[i]['x'])
+        place = order.index(index)
+        low = self.points[order[place - 1]]['x'] if place > 0 else 0.0
+        high = (self.points[order[place + 1]]['x']
+                if place < len(order) - 1 else self.x_max)
+        return max(0.0, low), min(self.x_max, high)
+
+    def point_at(self, index):
+        """Internal index of the index-th point in x order, or None.
+
+        The stored order is whatever editing left behind -- points are not
+        re-sorted as they are dragged, since the drag widgets are matched to
+        them by position in the list. Anything addressing points from outside
+        means the nth from the left, so it comes through here.
+        """
+        order = sorted(range(len(self.points)), key=lambda i: self.points[i]['x'])
+        if 0 <= index < len(order):
+            return order[index]
+        return None
+
+    def move_point(self, index, x=None, y=None, curve=None, notify=True):
+        """Set the nth point (in x order). Only the values given are changed."""
+        target = self.point_at(index)
+        if target is None:
+            return False
+        point = self.points[target]
+        if x is not None:
+            low, high = self.x_bounds(target)
+            point['x'] = max(low, min(high, any_to_float(x)))
+        if y is not None:
+            point['y'] = max(self.y_min, min(self.y_max, any_to_float(y)))
+        if curve is not None:
+            point['curve'] = max(-16.0, min(16.0, any_to_float(curve)))
+            self.update_point_color(target)
+        if target < len(self.point_tags) and dpg.does_item_exist(self.point_tags[target]):
+            dpg.set_value(self.point_tags[target], [point['x'], point['y']])
+        if notify:
+            self.changed()
+        return True
+
+    # -- messages ------------------------------------------------------------
+
+    MESSAGES = ('point', 'curve', 'add', 'remove', 'line')
+
+    def handle_message(self, message, message_data):
+        """The editing gestures as messages, so a curve can be driven by patch.
+
+            point <n> <x> <y> [curve]   move the nth point from the left
+            curve <n> <amount>          bend the segment leaving the nth point
+            add <x> <y> [curve]         add a point
+            remove <n>                  remove the nth point
+            line                        back to a straight line
+
+        Point values are clamped to the ranges, so a sequence driving this
+        cannot push the curve outside itself. Anything that cannot be applied
+        at all -- an index past the end, a missing argument -- is reported
+        rather than passed over in silence, since a message that does nothing
+        looks exactly like a message that never arrived.
+
+        Indices count from 0, as everywhere else in the patch.
+        """
+        if message == 'line':
+            self.set_points(self.straight_line())
+            return True
+
+        numbers = [any_to_float(value) for value in message_data]
+
+        if message == 'point':
+            if len(numbers) < 3:
+                return self._reject(message, message_data,
+                                    'needs an index, an x and a y')
+            return self._move_or_reject(
+                message, message_data, int(numbers[0]), numbers[1], numbers[2],
+                numbers[3] if len(numbers) > 3 else None)
+
+        if message == 'curve':
+            if len(numbers) < 2:
+                return self._reject(message, message_data,
+                                    'needs an index and an amount')
+            return self._move_or_reject(message, message_data, int(numbers[0]),
+                                        curve=numbers[1])
+
+        if message == 'add':
+            if len(numbers) < 2:
+                return self._reject(message, message_data, 'needs an x and a y')
+            self.add_point(numbers[0], numbers[1],
+                           numbers[2] if len(numbers) > 2 else 0.0)
+            self.changed()
+            return True
+
+        if message == 'remove':
+            if not numbers:
+                return self._reject(message, message_data, 'needs an index')
+            target = self.point_at(int(numbers[0]))
+            if target is None:
+                return self._reject(message, message_data,
+                                    self._index_hint(int(numbers[0])))
+            if not self.remove_point(target):
+                return self._reject(message, message_data,
+                                    'a curve cannot have fewer than 2 points')
+            self.changed()
+            return True
+
+        return False
+
+    def _move_or_reject(self, message, message_data, index, x=None, y=None,
+                        curve=None):
+        if self.move_point(index, x, y, curve):
+            return True
+        return self._reject(message, message_data, self._index_hint(index))
+
+    def _index_hint(self, index):
+        count = len(self.points)
+        return ('there is no point ' + str(index) + ' -- the curve has '
+                + str(count) + ' points, so indices run 0..' + str(count - 1))
+
+    def _reject(self, message, message_data, reason):
+        text = ' '.join([str(message)] + [str(value) for value in message_data])
+        print(self.name + ": '" + text + "' ignored -- " + reason)
+        return False
+
+    def nearest_point(self, mx, my):
+        min_dist = float('inf')
+        min_idx = -1
+        x_range = max(self.x_max, 0.001)
+        y_range = max(self.y_max - self.y_min, 0.001)
+        for i, p in enumerate(self.points):
+            dx = (p['x'] - mx) / x_range
+            dy = (p['y'] - my) / y_range
+            dist = (dx ** 2 + dy ** 2) ** 0.5
+            if dist < min_dist:
+                min_dist = dist
+                min_idx = i
+        return min_idx, min_dist
+
+    def segment_at_x(self, mx):
+        """Index of the point that starts the segment containing mx."""
+        sorted_pts = sorted(self.points, key=lambda p: p['x'])
+        for i in range(len(sorted_pts) - 1):
+            if sorted_pts[i]['x'] <= mx <= sorted_pts[i + 1]['x']:
+                return self.points.index(sorted_pts[i])
+        return -1
+
+    def hovered(self):
+        return self.ready and dpg.is_item_hovered(self.plot_tag)
+
+    def interacting(self):
+        """True while the user is working on the plot."""
+        return self.curving or (self.left_was_down and self.hovered())
+
+    # -- interaction ---------------------------------------------------------
+
+    def poll(self):
+        """Run the mouse gestures. Call once a frame from the host."""
+        if not self.ready:
+            return
+        shift_held = (dpg.is_key_down(dpg.mvKey_LShift)
+                      or dpg.is_key_down(dpg.mvKey_RShift))
+        left_down = dpg.is_mouse_button_down(0)
+        right_down = dpg.is_mouse_button_down(1)
+
+        # --- Curvature drag (shift + left-click held) ---
+        if self.curving:
+            if left_down and shift_held:
+                # Screen pixels rather than plot coordinates, so the drag is
+                # not clipped at the edge of the plot
+                screen_pos = dpg.get_mouse_pos()
+                delta_px = self.curve_drag_start_screen_y - screen_pos[1]
+                new_curve = self.curve_drag_start_val + delta_px / 18.0
+                new_curve = max(-16.0, min(16.0, new_curve))
+                index = self.curving_index
+                if 0 <= index < len(self.points):
+                    self.points[index]['curve'] = new_curve
+                    self.update_point_color(index)
+                    self.changed()
+            else:
+                self.curving = False
+            self.left_was_down = left_down
+            self.right_was_down = right_down
+            return
+
+        if left_down and not self.left_was_down and shift_held and self.hovered():
+            plot_pos = dpg.get_plot_mouse_pos()
+            if plot_pos:
+                index = self.segment_at_x(plot_pos[0])
+                if index >= 0:
+                    self.curving = True
+                    self.curving_index = index
+                    self.curve_drag_start_screen_y = dpg.get_mouse_pos()[1]
+                    self.curve_drag_start_val = self.points[index].get('curve', 0.0)
+                    self.left_was_down = left_down
+                    self.right_was_down = right_down
+                    return
+
+        # --- Poll the drag points ---
+        changed = False
+        for index, tag in enumerate(self.point_tags):
+            if index >= len(self.points) or not dpg.does_item_exist(tag):
+                continue
+            pos = dpg.get_value(tag)
+            # Dragged points stop at their neighbours for the same reason
+            # messaged ones do -- see x_bounds.
+            low, high = self.x_bounds(index)
+            x = max(low, min(high, pos[0]))
+            y = max(self.y_min, min(self.y_max, pos[1]))
+            if abs(x - pos[0]) > 1e-6 or abs(y - pos[1]) > 1e-6:
+                dpg.set_value(tag, [x, y])
+            point = self.points[index]
+            if abs(x - point['x']) > 1e-6 or abs(y - point['y']) > 1e-6:
+                point['x'] = x
+                point['y'] = y
+                changed = True
+
+        # --- Right-click: add or remove a point ---
+        if right_down and not self.right_was_down and self.hovered():
+            plot_pos = dpg.get_plot_mouse_pos()
+            if plot_pos:
+                nearest_idx, nearest_dist = self.nearest_point(plot_pos[0],
+                                                               plot_pos[1])
+                if nearest_dist < self.REMOVE_THRESHOLD and len(self.points) > 2:
+                    self.remove_point(nearest_idx)
+                else:
+                    x = max(0.0, min(self.x_max, plot_pos[0]))
+                    y = max(self.y_min, min(self.y_max, plot_pos[1]))
+                    self.add_point(x, y)
+                changed = True
+
+        if changed:
+            self.changed()
+
+        self.left_was_down = left_down
+        self.right_was_down = right_down
+
+
 class EnvelopeNode(Node):
     """A breakpoint function / envelope editor with draggable control points.
 
-    Points are connected by lines. Drag points to reposition.
-    Right-click: add point (if far from existing) or remove point (if near one).
-    Shift+right-click drag near a point: adjust curvature (up=convex, down=concave).
-    Send an x value to interpolate the envelope.
+    Drag a point to move it, right-click to add one or, near an existing point,
+    to remove it, shift + left-drag a segment to bend it. Send an x value to
+    read the curve there; bang 'trigger' to sweep across it over 'duration',
+    sending the value as the playhead goes.
+
+    The editing is BreakpointEditor, shared with shaper~ and shape_seq, so the
+    three behave identically under the mouse.
 
     Usage:
         envelope          - x range 0-1, y range 0-1
         envelope 10       - x range 0-10, y range 0-1
         envelope 10 5     - x range 0-10, y range 0-5
     """
-
-    SAMPLES_PER_CURVE = 32
 
     @staticmethod
     def factory(name, data, args=None):
@@ -3334,46 +3943,37 @@ class EnvelopeNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.x_max = 1.0
-        self.y_min = 0.0
-        self.y_max = 1.0
+        x_max, y_min, y_max = 1.0, 0.0, 1.0
         self.plot_width = 300
         self.plot_height = 150
-        self.remove_threshold = 0.08
 
         # Parse args
         if args and len(args) > 0:
             val, t = decode_arg(args, 0)
             if t in [float, int]:
-                self.x_max = float(val)
+                x_max = float(val)
         if args and len(args) > 1:
             val, t = decode_arg(args, 1)
             if t in [float, int]:
-                self.y_max = float(val)
+                y_max = float(val)
 
-        # Point data: {'tag': uuid, 'x': float, 'y': float, 'curve': float}
-        # 'curve' controls the outgoing segment shape:
-        #   0 = linear, positive = convex (bows up), negative = concave (bows down)
-        self.points = []
-        self.right_was_down = False
-        self.left_was_down = False
+        self.editor = BreakpointEditor(x_max=x_max, y_min=y_min, y_max=y_max,
+                                       width=self.plot_width,
+                                       height=self.plot_height,
+                                       on_change=self._send_points,
+                                       name=label)
+        # The classic default shape: a triangle across the range.
+        self.editor.set_points([[0.0, y_min, 0.0],
+                                [x_max * 0.5, y_max, 0.0],
+                                [x_max, y_min, 0.0]], notify=False)
+        # 'point 1 0.5 0.8' and friends -- see BreakpointEditor.handle_message.
+        for name in BreakpointEditor.MESSAGES:
+            self.message_handlers[name] = self._curve_message
 
         # Ramp / trigger state
         self.ramp_active = False
         self.ramp_start_time = 0.0
-        self.ramp_time = self.x_max  # default ramp duration = x range
-
-        # Curvature drag state
-        self.curving = False
-        self.curving_point_idx = -1
-        self.curve_drag_start_screen_y = 0.0
-        self.curve_drag_start_val = 0.0
-
-        # UUIDs
-        self.plot_tag = dpg.generate_uuid()
-        self.x_axis_tag = dpg.generate_uuid()
-        self.y_axis_tag = dpg.generate_uuid()
-        self.line_tag = dpg.generate_uuid()
+        self.ramp_time = x_max      # default ramp duration = x range
         self.playhead_tag = dpg.generate_uuid()
 
         # Inputs
@@ -3395,15 +3995,15 @@ class EnvelopeNode(Node):
 
         # Options
         self.x_max_option = self.add_option(
-            'x max', widget_type='drag_float', default_value=self.x_max,
+            'x max', widget_type='drag_float', default_value=self.editor.x_max,
             callback=self._range_changed
         )
         self.y_min_option = self.add_option(
-            'y min', widget_type='drag_float', default_value=self.y_min,
+            'y min', widget_type='drag_float', default_value=self.editor.y_min,
             callback=self._range_changed
         )
         self.y_max_option = self.add_option(
-            'y max', widget_type='drag_float', default_value=self.y_max,
+            'y max', widget_type='drag_float', default_value=self.editor.y_max,
             callback=self._range_changed
         )
         self.width_option = self.add_option(
@@ -3415,212 +4015,45 @@ class EnvelopeNode(Node):
             callback=self._size_changed
         )
 
+    # The editor owns the curve and the ranges; these keep the old names
+    # working for anything that reads them.
+    @property
+    def points(self):
+        return self.editor.points
+
+    @property
+    def x_max(self):
+        return self.editor.x_max
+
+    @property
+    def y_min(self):
+        return self.editor.y_min
+
+    @property
+    def y_max(self):
+        return self.editor.y_max
+
+    @property
+    def plot_tag(self):
+        return self.editor.plot_tag
+
     def submit_display(self):
-        with dpg.theme() as self.line_theme:
-            with dpg.theme_component(dpg.mvLineSeries):
-                dpg.add_theme_color(dpg.mvPlotCol_Line, (80, 140, 255), category=dpg.mvThemeCat_Plots)
-                dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, 2.0, category=dpg.mvThemeCat_Plots)
+        self.editor.submit(self.plot_display.uuid,
+                           width_option=self.width_option,
+                           height_option=self.height_option)
+        # Playhead vertical line, on the editor's plot (empty until a ramp runs)
+        dpg.add_inf_line_series(x=[], parent=self.editor.y_axis_tag,
+                                tag=self.playhead_tag)
 
-        with dpg.plot(
-            label='', tag=self.plot_tag,
-            height=self.plot_height, width=self.plot_width,
-            no_title=True, no_menus=True, no_box_select=True,
-            no_mouse_pos=True
-        ):
-            dpg.add_plot_axis(
-                dpg.mvXAxis, label='', tag=self.x_axis_tag,
-                no_tick_labels=True
-            )
-            dpg.add_plot_axis(
-                dpg.mvYAxis, label='', tag=self.y_axis_tag,
-                no_tick_labels=True
-            )
-            dpg.set_axis_limits(self.x_axis_tag, 0, self.x_max)
-            dpg.set_axis_limits(self.y_axis_tag, self.y_min, self.y_max)
-
-            # Line series connecting points
-            dpg.add_line_series([], [], parent=self.y_axis_tag, tag=self.line_tag)
-            dpg.bind_item_theme(self.line_tag, self.line_theme)
-
-            # Playhead vertical line (hidden until ramp active)
-            dpg.add_inf_line_series(x=[], parent=self.y_axis_tag, tag=self.playhead_tag)
-
-        # Default points: triangle
-        self._create_point(0.0, self.y_min)
-        self._create_point(self.x_max * 0.5, self.y_max)
-        self._create_point(self.x_max, self.y_min)
-        self._update_line()
-        self._install_resize_handle()
-
-    def _install_resize_handle(self):
-        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
-        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.plot_width, height=4)
-        handle = ResizeHandle(
-            btn_uuid, self.plot_tag, axis='xy',
-            width_option=self.width_option, height_option=self.height_option,
-            sync_width=True, sync_height=False
-        )
-        dpg.set_item_user_data(btn_uuid, handle)
-        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
-        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
-        self.resize_handle = handle
-
-    def _create_point(self, x, y, curve=0.0):
-        tag = dpg.generate_uuid()
-        color = self._curve_color(curve)
-        dpg.add_drag_point(
-            tag=tag, default_value=(x, y),
-            color=color,
-            parent=self.plot_tag
-        )
-        self.points.append({'tag': tag, 'x': x, 'y': y, 'curve': curve})
-        return tag
-
-    def _remove_point_at_index(self, index):
-        if len(self.points) <= 2:
-            return
-        p = self.points.pop(index)
-        if dpg.does_item_exist(p['tag']):
-            dpg.delete_item(p['tag'])
-
-    @staticmethod
-    def _curve_color(curve_val):
-        """Interpolate point color: yellow (linear) → green (curved)."""
-        blend = min(1.0, abs(curve_val) / 2.0)
-        r = int(255 * (1 - blend))
-        g = 255
-        b = int(100 * blend)
-        return (r, g, b, 255)
-
-    def _update_point_color(self, index):
-        p = self.points[index]
-        color = self._curve_color(p['curve'])
-        if dpg.does_item_exist(p['tag']):
-            dpg.configure_item(p['tag'], color=color)
-
-    def _find_nearest_point(self, mx, my):
-        """Find index and normalized distance of nearest point to (mx, my)."""
-        min_dist = float('inf')
-        min_idx = -1
-        x_range = max(self.x_max, 0.001)
-        y_range = max(self.y_max - self.y_min, 0.001)
-        for i, p in enumerate(self.points):
-            dx = (p['x'] - mx) / x_range
-            dy = (p['y'] - my) / y_range
-            dist = (dx ** 2 + dy ** 2) ** 0.5
-            if dist < min_dist:
-                min_dist = dist
-                min_idx = i
-        return min_idx, min_dist
-
-    def _find_segment_at_x(self, mx):
-        """Find the index (in self.points) of the start point of the segment containing mx."""
-        sorted_pts = sorted(self.points, key=lambda p: p['x'])
-        for i in range(len(sorted_pts) - 1):
-            if sorted_pts[i]['x'] <= mx <= sorted_pts[i + 1]['x']:
-                # Return index in self.points (not sorted index)
-                return self.points.index(sorted_pts[i])
-        return -1
-
-    @staticmethod
-    def _ease(t, curve_val):
-        """Attempt to apply curvature using Schlick bias function.
-
-        f(t) = t / (t + (1 - t) * k)
-
-        This function always has nonzero curvature at t=0 (no flat start).
-        curve_val = 0: k=1, linear
-        curve_val > 0: k<1, convex (f(t) > t, bows above straight line)
-        curve_val < 0: k>1, concave (f(t) < t, bows below straight line)
-        """
-        if abs(curve_val) < 0.001:
-            return t
-        if t <= 0.0:
-            return 0.0
-        if t >= 1.0:
-            return 1.0
-        # Map curve_val to bias parameter k
-        if curve_val > 0:
-            k = 1.0 / (1.0 + curve_val)
-        else:
-            k = 1.0 - curve_val
-        return t / (t + (1.0 - t) * k)
-
-    def _generate_line_data(self):
-        """Generate x/y arrays for the line series, with curved segments densely sampled."""
-        sorted_pts = sorted(self.points, key=lambda p: p['x'])
-        n = len(sorted_pts)
-        if n == 0:
-            return [], []
-        if n == 1:
-            return [sorted_pts[0]['x']], [sorted_pts[0]['y']]
-
-        x_data = []
-        y_data = []
-
-        for i in range(n - 1):
-            p_cur = sorted_pts[i]
-            p_next = sorted_pts[i + 1]
-            curve_val = p_cur.get('curve', 0.0)
-
-            if abs(curve_val) > 0.001:
-                # Curved segment: generate dense samples
-                y0 = p_cur['y']
-                y1 = p_next['y']
-                x0 = p_cur['x']
-                x1 = p_next['x']
-                # Flip curve direction for descending segments so that
-                # drag-up always bows the curve upward visually
-                effective_curve = curve_val if y1 >= y0 else -curve_val
-                for s in range(self.SAMPLES_PER_CURVE):
-                    t = s / float(self.SAMPLES_PER_CURVE)
-                    eased = self._ease(t, effective_curve)
-                    x_data.append(x0 + t * (x1 - x0))
-                    y_data.append(y0 + eased * (y1 - y0))
-            else:
-                # Linear: just the start point
-                x_data.append(p_cur['x'])
-                y_data.append(p_cur['y'])
-
-        # Add the final point
-        x_data.append(sorted_pts[-1]['x'])
-        y_data.append(sorted_pts[-1]['y'])
-
-        return x_data, y_data
-
-    def _update_line(self):
-        x_data, y_data = self._generate_line_data()
-        dpg.set_value(self.line_tag, [x_data, y_data])
+    def _curve_message(self, message='', message_data=[]):
+        self.editor.handle_message(message, message_data)
 
     def _send_points(self):
-        sorted_pts = sorted(self.points, key=lambda p: p['x'])
-        point_list = [[p['x'], p['y'], p.get('curve', 0.0)] for p in sorted_pts]
-        self.points_output.send(point_list)
+        self.points_output.send(self.editor.get_points())
 
     def _interpolate_at(self, x_val):
         """Interpolate the envelope at x_val, respecting per-segment curvature."""
-        sorted_pts = sorted(self.points, key=lambda p: p['x'])
-        n = len(sorted_pts)
-        if n == 0:
-            return 0.0
-        if x_val <= sorted_pts[0]['x']:
-            return sorted_pts[0]['y']
-        if x_val >= sorted_pts[-1]['x']:
-            return sorted_pts[-1]['y']
-
-        for i in range(n - 1):
-            if sorted_pts[i]['x'] <= x_val <= sorted_pts[i + 1]['x']:
-                dx = sorted_pts[i + 1]['x'] - sorted_pts[i]['x']
-                if dx == 0:
-                    return sorted_pts[i]['y']
-                t = (x_val - sorted_pts[i]['x']) / dx
-                curve_val = sorted_pts[i].get('curve', 0.0)
-                # Flip curve direction for descending segments
-                effective_curve = curve_val if sorted_pts[i + 1]['y'] >= sorted_pts[i]['y'] else -curve_val
-                eased = self._ease(t, effective_curve)
-                return sorted_pts[i]['y'] + eased * (sorted_pts[i + 1]['y'] - sorted_pts[i]['y'])
-
-        return sorted_pts[-1]['y']
+        return self.editor.value_at(x_val)
 
     def _start_ramp(self):
         """Start ramp playback (called by button or trigger input)."""
@@ -3660,118 +4093,711 @@ class EnvelopeNode(Node):
                     self.value_output.send(y_val)
                     dpg.set_value(self.playhead_tag, [[x_pos]])
 
-            shift_held = dpg.is_key_down(dpg.mvKey_LShift) or dpg.is_key_down(dpg.mvKey_RShift)
-            left_down = dpg.is_mouse_button_down(0)
-            right_down = dpg.is_mouse_button_down(1)
-
-            # --- Curvature drag (Shift+left-click held) ---
-            if self.curving:
-                if left_down and shift_held:
-                    # Use screen mouse (pixels) so drag isn't clipped at plot edge
-                    screen_pos = dpg.get_mouse_pos()
-                    # Screen Y is inverted: drag up = decrease in screen Y = positive curve
-                    delta_px = self.curve_drag_start_screen_y - screen_pos[1]
-                    # ~18 pixels of drag per unit of curve_val
-                    new_curve = self.curve_drag_start_val + delta_px / 18.0
-                    new_curve = max(-16.0, min(16.0, new_curve))
-                    idx = self.curving_point_idx
-                    if 0 <= idx < len(self.points):
-                        self.points[idx]['curve'] = new_curve
-                        self._update_point_color(idx)
-                        self._update_line()
-                else:
-                    # Released: finalize
-                    self.curving = False
-                    self._send_points()
-                self.left_was_down = left_down
-                self.right_was_down = right_down
-                return
-
-            # --- Shift+left-click: start curvature drag ---
-            if left_down and not self.left_was_down and shift_held:
-                if dpg.is_item_hovered(self.plot_tag):
-                    plot_pos = dpg.get_plot_mouse_pos()
-                    if plot_pos:
-                        seg_idx = self._find_segment_at_x(plot_pos[0])
-                        if seg_idx >= 0:
-                            self.curving = True
-                            self.curving_point_idx = seg_idx
-                            self.curve_drag_start_screen_y = dpg.get_mouse_pos()[1]
-                            self.curve_drag_start_val = self.points[seg_idx].get('curve', 0.0)
-                            self.left_was_down = left_down
-                            self.right_was_down = right_down
-                            return
-
-            # --- Poll drag point positions for changes ---
-            changed = False
-            for p in self.points:
-                if dpg.does_item_exist(p['tag']):
-                    pos = dpg.get_value(p['tag'])
-                    x = max(0, min(self.x_max, pos[0]))
-                    y = max(self.y_min, min(self.y_max, pos[1]))
-                    if abs(x - pos[0]) > 1e-6 or abs(y - pos[1]) > 1e-6:
-                        dpg.set_value(p['tag'], [x, y])
-                    if abs(x - p['x']) > 1e-6 or abs(y - p['y']) > 1e-6:
-                        p['x'] = x
-                        p['y'] = y
-                        changed = True
-
-            if changed:
-                self._update_line()
-                self._send_points()
-
-            # --- Right-click: add or remove point ---
-            if right_down and not self.right_was_down:
-                if dpg.is_item_hovered(self.plot_tag):
-                    plot_pos = dpg.get_plot_mouse_pos()
-                    if plot_pos:
-                        nearest_idx, nearest_dist = self._find_nearest_point(
-                            plot_pos[0], plot_pos[1]
-                        )
-                        if nearest_dist < self.remove_threshold and len(self.points) > 2:
-                            self._remove_point_at_index(nearest_idx)
-                        else:
-                            x = max(0, min(self.x_max, plot_pos[0]))
-                            y = max(self.y_min, min(self.y_max, plot_pos[1]))
-                            self._create_point(x, y)
-                        self._update_line()
-                        self._send_points()
-
-            self.left_was_down = left_down
-            self.right_was_down = right_down
+            self.editor.poll()
 
         except Exception:
             _log_frame_error_once(self)
 
     def save_custom(self, container):
-        sorted_pts = sorted(self.points, key=lambda p: p['x'])
-        container['envelope_points'] = [
-            [p['x'], p['y'], p.get('curve', 0.0)] for p in sorted_pts
-        ]
+        container['envelope_points'] = self.editor.get_points()
 
     def load_custom(self, container):
         if 'envelope_points' in container:
-            for p in self.points:
-                if dpg.does_item_exist(p['tag']):
-                    dpg.delete_item(p['tag'])
-            self.points.clear()
-            for pt_data in container['envelope_points']:
-                x, y = pt_data[0], pt_data[1]
-                curve = float(pt_data[2]) if len(pt_data) > 2 else 0.0
-                self._create_point(x, y, curve=curve)
-            self._update_line()
+            self.editor.set_points(container['envelope_points'], notify=False)
 
     def _range_changed(self):
-        self.x_max = self.x_max_option()
-        self.y_min = self.y_min_option()
-        self.y_max = self.y_max_option()
-        dpg.set_axis_limits(self.x_axis_tag, 0, self.x_max)
-        dpg.set_axis_limits(self.y_axis_tag, self.y_min, self.y_max)
+        self.editor.set_ranges(x_max=any_to_float(self.x_max_option()),
+                               y_min=any_to_float(self.y_min_option()),
+                               y_max=any_to_float(self.y_max_option()))
 
     def _size_changed(self):
-        dpg.set_item_width(self.plot_tag, self.width_option())
-        dpg.set_item_height(self.plot_tag, self.height_option())
-        rh = getattr(self, 'resize_handle', None)
-        if rh is not None and dpg.does_item_exist(rh.uuid):
-            dpg.set_item_width(rh.uuid, self.width_option())
+        self.plot_width = any_to_int(self.width_option())
+        self.plot_height = any_to_int(self.height_option())
+        self.editor.set_size(self.plot_width, self.plot_height)
+
+
+class ShapeSequencerNode(Node):
+    """A step sequencer whose steps are functions rather than values.
+
+    Every step holds its own breakpoint function, edited the way the envelope
+    node's is -- drag the points, right-click to add or remove one, shift +
+    left-drag a segment to curve it. A beat advances to the next step, samples
+    the 'x' inlet, reads that step's function at x, and sends the result out.
+
+    A plain value sequencer is the degenerate case where every function is
+    flat. The interesting case is one continuous input -- effort data, a fader,
+    an lfo~ through snapshot~ -- being re-interpreted step by step: this beat
+    passes it through, the next inverts it, the next compresses it into the top
+    of the range, the next ignores it and holds a constant.
+
+    Beat it from clock~'s bang outlet, from metro, or by clicking the button.
+    Nothing is sent between beats: the value is a sample taken at the beat, and
+    it stands until the next one.
+
+    The upper plot carries the whole sequence at once -- the step being edited
+    in blue with its control points, the step last played in green, the others
+    ghosted, and a marker where the input was last sampled. 'follow play'
+    walks the editor along with the sequence, and suspends itself while you are
+    dragging so it cannot pull the shape out from under the mouse.
+
+    The lower plot is the profile: one bar per step, each the value that step
+    would output at the input's current value, with the playing step's bar
+    highlighted. Where the upper plot shows what one step does to any input,
+    this shows what every step does to this input -- the shape of the phrase
+    you are about to hear. It follows the x inlet continuously rather than only
+    on beats, so moving the input redraws the whole profile. Click a bar to
+    edit that step; since that is a deliberate choice of step, it also switches
+    'follow play' off so the next beat cannot pull the editor away.
+
+    Usage:
+        shape_seq             - 8 steps, x range 0-1, y range 0-1
+        shape_seq 16          - 16 steps
+        shape_seq 16 10       - 16 steps, x range 0-10
+        shape_seq 16 10 5     - ... and y range 0-5
+    """
+
+    SAMPLES_PER_CURVE = 32
+    MAX_STEPS = 64
+    DIRECTIONS = ('forward', 'reverse', 'ping pong', 'random')
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShapeSequencerNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.step_count = 8
+        self.x_max = 1.0
+        self.y_min = 0.0
+        self.y_max = 1.0
+        self.plot_width = 200
+        self.plot_height = 100
+        self.remove_threshold = 0.08
+
+        # Parse args
+        if args and len(args) > 0:
+            val, t = decode_arg(args, 0)
+            if t in [float, int]:
+                self.step_count = max(1, min(self.MAX_STEPS, int(val)))
+        if args and len(args) > 1:
+            val, t = decode_arg(args, 1)
+            if t in [float, int]:
+                self.x_max = float(val)
+        if args and len(args) > 2:
+            val, t = decode_arg(args, 2)
+            if t in [float, int]:
+                self.y_max = float(val)
+
+        # One list of {'x', 'y', 'curve'} dicts per step. The edited step is
+        # held by the editor -- it owns that curve's line, its control points
+        # and the mouse -- while every other step exists here only as data and
+        # a ghost line the node draws on the editor's plot.
+        self.shapes = [self._default_shape() for _ in range(self.step_count)]
+        self.editor = BreakpointEditor(x_max=self.x_max, y_min=self.y_min,
+                                       y_max=self.y_max,
+                                       width=self.plot_width,
+                                       height=self.plot_height,
+                                       on_change=self._edited,
+                                       on_resize=self._editor_resized,
+                                       name=label)
+        self.editor.set_points(self.shapes[0], notify=False)
+        # 'point 1 0.5 0.8' and friends, acting on whichever step is being
+        # edited -- 'edit step <n>' selects it, being an option label. See
+        # BreakpointEditor.handle_message.
+        for name in BreakpointEditor.MESSAGES:
+            self.message_handlers[name] = self._curve_message
+
+        self.play_index = -1        # -1 = nothing played yet; first beat plays 0
+        self.edit_index = 0
+        self.ping_pong_sign = 1
+        self.clipboard = None
+        self.display_ready = False
+        self.profile_ready = False
+
+        # Mouse state for the profile plot; the editor keeps its own.
+        self.right_was_down = False
+        self.left_was_down = False
+
+        # UUIDs
+        self.marker_tag = dpg.generate_uuid()
+        self.series_tags = []
+
+        self.profile_tag = dpg.generate_uuid()
+        self.profile_x_axis_tag = dpg.generate_uuid()
+        self.profile_y_axis_tag = dpg.generate_uuid()
+        self.profile_bars_tag = dpg.generate_uuid()
+        self.profile_playing_tag = dpg.generate_uuid()
+        self.profile_height = 80
+        self.profile_x = None       # x the bars were last drawn for
+
+        # Inputs. The beat and reset buttons carry a callback but do not
+        # trigger execution: an incoming bang runs the widget's callback too,
+        # so triggering as well would advance the sequence twice per beat.
+        self.beat_input = self.add_input('beat', widget_type='button',
+                                         callback=self.beat)
+        self.x_input = self.add_input('x', widget_type='drag_float',
+                                      default_value=0.0)
+        if self.x_input.widget is not None:
+            self.x_input.widget.speed = 0.01
+        self.reset_input = self.add_input('reset', widget_type='button',
+                                          callback=self.reset_sequence)
+
+        self.step_display = self.add_property('step', widget_type='label',
+                                              default_value='-')
+        self.steps_property = self.add_property(
+            'steps', widget_type='drag_int', default_value=self.step_count,
+            min=1, max=self.MAX_STEPS, callback=self._steps_changed
+        )
+        self.direction_property = self.add_property(
+            'direction', widget_type='combo', default_value='forward',
+            width=110
+        )
+        self.direction_property.widget.combo_items = list(self.DIRECTIONS)
+        self.follow_property = self.add_property(
+            'follow play', widget_type='checkbox', default_value=True
+        )
+
+        self.plot_display = self.add_display('')
+        self.plot_display.submit_callback = self.submit_display
+
+        self.profile_display = self.add_display('')
+        self.profile_display.submit_callback = self.submit_profile
+
+        # Outputs
+        self.value_output = self.add_output('value out')
+        self.step_output = self.add_output('step out')
+        self.cycle_output = self.add_output('cycle')
+
+        # Options
+        self.edit_step_option = self.add_option(
+            'edit step', widget_type='drag_int', default_value=0,
+            min=0, max=self.MAX_STEPS - 1, callback=self._edit_step_changed
+        )
+        self.ghost_option = self.add_option(
+            'show other steps', widget_type='checkbox', default_value=True,
+            callback=self._refresh_series
+        )
+        # Wide enough for the longest of the three labels, so they read as a
+        # set and none of them is clipped.
+        self.copy_option = self.add_option(
+            'copy shape', widget_type='button', width=130,
+            callback=self._copy_shape
+        )
+        self.paste_option = self.add_option(
+            'paste shape', widget_type='button', width=130,
+            callback=self._paste_shape
+        )
+        self.copy_all_option = self.add_option(
+            'copy to all steps', widget_type='button', width=130,
+            callback=self._copy_to_all
+        )
+        self.x_max_option = self.add_option(
+            'x max', widget_type='drag_float', default_value=self.x_max,
+            callback=self._range_changed
+        )
+        self.y_min_option = self.add_option(
+            'y min', widget_type='drag_float', default_value=self.y_min,
+            callback=self._range_changed
+        )
+        self.y_max_option = self.add_option(
+            'y max', widget_type='drag_float', default_value=self.y_max,
+            callback=self._range_changed
+        )
+        self.width_option = self.add_option(
+            'width', widget_type='drag_int', default_value=self.plot_width,
+            callback=self._size_changed
+        )
+        self.height_option = self.add_option(
+            'height', widget_type='drag_int', default_value=self.plot_height,
+            callback=self._size_changed
+        )
+        self.show_profile_option = self.add_option(
+            'show profile', widget_type='checkbox', default_value=True,
+            callback=self._profile_visibility_changed
+        )
+        self.profile_height_option = self.add_option(
+            'profile height', widget_type='drag_int',
+            default_value=self.profile_height, min=20, max=400,
+            callback=self._size_changed
+        )
+
+    def _default_shape(self):
+        """Identity: an unedited step passes its input through unchanged."""
+        return [{'x': 0.0, 'y': self.y_min, 'curve': 0.0},
+                {'x': self.x_max, 'y': self.y_max, 'curve': 0.0}]
+
+    @property
+    def plot_tag(self):
+        return self.editor.plot_tag
+
+    # -- display ------------------------------------------------------------
+
+    def submit_display(self):
+        self.play_line_theme = self._line_theme((90, 230, 120), 2.5)
+        self.ghost_line_theme = self._line_theme((130, 130, 140, 110), 1.0)
+
+        with dpg.theme() as self.marker_theme:
+            with dpg.theme_component(dpg.mvScatterSeries):
+                dpg.add_theme_style(dpg.mvPlotStyleVar_Marker,
+                                    dpg.mvPlotMarker_Circle,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, 5,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, (255, 70, 70, 255),
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, (255, 70, 70, 255),
+                                    category=dpg.mvThemeCat_Plots)
+
+        # The editor builds the plot; the ghost lines and the sample marker are
+        # the node's own series, drawn on it alongside the edited curve.
+        self.editor.submit(self.plot_display.uuid,
+                           width_option=self.width_option,
+                           height_option=self.height_option)
+        dpg.add_scatter_series([], [], parent=self.editor.y_axis_tag,
+                               tag=self.marker_tag)
+        dpg.bind_item_theme(self.marker_tag, self.marker_theme)
+
+        self.display_ready = True
+        self._rebuild_series()
+        self._update_step_display()
+
+    @staticmethod
+    def _line_theme(color, weight):
+        with dpg.theme() as theme:
+            with dpg.theme_component(dpg.mvLineSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Line, color,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, weight,
+                                    category=dpg.mvThemeCat_Plots)
+        return theme
+
+    @staticmethod
+    def _bar_theme(color):
+        with dpg.theme() as theme:
+            with dpg.theme_component(dpg.mvBarSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Fill, color,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_Line, color,
+                                    category=dpg.mvThemeCat_Plots)
+        return theme
+
+    def submit_profile(self):
+        """The profile: what every step would output at the current input.
+
+        The shapes plot answers 'what does this step do to its input'; this one
+        answers 'what does the sequence do to the input it has right now',
+        which is the shape of the phrase you are about to hear. It is a reading
+        of all the steps at one x, not a history of what was played -- change
+        the input and the whole profile moves.
+        """
+        self.profile_bar_theme = self._bar_theme((110, 150, 210, 200))
+        self.profile_playing_theme = self._bar_theme((90, 230, 120, 255))
+
+        with dpg.plot(
+            label='', tag=self.profile_tag,
+            height=self.profile_height, width=self.plot_width,
+            no_title=True, no_menus=True, no_box_select=True,
+            no_mouse_pos=True
+        ):
+            dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.profile_x_axis_tag,
+                              no_tick_labels=True)
+            dpg.add_plot_axis(dpg.mvYAxis, label='', tag=self.profile_y_axis_tag,
+                              no_tick_labels=True)
+
+            # The playing step is a second series of one bar drawn over the
+            # first, since a bar series carries a single color for all its bars.
+            dpg.add_bar_series([], [], weight=0.7,
+                               parent=self.profile_y_axis_tag,
+                               tag=self.profile_bars_tag)
+            dpg.bind_item_theme(self.profile_bars_tag, self.profile_bar_theme)
+            dpg.add_bar_series([], [], weight=0.7,
+                               parent=self.profile_y_axis_tag,
+                               tag=self.profile_playing_tag)
+            dpg.bind_item_theme(self.profile_playing_tag, self.profile_playing_theme)
+
+        # Anything that reads an option is left to custom_create: option
+        # widgets are created after displays, and a widget's value is None
+        # until its own create() installs the default.
+        self.profile_ready = True
+        self._profile_axes()
+
+    def _profile_axes(self):
+        if not self.profile_ready:
+            return
+        dpg.set_axis_limits(self.profile_x_axis_tag, -0.6, self.step_count - 0.4)
+        # Bars grow from zero, so the axis has to reach it even when the
+        # shapes themselves live entirely above or below.
+        low = min(self.y_min, 0.0)
+        high = max(self.y_max, 0.0)
+        if high <= low:
+            high = low + 1.0
+        dpg.set_axis_limits(self.profile_y_axis_tag, low, high)
+
+    def _refresh_profile(self, force=False):
+        """Read every step at the current input value and redraw the bars."""
+        if not self.profile_ready or not any_to_bool(self.show_profile_option()):
+            return
+        x_val = any_to_float(self.x_input.get_widget_value())
+        if not force and self.profile_x is not None and x_val == self.profile_x:
+            return
+        self.profile_x = x_val
+
+        values = [breakpoint_value_at(shape, x_val) for shape in self.shapes]
+        dpg.set_value(self.profile_bars_tag,
+                      [list(range(len(values))), values])
+        if 0 <= self.play_index < len(values):
+            dpg.set_value(self.profile_playing_tag,
+                          [[self.play_index], [values[self.play_index]]])
+        else:
+            dpg.set_value(self.profile_playing_tag, [[], []])
+
+    def _profile_clicked(self):
+        """Click a bar to edit that step. Returns True if a bar was hit.
+
+        Picking a step by hand is a statement that you want to stay on it, so
+        this switches 'follow play' off rather than letting the next beat drag
+        the editor away again. Tick the option back on to resume following.
+        """
+        if not self.profile_ready or not dpg.is_item_shown(self.profile_tag):
+            return False
+        if not dpg.is_item_hovered(self.profile_tag):
+            return False
+        plot_pos = dpg.get_plot_mouse_pos()
+        if not plot_pos:
+            return False
+        index = int(round(plot_pos[0]))
+        if index < 0 or index >= self.step_count:
+            return False
+        if any_to_bool(self.follow_property()):
+            self.follow_property.widget.set(False)
+        self._set_edit_index(index)
+        return True
+
+    def _profile_visibility_changed(self):
+        if not self.profile_ready:
+            return
+        if any_to_bool(self.show_profile_option()):
+            dpg.show_item(self.profile_tag)
+            self._refresh_profile(force=True)
+        else:
+            dpg.hide_item(self.profile_tag)
+
+    def _editor_resized(self, new_w, new_h):
+        """Drag the handle and the profile keeps the width, not the height.
+
+        The profile cannot be an extra target of the editor's handle: that
+        handle resizes on both axes, and the profile is deliberately shorter
+        than the shapes plot.
+        """
+        self.plot_width = int(new_w)
+        self.plot_height = int(new_h)
+        if dpg.does_item_exist(self.profile_tag):
+            dpg.set_item_width(self.profile_tag, self.plot_width)
+
+    def _curve_message(self, message='', message_data=[]):
+        self.editor.handle_message(message, message_data)
+
+    def _edited(self):
+        """The editor moved: adopt its points as the edited step's shape."""
+        self.shapes[self.edit_index] = [dict(p) for p in self.editor.points]
+        self._refresh_profile(force=True)
+
+    def _rebuild_series(self):
+        """A ghost line per step. Only called when the step count changes.
+
+        The edited step is not among them -- the editor draws that one -- but
+        it keeps a slot so the list stays index-aligned with the shapes.
+        """
+        if not self.display_ready:
+            return
+        for tag in self.series_tags:
+            if dpg.does_item_exist(tag):
+                dpg.delete_item(tag)
+        self.series_tags = []
+        for _ in range(self.step_count):
+            tag = dpg.generate_uuid()
+            dpg.add_line_series([], [], parent=self.editor.y_axis_tag, tag=tag)
+            self.series_tags.append(tag)
+        self._refresh_series()
+
+    def _refresh_series(self):
+        """Redraw the ghost lines and rebind their themes."""
+        self._refresh_profile(force=True)
+        if not self.display_ready:
+            return
+        show_others = any_to_bool(self.ghost_option())
+        for index, tag in enumerate(self.series_tags):
+            if not dpg.does_item_exist(tag) or index >= len(self.shapes):
+                continue
+            # The edited step's line belongs to the editor, so this one stays
+            # empty. With the others off, nothing here is drawn at all --
+            # and nothing may depend on the played step, since beats take the
+            # themes-only path and would leave a stale line behind.
+            if show_others and index != self.edit_index:
+                x_data, y_data = breakpoint_line_data(self.shapes[index],
+                                                      self.SAMPLES_PER_CURVE)
+            else:
+                x_data, y_data = [], []
+            dpg.set_value(tag, [x_data, y_data])
+            dpg.bind_item_theme(tag, self._theme_for(index))
+
+    def _refresh_themes(self):
+        """Rebind line themes without regenerating the curves."""
+        # Which bar is highlighted follows the played step, so the profile
+        # comes along on the light path as well as the heavy one.
+        self._refresh_profile(force=True)
+        if not self.display_ready:
+            return
+        for index, tag in enumerate(self.series_tags):
+            if dpg.does_item_exist(tag):
+                dpg.bind_item_theme(tag, self._theme_for(index))
+
+    def _theme_for(self, index):
+        if index == self.play_index:
+            return self.play_line_theme
+        return self.ghost_line_theme
+
+    def _update_step_display(self):
+        if self.play_index < 0:
+            text = '- / ' + str(self.step_count)
+        else:
+            text = str(self.play_index + 1) + ' / ' + str(self.step_count)
+        self.step_display.set(text)
+
+    # -- sequencing ----------------------------------------------------------
+
+    def beat(self):
+        """Advance one step, sample the input, send it through that shape."""
+        if self.step_count <= 0:
+            return
+        wrapped = self._advance()
+        x_val = any_to_float(self.x_input())
+        y_val = breakpoint_value_at(self.shapes[self.play_index], x_val)
+
+        self._show_sample(x_val, y_val)
+
+        if wrapped:
+            self.cycle_output.send('bang')
+        self.step_output.send(self.play_index)
+        self.value_output.send(y_val)
+
+    def _advance(self):
+        """Move play_index one step. Returns True if the cycle started over."""
+        n = self.step_count
+        direction = any_to_string(self.direction_property())
+
+        if self.play_index < 0:
+            self.play_index = n - 1 if direction == 'reverse' else 0
+            self.ping_pong_sign = 1
+            return False
+
+        wrapped = False
+        if direction == 'reverse':
+            self.play_index -= 1
+            if self.play_index < 0:
+                self.play_index = n - 1
+                wrapped = True
+        elif direction == 'ping pong':
+            self.play_index += self.ping_pong_sign
+            if self.play_index >= n:
+                # Turn around one short of the end so the end step is not
+                # played twice running; a 1-step sequence just stays put.
+                self.play_index = max(0, n - 2)
+                self.ping_pong_sign = -1
+            elif self.play_index < 0:
+                self.play_index = min(n - 1, 1)
+                self.ping_pong_sign = 1
+                wrapped = True
+        elif direction == 'random':
+            self.play_index = int(np.random.randint(n))
+        else:
+            self.play_index += 1
+            if self.play_index >= n:
+                self.play_index = 0
+                wrapped = True
+        return wrapped
+
+    def _show_sample(self, x_val, y_val):
+        if not self.display_ready:
+            return
+        if dpg.does_item_exist(self.marker_tag):
+            dpg.set_value(self.marker_tag, [[x_val], [y_val]])
+        self._update_step_display()
+
+        if any_to_bool(self.follow_property()) and not self._interacting():
+            if self.play_index != self.edit_index:
+                self._set_edit_index(self.play_index)
+        self._refresh_themes()
+        self._refresh_profile(force=True)
+
+    def _interacting(self):
+        """True while the user is working on the plot, so following backs off."""
+        return self.editor.interacting()
+
+    def reset_sequence(self):
+        """Back to the top: the next beat plays the first step again."""
+        self.play_index = -1
+        self.ping_pong_sign = 1
+        self._update_step_display()
+        self._refresh_themes()
+
+    # -- options -------------------------------------------------------------
+
+    def _set_edit_index(self, index):
+        index = max(0, min(self.step_count - 1, int(index)))
+        if index == self.edit_index and self.editor.point_tags:
+            return
+        self.edit_index = index
+        self._sync_edit_option()
+        # Hand the editor the new step's curve. It keeps its own copies, so
+        # _edited() is what writes any change back into self.shapes.
+        self.editor.set_points(self.shapes[index], notify=False)
+        # Which ghost lines are drawn depends on the edited step, so the
+        # curves have to be regenerated, not just re-themed.
+        self._refresh_series()
+
+    def _sync_edit_option(self):
+        """Keep the option widget honest when the edited step moves by itself."""
+        if any_to_int(self.edit_step_option()) != self.edit_index:
+            self.edit_step_option.widget.set(self.edit_index)
+
+    def _edit_step_changed(self):
+        self._set_edit_index(any_to_int(self.edit_step_option()))
+
+    def _steps_changed(self):
+        count = max(1, min(self.MAX_STEPS, any_to_int(self.steps_property())))
+        if count == len(self.shapes):
+            return
+        if count < len(self.shapes):
+            self.shapes = self.shapes[:count]
+        else:
+            self.shapes.extend(self._default_shape()
+                               for _ in range(count - len(self.shapes)))
+        self.step_count = count
+        if self.play_index >= count:
+            self.play_index = -1
+        self.edit_index = min(self.edit_index, count - 1)
+        self._sync_edit_option()
+        self.editor.set_points(self.shapes[self.edit_index], notify=False)
+        self._profile_axes()
+        self._rebuild_series()
+        self._update_step_display()
+
+    def _copy_shape(self):
+        self.clipboard = self._shape_as_lists(self.shapes[self.edit_index])
+
+    def _paste_shape(self):
+        if self.clipboard is None:
+            return
+        self.shapes[self.edit_index] = self._shape_from_lists(self.clipboard)
+        self.editor.set_points(self.shapes[self.edit_index], notify=False)
+        self._refresh_series()
+
+    def _copy_to_all(self):
+        """Author one shape, then give it to every step as a starting point."""
+        source = self._shape_as_lists(self.shapes[self.edit_index])
+        self.shapes = [self._shape_from_lists(source)
+                       for _ in range(self.step_count)]
+        self.editor.set_points(self.shapes[self.edit_index], notify=False)
+        self._refresh_series()
+
+    @staticmethod
+    def _shape_as_lists(shape):
+        return [[p['x'], p['y'], p.get('curve', 0.0)]
+                for p in sorted(shape, key=lambda p: p['x'])]
+
+    @staticmethod
+    def _shape_from_lists(data):
+        shape = []
+        for entry in data:
+            shape.append({'x': float(entry[0]), 'y': float(entry[1]),
+                          'curve': float(entry[2]) if len(entry) > 2 else 0.0})
+        return shape
+
+    def _range_changed(self):
+        self.x_max = any_to_float(self.x_max_option())
+        self.y_min = any_to_float(self.y_min_option())
+        self.y_max = any_to_float(self.y_max_option())
+        # The editor clamps the edited step; the others are pulled into range
+        # here so the whole sequence stays inside the axes.
+        self.editor.set_ranges(x_max=self.x_max, y_min=self.y_min,
+                               y_max=self.y_max, notify=False)
+        for index, shape in enumerate(self.shapes):
+            if index == self.edit_index:
+                continue
+            for point in shape:
+                point['x'] = max(0.0, min(self.x_max, point['x']))
+                point['y'] = max(self.y_min, min(self.y_max, point['y']))
+        self.shapes[self.edit_index] = [dict(p) for p in self.editor.points]
+        self._profile_axes()
+        self._refresh_series()
+
+    def _size_changed(self):
+        self.plot_width = any_to_int(self.width_option())
+        self.plot_height = any_to_int(self.height_option())
+        self.profile_height = any_to_int(self.profile_height_option())
+        self.editor.set_size(self.plot_width, self.plot_height)
+        # The profile sits under the shapes and reads as one panel with them,
+        # so it takes its width from the same handle.
+        if dpg.does_item_exist(self.profile_tag):
+            dpg.set_item_width(self.profile_tag, self.plot_width)
+            dpg.set_item_height(self.profile_tag, self.profile_height)
+
+    # -- editing -------------------------------------------------------------
+
+    def custom_create(self, from_file):
+        # First point at which the options hold their real values, so this is
+        # where every drawing decision that depends on one gets made.
+        self._profile_visibility_changed()
+        self._refresh_series()
+        self.add_frame_task()
+
+    def frame_task(self):
+        try:
+            # The profile reads the x inlet continuously, not only on beats, so
+            # you can see the whole sequence respond while you move the input.
+            # It redraws only when x has actually moved.
+            self._refresh_profile()
+
+            left_down = dpg.is_mouse_button_down(0)
+
+            # --- Click a profile bar: edit that step ---
+            # Checked before the editor is given the frame, so a click meant
+            # for a bar cannot also land on the shapes plot.
+            if left_down and not self.left_was_down and self._profile_clicked():
+                self.left_was_down = left_down
+                return
+            self.left_was_down = left_down
+
+            self.editor.poll()
+
+        except Exception:
+            _log_frame_error_once(self)
+
+    # -- persistence ---------------------------------------------------------
+
+    def save_custom(self, container):
+        container['shape_sequence'] = [self._shape_as_lists(shape)
+                                       for shape in self.shapes]
+
+    def load_custom(self, container):
+        if 'shape_sequence' not in container:
+            return
+        data = container['shape_sequence']
+        if not data:
+            return
+        # The saved sequence is the authority on how many steps there are; the
+        # steps option may already have rebuilt them at its restored value.
+        self.shapes = [self._shape_from_lists(entry) for entry in data]
+        self.step_count = len(self.shapes)
+        if self.steps_property() != self.step_count:
+            self.steps_property.widget.set(self.step_count)
+        self.edit_index = min(self.edit_index, self.step_count - 1)
+        self._sync_edit_option()
+        self.editor.set_points(self.shapes[self.edit_index], notify=False)
+        self.play_index = -1
+        self._profile_axes()
+        self._rebuild_series()
+        self._update_step_display()
 
