@@ -19,7 +19,7 @@ from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
     synth_graph, start_filter_warm_up,
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
-    ShaperUnit,
+    ShaperUnit, FormantUnit, VocoderUnit, FORMANT_VOWELS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -39,6 +39,9 @@ def register_synth_nodes():
     Node.app.register_node('line~', RampNode.factory)
     Node.app.register_node('vco~', VcoNode.factory)
     Node.app.register_node('vcf~', VcfNode.factory)
+    Node.app.register_node('formant~', FormantNode.factory)
+    Node.app.register_node('vocoder~', VocoderNode.factory)
+    Node.app.register_node('vowel~', FormantNode.factory)
     Node.app.register_node('vca~', VcaNode.factory)
     Node.app.register_node('adsr~', AdsrNode.factory)
     Node.app.register_node('lfo~', LfoNode.factory)
@@ -107,6 +110,8 @@ class SynthNode(Node):
         self._parameter_bindings = []
         self._depth_bindings = []
         self._custom_bindings = []
+        self._modulation_ports = []
+        self._labels_aligned = False
         self._registered = False
 
     # -- port construction --------------------------------------------------
@@ -118,30 +123,79 @@ class SynthNode(Node):
         self.signal_inputs.append(port)
         return port
 
+    # Width of the knob and of the attenuverter beside it. The depth is the
+    # narrower of the two: it is a trim, and giving it equal weight would say
+    # otherwise.
+    KNOB_WIDTH = 76
+    DEPTH_WIDTH = 52
+
     def add_modulation_input(self, label, inlet, widget_type='drag_float',
                              default_value=None, minimum=None, maximum=None,
                              speed=None, attenuverter=True):
-        """Knob + CV inlet + attenuverter for one parameter."""
+        """Knob + CV inlet + attenuverter for one parameter.
+
+        The three are one control, so they are drawn as one row: the name, the
+        value, and -- where there is one -- the depth that scales whatever is
+        patched to the inlet. The depth remains an option for saving and for
+        messages; it is only drawn in the inlet's row rather than in the
+        options block, where it sat a screen away from the thing it modified.
+        """
         if default_value is None:
             default_value = inlet.base
         port = self.add_input(label, widget_type=widget_type,
                               default_value=default_value,
                               min=minimum, max=maximum,
+                              widget_width=SynthNode.KNOB_WIDTH,
                               callback=self.parameters_changed)
-        if speed is not None and port.widget is not None:
-            port.widget.speed = speed
+        if port.widget is not None:
+            if speed is not None:
+                port.widget.speed = speed
+            # The name moves to the left of the value; '##' keeps dpg from
+            # drawing it again on the right, and save/load strip it anyway.
+            port.widget.prefix_label = label
+            port.widget._label = '##' + label
         port.synth_inlet = inlet
         self.signal_inputs.append(port)
         self._parameter_bindings.append((port, inlet))
+        self._modulation_ports.append(port)
 
         if attenuverter:
             option = self.add_option(label + ' depth', widget_type='drag_float',
                                      default_value=inlet.depth,
+                                     width=SynthNode.DEPTH_WIDTH,
                                      callback=self.parameters_changed)
             if option.widget is not None:
                 option.widget.speed = 0.01
+                option.widget._label = '##' + label + ' depth'
+                option.widget.set_tooltip('depth: scales whatever is patched '
+                                          'to the ' + label + ' inlet')
+                option.inline_with = port.widget
             self._depth_bindings.append((option, inlet))
         return port
+
+    def align_modulation_labels(self):
+        """Square the name column off once text can be measured.
+
+        Names are proportional, so the values only line up if each name is
+        padded to the width of the longest. Nothing can be measured until a
+        frame has been drawn -- and nodes are built during patch load, before
+        that -- so this runs from the frame task until it succeeds once.
+        """
+        widths = []
+        for port in self._modulation_ports:
+            if port.widget is None:
+                continue
+            measured = port.widget.measure_prefix()
+            if measured is None:
+                return False
+            widths.append(measured)
+        if not widths:
+            return True
+        column = max(widths) + 8
+        for port in self._modulation_ports:
+            if port.widget is not None:
+                port.widget.set_prefix_column(column)
+        return True
 
     def add_scaling_signal_input(self, label, inlet, setter, default_value=1.0,
                                  speed=0.01):
@@ -221,6 +275,8 @@ class SynthNode(Node):
         # Any synth node drives the shared topology check; it acts once per
         # frame no matter how many nodes call it.
         synth_graph.tick(Node.app.frame_number)
+        if not self._labels_aligned:
+            self._labels_aligned = self.align_modulation_labels()
         self.synth_frame_task()
 
     def synth_frame_task(self):
@@ -383,11 +439,32 @@ class RampNode(SynthNode):
 # ----------------------------------------------------------------------------
 
 class VcoNode(SynthNode):
-    """Band-limited oscillator.
+    """Band-limited oscillator, with detuned unison.
 
     Pitch is a base frequency in Hz scaled by the exponential 'pitch' inlet in
     octaves (patch an envelope there for sweeps, an LFO for vibrato), with a
     separate linear FM inlet in Hz for inharmonic tones.
+
+    'voices' stacks up to eight oscillators on the note, detuned symmetrically
+    about it by 'detune' cents and spread across the stereo field by 'spread'.
+    One voice is the plain oscillator, unchanged; the cost of the rest is
+    mostly their band limiting, so a stack here runs about a quarter cheaper
+    than the same thing patched from separate oscillators through pans and a
+    mixer -- and it is one object to play rather than seven to keep in step.
+
+    Detune is an inlet rather than a setting because opening it as a note
+    develops is worth having: an envelope or a slow LFO patched there turns a
+    single tone into a swarm and back.
+
+    'drift' gives each voice its own slow random wander in cents, which is
+    what keeps a stack from sounding like a fixed chorus. It is off by default,
+    since it is the one thing here that makes the output non-repeatable.
+
+    The 'right' outlet carries the other half of the stereo spread. At one
+    voice, or with spread at 0, it carries the same signal as 'signal', so a
+    mono patch can ignore it. For the spread to survive to the speakers the
+    chain after it has to be stereo too -- two vcf~, two vca~ -- which costs
+    about a tenth of what the unison saves.
     """
 
     @staticmethod
@@ -400,17 +477,30 @@ class VcoNode(SynthNode):
 
         frequency = 110.0
         shape = 'saw'
+        voices = 1
+        detune = self.unit.detune_in.base
+        numbers = []
         if args is not None:
             for arg in args:
                 if arg in VCO_SHAPES:
                     shape = arg
                 else:
                     try:
-                        frequency = float(arg)
+                        numbers.append(float(arg))
                     except (ValueError, TypeError):
                         continue
+        # vco~ <frequency> <voices> <detune in cents>, in the order you reach
+        # for them: the note first, then how many of it, then how far apart.
+        if len(numbers) > 0:
+            frequency = numbers[0]
+        if len(numbers) > 1:
+            voices = max(1, min(VcoUnit.MAX_VOICES, int(numbers[1])))
+        if len(numbers) > 2:
+            detune = max(0.0, numbers[2])
         self.unit.shape = shape
         self.unit.frequency_in.base = frequency
+        self.unit.detune_in.base = detune
+        self.unit.voices = voices
 
         self.add_modulation_input('frequency', self.unit.frequency_in,
                                   default_value=frequency, minimum=0.0,
@@ -421,12 +511,29 @@ class VcoNode(SynthNode):
                                   minimum=0.01, maximum=0.99, speed=0.01)
         self.add_modulation_input('phase mod', self.unit.phase_mod_in, speed=0.01)
         self.add_signal_input('sync', self.unit.sync_in)
+        self.add_modulation_input('detune', self.unit.detune_in,
+                                  default_value=detune, minimum=0.0, speed=0.5,
+                                  attenuverter=False)
 
         self.shape_input = self.add_input('shape', widget_type='combo',
                                           default_value=shape,
                                           callback=self.parameters_changed)
         self.shape_input.widget.combo_items = list(VCO_SHAPES)
 
+        self.voices_option = self.add_option('voices', widget_type='drag_int',
+                                             default_value=voices, min=1,
+                                             max=VcoUnit.MAX_VOICES,
+                                             callback=self.parameters_changed)
+        self.spread_option = self.add_option('spread', widget_type='drag_float',
+                                             default_value=0.0, min=0.0, max=1.0,
+                                             callback=self.parameters_changed)
+        if self.spread_option.widget is not None:
+            self.spread_option.widget.speed = 0.01
+        self.drift_option = self.add_option('drift', widget_type='drag_float',
+                                            default_value=0.0, min=0.0,
+                                            callback=self.parameters_changed)
+        if self.drift_option.widget is not None:
+            self.drift_option.widget.speed = 0.05
         self.phase_option = self.add_option('start phase', widget_type='drag_float',
                                             default_value=0.0, min=0.0, max=1.0,
                                             callback=self.parameters_changed)
@@ -434,6 +541,9 @@ class VcoNode(SynthNode):
                                             callback=self.reset_phase)
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        # Appended, so links saved against the old single outlet keep their
+        # index and existing patches load unchanged.
+        self.right_output = self.add_signal_output('right', self.unit.right)
         self.finish_synth_node()
 
     def sync_options(self):
@@ -441,6 +551,9 @@ class VcoNode(SynthNode):
         if shape in VCO_SHAPES:
             self.unit.shape = shape
         self.unit.start_phase = any_to_float(self.phase_option())
+        self.unit.voices = any_to_int(self.voices_option())
+        self.unit.spread = any_to_float(self.spread_option())
+        self.unit.drift = max(0.0, any_to_float(self.drift_option()))
 
     def reset_phase(self):
         self.unit.reset()
@@ -456,6 +569,13 @@ class VcfNode(SynthNode):
     'tracking' is an exponential cutoff input in octaves, so patching the same
     signal that drives a vco~'s pitch inlet makes the filter track the
     oscillator. 'drive' saturates into the filter for a dirtier tone.
+
+    Patch 'right in' and it filters in stereo -- one cutoff, one resonance,
+    one envelope, both channels. That is the point of it being one node: the
+    coefficients are worked out once and the channels cannot drift apart the
+    way two vcf~ with separately patched cutoffs can. Leave it unpatched and
+    nothing changes; 'right' then carries the same signal as 'signal', so a
+    mono chain can ignore it.
     """
 
     @staticmethod
@@ -481,6 +601,7 @@ class VcfNode(SynthNode):
         self.unit.cutoff_in.base = cutoff
 
         self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
         self.add_modulation_input('cutoff', self.unit.cutoff_in,
                                   default_value=cutoff, minimum=1.0, speed=5.0)
         self.add_modulation_input('tracking', self.unit.tracking_in, speed=0.01)
@@ -495,12 +616,245 @@ class VcfNode(SynthNode):
         self.mode_input.widget.combo_items = list(VcfUnit.MODES)
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        # Appended, so links saved against the single outlet keep their index.
+        self.right_output = self.add_signal_output('right', self.unit.right)
         self.finish_synth_node()
 
     def sync_options(self):
         mode = any_to_string(self.mode_input())
         if mode in VcfUnit.MODES:
             self.unit.mode = VcfUnit.MODES.index(mode)
+
+
+# ----------------------------------------------------------------------------
+# formant~
+# ----------------------------------------------------------------------------
+
+class FormantNode(SynthNode):
+    """A vowel, as five resonances in parallel. Also registered as vowel~.
+
+    'vowel' runs 0..1 across a, e, i, o, u, and runs between them rather than
+    switching -- the formants are interpolated as ratios, so a slow sweep is a
+    mouth changing shape rather than a crossfade between two mouths. Patch an
+    envelope, an lfo~, or effort data there and the sound speaks.
+
+    'shift' multiplies every formant at once: the size of the head making the
+    sound. Below 1 is larger, above 1 smaller. 'q' is how sharp the resonances
+    are -- low is a vowel-ish colour, high rings, and past about 20 the bank
+    sings on its own with whatever the input gives it. Each band is normalised
+    for its own Q, so sharpening a vowel does not simply make it louder.
+
+    Feed it something harmonically dense. A saw works, a detuned vco~ stack
+    works better, noise gives you a whisper. A sine has nothing at the formant
+    frequencies for the bank to find.
+
+    Patch 'right in' for stereo, on one set of coefficients, as with vcf~. The
+    five resonances cost about 8 us a block together -- less than the plumbing
+    around a single vcf~ -- because they share one kernel.
+
+    Arguments: formant~ <vowel name or 0..1 position> <q>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return FormantNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = FormantUnit(synth_graph.sample_rate)
+
+        vowel = 0.0
+        numbers = []
+        if args is not None:
+            for arg in args:
+                if arg in FORMANT_VOWELS:
+                    vowel = (FORMANT_VOWELS.index(arg)
+                             / (len(FORMANT_VOWELS) - 1))
+                else:
+                    try:
+                        numbers.append(float(arg))
+                    except (ValueError, TypeError):
+                        continue
+        if len(numbers) > 0:
+            vowel = min(1.0, max(0.0, numbers[0]))
+        if len(numbers) > 1:
+            self.unit.q_in.base = max(0.5, numbers[1])
+        self.unit.vowel_in.base = vowel
+
+        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+        self.add_modulation_input('vowel', self.unit.vowel_in,
+                                  default_value=vowel, minimum=0.0,
+                                  maximum=1.0, speed=0.005)
+        self.add_modulation_input('shift', self.unit.shift_in,
+                                  default_value=self.unit.shift_in.base,
+                                  minimum=0.05, speed=0.005,
+                                  attenuverter=False)
+        self.add_modulation_input('q', self.unit.q_in,
+                                  default_value=self.unit.q_in.base,
+                                  minimum=0.5, speed=0.05,
+                                  attenuverter=False)
+
+        self.vowel_display = self.add_property('formants', widget_type='label',
+                                               default_value='')
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.finish_synth_node()
+        self._shown = ''
+
+    def synth_frame_task(self):
+        # What the bank is actually resonating at, which is the one thing you
+        # cannot infer from the vowel knob once shift is in play.
+        position = any_to_float(self.unit.vowel_in.base)
+        span = len(FORMANT_VOWELS) - 1
+        index = int(round(min(1.0, max(0.0, position)) * span))
+        text = (FORMANT_VOWELS[index] + '  '
+                + ' '.join(str(int(f)) for f in self.unit.frequencies[:3]))
+        if text != self._shown:
+            self._shown = text
+            self.vowel_display.set(text)
+
+
+# ----------------------------------------------------------------------------
+# vocoder~
+# ----------------------------------------------------------------------------
+
+class VocoderNode(SynthNode):
+    """One signal's spectrum imposed on another.
+
+    The modulator is split into bands, each band's level is followed, and the
+    carrier is passed through the same bands with those levels as gains. The
+    result has the carrier's pitch and the modulator's shape -- speech through
+    an oscillator being the classic case, though nothing here needs the
+    modulator to be a voice.
+
+    Give the carrier plenty to filter: a detuned vco~ stack is close to ideal,
+    a single sine has nothing in most bands to let through. 'sibilance' mixes
+    noise into the carrier for the top third of the range only, which is what
+    lets 's' and 't' through without the whole voice turning breathy.
+
+    'attack' and 'release' are the follower's times in seconds. Fast attack and
+    slower release is what makes consonants arrive intact while vowels hold;
+    long releases smear the modulator into a wash. 'freeze' stops the followers
+    where they are, turning the current spectrum into a fixed filter that keeps
+    its vowel after the voice stops.
+
+    The 'bands' outlet reports the band levels as a list every frame, and the
+    'gains' inlet takes a list back, which with 'band source' set to 'list'
+    replaces the analysis entirely. That is the interesting direction here: the
+    bank stops being a speech effect and becomes a spectral surface for
+    whatever else you have -- effort data, a sequencer, a hand.
+
+    Arguments: vocoder~ <bands> <low Hz> <high Hz>.
+    """
+
+    BAND_SOURCES = ('modulator', 'list')
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return VocoderNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = VocoderUnit(synth_graph.sample_rate)
+        self._sent = None
+
+        numbers = []
+        if args is not None:
+            for arg in args:
+                try:
+                    numbers.append(float(arg))
+                except (ValueError, TypeError):
+                    continue
+        if len(numbers) > 0:
+            self.unit.bands = max(2, min(VocoderUnit.MAX_BANDS,
+                                         int(numbers[0])))
+        if len(numbers) > 1:
+            self.unit.low = max(20.0, numbers[1])
+        if len(numbers) > 2:
+            self.unit.high = numbers[2]
+
+        self.add_signal_input('modulator', self.unit.modulator_in)
+        self.add_signal_input('carrier', self.unit.carrier_in)
+        self.add_signal_input('right carrier', self.unit.right_carrier_in)
+        self.add_modulation_input('attack', self.unit.attack_in,
+                                  minimum=0.0, speed=0.001,
+                                  attenuverter=False)
+        self.add_modulation_input('release', self.unit.release_in,
+                                  minimum=0.0, speed=0.005,
+                                  attenuverter=False)
+        self.add_modulation_input('sibilance', self.unit.sibilance_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01,
+                                  attenuverter=False)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, speed=0.05, attenuverter=False)
+        self.gains_input = self.add_input('gains', callback=self.gains_received)
+
+        self.freeze_input = self.add_input('freeze', widget_type='checkbox',
+                                           default_value=False,
+                                           callback=self.parameters_changed)
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.bands_output = self.add_output('bands')
+
+        self.bands_option = self.add_option('bands', widget_type='drag_int',
+                                            default_value=self.unit.bands,
+                                            min=2, max=VocoderUnit.MAX_BANDS,
+                                            callback=self.parameters_changed)
+        self.low_option = self.add_option('low', widget_type='drag_float',
+                                          default_value=self.unit.low, min=20.0,
+                                          callback=self.parameters_changed)
+        self.high_option = self.add_option('high', widget_type='drag_float',
+                                           default_value=self.unit.high,
+                                           callback=self.parameters_changed)
+        self.q_option = self.add_option('q', widget_type='drag_float',
+                                        default_value=self.unit.q, min=0.5,
+                                        callback=self.parameters_changed)
+        self.source_option = self.add_option('band source', widget_type='combo',
+                                             default_value='modulator',
+                                             callback=self.parameters_changed)
+        self.source_option.widget.combo_items = list(VocoderNode.BAND_SOURCES)
+        self.report_option = self.add_option('report bands',
+                                             widget_type='checkbox',
+                                             default_value=True)
+        self.finish_synth_node()
+
+    def sync_options(self):
+        self.unit.bands = any_to_int(self.bands_option())
+        self.unit.low = max(20.0, any_to_float(self.low_option()))
+        self.unit.high = any_to_float(self.high_option())
+        self.unit.q = max(0.5, any_to_float(self.q_option()))
+        self.unit.freeze = any_to_bool(self.freeze_input())
+        self.unit.external = (any_to_string(self.source_option()) == 'list')
+
+    def gains_received(self):
+        """A list of band gains from the patch, in place of the analysis."""
+        data = self.gains_input()
+        if isinstance(data, np.ndarray):
+            values = data.reshape(-1)
+        elif isinstance(data, (list, tuple)):
+            values = np.asarray([any_to_float(v) for v in data])
+        else:
+            values = np.asarray([any_to_float(data)])
+        count = min(len(values), VocoderUnit.MAX_BANDS)
+        if count == 0:
+            return
+        # Assigned into the live array one band at a time: the audio thread
+        # may read it mid-write, and a partly-updated set of gains is a
+        # momentary timbre rather than a fault.
+        for band in range(count):
+            self.unit.supplied[band] = float(values[band])
+
+    def synth_frame_task(self):
+        if not any_to_bool(self.report_option()):
+            return
+        count = self.unit.band_count()
+        levels = [round(float(v), 5) for v in self.unit.envelopes[:count]]
+        if levels != self._sent:
+            self._sent = levels
+            self.bands_output.send(levels)
 
 
 # ----------------------------------------------------------------------------
@@ -512,6 +866,10 @@ class VcaNode(SynthNode):
 
     Gain is the sum of the knob and any patched CV, so the usual patch is knob
     at 0 with an adsr~ into the gain inlet.
+
+    Patch 'right in' and it amplifies in stereo, one gain curve driving both
+    channels. Unpatched it is the mono vca~ it always was, and 'right' carries
+    the same signal as 'signal'.
     """
 
     RESPONSES = ('linear', 'exponential')
@@ -539,6 +897,7 @@ class VcaNode(SynthNode):
         self.unit.response = VcaNode.RESPONSES.index(response)
 
         self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
         self.add_modulation_input('gain', self.unit.gain_in,
                                   default_value=gain, minimum=0.0, speed=0.01)
 
@@ -548,6 +907,8 @@ class VcaNode(SynthNode):
         self.response_input.widget.combo_items = list(VcaNode.RESPONSES)
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        # Appended, so links saved against the single outlet keep their index.
+        self.right_output = self.add_signal_output('right', self.unit.right)
         self.finish_synth_node()
 
     def sync_options(self):

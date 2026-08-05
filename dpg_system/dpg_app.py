@@ -1817,7 +1817,13 @@ class App:
                 if source_output_name != '':
                     found_output = False
                     if source_output.get_label() != source_output_name:
-                        for index, output in enumerate(source_node.inputs):
+                        # Search the outputs, not the inputs. Searching the
+                        # wrong list could only ever fail to find the outlet --
+                        # or worse, match an input that happens to share its
+                        # name and bind the link to it -- so a saved outlet
+                        # whose index had moved fell through to the
+                        # single-outlet fallback below and was lost.
+                        for index, output in enumerate(source_node.outputs):
                             if output.get_label() == source_output_name:
                                 source_output_index = index
                                 source_output = output
@@ -1825,7 +1831,7 @@ class App:
                                 break
                         if not found_output:
                             #  check archive of names
-                            for index, output in enumerate(source_node.inputs):
+                            for index, output in enumerate(source_node.outputs):
                                 if source_output_name in output.name_archive:
                                     source_output_index = index
                                     source_output = output

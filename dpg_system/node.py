@@ -517,8 +517,26 @@ class NodeProperty:
         self.edited = False
         self.node = node
         self.name_archive = []
+        # When set to another widget, this property draws itself into that
+        # widget's row rather than claiming an attribute of its own -- the way
+        # an attenuverter belongs beside the knob it attenuates. It stays a
+        # normal option for saving, loading and messages; only where it is
+        # drawn changes.
+        self.inline_with = None
 
     def create(self, parent):
+        if self.inline_with is not None and self.inline_with.h_group_uuid:
+            if self.callback is not None:
+                self.widget.callback = self.callback
+                self.widget.user_data = self.user_data
+            # Pushed rather than wrapped in a group: the widget opens a group
+            # of its own, and a second one around it would nest for nothing.
+            dpg.push_container_stack(self.inline_with.h_group_uuid)
+            try:
+                self.widget.create()
+            finally:
+                dpg.pop_container_stack()
+            return
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Static, user_data=self, id=self.uuid)
         with self.node_attribute:
             if self.callback is not None:
@@ -625,6 +643,15 @@ class BasePropertyWidget:
         self.wants_resize_handle = False
         self.h_group_uuid = None
 
+        # A name drawn to the *left* of the widget, with a spacer after it so
+        # a column of them lines up. Dear PyGui puts a widget's own label on
+        # the right, which is fine for one widget on a line and unreadable once
+        # there are two -- the pair reads as one control with a name in front
+        # of it rather than two controls with a name between them.
+        self.prefix_label = None
+        self.prefix_uuid = None
+        self.prefix_spacer_uuid = None
+
          # Hover tooltip (lazily created). Useful when a widget's visible text
         # is truncated but the full value should stay accessible on hover.
         self.tooltip_text = None
@@ -651,12 +678,19 @@ class BasePropertyWidget:
     def create(self) -> None:
         """Template Method: Defines the skeleton of widget creation."""
         # 1. Determine layout
-        horizontal = self.widget_has_trigger or self._force_horizontal() or self.wants_resize_handle
+        horizontal = (self.widget_has_trigger or self._force_horizontal()
+                      or self.wants_resize_handle
+                      or self.prefix_label is not None)
 
         # 2. Initialize Value
         self._init_default_value()
         # 3. Draw
         with dpg.group(horizontal=horizontal) as self.h_group_uuid:
+            if self.prefix_label is not None:
+                self.prefix_uuid = dpg.add_text(self.prefix_label)
+                # Widened later to square the column off; text cannot be
+                # measured until something has been rendered.
+                self.prefix_spacer_uuid = dpg.add_spacer(width=1)
             self._draw_widget()
             self._setup_interaction()
             self._create_trigger_button()
@@ -895,6 +929,35 @@ class BasePropertyWidget:
     def get_label_width(self, pad: int = 12, minimum_width: int = 100) -> float:
         label = dpg.get_item_label(self.uuid)
         return self._calculate_width(label, pad, minimum_width)
+
+    def measure_prefix(self):
+        """Width of this widget's prefix name, or None if not measurable yet.
+
+        dpg cannot measure text before something has been rendered, which is
+        exactly when nodes are built during a patch load, so callers retry.
+        """
+        if self.prefix_label is None:
+            return None
+        try:
+            size = dpg.get_text_size(self.prefix_label,
+                                     font=dpg.get_item_font(self.uuid))
+        except Exception:
+            return None
+        if size is None:
+            return None
+        return float(size[0])
+
+    def set_prefix_column(self, width: float) -> bool:
+        """Pad the prefix out to `width` so a column of them squares off."""
+        if self.prefix_spacer_uuid is None:
+            return False
+        measured = self.measure_prefix()
+        if measured is None:
+            return False
+        if dpg.does_item_exist(self.prefix_spacer_uuid):
+            dpg.configure_item(self.prefix_spacer_uuid,
+                               width=max(1, int(width - measured)))
+        return True
 
     def _calculate_width(self, text, pad, minimum_width):
         font_id = dpg.get_item_font(self.uuid)
@@ -2921,10 +2984,7 @@ class Node:
                 self.custom_create(from_file)
         dpg.set_item_user_data(self.uuid, self)
         self.add_handler_to_widgets()
-        for option_att in self.options:
-            dpg.hide_item(option_att.uuid)
-            if option_att.widget is not None:
-                dpg.hide_item(option_att.widget.uuid)
+        self.set_options_visible(False)
         if self.presentation_state != 'hidden':
             self.set_visibility('show_all')
         self.created = True
@@ -2976,33 +3036,36 @@ class Node:
             value = any_to_bool(self.ordered_args[index])
         return value
 
+    def block_options(self) -> List['NodeProperty']:
+        """The options that live in the options block, and so can be hidden.
+
+        An inline option is drawn in an inlet's row and never made an attribute
+        of its own, so showing or hiding the block must pass it over. Every
+        place that toggles the block asks here rather than each remembering.
+        """
+        return [option for option in self.options
+                if getattr(option, 'inline_with', None) is None]
+
+    def set_options_visible(self, visible: bool) -> None:
+        for option_att in self.block_options():
+            if visible:
+                dpg.show_item(option_att.uuid)
+                if option_att.widget is not None:
+                    dpg.show_item(option_att.widget.uuid)
+            else:
+                dpg.hide_item(option_att.uuid)
+                if option_att.widget is not None:
+                    dpg.hide_item(option_att.widget.uuid)
+
     def toggle_show_hide_options(self) -> None:
         if len(self.options) > 0:
             self.options_visible = not self.options_visible
-            if self.options_visible:
-                for option_att in self.options:
-                    dpg.show_item(option_att.uuid)
-                    if option_att.widget is not None:
-                        dpg.show_item(option_att.widget.uuid)
-            else:
-                for option_att in self.options:
-                    dpg.hide_item(option_att.uuid)
-                    if option_att.widget is not None:
-                        dpg.hide_item(option_att.widget.uuid)
+            self.set_options_visible(self.options_visible)
 
     def show_options(self, message, value) -> None:
         if len(self.options) > 0:
-            value = any_to_int(value)
-            if value:
-                for option_att in self.options:
-                    dpg.show_item(option_att.uuid)
-                    if option_att.widget is not None:
-                        dpg.show_item(option_att.widget.uuid)
-            else:
-                for option_att in self.options:
-                    dpg.hide_item(option_att.uuid)
-                    if option_att.widget is not None:
-                        dpg.hide_item(option_att.widget.uuid)
+            self.options_visible = bool(any_to_int(value))
+            self.set_options_visible(self.options_visible)
 
     def check_for_messages(self, in_data: Union[str, List[Any]]) -> bool:
         self.message_handled = False

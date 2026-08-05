@@ -256,6 +256,388 @@ class SigUnit(Unit):
 
 
 # ----------------------------------------------------------------------------
+# formant~  --  a vowel as a bank of resonances
+# ----------------------------------------------------------------------------
+
+# The vowels, as the centre frequencies of their first three formants for an
+# average adult male voice. These are the textbook averages (Peterson & Barney,
+# and reproduced everywhere since); treat them as a well-placed starting point
+# rather than gospel -- 'shift' moves the whole set, and the morph runs
+# between them, so the exact numbers matter less than their relationships.
+#
+# F1 tracks how open the mouth is, F2 how far forward the tongue sits. That is
+# why 'i' and 'u' both have a low F1 but sit at opposite ends of F2, and it is
+# what makes a morph across this table sound like a mouth moving.
+FORMANT_VOWELS = ('a', 'e', 'i', 'o', 'u')
+_VOWEL_FORMANTS = {
+    'a': (730.0, 1090.0, 2440.0),
+    'e': (530.0, 1840.0, 2480.0),
+    'i': (270.0, 2290.0, 3010.0),
+    'o': (570.0, 840.0, 2410.0),
+    'u': (300.0, 870.0, 2240.0),
+}
+# Two fixed upper resonances for air and presence. They do not identify the
+# vowel, but without them the bank sounds like a filter rather than a throat.
+_UPPER_FORMANTS = (3300.0, 3850.0)
+# Relative weight per formant, about -6 dB a step.
+_FORMANT_GAINS = (1.0, 0.5, 0.25, 0.125, 0.0625)
+
+
+class FormantUnit(Unit):
+    """A vowel, as five resonances in parallel.
+
+    'vowel' runs 0..1 across a, e, i, o, u -- and runs *between* them, rather
+    than switching: the formants are interpolated in the log domain, so a slow
+    sweep is a mouth changing shape rather than a crossfade between two mouths.
+    'shift' multiplies every formant frequency at once, which is the size of
+    the head making the sound: below 1 a larger one, above 1 a smaller.
+
+    'q' is how sharp the resonances are. Low values are a vowel-ish colour;
+    high values ring, and past about 20 the bank starts to sing on its own with
+    whatever the input excites. Each band is normalised for its own Q, so
+    turning it up sharpens the vowel rather than simply making it louder.
+
+    Feed it something harmonically dense -- a saw, better still a detuned
+    unison stack, or noise for a whisper. A sine has nothing at the formant
+    frequencies to resonate.
+
+    Stereo when 'right in' is patched, on one set of coefficients, like vcf~.
+    """
+
+    BANDS = 5
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.vowel_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.shift_in = self.new_inlet(base=1.0, minimum=0.05)
+        self.q_in = self.new_inlet(base=8.0, minimum=0.5)
+
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+
+        bands = FormantUnit.BANDS
+        self._a1 = np.zeros(bands, dtype=np.float64)
+        self._a2 = np.zeros(bands, dtype=np.float64)
+        self._a3 = np.zeros(bands, dtype=np.float64)
+        self._gains = np.zeros(bands, dtype=np.float64)
+        self._ic1 = np.zeros(bands, dtype=np.float64)
+        self._ic2 = np.zeros(bands, dtype=np.float64)
+        self._ic1_right = np.zeros(bands, dtype=np.float64)
+        self._ic2_right = np.zeros(bands, dtype=np.float64)
+
+        self._x = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        # The frequencies the bank last ran with, for the node to display.
+        self.frequencies = [0.0] * bands
+
+    def reset(self):
+        self._ic1[:] = 0.0
+        self._ic2[:] = 0.0
+        self._ic1_right[:] = 0.0
+        self._ic2_right[:] = 0.0
+
+    def _mirror(self, frames):
+        if self.out.constant:
+            self.right.set_constant(self.out.value)
+            return
+        np.copyto(self.right.data[:frames], self.out.data[:frames])
+        self.right.constant = False
+
+    def _build_coefficients(self, vowel, shift, q):
+        """Where the five resonances sit for this vowel, and how sharp."""
+        position = min(1.0, max(0.0, vowel)) * (len(FORMANT_VOWELS) - 1)
+        lower = int(position)
+        upper = min(lower + 1, len(FORMANT_VOWELS) - 1)
+        blend = position - lower
+        first = _VOWEL_FORMANTS[FORMANT_VOWELS[lower]]
+        second = _VOWEL_FORMANTS[FORMANT_VOWELS[upper]]
+
+        limit = self.sample_rate * 0.45
+        quality = max(0.5, q)
+        k = 1.0 / quality
+
+        for band in range(FormantUnit.BANDS):
+            if band < len(first):
+                # Interpolated as a ratio rather than a difference: halfway
+                # between 300 Hz and 2300 Hz belongs at 830, not 1300, and the
+                # linear reading sweeps through vowels that are not on the way.
+                frequency = math.exp(math.log(first[band]) * (1.0 - blend)
+                                     + math.log(second[band]) * blend)
+            else:
+                frequency = _UPPER_FORMANTS[band - len(first)]
+            frequency = min(limit, max(20.0, frequency * shift))
+            self.frequencies[band] = frequency
+
+            g = math.tan(math.pi * frequency / self.sample_rate)
+            a1 = 1.0 / (1.0 + g * (g + k))
+            self._a1[band] = a1
+            self._a2[band] = g * a1
+            self._a3[band] = g * g * a1
+            # The bandpass tap peaks at Q, so fold k back in and each formant
+            # arrives at the weight it was given whatever the sharpness.
+            self._gains[band] = _FORMANT_GAINS[band] * k
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        vowel = self.vowel_in.eval(frames)
+        shift = self.shift_in.eval(frames)
+        q = self.q_in.eval(frames)
+
+        out = self.out
+        stereo = bool(self.right_in.sources)
+
+        if signal.constant and signal.value == 0.0 and not stereo:
+            out.set_constant(0.0)
+            self.right.set_constant(0.0)
+            return
+
+        self._build_coefficients(
+            vowel.value if vowel.constant else float(vowel.data[frames - 1]),
+            shift.value if shift.constant else float(shift.data[frames - 1]),
+            q.value if q.constant else float(q.data[frames - 1]))
+
+        if not _svf_ready.is_set():
+            # Kernel still compiling, or numba missing: pass audio rather than
+            # stall the callback.
+            np.copyto(out.data[:frames], signal.array(frames))
+            out.constant = False
+            self._mirror(frames)
+            return
+
+        source = self._x[:frames]
+        result = self._y[:frames]
+
+        np.copyto(source, signal.array(frames), casting='unsafe')
+        _formant_bank(source, self._a1, self._a2, self._a3, self._ic1,
+                      self._ic2, self._gains, result)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+
+        if not stereo:
+            self._mirror(frames)
+            return
+
+        np.copyto(source, self.right_in.eval(frames).array(frames),
+                  casting='unsafe')
+        _formant_bank(source, self._a1, self._a2, self._a3, self._ic1_right,
+                      self._ic2_right, self._gains, result)
+        np.copyto(self.right.data[:frames], result, casting='unsafe')
+        self.right.constant = False
+
+
+# ----------------------------------------------------------------------------
+# vocoder~  --  one signal's spectrum imposed on another
+# ----------------------------------------------------------------------------
+
+class VocoderUnit(Unit):
+    """A filterbank analysing one signal and shaping another with it.
+
+    The modulator is split into bands; each band drives an envelope follower;
+    the carrier goes through the same bands with those envelopes as gains. What
+    comes out has the carrier's pitch and the modulator's shape.
+
+    Both banks are one numba kernel apiece, so the band count is close to free
+    -- 16 bands cost about as much as a single vcf~. The expensive thing here
+    is not the filtering, it is having 32 of anything at the node layer, which
+    is why this is one object.
+
+    Two details separate a vocoder that speaks from one that mumbles. The
+    envelopes are followed and applied per sample, not per block, because at
+    block rate the gains zipper exactly when they are moving most. And the
+    bands are spaced geometrically, because that is how hearing is spaced --
+    linear spacing spends most of its bands above the range where vowels are
+    told apart.
+
+    The band envelopes are readable from outside, and can be supplied from
+    outside instead, which turns the bank into a spectral mapping surface for
+    whatever else is to hand rather than a speech effect.
+    """
+
+    MAX_BANDS = 32
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.modulator_in = self.new_inlet()
+        self.carrier_in = self.new_inlet()
+        self.right_carrier_in = self.new_inlet()
+        self.attack_in = self.new_inlet(base=0.002, minimum=0.0)   # seconds
+        self.release_in = self.new_inlet(base=0.04, minimum=0.0)   # seconds
+        self.sibilance_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0)
+
+        self.bands = 16
+        self.low = 120.0
+        self.high = 8000.0
+        self.q = 6.0
+        self.freeze = False
+        self.external = False       # take band gains from the node, not analysis
+
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+
+        size = VocoderUnit.MAX_BANDS
+        self._a1 = np.zeros(size, dtype=np.float64)
+        self._a2 = np.zeros(size, dtype=np.float64)
+        self._a3 = np.zeros(size, dtype=np.float64)
+        self._weights = np.zeros(size, dtype=np.float64)
+        self._m_ic1 = np.zeros(size, dtype=np.float64)
+        self._m_ic2 = np.zeros(size, dtype=np.float64)
+        self._c_ic1 = np.zeros(size, dtype=np.float64)
+        self._c_ic2 = np.zeros(size, dtype=np.float64)
+        self._r_ic1 = np.zeros(size, dtype=np.float64)
+        self._r_ic2 = np.zeros(size, dtype=np.float64)
+        self.envelopes = np.zeros(size, dtype=np.float64)
+        self.supplied = np.zeros(size, dtype=np.float64)
+        self._env_block = np.zeros((size, MAX_BLOCK), dtype=np.float64)
+
+        self._modulator = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._carrier = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._breath = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._result = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+        self._laid_out = ()
+
+    def reset(self):
+        for state in (self._m_ic1, self._m_ic2, self._c_ic1, self._c_ic2,
+                      self._r_ic1, self._r_ic2):
+            state[:] = 0.0
+        self.envelopes[:] = 0.0
+
+    def band_count(self):
+        return max(2, min(int(self.bands), VocoderUnit.MAX_BANDS))
+
+    def band_frequencies(self):
+        count = self.band_count()
+        low = max(20.0, min(self.low, self.high))
+        high = min(self.sample_rate * 0.45, max(self.low, self.high))
+        if high <= low:
+            high = low * 2.0
+        return np.geomspace(low, high, count)
+
+    def _build_bank(self):
+        """Coefficients for the current band layout, rebuilt only on change."""
+        count = self.band_count()
+        signature = (count, self.low, self.high, self.q, self.sample_rate)
+        if signature == self._laid_out:
+            return count
+        self._laid_out = signature
+
+        k = 1.0 / max(0.5, self.q)
+        for band, frequency in enumerate(self.band_frequencies()):
+            g = math.tan(math.pi * float(frequency) / self.sample_rate)
+            a1 = 1.0 / (1.0 + g * (g + k))
+            self._a1[band] = a1
+            self._a2[band] = g * a1
+            self._a3[band] = g * g * a1
+            # The bandpass tap peaks at Q; normalise so band count and
+            # sharpness do not each become a volume control.
+            self._weights[band] = k
+        return count
+
+    def _mirror(self, frames):
+        if self.out.constant:
+            self.right.set_constant(self.out.value)
+            return
+        np.copyto(self.right.data[:frames], self.out.data[:frames])
+        self.right.constant = False
+
+    @staticmethod
+    def _one_pole(seconds, sample_rate):
+        """Per-sample coefficient for a time constant in seconds."""
+        samples = max(1.0, seconds * sample_rate)
+        return 1.0 - math.exp(-1.0 / samples)
+
+    def render(self, frames):
+        carrier = self.carrier_in.eval(frames)
+        modulator = self.modulator_in.eval(frames)
+        attack = self.attack_in.eval(frames)
+        release = self.release_in.eval(frames)
+        sibilance = self.sibilance_in.eval(frames)
+        level = self.level_in.eval(frames)
+
+        out = self.out
+        stereo = bool(self.right_carrier_in.sources)
+        count = self._build_bank()
+
+        if not _svf_ready.is_set():
+            np.copyto(out.data[:frames], carrier.array(frames))
+            out.constant = False
+            self._mirror(frames)
+            return
+
+        envelope_block = self._env_block[:count, :frames]
+
+        if self.external:
+            # Gains handed in from the patch: the same bank, told what to do
+            # rather than listening for it.
+            for band in range(count):
+                envelope_block[band, :] = self.supplied[band]
+                self.envelopes[band] = self.supplied[band]
+        else:
+            source = self._modulator[:frames]
+            np.copyto(source, modulator.array(frames), casting='unsafe')
+            attack_time = (attack.value if attack.constant
+                           else float(attack.data[0]))
+            release_time = (release.value if release.constant
+                            else float(release.data[0]))
+            _vocoder_analyse(source, self._a1[:count], self._a2[:count],
+                             self._a3[:count], self._m_ic1[:count],
+                             self._m_ic2[:count], self.envelopes[:count],
+                             self._one_pole(attack_time, self.sample_rate),
+                             self._one_pole(release_time, self.sample_rate),
+                             0.0 if self.freeze else 1.0, envelope_block)
+
+        voice = self._carrier[:frames]
+        np.copyto(voice, carrier.array(frames), casting='unsafe')
+
+        breath_amount = (sibilance.value if sibilance.constant
+                         else float(sibilance.data[0]))
+        breath_amount = min(1.0, max(0.0, breath_amount))
+        if breath_amount > 0.0:
+            breath = self._breath[:frames]
+            breath[:] = np.random.random(frames) * 2.0 - 1.0
+            np.multiply(breath, breath_amount, out=breath)
+            np.multiply(voice, 1.0 - breath_amount, out=self._result[:frames])
+            breath += self._result[:frames]
+            # Noise replaces the carrier only in the top third of the range,
+            # where consonants live and pitch does not.
+            split = max(1, (count * 2) // 3)
+        else:
+            breath = voice
+            split = count
+
+        gain = level.value if level.constant else float(level.data[0])
+        result = self._result[:frames]
+
+        _vocoder_synthesise(voice, breath, split, self._a1[:count],
+                            self._a2[:count], self._a3[:count],
+                            self._c_ic1[:count], self._c_ic2[:count],
+                            envelope_block, self._weights[:count], result)
+        if gain != 1.0:
+            np.multiply(result, gain, out=result)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+
+        if not stereo:
+            self._mirror(frames)
+            return
+
+        right_voice = self._carrier[:frames]
+        np.copyto(right_voice, self.right_carrier_in.eval(frames).array(frames),
+                  casting='unsafe')
+        _vocoder_synthesise(right_voice, right_voice, count, self._a1[:count],
+                            self._a2[:count], self._a3[:count],
+                            self._r_ic1[:count], self._r_ic2[:count],
+                            envelope_block, self._weights[:count], result)
+        if gain != 1.0:
+            np.multiply(result, gain, out=result)
+        np.copyto(self.right.data[:frames], result, casting='unsafe')
+        self.right.constant = False
+
+
+# ----------------------------------------------------------------------------
 # ramp~  --  linear move to a target, arriving on schedule
 # ----------------------------------------------------------------------------
 
@@ -382,7 +764,15 @@ class RampUnit(Unit):
 # ----------------------------------------------------------------------------
 
 class VcaUnit(Unit):
-    """Voltage controlled amplifier: signal in, gain in, signal out."""
+    """Voltage controlled amplifier: signal in, gain in, signal out.
+
+    Stereo when, and only when, something is patched to the right inlet: the
+    gain curve is computed once and applied to both channels, so the two can
+    never drift out of step the way a pair of separate vca~ can. Left alone,
+    the right inlet costs nothing and the right outlet simply carries the same
+    signal as the left, so a mono patch neither pays for stereo nor has to
+    know about it.
+    """
 
     LINEAR = 0
     EXPONENTIAL = 1
@@ -390,25 +780,49 @@ class VcaUnit(Unit):
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
         self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
         self.gain_in = self.new_inlet(base=1.0)
         self.response = VcaUnit.LINEAR
         self.out = self.new_outlet()
+        self.right = self.new_outlet()
         self._gain = np.zeros(MAX_BLOCK, dtype=np.float32)
+
+    def _mirror(self, frames):
+        """Right carries the left channel when nothing is patched to it."""
+        if self.out.constant:
+            self.right.set_constant(self.out.value)
+            return
+        np.copyto(self.right.data[:frames], self.out.data[:frames])
+        self.right.constant = False
+
+    @staticmethod
+    def _apply_constant(signal, out, gain_value, frames):
+        if signal.constant:
+            out.set_constant(signal.value * gain_value)
+            return
+        np.multiply(signal.data[:frames], gain_value, out=out.data[:frames])
+        out.constant = False
+
+    @staticmethod
+    def _apply_curve(signal, out, curve, frames):
+        np.multiply(signal.array(frames), curve, out=out.data[:frames])
+        out.constant = False
 
     def render(self, frames):
         signal = self.signal_in.eval(frames)
         gain = self.gain_in.eval(frames)
-        out = self.out
+        stereo = bool(self.right_in.sources)
 
         if gain.constant:
             gain_value = max(0.0, gain.value)
             if self.response == VcaUnit.EXPONENTIAL:
                 gain_value = gain_value ** 3
-            if signal.constant:
-                out.set_constant(signal.value * gain_value)
-                return
-            np.multiply(signal.data[:frames], gain_value, out=out.data[:frames])
-            out.constant = False
+            self._apply_constant(signal, self.out, gain_value, frames)
+            if stereo:
+                self._apply_constant(self.right_in.eval(frames), self.right,
+                                     gain_value, frames)
+            else:
+                self._mirror(frames)
             return
 
         # Copy the gain curve before shaping so we do not scribble on the
@@ -421,9 +835,12 @@ class VcaUnit(Unit):
             # and far cheaper than a real dB conversion.
             curve *= curve * curve
 
-        buffer = out.data[:frames]
-        np.multiply(signal.array(frames), curve, out=buffer)
-        out.constant = False
+        self._apply_curve(signal, self.out, curve, frames)
+        if stereo:
+            self._apply_curve(self.right_in.eval(frames), self.right, curve,
+                              frames)
+        else:
+            self._mirror(frames)
 
 
 # ----------------------------------------------------------------------------
@@ -1001,7 +1418,23 @@ class VcoUnit(Unit):
     linear FM inlet in Hz for clangorous/bell tones. Hard sync resets phase on
     a rising edge of the sync inlet; the block is split at sync events so the
     reset lands on the right sample.
+
+    Raise `voices` and it becomes a unison stack: several oscillators detuned
+    symmetrically about the written pitch and spread across the stereo field.
+    They share one modulation section -- the increment is built once and
+    scaled per voice -- which is about a quarter cheaper than the same stack
+    patched as separate oscillators through pans and a mixer. The rest is the
+    band-limited shape rendering, which is a fixed cost per voice.
+
+    At one voice this is the plain oscillator it always was, on the same code
+    path, and the right outlet simply carries the same signal.
     """
+
+    MAX_VOICES = 8
+    # How fast a voice's drift wanders, as a one-pole coefficient per block.
+    # 0.01 at 86 blocks/sec is a time constant of about a second: slow enough
+    # to be movement rather than vibrato.
+    DRIFT_RATE = 0.01
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
@@ -1011,6 +1444,7 @@ class VcoUnit(Unit):
         self.width_in = self.new_inlet(base=0.5, minimum=0.01, maximum=0.99)
         self.phase_mod_in = self.new_inlet(base=0.0)      # cycles
         self.sync_in = self.new_inlet(base=0.0)
+        self.detune_in = self.new_inlet(base=10.0, minimum=0.0)   # cents
 
         self.shape = 'saw'
         self.phase = 0.0
@@ -1019,26 +1453,87 @@ class VcoUnit(Unit):
         self._pink_state = [np.zeros(1) for _ in _PINK_POLES]
         self._pink_last = 0.0
 
+        self.voices = 1
+        self.spread = 0.0          # 0 = all voices centred
+        self.drift = 0.0           # cents of slow per-voice wander
+        self._phases = [0.0] * VcoUnit.MAX_VOICES
+        self._drift_state = [0.0] * VcoUnit.MAX_VOICES
+        self._offsets = [0.0]
+        self._laid_out = 0         # voice count self._offsets was built for
+        self._started = 0          # voices that have been given a start phase
+
         self.out = self.new_outlet()
+        self.right = self.new_outlet()
         self._phase = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._increment = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._work = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._blep = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._voice_increment = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._voice = np.zeros(MAX_BLOCK, dtype=np.float32)
+        self._scaled = np.zeros(MAX_BLOCK, dtype=np.float32)
 
     def reset(self):
         self.phase = self.start_phase
+        self._started = 0
+        self._spread_phases(max(1, min(self.voices, VcoUnit.MAX_VOICES)))
+
+    # -- unison layout -------------------------------------------------------
+
+    def _spread_phases(self, count):
+        """Give each voice its own starting point around the cycle.
+
+        Voices all starting together sum coherently for the first moments of a
+        note, which reads as a phasey attack before the detuning pulls them
+        apart. Only voices that have not run yet are placed, so raising the
+        voice count mid-note does not restart the ones already sounding.
+        """
+        for index in range(self._started, count):
+            self._phases[index] = (self.start_phase + index / count) % 1.0
+        self._started = max(self._started, count)
+
+    def _voice_offsets(self, count):
+        """Detune positions, -1..1, symmetric about the written pitch.
+
+        An odd voice count leaves the middle voice exactly in tune, so the
+        note keeps a stable centre however wide the detuning goes.
+        """
+        if self._laid_out != count:
+            if count < 2:
+                self._offsets = [0.0]
+            else:
+                self._offsets = [(2.0 * i / (count - 1)) - 1.0
+                                 for i in range(count)]
+            self._laid_out = count
+        return self._offsets
+
+    def _advance_drift(self, index):
+        """One slow random wander per voice, in cents."""
+        if self.drift <= 0.0:
+            return 0.0
+        target = np.random.random() * 2.0 - 1.0
+        state = self._drift_state[index]
+        state += (target - state) * VcoUnit.DRIFT_RATE
+        self._drift_state[index] = state
+        return state * self.drift
+
+    # -- rendering -----------------------------------------------------------
 
     def render(self, frames):
         out = self.out
+        right_out = self.right
         buffer = out.data[:frames]
 
         if self.shape == 'noise':
             buffer[:] = np.random.random(frames) * 2.0 - 1.0
+            np.copyto(right_out.data[:frames], buffer)
             out.constant = False
+            right_out.constant = False
             return
         if self.shape == 'pink':
             self._render_pink(buffer, frames)
+            np.copyto(right_out.data[:frames], buffer)
             out.constant = False
+            right_out.constant = False
             return
 
         frequency = self.frequency_in.eval(frames)
@@ -1050,6 +1545,14 @@ class VcoUnit(Unit):
 
         increment = self._increment[:frames]
         self._build_increment(increment, frequency, pitch, linear_fm, frames)
+
+        count = max(1, min(int(self.voices), VcoUnit.MAX_VOICES))
+        if count > 1:
+            self._render_unison(buffer, right_out.data[:frames], increment,
+                                width, phase_mod, sync, count, frames)
+            out.constant = False
+            right_out.constant = False
+            return
 
         phase = self._phase[:frames]
         start = 0
@@ -1071,7 +1574,78 @@ class VcoUnit(Unit):
             phase = (phase + phase_mod.value) % 1.0
 
         self._render_shape(buffer, phase, increment, width, frames)
+        np.copyto(right_out.data[:frames], buffer)
         out.constant = False
+        right_out.constant = False
+
+    def _render_unison(self, left, right, increment, width, phase_mod, sync,
+                       count, frames):
+        detune = self.detune_in.eval(frames)
+        cents = detune.value if detune.constant else float(detune.data[0])
+
+        self._spread_phases(count)
+        offsets = self._voice_offsets(count)
+        segments = list(self._sync_segments(sync, frames))
+        spread = min(1.0, max(0.0, self.spread))
+        mono = spread <= 0.0
+
+        # Voices drift in and out of phase with each other, so the sum grows
+        # as the square root of their number rather than in proportion to it.
+        gain = 1.0 / math.sqrt(count)
+
+        left[:] = 0.0
+        if not mono:
+            right[:] = 0.0
+
+        voice_increment = self._voice_increment[:frames]
+        voice = self._voice[:frames]
+        scaled = self._scaled[:frames]
+        phase = self._phase[:frames]
+
+        for index in range(count):
+            ratio = 2.0 ** ((cents * offsets[index]
+                             + self._advance_drift(index)) / 1200.0)
+            np.multiply(increment, ratio, out=voice_increment)
+
+            start = 0
+            for segment_end, do_reset in segments:
+                if do_reset:
+                    # Sync restarts the whole stack together, keeping the
+                    # voices' phase relationship rather than collapsing it.
+                    self._phases[index] = (self.start_phase
+                                           + index / count) % 1.0
+                if segment_end > start:
+                    view = phase[start:segment_end]
+                    np.cumsum(voice_increment[start:segment_end], out=view)
+                    view += self._phases[index]
+                    np.mod(view, 1.0, out=view)
+                    self._phases[index] = float(view[-1])
+                start = segment_end
+
+            if not phase_mod.constant:
+                np.add(phase, phase_mod.data[:frames], out=phase)
+                np.mod(phase, 1.0, out=phase)
+            elif phase_mod.value != 0.0:
+                phase += phase_mod.value
+                np.mod(phase, 1.0, out=phase)
+
+            self._render_shape(voice, phase, voice_increment, width, frames)
+
+            if mono:
+                np.multiply(voice, gain, out=scaled)
+                left += scaled
+                continue
+
+            # Equal power across the field, matching pan~, so a voice does not
+            # dip in level as it travels.
+            angle = (offsets[index] * spread + 1.0) * 0.25 * math.pi
+            np.multiply(voice, gain * math.cos(angle), out=scaled)
+            left += scaled
+            np.multiply(voice, gain * math.sin(angle), out=scaled)
+            right += scaled
+
+        if mono:
+            np.copyto(right, left)
 
     def _build_increment(self, increment, frequency, pitch, linear_fm, frames):
         if pitch.constant:
@@ -1362,8 +1936,102 @@ else:
 _svf_ready = threading.Event()
 
 
+def _formant_bank_source(x, a1, a2, a3, ic1, ic2, gains, out):
+    """A parallel bank of TPT state variable filters, bandpass taps summed.
+
+    One kernel for the whole bank rather than one filter at a time: the bands
+    are independent, so the inner loop vectorises, and the input sample is read
+    once for all of them. A five-band bank costs about 8 us per 512 frames --
+    less than the numpy plumbing around a single vcf~.
+
+    Coefficients are per band and hold for the block, so they are computed
+    outside and passed in rather than being rebuilt per sample.
+    """
+    bands = a1.shape[0]
+    for i in range(x.shape[0]):
+        sample = x[i]
+        total = 0.0
+        for b in range(bands):
+            v3 = sample - ic2[b]
+            v1 = a1[b] * ic1[b] + a2[b] * v3
+            v2 = ic2[b] + a2[b] * ic1[b] + a3[b] * v3
+            ic1[b] = 2.0 * v1 - ic1[b]
+            ic2[b] = 2.0 * v2 - ic2[b]
+            total += v1 * gains[b]
+        out[i] = total
+
+
+if _HAVE_NUMBA:
+    _formant_bank = njit(cache=True, fastmath=True)(_formant_bank_source)
+else:
+    _formant_bank = _formant_bank_source
+
+
+def _vocoder_analyse_source(x, a1, a2, a3, ic1, ic2, env, attack, release,
+                            follow, env_out):
+    """Per-band envelope of the modulator, tracked sample by sample.
+
+    Attack and release are separate one-poles: a follower that rises fast and
+    falls slowly is what makes consonants arrive intact while vowels hold.
+    `follow` at 0 freezes the envelopes where they are, which turns the current
+    spectral shape into a fixed filter -- the bank keeps its vowel after the
+    voice stops.
+
+    The envelope is written per sample rather than per block. A block-rate gain
+    on a 512-frame buffer zippers audibly on speech, where the whole point is
+    that the gains move fast.
+    """
+    bands = a1.shape[0]
+    for i in range(x.shape[0]):
+        sample = x[i]
+        for b in range(bands):
+            v3 = sample - ic2[b]
+            v1 = a1[b] * ic1[b] + a2[b] * v3
+            v2 = ic2[b] + a2[b] * ic1[b] + a3[b] * v3
+            ic1[b] = 2.0 * v1 - ic1[b]
+            ic2[b] = 2.0 * v2 - ic2[b]
+            magnitude = abs(v1)
+            level = env[b]
+            coefficient = attack if magnitude > level else release
+            level = level + (magnitude - level) * coefficient * follow
+            env[b] = level
+            env_out[b, i] = level
+
+
+def _vocoder_synthesise_source(low, high, split, a1, a2, a3, ic1, ic2,
+                               env_out, weights, out):
+    """The carrier through the same bank, each band scaled by its envelope.
+
+    Bands at or above `split` read the second input instead of the first,
+    which is how the sibilance path works: noise mixed into the carrier for
+    the top of the range only, so 's' and 't' survive without the whole voice
+    turning breathy.
+    """
+    bands = a1.shape[0]
+    for i in range(out.shape[0]):
+        total = 0.0
+        for b in range(bands):
+            sample = low[i] if b < split else high[i]
+            v3 = sample - ic2[b]
+            v1 = a1[b] * ic1[b] + a2[b] * v3
+            v2 = ic2[b] + a2[b] * ic1[b] + a3[b] * v3
+            ic1[b] = 2.0 * v1 - ic1[b]
+            ic2[b] = 2.0 * v2 - ic2[b]
+            total += v1 * env_out[b, i] * weights[b]
+        out[i] = total
+
+
+if _HAVE_NUMBA:
+    _vocoder_analyse = njit(cache=True, fastmath=True)(_vocoder_analyse_source)
+    _vocoder_synthesise = njit(cache=True,
+                               fastmath=True)(_vocoder_synthesise_source)
+else:
+    _vocoder_analyse = _vocoder_analyse_source
+    _vocoder_synthesise = _vocoder_synthesise_source
+
+
 def _warm_up_filter():
-    """Compile the filter kernel off the audio thread.
+    """Compile the filter kernels off the audio thread.
 
     numba's first call triggers an LLVM compile of roughly a second. Doing that
     inside the PortAudio callback would drop buffers, so it happens on a worker
@@ -1378,6 +2046,15 @@ def _warm_up_filter():
         coefficients = np.full(8, 0.1, dtype=np.float64)
         output = np.zeros(8, dtype=np.float64)
         _svf_kernel(dummy, coefficients, coefficients, 0.0, 0.0, 0, output)
+        bank = np.full(2, 0.1, dtype=np.float64)
+        state = np.zeros(2, dtype=np.float64)
+        wide = dummy.astype(np.float64)
+        _formant_bank(wide, bank, bank, bank, state, state.copy(), bank, output)
+        envelopes = np.zeros((2, 8), dtype=np.float64)
+        _vocoder_analyse(wide, bank, bank, bank, state.copy(), state.copy(),
+                         bank.copy(), 0.1, 0.01, 1.0, envelopes)
+        _vocoder_synthesise(wide, wide, 1, bank, bank, bank, state.copy(),
+                            state.copy(), envelopes, bank, output)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -1396,13 +2073,25 @@ def start_filter_warm_up():
 
 
 class VcfUnit(Unit):
-    """Resonant multimode filter with true per-sample cutoff modulation."""
+    """Resonant multimode filter with true per-sample cutoff modulation.
+
+    Stereo when something is patched to the right inlet. The cutoff curve and
+    the resonance coefficient -- the tan() prewarp and the rest of the setup,
+    which is most of the work outside the kernel -- are computed once and used
+    for both channels; only the recursive kernel and its two state variables
+    are per channel. A pair of separate vcf~ would do that setup twice and
+    still leave you to keep two cutoff cords in step.
+
+    Unpatched, the right inlet costs a list check and the right outlet carries
+    the left channel.
+    """
 
     MODES = ('lowpass', 'highpass', 'bandpass', 'notch')
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
         self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
         self.cutoff_in = self.new_inlet(base=1000.0)          # Hz
         self.tracking_in = self.new_inlet(base=0.0)           # octaves
         self.resonance_in = self.new_inlet(base=0.0, minimum=0.0, maximum=0.99)
@@ -1411,17 +2100,43 @@ class VcfUnit(Unit):
         self.mode = 0
         self._ic1 = 0.0
         self._ic2 = 0.0
+        self._ic1_right = 0.0
+        self._ic2_right = 0.0
 
         self.out = self.new_outlet()
+        self.right = self.new_outlet()
         self._g = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._k = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._x = np.zeros(MAX_BLOCK, dtype=np.float32)
+        self._x_right = np.zeros(MAX_BLOCK, dtype=np.float32)
         self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
 
     def reset(self):
         self._ic1 = 0.0
         self._ic2 = 0.0
+        self._ic1_right = 0.0
+        self._ic2_right = 0.0
+
+    def _mirror(self, frames):
+        """Right carries the left channel when nothing is patched to it."""
+        if self.out.constant:
+            self.right.set_constant(self.out.value)
+            return
+        np.copyto(self.right.data[:frames], self.out.data[:frames])
+        self.right.constant = False
+
+    def _drive_into(self, signal, scratch, drive, frames):
+        """Copy a channel in, saturating it on the way if drive is up."""
+        np.copyto(scratch, signal.array(frames))
+        if drive.constant:
+            if drive.value != 1.0:
+                np.multiply(scratch, drive.value, out=scratch)
+                np.tanh(scratch, out=scratch)
+        else:
+            np.multiply(scratch, drive.data[:frames], out=scratch)
+            np.tanh(scratch, out=scratch)
+        return scratch
 
     def render(self, frames):
         signal = self.signal_in.eval(frames)
@@ -1432,27 +2147,30 @@ class VcfUnit(Unit):
 
         out = self.out
         buffer = out.data[:frames]
+        stereo = bool(self.right_in.sources)
 
-        if signal.constant and signal.value == 0.0:
+        if signal.constant and signal.value == 0.0 and not stereo:
             out.set_constant(0.0)
+            self.right.set_constant(0.0)
             return
 
-        source = self._x[:frames]
-        np.copyto(source, signal.array(frames))
-
-        if drive.constant:
-            if drive.value != 1.0:
-                np.multiply(source, drive.value, out=source)
-                np.tanh(source, out=source)
-        else:
-            np.multiply(source, drive.data[:frames], out=source)
-            np.tanh(source, out=source)
+        source = self._drive_into(signal, self._x[:frames], drive, frames)
+        right_source = None
+        if stereo:
+            right_source = self._drive_into(self.right_in.eval(frames),
+                                            self._x_right[:frames], drive,
+                                            frames)
 
         if not _svf_ready.is_set():
             # Kernel still compiling (or numba missing): pass audio rather
             # than stall the callback or emit a click.
             np.copyto(buffer, source)
             out.constant = False
+            if stereo:
+                np.copyto(self.right.data[:frames], right_source)
+                self.right.constant = False
+            else:
+                self._mirror(frames)
             return
 
         g = self._g[:frames]
@@ -1492,6 +2210,18 @@ class VcfUnit(Unit):
                                            self.mode, result)
         np.copyto(buffer, result, casting='unsafe')
         out.constant = False
+
+        if not stereo:
+            self._mirror(frames)
+            return
+
+        # Same coefficients, its own state: the two channels are the same
+        # filter, not two filters that happen to be set alike.
+        self._ic1_right, self._ic2_right = _svf_kernel(
+            right_source, g, k, self._ic1_right, self._ic2_right, self.mode,
+            result)
+        np.copyto(self.right.data[:frames], result, casting='unsafe')
+        self.right.constant = False
 
 
 # ----------------------------------------------------------------------------
