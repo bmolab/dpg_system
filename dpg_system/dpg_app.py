@@ -72,6 +72,7 @@ optional_import = [
     'point_cloud_nodes',
     'sampler_nodes',
     'synth_nodes',
+    'gang_nodes',
     'visca_nodes',
     'pjlink_nodes',
     'moderngl_nodes',
