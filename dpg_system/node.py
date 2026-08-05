@@ -652,6 +652,16 @@ class BasePropertyWidget:
         self.prefix_uuid = None
         self.prefix_spacer_uuid = None
 
+        # Column captions drawn on their own line above this widget, inside
+        # the same attribute so both lines start from the same edge. Their
+        # spacers are nudged into position from where the widgets actually
+        # landed, which is the only way to be sure of it: the gap between
+        # items is a theme value, and the text is proportional.
+        self.header_labels = None
+        self.header_group_uuid = None
+        self.header_spacers = []
+        self.header_texts = []
+
          # Hover tooltip (lazily created). Useful when a widget's visible text
         # is truncated but the full value should stay accessible on hover.
         self.tooltip_text = None
@@ -685,6 +695,19 @@ class BasePropertyWidget:
         # 2. Initialize Value
         self._init_default_value()
         # 3. Draw
+        if self.header_labels:
+            # Stacked so the captions sit directly over the row they describe.
+            with dpg.group():
+                self._draw_header()
+                self._draw_row(horizontal)
+        else:
+            self._draw_row(horizontal)
+        # Tooltip text may have been set before the widget was drawn.
+        if self.tooltip_text:
+            self._create_tooltip()
+        self._bind_horizontal_theme(horizontal)
+
+    def _draw_row(self, horizontal):
         with dpg.group(horizontal=horizontal) as self.h_group_uuid:
             if self.prefix_label is not None:
                 self.prefix_uuid = dpg.add_text(self.prefix_label)
@@ -694,9 +717,47 @@ class BasePropertyWidget:
             self._draw_widget()
             self._setup_interaction()
             self._create_trigger_button()
-        # Tooltip text may have been set before the widget was drawn.
-        if self.tooltip_text:
-            self._create_tooltip()
+
+    def _draw_header(self):
+        """A caption per column, each preceded by a spacer that positions it."""
+        with dpg.group(horizontal=True) as self.header_group_uuid:
+            self.header_spacers = []
+            self.header_texts = []
+            for caption in self.header_labels:
+                self.header_spacers.append(dpg.add_spacer(width=1))
+                self.header_texts.append(dpg.add_text(caption))
+
+    def align_header(self, targets, tolerance=1.0):
+        """Nudge each caption over the widget it describes.
+
+        Rather than working the positions out -- which would mean knowing the
+        theme's item spacing and measuring proportional text -- each caption is
+        moved by the distance it is currently out by. That converges in a frame
+        or two and stays right whatever the theme does. Returns True once every
+        caption is within `tolerance` of its target.
+        """
+        if not self.header_texts:
+            return True
+        settled = True
+        for caption, spacer, target in zip(self.header_texts,
+                                           self.header_spacers, targets):
+            if target is None or not dpg.does_item_exist(caption):
+                continue
+            try:
+                here = dpg.get_item_rect_min(caption)[0]
+                width = dpg.get_item_configuration(spacer)['width']
+            except Exception:
+                return False
+            if here is None:
+                return False
+            error = target - here
+            if abs(error) <= tolerance:
+                continue
+            dpg.configure_item(spacer, width=max(1, int(width + error)))
+            settled = False
+        return settled
+
+    def _bind_horizontal_theme(self, horizontal):
         if horizontal:
             dpg.bind_item_theme(self.h_group_uuid, _get_tight_group_theme())
 
