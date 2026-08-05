@@ -13,15 +13,17 @@ there is no penalty for exposing all of them.
 """
 
 import dearpygui.dearpygui as dpg
+import time
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
     synth_graph, start_filter_warm_up,
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
-    ShaperUnit, FormantUnit, VocoderUnit, FORMANT_VOWELS,
+    AdditiveUnit,
+    ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SnapshotUnit, ScalerUnit,
-    CaptureUnit, SamplerOscUnit, SamplerBuffer,
+    CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
 )
 
@@ -37,7 +39,11 @@ def register_synth_nodes():
     Node.app.register_node('sig~', SigNode.factory)
     Node.app.register_node('ramp~', RampNode.factory)
     Node.app.register_node('line~', RampNode.factory)
+    Node.app.register_node('one_euro~', OneEuroNode.factory)
+    Node.app.register_node('smooth~', OneEuroNode.factory)
     Node.app.register_node('vco~', VcoNode.factory)
+    Node.app.register_node('additive~', AdditiveNode.factory)
+    Node.app.register_node('spectrum~', AdditiveNode.factory)
     Node.app.register_node('vcf~', VcfNode.factory)
     Node.app.register_node('formant~', FormantNode.factory)
     Node.app.register_node('vocoder~', VocoderNode.factory)
@@ -45,7 +51,7 @@ def register_synth_nodes():
     Node.app.register_node('vca~', VcaNode.factory)
     Node.app.register_node('adsr~', AdsrNode.factory)
     Node.app.register_node('lfo~', LfoNode.factory)
-    Node.app.register_node('phasor~', LfoNode.factory)
+    Node.app.register_node('phasor~', PhasorNode.factory)
     Node.app.register_node('clock~', ClockNode.factory)
     Node.app.register_node('metro~', ClockNode.factory)
     Node.app.register_node('mix~', MixNode.factory)
@@ -62,7 +68,7 @@ def register_synth_nodes():
     Node.app.register_node('sampler_osc~', SamplerOscNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
-    Node.app.register_node('scope~', CaptureNode.factory)
+    Node.app.register_node('scope~', ScopeNode.factory)
     # Compile the filter kernel now, during startup, so the first vcf~ the
     # user patches is already band-limited rather than passing audio dry.
     start_filter_warm_up()
@@ -111,7 +117,10 @@ class SynthNode(Node):
         self._depth_bindings = []
         self._custom_bindings = []
         self._modulation_ports = []
+        self._header_port = None
+        self._header_depth = None
         self._labels_aligned = False
+        self._align_attempts = 0
         self._registered = False
 
     # -- port construction --------------------------------------------------
@@ -128,11 +137,26 @@ class SynthNode(Node):
     # otherwise.
     KNOB_WIDTH = 76
     DEPTH_WIDTH = 52
+    # Captions over the two columns, on the first pair only. Repeating them on
+    # every row would say the same thing five times.
+    COLUMN_LABELS = ('value', 'depth')
 
     def add_modulation_input(self, label, inlet, widget_type='drag_float',
                              default_value=None, minimum=None, maximum=None,
-                             speed=None, attenuverter=True):
+                             speed=None, attenuverter=True, slider=None,
+                             callback=None):
         """Knob + CV inlet + attenuverter for one parameter.
+
+        A parameter with both ends fixed is drawn as a slider rather than a
+        drag box: the position shows where in its range the value sits without
+        having to read it, and the whole range is one gesture. Bounded drag
+        boxes were already clamped, so this changes how a value is set, not
+        what it can be.
+
+        Pass slider=False where a range is wide enough that linear travel is
+        the wrong reading of it -- a value that spends its useful life in the
+        first tenth of its range wants a drag box, not a slider it can never
+        land on.
 
         The three are one control, so they are drawn as one row: the name, the
         value, and -- where there is one -- the depth that scales whatever is
@@ -142,11 +166,17 @@ class SynthNode(Node):
         """
         if default_value is None:
             default_value = inlet.base
+        if widget_type == 'drag_float':
+            bounded = minimum is not None and maximum is not None
+            if slider is None:
+                slider = bounded
+            if slider and bounded:
+                widget_type = 'slider_float'
         port = self.add_input(label, widget_type=widget_type,
                               default_value=default_value,
                               min=minimum, max=maximum,
                               widget_width=SynthNode.KNOB_WIDTH,
-                              callback=self.parameters_changed)
+                              callback=callback or self.parameters_changed)
         if port.widget is not None:
             if speed is not None:
                 port.widget.speed = speed
@@ -170,6 +200,12 @@ class SynthNode(Node):
                 option.widget.set_tooltip('depth: scales whatever is patched '
                                           'to the ' + label + ' inlet')
                 option.inline_with = port.widget
+                # The first pair carries the captions for both columns, drawn
+                # in its own attribute so the two lines share a left edge.
+                if self._header_port is None and port.widget is not None:
+                    port.widget.header_labels = SynthNode.COLUMN_LABELS
+                    self._header_port = port
+                    self._header_depth = option
             self._depth_bindings.append((option, inlet))
         return port
 
@@ -195,7 +231,36 @@ class SynthNode(Node):
         for port in self._modulation_ports:
             if port.widget is not None:
                 port.widget.set_prefix_column(column)
-        return True
+        return self.align_column_headers()
+
+    def align_column_headers(self):
+        """Put the captions over the widgets they name.
+
+        Their positions are corrected from where the widgets actually landed
+        rather than worked out in advance, so the theme's spacing and the
+        proportional text take care of themselves. Returns True once settled.
+        """
+        if self._header_port is None or self._header_port.widget is None:
+            return True
+        header = self._header_port.widget
+        if not header.header_texts:
+            return True
+        targets = []
+        for item in (self._header_port.widget,
+                     self._header_depth.widget if self._header_depth else None):
+            if item is None or not dpg.does_item_exist(item.uuid):
+                targets.append(None)
+                continue
+            try:
+                targets.append(dpg.get_item_rect_min(item.uuid)[0])
+            except Exception:
+                return False
+        # Everything reads as 0 until the node has actually been drawn, and a
+        # zero would look like a perfect fit and stop the correction with the
+        # captions still where they started.
+        if any(not target for target in targets):
+            return False
+        return header.align_header(targets)
 
     def add_scaling_signal_input(self, label, inlet, setter, default_value=1.0,
                                  speed=0.01):
@@ -276,7 +341,12 @@ class SynthNode(Node):
         # frame no matter how many nodes call it.
         synth_graph.tick(Node.app.frame_number)
         if not self._labels_aligned:
-            self._labels_aligned = self.align_modulation_labels()
+            # Retried until it settles, since none of it can be measured
+            # before something has been drawn -- and given up on eventually,
+            # rather than measuring every frame for the life of the patch.
+            self._align_attempts += 1
+            self._labels_aligned = (self.align_modulation_labels()
+                                    or self._align_attempts > 240)
         self.synth_frame_task()
 
     def synth_frame_task(self):
@@ -355,6 +425,84 @@ class SigNode(SynthNode):
 
 
 # ----------------------------------------------------------------------------
+# phasor~
+# ----------------------------------------------------------------------------
+
+class PhasorNode(SynthNode):
+    """A 0..1 ramp, built to drive sampler_osc~ position.
+
+    Patch sampler_osc~'s 'length' outlet into 'period' and its 'phase' outlet
+    into sampler_osc~'s 'position', with the sampler in scrub mode: one cycle
+    then scans the whole file at natural speed, whatever file is loaded and
+    without working the rate out by hand.
+
+    From there the position is yours: freeze it and the sound holds where it
+    stands, run the period negative and it plays backwards, narrow
+    'start'/'end' to sweep a window.
+
+    Which sampler mode you scan matters, because the two do different things:
+
+      scrub      varispeed, like dragging a tape head. Slowing the period
+                 drops the pitch with it -- measured 2.17x down for a 2x
+                 slower scan, i.e. an octave. Reach for it when you want that
+                 sound, not when you want stretch.
+      granular   pitch stays put while the scan speed changes -- measured
+                 within 6% across the same 2x -- because the grains keep
+                 playing at their own rate wherever the playhead points. This
+                 is the one for actual time-stretching, and for driving scan
+                 speed from effort without the pitch sliding around.
+
+    'wrap' emits a one-sample pulse each time the ramp turns over, for firing
+    an adsr~ or anything else once per cycle.
+
+    Arguments: phasor~ <frequency in Hz>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PhasorNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = PhasorUnit(synth_graph.sample_rate)
+
+        frequency = 1.0
+        if args is not None and len(args) > 0:
+            value, arg_type = decode_arg(args, 0)
+            if arg_type in [float, int]:
+                frequency = float(value)
+        self.unit.frequency_in.base = frequency
+
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency, speed=0.01)
+        self.add_modulation_input('period', self.unit.period_in,
+                                  minimum=0.0, speed=0.01, attenuverter=False)
+        self.add_modulation_input('phase', self.unit.phase_in, speed=0.01,
+                                  attenuverter=False)
+        self.add_modulation_input('start', self.unit.start_in, speed=0.01,
+                                  attenuverter=False)
+        self.add_modulation_input('end', self.unit.end_in, speed=0.01,
+                                  attenuverter=False)
+        self.add_signal_input('reset', self.unit.reset_in)
+
+        self.phase_output = self.add_signal_output('phase', self.unit.out)
+        self.wrap_output = self.add_signal_output('wrap', self.unit.wrap)
+
+        self.start_phase_option = self.add_option(
+            'start phase', widget_type='drag_float', default_value=0.0,
+            min=0.0, max=1.0, callback=self.parameters_changed)
+        self.reset_option = self.add_option('reset now', widget_type='button',
+                                            callback=self.reset_phase)
+        self.finish_synth_node()
+
+    def sync_options(self):
+        self.unit.start_phase = any_to_float(self.start_phase_option())
+
+    def reset_phase(self):
+        self.unit.reset()
+
+
+# ----------------------------------------------------------------------------
 # ramp~
 # ----------------------------------------------------------------------------
 
@@ -376,8 +524,37 @@ class RampNode(SynthNode):
     time anything else. 'time' is read when a move begins; changing it affects
     the next move rather than the one in flight.
 
+    Set 'time source' to 'measured' and the move takes as long as the gap
+    between the values arriving, which the node times for itself. A stream at
+    some frame rate -- effort data at 60, a sequencer, anything regular --
+    becomes a continuous signal that reaches each value exactly as the next
+    one lands, with no steps and nothing to set by hand.
+
+    The estimate is smoothed and ignores intervals far from it, so one late
+    frame does not stretch the following move to match; several in a row are
+    taken as the rate having genuinely changed. Until two values have arrived
+    there is nothing to measure, so the 'time' inlet is used, which is why it
+    still matters in this mode.
+
+    'stretch' scales the measured interval. Slightly over 1 is the useful
+    setting: arriving a little late is inaudible, while arriving early means
+    sitting still at the destination until the next value -- the steps you
+    were trying to be rid of. Note that the output necessarily lags the input
+    by one frame, since a ramp cannot start before it knows where it is going.
+
     Arguments: ramp~ <time in seconds> <starting value>, e.g. 'ramp~ 0.25'.
     """
+
+    TIME_SOURCES = ('manual', 'measured')
+    # How hard a new interval pulls the estimate: low enough that one ragged
+    # frame barely moves it, high enough to follow a real change in a few.
+    ESTIMATE_RATE = 0.25
+    # Intervals outside this band of the estimate are a dropped frame or a
+    # pause rather than the stream's rate.
+    OUTLIER_LOW = 0.4
+    OUTLIER_HIGH = 2.5
+    # ... unless this many arrive in a row, which means the rate did change.
+    OUTLIERS_BEFORE_RELOCK = 3
 
     @staticmethod
     def factory(name, data, args=None):
@@ -387,6 +564,12 @@ class RampNode(SynthNode):
         super().__init__(label, data, args)
         self.unit = RampUnit(synth_graph.sample_rate)
         self._last_arrive_count = 0
+
+        # Timing of the incoming stream, kept on the main thread.
+        self._last_arrival = None
+        self._interval = None
+        self._outliers = 0
+        self._shown_rate = ''
 
         numbers = []
         if args is not None:
@@ -404,16 +587,30 @@ class RampNode(SynthNode):
             self.unit._goal = numbers[1]
             self.unit.target_in.base = numbers[1]
 
-        self.add_modulation_input('target', self.unit.target_in, speed=0.01)
+        self.add_modulation_input('target', self.unit.target_in, speed=0.01,
+                                  callback=self.target_arrived)
         self.add_modulation_input('time', self.unit.time_in,
                                   default_value=self.unit.time_in.base,
                                   minimum=0.0, speed=0.001, attenuverter=False)
         self.add_trigger_signal_input('trigger', self.unit.trigger_in,
                                       self.restart)
 
+        self.rate_display = self.add_property('stream', widget_type='label',
+                                              default_value='-')
+
         self.jump_option = self.add_option('jump to target',
                                            widget_type='button', width=110,
                                            callback=self.jump_now)
+        self.time_source_option = self.add_option('time source',
+                                                  widget_type='combo',
+                                                  default_value='manual',
+                                                  callback=self.parameters_changed)
+        self.time_source_option.widget.combo_items = list(RampNode.TIME_SOURCES)
+        self.stretch_option = self.add_option('stretch', widget_type='drag_float',
+                                              default_value=1.1, min=0.1, max=4.0,
+                                              callback=self.stretch_changed)
+        if self.stretch_option.widget is not None:
+            self.stretch_option.widget.speed = 0.01
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         self.done_output = self.add_output('done')
@@ -425,6 +622,59 @@ class RampNode(SynthNode):
     def jump_now(self):
         self.unit.jump()
 
+    def sync_options(self):
+        self.unit.auto_time = (any_to_string(self.time_source_option())
+                               == 'measured')
+
+    # -- timing the incoming stream -----------------------------------------
+
+    def target_arrived(self, now=None):
+        """A new target: time the gap since the last one and ramp over it.
+
+        Called on the main thread whichever way the value came -- a cord, or
+        the widget being dragged. `now` is a parameter so the estimator can be
+        driven with known times rather than by waiting in real seconds.
+        """
+        self.parameters_changed()
+
+        if now is None:
+            now = time.perf_counter()
+        previous = self._last_arrival
+        self._last_arrival = now
+        if previous is None:
+            return
+        interval = now - previous
+        if interval <= 0.0:
+            return
+
+        if self._interval is None:
+            self._interval = interval
+            self._outliers = 0
+        elif (RampNode.OUTLIER_LOW * self._interval <= interval
+                <= RampNode.OUTLIER_HIGH * self._interval):
+            self._interval += (interval - self._interval) * RampNode.ESTIMATE_RATE
+            self._outliers = 0
+        else:
+            # One of these is a frame gone astray, and following it would
+            # stretch the next move to match. Several in a row is the stream
+            # having actually changed rate, which is worth following.
+            self._outliers += 1
+            if self._outliers < RampNode.OUTLIERS_BEFORE_RELOCK:
+                return
+            self._interval = interval
+            self._outliers = 0
+
+        self.push_measured_time()
+
+    def push_measured_time(self):
+        if self._interval is None:
+            return
+        stretch = max(0.1, any_to_float(self.stretch_option()))
+        self.unit.measured_time = min(10.0, max(0.001, self._interval * stretch))
+
+    def stretch_changed(self):
+        self.push_measured_time()
+
     def synth_frame_task(self):
         # Several short ramps can land between GUI frames; report each arrival
         # rather than only the most recent state.
@@ -432,6 +682,94 @@ class RampNode(SynthNode):
         if count != self._last_arrive_count:
             self._last_arrive_count = count
             self.done_output.send('bang')
+
+        # What rate the node thinks it is being fed at -- the one thing you
+        # cannot tell by looking at the sound.
+        if self._interval and self.unit.auto_time:
+            text = '{:.1f} Hz'.format(1.0 / self._interval)
+        else:
+            text = '-'
+        if text != self._shown_rate:
+            self._shown_rate = text
+            self.rate_display.set(text)
+
+
+# ----------------------------------------------------------------------------
+# one_euro~
+# ----------------------------------------------------------------------------
+
+class OneEuroNode(SynthNode):
+    """Smoothing that gets out of the way when you move. Also smooth~.
+
+    Any fixed smoothing has to choose between passing jitter and lagging
+    behind a gesture, because those are the same setting. The one euro filter
+    chooses per sample: at rest the cutoff drops to 'min cutoff' and the
+    signal settles hard; as it moves the cutoff opens in proportion to its
+    speed, so the lag falls away exactly when it would have been noticed. It
+    was made for interactive motion data (Casiello and Roussel, CHI 2012),
+    which is what effort data is.
+
+    The two controls do separate jobs, and it is worth setting them in order.
+    Hold still and lower 'min cutoff' until the signal stops shivering; then
+    move, and raise 'beta' until the movement stops feeling dragged. Setting
+    beta first tends to end with both too high.
+
+    Put it after ramp~ to round the corners between one frame's move and the
+    next, or on its own between a jittery stream and whatever will make a
+    sound of it. Patch 'right in' for stereo, as with the filters.
+
+    Arguments: one_euro~ <min cutoff in Hz> <beta>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return OneEuroNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = OneEuroUnit(synth_graph.sample_rate)
+
+        numbers = []
+        if args is not None:
+            for arg in args:
+                try:
+                    numbers.append(float(arg))
+                except (ValueError, TypeError):
+                    continue
+        if len(numbers) > 0:
+            self.unit.min_cutoff_in.base = max(0.0001, numbers[0])
+        if len(numbers) > 1:
+            self.unit.beta_in.base = max(0.0, numbers[1])
+
+        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+        self.add_modulation_input('min cutoff', self.unit.min_cutoff_in,
+                                  default_value=self.unit.min_cutoff_in.base,
+                                  minimum=0.0001, speed=0.05,
+                                  attenuverter=False)
+        self.add_modulation_input('beta', self.unit.beta_in,
+                                  default_value=self.unit.beta_in.base,
+                                  minimum=0.0, speed=0.02, attenuverter=False)
+
+        self.derivative_option = self.add_option('speed cutoff',
+                                                 widget_type='drag_float',
+                                                 default_value=1.0, min=0.01,
+                                                 callback=self.parameters_changed)
+        if self.derivative_option.widget is not None:
+            self.derivative_option.widget.speed = 0.05
+        self.reset_option = self.add_option('reset', widget_type='button',
+                                            callback=self.reset_filter)
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.finish_synth_node()
+
+    def sync_options(self):
+        self.unit.derivative_cutoff = max(0.01,
+                                          any_to_float(self.derivative_option()))
+
+    def reset_filter(self):
+        self.unit.reset()
 
 
 # ----------------------------------------------------------------------------
@@ -520,11 +858,11 @@ class VcoNode(SynthNode):
                                           callback=self.parameters_changed)
         self.shape_input.widget.combo_items = list(VCO_SHAPES)
 
-        self.voices_option = self.add_option('voices', widget_type='drag_int',
+        self.voices_option = self.add_option('voices', widget_type='slider_int',
                                              default_value=voices, min=1,
                                              max=VcoUnit.MAX_VOICES,
                                              callback=self.parameters_changed)
-        self.spread_option = self.add_option('spread', widget_type='drag_float',
+        self.spread_option = self.add_option('spread', widget_type='slider_float',
                                              default_value=0.0, min=0.0, max=1.0,
                                              callback=self.parameters_changed)
         if self.spread_option.widget is not None:
@@ -534,7 +872,7 @@ class VcoNode(SynthNode):
                                             callback=self.parameters_changed)
         if self.drift_option.widget is not None:
             self.drift_option.widget.speed = 0.05
-        self.phase_option = self.add_option('start phase', widget_type='drag_float',
+        self.phase_option = self.add_option('start phase', widget_type='slider_float',
                                             default_value=0.0, min=0.0, max=1.0,
                                             callback=self.parameters_changed)
         self.reset_option = self.add_option('reset phase', widget_type='button',
@@ -557,6 +895,431 @@ class VcoNode(SynthNode):
 
     def reset_phase(self):
         self.unit.reset()
+
+
+# ----------------------------------------------------------------------------
+# additive~
+# ----------------------------------------------------------------------------
+
+# A preset is a starting point, not a patch: it sets the drawn curve and the
+# four controls that shape it, and leaves pitch and phase alone. The classic
+# waveforms are here because they are worth knowing as spectra -- a saw is a
+# flat curve at -6 dB an octave, a square is the same thing with the even
+# partials taken out, a triangle is that again at twice the slope. Seeing them
+# arrive as three settings of the same three controls is the point.
+_FLAT = [[0.0, 1.0, 0.0], [1.0, 1.0, 0.0]]
+
+ADDITIVE_PRESETS = {
+    'saw':      {'points': _FLAT, 'tilt': -6.02, 'balance': 0.5,
+                 'stretch': 0.0, 'partials': 48},
+    'square':   {'points': _FLAT, 'tilt': -6.02, 'balance': 0.0,
+                 'stretch': 0.0, 'partials': 48},
+    'triangle': {'points': _FLAT, 'tilt': -12.04, 'balance': 0.0,
+                 'stretch': 0.0, 'partials': 48},
+    'pulse':    {'points': _FLAT, 'tilt': 0.0, 'balance': 0.5,
+                 'stretch': 0.0, 'partials': 24},
+    'sine':     {'points': _FLAT, 'tilt': 0.0, 'balance': 0.5,
+                 'stretch': 0.0, 'partials': 1},
+    'organ':    {'points': [[0.0, 1.0, 0.0], [0.12, 0.85, 0.0],
+                            [0.25, 0.2, 0.0], [0.5, 0.45, 0.0],
+                            [0.75, 0.1, 0.0], [1.0, 0.05, 0.0]],
+                 'tilt': -3.0, 'balance': 0.5, 'stretch': 0.0,
+                 'partials': 16},
+    'vocal':    {'points': [[0.0, 0.25, 0.0], [0.06, 0.95, 0.0],
+                            [0.16, 0.3, 0.0], [0.3, 0.7, 0.0],
+                            [0.4, 0.15, 0.0], [0.62, 0.35, 0.0],
+                            [0.72, 0.08, 0.0], [1.0, 0.04, 0.0]],
+                 'tilt': -4.0, 'balance': 0.5, 'stretch': 0.0,
+                 'partials': 40},
+    'bell':     {'points': _FLAT, 'tilt': -7.0, 'balance': 0.5,
+                 'stretch': 0.35, 'partials': 12},
+    'gong':     {'points': _FLAT, 'tilt': -4.0, 'balance': 0.5,
+                 'stretch': -0.25, 'partials': 24},
+}
+
+ADDITIVE_SPANS = ('partials', 'all')
+
+
+class AdditiveNode(SynthNode):
+    """An oscillator built from a drawn spectrum.
+
+    Draw the amplitude of each partial against its index -- partial 1 is the
+    fundamental, 2 the octave above it, 3 the twelfth -- and the node sounds
+    their sum. The gestures are shaper~'s: drag a point, right-click to add or
+    remove one, shift + left-drag a segment to bend it.
+
+    The drawn curve is the character; the inlets around it are the ways it
+    moves, and all of them are audio-rate:
+
+      tilt      a slope in dB per octave over the whole spectrum, i.e. its
+                brightness. Drawing a shape and then sweeping the tilt with an
+                envelope is the workhorse gesture here -- it is a filter sweep
+                that cannot ring, resonate or lose the fundamental, because
+                nothing is being filtered.
+      partials  how many partials sound, and so how much bandwidth the tone
+                occupies. Fractional: the top partial fades in rather than
+                arriving.
+      odd/even  fades between the odd partials alone (0), all of them (0.5)
+                and the even alone (1). The odd-only end is the hollow,
+                stopped-pipe sound -- a square, a clarinet.
+      stretch   bends the partials off the harmonic series, as the exponent in
+                ratio = k ** (1 + stretch). Zero is harmonic. A few thousandths
+                is the stiffness of a real string, which is why a piano's top
+                octave is tuned sharp. Further out are bells; negative
+                compresses the partials instead, towards gongs.
+
+    Zero stretch is not just a value, it is a different engine: the partials
+    are all multiples of the fundamental, so the sum repeats every cycle and is
+    baked into a wavetable by one inverse FFT. Five hundred partials then cost
+    what one does. Off zero there is nothing periodic to bake and it falls back
+    to a real oscillator bank, which is why the partial count is capped much
+    lower there. The two agree exactly at the boundary, so a stretch envelope
+    crosses it without a seam.
+
+    The table is rebuilt for exactly as many partials as fit below Nyquist at
+    the moment, so band limiting follows a pitch sweep by the sample and there
+    is no aliasing to trade against brightness.
+
+    Phase mode is worth trying on any sound that seems too loud for its level.
+    Every partial in phase means one narrow spike per cycle, which is a high
+    crest factor -- so normalising it costs a lot of level -- and reads as a
+    buzz. 'random' and 'schroeder' spread the same partials across the cycle
+    for about half the crest; schroeder is the deterministic one.
+
+    'span' decides what the curve's x axis means. On 'partials' it stretches
+    to whatever the partial count is, so the shape you drew survives being
+    opened and closed. On 'all' it is pinned to the full range, so raising the
+    count extends the spectrum into new territory instead.
+
+    Patch a list of amplitudes into 'spectrum' to load a curve from elsewhere
+    -- an analysis, a preset, another node's 'spectrum out'.
+
+    Arguments: additive~ <frequency> <partials> <tilt> and/or a preset name.
+    """
+
+    TABLE_SAMPLES_PER_SEGMENT = 256
+    CUSTOM = 'custom'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return AdditiveNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = AdditiveUnit(synth_graph.sample_rate)
+
+        preset = AdditiveNode.CUSTOM
+        numbers = []
+        if args is not None:
+            for arg in args:
+                if arg in ADDITIVE_PRESETS:
+                    preset = arg
+                else:
+                    try:
+                        numbers.append(float(arg))
+                    except (ValueError, TypeError):
+                        continue
+        frequency = self.unit.frequency_in.base
+        partials = self.unit.partials_in.base
+        tilt = self.unit.tilt_in.base
+        if preset != AdditiveNode.CUSTOM:
+            recipe = ADDITIVE_PRESETS[preset]
+            partials = float(recipe['partials'])
+            tilt = recipe['tilt']
+        # additive~ <frequency> <partials> <tilt>, in the order you reach for
+        # them: the note, how wide it is, how bright it is.
+        if len(numbers) > 0:
+            frequency = numbers[0]
+        if len(numbers) > 1:
+            partials = max(1.0, min(float(AdditiveUnit.MAX_PARTIALS),
+                                    numbers[1]))
+        if len(numbers) > 2:
+            tilt = numbers[2]
+        self.unit.frequency_in.base = frequency
+        self.unit.partials_in.base = partials
+        self.unit.tilt_in.base = tilt
+
+        self.plot_width = 220
+        self.plot_height = 96
+        # Same editor as shaper~, meaning something else: x is the partial
+        # index, y the amplitude of that partial.
+        from dpg_system.interface_nodes import BreakpointEditor
+        self.editor = BreakpointEditor(x_max=1.0, y_min=0.0, y_max=1.0,
+                                       width=self.plot_width,
+                                       height=self.plot_height,
+                                       on_change=self.spectrum_edited,
+                                       line_color=(240, 170, 80),
+                                       name=label)
+        for name in BreakpointEditor.MESSAGES:
+            self.message_handlers[name] = self.spectrum_message
+
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency, minimum=0.0,
+                                  speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.add_modulation_input('linear fm', self.unit.linear_fm_in,
+                                  speed=1.0)
+        self.tilt_input = self.add_modulation_input(
+            'tilt', self.unit.tilt_in, default_value=tilt, minimum=-36.0,
+            maximum=12.0, speed=0.05)
+        # 1..512 with everything interesting in the first tenth: a slider could
+        # never be set to 8 partials, so this stays a drag box.
+        self.partials_input = self.add_modulation_input(
+            'partials', self.unit.partials_in, default_value=partials,
+            minimum=1.0, maximum=float(AdditiveUnit.MAX_PARTIALS),
+            speed=0.25, slider=False)
+        self.balance_input = self.add_modulation_input(
+            'odd/even', self.unit.balance_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        self.stretch_input = self.add_modulation_input(
+            'stretch', self.unit.stretch_in, minimum=-0.5, maximum=1.0,
+            speed=0.002)
+        self.add_modulation_input('phase mod', self.unit.phase_mod_in,
+                                  speed=0.01)
+        self.add_signal_input('sync', self.unit.sync_in)
+        self.spectrum_input = self.add_input('spectrum',
+                                             callback=self.spectrum_received)
+
+        self.preset_input = self.add_input('preset', widget_type='combo',
+                                           default_value=preset,
+                                           callback=self.preset_changed)
+        self.preset_input.widget.combo_items = ([AdditiveNode.CUSTOM]
+                                                + list(ADDITIVE_PRESETS))
+        self.phase_input = self.add_input('phase', widget_type='combo',
+                                          default_value='aligned',
+                                          callback=self.parameters_changed)
+        self.phase_input.widget.combo_items = list(AdditiveUnit.PHASE_MODES)
+
+        self.spectrum_display = self.add_display('')
+        self.spectrum_display.submit_callback = self.submit_display
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.spectrum_output = self.add_output('spectrum out')
+
+        self.normalize_option = self.add_option('normalize',
+                                                widget_type='combo',
+                                                default_value='rms',
+                                                callback=self.parameters_changed)
+        self.normalize_option.widget.combo_items = list(
+            AdditiveUnit.NORMALIZE_MODES)
+        self.span_option = self.add_option('span', widget_type='combo',
+                                           default_value=ADDITIVE_SPANS[0],
+                                           callback=self.parameters_changed)
+        self.span_option.widget.combo_items = list(ADDITIVE_SPANS)
+        self.phase_option = self.add_option('start phase',
+                                            widget_type='slider_float',
+                                            default_value=0.0, min=0.0,
+                                            max=1.0,
+                                            callback=self.parameters_changed)
+        self.reset_option = self.add_option('reset phase',
+                                            widget_type='button',
+                                            callback=self.reset_phase)
+        self.flatten_option = self.add_option('flatten', widget_type='button',
+                                              width=110,
+                                              callback=self.flatten_spectrum)
+        self.width_option = self.add_option('width', widget_type='drag_int',
+                                            default_value=self.plot_width,
+                                            callback=self.size_changed)
+        self.height_option = self.add_option('height', widget_type='drag_int',
+                                             default_value=self.plot_height,
+                                             callback=self.size_changed)
+
+        # What the preset combo last actually applied. A preset restored by the
+        # loader must not be re-applied over the curve and controls the loader
+        # is in the middle of restoring, and a hand edit afterwards means the
+        # patch is no longer that preset.
+        self._preset_shown = preset
+        self._applying_preset = False
+        self.editor.set_points(_FLAT, notify=False)
+        self.finish_synth_node()
+
+    # -- display -------------------------------------------------------------
+
+    def submit_display(self):
+        self.editor.submit(self.spectrum_display.uuid,
+                           width_option=self.width_option,
+                           height_option=self.height_option)
+
+    def custom_create(self, from_file):
+        # Options only hold their real values once every element exists, so
+        # anything that reads one waits until here.
+        self.editor.set_size(any_to_int(self.width_option()),
+                             any_to_int(self.height_option()))
+        if not from_file and self._preset_shown != AdditiveNode.CUSTOM:
+            self.apply_preset(self._preset_shown)
+        self.build_spectrum()
+
+    def size_changed(self):
+        self.editor.set_size(any_to_int(self.width_option()),
+                             any_to_int(self.height_option()))
+
+    def synth_frame_task(self):
+        self.editor.poll()
+
+    # -- settings ------------------------------------------------------------
+
+    def sync_options(self):
+        mode = any_to_string(self.phase_input())
+        if mode in AdditiveUnit.PHASE_MODES:
+            self.unit.phase_mode = AdditiveUnit.PHASE_MODES.index(mode)
+        normalize = any_to_string(self.normalize_option())
+        if normalize in AdditiveUnit.NORMALIZE_MODES:
+            self.unit.normalize = AdditiveUnit.NORMALIZE_MODES.index(normalize)
+        span = any_to_string(self.span_option())
+        if span in ADDITIVE_SPANS:
+            self.unit.spectrum_span = ADDITIVE_SPANS.index(span)
+        self.unit.start_phase = any_to_float(self.phase_option())
+
+    def reset_phase(self):
+        self.unit.reset()
+
+    def flatten_spectrum(self):
+        self.editor.set_points(_FLAT)
+
+    # -- the spectrum --------------------------------------------------------
+
+    def spectrum_message(self, message='', message_data=[]):
+        self.editor.handle_message(message, message_data)
+
+    def spectrum_edited(self):
+        """The editor moved: rebake the partials and pass the curve on."""
+        self.build_spectrum()
+        if not self._applying_preset:
+            self.mark_custom()
+        self.spectrum_output.send(self.editor.get_points())
+
+    def build_spectrum(self):
+        """Sample the drawn curve onto the unit's uniform partial table.
+
+        breakpoint_line_data owns what a curved segment means, so sampling it
+        rather than reimplementing the easing is what keeps this, shaper~ and
+        the envelope nodes agreeing about the same curve.
+        """
+        xs, ys = self.editor.line_data(AdditiveNode.TABLE_SAMPLES_PER_SEGMENT)
+        if len(xs) < 2:
+            return
+        grid = np.linspace(0.0, self.editor.x_max,
+                           AdditiveUnit.SPECTRUM_POINTS)
+        self.unit.set_spectrum(np.interp(grid, xs, ys))
+
+    def spectrum_received(self):
+        """A curve from elsewhere -- an analysis, another additive~.
+
+        A list of plain numbers is taken as one amplitude per partial, which is
+        what an analysis produces; breakpoints are taken as a drawn curve. Both
+        are normalised to the editor's axes, so either arrives looking like
+        itself.
+        """
+        data = self.spectrum_input()
+        points = self.spectrum_points_from(data)
+        if not points:
+            return
+        self._applying_preset = True
+        try:
+            self.editor.set_points(points)
+        finally:
+            self._applying_preset = False
+        self.mark_custom()
+
+    @staticmethod
+    def spectrum_points_from(data):
+        """[[x, y, curve], ...] as the editor wants it, on 0..1 in both axes."""
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        if not isinstance(data, (list, tuple)) or len(data) < 2:
+            return []
+
+        first = data[0]
+        if isinstance(first, np.ndarray):
+            first = first.tolist()
+        if not isinstance(first, (list, tuple, dict)):
+            # A bare list of amplitudes: one per partial, evenly spaced.
+            values = [any_to_float(entry) for entry in data]
+            peak = max(values)
+            if peak <= 0.0:
+                return []
+            last = len(values) - 1
+            return [[index / last, value / peak, 0.0]
+                    for index, value in enumerate(values)]
+
+        points = []
+        for entry in data:
+            if isinstance(entry, dict):
+                entry = [entry.get('x', 0.0), entry.get('y', 0.0),
+                         entry.get('curve', 0.0)]
+            if isinstance(entry, np.ndarray):
+                entry = entry.tolist()
+            if not isinstance(entry, (list, tuple)) or len(entry) < 2:
+                continue
+            points.append([any_to_float(entry[0]), any_to_float(entry[1]),
+                           any_to_float(entry[2]) if len(entry) > 2 else 0.0])
+        if len(points) < 2:
+            return []
+
+        low = min(point[0] for point in points)
+        span = max(point[0] for point in points) - low
+        if span <= 0.0:
+            return []
+        peak = max(max(point[1] for point in points), 1.0e-9)
+        for point in points:
+            point[0] = (point[0] - low) / span
+            point[1] = max(0.0, point[1] / peak)
+        return points
+
+    # -- presets -------------------------------------------------------------
+
+    def preset_changed(self):
+        chosen = any_to_string(self.preset_input())
+        if chosen == self._preset_shown:
+            return
+        self._preset_shown = chosen
+        if chosen == AdditiveNode.CUSTOM:
+            return
+        # During a load the widgets are still being restored; applying a preset
+        # now would overwrite the curve and the controls the loader is about to
+        # put back. custom_create applies it for a node created by hand.
+        if self.in_loading_process:
+            return
+        self.apply_preset(chosen)
+
+    def apply_preset(self, name):
+        recipe = ADDITIVE_PRESETS.get(name)
+        if recipe is None:
+            return
+        self._applying_preset = True
+        try:
+            self.editor.set_points(recipe['points'])
+            for port, value in ((self.tilt_input, recipe['tilt']),
+                                (self.balance_input, recipe['balance']),
+                                (self.stretch_input, recipe['stretch']),
+                                (self.partials_input, recipe['partials'])):
+                if port is not None and port.widget is not None:
+                    port.widget.set(value)
+            self.parameters_changed()
+        finally:
+            self._applying_preset = False
+
+    def mark_custom(self):
+        """A hand edit means the patch is no longer the preset it started as.
+
+        Without this, reloading would re-apply the preset over the edit -- the
+        combo would still say 'bell' and would be believed.
+        """
+        if self._preset_shown == AdditiveNode.CUSTOM:
+            return
+        self._preset_shown = AdditiveNode.CUSTOM
+        if self.preset_input.widget is not None:
+            self.preset_input.widget.set(AdditiveNode.CUSTOM)
+
+    # -- persistence ---------------------------------------------------------
+
+    def save_custom(self, container):
+        container['additive_points'] = self.editor.get_points()
+
+    def load_custom(self, container):
+        if 'additive_points' in container:
+            self.editor.set_points(container['additive_points'], notify=False)
+            self.build_spectrum()
 
 
 # ----------------------------------------------------------------------------
@@ -799,7 +1562,7 @@ class VocoderNode(SynthNode):
         self.right_output = self.add_signal_output('right', self.unit.right)
         self.bands_output = self.add_output('bands')
 
-        self.bands_option = self.add_option('bands', widget_type='drag_int',
+        self.bands_option = self.add_option('bands', widget_type='slider_int',
                                             default_value=self.unit.bands,
                                             min=2, max=VocoderUnit.MAX_BANDS,
                                             callback=self.parameters_changed)
@@ -1023,9 +1786,11 @@ class LfoNode(SynthNode):
     Nothing stops the rate from reaching the audio range, where it becomes an
     ordinary (unbandlimited) modulator for FM and AM.
 
-    Registered as phasor~ as well, which starts as a unipolar 0..1 ramp. That
-    is the shape to index a table or drive shaper~ with -- not vco~'s saw,
-    whose band limiting is what makes it a good oscillator and a bad index.
+    Not being band limited is also what makes its 'ramp' shape the thing to
+    index a table or drive shaper~ with, where vco~'s saw is not: band
+    limiting spreads the wrap over a couple of samples at intermediate values,
+    and a lookup maps those through the middle of the curve, so every cycle
+    ends in a spike however well the curve's endpoints match.
     """
 
     @staticmethod
@@ -1037,14 +1802,7 @@ class LfoNode(SynthNode):
         self.unit = LfoUnit(synth_graph.sample_rate)
 
         rate = 1.0
-        # phasor~ is the same oscillator wearing the name it is wanted under:
-        # a unipolar 0..1 ramp for indexing tables and driving shaper~. It has
-        # to be this one rather than vco~'s saw, because band limiting spreads
-        # the wrap over a couple of samples with intermediate values, and a
-        # lookup maps those through the middle of the curve -- a spike at every
-        # cycle even when the curve's endpoints match.
-        phasor = label == 'phasor~'
-        shape = 'ramp' if phasor else 'sine'
+        shape = 'sine'
         if args is not None:
             for arg in args:
                 if arg in LFO_SHAPES:
@@ -1070,11 +1828,10 @@ class LfoNode(SynthNode):
                                           callback=self.parameters_changed)
         self.shape_input.widget.combo_items = list(LFO_SHAPES)
 
-        # A phasor runs 0..1, which lines up with shaper~'s default input range.
         self.bipolar_option = self.add_option('bipolar', widget_type='checkbox',
-                                              default_value=not phasor,
+                                              default_value=True,
                                               callback=self.parameters_changed)
-        self.phase_option = self.add_option('start phase', widget_type='drag_float',
+        self.phase_option = self.add_option('start phase', widget_type='slider_float',
                                             default_value=0.0, min=0.0, max=1.0,
                                             callback=self.parameters_changed)
         self.reset_option = self.add_option('reset now', widget_type='button',
@@ -1326,9 +2083,11 @@ class ScalerNode(SynthNode):
                                   speed=0.01, attenuverter=False)
         self.add_modulation_input('out high', self.unit.out_high_in,
                                   speed=0.01, attenuverter=False)
+        # 1.0 is the neutral value and sits at a twentieth of this range, so
+        # a linear slider could never be set to it. Stays a drag box.
         self.add_modulation_input('curve', self.unit.curve_in,
                                   minimum=0.01, maximum=16.0, speed=0.01,
-                                  attenuverter=False)
+                                  attenuverter=False, slider=False)
 
         self.mode_input = self.add_input('mode', widget_type='combo',
                                          default_value=mode,
@@ -1774,7 +2533,7 @@ class SnapshotNode(SynthNode):
                                                default_value=0.0, min=0.0)
         if self.deadband_option.widget is not None:
             self.deadband_option.widget.speed = 0.001
-        self.precision_option = self.add_option('precision', widget_type='drag_int',
+        self.precision_option = self.add_option('precision', widget_type='slider_int',
                                                 default_value=3, min=0, max=8)
         self.finish_synth_node()
 
@@ -2023,7 +2782,8 @@ class CaptureNode(SynthNode):
     stay gapless, the boundaries just fall inside blocks.
 
     Arguments: capture~ <size> and/or 'latest' | 'continuous'.
-    Also registered as array~ and scope~.
+    Also registered as array~. To look at the signal rather than compute on
+    it, use scope~, which draws the same ring buffer with a trigger.
     """
 
     MODES = ('latest', 'continuous')
@@ -2105,3 +2865,364 @@ class CaptureNode(SynthNode):
             self._last_read = self.unit.written
             return
         self._emit()
+
+
+# ----------------------------------------------------------------------------
+# scope~
+# ----------------------------------------------------------------------------
+
+class ScopeNode(SynthNode):
+    """The signal, drawn. An oscilloscope with a trigger.
+
+    plot takes a stream of control values, one per frame, so an audio signal
+    reaching it through snapshot~ is aliased beyond recognition: 60 samples a
+    second of something oscillating at 440 Hz is noise. This keeps every
+    sample in the same ring buffer capture~ uses and draws a window of it, so
+    what you see is the waveform rather than a beat pattern between the audio
+    rate and the frame rate.
+
+    Untriggered ('free'), successive frames start at unrelated phases and a
+    steady tone scrolls and tears. The sync modes fix that: the window starts
+    at a crossing of the trigger 'level' -- zero by default, so a zero
+    crossing -- going up ('rising') or down ('falling'), and a periodic signal
+    then stands still. What moves on the screen is what is actually changing
+    in the sound.
+
+    'noise reject' is the trigger's hysteresis. A crossing only counts once
+    the signal has been clear of the level by that much on the other side, so
+    a waveform that hovers around the level, or one riding on noise, triggers
+    once per cycle instead of on every wiggle. Raise it until the trace sits
+    still; too high and slow or quiet material stops triggering at all.
+
+    Nothing to trigger on -- silence, or a period longer than the window --
+    holds the last trace for a moment and then free-runs, so the display goes
+    back to showing the truth rather than freezing on a stale waveform.
+
+    The readout gives the window's duration and, when synced, the frequency
+    implied by the spacing of the triggers. 'array' sends the displayed window
+    out, phase-aligned, for a patch that wants to measure what it is looking
+    at; capture~ is the better source where the trigger is beside the point.
+
+    Arguments: scope~ <samples> and/or 'free' | 'rising' | 'falling'.
+    """
+
+    SYNC_MODES = ('free', 'rising', 'falling')
+
+    # How long a triggered trace survives without a new trigger before the
+    # display gives up and free-runs. Half a second: long enough to ride out
+    # a gap between notes, short enough that silence does not look like sound.
+    HOLD_FRAMES = 30
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ScopeNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = CaptureUnit(synth_graph.sample_rate)
+
+        samples = 512
+        sync = 'rising'
+        if args is not None:
+            for arg in args:
+                if arg in ScopeNode.SYNC_MODES:
+                    sync = arg
+                else:
+                    try:
+                        samples = int(float(arg))
+                    except (ValueError, TypeError):
+                        continue
+        self.samples = self._clamp_samples(samples)
+
+        self.plot_width = 300
+        self.plot_height = 128
+
+        self.plot_tag = dpg.generate_uuid()
+        self.x_axis_tag = dpg.generate_uuid()
+        self.y_axis_tag = dpg.generate_uuid()
+        self.trace_tag = dpg.generate_uuid()
+        self.level_tag = dpg.generate_uuid()
+        self.plot_ready = False
+
+        self.x_data = np.arange(self.samples, dtype=np.float32)
+        self._held_frames = 0
+        self._shown_readout = ''
+
+        self.add_signal_input('in', self.unit.signal_in)
+
+        self.sync_input = self.add_input('sync', widget_type='combo',
+                                         default_value=sync,
+                                         callback=self.sync_changed)
+        self.sync_input.widget.combo_items = list(ScopeNode.SYNC_MODES)
+        self.level_input = self.add_input('level', widget_type='drag_float',
+                                          default_value=0.0,
+                                          callback=self.level_changed)
+        if self.level_input.widget is not None:
+            self.level_input.widget.speed = 0.01
+            self.level_input.widget.set_tooltip(
+                'the signal value the trace starts on -- 0 is a zero crossing')
+
+        self.scope_display = self.add_display('')
+        self.scope_display.submit_callback = self.submit_display
+        self.readout_display = self.add_property('window', widget_type='label',
+                                                 default_value='-')
+
+        self.array_output = self.add_array_output('array')
+
+        self.samples_option = self.add_option('samples', widget_type='drag_int',
+                                              default_value=self.samples,
+                                              min=16,
+                                              max=self.unit.max_window // 2,
+                                              callback=self.window_changed)
+        if self.samples_option.widget is not None:
+            self.samples_option.widget.set_tooltip(
+                'width of the window in samples: how much time is on screen')
+        self.hysteresis_option = self.add_option('noise reject',
+                                                 widget_type='drag_float',
+                                                 default_value=0.0, min=0.0,
+                                                 callback=self.parameters_changed)
+        if self.hysteresis_option.widget is not None:
+            self.hysteresis_option.widget.speed = 0.005
+            self.hysteresis_option.widget.set_tooltip(
+                'trigger hysteresis: how far past the level the signal must '
+                'go before the next crossing counts')
+        self.min_y_option = self.add_option('min y', widget_type='drag_float',
+                                            default_value=-1.0,
+                                            callback=self.range_changed)
+        self.max_y_option = self.add_option('max y', widget_type='drag_float',
+                                            default_value=1.0,
+                                            callback=self.range_changed)
+        for option in (self.min_y_option, self.max_y_option):
+            if option.widget is not None:
+                option.widget.speed = 0.01
+        self.width_option = self.add_option('width', widget_type='drag_int',
+                                            default_value=self.plot_width,
+                                            max=3840, callback=self.size_changed)
+        self.height_option = self.add_option('height', widget_type='drag_int',
+                                             default_value=self.plot_height,
+                                             max=3840, callback=self.size_changed)
+        self.finish_synth_node()
+
+    def _clamp_samples(self, samples):
+        # Half the readable window, not all of it: the trigger needs a window's
+        # worth of search region ahead of the one on screen, and a scope that
+        # quietly stopped triggering at its widest setting would look broken.
+        return max(16, min(self.unit.max_window // 2, int(samples)))
+
+    # -- display ------------------------------------------------------------
+
+    def submit_display(self):
+        # Options do not hold their values yet -- they are created after the
+        # displays -- so this draws at the instance defaults and custom_create
+        # applies whatever was actually saved.
+        with dpg.theme() as self.trace_theme:
+            with dpg.theme_component(dpg.mvLineSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Line, (120, 220, 150),
+                                    category=dpg.mvThemeCat_Plots)
+        with dpg.theme() as self.level_theme:
+            with dpg.theme_component(dpg.mvLineSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Line, (120, 120, 120, 110),
+                                    category=dpg.mvThemeCat_Plots)
+
+        with dpg.plot(label='', tag=self.plot_tag,
+                      height=self.plot_height, width=self.plot_width,
+                      no_title=True, no_menus=True, no_box_select=True,
+                      no_mouse_pos=True):
+            dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.x_axis_tag,
+                              no_tick_labels=True)
+            dpg.add_plot_axis(dpg.mvYAxis, label='', tag=self.y_axis_tag,
+                              no_tick_labels=True)
+            # The level line is drawn under the trace so the waveform stays
+            # readable where the two coincide, which is exactly at the trigger.
+            dpg.add_line_series([], [], parent=self.y_axis_tag,
+                                tag=self.level_tag)
+            dpg.add_line_series([], [], parent=self.y_axis_tag,
+                                tag=self.trace_tag)
+            dpg.bind_item_theme(self.level_tag, self.level_theme)
+            dpg.bind_item_theme(self.trace_tag, self.trace_theme)
+        self.plot_ready = True
+        self.install_resize_handle()
+
+    def install_resize_handle(self):
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
+        btn_uuid = dpg.add_button(parent=self.scope_display.uuid, label='',
+                                  width=self.plot_width, height=4)
+        handle = ResizeHandle(
+            btn_uuid, self.plot_tag, axis='xy',
+            width_option=self.width_option, height_option=self.height_option,
+            sync_width=True, sync_height=False,
+            on_resize=self.handle_resized
+        )
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
+        self.resize_handle = handle
+
+    def handle_resized(self, new_w, new_h):
+        self.plot_width = int(new_w)
+        self.plot_height = int(new_h)
+
+    def custom_create(self, from_file):
+        self.window_changed()
+        self.range_changed()
+        self.size_changed()
+
+    def size_changed(self):
+        if not self.plot_ready:
+            return
+        self.plot_width = any_to_int(self.width_option())
+        self.plot_height = any_to_int(self.height_option())
+        dpg.set_item_width(self.plot_tag, self.plot_width)
+        dpg.set_item_height(self.plot_tag, self.plot_height)
+        handle = getattr(self, 'resize_handle', None)
+        if handle is not None and dpg.does_item_exist(handle.uuid):
+            dpg.set_item_width(handle.uuid, self.plot_width)
+
+    def window_changed(self):
+        samples = self._clamp_samples(any_to_int(self.samples_option()))
+        if samples != any_to_int(self.samples_option()):
+            self.samples_option.set(samples)
+        if samples != self.samples or self.x_data.size != samples:
+            self.samples = samples
+            self.x_data = np.arange(samples, dtype=np.float32)
+        if self.plot_ready:
+            dpg.set_axis_limits(self.x_axis_tag, 0, max(1, self.samples - 1))
+        self._shown_readout = ''
+
+    def range_changed(self):
+        low = any_to_float(self.min_y_option())
+        high = any_to_float(self.max_y_option())
+        if high <= low:
+            high = low + 1.0
+            self.max_y_option.set(high)
+        if self.plot_ready:
+            dpg.set_axis_limits(self.y_axis_tag, low, high)
+
+    def sync_changed(self):
+        # A mode change invalidates whatever is frozen on screen.
+        self._held_frames = ScopeNode.HOLD_FRAMES
+        self.parameters_changed()
+
+    def level_changed(self):
+        self._held_frames = ScopeNode.HOLD_FRAMES
+        self.parameters_changed()
+
+    # -- trigger ------------------------------------------------------------
+
+    @staticmethod
+    def _trigger_indices(data, level, hysteresis, rising):
+        """Where the signal crosses `level` in the wanted direction, armed.
+
+        A bare comparison retriggers on every sample of a signal that sits on
+        the level, and on every noise excursion near it. This is the usual
+        armed edge instead: a crossing counts only if the signal has been on
+        the far side of level -/+ hysteresis since the previous crossing.
+        Done by comparing, at each sample, how recently each of those two
+        conditions last held -- which vectorises, where the scan does not.
+        """
+        if rising:
+            above = data >= level
+            below = data <= level - hysteresis
+        else:
+            above = data <= level
+            below = data >= level + hysteresis
+        index = np.arange(data.size)
+        last_below = np.maximum.accumulate(np.where(below, index, -1))
+        last_above = np.maximum.accumulate(np.where(above, index, -1))
+        armed = np.empty(data.size, dtype=bool)
+        armed[0] = False
+        armed[1:] = last_below[:-1] > last_above[:-1]
+        return np.flatnonzero(above & armed)
+
+    @staticmethod
+    def _aligned_window(data, start, count, level):
+        """The window from the crossing, placed between samples.
+
+        The crossing almost never falls on a sample: it lies somewhere in the
+        step from data[start - 1] to data[start]. Starting at the sample
+        rounds the trigger to the sample grid, which at audio frequencies is
+        a sizeable fraction of a cycle -- a 1 kHz tone is 44 samples long, so
+        the trace visibly shivers by a fortieth of a period from frame to
+        frame. Reading the window at the crossing's real position instead
+        holds it still, and since the samples wanted are a unit apart that is
+        one linear blend of two slices rather than a resampling.
+        """
+        base = start - 1
+        if base < 0 or base + count + 1 > data.size:
+            return data[start:start + count]
+        span = float(data[start]) - float(data[base])
+        if span == 0.0:
+            fraction = 0.0
+        else:
+            fraction = min(1.0, max(0.0, (level - float(data[base])) / span))
+        earlier = data[base:base + count]
+        later = data[base + 1:base + count + 1]
+        return earlier * (1.0 - fraction) + later * fraction
+
+    def _readout(self, period_samples):
+        duration = 1000.0 * self.samples / max(1.0, self.unit.sample_rate)
+        text = '{:.1f} ms'.format(duration)
+        if period_samples:
+            frequency = self.unit.sample_rate / period_samples
+            if frequency >= 1000.0:
+                text += '   {:.2f} kHz'.format(frequency / 1000.0)
+            else:
+                text += '   {:.1f} Hz'.format(frequency)
+        if text != self._shown_readout:
+            self._shown_readout = text
+            self.readout_display.set(text)
+
+    def synth_frame_task(self):
+        if not self.plot_ready:
+            return
+        if any_to_int(self.samples_option()) != self.samples:
+            self.window_changed()
+
+        count = self.samples
+        mode = any_to_string(self.sync_input())
+        # Search a whole window's worth ahead of the displayed one, so any
+        # period that fits on screen has a trigger somewhere to be found.
+        data = self.unit.read_latest(min(count * 2, self.unit.max_window))
+        if data is None or data.size == 0:
+            return
+
+        level = any_to_float(self.level_input())
+        start = None
+        period = 0
+        if mode in ('rising', 'falling') and data.size > count:
+            fires = self._trigger_indices(
+                data, level, max(0.0, any_to_float(self.hysteresis_option())),
+                mode == 'rising')
+            if fires.size > 1:
+                # Median rather than the last gap: one missed or extra trigger
+                # would otherwise halve or double the reported frequency.
+                period = float(np.median(np.diff(fires)))
+            usable = fires[fires <= data.size - count]
+            if usable.size:
+                # The latest usable crossing, so the trace is as current as the
+                # trigger allows rather than lagging by a whole search window.
+                start = int(usable[-1])
+
+        if start is None:
+            if mode != 'free' and self._held_frames < ScopeNode.HOLD_FRAMES:
+                # Nothing to lock to yet. Leave the last good trace up rather
+                # than replacing it with an untriggered one that will tear.
+                self._held_frames += 1
+                return
+            window = data[max(0, data.size - count):]
+        else:
+            self._held_frames = 0
+            window = self._aligned_window(data, start, count, level)
+
+        if window.size < count:
+            return
+
+        dpg.set_value(self.trace_tag, [self.x_data, window])
+        level = any_to_float(self.level_input())
+        if mode == 'free':
+            dpg.set_value(self.level_tag, [[], []])
+        else:
+            dpg.set_value(self.level_tag,
+                          [[0.0, float(count - 1)], [level, level]])
+        self._readout(period)
+        self.array_output.send(window)

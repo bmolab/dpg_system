@@ -181,6 +181,7 @@ class Unit:
         self.sample_rate = float(sample_rate)
         self.inlets = []
         self.outlets = []
+        self._sync_armed = True
 
     def new_inlet(self, base=0.0, depth=1.0, minimum=None, maximum=None):
         inlet = Inlet(base, depth, minimum, maximum)
@@ -212,6 +213,71 @@ class Unit:
         np.multiply(_INDEX_RAMP[:frames], math.log(coefficient), out=view)
         np.exp(view, out=view)
         return view
+
+    # -- shared oscillator machinery -----------------------------------------
+    #
+    # Pitch and hard sync mean the same thing wherever they appear, so every
+    # oscillator resolves them through these rather than through its own copy.
+
+    def _build_increment(self, increment, frequency, pitch, linear_fm, frames):
+        """Phase increment in cycles per sample, into `increment`.
+
+        Frequency in Hz, scaled by an exponential inlet in octaves (1.0 = up
+        an octave, matching a 1V/oct input) and offset by a linear FM inlet in
+        Hz. Clamped below Nyquist, which is also what PolyBLEP needs.
+        """
+        if pitch.constant:
+            multiplier = 2.0 ** pitch.value
+            if frequency.constant:
+                increment[:] = frequency.value * multiplier
+            else:
+                np.multiply(frequency.data[:frames], multiplier, out=increment,
+                            casting='unsafe')
+        else:
+            np.multiply(pitch.data[:frames], math.log(2.0), out=increment,
+                        casting='unsafe')
+            np.exp(increment, out=increment)
+            if frequency.constant:
+                increment *= frequency.value
+            else:
+                increment *= frequency.data[:frames]
+
+        if linear_fm.constant:
+            if linear_fm.value != 0.0:
+                increment += linear_fm.value
+        else:
+            increment += linear_fm.data[:frames]
+
+        limit = self.sample_rate * 0.49
+        np.clip(increment, -limit, limit, out=increment)
+        increment /= self.sample_rate
+
+    def _sync_segments(self, sync, frames):
+        """(end_index, reset_at_segment_start) covering the whole block.
+
+        Splits the block at every rising edge of the sync inlet so a reset
+        lands on the sample it happened on rather than at a block boundary.
+        """
+        if sync.constant:
+            high = sync.value >= 0.5
+            reset = high and self._sync_armed
+            self._sync_armed = not high
+            return ((frames, reset),)
+
+        above = sync.data[:frames] >= 0.5
+        edges = np.flatnonzero(above[1:] & ~above[:-1]) + 1
+
+        starts = [(0, bool(above[0]) and self._sync_armed)]
+        for edge in edges:
+            starts.append((int(edge), True))
+
+        segments = []
+        for index, (begin, reset) in enumerate(starts):
+            end = starts[index + 1][0] if index + 1 < len(starts) else frames
+            segments.append((end, reset))
+
+        self._sync_armed = not bool(above[-1])
+        return tuple(segments)
 
 
 # ----------------------------------------------------------------------------
@@ -638,8 +704,217 @@ class VocoderUnit(Unit):
 
 
 # ----------------------------------------------------------------------------
+# one_euro~  --  smoothing that gets out of the way when you move
+# ----------------------------------------------------------------------------
+
+class OneEuroUnit(Unit):
+    """The one euro filter: a low-pass whose cutoff rises with speed.
+
+    Any fixed smoothing has to choose between passing jitter and lagging
+    behind a gesture, because those are the same setting. This chooses per
+    sample: at rest the cutoff drops to 'min cutoff' and the signal settles
+    hard, and as it starts moving the cutoff opens in proportion to its speed,
+    so the lag falls away exactly when it would have been noticed. It was
+    designed for interactive motion data (Casiello and Roussel, CHI 2012),
+    which is what effort data is.
+
+    Two controls, and they do separate jobs. 'min cutoff' is how still a
+    resting signal is -- lower is calmer and slower to set off. 'beta' is how
+    readily it gets out of the way -- raise it if fast gestures feel dragged,
+    lower it if noise survives the movement.
+
+    After ramp~, this rounds the corners between one frame's move and the
+    next. On its own it is the thing to put between a jittery control stream
+    and anything that will make a sound of it.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.min_cutoff_in = self.new_inlet(base=1.0, minimum=0.0001)   # Hz
+        self.beta_in = self.new_inlet(base=1.0, minimum=0.0)
+        self.derivative_cutoff = 1.0                                    # Hz
+
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+
+        # previous raw sample, smoothed speed, smoothed output, primed flag
+        self._state = [0.0, 0.0, 0.0, 0.0]
+        self._right_state = [0.0, 0.0, 0.0, 0.0]
+
+        self._x = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._state = [0.0, 0.0, 0.0, 0.0]
+        self._right_state = [0.0, 0.0, 0.0, 0.0]
+
+    def _mirror(self, frames):
+        if self.out.constant:
+            self.right.set_constant(self.out.value)
+            return
+        np.copyto(self.right.data[:frames], self.out.data[:frames])
+        self.right.constant = False
+
+    def _filter(self, signal, state, destination, period, min_cutoff,
+                beta, frames):
+        source = self._x[:frames]
+        np.copyto(source, signal.array(frames), casting='unsafe')
+        result = self._y[:frames]
+        state[0], state[1], state[2], state[3] = _one_euro(
+            source, result, period, min_cutoff, beta,
+            self.derivative_cutoff, state[0], state[1], state[2], state[3])
+        np.copyto(destination.data[:frames], result, casting='unsafe')
+        destination.constant = False
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        min_cutoff = self.min_cutoff_in.eval(frames)
+        beta = self.beta_in.eval(frames)
+        stereo = bool(self.right_in.sources)
+
+        if not _svf_ready.is_set():
+            np.copyto(self.out.data[:frames], signal.array(frames))
+            self.out.constant = False
+            self._mirror(frames)
+            return
+
+        period = 1.0 / self.sample_rate
+        cutoff_value = max(0.0001, min_cutoff.value if min_cutoff.constant
+                           else float(min_cutoff.data[0]))
+        beta_value = max(0.0, beta.value if beta.constant
+                         else float(beta.data[0]))
+
+        self._filter(signal, self._state, self.out, period,
+                     cutoff_value, beta_value, frames)
+        if stereo:
+            self._filter(self.right_in.eval(frames), self._right_state,
+                         self.right, period, cutoff_value, beta_value,
+                         frames)
+        else:
+            self._mirror(frames)
+
+
+# ----------------------------------------------------------------------------
 # ramp~  --  linear move to a target, arriving on schedule
 # ----------------------------------------------------------------------------
+
+class PhasorUnit(Unit):
+    """A 0..1 ramp, built to drive sampler_osc~ position.
+
+    An lfo~ set to a unipolar ramp is already a phasor, but two things make it
+    awkward for scanning a sample. The rate has to be worked out by hand from
+    the file's length (a 7.3 s sample needs 0.137 Hz), and there is nothing to
+    tell the rest of the patch when a cycle turns over.
+
+    So this takes a 'period' in seconds as well as a frequency: patch
+    sampler_osc~'s 'length' outlet straight into it and one cycle scans the
+    whole file at natural speed, whatever file is loaded. Slow the period down
+    from there and you are time-stretching; freeze it and the sound holds at a
+    position; run it negative and it plays backwards.
+
+    The 'wrap' outlet emits a one-sample pulse each time the ramp turns over,
+    ready for an adsr~ trigger or anything else that wants to fire per cycle.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.frequency_in = self.new_inlet(base=1.0)     # Hz
+        self.period_in = self.new_inlet(base=0.0)        # seconds; >0 wins
+        self.phase_in = self.new_inlet(base=0.0)         # offset, in cycles
+        self.start_in = self.new_inlet(base=0.0)
+        self.end_in = self.new_inlet(base=1.0)
+        self.reset_in = self.new_inlet(base=0.0)
+
+        self.phase = 0.0
+        self.start_phase = 0.0
+        self._reset_armed = True
+
+        self.out = self.new_outlet()
+        self.wrap = self.new_outlet()
+        self._phase = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._increment = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self.phase = self.start_phase
+
+    def render(self, frames):
+        frequency = self.frequency_in.eval(frames)
+        period = self.period_in.eval(frames)
+        offset = self.phase_in.eval(frames)
+        low = self.start_in.eval(frames)
+        high = self.end_in.eval(frames)
+        reset = self.reset_in.eval(frames)
+
+        edge = reset.value if reset.constant else float(reset.data[frames - 1])
+        if edge >= 0.5:
+            if self._reset_armed:
+                self.phase = self.start_phase
+                self._reset_armed = False
+        else:
+            self._reset_armed = True
+
+        increment = self._increment[:frames]
+        # A period in seconds takes precedence, so 'length' can be patched
+        # straight in without also clearing the frequency knob.
+        period_value = period.value if period.constant else float(period.data[0])
+        if period_value > 0.0:
+            if period.constant:
+                increment[:] = 1.0 / (period_value * self.sample_rate)
+            else:
+                np.copyto(increment, period.data[:frames], casting='unsafe')
+                np.maximum(increment, 1.0e-6, out=increment)
+                np.reciprocal(increment, out=increment)
+                increment /= self.sample_rate
+        elif frequency.constant:
+            increment[:] = frequency.value / self.sample_rate
+        else:
+            np.divide(frequency.data[:frames], self.sample_rate, out=increment,
+                      casting='unsafe')
+
+        np.nan_to_num(increment, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
+
+        phase = self._phase[:frames]
+        np.cumsum(increment, out=phase)
+        phase += self.phase
+        if offset.constant:
+            if offset.value != 0.0:
+                phase += offset.value
+        else:
+            phase += offset.data[:frames]
+        np.mod(phase, 1.0, out=phase)
+
+        previous = self.phase
+        self.phase = float(phase[-1])
+
+        # A turn-over is a step against the direction of travel.
+        wrap = self.wrap
+        wrap_buffer = wrap.data[:frames]
+        wrap_buffer[:] = 0.0
+        forward = increment[0] >= 0.0
+        steps = np.diff(phase)
+        if forward:
+            indices = np.flatnonzero(steps < -0.5) + 1
+            first = (phase[0] - previous) < -0.5
+        else:
+            indices = np.flatnonzero(steps > 0.5) + 1
+            first = (phase[0] - previous) > 0.5
+        if indices.size:
+            wrap_buffer[indices] = 1.0
+        if first:
+            wrap_buffer[0] = 1.0
+        wrap.constant = False
+
+        out = self.out
+        buffer = out.data[:frames]
+        low_value = low.value if low.constant else low.data[:frames]
+        high_value = high.value if high.constant else high.data[:frames]
+        np.multiply(phase, (high_value - low_value), out=buffer,
+                    casting='unsafe')
+        buffer += low_value
+        out.constant = False
+
 
 class RampUnit(Unit):
     """Straight-line ramp to a target, reaching it exactly at the end of time.
@@ -664,6 +939,13 @@ class RampUnit(Unit):
         self.threshold = 0.5
         self.current = 0.0
         self.arrive_count = 0     # bumped when a move lands; the node bangs
+
+        # With auto_time set, the move takes as long as the gap between the
+        # values arriving, which the node measures and writes here. The audio
+        # thread only reads it, and a float assignment lands whole, so no
+        # handshake is needed for it.
+        self.auto_time = False
+        self.measured_time = 0.0
 
         self._goal = 0.0
         self._remaining = 0       # samples left to run
@@ -709,7 +991,12 @@ class RampUnit(Unit):
         trigger = self.trigger_in.eval(frames)
 
         goal = target.value if target.constant else float(target.data[frames - 1])
-        seconds = time_in.value if time_in.constant else float(time_in.data[0])
+        if self.auto_time and self.measured_time > 0.0:
+            seconds = self.measured_time
+        else:
+            # Also the fallback before enough values have arrived to time the
+            # stream, which is why the manual setting still matters in auto.
+            seconds = time_in.value if time_in.constant else float(time_in.data[0])
 
         if self._jump_requests != self._jump_served:
             self._jump_served = self._jump_requests
@@ -1647,57 +1934,6 @@ class VcoUnit(Unit):
         if mono:
             np.copyto(right, left)
 
-    def _build_increment(self, increment, frequency, pitch, linear_fm, frames):
-        if pitch.constant:
-            multiplier = 2.0 ** pitch.value
-            if frequency.constant:
-                increment[:] = frequency.value * multiplier
-            else:
-                np.multiply(frequency.data[:frames], multiplier, out=increment,
-                            casting='unsafe')
-        else:
-            np.multiply(pitch.data[:frames], math.log(2.0), out=increment,
-                        casting='unsafe')
-            np.exp(increment, out=increment)
-            if frequency.constant:
-                increment *= frequency.value
-            else:
-                increment *= frequency.data[:frames]
-
-        if linear_fm.constant:
-            if linear_fm.value != 0.0:
-                increment += linear_fm.value
-        else:
-            increment += linear_fm.data[:frames]
-
-        # PolyBLEP assumes |increment| < 0.5; also keeps us under Nyquist.
-        limit = self.sample_rate * 0.49
-        np.clip(increment, -limit, limit, out=increment)
-        increment /= self.sample_rate
-
-    def _sync_segments(self, sync, frames):
-        """(end_index, reset_at_segment_start) covering the whole block."""
-        if sync.constant:
-            high = sync.value >= 0.5
-            reset = high and self._sync_armed
-            self._sync_armed = not high
-            return ((frames, reset),)
-
-        above = sync.data[:frames] >= 0.5
-        edges = np.flatnonzero(above[1:] & ~above[:-1]) + 1
-
-        starts = [(0, bool(above[0]) and self._sync_armed)]
-        for edge in edges:
-            starts.append((int(edge), True))
-
-        segments = []
-        for index, (begin, reset) in enumerate(starts):
-            end = starts[index + 1][0] if index + 1 < len(starts) else frames
-            segments.append((end, reset))
-
-        self._sync_armed = not bool(above[-1])
-        return tuple(segments)
-
     def _render_shape(self, buffer, phase, increment, width, frames):
         work = self._work[:frames]
         blep = self._blep[:frames]
@@ -1758,6 +1994,493 @@ class VcoUnit(Unit):
         total += white * 0.5362
         total *= 0.11
         np.copyto(buffer, total, casting='unsafe')
+
+
+# ----------------------------------------------------------------------------
+# additive~  --  a spectrum, sounded
+# ----------------------------------------------------------------------------
+
+class AdditiveUnit(Unit):
+    """A drawn spectrum played as an oscillator.
+
+    The partials are given as amplitudes against partial index -- partial 1 is
+    the fundamental, 2 is the octave, and so on -- and the unit sounds their
+    sum. Everything else here shapes that list: `tilt` weights it by a slope in
+    dB per octave, `balance` fades between the odd and even partials, `count`
+    says how many of them sound, and `stretch` bends where they sit.
+
+    Two render paths, chosen per block by whether `stretch` is zero:
+
+      Harmonic. With every partial at an exact multiple of the fundamental the
+      sum is periodic at the fundamental, so it is baked into a single cycle by
+      one inverse FFT and read back with the phase accumulator. That costs the
+      same whether it is eight partials or five hundred, and the table is built
+      for exactly as many partials as fit under Nyquist at this block's
+      fastest increment -- band limiting that is exact rather than fitted, and
+      that follows a pitch sweep by the sample.
+
+      Stretched. Once the partials are not multiples of anything the sum is not
+      periodic and there is no table to bake, so it falls back to an actual
+      oscillator bank -- one phase accumulator per partial, the whole bank
+      advanced as a matrix. That is real work per partial, which is why the
+      bank is capped well below the harmonic path's partial count.
+
+    The table is rebuilt whenever the spectrum or the controls shaping it move,
+    which for a swept control is once a block; a rebuild crossfades into the
+    old table across that block, so a spectrum can be modulated without the
+    waveform stepping at block boundaries.
+
+    `stretch` is the exponent in ratio = k ** (1 + stretch). Zero is harmonic;
+    small positive values are the stiffness of a real string, which is what
+    makes a piano's top octave sound in tune with itself; larger values walk
+    out through bells and gongs; negative values compress the partials
+    together instead.
+
+    Phase mode matters more than it looks. The same magnitude spectrum with
+    every partial aligned is a narrow spike once per cycle with very little in
+    between -- a high crest factor, so it must be scaled down hard to fit, and
+    it sounds like a buzz. Random or Schroeder phases spread the same energy
+    across the cycle. Schroeder is the deterministic version, a quadratic phase
+    sweep whose crest factor is close to the theoretical minimum.
+    """
+
+    # The harmonic path holds any of these for the price of one lookup. The
+    # bank pays per partial per sample, so it stops much sooner.
+    MAX_PARTIALS = 512
+    BANK_PARTIALS = 64
+    # The bank runs in chunks so its matrix can be preallocated at a fixed
+    # size rather than at MAX_BLOCK, which would be 16x larger for nothing.
+    BANK_CHUNK = 256
+
+    TABLE_SIZE = 4096
+    SPECTRUM_POINTS = 512
+
+    PHASE_MODES = ('aligned', 'random', 'schroeder')
+    NORMALIZE_MODES = ('none', 'rms', 'peak')
+    STRETCH_SPAN, FIXED_SPAN = 0, 1
+
+    # What 'rms' normalises to. Roughly a vco~ saw, so swapping one for the
+    # other does not move the level of a patch.
+    RMS_TARGET = 0.5
+    # dB per octave, as a factor on partial index: 20 * log10(2).
+    DB_PER_OCTAVE = 6.020599913279624
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.frequency_in = self.new_inlet(base=110.0)
+        self.pitch_in = self.new_inlet(base=0.0)              # octaves
+        self.linear_fm_in = self.new_inlet(base=0.0)          # Hz
+        self.tilt_in = self.new_inlet(base=-6.0)              # dB per octave
+        self.partials_in = self.new_inlet(
+            base=32.0, minimum=1.0, maximum=float(AdditiveUnit.MAX_PARTIALS))
+        self.balance_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.stretch_in = self.new_inlet(base=0.0)
+        self.phase_mod_in = self.new_inlet(base=0.0)          # cycles
+        self.sync_in = self.new_inlet(base=0.0)
+
+        self.phase_mode = 0
+        self.normalize = 1                # rms
+        self.spectrum_span = AdditiveUnit.STRETCH_SPAN
+        self.phase = 0.0
+        self.start_phase = 0.0
+
+        # The drawn curve, sampled uniformly across its x axis. Flat to begin
+        # with, which with the default tilt is a band-limited saw.
+        self.spectrum = np.ones(AdditiveUnit.SPECTRUM_POINTS, dtype=np.float64)
+        self._spectrum_x = np.linspace(0.0, 1.0, AdditiveUnit.SPECTRUM_POINTS)
+        self._spectrum_generation = 0
+
+        self.out = self.new_outlet()
+
+        # -- per-partial working space --
+        self._k = np.arange(1.0, AdditiveUnit.MAX_PARTIALS + 1.0)
+        self._weights = np.zeros(AdditiveUnit.MAX_PARTIALS)
+        self._ratios = np.zeros(AdditiveUnit.MAX_PARTIALS)
+        self._positions = np.zeros(AdditiveUnit.MAX_PARTIALS)
+        # Random phases are drawn once and kept. Redrawing them on a rebuild
+        # would change the waveform under a held note, which is a click.
+        self._random_phases = (np.random.RandomState(20240501)
+                               .uniform(0.0, 2.0 * math.pi,
+                                        AdditiveUnit.MAX_PARTIALS))
+
+        # -- harmonic path --
+        # Two tables, used alternately, so the one being crossfaded out is
+        # still intact while the new one is written.
+        size = AdditiveUnit.TABLE_SIZE
+        self._tables = [np.zeros(size + 1), np.zeros(size + 1)]
+        self._live = 0
+        self._table_key = None
+        self._bins = np.zeros(size // 2 + 1, dtype=np.complex128)
+
+        # -- bank path --
+        self._bank = np.zeros((AdditiveUnit.BANK_PARTIALS,
+                               AdditiveUnit.BANK_CHUNK))
+        self._bank_phase = np.zeros(AdditiveUnit.BANK_PARTIALS)
+        self._offsets = np.zeros(AdditiveUnit.BANK_PARTIALS)
+        self._cumulative = np.zeros(AdditiveUnit.BANK_CHUNK)
+
+        # -- block working space --
+        self._phase = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._increment = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._mix = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._fresh = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._stale = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._index = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._floor = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._integer = np.zeros(MAX_BLOCK, dtype=np.int32)
+        self._lower = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._upper = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._pm_last = 0.0
+
+    def reset(self):
+        self.phase = self.start_phase
+        self._bank_phase[:] = self.start_phase
+        self._pm_last = 0.0
+
+    # -- the spectrum --------------------------------------------------------
+
+    def set_spectrum(self, values):
+        """Main thread: swap in a new set of partial amplitudes.
+
+        Assigned whole, so the audio thread sees one spectrum or the other and
+        never half of each. The generation bump is what invalidates the table.
+        """
+        curve = np.asarray(values, dtype=np.float64).reshape(-1)
+        if curve.size < 2:
+            return
+        if curve.size != AdditiveUnit.SPECTRUM_POINTS:
+            curve = np.interp(self._spectrum_x,
+                              np.linspace(0.0, 1.0, curve.size), curve)
+        self.spectrum = np.clip(curve, 0.0, None)
+        self._spectrum_generation += 1
+
+    @staticmethod
+    def _scalar(signal):
+        """Spectral controls are read once a block, not once a sample.
+
+        Rebuilding the table costs about as much as a block of lookups, so
+        there is no sense resolving these per sample -- and the bank's weights
+        are per partial, which has no per-sample meaning either.
+        """
+        return signal.value if signal.constant else float(signal.data[0])
+
+    def _partial_weights(self, count, tilt, balance, ratios, limit, partials):
+        """Amplitude per sounding partial, and how many there are.
+
+        The drawn curve, weighted by the tilt, faded between odd and even, and
+        taken down by two soft edges: one at the requested partial count, one
+        at Nyquist. Both are ramps a partial wide rather than cutoffs, so a
+        partial arriving or leaving does so without a step.
+        """
+        highest = max(1, int(math.ceil(min(count, partials))))
+        k = self._k[:highest]
+        weights = self._weights[:highest]
+
+        # Where each partial reads the drawn curve. Spanning the count means
+        # the shape stretches to fit however many partials sound; spanning the
+        # whole range means raising the count extends the spectrum instead.
+        positions = self._positions[:highest]
+        if self.spectrum_span == AdditiveUnit.FIXED_SPAN:
+            divisor = float(AdditiveUnit.MAX_PARTIALS - 1)
+        else:
+            divisor = max(1.0, math.ceil(count) - 1.0)
+        np.subtract(k, 1.0, out=positions)
+        positions /= divisor
+        np.copyto(weights, np.interp(positions, self._spectrum_x, self.spectrum))
+
+        if tilt != 0.0:
+            np.multiply(weights, np.power(k, tilt / AdditiveUnit.DB_PER_OCTAVE),
+                        out=weights)
+
+        # 0 leaves only the odd partials (a square/clarinet family), 1 only the
+        # even, 0.5 all of them. Between those it is a fade, not a switch.
+        if balance != 0.5:
+            odd_gain = min(1.0, 2.0 - 2.0 * balance)
+            even_gain = min(1.0, 2.0 * balance)
+            weights[0::2] *= odd_gain      # k = 1, 3, 5 ... the odd partials
+            weights[1::2] *= even_gain
+
+        # Soft edge at the requested count.
+        edge = self._positions[:highest]
+        np.subtract(count + 1.0, k, out=edge)
+        np.clip(edge, 0.0, 1.0, out=edge)
+        weights *= edge
+
+        # Soft edge at Nyquist. `limit` is the highest partial *ratio* that
+        # fits, so for the bank this bites on the stretched positions rather
+        # than on the index.
+        np.subtract(limit + 1.0, ratios[:highest], out=edge)
+        np.clip(edge, 0.0, 1.0, out=edge)
+        weights *= edge
+
+        if self.normalize == 1:                      # rms
+            power = float(np.dot(weights, weights))
+            if power > 1.0e-12:
+                weights *= AdditiveUnit.RMS_TARGET / math.sqrt(power * 0.5)
+        elif self.normalize == 2:                    # peak
+            # The sum is what the partials reach if they ever line up, so
+            # scaling by it cannot overshoot. Computed from the weights alone,
+            # which is the only definition both render paths can share.
+            total = float(np.sum(weights))
+            if total > 1.0e-12:
+                weights *= 1.0 / total
+
+        return weights, highest
+
+    def _partial_phases(self, count):
+        mode = self.phase_mode
+        if mode == 1:
+            return self._random_phases[:count]
+        if mode == 2:
+            # Schroeder: a quadratic phase sweep across the partials, which
+            # spreads the cycle's energy about as evenly as it can be spread.
+            k = self._k[:count]
+            return -math.pi * k * (k - 1.0) / count - math.pi * 0.5
+        # Cosines rotated a quarter turn, i.e. sines: the cycle starts at zero
+        # so a reset or a sync lands on a zero crossing.
+        return -math.pi * 0.5
+
+    # -- rendering -----------------------------------------------------------
+
+    def render(self, frames):
+        out = self.out
+        buffer = out.data[:frames]
+
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        linear_fm = self.linear_fm_in.eval(frames)
+        phase_mod = self.phase_mod_in.eval(frames)
+        sync = self.sync_in.eval(frames)
+
+        increment = self._increment[:frames]
+        self._build_increment(increment, frequency, pitch, linear_fm, frames)
+        self._fold_phase_mod(increment, phase_mod, frames)
+
+        count = min(max(self._scalar(self.partials_in.eval(frames)), 1.0),
+                    float(AdditiveUnit.MAX_PARTIALS))
+        tilt = self._scalar(self.tilt_in.eval(frames))
+        balance = min(1.0, max(0.0, self._scalar(self.balance_in.eval(frames))))
+        stretch = self._scalar(self.stretch_in.eval(frames))
+
+        # The highest partial that stays below Nyquist, in multiples of the
+        # fundamental, taken at this block's fastest increment so a sweep is
+        # limited by where it is going rather than where it started.
+        fastest = float(np.max(np.abs(increment))) if frames else 0.0
+        if fastest > 1.0e-9:
+            limit = 0.5 / fastest
+        else:
+            limit = float(AdditiveUnit.MAX_PARTIALS)
+
+        segments = self._sync_segments(sync, frames)
+
+        if abs(stretch) < 1.0e-4:
+            self._render_table(buffer, increment, segments, count, tilt,
+                               balance, limit, frames)
+        else:
+            self._render_bank(buffer, increment, segments, count, tilt,
+                              balance, stretch, limit, frames)
+        out.constant = False
+
+    def _fold_phase_mod(self, increment, phase_mod, frames):
+        """Add the phase modulation to the increment as its own difference.
+
+        Accumulating the difference gives back the modulation exactly, so the
+        one phase accumulator carries both -- and in the bank, where each
+        partial runs at its own rate, the modulation comes out scaled by that
+        rate, which is what phase modulation of the fundamental means. Adding
+        it after the accumulator instead would work only at ratio 1, and would
+        step every partial that is not an integer multiple every time the
+        fundamental's phase wrapped.
+        """
+        if phase_mod.constant:
+            if phase_mod.value != self._pm_last:
+                increment[0] += phase_mod.value - self._pm_last
+                self._pm_last = phase_mod.value
+        else:
+            data = phase_mod.data[:frames]
+            previous = self._pm_last
+            self._pm_last = float(data[-1])
+            increment[1:] += np.diff(data)
+            increment[0] += float(data[0]) - previous
+        np.clip(increment, -0.5, 0.5, out=increment)
+
+    def _accumulate(self, phase, increment, segments, frames):
+        """Fundamental phase for the block, wrapped, honouring sync."""
+        start = 0
+        for segment_end, do_reset in segments:
+            if do_reset:
+                self.phase = self.start_phase
+            if segment_end > start:
+                view = phase[start:segment_end]
+                np.cumsum(increment[start:segment_end], out=view)
+                view += self.phase
+                np.mod(view, 1.0, out=view)
+                self.phase = float(view[-1])
+            start = segment_end
+        return phase
+
+    # -- harmonic path -------------------------------------------------------
+
+    def _render_table(self, buffer, increment, segments, count, tilt, balance,
+                      limit, frames):
+        table, previous = self._ensure_table(count, tilt, balance, limit)
+        phase = self._accumulate(self._phase[:frames], increment, segments,
+                                 frames)
+
+        fresh = self._gather(phase, table, self._fresh[:frames], frames)
+        if previous is None:
+            np.copyto(buffer, fresh, casting='unsafe')
+            return
+
+        # The table changed under a running phase, which is a step in the
+        # output wherever the two disagree. Crossfade across the block: for a
+        # control being swept the two tables are nearly the same and this
+        # costs a pass to prove it, and for a control being jumped it is the
+        # difference between a move and a click.
+        stale = self._gather(phase, previous, self._stale[:frames], frames)
+        blend = self._mix[:frames]
+        np.multiply(_INDEX_RAMP[:frames], 1.0 / frames, out=blend)
+        np.subtract(fresh, stale, out=fresh)
+        np.multiply(fresh, blend, out=fresh)
+        np.add(stale, fresh, out=fresh)
+        np.copyto(buffer, fresh, casting='unsafe')
+
+    def _ensure_table(self, count, tilt, balance, limit):
+        """The single cycle for these controls, and the one it replaces.
+
+        Returns (table, previous) where previous is None if nothing was
+        rebuilt -- which is the common case, since none of these move unless
+        something is being swept.
+        """
+        # Nyquist only enters the key once it actually bites; otherwise a
+        # pitch sweep under a modest partial count would rebuild every block
+        # to produce the same table.
+        key = (round(count, 2), round(min(limit, count + 1.0), 2),
+               round(tilt, 2), round(balance, 3), self._spectrum_generation,
+               self.phase_mode, self.normalize, self.spectrum_span)
+        if key == self._table_key:
+            return self._tables[self._live], None
+
+        previous = self._tables[self._live] if self._table_key is not None else None
+        target = self._tables[1 - self._live]
+        self._build_table(target, count, tilt, balance, limit)
+        self._live = 1 - self._live
+        self._table_key = key
+        return target, previous
+
+    def _build_table(self, target, count, tilt, balance, limit):
+        weights, highest = self._partial_weights(
+            count, tilt, balance, self._k, limit, AdditiveUnit.MAX_PARTIALS)
+
+        bins = self._bins
+        bins[:] = 0.0
+        phases = self._partial_phases(highest)
+        bins[1:highest + 1] = weights * np.exp(1j * phases)
+
+        size = AdditiveUnit.TABLE_SIZE
+        # irfft carries a 1/size, and a single bin appears in the result at
+        # twice its own magnitude once its conjugate is counted, so this scale
+        # makes a bin of 1.0 come out as a partial of amplitude 1.0.
+        cycle = np.fft.irfft(bins, n=size) * (size * 0.5)
+        target[:size] = cycle
+        # One entry past the end, holding the wrap, so index + 1 is always in
+        # bounds and the last interval interpolates into the next cycle.
+        target[size] = cycle[0]
+
+    def _gather(self, phase, table, out, frames):
+        """Read the table at `phase` (0..1) with linear interpolation."""
+        size = table.size - 1
+        index = self._index[:frames]
+        np.multiply(phase, size, out=index)
+        np.nan_to_num(index, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
+        np.clip(index, 0.0, float(size), out=index)
+
+        whole = self._floor[:frames]
+        np.floor(index, out=whole)
+        integer = self._integer[:frames]
+        np.copyto(integer, whole, casting='unsafe')
+        np.subtract(index, whole, out=index)          # index is now the fraction
+
+        lower = self._lower[:frames]
+        upper = self._upper[:frames]
+        np.take(table, integer, out=lower, mode='clip')
+        np.add(integer, 1, out=integer)
+        np.take(table, integer, out=upper, mode='clip')
+
+        np.subtract(upper, lower, out=upper)
+        np.multiply(upper, index, out=upper)
+        np.add(lower, upper, out=out)
+        return out
+
+    # -- stretched path ------------------------------------------------------
+
+    def _render_bank(self, buffer, increment, segments, count, tilt, balance,
+                     stretch, limit, frames):
+        highest = max(1, int(math.ceil(min(count,
+                                           AdditiveUnit.BANK_PARTIALS))))
+        ratios = self._ratios[:highest]
+        np.power(self._k[:highest], 1.0 + stretch, out=ratios)
+
+        weights, highest = self._partial_weights(
+            count, tilt, balance, ratios, limit,
+            AdditiveUnit.BANK_PARTIALS)
+        ratios = ratios[:highest]
+
+        # Partial k's phase is ratio_k times the fundamental's, so the block is
+        # one 1-D accumulation scaled out across the partials rather than an
+        # accumulation per partial -- which measured about four times cheaper,
+        # accumulation and wrapping being the expensive parts of a bank and
+        # the sine much the cheapest.
+        #
+        # Nothing is wrapped into a cycle here either: sin takes the radians
+        # as they come. Un-wrapped, they reach a few hundred thousand within a
+        # chunk, where a double still resolves about 5e-11 of a radian. Only
+        # the phase carried between chunks is wrapped, and that is one short
+        # vector rather than the whole matrix.
+        #
+        # What must not be done is to scale the *wrapped* fundamental phase:
+        # every partial that is not an integer multiple would then step every
+        # time the fundamental turned over, which is a click per cycle.
+        phases = self._bank_phase[:highest]
+        offsets = self._offsets[:highest]
+        # _partial_phases speaks the cosine convention the table's bins want;
+        # a quarter turn puts it into this path's sine.
+        fixed = self._partial_phases(highest) + math.pi * 0.5
+        mix = self._mix[:frames]
+        tau = 2.0 * math.pi
+
+        start = 0
+        for segment_end, do_reset in segments:
+            if do_reset:
+                phases[:] = self.start_phase
+            begin = start
+            while begin < segment_end:
+                stop = min(begin + AdditiveUnit.BANK_CHUNK, segment_end)
+                span = stop - begin
+                block = self._bank[:highest, :span]
+                travel = self._cumulative[:span]
+                np.cumsum(increment[begin:stop], out=travel)
+                advance = float(travel[-1])
+                travel *= tau
+
+                np.multiply(ratios[:, None], travel[None, :], out=block)
+                np.multiply(phases, tau, out=offsets)
+                offsets += fixed
+                block += offsets[:, None]
+                np.sin(block, out=block)
+                mix[begin:stop] = weights @ block
+
+                # Carry each partial's phase into the next chunk.
+                np.multiply(ratios, advance, out=offsets)
+                phases += offsets
+                np.mod(phases, 1.0, out=phases)
+                begin = stop
+            start = segment_end
+
+        # The fundamental's own accumulator is kept in step so that leaving
+        # the stretch does not restart the phase.
+        self._accumulate(self._phase[:frames], increment, segments, frames)
+        np.copyto(buffer, mix, casting='unsafe')
 
 
 # ----------------------------------------------------------------------------
@@ -2030,6 +2753,50 @@ else:
     _vocoder_synthesise = _vocoder_synthesise_source
 
 
+def _one_euro_source(x, out, period, min_cutoff, beta, d_cutoff,
+                     previous, speed, smoothed, primed):
+    """The one euro filter, sample by sample.
+
+    A low-pass whose cutoff rises with the signal's own speed. The speed
+    estimate is itself low-passed, at a fixed cutoff, so that noise in the
+    signal cannot open the filter up and let more of itself through.
+
+    A cutoff becomes a coefficient as (2*pi*fc*Te) / (1 + 2*pi*fc*Te), which
+    is one multiply and one divide -- no tan or exp in the inner loop. Only
+    the signal's own cutoff changes per sample; everything else is lifted out.
+    """
+    scale = 2.0 * math.pi * period
+    speed_weight = (scale * d_cutoff) / (1.0 + scale * d_cutoff)
+    rate = 1.0 / period
+
+    for i in range(x.shape[0]):
+        sample = x[i]
+        if primed == 0.0:
+            previous = sample
+            speed = 0.0
+            smoothed = sample
+            primed = 1.0
+            out[i] = sample
+            continue
+
+        # Speed of the raw signal, smoothed at a fixed cutoff.
+        speed = speed + ((sample - previous) * rate - speed) * speed_weight
+        previous = sample
+
+        # The faster it is moving, the wider the filter opens.
+        cutoff = min_cutoff + beta * abs(speed)
+        weight = (scale * cutoff) / (1.0 + scale * cutoff)
+        smoothed = smoothed + (sample - smoothed) * weight
+        out[i] = smoothed
+    return previous, speed, smoothed, primed
+
+
+if _HAVE_NUMBA:
+    _one_euro = njit(cache=True, fastmath=True)(_one_euro_source)
+else:
+    _one_euro = _one_euro_source
+
+
 def _warm_up_filter():
     """Compile the filter kernels off the audio thread.
 
@@ -2055,6 +2822,8 @@ def _warm_up_filter():
                          bank.copy(), 0.1, 0.01, 1.0, envelopes)
         _vocoder_synthesise(wide, wide, 1, bank, bank, bank, state.copy(),
                             state.copy(), envelopes, bank, output)
+        _one_euro(wide, output, 1.0 / DEFAULT_SAMPLE_RATE, 1.0, 1.0, 1.0,
+                  0.0, 0.0, 0.0, 0.0)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -2662,8 +3431,22 @@ class SamplerOscUnit(Unit):
         self.left = self.new_outlet()
         self.right = self.new_outlet()
 
+        # Scrub declick: a position inlet can jump (a phasor turning over, a
+        # gesture snapping), and an absolute jump in the playhead is a step in
+        # the output, which is a click. These carry the pre-jump trajectory so
+        # it can be crossfaded out across the discontinuity.
+        self._scrub_last = None
+        self._scrub_delta = 0.0
+        self._fade_position = 0.0
+        self._fade_delta = 0.0
+        self._fade_remaining = 0
+        self._fade_total = 0
+
         self._pos = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._inc = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._deltas = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._fade_pos = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._fade_buffer = np.zeros(MAX_BLOCK, dtype=np.float32)
         self._left = np.zeros(MAX_BLOCK, dtype=np.float32)
         self._right = np.zeros(MAX_BLOCK, dtype=np.float32)
 
@@ -2885,6 +3668,97 @@ class SamplerOscUnit(Unit):
 
         if mode == 'loop' and end is not None:
             self._apply_seam_crossfade(sample, positions, start, end, frames)
+        elif mode == 'scrub':
+            self._apply_scrub_declick(sample, positions, frames)
+
+    def _apply_scrub_declick(self, sample, positions, frames):
+        """Crossfade across jumps in the position inlet.
+
+        A phasor driving position turns over once a cycle, and that turn-over
+        is a full-scale step in the playhead: measured at 16x the ordinary
+        sample-to-sample motion, i.e. an audible click every cycle. Rather than
+        cut straight to the new position, the pre-jump trajectory is continued
+        at its own speed and faded out underneath the new one.
+
+        The threshold is the crossfade length itself, which separates cleanly:
+        ordinary playback moves at most MAX_RATE samples per sample, far below
+        a fade window's worth of material.
+        """
+        fade_total = int(self.crossfade * self.sample_rate)
+        if fade_total < 8:
+            self._fade_remaining = 0
+            self._scrub_last = float(positions[frames - 1])
+            self._scrub_delta = (float(positions[frames - 1] - positions[frames - 2])
+                                 if frames > 1 else 0.0)
+            return
+
+        threshold = max(float(SamplerOscUnit.MAX_RATE) * 4.0,
+                        self.crossfade * sample.source_rate)
+
+        deltas = self._deltas[:frames]
+        if frames > 1:
+            np.subtract(positions[1:], positions[:-1], out=deltas[1:])
+        deltas[0] = (positions[0] - self._scrub_last
+                     if self._scrub_last is not None else 0.0)
+
+        jumps = np.flatnonzero(np.abs(deltas) > threshold)
+        fade_start = -1
+
+        if jumps.size:
+            index = int(jumps[0])
+            if index == 0:
+                base = self._scrub_last
+                delta = self._scrub_delta
+            else:
+                base = float(positions[index - 1])
+                delta = (float(deltas[index - 1]) if index >= 2
+                         else self._scrub_delta)
+            self._fade_position = base if base is not None else float(positions[0])
+            self._fade_delta = delta
+            self._fade_remaining = fade_total
+            self._fade_total = fade_total
+            fade_start = index
+        elif self._fade_remaining > 0:
+            fade_start = 0
+
+        self._scrub_last = float(positions[frames - 1])
+        self._scrub_delta = (float(deltas[frames - 1]) if frames > 1 else 0.0)
+
+        if fade_start < 0 or self._fade_remaining <= 0:
+            return
+
+        count = min(frames - fade_start, self._fade_remaining)
+        if count <= 0:
+            return
+
+        # Continue the old playhead at the speed it was travelling.
+        old = self._fade_pos[:count]
+        np.multiply(_INDEX_RAMP[:count], self._fade_delta, out=old)
+        old += self._fade_position
+        np.clip(old, 0.0, sample.frames - 1.0, out=old)
+
+        done = self._fade_total - self._fade_remaining
+        alpha = self._deltas[:count]
+        np.multiply(_INDEX_RAMP[:count], 1.0 / self._fade_total, out=alpha)
+        alpha += done / self._fade_total
+        np.clip(alpha, 0.0, 1.0, out=alpha)
+
+        blend = self._fade_buffer[:count]
+        stop = fade_start + count
+
+        self._gather(sample.left, old, blend)
+        segment = self._left[fade_start:stop]
+        segment *= alpha
+        segment += blend * (1.0 - alpha)
+
+        if sample.stereo:
+            self._gather(sample.right, old, blend)
+        segment = self._right[fade_start:stop]
+        segment *= alpha
+        segment += blend * (1.0 - alpha)
+
+        self._fade_position = float(old[-1]) + self._fade_delta
+        self._fade_remaining -= count
 
     def _apply_seam_crossfade(self, sample, positions, start, end, frames):
         """Blend the pre-loop-end tail with the post-wrap head.
