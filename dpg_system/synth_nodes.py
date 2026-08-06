@@ -23,7 +23,9 @@ from dpg_system.synth_core import (
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SnapshotUnit, ScalerUnit,
-    CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit,
+    CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
+    plugin_hosting_available, installed_plugin_files, find_plugin_file,
+    plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
 )
 
@@ -75,6 +77,9 @@ def register_synth_nodes():
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
+    if plugin_hosting_available():
+        Node.app.register_node('vst~', VstNode.factory)
+        Node.app.register_node('plugin~', VstNode.factory)
     # Compile the filter kernel now, during startup, so the first vcf~ the
     # user patches is already band-limited rather than passing audio dry.
     start_filter_warm_up()
@@ -3966,3 +3971,440 @@ class ScopeNode(SynthNode):
                           [[0.0, float(count - 1)], [level, level]])
         self._readout(period)
         self.array_output.send(window)
+
+
+# ----------------------------------------------------------------------------
+# vst~
+# ----------------------------------------------------------------------------
+
+class VstNode(SynthNode):
+    """A VST3 or AudioUnit effect, patched like any other unit.
+
+    Arguments: vst~ <part of a plugin filename> -- 'valhalla', 'waveshell'.
+    A file holding several plugins (a Waves shell, say) offers them in the
+    'plugin' option; pick one and it reloads.
+
+    'params=N' and 'choices=N' set how many slots the node has, since a plugin
+    with fifteen useful controls does not fit through four. Slots are cheap
+    enough to ask for freely: an empty one costs nothing at all, and a bound
+    one costs about 0.33 us a block plus the plugin's own charge for a write,
+    and only when the value moves. Sixteen of them running flat out is under
+    half a percent of the block. What they cost is height on screen, so take
+    what you need and no more. Defaults are 8 and 3, up to 24 and 12.
+    Anything that is not a keyword is part of the plugin name, so
+    'vst~ WaveShell1-VST3 17.1 params=12' reads correctly.
+
+    A plugin's parameters come in two kinds and are offered as two kinds of
+    control, because they are not the same thing.
+
+    The ones with a numeric range are knobs. Four 'param' inlets drive them,
+    chosen by name in the matching 'param n source' option. They run 0..1,
+    which is what plugin automation is underneath whatever the plugin calls
+    its own range, so a knob, an lfo~ or a joint's effort all reach them the
+    same way.
+
+    The rest are menus -- a reverb mode, a delay sync division. Three 'choice'
+    slots hold them: pick the parameter in 'choice n', pick its setting in
+    'choice n value'. They are deliberately not modulatable. The numbers
+    behind a menu are not evenly spaced (Supermassive's 23 modes quantise
+    unevenly and list 'Gemini' at both ends of the range), so stepping one by
+    arithmetic lands on the wrong entry for half the list; the setting is
+    resolved by name instead, which is exact.
+
+    Press 'print parameters' to see what a loaded plugin offers, marked
+    [knob] or [menu].
+
+    Three things worth knowing before patching one in:
+
+    Parameters move once per block, about 86 times a second. That is what
+    plugin automation is, not a shortcoming of the wrapper. Patch an audio-rate
+    signal to a param inlet and it is read at the last sample of each block and
+    nothing between -- fine for effort data or an LFO, wrong for anything you
+    want to hear as modulation. The native units do that.
+
+    Latency is not compensated. Plugins declare a delay, sometimes a large one,
+    and the 'status' line reports it. In series that is just delay. The 'mix'
+    control is a parallel dry path, so on a latent plugin it combs rather than
+    blends -- leave mix at 1.0 there and blend outside with mix~.
+
+    A plugin that throws, returns the wrong number of frames, or keeps missing
+    the deadline is dropped, and the node passes its input through instead.
+    The reason lands in 'status' and on the console. This is the same thing
+    'bypass' does by hand, and it is the only failure a performance survives.
+    """
+
+    # Enough for the menus a plugin actually has -- Supermassive has three,
+    # and most have none.
+    CHOICE_SLOTS = 3
+    MAX_PARAMETER_SLOTS = 24
+    MAX_CHOICE_SLOTS = 12
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return VstNode(name, data, args)
+
+    @staticmethod
+    def read_arguments(args):
+        """Split 'supermassive params=16' into a name and the slot counts.
+
+        A keyword rather than a trailing number, because plugin names end in
+        numbers all the time -- 'Reverb 2', 'WaveShell1-VST3 17.1' -- and a
+        positional count would silently eat one and load the wrong plugin.
+        Everything that is not a keyword joins back into the name, so a name
+        with spaces in it needs no quoting.
+        """
+        counts = {'params': VstUnit.PARAMETER_SLOTS,
+                  'choices': VstNode.CHOICE_SLOTS}
+        limits = {'params': VstNode.MAX_PARAMETER_SLOTS,
+                  'choices': VstNode.MAX_CHOICE_SLOTS}
+        words = []
+        for arg in (args or ()):
+            text = any_to_string(arg)
+            key, sep, number = text.partition('=')
+            key = key.strip().lower()
+            if sep and key in counts:
+                try:
+                    counts[key] = max(0, min(limits[key], int(number)))
+                except (ValueError, TypeError):
+                    print('vst~: ' + key + ' needs a whole number, not '
+                          + repr(number))
+                continue
+            words.append(text)
+        return ' '.join(words), counts['params'], counts['choices']
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        requested, parameter_slots, self.choice_slots = \
+            VstNode.read_arguments(args)
+        self.unit = VstUnit(synth_graph.sample_rate, parameter_slots)
+        self.plugin = None
+        self.parameter_names = []
+        self.numeric_names = []
+        self.choice_names = []
+        self._parameters = {}
+        self._applied_choices = {}
+        self._reload_pending = True
+        self._reported_error = ''
+        self._cost_countdown = 0
+
+        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+        self.add_modulation_input('mix', self.unit.mix_in, default_value=1.0,
+                                  minimum=0.0, maximum=1.0, speed=0.01,
+                                  attenuverter=False)
+        self.slot_inputs = []
+        for index, inlet in enumerate(self.unit.parameter_in):
+            self.slot_inputs.append(self.add_modulation_input(
+                'param ' + str(index + 1), inlet, default_value=0.0,
+                minimum=0.0, maximum=1.0, speed=0.005))
+
+        self.file_option = self.add_option('file', widget_type='text_input',
+                                           width=240, default_value=requested,
+                                           callback=self.request_reload)
+        self.plugin_option = self.add_option('plugin', widget_type='combo',
+                                             default_value='',
+                                             callback=self.request_reload)
+        if self.plugin_option.widget is not None:
+            self.plugin_option.widget.combo_items = ['']
+
+        self.slot_options = []
+        for index in range(len(self.unit.parameter_in)):
+            option = self.add_option('param ' + str(index + 1) + ' source',
+                                     widget_type='combo', default_value='',
+                                     callback=self.bind_parameters)
+            if option.widget is not None:
+                option.widget.combo_items = ['']
+            self.slot_options.append(option)
+
+        # Menus, not knobs. A reverb mode or a sync division is a choice from a
+        # list, and the numbers behind those lists are not evenly spaced, so
+        # they belong nowhere near a 0..1 modulation inlet -- picking
+        # Supermassive's 23rd mode by dragging a slider is not a control.
+        # Each pair names a parameter and then holds its setting.
+        self.choice_options = []
+        for index in range(self.choice_slots):
+            chooser = self.add_option('choice ' + str(index + 1),
+                                      widget_type='combo', default_value='',
+                                      callback=self.choice_source_changed)
+            value = self.add_option('choice ' + str(index + 1) + ' value',
+                                    widget_type='combo', default_value='',
+                                    callback=self.apply_choices)
+            for option in (chooser, value):
+                if option.widget is not None:
+                    option.widget.combo_items = ['']
+            self.choice_options.append((chooser, value))
+
+        self.print_option = self.add_option('print parameters',
+                                            widget_type='button',
+                                            callback=self.print_parameters)
+        self.status_property = self.add_property(
+            'status', widget_type='label',
+            default_value='pedalboard not installed'
+            if not plugin_hosting_available() else 'no plugin')
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
+        self.finish_synth_node()
+
+    # -- loading ------------------------------------------------------------
+    #
+    # Never from a widget callback. Loading a plugin takes hundreds of
+    # milliseconds and some of them touch UI toolkits while initialising, and
+    # widget callbacks arrive on whatever thread dpg happens to be on -- so
+    # the callbacks only raise a flag and the frame task, which is the main
+    # loop, does the work.
+
+    def request_reload(self):
+        self._reload_pending = True
+
+    def update_parameters_from_widgets(self):
+        # The loader restores the file and plugin options without necessarily
+        # firing their callbacks, so ask for the load here as well.
+        self._reload_pending = True
+        super().update_parameters_from_widgets()
+
+    def synth_frame_task(self):
+        if self._reload_pending:
+            self._reload_pending = False
+            self.load_requested_plugin()
+        if self.unit.error:
+            if self.unit.error != self._reported_error:
+                self._reported_error = self.unit.error
+                self.plugin = None
+                self.set_status('dropped -- ' + self.unit.error)
+                print('vst~: dropped ' + str(self.unit.plugin_name) + ' -- '
+                      + self.unit.error)
+            return
+        # The cost figure is worth showing but not worth redrawing every
+        # frame for; a couple of times a second reads as live.
+        if self.plugin is not None:
+            self._cost_countdown -= 1
+            if self._cost_countdown <= 0:
+                self._cost_countdown = 30
+                self.set_status(self.describe_plugin())
+
+    def load_requested_plugin(self):
+        self.unit.attach(None, 1)
+        self.plugin = None
+        self.parameter_names = []
+        self._reported_error = ''
+
+        fragment = any_to_string(self.file_option()).strip()
+        if not fragment:
+            self.set_status('no plugin')
+            self.offer_parameters([])
+            return
+        if not plugin_hosting_available():
+            self.set_status('pedalboard not installed')
+            return
+
+        path = find_plugin_file(fragment)
+        if path is None:
+            self.set_status('nothing installed matching "' + fragment + '"')
+            print('vst~: no plugin file matching "' + fragment + '". '
+                  'Installed:')
+            for installed in installed_plugin_files():
+                print('   ' + os.path.basename(installed))
+            return
+
+        refusal = plugin_file_refusal(path)
+        if refusal:
+            self.set_status(refusal)
+            print('vst~: ' + refusal)
+            return
+
+        names = plugin_names_in_file(path)
+        self.set_combo_items(self.plugin_option, names or [''])
+        wanted = any_to_string(self.plugin_option()).strip()
+        if wanted not in names:
+            wanted = names[0] if names else None
+            if wanted:
+                self.plugin_option.set(wanted)
+
+        try:
+            plugin, channels = open_plugin(path, wanted,
+                                           synth_graph.sample_rate)
+        except Exception as error:
+            self.set_status(str(error))
+            print('vst~: ' + str(error))
+            return
+
+        self.plugin = plugin
+        # One pass over the parameter dictionary, here on the main thread.
+        # Reading `plugin.parameters` rebuilds it every time and costs a
+        # quarter of a block period, so nothing on the audio path may touch it.
+        parameters = dict(plugin.parameters)
+        self.parameter_names = sorted(parameters.keys())
+        self._parameters = parameters
+        self._applied_choices = {}
+        # A parameter with a numeric range is a knob and can be modulated; one
+        # without is a menu, and its values are only meaningful by name.
+        self.numeric_names = [name for name in self.parameter_names
+                              if parameters[name].range[0] is not None]
+        self.choice_names = [name for name in self.parameter_names
+                             if parameters[name].range[0] is None
+                             and len(parameters[name].valid_values or ()) > 1]
+        self.unit.attach(plugin, channels, name=str(plugin.name),
+                         latency=int(plugin.reported_latency_samples))
+        self.offer_parameters()
+        self.bind_parameters()
+        self.apply_choices()
+        self.set_status(self.describe_plugin())
+
+    # -- parameters ---------------------------------------------------------
+
+    def offer_parameters(self):
+        for option in self.slot_options:
+            self.set_combo_items(option, [''] + list(self.numeric_names))
+        for chooser, value in self.choice_options:
+            self.set_combo_items(chooser, [''] + list(self.choice_names))
+            self.set_combo_items(value, self.values_for(chooser) or [''])
+
+    def set_combo_items(self, option, items):
+        """Combos take their items at creation, so a live list needs both."""
+        if option.widget is None:
+            return
+        option.widget.combo_items = list(items)
+        if dpg.does_item_exist(option.widget.uuid):
+            try:
+                dpg.configure_item(option.widget.uuid, items=list(items))
+            except Exception:
+                pass
+
+    def bind_parameters(self):
+        """Hand the unit the parameter objects its slots drive."""
+        self.relabel_slots()
+        if self.plugin is None:
+            self.unit.bind_parameters(())
+            return
+        pairs = []
+        for option, inlet in zip(self.slot_options, self.unit.parameter_in):
+            name = any_to_string(option()).strip()
+            parameter = self._parameters.get(name)
+            if parameter is not None:
+                pairs.append((parameter, inlet))
+        self.unit.bind_parameters(pairs)
+
+    def relabel_slots(self):
+        """Let each slot wear the name of the parameter it drives.
+
+        Only the drawn text changes. Renaming a port for real would be the
+        dangerous thing, but nothing here needs it: what a widget shows beside
+        itself is a separate label from the one it was built with, and it is
+        the built one that everything durable keys on. Links are restored by
+        the input's position in the node (node_editor resolves
+        dest_input_index against node.inputs), and saved values are matched
+        against the widget's own label, which stays 'param n' for life. So a
+        slot can read 'feedback' on screen while remaining, to every cord and
+        every saved patch, the third input of this node.
+
+        An empty slot goes back to its number rather than showing nothing --
+        an unnamed inlet you can still patch into would be a worse lie than a
+        dull name.
+        """
+        for index, port in enumerate(self.slot_inputs):
+            widget = getattr(port, 'widget', None)
+            if widget is None:
+                continue
+            chosen = any_to_string(self.slot_options[index]()).strip()
+            text = chosen or ('param ' + str(index + 1))
+            if widget.prefix_label == text:
+                continue
+            widget.prefix_label = text
+            prefix = getattr(widget, 'prefix_uuid', None)
+            if prefix is not None and dpg.does_item_exist(prefix):
+                dpg.set_value(prefix, text)
+            # The name column is sized to the longest name in it, and that has
+            # just changed, so ask for it to be squared off again.
+            self._labels_aligned = False
+            self._align_attempts = 0
+
+    # -- choices ------------------------------------------------------------
+
+    def values_for(self, chooser):
+        """The settings the parameter named in this chooser can take."""
+        parameter = self._parameters.get(any_to_string(chooser()).strip())
+        if parameter is None:
+            return []
+        return [any_to_string(item) for item in (parameter.valid_values or ())]
+
+    def choice_source_changed(self):
+        """A different parameter was picked, so its settings replace the old.
+
+        The value combo is left showing whatever the plugin currently has,
+        which is both the honest reading and a sensible starting point.
+        """
+        for chooser, value in self.choice_options:
+            options = self.values_for(chooser)
+            self.set_combo_items(value, options or [''])
+            if options and any_to_string(value()).strip() not in options:
+                name = any_to_string(chooser()).strip()
+                current = any_to_string(getattr(self.plugin, name, options[0]))
+                value.set(current if current in options else options[0])
+        self.apply_choices()
+
+    def apply_choices(self):
+        """Push each chosen setting to the unit, which applies it next block.
+
+        The raw value comes from the parameter's own get_raw_value_for rather
+        than from the position of the name in the list. Discrete parameters do
+        not quantise evenly -- stepping Supermassive's modes by index lands on
+        the wrong one for half the list -- and this is exact.
+        """
+        if self.plugin is None:
+            return
+        for chooser, value in self.choice_options:
+            name = any_to_string(chooser()).strip()
+            parameter = self._parameters.get(name)
+            if parameter is None:
+                continue
+            wanted = any_to_string(value()).strip()
+            if not wanted or wanted not in (parameter.valid_values or ()):
+                continue
+            # Every knob move calls through here; only send what changed.
+            if self._applied_choices.get(name) == wanted:
+                continue
+            self._applied_choices[name] = wanted
+            try:
+                self.unit.set_choice(parameter,
+                                     parameter.get_raw_value_for(wanted))
+            except Exception as error:
+                print('vst~: could not set ' + name + ' to ' + wanted
+                      + ' (' + str(error) + ')')
+
+    def print_parameters(self):
+        if self.plugin is None:
+            print('vst~: no plugin loaded')
+            return
+        print('vst~: ' + str(self.plugin.name) + ', '
+              + str(len(self.parameter_names)) + ' parameters')
+        for name in self.numeric_names:
+            print('   ' + name + ' = '
+                  + str(getattr(self.plugin, name, '?')) + '   [knob]')
+        for name in self.choice_names:
+            parameter = self._parameters[name]
+            print('   ' + name + ' = '
+                  + str(getattr(self.plugin, name, '?')) + '   [menu: '
+                  + ', '.join(any_to_string(v)
+                              for v in parameter.valid_values) + ']')
+
+    # -- display ------------------------------------------------------------
+
+    def describe_plugin(self):
+        latency = self.unit.latency
+        text = (str(self.unit.plugin_name) + '  '
+                + ('stereo' if self.unit.channels > 1 else 'mono')
+                + '  ' + format(self.unit.cost_ms, '.2f') + ' ms/block')
+        if latency > 0:
+            text += ('  +' + format(latency / synth_graph.sample_rate * 1000.0,
+                                    '.0f') + ' ms latency')
+        return text
+
+    def set_status(self, text):
+        if self.status_property is not None:
+            self.status_property.set(text)
+
+    def sync_options(self):
+        self.bind_parameters()
+        self.apply_choices()

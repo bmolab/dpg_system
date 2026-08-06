@@ -23,7 +23,11 @@ uses a numba kernel and pink noise goes through lfilter.
 """
 
 import math
+import os
+import platform
+import struct
 import threading
+import time
 
 import numpy as np
 
@@ -5309,6 +5313,537 @@ class SnapshotUnit(Unit):
         self._sample_count = 0
         rms = math.sqrt(total / count) if count else 0.0
         return self.value, peak, rms
+
+
+# ----------------------------------------------------------------------------
+# vst~
+# ----------------------------------------------------------------------------
+
+try:
+    import pedalboard
+except ImportError:
+    pedalboard = None
+
+
+def plugin_hosting_available():
+    return pedalboard is not None
+
+
+# macOS keeps its two dozen built-in effects (AUMatrixReverb, AUDelay, the
+# filters) in one shell bundle here. None of them can be hosted: pedalboard
+# only scans /Library/Audio/Plug-Ins/Components and the user equivalent, and
+# handed this bundle directly its scanner segfaults on a name lookup and hangs
+# for ever on a named load -- tested on seven of them, all seven hung. A hang
+# is worse than a refusal because it takes the GUI thread with it, so the
+# whole directory is refused by name before anything is opened.
+UNSCANNABLE_DIRECTORY = '/System/Library/Components'
+
+
+def plugin_file_refusal(path):
+    """Why this file must not be opened, or '' if it is safe to try."""
+    if not path:
+        return ''
+    if os.path.abspath(path).startswith(UNSCANNABLE_DIRECTORY):
+        return ("macOS's built-in AudioUnits live in " + UNSCANNABLE_DIRECTORY
+                + ' and cannot be hosted -- the scanner hangs on that bundle. '
+                'Install a plugin under /Library/Audio/Plug-Ins instead.')
+    return ''
+
+
+def installed_plugin_files():
+    """Every VST3 and AudioUnit file the system knows about.
+
+    Apple's own effects are deliberately not among them; see
+    UNSCANNABLE_DIRECTORY.
+    """
+    if pedalboard is None:
+        return []
+    files = []
+    for holder in (pedalboard.VST3Plugin, pedalboard.AudioUnitPlugin):
+        try:
+            files.extend(holder.installed_plugins)
+        except Exception:
+            continue
+    return files
+
+
+def find_plugin_file(fragment):
+    """Resolve a path, or any distinctive part of a plugin's filename."""
+    if not fragment:
+        return None
+    if os.path.exists(fragment):
+        return fragment
+    lowered = str(fragment).lower()
+    for path in installed_plugin_files():
+        if lowered in os.path.basename(path).lower():
+            return path
+    return None
+
+
+def plugin_names_in_file(path):
+    """The plugins inside one file. Usually one; shells hold many."""
+    if pedalboard is None or plugin_file_refusal(path):
+        return []
+    holder = (pedalboard.AudioUnitPlugin if path.endswith('.component')
+              else pedalboard.VST3Plugin)
+    try:
+        return list(holder.get_plugin_names_for_file(path))
+    except Exception:
+        return []
+
+
+# Mach-O, enough of it to read the architectures out of a plugin binary.
+_MACHO_CPU_NAMES = {0x01000007: 'x86_64', 0x0100000c: 'arm64',
+                    0x00000007: 'i386', 0x0000000c: 'arm'}
+_MACHO_FAT = (0xcafebabe, 0xcafebabf)
+# Keyed by the magic as it reads big-endian, which is how the four bytes sit
+# in the file. A file whose magic reads back 0xcffaedfe is little-endian, so
+# its cputype must be read little-endian too -- getting this backwards turns
+# x86_64 (0x01000007) into 0x07000001 and reports an architecture that has
+# never existed.
+_MACHO_THIN = {0xfeedface: '>I', 0xfeedfacf: '>I',
+               0xcefaedfe: '<I', 0xcffaedfe: '<I'}
+
+
+def _macho_arch_name(cpu, subtype):
+    """arm64 and arm64e share a CPU type and differ only in the subtype."""
+    name = _MACHO_CPU_NAMES.get(cpu)
+    if name is None:
+        return hex(cpu)
+    if name == 'arm64' and (subtype & 0xff) == 2:
+        return 'arm64e'
+    return name
+
+
+def plugin_architectures(path):
+    """Which CPUs a plugin bundle was built for, as a set of names.
+
+    Read out of the Mach-O header rather than shelled out to `lipo`, so it
+    costs nothing and works whether or not the developer tools are installed.
+    An empty set means we could not tell, which is treated as no evidence
+    rather than as bad news.
+    """
+    binary = None
+    holder = os.path.join(path, 'Contents', 'MacOS')
+    if os.path.isdir(holder):
+        for entry in sorted(os.listdir(holder)):
+            candidate = os.path.join(holder, entry)
+            if os.path.isfile(candidate):
+                binary = candidate
+                break
+    if binary is None:
+        return set()
+
+    try:
+        with open(binary, 'rb') as handle:
+            head = handle.read(4)
+            if len(head) < 4:
+                return set()
+            magic = struct.unpack('>I', head)[0]
+            if magic in _MACHO_FAT:
+                count = struct.unpack('>I', handle.read(4))[0]
+                if count > 64:
+                    return set()
+                found = set()
+                # fat_arch is cputype, cpusubtype, offset, size, align -- 20
+                # bytes; fat_arch_64 widens offset and size and adds a
+                # reserved word, making 32. Getting this stride wrong reads
+                # the next entry's offset as a CPU type and invents
+                # architectures that are not there.
+                width = 32 if magic == 0xcafebabf else 20
+                for _ in range(count):
+                    entry = handle.read(width)
+                    if len(entry) < 8:
+                        break
+                    cpu, subtype = struct.unpack('>II', entry[:8])
+                    found.add(_macho_arch_name(cpu, subtype))
+                return found
+            if magic in _MACHO_THIN:
+                order = _MACHO_THIN[magic]
+                rest = handle.read(8)
+                if len(rest) < 8:
+                    return set()
+                cpu, subtype = struct.unpack(order + order[-1], rest)
+                return {_macho_arch_name(cpu, subtype)}
+    except OSError:
+        return set()
+    return set()
+
+
+def architecture_complaint(path):
+    """Why this plugin cannot run in this process, or '' if that is not it.
+
+    A plugin built for another CPU fails to load with nothing but 'scan
+    failure' from the plugin format layer, which sends you looking for a bug
+    in the host. It is worth the twenty lines above to be able to say what is
+    actually wrong, because there is no fixing it in software: an arm64
+    process cannot load an x86_64 bundle, and every plugin from before Apple
+    Silicon is in exactly that position.
+    """
+    built_for = plugin_architectures(path)
+    if not built_for:
+        return ''
+    ours = platform.machine()
+    if ours in built_for:
+        return ''
+    return (os.path.basename(path) + ' is built for '
+            + ', '.join(sorted(built_for)) + ' and this is an ' + ours
+            + ' process, so it cannot be loaded at all -- no host running '
+            'natively on this Mac can. Find a build with ' + ours
+            + ' in it, or run the plugin in an external host and return its '
+            'audio over a virtual device.')
+
+
+def open_plugin(path, plugin_name=None, sample_rate=DEFAULT_SAMPLE_RATE):
+    """Main thread only: load a plugin and find out how wide it is.
+
+    A plugin's channel layout is fixed by the plugin, not chosen by the host:
+    a mono effect handed a stereo block raises rather than adapting. There is
+    no property to ask, so the only reliable way to find out is to try it,
+    stereo first, and keep whichever shape it accepts.
+
+    Loading is slow (hundreds of ms, sometimes seconds) and some plugins touch
+    UI toolkits while initialising, so this belongs on the main thread at a
+    moment when a stall is acceptable -- never on the audio thread.
+    """
+    if pedalboard is None:
+        raise RuntimeError('pedalboard is not installed')
+    refusal = plugin_file_refusal(path)
+    if refusal:
+        raise ValueError(refusal)
+    try:
+        plugin = pedalboard.load_plugin(path, plugin_name=plugin_name)
+    except Exception as error:
+        # Diagnose only once it has actually failed. Checking the header first
+        # would let a mistake in the reader refuse a plugin that works.
+        complaint = architecture_complaint(path)
+        if complaint:
+            raise ValueError(complaint)
+        raise error
+    if plugin.is_instrument and not plugin.is_effect:
+        raise ValueError(str(plugin.name) + ' is an instrument; vst~ hosts '
+                         'effects. Drive instruments from an external host.')
+
+    channels = 0
+    for count in (2, 1):
+        probe = np.zeros((count, 64), dtype=np.float32)
+        try:
+            result = plugin.process(probe, sample_rate, buffer_size=64,
+                                    reset=True)
+        except Exception:
+            continue
+        if result.shape[1] == 64:
+            channels = count
+            break
+    if channels == 0:
+        raise ValueError(str(plugin.name) + ' accepted neither a mono nor a '
+                         'stereo block')
+
+    # Deliberately not reset() here, however tidy that would look. reset()
+    # tears down the prepared state, and pedalboard only rebuilds it on a
+    # process(reset=True) -- so a reset plugin driven the way the audio thread
+    # drives it, with reset=False, returns zero frames for ever, silently and
+    # without raising. The probe above already ran with reset=True, which is
+    # what leaves it prepared; all it has swallowed is 64 samples of silence.
+    return plugin, channels
+
+
+class VstUnit(Unit):
+    """Hosts a VST3 or AudioUnit effect as one unit in the graph.
+
+    The plugin is an ordinary unit as far as the compiler is concerned -- it
+    sorts, it gates, it bypasses. What is different is that its insides are
+    somebody else's code, which the audio thread has to call and cannot
+    trust: it may be slow, it may throw, and it may be doing something
+    unbounded like reading a sample library from disk. So the call is timed
+    and wrapped, and a plugin that misbehaves is dropped rather than allowed
+    to keep costing the whole graph its deadline. Dropping it leaves the
+    signal passing through, not silence, which is the same thing bypass does
+    and the only failure a performance can absorb.
+
+    Two things the surrounding architecture does not do for you:
+
+    Latency. Plugins report a processing delay -- 46 ms for a Waves Clarity,
+    216 ms for a neural effect -- and there is no delay compensation in the
+    compiler. In series that is simply added delay. Against a parallel dry
+    path it is a phase smear, and the 'mix' control here is exactly such a
+    path, so on a plugin with real latency use mix at 1.0 and blend outside.
+    `latency` carries the figure so the node can say so.
+
+    Rate. Parameters are set once per block, ~86 Hz at 512 frames, because
+    that is what a plugin parameter is -- automation, not a modulation input.
+    Audio-rate movement patched to a parameter inlet is read at its last
+    sample and nothing between. For anything that needs to move at audio rate,
+    use the native units; they exist for that.
+    """
+
+    # A plugin taking more than half the block period on its own leaves too
+    # little for the rest of the graph. One late block is a scheduling
+    # accident, twenty is what the plugin costs, so tolerate a run of them
+    # and count down on the good ones before giving up.
+    OVERRUN_FRACTION = 0.5
+    OVERRUN_LIMIT = 20
+
+    # Parameter values below this much movement are not worth a call across
+    # the plugin boundary; VST automation is 7-bit-ish in practice anyway.
+    PARAMETER_EPSILON = 1.0 / 2048.0
+
+    # Modulation slots. However many there are, they are created before any
+    # plugin is loaded, because the node's ports have to exist at construction
+    # to survive save and load -- which plugin parameter a slot drives is a
+    # name stored in an option, not a port that appears and disappears.
+    #
+    # The count is worth spending: a slot that drives nothing is not in the
+    # binding list at all and costs literally nothing per block, and a bound
+    # one costs 0.33 us whether it moves or not, plus whatever the plugin
+    # charges for the write (2.8 us on Supermassive) and only when the value
+    # actually changes. Sixteen slots all moving every block is under half a
+    # percent of the block period. Screen space is the scarce thing here, not
+    # time.
+    PARAMETER_SLOTS = 8
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE, parameter_slots=None):
+        super().__init__(sample_rate)
+        if parameter_slots is None:
+            parameter_slots = VstUnit.PARAMETER_SLOTS
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.mix_in = self.new_inlet(base=1.0, minimum=0.0, maximum=1.0)
+        self.parameter_in = [self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+                             for _ in range(max(0, int(parameter_slots)))]
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+
+        # Read once at the top of render and assigned whole from the main
+        # thread, the way the engine takes a new SynthProgram: the audio
+        # thread either has the old plugin or the new one, never a half-built
+        # one, and no lock is needed to say so.
+        self._plugin = None
+        self.plugin_name = ''
+        self.channels = 1
+        self.latency = 0
+        self.error = ''
+        self.cost_ms = 0.0
+
+        self._bindings = ()
+        self._pending_choices = []
+        self._blocks = {}
+        self._overruns = 0
+        self._dry = np.zeros((2, MAX_BLOCK), dtype=np.float32)
+        self._blend = np.zeros(MAX_BLOCK, dtype=np.float32)
+
+    # -- main thread --------------------------------------------------------
+
+    def attach(self, plugin, channels, name='', latency=0):
+        """Install a loaded plugin, or None to go back to passing through."""
+        self._plugin = None
+        self._bindings = ()
+        self._pending_choices = []
+        self._blocks = {}
+        self.channels = max(1, min(2, int(channels)))
+        self.plugin_name = name
+        self.latency = int(latency)
+        self.cost_ms = 0.0
+        self._overruns = 0
+        self.error = ''
+        self._plugin = plugin
+
+    def bind_parameters(self, pairs):
+        """(parameter object, inlet) pairs for render to drive per block.
+
+        The parameter objects are held rather than looked up by name because
+        `plugin.parameters` rebuilds the entire dictionary on every access --
+        294 us measured on a 300-parameter plugin, which is a quarter of the
+        block period at 512 frames, to read one number. A parameter object
+        kept from that dictionary costs 2.3 us to set, which is affordable.
+        """
+        self._bindings = [[parameter, inlet, -1.0] for parameter, inlet in pairs]
+
+    def set_choice(self, parameter, raw_value):
+        """Ask for a discrete parameter (a mode, a sync division) to change.
+
+        Queued rather than written here. The plugin belongs to the audio
+        thread for as long as it is rendering, and a parameter written from
+        under it is the kind of race that shows up once a fortnight in
+        performance and never on the bench. The queue is drained at the top of
+        the next block, so the change lands within a block either way -- which
+        for something you choose from a menu is immediate.
+
+        Discrete parameters are not evenly spaced and cannot be indexed by
+        arithmetic: Supermassive's 23 reverb modes quantise unevenly and list
+        'Gemini' at both ends. The caller works the value out with the
+        parameter's own get_raw_value_for(), which is exact.
+        """
+        self._pending_choices.append((parameter, float(raw_value)))
+
+    def plugin_loaded(self):
+        return self._plugin is not None
+
+    # -- audio thread -------------------------------------------------------
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
+
+    def _block(self, frames):
+        """A contiguous (channels, frames) buffer for this block size.
+
+        It has to be contiguous. A view like scratch[:, :frames] of a wider
+        two-channel buffer is not, and pedalboard does not reject one -- it
+        returns a (2, 0) array, so the failure arrives as silence with no
+        exception anywhere. Buffers are therefore kept whole, one per block
+        size seen. PortAudio settles on a size immediately, so this allocates
+        once or twice in the life of a patch and never again.
+        """
+        block = self._blocks.get(frames)
+        if block is None or block.shape[0] != self.channels:
+            block = np.zeros((self.channels, frames), dtype=np.float32)
+            self._blocks[frames] = block
+        return block
+
+    def _apply_bindings(self, frames):
+        """Push modulated parameters across, skipping the ones that held.
+
+        Values are normalised 0..1, which is what VST automation is; the
+        plugin maps that onto whatever its own range happens to be.
+        """
+        for binding in self._bindings:
+            parameter, inlet, previous = binding
+            signal = inlet.eval(frames)
+            if signal.constant:
+                value = signal.value
+            else:
+                value = float(signal.data[frames - 1])
+            if value < 0.0:
+                value = 0.0
+            elif value > 1.0:
+                value = 1.0
+            if abs(value - previous) < VstUnit.PARAMETER_EPSILON:
+                continue
+            binding[2] = value
+            try:
+                parameter.raw_value = value
+            except Exception:
+                # A parameter that refuses a value is not worth killing the
+                # plugin over, but it is worth not retrying every block.
+                binding[2] = value
+
+    def fail(self, message):
+        """Drop the plugin. The graph keeps running with the signal passing."""
+        self._plugin = None
+        self.error = message
+
+    def _pass_through(self, signal, right_signal, frames):
+        for source, outlet in ((signal, self.out), (right_signal, self.right)):
+            if source.constant:
+                outlet.set_constant(source.value)
+            else:
+                np.copyto(outlet.data[:frames], source.data[:frames])
+                outlet.constant = False
+
+    def _drain_choices(self):
+        """Apply queued menu changes. Rebinding the list is the whole lock:
+        the main thread only ever appends, so nothing can be lost."""
+        pending, self._pending_choices = self._pending_choices, []
+        for parameter, value in pending:
+            try:
+                parameter.raw_value = value
+            except Exception:
+                pass
+
+    def render(self, frames):
+        plugin = self._plugin
+        if self._pending_choices:
+            self._drain_choices()
+        signal = self.signal_in.eval(frames)
+        right_signal = (self.right_in.eval(frames) if self.right_in.sources
+                        else signal)
+
+        if plugin is None:
+            self._pass_through(signal, right_signal, frames)
+            return
+
+        stereo = self.channels > 1
+        block = self._block(frames)
+        np.copyto(block[0], signal.array(frames), casting='unsafe')
+        if stereo:
+            np.copyto(block[1], right_signal.array(frames), casting='unsafe')
+
+        mix = self.mix_in.eval(frames)
+        wet_only = mix.constant and mix.value >= 1.0
+        if not wet_only:
+            # Kept before processing: the plugin is handed our buffer and is
+            # entitled to write through it.
+            np.copyto(self._dry[0, :frames], block[0])
+            if stereo:
+                np.copyto(self._dry[1, :frames], block[1])
+
+        self._apply_bindings(frames)
+
+        start = time.perf_counter()
+        try:
+            wet = plugin.process(block, self.sample_rate, buffer_size=frames,
+                                 reset=False)
+        except Exception as error:
+            self.fail(type(error).__name__ + ': ' + str(error))
+            self._pass_through(signal, right_signal, frames)
+            return
+        self._watch(time.perf_counter() - start, frames)
+
+        if wet.shape[1] != frames:
+            self.fail('returned ' + str(wet.shape[1]) + ' of ' + str(frames)
+                      + ' frames')
+            self._pass_through(signal, right_signal, frames)
+            return
+
+        left_out = self.out.data[:frames]
+        right_out = self.right.data[:frames]
+        np.copyto(left_out, wet[0], casting='unsafe')
+        self.out.constant = False
+        self.right.constant = False
+
+        if stereo:
+            np.copyto(right_out, wet[1] if wet.shape[0] > 1 else wet[0],
+                      casting='unsafe')
+            if not wet_only:
+                self._mix_dry(left_out, self._dry[0, :frames], mix, frames)
+                self._mix_dry(right_out, self._dry[1, :frames], mix, frames)
+            return
+
+        if not wet_only:
+            self._mix_dry(left_out, self._dry[0, :frames], mix, frames)
+        np.copyto(right_out, left_out)
+
+    def _mix_dry(self, wet, dry, mix, frames):
+        """Crossfade in place. `dry` is scratch and may be consumed."""
+        if mix.constant:
+            amount = min(1.0, max(0.0, mix.value))
+            wet *= amount
+            dry *= (1.0 - amount)
+            wet += dry
+            return
+        amount = mix.data[:frames]
+        blend = self._blend[:frames]
+        np.subtract(1.0, amount, out=blend)
+        wet *= amount
+        dry *= blend
+        wet += dry
+
+    def _watch(self, elapsed, frames):
+        milliseconds = elapsed * 1000.0
+        # Smoothed rather than averaged: the node only wants a number to show,
+        # and a running figure costs one multiply where a window costs memory.
+        self.cost_ms += (milliseconds - self.cost_ms) * 0.05
+        budget = frames / self.sample_rate * 1000.0
+        if milliseconds > budget * VstUnit.OVERRUN_FRACTION:
+            self._overruns += 1
+            if self._overruns >= VstUnit.OVERRUN_LIMIT:
+                self.fail('too slow for the audio thread ('
+                          + format(milliseconds, '.1f') + ' ms of a '
+                          + format(budget, '.1f') + ' ms block)')
+        elif self._overruns > 0:
+            self._overruns -= 1
 
 
 # ----------------------------------------------------------------------------
