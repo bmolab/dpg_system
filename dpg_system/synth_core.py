@@ -2062,6 +2062,10 @@ class AdditiveUnit(Unit):
     # What 'rms' normalises to. Roughly a vco~ saw, so swapping one for the
     # other does not move the level of a patch.
     RMS_TARGET = 0.5
+    # Most a normaliser may lift a quiet spectrum, about 18 dB. Past this it
+    # stops lifting, so a spectrum being faded out is allowed to fade out
+    # rather than being held up and then dropped.
+    MAX_BOOST = 8.0
     # dB per octave, as a factor on partial index: 20 * log10(2).
     DB_PER_OCTAVE = 6.020599913279624
 
@@ -2075,6 +2079,7 @@ class AdditiveUnit(Unit):
             base=32.0, minimum=1.0, maximum=float(AdditiveUnit.MAX_PARTIALS))
         self.balance_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.stretch_in = self.new_inlet(base=0.0)
+        self.spread_in = self.new_inlet(base=1.0, minimum=0.0, maximum=4.0)
         self.phase_mod_in = self.new_inlet(base=0.0)          # cycles
         self.sync_in = self.new_inlet(base=0.0)
 
@@ -2083,6 +2088,10 @@ class AdditiveUnit(Unit):
         self.spectrum_span = AdditiveUnit.STRETCH_SPAN
         self.phase = 0.0
         self.start_phase = 0.0
+        # Seconds for a phase to turn half a circle -- the speed limit, not a
+        # lag, so only a jump is rationed. Long enough that a step is a move
+        # rather than a lurch, short enough still to feel like a switch.
+        self.phase_glide = 0.08
 
         # The drawn curve, sampled uniformly across its x axis. Flat to begin
         # with, which with the default tilt is a band-limited saw.
@@ -2102,6 +2111,20 @@ class AdditiveUnit(Unit):
         self._random_phases = (np.random.RandomState(20240501)
                                .uniform(0.0, 2.0 * math.pi,
                                         AdditiveUnit.MAX_PARTIALS))
+        # The phases actually in force, what the settings ask for, and the
+        # rotation between them for this block.
+        self._dispersion_now = np.zeros(AdditiveUnit.MAX_PARTIALS)
+        self._dispersion_want = np.zeros(AdditiveUnit.MAX_PARTIALS)
+        self._dispersion_step = np.zeros(AdditiveUnit.MAX_PARTIALS)
+        self._phase_ready = 0            # partials that have sounded
+        self._phase_epoch = 0            # bumped while the phases are moving
+        # What the phases were last resolved for, so a settled node can skip
+        # the whole business -- which is the usual case, and this runs in the
+        # audio callback once per voice per block.
+        self._phase_settled = False
+        self._phase_count = -1
+        self._phase_spread = None
+        self._phase_law = -1
 
         # -- harmonic path --
         # Two tables, used alternately, so the one being crossfaded out is
@@ -2117,6 +2140,8 @@ class AdditiveUnit(Unit):
                                AdditiveUnit.BANK_CHUNK))
         self._bank_phase = np.zeros(AdditiveUnit.BANK_PARTIALS)
         self._offsets = np.zeros(AdditiveUnit.BANK_PARTIALS)
+        self._bank_fixed = np.zeros(AdditiveUnit.BANK_PARTIALS)
+        self._bank_ratio = np.zeros(AdditiveUnit.BANK_PARTIALS)
         self._cumulative = np.zeros(AdditiveUnit.BANK_CHUNK)
 
         # -- block working space --
@@ -2136,6 +2161,10 @@ class AdditiveUnit(Unit):
         self.phase = self.start_phase
         self._bank_phase[:] = self.start_phase
         self._pm_last = 0.0
+        # An explicit reset is the one place a phase may jump: nothing is
+        # sounding through it, so there is nothing for a glide to protect.
+        self._phase_ready = 0
+        self._phase_settled = False
 
     # -- the spectrum --------------------------------------------------------
 
@@ -2179,11 +2208,17 @@ class AdditiveUnit(Unit):
         # Where each partial reads the drawn curve. Spanning the count means
         # the shape stretches to fit however many partials sound; spanning the
         # whole range means raising the count extends the spectrum instead.
+        #
+        # The count is used as it is, fractional part and all. Rounding it up
+        # to whole partials first -- which is what the array has to be -- moves
+        # every partial's reading of the curve at once each time the count
+        # crosses an integer, so a drawn shape lurches its way through a count
+        # sweep. Only the array length may be whole; the shape may not.
         positions = self._positions[:highest]
         if self.spectrum_span == AdditiveUnit.FIXED_SPAN:
             divisor = float(AdditiveUnit.MAX_PARTIALS - 1)
         else:
-            divisor = max(1.0, math.ceil(count) - 1.0)
+            divisor = max(1.0, count - 1.0)
         np.subtract(k, 1.0, out=positions)
         positions /= divisor
         np.copyto(weights, np.interp(positions, self._spectrum_x, self.spectrum))
@@ -2213,32 +2248,119 @@ class AdditiveUnit(Unit):
         np.clip(edge, 0.0, 1.0, out=edge)
         weights *= edge
 
+        # Normalising divides by the level, so a spectrum on its way to
+        # silence asks for an ever larger boost -- and a guard that gives up
+        # below some threshold turns that into a jump from full level to
+        # nothing. Both are audible, and both fire in ordinary use: draw a
+        # curve that reaches zero, or take the tilt or the partial count far
+        # enough, and the sounding partials get arbitrarily quiet.
+        #
+        # The boost is capped instead. Above the cap the level is held where
+        # it is asked for; below it the gain stops rising, so a spectrum
+        # fading out fades out, and silence stays silent.
         if self.normalize == 1:                      # rms
-            power = float(np.dot(weights, weights))
-            if power > 1.0e-12:
-                weights *= AdditiveUnit.RMS_TARGET / math.sqrt(power * 0.5)
+            level = math.sqrt(max(float(np.dot(weights, weights)), 0.0) * 0.5)
+            floor = AdditiveUnit.RMS_TARGET / AdditiveUnit.MAX_BOOST
+            weights *= AdditiveUnit.RMS_TARGET / max(level, floor)
         elif self.normalize == 2:                    # peak
             # The sum is what the partials reach if they ever line up, so
             # scaling by it cannot overshoot. Computed from the weights alone,
             # which is the only definition both render paths can share.
             total = float(np.sum(weights))
-            if total > 1.0e-12:
-                weights *= 1.0 / total
+            weights *= 1.0 / max(total, 1.0 / AdditiveUnit.MAX_BOOST)
 
         return weights, highest
 
-    def _partial_phases(self, count):
+    # -- phase ---------------------------------------------------------------
+    #
+    # Phase is a continuous quantity here, in both senses: 'spread' scales the
+    # chosen law rather than switching it on, and whatever the settings ask for
+    # is reached by rotating rather than by jumping.
+    #
+    # Both matter for the same reason. Every partial changing phase at once is
+    # a step in the waveform, which is a click; and crossfading between two
+    # sets of phases is worse than it sounds, because the same partial at two
+    # phases partly cancels itself halfway through, so a blend sweeps a notch
+    # through the spectrum. Rotating each partial to where it is wanted avoids
+    # both -- amplitudes never move, and a phase turning slowly is heard as a
+    # momentary detune of a fraction of a cent, if at all.
+
+    def _dispersion(self, count):
+        """The phase pattern of the chosen law, before 'spread' scales it.
+
+        Zero for 'aligned', so at spread 0 every law agrees and changing the
+        law is silent. That is the useful property: spread becomes the control
+        and the law becomes a choice of what it spreads towards.
+        """
+        want = self._dispersion_want[:count]
         mode = self.phase_mode
         if mode == 1:
-            return self._random_phases[:count]
-        if mode == 2:
-            # Schroeder: a quadratic phase sweep across the partials, which
-            # spreads the cycle's energy about as evenly as it can be spread.
+            np.copyto(want, self._random_phases[:count])
+        elif mode == 2:
+            # Schroeder: a quadratic sweep across the partials, which spreads
+            # the cycle's energy about as evenly as it can be spread.
             k = self._k[:count]
-            return -math.pi * k * (k - 1.0) / count - math.pi * 0.5
-        # Cosines rotated a quarter turn, i.e. sines: the cycle starts at zero
-        # so a reset or a sync lands on a zero crossing.
-        return -math.pi * 0.5
+            np.multiply(k, k - 1.0, out=want)
+            want *= -math.pi / count
+        else:
+            want[:] = 0.0
+        return want
+
+    def _advance_phase(self, count, spread, frames):
+        """Rotate the applied phases toward the ones the settings ask for.
+
+        Returns (applied, step, moving): the phases in force for this block,
+        how far each moved to get there, and whether anything is still moving.
+        The step is what the bank needs -- it turns the rotation into a
+        frequency, so the phases arrive smoothly within the block rather than
+        stepping at its edge.
+        """
+        if (self._phase_settled and count == self._phase_count
+                and spread == self._phase_spread
+                and self.phase_mode == self._phase_law):
+            # Arrived, and nothing has asked for anything different. The step
+            # is already zero, so the bank folds in no rotation and the table
+            # keeps its key.
+            return (self._dispersion_now[:count],
+                    self._dispersion_step[:count], False)
+        self._phase_count = count
+        self._phase_spread = spread
+        self._phase_law = self.phase_mode
+
+        want = self._dispersion(count)
+        if spread != 1.0:
+            want *= spread
+        now = self._dispersion_now[:count]
+        step = self._dispersion_step[:count]
+
+        # A partial that has just come into range starts where it is wanted,
+        # rather than gliding up from a phase it never sounded at.
+        if count > self._phase_ready:
+            now[self._phase_ready:count] = want[self._phase_ready:count]
+            self._phase_ready = count
+
+        np.subtract(want, now, out=step)
+        # A phase is an angle, so go the short way round: +3pi/2 is really
+        # -pi/2, and rotating the long way would take four times as long for
+        # the same destination.
+        step += math.pi
+        np.mod(step, 2.0 * math.pi, out=step)
+        step -= math.pi
+
+        # A speed limit rather than a lag. A lag would smooth the jumps and
+        # also drag every continuous move -- spread swept by hand or by an
+        # LFO would arrive late and come out shallower than it was asked for.
+        # Limiting the speed instead leaves anything slower than the limit
+        # exactly as it is and only stretches what could not be done in time,
+        # so the control stays immediate and only a jump is rationed.
+        glide = self.phase_glide
+        if glide > 0.0:
+            reach = math.pi * frames / (glide * self.sample_rate)
+            np.clip(step, -reach, reach, out=step)
+        moving = bool(np.any(step))
+        np.add(now, step, out=now)
+        self._phase_settled = not moving
+        return now, step, moving
 
     # -- rendering -----------------------------------------------------------
 
@@ -2261,6 +2383,7 @@ class AdditiveUnit(Unit):
         tilt = self._scalar(self.tilt_in.eval(frames))
         balance = min(1.0, max(0.0, self._scalar(self.balance_in.eval(frames))))
         stretch = self._scalar(self.stretch_in.eval(frames))
+        spread = max(0.0, self._scalar(self.spread_in.eval(frames)))
 
         # The highest partial that stays below Nyquist, in multiples of the
         # fundamental, taken at this block's fastest increment so a sweep is
@@ -2275,10 +2398,10 @@ class AdditiveUnit(Unit):
 
         if abs(stretch) < 1.0e-4:
             self._render_table(buffer, increment, segments, count, tilt,
-                               balance, limit, frames)
+                               balance, spread, limit, frames)
         else:
             self._render_bank(buffer, increment, segments, count, tilt,
-                              balance, stretch, limit, frames)
+                              balance, stretch, spread, limit, frames)
         out.constant = False
 
     def _fold_phase_mod(self, increment, phase_mod, frames):
@@ -2294,7 +2417,13 @@ class AdditiveUnit(Unit):
         """
         if phase_mod.constant:
             if phase_mod.value != self._pm_last:
-                increment[0] += phase_mod.value - self._pm_last
+                # A knob, moved. The whole change put on one sample would be
+                # exactly that: the phase jumping between two samples, which
+                # is a step in the waveform and a click -- once per frame for
+                # as long as the knob is being dragged. Spread across the
+                # block it is a phase ramp instead, i.e. a moment of pitch,
+                # which is the only thing a phase move can honestly be.
+                increment += (phase_mod.value - self._pm_last) / frames
                 self._pm_last = phase_mod.value
         else:
             data = phase_mod.data[:frames]
@@ -2322,10 +2451,34 @@ class AdditiveUnit(Unit):
     # -- harmonic path -------------------------------------------------------
 
     def _render_table(self, buffer, increment, segments, count, tilt, balance,
-                      limit, frames):
+                      spread, limit, frames):
+        # The phases rotate whether or not the table is rebuilt, so this runs
+        # before the key is compared -- and while they are moving it is what
+        # invalidates the key, so each block bakes the phases it has reached
+        # and crossfades from the ones before. Consecutive tables in a glide
+        # differ by a fraction of a radian per partial, which is exactly the
+        # case the crossfade handles cleanly.
+        highest = max(1, int(math.ceil(min(count,
+                                           AdditiveUnit.MAX_PARTIALS))))
+        _, _, moving = self._advance_phase(highest, spread, frames)
+        if moving:
+            self._phase_epoch += 1
+
         table, previous = self._ensure_table(count, tilt, balance, limit)
         phase = self._accumulate(self._phase[:frames], increment, segments,
                                  frames)
+
+        # Keep the bank's per-partial accumulators in step with the
+        # fundamental, against the block where the stretch leaves zero and the
+        # bank takes over. Every partial here is an exact multiple, so partial
+        # k's phase is k times the fundamental's -- wrapping first is what
+        # being harmonic means. Without this the bank would start each partial
+        # from wherever it was last left, which is a step in every one of them
+        # at once: the click on taking the stretch off zero. (The other
+        # direction is already covered -- the bank keeps self.phase running.)
+        bank = self._bank_phase
+        np.multiply(self._k[:AdditiveUnit.BANK_PARTIALS], self.phase, out=bank)
+        np.mod(bank, 1.0, out=bank)
 
         fresh = self._gather(phase, table, self._fresh[:frames], frames)
         if previous is None:
@@ -2357,7 +2510,7 @@ class AdditiveUnit(Unit):
         # to produce the same table.
         key = (round(count, 2), round(min(limit, count + 1.0), 2),
                round(tilt, 2), round(balance, 3), self._spectrum_generation,
-               self.phase_mode, self.normalize, self.spectrum_span)
+               self._phase_epoch, self.normalize, self.spectrum_span)
         if key == self._table_key:
             return self._tables[self._live], None
 
@@ -2374,7 +2527,10 @@ class AdditiveUnit(Unit):
 
         bins = self._bins
         bins[:] = 0.0
-        phases = self._partial_phases(highest)
+        # The bins want the cosine convention; a quarter turn back off the
+        # applied phases makes partial 1 a sine, so a reset or a sync still
+        # lands on a zero crossing.
+        phases = self._dispersion_now[:highest] - math.pi * 0.5
         bins[1:highest + 1] = weights * np.exp(1j * phases)
 
         size = AdditiveUnit.TABLE_SIZE
@@ -2415,7 +2571,7 @@ class AdditiveUnit(Unit):
     # -- stretched path ------------------------------------------------------
 
     def _render_bank(self, buffer, increment, segments, count, tilt, balance,
-                     stretch, limit, frames):
+                     stretch, spread, limit, frames):
         highest = max(1, int(math.ceil(min(count,
                                            AdditiveUnit.BANK_PARTIALS))))
         ratios = self._ratios[:highest]
@@ -2443,11 +2599,31 @@ class AdditiveUnit(Unit):
         # time the fundamental turned over, which is a click per cycle.
         phases = self._bank_phase[:highest]
         offsets = self._offsets[:highest]
-        # _partial_phases speaks the cosine convention the table's bins want;
-        # a quarter turn puts it into this path's sine.
-        fixed = self._partial_phases(highest) + math.pi * 0.5
         mix = self._mix[:frames]
         tau = 2.0 * math.pi
+
+        # A phase rotation is a frequency. Rather than stepping the offsets at
+        # the block edge -- which is the click this whole mechanism exists to
+        # avoid -- the rotation owed this block is folded into each partial's
+        # rate, so it arrives smoothly across the block and costs one add per
+        # partial. The chunk length cancels out of that rate, so every chunk
+        # can use the same one: the share of the rotation a chunk performs is
+        # proportional to the share of the block it covers.
+        applied, step, _ = self._advance_phase(highest, spread, frames)
+        fixed = self._bank_fixed[:highest]
+        np.subtract(applied, step, out=fixed)      # where this block starts
+        travelled = float(np.sum(increment[:frames])) if frames else 0.0
+        gliding = abs(travelled) > 1.0e-12 and bool(np.any(step))
+        if gliding:
+            rate = self._bank_ratio[:highest]
+            np.multiply(step, 1.0 / (tau * travelled), out=rate)
+            rate += ratios
+        else:
+            # Either nothing is turning -- so there is no rate to hide the
+            # rotation in, and nothing audible to hide it from -- or there is
+            # no rotation owed. Either way, land on the new phases.
+            rate = ratios
+            np.copyto(fixed, applied)
 
         start = 0
         for segment_end, do_reset in segments:
@@ -2463,7 +2639,7 @@ class AdditiveUnit(Unit):
                 advance = float(travel[-1])
                 travel *= tau
 
-                np.multiply(ratios[:, None], travel[None, :], out=block)
+                np.multiply(rate[:, None], travel[None, :], out=block)
                 np.multiply(phases, tau, out=offsets)
                 offsets += fixed
                 block += offsets[:, None]
@@ -2474,6 +2650,11 @@ class AdditiveUnit(Unit):
                 np.multiply(ratios, advance, out=offsets)
                 phases += offsets
                 np.mod(phases, 1.0, out=phases)
+                if gliding:
+                    # And the rotation performed so far with it, or the next
+                    # chunk would start the glide over rather than continue it.
+                    np.multiply(step, advance / travelled, out=offsets)
+                    fixed += offsets
                 begin = stop
             start = segment_end
 

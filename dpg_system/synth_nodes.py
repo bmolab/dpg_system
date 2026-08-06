@@ -981,11 +981,19 @@ class AdditiveNode(SynthNode):
     the moment, so band limiting follows a pitch sweep by the sample and there
     is no aliasing to trade against brightness.
 
-    Phase mode is worth trying on any sound that seems too loud for its level.
-    Every partial in phase means one narrow spike per cycle, which is a high
-    crest factor -- so normalising it costs a lot of level -- and reads as a
-    buzz. 'random' and 'schroeder' spread the same partials across the cycle
-    for about half the crest; schroeder is the deterministic one.
+    'spread' is the phase control, and it is continuous. At 0 every partial
+    starts together: one narrow spike per cycle, a high crest factor -- so
+    normalising it costs a lot of level -- and it reads as a buzz. Opening it
+    disperses the partials across the cycle for about half the crest at the
+    same spectrum, which sounds like the spike smearing into a swoosh. 'phase'
+    only chooses what it disperses towards, so at spread 0 the three agree and
+    changing between them is silent.
+
+    Nothing here jumps. A new set of phases is reached by rotating each partial
+    to it over 'phase glide' seconds rather than stepping, because every
+    partial moving at once is a step in the waveform and therefore a click.
+    A phase turning slowly is heard as a momentary detune of a fraction of a
+    cent, if at all. Set the glide to 0 to get the jump back.
 
     'span' decides what the curve's x axis means. On 'partials' it stretches
     to whatever the partial count is, so the shape you drew survives being
@@ -1128,6 +1136,9 @@ class AdditiveNode(SynthNode):
         self.stretch_input = self.add_modulation_input(
             'stretch', self.unit.stretch_in, minimum=-0.5, maximum=1.0,
             speed=0.002)
+        self.spread_input = self.add_modulation_input(
+            'spread', self.unit.spread_in, minimum=0.0, maximum=4.0,
+            speed=0.01, slider=False)
         self.add_modulation_input('phase mod', self.unit.phase_mod_in,
                                   speed=0.01)
         self.add_signal_input('sync', self.unit.sync_in)
@@ -1170,6 +1181,15 @@ class AdditiveNode(SynthNode):
         self.span_option.widget.set_tooltip(
             'what the curve x axis means. Ignored while editing bars, where '
             'a bar is always its own partial')
+        self.glide_option = self.add_option('phase glide',
+                                            widget_type='drag_float',
+                                            default_value=0.08, min=0.0,
+                                            callback=self.parameters_changed)
+        if self.glide_option.widget is not None:
+            self.glide_option.widget.speed = 0.005
+            self.glide_option.widget.set_tooltip(
+                'seconds for a phase to turn half a circle: a speed limit on '
+                'phase changes, not a lag on them. 0 jumps, which lurches')
         self.phase_option = self.add_option('start phase',
                                             widget_type='slider_float',
                                             default_value=0.0, min=0.0,
@@ -1311,6 +1331,7 @@ class AdditiveNode(SynthNode):
             # interpolated. The span option keeps its value for the curve.
             self.unit.spectrum_span = AdditiveUnit.FIXED_SPAN
         self.unit.start_phase = any_to_float(self.phase_option())
+        self.unit.phase_glide = max(0.0, any_to_float(self.glide_option()))
 
     def reset_phase(self):
         self.unit.reset()
