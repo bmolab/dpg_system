@@ -20,7 +20,7 @@ from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
     synth_graph, start_filter_warm_up,
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
-    AdditiveUnit,
+    AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit,
@@ -44,6 +44,12 @@ def register_synth_nodes():
     Node.app.register_node('vco~', VcoNode.factory)
     Node.app.register_node('additive~', AdditiveNode.factory)
     Node.app.register_node('spectrum~', AdditiveNode.factory)
+    Node.app.register_node('delay~', DelayNode.factory)
+    Node.app.register_node('echo~', DelayNode.factory)
+    Node.app.register_node('fold~', FoldNode.factory)
+    Node.app.register_node('distort~', FoldNode.factory)
+    Node.app.register_node('crush~', CrushNode.factory)
+    Node.app.register_node('decimate~', CrushNode.factory)
     Node.app.register_node('vcf~', VcfNode.factory)
     Node.app.register_node('formant~', FormantNode.factory)
     Node.app.register_node('vocoder~', VocoderNode.factory)
@@ -1619,6 +1625,348 @@ class AdditiveNode(SynthNode):
             self.bars.set_values(container['additive_bars'], notify=False)
         if 'additive_points' in container or 'additive_bars' in container:
             self.build_spectrum()
+
+
+# ----------------------------------------------------------------------------
+# delay~
+# ----------------------------------------------------------------------------
+
+class DelayNode(SynthNode):
+    """Delay line with damped feedback and an audio-rate delay time.
+
+    Feedback belongs to the object rather than to the patch, and has to: a
+    cord from the outlet back to the inlet is a cycle, the compiler runs a
+    cycle one block late, so the shortest delay a patched loop can make is
+    around 12 ms. Everything below that is only reachable from inside -- and
+    that is where the good things live. A few milliseconds with feedback is a
+    comb filter; the same with damping is a plucked string; under a
+    millisecond, modulated, is a flanger.
+
+    'damping' is a one pole inside the loop, so each repeat comes back darker
+    than the one before. At 0 it is transparent. It is the difference between
+    a feedback that decays like something in a room and one that builds to a
+    shriek, and between a comb filter and a string.
+
+    Feedback past 1 is allowed on purpose -- it is how a delay becomes an
+    oscillator. The loop has a soft stop that is exactly linear below 1.5 and
+    bends above it, so it settles at a level instead of running away, and
+    ordinary levels are not coloured on the way past.
+
+    'time' is audio-rate and the read is interpolated, so it can be modulated
+    as hard as you like:
+
+      slide  one read head, moved through the buffer. The pitch moves with it,
+             which is what tape does. Effort driving the delay time becomes
+             pitch, which is probably why you want this node.
+      fade   the head is held still and crossfaded to the new time when the
+             time changes, so a delay time can be *set* without gliding to it.
+             Standing still the two modes are identical.
+
+    'freeze' stops the input and loops what is already in the buffer.
+
+    Stereo when something is patched to the right inlet: two lines, one set of
+    times and gains, so the channels cannot drift apart.
+
+    Arguments: delay~ <time in seconds> <feedback> and/or a mode.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return DelayNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = DelayUnit(synth_graph.sample_rate)
+
+        mode = 'slide'
+        numbers = []
+        if args is not None:
+            for arg in args:
+                if arg in DelayUnit.MODES:
+                    mode = arg
+                else:
+                    try:
+                        numbers.append(float(arg))
+                    except (ValueError, TypeError):
+                        continue
+        seconds = 0.25
+        feedback = 0.0
+        if len(numbers) > 0:
+            seconds = max(0.0, numbers[0])
+        if len(numbers) > 1:
+            feedback = numbers[1]
+        self.unit.time_in.base = seconds
+        self.unit.feedback_in.base = feedback
+        self.unit.mode = DelayUnit.MODES.index(mode)
+
+        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+        # A wide range whose useful part is all at the bottom: a slider could
+        # never be set to the few milliseconds that make a comb.
+        self.time_input = self.add_modulation_input(
+            'time', self.unit.time_in, default_value=seconds, minimum=0.0,
+            speed=0.002, slider=False)
+        self.feedback_input = self.add_modulation_input(
+            'feedback', self.unit.feedback_in, default_value=feedback,
+            minimum=-1.2, maximum=1.2, speed=0.01)
+        self.damping_input = self.add_modulation_input(
+            'damping', self.unit.damping_in, minimum=0.0, maximum=0.999,
+            speed=0.01)
+        self.freeze_input = self.add_signal_input('freeze',
+                                                  self.unit.freeze_in)
+
+        self.mode_input = self.add_input('mode', widget_type='combo',
+                                         default_value=mode,
+                                         callback=self.parameters_changed)
+        self.mode_input.widget.combo_items = list(DelayUnit.MODES)
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+
+        self.freeze_option = self.add_option('freeze', widget_type='checkbox',
+                                             default_value=False,
+                                             callback=self.parameters_changed)
+        self.max_option = self.add_option('max delay', widget_type='drag_float',
+                                          default_value=2.0, min=0.01,
+                                          callback=self.max_changed)
+        if self.max_option.widget is not None:
+            self.max_option.widget.speed = 0.1
+            self.max_option.widget.set_tooltip(
+                'seconds of buffer; the time inlet is clamped to it')
+        self.clear_option = self.add_option('clear', widget_type='button',
+                                            callback=self.clear_line)
+        self.finish_synth_node()
+
+    def custom_create(self, from_file):
+        # An option holds its real value only once every element has been
+        # created, so the unit is brought into line here. Without this a node
+        # made by hand keeps whatever the unit was built with, and the panel
+        # says one thing while the sound does another.
+        self.max_changed()
+        self.parameters_changed()
+
+    def sync_options(self):
+        mode = any_to_string(self.mode_input())
+        if mode in DelayUnit.MODES:
+            self.unit.mode = DelayUnit.MODES.index(mode)
+        # The checkbox and the inlet are summed by the inlet itself, so either
+        # can freeze it and the button does not fight a patched gate.
+        self.unit.freeze_in.base = 1.0 if any_to_bool(self.freeze_option()) \
+            else 0.0
+
+    def max_changed(self):
+        self.unit.set_max_delay(any_to_float(self.max_option()))
+
+    def clear_line(self):
+        self.unit.reset()
+
+
+# ----------------------------------------------------------------------------
+# fold~
+# ----------------------------------------------------------------------------
+
+class FoldNode(SynthNode):
+    """Saturation and wavefolding, with the aliasing dealt with.
+
+    Any nonlinearity makes harmonics above the ones it was handed, and the
+    ones that land past Nyquist come back down as tones unrelated to the pitch
+    that do not move when the pitch moves. That is the fizz around bright
+    distorted sound. shaper~ will apply any curve you can draw but can do
+    nothing about this, because band-limiting a curve needs its integral.
+    These four shapes were chosen partly because they have one.
+
+    'shape' runs along the four and, like formant~'s vowel, between them:
+
+      0 tanh   soft saturation: odd harmonics, gently, and a ceiling.
+      1 clip   hard clipping: the same ceiling arrived at abruptly, so far
+               more harmonics -- the sound of too much gain.
+      2 sine   sine folding: past the limit the signal turns back on itself
+               rather than stopping, but smoothly, so the harmonics sweep and
+               change places without the very high ones a corner would make.
+      3 fold   triangle wavefolding: the same turning back, with corners. The
+               brightest of the four by some way, and the one whose timbre
+               moves most under a drive envelope -- which is why 'drive' is
+               the interesting inlet on this node.
+
+    The run only ever gets harsher, which is what a control swept upwards
+    should do. Driven six times over, the four measure a spectral centroid of
+    about 140 Hz, 155, 400 and 740, in that order. Each step is one decision:
+    how sharp the knee (0 to 1), whether the signal stops at the limit or
+    turns back through it (1 to 2), how sharp that turn is (2 to 3). 2.5 is a
+    fold with its corners taken off. The position is an audio-rate inlet, so
+    the shape can move with whatever drives it.
+
+    'bias' pushes the signal off centre before shaping. A symmetrical curve
+    makes only odd harmonics and can sound hollow; asymmetry brings in the
+    even ones, which is most of what is meant by warmth. It makes DC too, so
+    there is a blocker on the way out.
+
+    'antialias' is the cheap repair -- ask what the curve did on average
+    between the last sample and this one rather than what it does at this one.
+    It costs almost nothing and is worth 6 to 8 dB.
+
+    'oversample' is the real one, and folding needs it. Driven hard at 3 kHz,
+    the aliasing measures about -25 dB for tanh and around the level of the
+    signal itself for the folder; antialias alone takes 8 dB off that, 2x
+    takes about 30, and 4x about 50. That is the difference between a folder
+    that can be swept and one that can only be whispered to. It costs roughly
+    3-4x, which at 4x measured 156 us a block against an 11.6 ms budget --
+    cheap enough that 2x is the default and 1 is the saving, not the norm.
+
+    Also registered as distort~.
+
+    Arguments: fold~ <drive> and/or a shape name.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return FoldNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = FoldUnit(synth_graph.sample_rate)
+
+        shape = 0.0
+        drive = 1.0
+        numbers = []
+        if args is not None:
+            for arg in args:
+                if arg in FoldUnit.SHAPES:
+                    shape = float(FoldUnit.SHAPES.index(arg))
+                else:
+                    try:
+                        numbers.append(float(arg))
+                    except (ValueError, TypeError):
+                        continue
+        # fold~ <drive> <shape position>, or a shape by name in either place.
+        if len(numbers) > 0:
+            drive = numbers[0]
+        if len(numbers) > 1:
+            shape = min(float(len(FoldUnit.SHAPES) - 1), max(0.0, numbers[1]))
+        self.unit.shape_in.base = shape
+        self.unit.drive_in.base = drive
+
+        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+        self.drive_input = self.add_modulation_input(
+            'drive', self.unit.drive_in, default_value=drive, minimum=0.0,
+            speed=0.02, slider=False)
+        self.bias_input = self.add_modulation_input(
+            'bias', self.unit.bias_in, minimum=-2.0, maximum=2.0, speed=0.01)
+        self.level_input = self.add_modulation_input(
+            'level', self.unit.level_in, minimum=0.0, maximum=2.0, speed=0.01)
+        # A slider, because the whole range is useful and the position between
+        # the named shapes is the point of it.
+        self.shape_input = self.add_modulation_input(
+            'shape', self.unit.shape_in, default_value=shape, minimum=0.0,
+            maximum=float(len(FoldUnit.SHAPES) - 1), speed=0.01)
+        if self.shape_input.widget is not None:
+            self.shape_input.widget.set_tooltip(
+                '0 tanh, 1 clip, 2 fold, 3 sine -- and every point between')
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+
+        self.antialias_option = self.add_option(
+            'antialias', widget_type='checkbox', default_value=True,
+            callback=self.parameters_changed)
+        self.oversample_option = self.add_option(
+            'oversample', widget_type='combo', default_value='2',
+            callback=self.parameters_changed)
+        self.oversample_option.widget.combo_items = [
+            str(factor) for factor in FoldUnit.FACTORS]
+        if self.oversample_option.widget is not None:
+            self.oversample_option.widget.set_tooltip(
+                'run the shaper this many times faster; folding wants 2 or 4')
+        self.dc_option = self.add_option('block dc', widget_type='checkbox',
+                                         default_value=True,
+                                         callback=self.parameters_changed)
+        self.finish_synth_node()
+
+    def custom_create(self, from_file):
+        # See DelayNode: the oversampling default lives in the option, so the
+        # unit only learns about it once the options are real.
+        self.parameters_changed()
+
+    def sync_options(self):
+        self.unit.antialias = any_to_bool(self.antialias_option())
+        self.unit.block_dc = any_to_bool(self.dc_option())
+        try:
+            factor = int(any_to_string(self.oversample_option()))
+        except (ValueError, TypeError):
+            factor = 1
+        self.unit.set_oversample(factor)
+
+
+# ----------------------------------------------------------------------------
+# crush~
+# ----------------------------------------------------------------------------
+
+class CrushNode(SynthNode):
+    """Bit depth and sample rate reduction.
+
+    Its own object rather than a shape in fold~, because neither of these is a
+    curve: quantising is a staircase whose steps are fixed in amplitude,
+    holding is a staircase in time, and they sound nothing alike.
+
+    'bits' quantises the amplitude. The error is roughly noise high up and
+    plainly harmonic low down, and unlike tape hiss it is loudest when the
+    signal is loudest, which is what makes it sound like a machine rather than
+    like dirt.
+
+    'rate' is the more useful of the two, and the one to modulate. Holding
+    each sample until the next is due is a sample and hold at audio rate, and
+    the images it throws off around that rate are inharmonic and stay put when
+    the pitch moves -- so sweeping it against a held note is an instrument in
+    itself. At or above the sample rate it does nothing at all.
+
+    Neither is anti-aliased, and neither should be: here the aliasing is the
+    effect rather than a defect of it. Patch fold~ before this for dirt with a
+    shape to it, or after it to break up what the folder made.
+
+    Also registered as decimate~.
+
+    Arguments: crush~ <bits> <rate in Hz>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return CrushNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = CrushUnit(synth_graph.sample_rate)
+
+        bits = 24.0
+        rate = synth_graph.sample_rate
+        numbers = []
+        if args is not None:
+            for arg in args:
+                try:
+                    numbers.append(float(arg))
+                except (ValueError, TypeError):
+                    continue
+        if len(numbers) > 0:
+            bits = min(24.0, max(1.0, numbers[0]))
+        if len(numbers) > 1:
+            rate = max(1.0, numbers[1])
+        self.unit.bits_in.base = bits
+        self.unit.rate_in.base = rate
+
+        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+        self.bits_input = self.add_modulation_input(
+            'bits', self.unit.bits_in, default_value=bits, minimum=1.0,
+            maximum=24.0, speed=0.05)
+        # Everything worth hearing is in the bottom few percent of this range,
+        # so it stays a drag box rather than becoming a slider.
+        self.rate_input = self.add_modulation_input(
+            'rate', self.unit.rate_in, default_value=rate, minimum=1.0,
+            maximum=synth_graph.sample_rate, speed=20.0, slider=False)
+
+        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.finish_synth_node()
 
 
 # ----------------------------------------------------------------------------

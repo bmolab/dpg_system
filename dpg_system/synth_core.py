@@ -2934,6 +2934,121 @@ else:
     _vocoder_synthesise = _vocoder_synthesise_source
 
 
+def _cubic_read_source(buffer, size, position):
+    """Catmull-Rom read at a fractional position, wrapping the buffer.
+
+    Linear interpolation would be cheaper, but its error is a lowpass that
+    varies with the fractional part -- so a delay time being modulated would
+    scrub the high end in time with the modulation, which is audible as a
+    warble quite apart from the pitch shift that is wanted.
+    """
+    i1 = int(position)
+    frac = position - i1
+    i0 = i1 - 1
+    if i0 < 0:
+        i0 += size
+    i2 = i1 + 1
+    if i2 >= size:
+        i2 -= size
+    i3 = i1 + 2
+    if i3 >= size:
+        i3 -= size
+    y0 = buffer[i0]
+    y1 = buffer[i1]
+    y2 = buffer[i2]
+    y3 = buffer[i3]
+    c1 = 0.5 * (y2 - y0)
+    c2 = y0 - 2.5 * y1 + 2.0 * y2 - 0.5 * y3
+    c3 = 0.5 * (y3 - y0) + 1.5 * (y1 - y2)
+    return ((c3 * frac + c2) * frac + c1) * frac + y1
+
+
+def _delay_kernel_source(x, buffer, write, delay, feedback, damping, out,
+                         low, phase, held_a, held_b, fade_step, mode, freeze):
+    """One delay line with damped feedback, sample by sample.
+
+    Recursive by nature -- what is written now depends on what was read now --
+    so this is the one shape that cannot be vectorised, which is why it runs
+    here rather than in numpy.
+
+    mode 0 slides: one read head, so changing the delay time drags the read
+    point through the buffer and the pitch goes with it. That is what tape
+    does, and with a body driving the time it is the whole point.
+
+    mode 1 crossfades: two heads, each picking up the current time when its
+    turn comes round, mixed across a fixed period. The time changes without
+    the pitch, at the cost of a little comb while the two disagree. Holding
+    still, both heads sit at the same place and it is exactly mode 0.
+    """
+    size = buffer.shape[0]
+    limit = size - 3.0
+    for i in range(x.shape[0]):
+        want = delay[i]
+        if want < 1.0:
+            want = 1.0
+        elif want > limit:
+            want = limit
+
+        if held_a <= 0.0:
+            held_a = want              # first block: start where we are asked
+
+        if mode == 0:
+            held_a = want
+            read = write - want
+            if read < 0.0:
+                read += size
+            y = _cubic_read(buffer, size, read)
+        else:
+            # Crossfade only when the time has actually moved, and hold a
+            # single head the rest of the time. Blending two heads
+            # continuously -- which is the obvious way to write this -- would
+            # mean the output was always a mixture of two delays, so the pitch
+            # would sit between them and the mode would never do the one thing
+            # it exists for.
+            if phase <= 0.0 and (want - held_a > 1.0 or held_a - want > 1.0):
+                held_b = want
+                phase = fade_step
+            read = write - held_a
+            if read < 0.0:
+                read += size
+            y = _cubic_read(buffer, size, read)
+            if phase > 0.0:
+                read = write - held_b
+                if read < 0.0:
+                    read += size
+                y += (_cubic_read(buffer, size, read) - y) * phase
+                phase += fade_step
+                if phase >= 1.0:
+                    held_a = held_b
+                    phase = 0.0
+
+        # One pole in the loop. At damping 0 it is transparent, so a clean
+        # delay stays clean; opening it makes each repeat darker than the one
+        # before, which is what stops a long feedback becoming a shriek.
+        low += (y - low) * (1.0 - damping[i])
+        fed = low * feedback[i]
+
+        # Feedback over unity is worth having -- it is how a delay becomes an
+        # oscillator -- so the loop needs a stop that is not a hard clip. This
+        # is exactly linear below 1.5 and bends smoothly above it, so ordinary
+        # levels are untouched and a runaway settles instead of exploding.
+        if fed > 1.5:
+            fed = 1.5 + np.tanh(fed - 1.5)
+        elif fed < -1.5:
+            fed = -1.5 - np.tanh(-fed - 1.5)
+
+        if freeze != 0:
+            buffer[write] = y          # the loop keeps what it has, and only that
+        else:
+            buffer[write] = x[i] + fed
+        out[i] = y
+
+        write += 1
+        if write >= size:
+            write = 0
+    return write, low, phase, held_a, held_b
+
+
 def _one_euro_source(x, out, period, min_cutoff, beta, d_cutoff,
                      previous, speed, smoothed, primed):
     """The one euro filter, sample by sample.
@@ -2977,6 +3092,14 @@ if _HAVE_NUMBA:
 else:
     _one_euro = _one_euro_source
 
+if _HAVE_NUMBA:
+    _cubic_read = njit(cache=True, fastmath=True, inline='always')(
+        _cubic_read_source)
+    _delay_kernel = njit(cache=True, fastmath=True)(_delay_kernel_source)
+else:
+    _cubic_read = _cubic_read_source
+    _delay_kernel = _delay_kernel_source
+
 
 def _warm_up_filter():
     """Compile the filter kernels off the audio thread.
@@ -3005,6 +3128,12 @@ def _warm_up_filter():
                             state.copy(), envelopes, bank, output)
         _one_euro(wide, output, 1.0 / DEFAULT_SAMPLE_RATE, 1.0, 1.0, 1.0,
                   0.0, 0.0, 0.0, 0.0)
+        line = np.zeros(64, dtype=np.float64)
+        taps = np.full(wide.shape[0], 8.0)
+        zeros = np.zeros(wide.shape[0])
+        for shape in (0, 1):
+            _delay_kernel(wide, line, 0, taps, zeros, zeros, output,
+                          0.0, 0.0, 8.0, 8.0, 0.01, shape, 0)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -3172,6 +3301,716 @@ class VcfUnit(Unit):
             result)
         np.copyto(self.right.data[:frames], result, casting='unsafe')
         self.right.constant = False
+
+
+# ----------------------------------------------------------------------------
+# delay~  --  a buffer read behind itself
+# ----------------------------------------------------------------------------
+
+class DelayUnit(Unit):
+    """Delay line with damped feedback and an audio-rate delay time.
+
+    Feedback is part of the unit rather than something you patch, and it has
+    to be: a cord from the outlet back to the inlet is a cycle, and the
+    compiler runs a cycle a block late, so the shortest delay a patched loop
+    can make is one block -- around 12 ms. Everything interesting below that
+    is therefore only reachable from inside. A few ms with feedback is a comb
+    filter; a few ms with feedback and damping is a plucked string; under a
+    millisecond, modulated, is a flanger.
+
+    'damping' is a one pole in the loop, so each repeat is darker than the one
+    before. At 0 it is transparent and a clean delay stays clean. It is what
+    makes a long feedback decay like something in a room rather than build to
+    a shriek, and it is the difference between a comb filter and a string.
+
+    Feedback past 1 is allowed. The loop has a soft stop that is exactly
+    linear below 1.5 and bends above it, so a delay pushed into oscillation
+    settles at a level instead of running away, and ordinary levels are not
+    coloured on the way.
+
+    'time' is an audio-rate inlet and the read is interpolated, so it can be
+    modulated as hard as you like. In 'slide' the read head moves through the
+    buffer and the pitch moves with it -- tape, and doppler: effort driving
+    the delay time becomes pitch. In 'fade' two heads take turns picking up
+    the new time and crossfade, so the time changes without the pitch, at the
+    cost of a little comb while the two disagree. Standing still the two modes
+    are identical.
+
+    'freeze' stops the input and loops what is in the buffer.
+
+    Stereo when something is patched to the right inlet: two buffers, one set
+    of times and gains, so the channels cannot drift apart.
+    """
+
+    SLIDE, FADE = 0, 1
+    MODES = ('slide', 'fade')
+    # How long a crossfade takes when the delay time moves in 'fade'.
+    FADE_SECONDS = 0.02
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.time_in = self.new_inlet(base=0.25, minimum=0.0)      # seconds
+        self.feedback_in = self.new_inlet(base=0.0, minimum=-1.2, maximum=1.2)
+        self.damping_in = self.new_inlet(base=0.0, minimum=0.0, maximum=0.999)
+        self.freeze_in = self.new_inlet(base=0.0)
+
+        self.mode = DelayUnit.SLIDE
+        self.max_delay = 2.0
+        self._allocate(self.max_delay)
+
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+        self._samples = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._feedback = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._damping = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._work = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._input = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._last_tap = None
+        self._warned = False
+
+    # -- buffers -------------------------------------------------------------
+
+    def _allocate(self, seconds):
+        size = max(64, int(self.sample_rate * max(0.001, seconds)) + 4)
+        self.left_line = np.zeros(size, dtype=np.float64)
+        self.right_line = np.zeros(size, dtype=np.float64)
+        self._write_left = 0
+        self._write_right = 0
+        self._low_left = 0.0
+        self._low_right = 0.0
+        self._phase_left = 0.0
+        self._phase_right = 0.0
+        # Zero means 'not started': the kernel adopts the first delay it is
+        # asked for rather than gliding to it from an arbitrary place.
+        self._head_a_left = 0.0
+        self._head_b_left = 0.0
+        self._head_a_right = 0.0
+        self._head_b_right = 0.0
+
+    def set_max_delay(self, seconds):
+        """Main thread: resize the line. Whole new buffers, assigned at once."""
+        seconds = max(0.001, float(seconds))
+        if abs(seconds - self.max_delay) < 1.0e-6:
+            return
+        self.max_delay = seconds
+        self._allocate(seconds)
+
+    def reset(self):
+        self.left_line[:] = 0.0
+        self.right_line[:] = 0.0
+        self._low_left = 0.0
+        self._low_right = 0.0
+
+    # -- rendering -----------------------------------------------------------
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        right_in = self.right_in.eval(frames)
+        time = self.time_in.eval(frames)
+        feedback = self.feedback_in.eval(frames)
+        damping = self.damping_in.eval(frames)
+        freeze = self.freeze_in.eval(frames)
+
+        size = self.left_line.shape[0]
+        taps = self._samples[:frames]
+        if time.constant:
+            # A knob, held between GUI frames. Jumping the read point to the
+            # new value for the whole block would move it by tens of samples
+            # at a stroke -- a step in the output, once a block, for as long
+            # as the knob is moving. Ramped across the block it is a moment of
+            # pitch instead, which is what moving a tape head sounds like.
+            target = time.value * self.sample_rate
+            start = target if self._last_tap is None else self._last_tap
+            np.multiply(_INDEX_RAMP[:frames], (target - start) / frames,
+                        out=taps)
+            taps += start
+            self._last_tap = target
+        else:
+            np.multiply(time.data[:frames], self.sample_rate, out=taps,
+                        casting='unsafe')
+            self._last_tap = float(taps[-1])
+        np.nan_to_num(taps, copy=False, nan=1.0, posinf=0.0, neginf=0.0)
+        np.clip(taps, 1.0, size - 3.0, out=taps)
+
+        gains = self._feedback[:frames]
+        if feedback.constant:
+            gains[:] = feedback.value
+        else:
+            np.copyto(gains, feedback.data[:frames], casting='unsafe')
+        np.clip(gains, -1.2, 1.2, out=gains)
+
+        dark = self._damping[:frames]
+        if damping.constant:
+            dark[:] = damping.value
+        else:
+            np.copyto(dark, damping.data[:frames], casting='unsafe')
+        np.clip(dark, 0.0, 0.999, out=dark)
+
+        held = 1 if (freeze.value >= 0.5 if freeze.constant
+                     else float(freeze.data[0]) >= 0.5) else 0
+        stereo = len(self.right_in.sources) > 0
+        step = 1.0 / max(1.0, DelayUnit.FADE_SECONDS * self.sample_rate)
+
+        source = self._input[:frames]
+        if signal.constant:
+            source[:] = signal.value
+        else:
+            np.copyto(source, signal.data[:frames], casting='unsafe')
+
+        work = self._work[:frames]
+        if _HAVE_NUMBA and _svf_ready.is_set():
+            (self._write_left, self._low_left, self._phase_left,
+             self._head_a_left, self._head_b_left) = _delay_kernel(
+                source, self.left_line, self._write_left, taps, gains, dark,
+                work, self._low_left, self._phase_left, self._head_a_left,
+                self._head_b_left, step, self.mode, held)
+        else:
+            self._render_plain(source, self.left_line, taps, work, frames,
+                               left=True)
+        np.copyto(self.out.data[:frames], work, casting='unsafe')
+        self.out.constant = False
+
+        if not stereo:
+            np.copyto(self.right.data[:frames], self.out.data[:frames])
+            self.right.constant = False
+            return
+
+        if right_in.constant:
+            source[:] = right_in.value
+        else:
+            np.copyto(source, right_in.data[:frames], casting='unsafe')
+        if _HAVE_NUMBA and _svf_ready.is_set():
+            (self._write_right, self._low_right, self._phase_right,
+             self._head_a_right, self._head_b_right) = _delay_kernel(
+                source, self.right_line, self._write_right, taps, gains, dark,
+                work, self._low_right, self._phase_right, self._head_a_right,
+                self._head_b_right, step, self.mode, held)
+        else:
+            self._render_plain(source, self.right_line, taps, work, frames,
+                               left=False)
+        np.copyto(self.right.data[:frames], work, casting='unsafe')
+        self.right.constant = False
+
+    def _render_plain(self, source, line, taps, out, frames, left):
+        """Delay without feedback, for before the kernel is compiled.
+
+        numba's first call costs about a second and cannot happen on the audio
+        thread, so for the moment before it is ready -- and permanently, if
+        numba is not installed -- the line still delays, vectorised, and only
+        the loop is missing. Reads are clamped to a block so that a read
+        cannot want a sample this same block is still writing.
+        """
+        if not self._warned and not _HAVE_NUMBA:
+            self._warned = True
+            print('synth_core: numba unavailable, delay~ runs without feedback')
+        size = line.shape[0]
+        write = self._write_left if left else self._write_right
+
+        positions = np.clip(taps, float(frames), size - 3.0)
+        read = (write + _INDEX_RAMP[:frames] - 1.0) - positions
+        np.mod(read, float(size), out=read)
+
+        base = read.astype(np.int64)
+        frac = read - base
+        gather = np.empty((4, frames))
+        for offset in range(-1, 3):
+            np.take(line, (base + offset) % size, out=gather[offset + 1])
+        y0, y1, y2, y3 = gather
+        c1 = 0.5 * (y2 - y0)
+        c2 = y0 - 2.5 * y1 + 2.0 * y2 - 0.5 * y3
+        c3 = 0.5 * (y3 - y0) + 1.5 * (y1 - y2)
+        np.copyto(out, ((c3 * frac + c2) * frac + c1) * frac + y1)
+
+        index = (write + np.arange(frames)) % size
+        line[index] = source
+        if left:
+            self._write_left = int((write + frames) % size)
+        else:
+            self._write_right = int((write + frames) % size)
+
+
+# ----------------------------------------------------------------------------
+# fold~  --  a nonlinearity that does not fizz
+# ----------------------------------------------------------------------------
+
+def _fold_shape(v, shape):
+    """The transfer function itself.
+
+    Ordered gentlest to harshest, which is measurable rather than a matter of
+    taste: driven six times over, a sine into each of these comes out with a
+    spectral centroid of about 140 Hz, 155, 400 and 740, and with 11, 13, 68
+    and 87 percent of its energy above the fundamental.
+    """
+    if shape == 1:
+        return np.clip(v, -1.0, 1.0)
+    if shape == 2:
+        return np.sin(v)
+    if shape == 3:
+        p = np.mod(v + 1.0, 4.0)
+        return np.where(p < 2.0, p - 1.0, 3.0 - p)
+    return np.tanh(v)
+
+
+def _fold_integral(v, shape):
+    """Its antiderivative, which is what makes the anti-aliasing possible.
+
+    Every shape here was chosen partly because this exists in closed form. A
+    curve without one can still be drawn in shaper~; it just cannot be
+    band-limited this cheaply.
+    """
+    if shape == 1:
+        magnitude = np.abs(v)
+        return np.where(magnitude <= 1.0, v * v * 0.5, magnitude - 0.5)
+    if shape == 2:
+        return -np.cos(v)
+    if shape == 3:
+        p = np.mod(v + 1.0, 4.0)
+        return np.where(p < 2.0, p * p * 0.5 - p, 3.0 * p - p * p * 0.5 - 4.0)
+    # log(cosh(v)), written so that it does not overflow for loud input.
+    magnitude = np.abs(v)
+    return magnitude + np.log1p(np.exp(-2.0 * magnitude)) - math.log(2.0)
+
+
+_OVERSAMPLE_FIR = {}
+
+
+def _oversample_filter(factor):
+    """Half-band-ish lowpass for going up and coming back down.
+
+    Designed once per factor and shared: it is the same filter both ways, and
+    at 63 taps it is cheap enough to run twice per sample at the raised rate.
+    """
+    if factor not in _OVERSAMPLE_FIR:
+        if scipy_signal is None:
+            _OVERSAMPLE_FIR[factor] = None
+        else:
+            _OVERSAMPLE_FIR[factor] = scipy_signal.firwin(63, 0.9 / factor)
+    return _OVERSAMPLE_FIR[factor]
+
+
+class FoldUnit(Unit):
+    """Saturation and wavefolding, with the aliasing taken out.
+
+    Any nonlinearity makes harmonics above the ones it was given, and the ones
+    that land past Nyquist fold back down as tones that are not related to the
+    pitch and do not move with it. That is the fizz around bright distorted
+    sound, and it is why shaper~ warns about it: a drawn curve cannot be
+    band-limited, because band-limiting needs to know the curve's integral.
+
+    These four do have integrals, in closed form, so this uses the standard
+    first-order trick: instead of asking what the curve does at this sample,
+    ask what it did *on average between the last sample and this one*, which
+    is the difference of the antiderivative over the difference of the input.
+    A corner is then crossed rather than landed on, and what would have been
+    aliasing is mostly not generated. It costs one extra evaluation and half a
+    sample of delay, and it is worth about 25 dB where it matters. Off, this
+    is an ordinary waveshaper again -- worth hearing the difference.
+
+    'shape' runs along the four of them and, like formant~'s vowel, runs
+    *between* them rather than switching:
+
+      0 tanh   soft saturation. Odd harmonics, gently, and a ceiling.
+      1 clip   hard clipping. The same ceiling arrived at abruptly, so many
+               more harmonics, and the classic sound of too much gain.
+      2 sine   sine folding. Past the limit the signal turns back on itself
+               instead of stopping, but smoothly -- so the harmonics do not
+               merely grow with drive, they sweep and change places, without
+               the very high ones a corner would make.
+      3 fold   triangle wavefolding. The same turning back, with corners: the
+               brightest of the four by a long way, and the one whose timbre
+               moves most under a drive envelope.
+
+    The order is not arbitrary, and not a matter of taste either -- it is the
+    order the four come in when you measure them. Each step is one decision:
+    0 to 1 is how sharp the knee is, 1 to 2 is whether the signal stops at the
+    limit or turns back through it, 2 to 3 is how sharp that turn is. So the
+    run only ever gets harsher, which is what a control that is swept upwards
+    should do, and 2.5 is a fold with its corners taken off -- the ground
+    between a sine's roundness and a triangle's bright edges. The position is
+    an audio-rate inlet like any other: a shape that moves with what drives it.
+
+    Mixing two curves is exactly what lets the anti-aliasing survive it:
+    integration is linear, so the antiderivative of the mixture is the mixture
+    of the antiderivatives, and the trick below still applies at any point
+    along the run. Only two of the four are ever evaluated -- the pair the
+    block sits between.
+
+    'bias' pushes the signal off centre before shaping. A symmetrical curve
+    makes only odd harmonics and can sound hollow; asymmetry brings in the
+    even ones, which is most of what 'warm' means. It also makes DC, so there
+    is a blocker on the way out.
+
+    How much anti-aliasing is enough depends on the shape, and measurably so.
+    On a 3 kHz tone driven hard, the aliasing sits at about -25 dB for tanh and
+    -21 dB for hard clip before anything is done about it, and the
+    antiderivative trick takes 6 to 8 dB off that -- audible, and enough for
+    saturation. Folding is a different matter: it makes far more harmonics and
+    they run far higher, so the same tone folded lands its aliasing at roughly
+    the level of the signal itself, and 8 dB off that is still ruin. That is
+    what 'oversample' is for. Running the shaper at two or four times the rate
+    and filtering on the way back costs about four times as much and takes 30
+    dB or more off, which is the difference between a folder that can be swept
+    and one that can only be used quietly. Leave it at 1 for saturation; raise
+    it for folding, or whenever a bright source starts to fizz.
+    """
+
+    SHAPES = ('tanh', 'clip', 'sine', 'fold')
+    FACTORS = (1, 2, 4)
+    # Below this the antiderivative difference is two nearly equal numbers
+    # over a nearly zero one, so fall back to reading the curve directly.
+    ADAA_FLOOR = 1.0e-5
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.drive_in = self.new_inlet(base=1.0, minimum=0.0)
+        self.bias_in = self.new_inlet(base=0.0)
+        self.level_in = self.new_inlet(base=1.0)
+        self.shape_in = self.new_inlet(
+            base=0.0, minimum=0.0, maximum=float(len(FoldUnit.SHAPES) - 1))
+
+        self.antialias = True
+        self.block_dc = True
+        self.oversample = 1
+
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+        self._previous_left = 0.0
+        self._previous_right = 0.0
+        self._dc_left = np.zeros(1)
+        self._dc_right = np.zeros(1)
+        self._driven = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._earlier = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._morph = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._last_shape = None
+        self._blend_low = 0
+        self._blend_weight = 0.0
+        self._raised = None
+        self._up_state = [None, None]
+        self._down_state = [None, None]
+
+    def set_oversample(self, factor):
+        """Main thread: change the internal rate, and size the buffer for it."""
+        factor = int(factor)
+        if factor not in FoldUnit.FACTORS or factor == self.oversample:
+            return
+        self.oversample = factor
+        if factor > 1:
+            self._raised = np.zeros(MAX_BLOCK * factor, dtype=np.float64)
+        else:
+            self._raised = None
+        self._up_state = [None, None]
+        self._down_state = [None, None]
+
+    def reset(self):
+        self._previous_left = 0.0
+        self._previous_right = 0.0
+        self._dc_left = np.zeros(1)
+        self._dc_right = np.zeros(1)
+        self._up_state = [None, None]
+        self._down_state = [None, None]
+
+    def _blend(self, values, integral, weight):
+        """The shape, or its antiderivative, somewhere between two of them.
+
+        Integrating is linear, so the antiderivative of a mixture is the
+        mixture of the antiderivatives -- which is why the shapes can be
+        morphed without giving up the anti-aliasing. A curve that had to be
+        blended some other way would have no integral to speak of.
+        """
+        low = self._blend_low
+        table = _fold_integral if integral else _fold_shape
+        if isinstance(weight, float):
+            if weight <= 0.0:
+                return table(values, low)
+            if weight >= 1.0:
+                return table(values, low + 1)
+        under = table(values, low)
+        over = table(values, low + 1)
+        return under + (over - under) * weight
+
+    def _resolve_shape(self, frames):
+        """Where along the list of shapes we are, and between which two.
+
+        Ramped across the block when it comes from a knob, for the same reason
+        every other setting here is: a curve swapped at a block boundary is a
+        step in the output, once per frame for as long as it is being moved.
+        """
+        shape = self.shape_in.eval(frames)
+        highest = float(len(FoldUnit.SHAPES) - 1)
+        morph = self._morph[:frames]
+        if shape.constant:
+            target = min(highest, max(0.0, shape.value))
+            start = target if self._last_shape is None else self._last_shape
+            np.multiply(_INDEX_RAMP[:frames], (target - start) / frames,
+                        out=morph)
+            morph += start
+            self._last_shape = target
+        else:
+            np.copyto(morph, shape.data[:frames], casting='unsafe')
+            self._last_shape = float(morph[-1])
+        np.clip(morph, 0.0, highest, out=morph)
+
+        # Only ever two shapes are needed: the pair the block sits between.
+        low = int(math.floor(float(morph.min())))
+        self._blend_low = max(0, min(low, len(FoldUnit.SHAPES) - 2))
+        weight = np.clip(morph - self._blend_low, 0.0, 1.0)
+        first = float(weight[0])
+        if float(weight.min()) == first and float(weight.max()) == first:
+            self._blend_weight = first          # a scalar costs one curve less
+        else:
+            self._blend_weight = weight
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        right_in = self.right_in.eval(frames)
+        drive = self.drive_in.eval(frames)
+        bias = self.bias_in.eval(frames)
+        level = self.level_in.eval(frames)
+        self._resolve_shape(frames)
+
+        stereo = len(self.right_in.sources) > 0
+        result = self._shape_channel(signal, drive, bias, level, frames, True)
+        np.copyto(self.out.data[:frames], result, casting='unsafe')
+        self.out.constant = False
+
+        if not stereo:
+            np.copyto(self.right.data[:frames], self.out.data[:frames])
+            self.right.constant = False
+            return
+        result = self._shape_channel(right_in, drive, bias, level, frames,
+                                     False)
+        np.copyto(self.right.data[:frames], result, casting='unsafe')
+        self.right.constant = False
+
+    def _shape_channel(self, signal, drive, bias, level, frames, left):
+        driven = self._driven[:frames]
+        if signal.constant:
+            driven[:] = signal.value
+        else:
+            np.copyto(driven, signal.data[:frames], casting='unsafe')
+        if drive.constant:
+            if drive.value != 1.0:
+                driven *= drive.value
+        else:
+            driven *= drive.data[:frames]
+        if bias.constant:
+            if bias.value != 0.0:
+                driven += bias.value
+        else:
+            driven += bias.data[:frames]
+
+        factor = self.oversample
+        if factor > 1 and scipy_signal is not None:
+            shaped = self._shape_raised(driven, frames, factor, left)
+        else:
+            shaped = self._shape_at_rate(driven, left, self._blend_weight)
+
+        if self.block_dc:
+            shaped = self._remove_dc(shaped, left)
+        if level.constant:
+            if level.value != 1.0:
+                shaped = shaped * level.value
+        else:
+            shaped = shaped * level.data[:frames]
+        return shaped
+
+    def _shape_at_rate(self, driven, left, weight):
+        """The curve, applied to whatever rate these samples are at."""
+        if not self.antialias:
+            result = self._blend(driven, False, weight)
+            if left:
+                self._previous_left = float(driven[-1])
+            else:
+                self._previous_right = float(driven[-1])
+            return result
+
+        count = driven.shape[0]
+        earlier = np.empty(count)
+        earlier[0] = self._previous_left if left else self._previous_right
+        earlier[1:] = driven[:-1]
+        difference = driven - earlier
+        # Where two samples are nearly equal the quotient is two almost equal
+        # numbers over an almost zero one, so read the curve at the midpoint
+        # instead -- which is the limit the quotient is heading for anyway.
+        steady = np.abs(difference) < FoldUnit.ADAA_FLOOR
+        safe = np.where(steady, 1.0, difference)
+        result = np.where(
+            steady,
+            self._blend((driven + earlier) * 0.5, False, weight),
+            (self._blend(driven, True, weight)
+             - self._blend(earlier, True, weight)) / safe)
+        if left:
+            self._previous_left = float(driven[-1])
+        else:
+            self._previous_right = float(driven[-1])
+        return result
+
+    def _shape_raised(self, driven, frames, factor, left):
+        """Shape at a multiple of the sample rate, then come back down.
+
+        Zero-stuff, filter, shape, filter, keep every nth. Both filters carry
+        their state between blocks, so this streams -- the one-shot resamplers
+        would restart their history every block and buzz at the block rate.
+        """
+        taps = _oversample_filter(factor)
+        channel = 0 if left else 1
+        raised = self._raised[:frames * factor]
+        raised[:] = 0.0
+        raised[::factor] = driven
+
+        state = self._up_state[channel]
+        if state is None:
+            state = np.zeros(len(taps) - 1)
+        raised, state = scipy_signal.lfilter(taps * factor, 1.0, raised,
+                                             zi=state)
+        self._up_state[channel] = state
+
+        # The morph is a control, not audio, so holding each of its values for
+        # the run of raised samples it belongs to is exact enough.
+        weight = self._blend_weight
+        if not isinstance(weight, float):
+            weight = np.repeat(weight, factor)
+        shaped = self._shape_at_rate(raised, left, weight)
+
+        state = self._down_state[channel]
+        if state is None:
+            state = np.zeros(len(taps) - 1)
+        shaped, state = scipy_signal.lfilter(taps, 1.0, shaped, zi=state)
+        self._down_state[channel] = state
+        return shaped[::factor]
+
+    def _remove_dc(self, values, left):
+        """Bias makes DC, and DC eats headroom without being audible."""
+        if scipy_signal is None:
+            return values
+        pole = math.exp(-2.0 * math.pi * 10.0 / self.sample_rate)
+        state = self._dc_left if left else self._dc_right
+        filtered, state = scipy_signal.lfilter([1.0, -1.0], [1.0, -pole],
+                                               values, zi=state)
+        if left:
+            self._dc_left = state
+        else:
+            self._dc_right = state
+        return filtered
+
+
+# ----------------------------------------------------------------------------
+# crush~  --  fewer bits, fewer samples
+# ----------------------------------------------------------------------------
+
+class CrushUnit(Unit):
+    """Bit depth and sample rate reduction.
+
+    Not a curve, which is why it is its own object: quantising is a staircase
+    whose step size is fixed in amplitude, and holding is a staircase in time.
+    Neither can be drawn as a transfer function, and they sound nothing alike.
+
+    'bits' quantises the amplitude. The error is roughly noise at high
+    settings and plainly harmonic at low ones, and unlike tape hiss it is
+    loudest when the signal is loud.
+
+    'rate' is the more useful of the two. Holding each sample until the next
+    one is due is a sample and hold at audio rate, and the images it makes
+    around that rate are inharmonic and do not move with the pitch -- so
+    sweeping it against a held note is a whole instrument in itself. Set at or
+    above the sample rate it does nothing.
+
+    Both are audio-rate inlets. Neither is anti-aliased, and neither should
+    be: the aliasing is the effect.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.bits_in = self.new_inlet(base=24.0, minimum=1.0, maximum=24.0)
+        self.rate_in = self.new_inlet(base=DEFAULT_SAMPLE_RATE, minimum=1.0)
+
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+        self._phase = 0.0
+        self._held_left = 0.0
+        self._held_right = 0.0
+        self._work = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._steps = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._index = np.zeros(MAX_BLOCK, dtype=np.int64)
+
+    def reset(self):
+        self._phase = 0.0
+        self._held_left = 0.0
+        self._held_right = 0.0
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        right_in = self.right_in.eval(frames)
+        bits = self.bits_in.eval(frames)
+        rate = self.rate_in.eval(frames)
+
+        # Where the held samples fall. A phase runs at the reduction rate and
+        # a new sample is taken every time it passes a whole number, so the
+        # rate is free to move within the block; the index of the most recent
+        # crossing is then carried forward, which is the hold.
+        advance = self._steps[:frames]
+        if rate.constant:
+            advance[:] = rate.value / self.sample_rate
+        else:
+            np.multiply(rate.data[:frames], 1.0 / self.sample_rate,
+                        out=advance, casting='unsafe')
+        np.nan_to_num(advance, copy=False, nan=1.0, posinf=1.0, neginf=0.0)
+        np.clip(advance, 0.0, 1.0, out=advance)
+        np.cumsum(advance, out=advance)
+        advance += self._phase
+        whole = np.floor(advance)
+        self._phase = float(advance[-1] - whole[-1])
+
+        taken = self._index[:frames]
+        np.copyto(taken, np.arange(frames))
+        fresh = np.empty(frames, dtype=bool)
+        fresh[0] = whole[0] >= 1.0
+        np.greater(whole[1:], whole[:-1], out=fresh[1:])
+        taken[~fresh] = -1
+        np.maximum.accumulate(taken, out=taken)
+
+        levels = 0.0
+        if bits.constant:
+            levels = 2.0 ** (min(24.0, max(1.0, bits.value)) - 1.0)
+        stereo = len(self.right_in.sources) > 0
+
+        result = self._crush(signal, taken, bits, levels, frames, True)
+        np.copyto(self.out.data[:frames], result, casting='unsafe')
+        self.out.constant = False
+        if not stereo:
+            np.copyto(self.right.data[:frames], self.out.data[:frames])
+            self.right.constant = False
+            return
+        result = self._crush(right_in, taken, bits, levels, frames, False)
+        np.copyto(self.right.data[:frames], result, casting='unsafe')
+        self.right.constant = False
+
+    def _crush(self, signal, taken, bits, levels, frames, left):
+        work = self._work[:frames]
+        if signal.constant:
+            work[:] = signal.value
+        else:
+            np.copyto(work, signal.data[:frames], casting='unsafe')
+
+        previous = self._held_left if left else self._held_right
+        held = np.where(taken >= 0, work[np.maximum(taken, 0)], previous)
+        if left:
+            self._held_left = float(held[-1])
+        else:
+            self._held_right = float(held[-1])
+
+        if not bits.constant:
+            steps = np.clip(bits.data[:frames], 1.0, 24.0) - 1.0
+            levels = np.exp2(steps)
+        if np.all(levels >= 8388608.0):
+            return held
+        return np.round(held * levels) / levels
 
 
 # ----------------------------------------------------------------------------
