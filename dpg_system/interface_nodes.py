@@ -3918,6 +3918,258 @@ class BreakpointEditor:
         self.left_was_down = left_down
         self.right_was_down = right_down
 
+    def set_visible(self, visible):
+        """Show or hide the whole editor, plot and handle together.
+
+        For a host that owns more than one editor and shows one at a time.
+        A hidden plot cannot be hovered, so poll() goes quiet on its own.
+        """
+        if not self.ready:
+            return
+        dpg.configure_item(self.plot_tag, show=visible)
+        if self.resize_handle is not None \
+                and dpg.does_item_exist(self.resize_handle.uuid):
+            dpg.configure_item(self.resize_handle.uuid, show=visible)
+
+
+class BarEditor:
+    """One bar per slot: values set by index rather than drawn through.
+
+    BreakpointEditor is the right instrument for a shape and the wrong one for
+    a specific set of values, because a curve through slot 9 has to pass over
+    8 and 10 on its way. Here each bar is one slot and nothing reaches its
+    neighbours, which is what picking out individual harmonics needs.
+
+    Left-drag sets the bar under the cursor and paints across the ones you
+    sweep over; right-drag clears them. Sweeping fills in the bars the mouse
+    skipped between frames, so a fast gesture does not come out as a comb.
+
+    The store is `capacity` long while only the first `count` are drawn: a host
+    whose visible range changes -- additive~'s partial count -- can open and
+    close it without the hidden bars being lost.
+
+    A host builds one in __init__, calls submit() from a display's
+    submit_callback, poll() from its frame task, and hears about edits through
+    on_change.
+    """
+
+    def __init__(self, count=16, capacity=512, y_min=0.0, y_max=1.0,
+                 width=220, height=96, on_change=None,
+                 bar_color=(240, 170, 80), name='bars'):
+        self.name = name        # only used to name the node in diagnostics
+        self.capacity = max(1, int(capacity))
+        self.count = max(1, min(self.capacity, int(count)))
+        self.y_min = float(y_min)
+        self.y_max = float(y_max)
+        self.width = int(width)
+        self.height = int(height)
+        self.on_change = on_change
+        self.bar_color = bar_color
+
+        self.data = np.zeros(self.capacity, dtype=np.float64)
+        self.ready = False
+
+        self.plot_tag = dpg.generate_uuid()
+        self.x_axis_tag = dpg.generate_uuid()
+        self.y_axis_tag = dpg.generate_uuid()
+        self.bar_tag = dpg.generate_uuid()
+        self.resize_handle = None
+
+        self.painting = False
+        self.last_index = -1
+
+    # -- construction --------------------------------------------------------
+
+    def submit(self, display_uuid, width_option=None, height_option=None):
+        """Build the plot. Call inside the host display's submit_callback."""
+        with dpg.theme() as self.bar_theme:
+            with dpg.theme_component(dpg.mvBarSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Fill, self.bar_color,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_Line, self.bar_color,
+                                    category=dpg.mvThemeCat_Plots)
+
+        with dpg.plot(label='', tag=self.plot_tag,
+                      height=self.height, width=self.width,
+                      no_title=True, no_menus=True, no_box_select=True,
+                      no_mouse_pos=True):
+            # The x labels stay on here, unlike the curve editors: the whole
+            # point of bars is knowing which one is the ninth.
+            dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.x_axis_tag)
+            dpg.add_plot_axis(dpg.mvYAxis, label='', tag=self.y_axis_tag,
+                              no_tick_labels=True)
+            dpg.add_bar_series([], [], weight=0.7, parent=self.y_axis_tag,
+                               tag=self.bar_tag)
+            dpg.bind_item_theme(self.bar_tag, self.bar_theme)
+
+        self.ready = True
+        self.apply_axis_limits()
+        self.update_bars()
+        if width_option is not None or height_option is not None:
+            self.install_resize_handle(display_uuid, width_option,
+                                       height_option)
+
+    def install_resize_handle(self, display_uuid, width_option, height_option):
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
+        btn_uuid = dpg.add_button(parent=display_uuid, label='',
+                                  width=self.width, height=4)
+        handle = ResizeHandle(
+            btn_uuid, self.plot_tag, axis='xy',
+            width_option=width_option, height_option=height_option,
+            sync_width=True, sync_height=False,
+            on_resize=self.handle_resized
+        )
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
+        self.resize_handle = handle
+
+    def handle_resized(self, new_w, new_h):
+        self.width = int(new_w)
+        self.height = int(new_h)
+
+    # -- geometry ------------------------------------------------------------
+
+    def apply_axis_limits(self):
+        if not self.ready:
+            return
+        # Bars are centred on their own index, so the axis runs half a bar
+        # past each end and the first and last are drawn whole.
+        dpg.set_axis_limits(self.x_axis_tag, 0.5, self.count + 0.5)
+        dpg.set_axis_limits(self.y_axis_tag, self.y_min, self.y_max)
+
+    def set_size(self, width, height):
+        self.width = int(width)
+        self.height = int(height)
+        if not self.ready:
+            return
+        dpg.set_item_width(self.plot_tag, self.width)
+        dpg.set_item_height(self.plot_tag, self.height)
+        if self.resize_handle is not None \
+                and dpg.does_item_exist(self.resize_handle.uuid):
+            dpg.set_item_width(self.resize_handle.uuid, self.width)
+
+    def set_count(self, count):
+        """How many bars are drawn. The rest keep their values, unseen."""
+        count = max(1, min(self.capacity, int(count)))
+        if count == self.count:
+            return
+        self.count = count
+        self.apply_axis_limits()
+        self.update_bars()
+
+    def set_ranges(self, y_min=None, y_max=None):
+        if y_min is not None:
+            self.y_min = float(y_min)
+        if y_max is not None:
+            self.y_max = float(y_max)
+        np.clip(self.data, self.y_min, self.y_max, out=self.data)
+        self.apply_axis_limits()
+        self.update_bars()
+
+    def set_visible(self, visible):
+        if not self.ready:
+            return
+        dpg.configure_item(self.plot_tag, show=visible)
+        if self.resize_handle is not None \
+                and dpg.does_item_exist(self.resize_handle.uuid):
+            dpg.configure_item(self.resize_handle.uuid, show=visible)
+
+    # -- values --------------------------------------------------------------
+
+    def set_values(self, values, notify=True):
+        """Replace the store. Shorter input fills from the bottom, rest zero."""
+        incoming = np.asarray(values, dtype=np.float64).reshape(-1)
+        self.data[:] = 0.0
+        size = min(incoming.size, self.capacity)
+        if size:
+            self.data[:size] = np.clip(incoming[:size], self.y_min, self.y_max)
+        self.update_bars()
+        if notify:
+            self.changed()
+
+    def get_values(self):
+        """The whole store, one value per slot."""
+        return self.data.copy()
+
+    def get_visible(self):
+        return self.data[:self.count].copy()
+
+    def clear(self, notify=True):
+        self.data[:] = 0.0
+        self.update_bars()
+        if notify:
+            self.changed()
+
+    def update_bars(self):
+        if not self.ready:
+            return
+        x = np.arange(1, self.count + 1, dtype=np.float64)
+        dpg.set_value(self.bar_tag, [x, self.data[:self.count].copy()])
+
+    def changed(self):
+        if self.on_change is not None:
+            self.on_change()
+
+    # -- interaction ---------------------------------------------------------
+
+    def hovered(self):
+        return self.ready and dpg.is_item_hovered(self.plot_tag)
+
+    def interacting(self):
+        return self.painting
+
+    def paint(self, index, value):
+        """Set one bar, filling in any the mouse jumped over since last frame."""
+        index = max(0, min(self.count - 1, int(index)))
+        value = max(self.y_min, min(self.y_max, float(value)))
+        previous = self.last_index
+        if previous < 0 or previous == index:
+            self.data[index] = value
+        else:
+            # A sweep between frames crosses several bars. Ramping across them
+            # rather than setting them all to the latest value keeps a diagonal
+            # drag reading as the line it was drawn as.
+            step = 1 if index > previous else -1
+            span = abs(index - previous)
+            start = self.data[previous]
+            for offset in range(1, span + 1):
+                position = previous + offset * step
+                blend = offset / span
+                self.data[position] = start + (value - start) * blend
+        self.last_index = index
+        self.update_bars()
+        self.changed()
+
+    def poll(self):
+        """Run the mouse gestures. Call once a frame from the host."""
+        if not self.ready:
+            return
+        left_down = dpg.is_mouse_button_down(0)
+        right_down = dpg.is_mouse_button_down(1)
+
+        if not (left_down or right_down):
+            self.painting = False
+            self.last_index = -1
+            return
+
+        if not self.painting:
+            if not self.hovered():
+                return
+            self.painting = True
+            self.last_index = -1
+
+        position = dpg.get_plot_mouse_pos()
+        if not position:
+            return
+        index = int(round(position[0])) - 1
+        if index < 0 or index >= self.count:
+            # Off the end of the bars: stop bridging, so coming back in does
+            # not draw a ramp across everything in between.
+            self.last_index = -1
+            return
+        self.paint(index, 0.0 if right_down else position[1])
+
 
 class EnvelopeNode(Node):
     """A breakpoint function / envelope editor with draggable control points.

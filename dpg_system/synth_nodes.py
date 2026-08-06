@@ -938,6 +938,7 @@ ADDITIVE_PRESETS = {
 }
 
 ADDITIVE_SPANS = ('partials', 'all')
+ADDITIVE_EDITORS = ('curve', 'bars')
 
 
 class AdditiveNode(SynthNode):
@@ -991,6 +992,34 @@ class AdditiveNode(SynthNode):
     opened and closed. On 'all' it is pinned to the full range, so raising the
     count extends the spectrum into new territory instead.
 
+    'edit' chooses the instrument. On 'curve' the spectrum is drawn as a shape,
+    which is how you get a family of partials to fall off, bulge or notch
+    together. On 'bars' it is one bar per partial and bar 9 is partial 9
+    exactly -- for a timbre that is a specific handful of harmonics, 1, 2 and 9
+    and nothing else, where a curve through the ninth would have to cross the
+    eighth and tenth to reach it. Left-drag sets a bar and paints across the
+    ones you sweep, right-drag clears them, 'clear bars' empties them all to
+    build a spectrum up from silence.
+
+    The bars follow the partial count, so what is on screen is what sounds:
+    ask for nine partials and there are nine bars. They are always read as
+    partial-per-bar, which is what 'span all' means, so 'span' applies to the
+    curve only while they are up. Above 64 partials the count is past what a
+    bar can usefully be, and the drawing stops there.
+
+    The small button at the right of the tilt, odd/even and stretch rows puts
+    that control exactly on its default -- -6, 0.5 and 0. All three are values
+    a drag steps over rather than lands on, and stretch's is the one that
+    matters most: zero there is not a setting but the line between the
+    wavetable and the oscillator bank.
+
+    The two are separate drawings on the same spectrum, not two views of one:
+    switching to bars fills them from the curve as it currently sounds, so
+    nothing jumps, and switching back leaves the curve as it was. Both are
+    saved. Note that 'tilt' still shapes whatever the bars say -- at the
+    default -6 dB/octave a row of equal bars is a saw, not a flat spectrum, so
+    for bars to mean their own amplitudes set the tilt to 0.
+
     Patch a list of amplitudes into 'spectrum' to load a curve from elsewhere
     -- an analysis, a preset, another node's 'spectrum out'.
 
@@ -999,6 +1028,9 @@ class AdditiveNode(SynthNode):
 
     TABLE_SAMPLES_PER_SEGMENT = 256
     CUSTOM = 'custom'
+    # Most bars worth drawing. Past this they are a couple of pixels wide and
+    # the mouse cannot pick one out, which is the only thing bars are for.
+    MAX_BARS = 64
 
     @staticmethod
     def factory(name, data, args=None):
@@ -1007,6 +1039,13 @@ class AdditiveNode(SynthNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.unit = AdditiveUnit(synth_graph.sample_rate)
+
+        # Read before an argument or a preset overwrites any of them, so the
+        # snap buttons go to the unit's own defaults rather than to numbers
+        # written out a second time here and able to drift from it.
+        self._tilt_home = self.unit.tilt_in.base
+        self._balance_home = self.unit.balance_in.base
+        self._stretch_home = self.unit.stretch_in.base
 
         preset = AdditiveNode.CUSTOM
         numbers = []
@@ -1043,13 +1082,28 @@ class AdditiveNode(SynthNode):
         self.plot_height = 96
         # Same editor as shaper~, meaning something else: x is the partial
         # index, y the amplitude of that partial.
-        from dpg_system.interface_nodes import BreakpointEditor
+        from dpg_system.interface_nodes import BreakpointEditor, BarEditor
         self.editor = BreakpointEditor(x_max=1.0, y_min=0.0, y_max=1.0,
                                        width=self.plot_width,
                                        height=self.plot_height,
                                        on_change=self.spectrum_edited,
                                        line_color=(240, 170, 80),
                                        name=label)
+        # The same spectrum, editable a partial at a time. A drawn curve
+        # cannot single out the ninth harmonic without passing over the
+        # eighth; one bar per partial can.
+        self.bars = BarEditor(count=self.bar_count_for(partials),
+                              capacity=AdditiveUnit.MAX_PARTIALS,
+                              y_min=0.0, y_max=1.0,
+                              width=self.plot_width,
+                              height=self.plot_height,
+                              on_change=self.bars_edited,
+                              bar_color=(240, 170, 80),
+                              name=label)
+        self._shown_bars = self.bars.count
+        # Which editor is live. Set before any option exists, since a widget
+        # callback during creation or load can reach sync_options first.
+        self._edit_shown = ADDITIVE_EDITORS[0]
         for name in BreakpointEditor.MESSAGES:
             self.message_handlers[name] = self.spectrum_message
 
@@ -1102,10 +1156,20 @@ class AdditiveNode(SynthNode):
                                                 callback=self.parameters_changed)
         self.normalize_option.widget.combo_items = list(
             AdditiveUnit.NORMALIZE_MODES)
+        self.edit_option = self.add_option('edit', widget_type='combo',
+                                           default_value=ADDITIVE_EDITORS[0],
+                                           callback=self.edit_mode_changed)
+        self.edit_option.widget.combo_items = list(ADDITIVE_EDITORS)
+        self.edit_option.widget.set_tooltip(
+            'curve: draw a spectral shape. bars: set partials one at a time, '
+            'bar k is partial k exactly')
         self.span_option = self.add_option('span', widget_type='combo',
                                            default_value=ADDITIVE_SPANS[0],
                                            callback=self.parameters_changed)
         self.span_option.widget.combo_items = list(ADDITIVE_SPANS)
+        self.span_option.widget.set_tooltip(
+            'what the curve x axis means. Ignored while editing bars, where '
+            'a bar is always its own partial')
         self.phase_option = self.add_option('start phase',
                                             widget_type='slider_float',
                                             default_value=0.0, min=0.0,
@@ -1117,6 +1181,23 @@ class AdditiveNode(SynthNode):
         self.flatten_option = self.add_option('flatten', widget_type='button',
                                               width=110,
                                               callback=self.flatten_spectrum)
+        self.clear_option = self.add_option('clear bars', widget_type='button',
+                                            width=110,
+                                            callback=self.clear_bars)
+        # Three values worth returning to exactly, and a drag step lands
+        # either side of all of them: the saw slope, all partials equally,
+        # harmonic. Each button is drawn in its own knob's row rather than
+        # down here with the other buttons: the whole complaint is that the
+        # value is awkward to reach, and an answer kept behind the options
+        # toggle would not be much of one. The label is the value it goes to.
+        self.tilt_home_option = self.snap_button(
+            self.tilt_input, self._tilt_home, self.snap_tilt, 'tilt')
+        self.balance_home_option = self.snap_button(
+            self.balance_input, self._balance_home, self.snap_balance,
+            'odd/even')
+        self.stretch_home_option = self.snap_button(
+            self.stretch_input, self._stretch_home, self.snap_stretch,
+            'stretch')
         self.width_option = self.add_option('width', widget_type='drag_int',
                                             default_value=self.plot_width,
                                             callback=self.size_changed)
@@ -1136,25 +1217,81 @@ class AdditiveNode(SynthNode):
     # -- display -------------------------------------------------------------
 
     def submit_display(self):
+        # Both editors are built, and one is shown. Rebuilding a plot to
+        # switch would mean tearing down a node attribute mid-patch; hiding
+        # one costs a hidden item and keeps either drawing intact while the
+        # other is in use.
         self.editor.submit(self.spectrum_display.uuid,
                            width_option=self.width_option,
                            height_option=self.height_option)
+        self.bars.submit(self.spectrum_display.uuid,
+                         width_option=self.width_option,
+                         height_option=self.height_option)
 
     def custom_create(self, from_file):
         # Options only hold their real values once every element exists, so
         # anything that reads one waits until here.
-        self.editor.set_size(any_to_int(self.width_option()),
-                             any_to_int(self.height_option()))
+        self.size_changed()
+        self._edit_shown = any_to_string(self.edit_option())
+        self.show_active_editor()
         if not from_file and self._preset_shown != AdditiveNode.CUSTOM:
             self.apply_preset(self._preset_shown)
         self.build_spectrum()
 
     def size_changed(self):
-        self.editor.set_size(any_to_int(self.width_option()),
-                             any_to_int(self.height_option()))
+        width = any_to_int(self.width_option())
+        height = any_to_int(self.height_option())
+        self.editor.set_size(width, height)
+        self.bars.set_size(width, height)
+
+    def editing_bars(self):
+        return self._edit_shown == 'bars'
+
+    def show_active_editor(self):
+        bars = self.editing_bars()
+        self.editor.set_visible(not bars)
+        self.bars.set_visible(bars)
+
+    def edit_mode_changed(self):
+        mode = any_to_string(self.edit_option())
+        if mode not in ADDITIVE_EDITORS or mode == self._edit_shown:
+            return
+        # A load restores the bars themselves a moment later, and the curve
+        # this would read from has not been restored yet, so converting now
+        # would seed the bars from a shape that is about to be replaced.
+        converting = (mode == 'bars' and not self.in_loading_process)
+        self._edit_shown = mode
+        if converting:
+            # Start the bars from what is currently sounding, sampled at the
+            # positions the partials are reading the curve at right now.
+            self.bars.set_values(self.curve_at_partials(), notify=False)
+        self.show_active_editor()
+        self.parameters_changed()
+        self.build_spectrum()
+
+    def bar_count_for(self, partials):
+        """How many bars to draw for a partial count.
+
+        The bars follow the partial count, so what is on screen is what
+        sounds -- ask for nine partials and you are given nine bars to set.
+        Capped where a bar would get too narrow to hit; past that the count
+        is the wrong instrument for the job anyway.
+        """
+        try:
+            count = int(np.ceil(any_to_float(partials)))
+        except (TypeError, ValueError):
+            count = 1
+        return max(1, min(AdditiveNode.MAX_BARS, count))
 
     def synth_frame_task(self):
-        self.editor.poll()
+        if self.editing_bars():
+            wanted = self.bar_count_for(self.partials_input())
+            if wanted != self._shown_bars:
+                self._shown_bars = wanted
+                self.bars.set_count(wanted)
+            self.bars.poll()
+        else:
+            self.editor.poll()
 
     # -- settings ------------------------------------------------------------
 
@@ -1168,13 +1305,67 @@ class AdditiveNode(SynthNode):
         span = any_to_string(self.span_option())
         if span in ADDITIVE_SPANS:
             self.unit.spectrum_span = ADDITIVE_SPANS.index(span)
+        if self.editing_bars():
+            # A bar is a partial, which is only true on the fixed span: it is
+            # the one where partial k reads entry k - 1 and nothing is
+            # interpolated. The span option keeps its value for the curve.
+            self.unit.spectrum_span = AdditiveUnit.FIXED_SPAN
         self.unit.start_phase = any_to_float(self.phase_option())
 
     def reset_phase(self):
         self.unit.reset()
 
     def flatten_spectrum(self):
+        if self.editing_bars():
+            self.bars.set_values(np.ones(AdditiveUnit.MAX_PARTIALS))
+            return
         self.editor.set_points(_FLAT)
+
+    def clear_bars(self):
+        """Silence every bar, for building a spectrum up from nothing."""
+        self.bars.clear()
+
+    def snap_button(self, port, value, callback, name):
+        """A button on `value`, drawn at the right of that knob's row.
+
+        The label is the number, which is all it needs to say sitting where it
+        does; '##' keeps dpg from drawing the part that only makes the id
+        unique. It stays an ordinary option, so it saves and takes messages
+        like any other -- only where it is drawn changes.
+        """
+        option = self.add_option('{:g}##{} home'.format(value, name),
+                                 widget_type='button', width=38,
+                                 callback=callback)
+        if option.widget is not None:
+            option.widget.set_tooltip(
+                'set ' + name + ' to ' + '{:g}'.format(value)
+                + ', its default -- a drag steps over it')
+            if port is not None:
+                option.inline_with = port.widget
+        return option
+
+    def snap_input(self, port, value):
+        """Put one knob exactly on a value and let the unit hear about it.
+
+        The same path a drag takes -- set the widget, then push every
+        parameter -- so nothing else has to know these buttons exist.
+        """
+        if port is None or port.widget is None:
+            return
+        port.widget.set(value)
+        self.parameters_changed()
+
+    def snap_tilt(self):
+        self.snap_input(self.tilt_input, self._tilt_home)
+
+    def snap_balance(self):
+        self.snap_input(self.balance_input, self._balance_home)
+
+    def snap_stretch(self):
+        # Worth a button of its own more than the other two: zero is not a
+        # value here but the boundary between the wavetable and the bank, and
+        # a hair off it is the expensive engine sounding identical.
+        self.snap_input(self.stretch_input, self._stretch_home)
 
     # -- the spectrum --------------------------------------------------------
 
@@ -1188,19 +1379,58 @@ class AdditiveNode(SynthNode):
             self.mark_custom()
         self.spectrum_output.send(self.editor.get_points())
 
+    def bars_edited(self):
+        """A bar moved: hand the partials over as they stand."""
+        self.build_spectrum()
+        if not self._applying_preset:
+            self.mark_custom()
+        self.spectrum_output.send(self.bars.get_visible().tolist())
+
     def build_spectrum(self):
         """Sample the drawn curve onto the unit's uniform partial table.
 
         breakpoint_line_data owns what a curved segment means, so sampling it
         rather than reimplementing the easing is what keeps this, shaper~ and
         the envelope nodes agreeing about the same curve.
+
+        The bars need no sampling at all: the table is SPECTRUM_POINTS long,
+        which is MAX_PARTIALS, so entry k - 1 is partial k and the values
+        arrive exactly as they were set. That equality is also why bars run on
+        the fixed span -- see sync_options.
         """
+        if self.editing_bars():
+            self.unit.set_spectrum(self.bars.get_values())
+            return
         xs, ys = self.editor.line_data(AdditiveNode.TABLE_SAMPLES_PER_SEGMENT)
         if len(xs) < 2:
             return
         grid = np.linspace(0.0, self.editor.x_max,
                            AdditiveUnit.SPECTRUM_POINTS)
         self.unit.set_spectrum(np.interp(grid, xs, ys))
+
+    def curve_at_partials(self):
+        """The drawn curve read where the partials are reading it.
+
+        Switching to bars should sound like nothing happened, so the bars are
+        filled from the curve at each partial's own position rather than at
+        even spacing -- which are different things whenever the span is
+        'partials'. Bars above the count are left silent: they are not
+        sounding, and carrying the curve's tail up there would mean raising
+        the count later brought in partials nobody set.
+        """
+        values = np.zeros(AdditiveUnit.MAX_PARTIALS, dtype=np.float64)
+        xs, ys = self.editor.line_data(AdditiveNode.TABLE_SAMPLES_PER_SEGMENT)
+        if len(xs) < 2:
+            return values
+        count = self.bar_count_for(self.partials_input())
+        if any_to_string(self.span_option()) == 'all':
+            divisor = float(AdditiveUnit.MAX_PARTIALS - 1)
+        else:
+            divisor = max(1.0, float(count) - 1.0)
+        positions = np.arange(count, dtype=np.float64) / divisor
+        np.clip(positions, 0.0, self.editor.x_max, out=positions)
+        values[:count] = np.clip(np.interp(positions, xs, ys), 0.0, 1.0)
+        return values
 
     def spectrum_received(self):
         """A curve from elsewhere -- an analysis, another additive~.
@@ -1211,6 +1441,20 @@ class AdditiveNode(SynthNode):
         itself.
         """
         data = self.spectrum_input()
+        if self.editing_bars():
+            # Bars take a bare list at face value: amplitude per partial, in
+            # order, no normalising and no resampling. Sending [1, 0.5, 0, 0,
+            # 0, 0, 0, 0, 0.3] is then a way of saying exactly that.
+            amplitudes = self.bar_values_from(data)
+            if amplitudes is None:
+                return
+            self._applying_preset = True
+            try:
+                self.bars.set_values(amplitudes)
+            finally:
+                self._applying_preset = False
+            self.mark_custom()
+            return
         points = self.spectrum_points_from(data)
         if not points:
             return
@@ -1220,6 +1464,34 @@ class AdditiveNode(SynthNode):
         finally:
             self._applying_preset = False
         self.mark_custom()
+
+    @staticmethod
+    def bar_values_from(data):
+        """A list of amplitudes as bars: one per partial, in order.
+
+        Breakpoints arriving while the bars are up are read for their y values
+        alone -- the x positions are the curve's business, and this side is
+        indexed by partial.
+        """
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        if not isinstance(data, (list, tuple)) or len(data) == 0:
+            return None
+        values = []
+        for entry in data:
+            if isinstance(entry, np.ndarray):
+                entry = entry.tolist()
+            if isinstance(entry, dict):
+                values.append(any_to_float(entry.get('y', 0.0)))
+            elif isinstance(entry, (list, tuple)):
+                if len(entry) < 2:
+                    return None
+                values.append(any_to_float(entry[1]))
+            else:
+                values.append(any_to_float(entry))
+        if not values:
+            return None
+        return np.clip(np.asarray(values, dtype=np.float64), 0.0, 1.0)
 
     @staticmethod
     def spectrum_points_from(data):
@@ -1315,10 +1587,16 @@ class AdditiveNode(SynthNode):
 
     def save_custom(self, container):
         container['additive_points'] = self.editor.get_points()
+        # Both drawings are saved whichever one is showing, so a patch that
+        # was switched to bars and back still has each of them.
+        container['additive_bars'] = self.bars.get_values().tolist()
 
     def load_custom(self, container):
         if 'additive_points' in container:
             self.editor.set_points(container['additive_points'], notify=False)
+        if 'additive_bars' in container:
+            self.bars.set_values(container['additive_bars'], notify=False)
+        if 'additive_points' in container or 'additive_bars' in container:
             self.build_spectrum()
 
 
