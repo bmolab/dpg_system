@@ -177,11 +177,19 @@ class Inlet:
 class Unit:
     """Base class for every DSP object. render() runs on the audio thread."""
 
+    # Seconds to fade in or out when a unit is switched on or off. Short
+    # enough to feel like a switch, long enough not to be a step.
+    GATE_SECONDS = 0.006
+
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         self.sample_rate = float(sample_rate)
         self.inlets = []
         self.outlets = []
         self._sync_armed = True
+        self.enabled = True
+        self._switched_off = False
+        self._gate_level = 1.0
+        self._gate_ramp = np.zeros(MAX_BLOCK, dtype=np.float64)
 
     def new_inlet(self, base=0.0, depth=1.0, minimum=None, maximum=None):
         inlet = Inlet(base, depth, minimum, maximum)
@@ -213,6 +221,130 @@ class Unit:
         np.multiply(_INDEX_RAMP[:frames], math.log(coefficient), out=view)
         np.exp(view, out=view)
         return view
+
+    # -- enable ---------------------------------------------------------------
+    #
+    # Switching a source off is worth more than a mute: once it has faded out
+    # there is nothing to render, so the block is skipped entirely and the
+    # outlets go constant -- which makes everything downstream cheap too, since
+    # a constant input takes the scalar path through every unit it reaches.
+    # A disabled voice therefore costs almost nothing, which is the point of
+    # having the switch at all when there are two dozen of them.
+    #
+    # It cannot simply stop, though. A running oscillator cut to zero between
+    # two samples is a step in the waveform, which is a click -- so it fades,
+    # and only stops once the fade has finished.
+
+    def gate(self, frames):
+        """How this block should be scaled: 1.0, 0.0, or a ramp between.
+
+        1.0 means render normally and do nothing. 0.0 means the unit is off
+        and settled, so there is nothing to render at all. Anything else is a
+        per-sample ramp to multiply the output by.
+        """
+        target = 1.0 if self.enabled else 0.0
+        level = self._gate_level
+        if level == target:
+            return target
+
+        span = 1.0 / max(1.0, Unit.GATE_SECONDS * self.sample_rate)
+        ramp = self._gate_ramp[:frames]
+        np.multiply(_INDEX_RAMP[:frames], span if target > level else -span,
+                    out=ramp)
+        ramp += level
+        np.clip(ramp, min(level, target), max(level, target), out=ramp)
+        self._gate_level = float(ramp[-1])
+        return ramp
+
+    def silence(self, frames):
+        """Put every outlet at constant zero. Used when a unit is switched off."""
+        for signal in self.outlets:
+            signal.set_constant(0.0)
+
+    def deactivate(self):
+        """Called once when a unit has finished switching off.
+
+        For anything holding a history that stops making sense once the unit
+        stops -- a delay line, chiefly -- this is where to drop it. A delay
+        that simply stopped writing would leave a seam in its buffer between
+        what it had before and what it gets afterwards, and the read head
+        crosses that seam a delay time after coming back, which is long after
+        any fade has finished and so is heard as a click.
+        """
+
+    def bypass_pairs(self):
+        """(inlet, outlet) pairs to carry straight through when switched off.
+
+        This is what separates a source from a processor. A source has none,
+        so switching it off leaves silence. A processor names the way its
+        input reaches its output, so switching it off leaves the signal alone
+        instead of removing it -- which is what bypass has to mean, and why it
+        cannot simply be the same switch.
+
+        Units whose right channel mirrors the left when nothing is patched to
+        it say so here, so a bypassed mono chain does not lose one side.
+        """
+        return ()
+
+    def run(self, frames):
+        """What the program calls. render() is the unit's own business.
+
+        The whole switch lives here rather than in each unit's render, so
+        every unit gets it by naming its dry paths and nothing else, and the
+        cost when everything is switched on is one float comparison.
+        """
+        level = self.gate(frames)
+        if isinstance(level, float):
+            if level == 1.0:
+                self._switched_off = False
+                self.render(frames)
+                return
+            if not self._switched_off:
+                self._switched_off = True
+                self.deactivate()
+            pairs = self.bypass_pairs()
+            if pairs:
+                self._carry_dry(frames, pairs)
+            else:
+                self.silence(frames)
+            return
+        self._switched_off = False
+
+        # Part way between. The unit has to run either way, since what is
+        # being faded between is its output and either silence or its input.
+        self.render(frames)
+        pairs = self.bypass_pairs()
+        if pairs:
+            self._blend_dry(frames, level, pairs)
+            return
+        for signal in self.outlets:
+            buffer = signal.array(frames)
+            np.multiply(buffer, level, out=buffer, casting='unsafe')
+            signal.constant = False
+
+    def _carry_dry(self, frames, pairs):
+        """Fully bypassed: the input, and none of the work."""
+        for inlet, outlet in pairs:
+            source = inlet.eval(frames)
+            if source.constant:
+                outlet.set_constant(source.value)
+            else:
+                np.copyto(outlet.data[:frames], source.data[:frames])
+                outlet.constant = False
+
+    def _blend_dry(self, frames, level, pairs):
+        """Part way in or out: cross from the input to the processed signal.
+
+        A filter cut straight to dry would step by whatever it was removing,
+        which is a click; crossing over a few milliseconds is not.
+        """
+        for inlet, outlet in pairs:
+            dry = inlet.eval(frames).array(frames)
+            wet = outlet.array(frames)
+            np.subtract(wet, dry, out=wet)
+            np.multiply(wet, level, out=wet)
+            np.add(wet, dry, out=wet)
+            outlet.constant = False
 
     # -- shared oscillator machinery -----------------------------------------
     #
@@ -445,6 +577,12 @@ class FormantUnit(Unit):
             # arrives at the weight it was given whatever the sharpness.
             self._gains[band] = _FORMANT_GAINS[band] * k
 
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
+
     def render(self, frames):
         signal = self.signal_in.eval(frames)
         vowel = self.vowel_in.eval(frames)
@@ -615,6 +753,15 @@ class VocoderUnit(Unit):
         samples = max(1.0, seconds * sample_rate)
         return 1.0 - math.exp(-1.0 / samples)
 
+
+    def bypass_pairs(self):
+        # The carrier is the signal; the modulator only shapes it, so bypass
+        # hands the carrier back untouched.
+        if self.right_carrier_in.sources:
+            return ((self.carrier_in, self.out),
+                    (self.right_carrier_in, self.right))
+        return ((self.carrier_in, self.out), (self.carrier_in, self.right))
+
     def render(self, frames):
         carrier = self.carrier_in.eval(frames)
         modulator = self.modulator_in.eval(frames)
@@ -767,6 +914,12 @@ class OneEuroUnit(Unit):
             self.derivative_cutoff, state[0], state[1], state[2], state[3])
         np.copyto(destination.data[:frames], result, casting='unsafe')
         destination.constant = False
+
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
 
     def render(self, frames):
         signal = self.signal_in.eval(frames)
@@ -985,6 +1138,14 @@ class RampUnit(Unit):
         self._remaining = samples
         self._increment = (goal - self.current) / samples
 
+
+    def bypass_pairs(self):
+        # A ramp is a slew on its target, not a source of its own, so leaving
+        # it alone means handing the target back unsmoothed -- the step it
+        # would have ramped to. Silence would be the wrong answer: there is an
+        # input here, it is simply a target rather than a waveform.
+        return ((self.target_in, self.out),)
+
     def render(self, frames):
         target = self.target_in.eval(frames)
         time_in = self.time_in.eval(frames)
@@ -1094,6 +1255,12 @@ class VcaUnit(Unit):
     def _apply_curve(signal, out, curve, frames):
         np.multiply(signal.array(frames), curve, out=out.data[:frames])
         out.constant = False
+
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
 
     def render(self, frames):
         signal = self.signal_in.eval(frames)
@@ -2746,6 +2913,10 @@ class ShaperUnit(Unit):
         fraction = index - whole
         return float(table[whole] + fraction * (table[whole + 1] - table[whole]))
 
+
+    def bypass_pairs(self):
+        return ((self.signal_in, self.out),)
+
     def render(self, frames):
         signal = self.signal_in.eval(frames)
         low_in = self.in_low_in.eval(frames)
@@ -3217,6 +3388,12 @@ class VcfUnit(Unit):
             np.tanh(scratch, out=scratch)
         return scratch
 
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
+
     def render(self, frames):
         signal = self.signal_in.eval(frames)
         cutoff = self.cutoff_in.eval(frames)
@@ -3367,7 +3544,9 @@ class DelayUnit(Unit):
         self._damping = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._work = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._input = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._entering = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._last_tap = None
+        self._write_fade = 0
         self._warned = False
 
     # -- buffers -------------------------------------------------------------
@@ -3404,6 +3583,25 @@ class DelayUnit(Unit):
         self._low_right = 0.0
 
     # -- rendering -----------------------------------------------------------
+
+
+
+    def deactivate(self):
+        # Bypassing drops the tail. Keeping it would mean going on writing,
+        # which is most of the work this switch exists to avoid, and coming
+        # back to a line with a hole in it clicks.
+        self.reset()
+        # An emptied line still has one edge in it: the boundary between the
+        # zeros and the first thing written after coming back, which the read
+        # head reaches one delay time later -- long after any fade of the
+        # output has finished, so it arrives unprotected. Ramping what is
+        # written removes the edge itself rather than trying to cover it.
+        self._write_fade = int(Unit.GATE_SECONDS * self.sample_rate)
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
 
     def render(self, frames):
         signal = self.signal_in.eval(frames)
@@ -3453,11 +3651,24 @@ class DelayUnit(Unit):
         stereo = len(self.right_in.sources) > 0
         step = 1.0 / max(1.0, DelayUnit.FADE_SECONDS * self.sample_rate)
 
+        entering = None
+        if self._write_fade > 0:
+            total = Unit.GATE_SECONDS * self.sample_rate
+            count = min(frames, self._write_fade)
+            entering = self._entering[:frames]
+            entering[:] = 1.0
+            np.multiply(_INDEX_RAMP[:count],
+                        1.0 / total, out=entering[:count])
+            entering[:count] += (total - self._write_fade) / total
+            np.clip(entering, 0.0, 1.0, out=entering)
+
         source = self._input[:frames]
         if signal.constant:
             source[:] = signal.value
         else:
             np.copyto(source, signal.data[:frames], casting='unsafe')
+        if entering is not None:
+            source *= entering
 
         work = self._work[:frames]
         if _HAVE_NUMBA and _svf_ready.is_set():
@@ -3475,12 +3686,15 @@ class DelayUnit(Unit):
         if not stereo:
             np.copyto(self.right.data[:frames], self.out.data[:frames])
             self.right.constant = False
+            self._spend_write_fade(frames)
             return
 
         if right_in.constant:
             source[:] = right_in.value
         else:
             np.copyto(source, right_in.data[:frames], casting='unsafe')
+        if entering is not None:
+            source *= entering
         if _HAVE_NUMBA and _svf_ready.is_set():
             (self._write_right, self._low_right, self._phase_right,
              self._head_a_right, self._head_b_right) = _delay_kernel(
@@ -3492,6 +3706,11 @@ class DelayUnit(Unit):
                                left=False)
         np.copyto(self.right.data[:frames], work, casting='unsafe')
         self.right.constant = False
+        self._spend_write_fade(frames)
+
+    def _spend_write_fade(self, frames):
+        if self._write_fade > 0:
+            self._write_fade = max(0, self._write_fade - frames)
 
     def _render_plain(self, source, line, taps, out, frames, left):
         """Delay without feedback, for before the kernel is compiled.
@@ -3764,6 +3983,12 @@ class FoldUnit(Unit):
         else:
             self._blend_weight = weight
 
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
+
     def render(self, frames):
         signal = self.signal_in.eval(frames)
         right_in = self.right_in.eval(frames)
@@ -3944,6 +4169,12 @@ class CrushUnit(Unit):
         self._held_left = 0.0
         self._held_right = 0.0
 
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
+
     def render(self, frames):
         signal = self.signal_in.eval(frames)
         right_in = self.right_in.eval(frames)
@@ -4074,6 +4305,10 @@ class ScalerUnit(Unit):
             value = min(max(value, low), high)
         return value
 
+
+    def bypass_pairs(self):
+        return ((self.signal_in, self.out),)
+
     def render(self, frames):
         signal = self.signal_in.eval(frames)
         in_low = self.in_low_in.eval(frames)
@@ -4153,6 +4388,12 @@ class MultUnit(Unit):
         self.signal_inlets = [self.new_inlet() for _ in range(inputs)]
         self.factors = [1.0] * inputs
         self.out = self.new_outlet()
+
+
+    def bypass_pairs(self):
+        # The first inlet is the signal; the rest are what it is multiplied
+        # by, so bypass hands the first one back.
+        return ((self.signal_inlets[0], self.out),)
 
     def render(self, frames):
         scalar = 1.0
@@ -4254,6 +4495,10 @@ class PanUnit(Unit):
         self.left = self.new_outlet()
         self.right = self.new_outlet()
         self._angle = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+
+    def bypass_pairs(self):
+        return ((self.signal_in, self.left), (self.signal_in, self.right))
 
     def render(self, frames):
         signal = self.signal_in.eval(frames)
@@ -5082,7 +5327,7 @@ class SynthProgram:
 
     def render(self, mix, frames):
         for unit in self.units:
-            unit.render(frames)
+            unit.run(frames)
         for sink in self.sinks:
             sink.mix_into(mix, frames)
 

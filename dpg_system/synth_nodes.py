@@ -125,6 +125,11 @@ class SynthNode(Node):
         self._modulation_ports = []
         self._header_port = None
         self._header_depth = None
+        # Set by add_switch_option. Nodes that are neither a source nor a
+        # processor -- audio_out~, which already has its own mute -- leave it
+        # alone and are never switched.
+        self.switch_input = None
+        self._is_processor = False
         self._labels_aligned = False
         self._align_attempts = 0
         self._registered = False
@@ -299,6 +304,33 @@ class SynthNode(Node):
         self.signal_inputs.append(port)
         return port
 
+    def add_switch(self):
+        """The on/off checkbox, on the face of the node rather than hidden.
+
+        A source is switched off to silence and a processor to leave its input
+        alone, so the same unit-level flag wants opposite names and opposite
+        senses: 'enable', ticked to run, against 'bypass', ticked to stand
+        aside. The unit decides which it is by whether it declares a dry path,
+        so the node does not have to be told.
+
+        An inlet rather than an option, so it is visible without opening
+        anything and can be driven from the patch -- which is how a voice gets
+        switched in and out by something other than a mouse.
+        """
+        self._is_processor = bool(self.unit.bypass_pairs())
+        label = 'bypass' if self._is_processor else 'enable'
+        self.switch_input = self.add_input(
+            label, widget_type='checkbox',
+            default_value=False if self._is_processor else True,
+            callback=self.parameters_changed)
+        if self.switch_input.widget is not None:
+            self.switch_input.widget.set_tooltip(
+                'passes the input through untouched, and stops processing'
+                if self._is_processor else
+                'off fades out over a few ms and then stops rendering'
+                ' altogether')
+        return self.switch_input
+
     def add_signal_output(self, label, signal):
         port = self.add_output(label)
         port.synth_signal = signal
@@ -308,6 +340,22 @@ class SynthNode(Node):
 
     def finish_synth_node(self):
         """Call at the end of __init__, once ports and the unit exist."""
+        # Elements are drawn in the order they were made, and the switch is
+        # made last so that every node can add it with one line -- so move it
+        # to the head of the inlets, where the first thing about a node should
+        # be whether it is doing anything at all. Only the drawing order
+        # moves: the inlet's place in self.inputs is what a saved link refers
+        # to, and that stays where it was put, so patches keep their cords.
+        elements = getattr(self, 'ordered_elements', None)
+        if self.switch_input is not None and elements:
+            first_inlet = None
+            for index, element in enumerate(elements):
+                if element in self.inputs and element is not self.switch_input:
+                    first_inlet = index
+                    break
+            if first_inlet is not None:
+                elements.remove(self.switch_input)
+                elements.insert(first_inlet, self.switch_input)
         ensure_engine()
         synth_graph.register(self)
         self._registered = True
@@ -330,6 +378,10 @@ class SynthNode(Node):
             inlet.depth = any_to_float(option())
         for port, setter in self._custom_bindings:
             setter(any_to_float(port()))
+        if self.switch_input is not None:
+            ticked = any_to_bool(self.switch_input())
+            # 'bypass' is the same flag read the other way round.
+            self.unit.enabled = (not ticked) if self._is_processor else ticked
         self.sync_options()
 
     def sync_options(self):
@@ -412,6 +464,7 @@ class SigNode(SynthNode):
                                            callback=self.settings_changed)
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.add_switch()
         self.finish_synth_node()
 
     def value_changed(self):
@@ -499,6 +552,7 @@ class PhasorNode(SynthNode):
             min=0.0, max=1.0, callback=self.parameters_changed)
         self.reset_option = self.add_option('reset now', widget_type='button',
                                             callback=self.reset_phase)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -620,6 +674,7 @@ class RampNode(SynthNode):
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         self.done_output = self.add_output('done')
+        self.add_switch()
         self.finish_synth_node()
 
     def restart(self):
@@ -768,6 +823,7 @@ class OneEuroNode(SynthNode):
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -803,6 +859,14 @@ class VcoNode(SynthNode):
     'drift' gives each voice its own slow random wander in cents, which is
     what keeps a stack from sounding like a fixed chorus. It is off by default,
     since it is the one thing here that makes the output non-repeatable.
+
+    'enable' is not a mute. It fades out over a few milliseconds -- cutting a
+    running oscillator between two samples would be a step, and a click -- and
+    once it has faded the unit stops rendering altogether and its outlets go
+    constant, which takes everything downstream onto its scalar path too. A
+    disabled voice therefore costs close to nothing, which is the point when
+    there are two dozen of them. Phase stops where it is and carries on from
+    there when it comes back.
 
     The 'right' outlet carries the other half of the stereo spread. At one
     voice, or with spread at 0, it carries the same signal as 'signal', so a
@@ -888,6 +952,7 @@ class VcoNode(SynthNode):
         # Appended, so links saved against the old single outlet keep their
         # index and existing patches load unchanged.
         self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -1238,6 +1303,7 @@ class AdditiveNode(SynthNode):
         self._preset_shown = preset
         self._applying_preset = False
         self.editor.set_points(_FLAT, notify=False)
+        self.add_switch()
         self.finish_synth_node()
 
     # -- display -------------------------------------------------------------
@@ -1735,6 +1801,7 @@ class DelayNode(SynthNode):
                 'seconds of buffer; the time inlet is clamped to it')
         self.clear_option = self.add_option('clear', widget_type='button',
                                             callback=self.clear_line)
+        self.add_switch()
         self.finish_synth_node()
 
     def custom_create(self, from_file):
@@ -1881,6 +1948,7 @@ class FoldNode(SynthNode):
         self.dc_option = self.add_option('block dc', widget_type='checkbox',
                                          default_value=True,
                                          callback=self.parameters_changed)
+        self.add_switch()
         self.finish_synth_node()
 
     def custom_create(self, from_file):
@@ -1966,6 +2034,7 @@ class CrushNode(SynthNode):
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
         self.finish_synth_node()
 
 
@@ -2028,6 +2097,7 @@ class VcfNode(SynthNode):
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         # Appended, so links saved against the single outlet keep their index.
         self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -2110,6 +2180,7 @@ class FormantNode(SynthNode):
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
         self.finish_synth_node()
         self._shown = ''
 
@@ -2229,6 +2300,7 @@ class VocoderNode(SynthNode):
         self.report_option = self.add_option('report bands',
                                              widget_type='checkbox',
                                              default_value=True)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -2319,6 +2391,7 @@ class VcaNode(SynthNode):
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         # Appended, so links saved against the single outlet keep their index.
         self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -2404,6 +2477,7 @@ class AdsrNode(SynthNode):
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
         self.done_output = self.add_output('done')
+        self.add_switch()
         self.finish_synth_node()
 
     def fire_once(self):
@@ -2485,6 +2559,7 @@ class LfoNode(SynthNode):
                                             callback=self.reset_phase)
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -2590,6 +2665,7 @@ class ClockNode(SynthNode):
         self.trigger_output = self.add_signal_output('trigger', self.unit.out)
         self.bang_output = self.add_output('bang')
         self.count_output = self.add_output('count')
+        self.add_switch()
         self.finish_synth_node()
 
     def rate_in_hz(self):
@@ -2669,6 +2745,7 @@ class MixNode(SynthNode):
                                   minimum=0.0, speed=0.01, attenuverter=False)
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.add_switch()
         self.finish_synth_node()
 
 
@@ -2746,6 +2823,7 @@ class ScalerNode(SynthNode):
                                            callback=self.parameters_changed)
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.add_switch()
         self.finish_synth_node()
 
     def sync_options(self):
@@ -2879,6 +2957,7 @@ class ShaperNode(SynthNode):
         self.height_option = self.add_option('height', widget_type='drag_int',
                                              default_value=self.plot_height,
                                              callback=self.size_changed)
+        self.add_switch()
         self.finish_synth_node()
 
     # -- display ------------------------------------------------------------
@@ -3041,6 +3120,7 @@ class MultNode(SynthNode):
                 self._factor_setter(index))
 
         self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.add_switch()
         self.finish_synth_node()
 
     def _factor_setter(self, index):
@@ -3066,6 +3146,7 @@ class PanNode(SynthNode):
 
         self.left_output = self.add_signal_output('left', self.unit.left)
         self.right_output = self.add_signal_output('right', self.unit.right)
+        self.add_switch()
         self.finish_synth_node()
 
 
@@ -3182,6 +3263,7 @@ class SnapshotNode(SynthNode):
             self.deadband_option.widget.speed = 0.001
         self.precision_option = self.add_option('precision', widget_type='slider_int',
                                                 default_value=3, min=0, max=8)
+        self.add_switch()
         self.finish_synth_node()
 
     def _display(self, value):
@@ -3270,6 +3352,14 @@ class SamplerOscNode(SynthNode):
                 effort data: the material sounds while the body moves
       granular  grains sprayed around the position inlet
 
+    'enable' is not a mute. It fades out over a few milliseconds -- cutting
+    playback between two samples would be a step, and a click -- and once it
+    has faded the unit stops rendering altogether and its outlets go constant,
+    which takes everything downstream onto its scalar path too. A disabled
+    voice therefore costs close to nothing, which is the point when there are
+    two dozen of them. The playhead stops where it is and carries on from
+    there, so switching back in does not restart the material.
+
     Arguments: sampler_osc~ <path> and/or a mode name.
     """
 
@@ -3342,6 +3432,7 @@ class SamplerOscNode(SynthNode):
                                              widget_type='drag_float',
                                              default_value=8.0, min=0.01,
                                              callback=self.parameters_changed)
+        self.add_switch()
         self.finish_synth_node()
 
         if path:
@@ -3477,6 +3568,7 @@ class CaptureNode(SynthNode):
         self.send_option = self.add_option('send', widget_type='combo',
                                            default_value='every frame')
         self.send_option.widget.combo_items = list(CaptureNode.SEND_MODES)
+        self.add_switch()
         self.finish_synth_node()
 
     # More than one block can land between GUI frames, so a frame may owe
@@ -3648,6 +3740,7 @@ class ScopeNode(SynthNode):
         self.height_option = self.add_option('height', widget_type='drag_int',
                                              default_value=self.plot_height,
                                              max=3840, callback=self.size_changed)
+        self.add_switch()
         self.finish_synth_node()
 
     def _clamp_samples(self, samples):
