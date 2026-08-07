@@ -2609,7 +2609,9 @@ class ClockNode(SynthNode):
     # A GUI frame that runs long -- a patch load, a heavy node -- leaves a
     # backlog of ticks behind it. Firing all of them would spray bangs that no
     # longer mean anything musically, so the backlog is capped and the rest of
-    # that stall is simply not heard.
+    # that stall is simply not heard. The 'count' outlet still advances by the
+    # whole backlog: what is skipped is the sound of those beats, not the
+    # clock's place in the bar.
     MAX_TICKS_PER_FRAME = 32
 
     @staticmethod
@@ -2706,9 +2708,19 @@ class ClockNode(SynthNode):
             return
         pending = count - self._served_ticks
         self._served_ticks = count
-        if pending > ClockNode.MAX_TICKS_PER_FRAME:
-            pending = ClockNode.MAX_TICKS_PER_FRAME
-        for _ in range(pending):
+
+        # A stall -- a patch load, a window resize, a heavy node -- leaves a
+        # backlog behind it, and only the most recent of it is banged; the
+        # rest no longer means anything musically.
+        #
+        # The count is not a tally of those bangs, though. It is which beat
+        # this is, so it advances by the whole backlog whether or not each
+        # tick was heard. Counting only what was delivered would leave a
+        # sequencer permanently behind the clock after a single resize, and
+        # silently: the bangs would keep coming, just from the wrong bar.
+        delivered = min(pending, ClockNode.MAX_TICKS_PER_FRAME)
+        self._tick_index += pending - delivered
+        for _ in range(delivered):
             self._tick_index += 1
             self.count_output.send(self._tick_index)
             self.bang_output.send('bang')
