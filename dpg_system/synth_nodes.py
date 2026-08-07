@@ -4024,7 +4024,12 @@ class VstNode(SynthNode):
     resolved by name instead, which is exact.
 
     Press 'print parameters' to see what a loaded plugin offers, marked
-    [knob] or [menu].
+    [knob] or [menu]. 'open editor' brings up the plugin's own window; it is
+    modal, so the patch UI waits while the audio carries on. When it closes,
+    every parameter the panel shows is read back from the plugin, so the
+    knobs and menus follow what was done in the window -- and are saved with
+    the patch. Edits to parameters the panel does not show stay in the
+    plugin only.
 
     Three things worth knowing before patching one in:
 
@@ -4096,6 +4101,7 @@ class VstNode(SynthNode):
         self._parameters = {}
         self._applied_choices = {}
         self._reload_pending = True
+        self._editor_pending = False
         self._reported_error = ''
         self._cost_countdown = 0
 
@@ -4149,6 +4155,13 @@ class VstNode(SynthNode):
         self.print_option = self.add_option('print parameters',
                                             widget_type='button',
                                             callback=self.print_parameters)
+        self.editor_option = self.add_option('open editor',
+                                             widget_type='button',
+                                             callback=self.request_editor)
+        if self.editor_option.widget is not None:
+            self.editor_option.widget.set_tooltip(
+                "the plugin's own window, modal: the patch UI pauses while it "
+                'is open, the audio does not')
         self.status_property = self.add_property(
             'status', widget_type='label',
             default_value='pedalboard not installed'
@@ -4170,16 +4183,95 @@ class VstNode(SynthNode):
     def request_reload(self):
         self._reload_pending = True
 
+    def request_editor(self):
+        self._editor_pending = True
+
     def update_parameters_from_widgets(self):
         # The loader restores the file and plugin options without necessarily
         # firing their callbacks, so ask for the load here as well.
         self._reload_pending = True
         super().update_parameters_from_widgets()
 
+    def open_editor(self):
+        """The plugin's own window, as a modal interlude.
+
+        show_editor blocks the calling thread until the window is closed, and
+        on macOS it has to be the main thread -- which is exactly the thread
+        the patch UI runs on. So opening the editor pauses dpg: no knobs, no
+        repatching, no metro~ bangs until it closes. The audio thread is not
+        this thread, and pedalboard releases the GIL for the duration, so
+        everything already sounding keeps sounding, and patched modulation
+        keeps modulating -- measured, not assumed: a rendering thread lost no
+        blocks across an open editor.
+
+        When the window closes, sync_from_plugin pulls what it changed back
+        into the panel, so a parameter the node shows is saved with the patch
+        exactly as the editor left it. Parameters the panel does not show
+        stay in the plugin only, and do not survive a save and reload.
+        """
+        if self.plugin is None:
+            self.set_status('no plugin to show')
+            return
+        self.set_status('editor open -- patch UI paused until it closes')
+        try:
+            self.plugin.show_editor()
+        except Exception as error:
+            self.set_status('editor failed: ' + str(error))
+            print('vst~: editor failed (' + str(error) + ')')
+            return
+        self.sync_from_plugin()
+        self.set_status(self.describe_plugin())
+
+    def sync_from_plugin(self):
+        """Pull the plugin's current values back into the panel.
+
+        The editor writes into the plugin directly, so once it closes any
+        knob or menu showing one of its parameters is out of date. This is
+        the moment to catch up -- and the only one there is, since the frame
+        loop is inside show_editor the whole time the window is open.
+
+        A knob whose inlet has a cord patched into it is left alone. Its
+        parameter is being driven, and the knob is an offset in that sum,
+        not a readout; writing the modulation's momentary value into it
+        would bake a passing instant into the patch.
+
+        Parameters the panel does not show are simply not the panel's
+        business -- the editor's edits to them stay in the plugin either way.
+        """
+        if self.plugin is None:
+            return
+        for index, option in enumerate(self.slot_options):
+            name = any_to_string(option()).strip()
+            parameter = self._parameters.get(name)
+            if parameter is None:
+                continue
+            if self.unit.parameter_in[index].sources:
+                continue
+            port = self.slot_inputs[index]
+            if port.widget is None:
+                continue
+            value = float(parameter.raw_value)
+            if abs(any_to_float(port()) - value) > 1e-6:
+                port.widget.set(value)
+        for chooser, value_option in self.choice_options:
+            name = any_to_string(chooser()).strip()
+            if name not in self._parameters:
+                continue
+            current = any_to_string(getattr(self.plugin, name, ''))
+            if current and any_to_string(value_option()).strip() != current:
+                value_option.set(current)
+                # The plugin already holds this setting; remembering it here
+                # keeps apply_choices from sending it again.
+                self._applied_choices[name] = current
+        self.parameters_changed()
+
     def synth_frame_task(self):
         if self._reload_pending:
             self._reload_pending = False
             self.load_requested_plugin()
+        if self._editor_pending:
+            self._editor_pending = False
+            self.open_editor()
         if self.unit.error:
             if self.unit.error != self._reported_error:
                 self._reported_error = self.unit.error
@@ -4200,12 +4292,14 @@ class VstNode(SynthNode):
         self.unit.attach(None, 1)
         self.plugin = None
         self.parameter_names = []
+        self.numeric_names = []
+        self.choice_names = []
         self._reported_error = ''
 
         fragment = any_to_string(self.file_option()).strip()
         if not fragment:
             self.set_status('no plugin')
-            self.offer_parameters([])
+            self.offer_parameters()
             return
         if not plugin_hosting_available():
             self.set_status('pedalboard not installed')
