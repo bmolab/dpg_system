@@ -3986,8 +3986,21 @@ class ModalNode(SynthNode):
     whatever is patched in: bow~ through a wood table at decay 0.1 and dry
     up is a violin.
 
+    The mode table itself is drawn on the node: one stem per mode, standing
+    at its ratio, as tall as its weight, colored by how long it rings. Drag
+    a stem to tune and weight it, shift-drag vertically to set its ring
+    time, right-click to add or remove one. A material is a starting point:
+    edit it and the combo says 'custom', and the table you drew is what the
+    patch saves. Edits land while the bank is ringing -- drag a sounding
+    mode and it glisses. The same gestures arrive as messages (mode / add /
+    remove), a table sent to 'modes' replaces the drawing, and 'modes out'
+    reports every edit, so tables can be built, morphed and sequenced by
+    patch.
+
     modal~ <frequency> <material>, e.g. modal~ 220 marimba.
     """
+
+    CUSTOM = 'custom'
 
     @staticmethod
     def factory(name, data, args=None):
@@ -4009,8 +4022,24 @@ class ModalNode(SynthNode):
                     except (ValueError, TypeError):
                         continue
         self.unit.frequency_in.base = frequency
-        self._material = material
         self.unit.set_modes(MODAL_MATERIALS[material])
+
+        self.plot_width = 220
+        self.plot_height = 96
+        from dpg_system.interface_nodes import ModeEditor
+        self.editor = ModeEditor(width=self.plot_width,
+                                 height=self.plot_height,
+                                 on_change=self.modes_edited,
+                                 name=label)
+        self.editor.set_modes(MODAL_MATERIALS[material], notify=False)
+        # What the material combo last actually applied, and the guards that
+        # keep a load from re-applying it over the table being restored --
+        # the additive~ preset arrangement, for the same reasons.
+        self._material_shown = material
+        self._applying_material = False
+        self._modes_loaded = False
+        for name in ModeEditor.MESSAGES:
+            self.message_handlers[name] = self.modes_message
 
         self.add_signal_input('excite in', self.unit.excite_in)
         self.add_trigger_signal_input('strike', self.unit.trigger_in,
@@ -4044,10 +4073,16 @@ class ModalNode(SynthNode):
                 'fixed frequency and a short decay this turns the bank into '
                 'a body around whatever is patched in')
 
+        self.modes_input = self.add_input('modes',
+                                          callback=self.modes_received)
         self.material_input = self.add_input('material', widget_type='combo',
                                              default_value=material,
-                                             callback=self.parameters_changed)
-        self.material_input.widget.combo_items = list(MODAL_MATERIALS)
+                                             callback=self.material_changed)
+        self.material_input.widget.combo_items = ([ModalNode.CUSTOM]
+                                                  + list(MODAL_MATERIALS))
+
+        self.modes_display = self.add_display('')
+        self.modes_display.submit_callback = self.submit_display
 
         self.modes_option = self.add_option('modes', widget_type='slider_int',
                                             default_value=ModalUnit.MAX_MODES,
@@ -4055,29 +4090,156 @@ class ModalNode(SynthNode):
                                             callback=self.parameters_changed)
         if self.modes_option.widget is not None:
             self.modes_option.widget.set_tooltip(
-                'how many of the material\'s modes ring; fewer is a simpler, '
-                'cheaper object')
+                'how many of the table\'s modes ring, lowest ratio first; '
+                'fewer is a simpler, cheaper object')
+        self.width_option = self.add_option('width', widget_type='drag_int',
+                                            default_value=self.plot_width,
+                                            callback=self.size_changed)
+        self.height_option = self.add_option('height', widget_type='drag_int',
+                                             default_value=self.plot_height,
+                                             callback=self.size_changed)
 
         self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.modes_output = self.add_output('modes out')
         self.add_switch()
         self.finish_synth_node()
 
     def strike(self):
         self.unit.fire()
 
+    # -- the editor ----------------------------------------------------------
+
+    def submit_display(self):
+        self.editor.submit(self.modes_display.uuid,
+                           width_option=self.width_option,
+                           height_option=self.height_option)
+
+    def custom_create(self, from_file):
+        self.size_changed()
+        self.push_modes()
+
+    def size_changed(self):
+        self.editor.set_size(any_to_int(self.width_option()),
+                             any_to_int(self.height_option()))
+
+    def synth_frame_task(self):
+        self.editor.poll()
+
+    def modes_edited(self):
+        """The editor moved: retune the bank and report the table."""
+        if not self._applying_material:
+            self.mark_custom()
+        self.push_modes()
+        self.modes_output.send(self.editor.get_modes())
+
+    def push_modes(self):
+        """The editor's table, capped by the modes option, into the unit."""
+        count = ModalUnit.MAX_MODES
+        if getattr(self, 'modes_option', None) is not None:
+            wanted = any_to_int(self.modes_option())
+            if wanted > 0:
+                count = min(wanted, ModalUnit.MAX_MODES)
+        self.unit.set_modes(self.editor.get_modes()[:count])
+
     def sync_options(self):
-        material = any_to_string(self.material_input())
-        count = any_to_int(self.modes_option())
-        if material not in MODAL_MATERIALS:
+        self.push_modes()
+
+    # -- materials -----------------------------------------------------------
+
+    def material_changed(self):
+        chosen = any_to_string(self.material_input())
+        if chosen == self._material_shown:
             return
-        if count <= 0:
-            count = ModalUnit.MAX_MODES
-        table = MODAL_MATERIALS[material][:count]
-        # Adopting a table resets the bank's ring, so only push one when the
-        # material or the count has actually changed.
-        if material != self._material or len(table) != self.unit._modes.shape[0]:
-            self._material = material
-            self.unit.set_modes(table)
+        self._material_shown = chosen
+        if chosen == ModalNode.CUSTOM:
+            return
+        # During a load the table is restored by load_custom; applying the
+        # material now would overwrite what the loader is putting back.
+        if self.in_loading_process:
+            return
+        self.apply_material(chosen)
+
+    def apply_material(self, name):
+        table = MODAL_MATERIALS.get(name)
+        if table is None:
+            return
+        self._applying_material = True
+        try:
+            self.editor.set_modes(table)
+        finally:
+            self._applying_material = False
+
+    def mark_custom(self):
+        """A hand edit means the table is no longer the material it started as.
+
+        Without this, reloading would re-apply the material over the edit --
+        the combo would still say 'bell' and would be believed.
+        """
+        if self._material_shown == ModalNode.CUSTOM:
+            return
+        self._material_shown = ModalNode.CUSTOM
+        if self.material_input.widget is not None:
+            self.material_input.widget.set(ModalNode.CUSTOM)
+
+    def update_parameters_from_widgets(self):
+        # Patches saved before the editor existed carry only the combo, so a
+        # load restores 'marimba' with no table behind it. Once the widgets
+        # are back, a material that does not match what the editor holds --
+        # and was not overridden by a saved table -- is applied the old way.
+        chosen = any_to_string(self.material_input())
+        if (chosen in MODAL_MATERIALS and chosen != self._material_shown
+                and not self._modes_loaded):
+            self._material_shown = chosen
+            self.editor.set_modes(MODAL_MATERIALS[chosen], notify=False)
+        elif chosen:
+            self._material_shown = chosen
+        super().update_parameters_from_widgets()
+
+    # -- the table by patch --------------------------------------------------
+
+    def modes_message(self, message='', message_data=[]):
+        self.editor.handle_message(message, message_data)
+
+    def modes_received(self):
+        """A whole table sent to the 'modes' inlet replaces the drawing.
+
+        Rows of [ratio, weight, decay] or a flat list of triples; a bare
+        list of ratios gets weight 1 and decay 1, so 'modes 1 2.1 3.4 5.8'
+        is a quick way to sketch a tuning.
+        """
+        data = self.modes_input()
+        table = self.modes_table_from(data)
+        if table:
+            self.editor.set_modes(table)
+
+    @staticmethod
+    def modes_table_from(data):
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        if not isinstance(data, (list, tuple)) or len(data) == 0:
+            return None
+        if isinstance(data[0], (list, tuple, np.ndarray)):
+            return [row for row in data]
+        numbers = []
+        for value in data:
+            try:
+                numbers.append(float(value))
+            except (TypeError, ValueError):
+                return None
+        if len(numbers) >= 3 and len(numbers) % 3 == 0:
+            return [numbers[i:i + 3] for i in range(0, len(numbers), 3)]
+        return [[ratio, 1.0, 1.0] for ratio in numbers]
+
+    # -- persistence ---------------------------------------------------------
+
+    def save_custom(self, container):
+        container['modal_modes'] = self.editor.get_modes()
+
+    def load_custom(self, container):
+        if 'modal_modes' in container:
+            self._modes_loaded = True
+            self.editor.set_modes(container['modal_modes'], notify=False)
+            self.push_modes()
 
 
 class WindNode(SynthNode):

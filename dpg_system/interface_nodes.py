@@ -1,4 +1,5 @@
 import dearpygui.dearpygui as dpg
+import math
 import time
 import platform
 import traceback
@@ -4169,6 +4170,485 @@ class BarEditor:
             self.last_index = -1
             return
         self.paint(index, 0.0 if right_down else position[1])
+
+
+def mode_point_color(decay):
+    """Mode point color: cool (dies fast) -> warm (rings long).
+
+    Decay multiples live on a ratio scale -- 0.5 and 2.0 are the same step
+    either side of 1 -- so the blend runs on log2, two octaves each way.
+    """
+    value = max(0.05, min(4.0, float(decay)))
+    blend = (math.log2(value) + 2.0) / 4.0
+    blend = max(0.0, min(1.0, blend))
+    return (int(90 + blend * 165), int(120 + blend * 50),
+            int(255 - blend * 175), 255)
+
+
+class ModeEditor:
+    """An editable mode table on a plot: one stem per resonant mode.
+
+    Where BreakpointEditor edits a shape and BarEditor a row of slots, this
+    edits a *set*: each mode is a stem standing at its frequency ratio, as
+    tall as its weight, colored by how long it rings -- cool for a mode that
+    dies fast, warm for one that lasts. There is no curve through them
+    because there is nothing between modes; that is what makes an object
+    sound like a thing rather than a filter.
+
+    The gestures are the breakpoint editor's, re-meant: drag a stem to tune
+    it (x) and weight it (y), shift + drag vertically to set how long it
+    rings, right-click empty space to add a mode, right-click a stem to
+    remove it. Stems may pass each other freely -- modes have no order to
+    preserve -- and messages address the nth from the left at the moment
+    they arrive.
+
+    The x axis grows and shrinks to fit the table when one is loaded, and
+    keeps its tick labels: where a stem stands is the whole reading.
+
+    A host builds one in __init__, calls submit() from a display's
+    submit_callback, poll() from its frame task, and hears about edits
+    through on_change.
+    """
+
+    DECAY_MIN, DECAY_MAX = 0.05, 4.0
+    RATIO_MIN = 0.02
+    REMOVE_THRESHOLD = 0.08
+
+    def __init__(self, x_max=8.0, width=220, height=96, on_change=None,
+                 on_resize=None, stem_color=(240, 170, 80), name='modes'):
+        self.name = name        # only used to name the node in diagnostics
+        self.x_max = float(x_max)
+        self.width = int(width)
+        self.height = int(height)
+        self.on_change = on_change
+        self.on_resize = on_resize
+        self.stem_color = stem_color
+
+        self.modes = [{'ratio': 1.0, 'weight': 1.0, 'decay': 1.0}]
+        self.point_tags = []
+        self.ready = False
+
+        self.plot_tag = dpg.generate_uuid()
+        self.x_axis_tag = dpg.generate_uuid()
+        self.y_axis_tag = dpg.generate_uuid()
+        self.stem_tag = dpg.generate_uuid()
+        self.resize_handle = None
+
+        self.left_was_down = False
+        self.right_was_down = False
+        self.decay_dragging = False
+        self.decay_index = -1
+        self.decay_drag_start_screen_y = 0.0
+        self.decay_drag_start_val = 1.0
+
+    # -- construction --------------------------------------------------------
+
+    def submit(self, display_uuid, width_option=None, height_option=None):
+        """Build the plot. Call inside the host display's submit_callback."""
+        with dpg.theme() as self.stem_theme:
+            with dpg.theme_component(dpg.mvStemSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Line, self.stem_color,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, self.stem_color,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline,
+                                    self.stem_color,
+                                    category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, 2.0,
+                                    category=dpg.mvThemeCat_Plots)
+
+        with dpg.plot(label='', tag=self.plot_tag,
+                      height=self.height, width=self.width,
+                      no_title=True, no_menus=True, no_box_select=True,
+                      no_mouse_pos=True):
+            # Tick labels stay on: where a stem stands is the reading.
+            dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.x_axis_tag)
+            dpg.add_plot_axis(dpg.mvYAxis, label='', tag=self.y_axis_tag,
+                              no_tick_labels=True)
+            dpg.add_stem_series([], [], parent=self.y_axis_tag,
+                                tag=self.stem_tag)
+            dpg.bind_item_theme(self.stem_tag, self.stem_theme)
+
+        self.ready = True
+        self.apply_axis_limits()
+        self.rebuild_points()
+        if width_option is not None or height_option is not None:
+            self.install_resize_handle(display_uuid, width_option,
+                                       height_option)
+
+    def install_resize_handle(self, display_uuid, width_option, height_option):
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
+        btn_uuid = dpg.add_button(parent=display_uuid, label='',
+                                  width=self.width, height=4)
+        handle = ResizeHandle(
+            btn_uuid, self.plot_tag, axis='xy',
+            width_option=width_option, height_option=height_option,
+            sync_width=True, sync_height=False,
+            on_resize=self.handle_resized
+        )
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
+        self.resize_handle = handle
+
+    def handle_resized(self, new_w, new_h):
+        self.width = int(new_w)
+        self.height = int(new_h)
+        self.apply_axis_limits()
+        if self.on_resize is not None:
+            self.on_resize(self.width, self.height)
+
+    def set_size(self, width, height):
+        self.width = int(width)
+        self.height = int(height)
+        if not self.ready:
+            return
+        dpg.set_item_width(self.plot_tag, self.width)
+        dpg.set_item_height(self.plot_tag, self.height)
+        if self.resize_handle is not None \
+                and dpg.does_item_exist(self.resize_handle.uuid):
+            dpg.set_item_width(self.resize_handle.uuid, self.width)
+        self.apply_axis_limits()
+
+    def apply_axis_limits(self):
+        if not self.ready:
+            return
+        x_low, x_high, y_low, y_high = breakpoint_axis_limits(
+            self.x_max, 0.0, 1.0, self.width, self.height)
+        dpg.set_axis_limits(self.x_axis_tag, x_low, x_high)
+        dpg.set_axis_limits(self.y_axis_tag, y_low, y_high)
+
+    def fit_range(self):
+        """Grow or shrink the x axis to frame the table it holds."""
+        top = max(mode['ratio'] for mode in self.modes)
+        wanted = max(2.0, float(math.ceil(top * 1.1)))
+        if wanted != self.x_max:
+            self.x_max = wanted
+            self.apply_axis_limits()
+
+    # -- the table -----------------------------------------------------------
+
+    def set_modes(self, table, notify=True):
+        """Replace the table. Accepts dicts or (ratio, weight, decay) rows."""
+        parsed = []
+        for entry in table or ():
+            if isinstance(entry, dict):
+                parsed.append({
+                    'ratio': any_to_float(entry.get('ratio', 1.0)),
+                    'weight': any_to_float(entry.get('weight', 1.0)),
+                    'decay': any_to_float(entry.get('decay', 1.0))})
+                continue
+            if isinstance(entry, np.ndarray):
+                entry = entry.tolist()
+            if not isinstance(entry, (list, tuple)) or len(entry) < 2:
+                continue
+            parsed.append({
+                'ratio': any_to_float(entry[0]),
+                'weight': any_to_float(entry[1]),
+                'decay': (any_to_float(entry[2])
+                          if len(entry) > 2 else 1.0)})
+        if not parsed:
+            return False
+        for mode in parsed:
+            mode['ratio'] = max(ModeEditor.RATIO_MIN, mode['ratio'])
+            mode['weight'] = max(0.0, min(1.0, mode['weight']))
+            mode['decay'] = max(ModeEditor.DECAY_MIN,
+                                min(ModeEditor.DECAY_MAX, mode['decay']))
+        self.modes = sorted(parsed, key=lambda m: m['ratio'])
+        self.fit_range()
+        self.rebuild_points()
+        if notify:
+            self.changed()
+        return True
+
+    def get_modes(self):
+        return [[m['ratio'], m['weight'], m['decay']]
+                for m in sorted(self.modes, key=lambda m: m['ratio'])]
+
+    def changed(self):
+        self.update_stems()
+        if self.on_change is not None:
+            self.on_change()
+
+    def update_stems(self):
+        if not self.ready:
+            return
+        xs = [m['ratio'] for m in self.modes]
+        ys = [m['weight'] for m in self.modes]
+        dpg.set_value(self.stem_tag, [xs, ys])
+
+    # -- the points ----------------------------------------------------------
+
+    def rebuild_points(self):
+        if not self.ready:
+            # No widgets to make yet, but the bookkeeping keeps step so
+            # edits arriving before submit() line up with their modes.
+            self.point_tags = [None] * len(self.modes)
+            return
+        for tag in self.point_tags:
+            if tag is not None and dpg.does_item_exist(tag):
+                dpg.delete_item(tag)
+        self.point_tags = [self.create_point_widget(m) for m in self.modes]
+        self.update_stems()
+
+    def create_point_widget(self, mode):
+        # Before the plot exists there is nothing to hang a widget on;
+        # rebuild_points() makes the real ones when submit() runs.
+        if not self.ready:
+            return None
+        tag = dpg.generate_uuid()
+        dpg.add_drag_point(tag=tag,
+                           default_value=(mode['ratio'], mode['weight']),
+                           color=mode_point_color(mode['decay']),
+                           parent=self.plot_tag)
+        return tag
+
+    def update_point_color(self, index):
+        if index >= len(self.point_tags):
+            return
+        tag = self.point_tags[index]
+        if tag is not None and dpg.does_item_exist(tag):
+            dpg.configure_item(tag, color=mode_point_color(
+                self.modes[index]['decay']))
+
+    def add_mode(self, ratio, weight, decay=1.0):
+        mode = {'ratio': max(ModeEditor.RATIO_MIN, min(self.x_max, ratio)),
+                'weight': max(0.0, min(1.0, weight)),
+                'decay': max(ModeEditor.DECAY_MIN,
+                             min(ModeEditor.DECAY_MAX, decay))}
+        self.modes.append(mode)
+        self.point_tags.append(self.create_point_widget(mode))
+        return mode
+
+    def remove_mode(self, index):
+        if len(self.modes) <= 1 or not 0 <= index < len(self.modes):
+            return False
+        self.modes.pop(index)
+        tag = self.point_tags.pop(index)
+        if tag is not None and dpg.does_item_exist(tag):
+            dpg.delete_item(tag)
+        return True
+
+    def mode_at(self, index):
+        """Internal index of the index-th mode in ratio order, or None.
+
+        Stored order is whatever editing left behind, for the same reason as
+        the breakpoint editor: drag widgets are matched to modes by list
+        position. Messages mean the nth from the left, so they come through
+        here.
+        """
+        order = sorted(range(len(self.modes)),
+                       key=lambda i: self.modes[i]['ratio'])
+        if 0 <= index < len(order):
+            return order[index]
+        return None
+
+    def nearest_mode(self, mx, my):
+        min_dist = float('inf')
+        min_idx = -1
+        x_range = max(self.x_max, 0.001)
+        for i, mode in enumerate(self.modes):
+            dx = (mode['ratio'] - mx) / x_range
+            dy = mode['weight'] - my
+            dist = (dx ** 2 + dy ** 2) ** 0.5
+            if dist < min_dist:
+                min_dist = dist
+                min_idx = i
+        return min_idx, min_dist
+
+    # -- messages ------------------------------------------------------------
+
+    MESSAGES = ('mode', 'add', 'remove')
+
+    def handle_message(self, message, message_data):
+        """The editing gestures as messages, so a table can be driven by patch.
+
+            mode <n> <ratio> <weight> [decay]   set the nth mode from the left
+            add <ratio> <weight> [decay]        add a mode
+            remove <n>                          remove the nth mode
+
+        Values are clamped to the editor's ranges. Anything that cannot be
+        applied is reported rather than passed over in silence.
+
+        Indices count from 0, as everywhere else in the patch.
+        """
+        numbers = [any_to_float(value) for value in message_data]
+
+        if message == 'mode':
+            if len(numbers) < 3:
+                return self._reject(message, message_data,
+                                    'needs an index, a ratio and a weight')
+            target = self.mode_at(int(numbers[0]))
+            if target is None:
+                return self._reject(message, message_data,
+                                    self._index_hint(int(numbers[0])))
+            mode = self.modes[target]
+            mode['ratio'] = max(ModeEditor.RATIO_MIN,
+                                min(self.x_max, numbers[1]))
+            mode['weight'] = max(0.0, min(1.0, numbers[2]))
+            if len(numbers) > 3:
+                mode['decay'] = max(ModeEditor.DECAY_MIN,
+                                    min(ModeEditor.DECAY_MAX, numbers[3]))
+                self.update_point_color(target)
+            if target < len(self.point_tags) \
+                    and self.point_tags[target] is not None \
+                    and dpg.does_item_exist(self.point_tags[target]):
+                dpg.set_value(self.point_tags[target],
+                              [mode['ratio'], mode['weight']])
+            self.changed()
+            return True
+
+        if message == 'add':
+            if len(numbers) < 2:
+                return self._reject(message, message_data,
+                                    'needs a ratio and a weight')
+            self.add_mode(numbers[0], numbers[1],
+                          numbers[2] if len(numbers) > 2 else 1.0)
+            self.fit_range()
+            self.changed()
+            return True
+
+        if message == 'remove':
+            if not numbers:
+                return self._reject(message, message_data, 'needs an index')
+            target = self.mode_at(int(numbers[0]))
+            if target is None:
+                return self._reject(message, message_data,
+                                    self._index_hint(int(numbers[0])))
+            if not self.remove_mode(target):
+                return self._reject(message, message_data,
+                                    'a table cannot have fewer than 1 mode')
+            self.changed()
+            return True
+
+        return False
+
+    def _index_hint(self, index):
+        count = len(self.modes)
+        return ('there is no mode ' + str(index) + ' -- the table has '
+                + str(count) + ' modes, so indices run 0..' + str(count - 1))
+
+    def _reject(self, message, message_data, reason):
+        text = ' '.join([str(message)] + [str(value) for value in message_data])
+        print(self.name + ": '" + text + "' ignored -- " + reason)
+        return False
+
+    # -- interaction ---------------------------------------------------------
+
+    def hovered(self):
+        return self.ready and dpg.is_item_hovered(self.plot_tag)
+
+    def interacting(self):
+        return self.decay_dragging or (self.left_was_down and self.hovered())
+
+    def _begin_decay_drag(self, index):
+        self.decay_dragging = True
+        self.decay_index = index
+        self.decay_drag_start_screen_y = dpg.get_mouse_pos()[1]
+        self.decay_drag_start_val = self.modes[index]['decay']
+
+    def _hold_stem(self, index):
+        """Pin a drag point to its mode, undoing any capture-drag motion."""
+        if 0 <= index < len(self.point_tags):
+            tag = self.point_tags[index]
+            if tag is not None and dpg.does_item_exist(tag):
+                mode = self.modes[index]
+                dpg.set_value(tag, [mode['ratio'], mode['weight']])
+
+    def poll(self):
+        """Run the mouse gestures. Call once a frame from the host."""
+        if not self.ready:
+            return
+        shift_held = (dpg.is_key_down(dpg.mvKey_LShift)
+                      or dpg.is_key_down(dpg.mvKey_RShift))
+        left_down = dpg.is_mouse_button_down(0)
+        right_down = dpg.is_mouse_button_down(1)
+
+        # --- Decay drag (shift + left-drag) ---
+        if self.decay_dragging:
+            index = self.decay_index
+            if left_down and shift_held and 0 <= index < len(self.modes):
+                screen_pos = dpg.get_mouse_pos()
+                delta_px = self.decay_drag_start_screen_y - screen_pos[1]
+                # Pixels to octaves of ring time: 40 px doubles or halves.
+                value = self.decay_drag_start_val * (2.0 ** (delta_px / 40.0))
+                value = max(ModeEditor.DECAY_MIN,
+                            min(ModeEditor.DECAY_MAX, value))
+                self.modes[index]['decay'] = value
+                self.update_point_color(index)
+                self.changed()
+            else:
+                self.decay_dragging = False
+            # Every frame, not just at the end: if the press landed on the
+            # drag point it is dragging too, and left free it would wander
+            # off and retune the stem the gesture was aimed at.
+            self._hold_stem(index)
+            self.left_was_down = left_down
+            self.right_was_down = right_down
+            return
+
+        # Shift + press on the plot: adjust the nearest mode's ring time.
+        # No distance gate, matching the segment-bend gesture it is copied
+        # from -- on a plot this small the nearest stem is the meant one.
+        if left_down and not self.left_was_down and shift_held \
+                and self.hovered():
+            plot_pos = dpg.get_plot_mouse_pos()
+            if plot_pos:
+                index, _ = self.nearest_mode(plot_pos[0], plot_pos[1])
+                if index >= 0:
+                    self._begin_decay_drag(index)
+                    self._hold_stem(index)
+                    self.left_was_down = left_down
+                    self.right_was_down = right_down
+                    return
+
+        # --- Poll the drag points ---
+        changed = False
+        for index, tag in enumerate(self.point_tags):
+            if index >= len(self.modes) or tag is None \
+                    or not dpg.does_item_exist(tag):
+                continue
+            pos = dpg.get_value(tag)
+            mode = self.modes[index]
+            moved = (abs(pos[0] - mode['ratio']) > 1e-6
+                     or abs(pos[1] - mode['weight']) > 1e-6)
+            if moved and shift_held and left_down:
+                # The press landed on the point itself, where the plot may
+                # not report hover, so the shift path above never saw it.
+                # The point's own motion is the tell: same gesture, caught
+                # the other way round.
+                self._begin_decay_drag(index)
+                self._hold_stem(index)
+                self.left_was_down = left_down
+                self.right_was_down = right_down
+                return
+            x = max(ModeEditor.RATIO_MIN, min(self.x_max, pos[0]))
+            y = max(0.0, min(1.0, pos[1]))
+            if abs(x - pos[0]) > 1e-6 or abs(y - pos[1]) > 1e-6:
+                dpg.set_value(tag, [x, y])
+            if abs(x - mode['ratio']) > 1e-6 or abs(y - mode['weight']) > 1e-6:
+                mode['ratio'] = x
+                mode['weight'] = y
+                changed = True
+
+        # --- Right-click: add or remove a mode ---
+        if right_down and not self.right_was_down and self.hovered():
+            plot_pos = dpg.get_plot_mouse_pos()
+            if plot_pos:
+                index, dist = self.nearest_mode(plot_pos[0], plot_pos[1])
+                if dist < ModeEditor.REMOVE_THRESHOLD and len(self.modes) > 1:
+                    self.remove_mode(index)
+                else:
+                    self.add_mode(max(ModeEditor.RATIO_MIN,
+                                      min(self.x_max, plot_pos[0])),
+                                  max(0.0, min(1.0, plot_pos[1])))
+                changed = True
+
+        if changed:
+            self.changed()
+
+        self.left_was_down = left_down
+        self.right_was_down = right_down
 
 
 class EnvelopeNode(Node):

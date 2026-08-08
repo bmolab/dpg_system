@@ -5907,14 +5907,24 @@ class ModalUnit(Unit):
         self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
 
     def set_modes(self, table):
-        """Main thread: adopt a mode table, rows of (ratio, weight, decay)."""
+        """Main thread: adopt a mode table, rows of (ratio, weight, decay).
+
+        Coefficients are rebuilt from the table every block, so a mode edited
+        while it is ringing retunes live -- dragging a stem in the editor
+        glisses the partial rather than cutting it. Only a change in how many
+        modes there are clears the ring: the states would otherwise carry
+        energy from one mode's history into what is now a different mode.
+        """
         rows = [row for row in table[:ModalUnit.MAX_MODES]]
         if not rows:
             rows = [(1.0, 1.0, 1.0)]
-        self._modes = np.array(rows, dtype=np.float64)
-        self._weight_norm = max(1.0, float(np.sum(np.abs(self._modes[:, 1]))))
-        self._s1[:] = 0.0
-        self._s2[:] = 0.0
+        fresh = np.array(rows, dtype=np.float64)
+        resized = fresh.shape[0] != self._modes.shape[0]
+        self._modes = fresh
+        self._weight_norm = max(1.0, float(np.sum(np.abs(fresh[:, 1]))))
+        if resized:
+            self._s1[:] = 0.0
+            self._s2[:] = 0.0
 
     def fire(self):
         """Request one strike from the node layer. Served on the next block."""
