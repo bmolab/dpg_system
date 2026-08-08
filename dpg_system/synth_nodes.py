@@ -25,7 +25,7 @@ from dpg_system.synth_core import (
     MixUnit, MultUnit, PanUnit, AudioOutUnit, AUDIO_OUT_SPACES,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
-    StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit,
+    StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -87,6 +87,7 @@ def register_synth_nodes():
     Node.app.register_node('bowed~', BowNode.factory)
     Node.app.register_node('rub~', RubNode.factory)
     Node.app.register_node('glass~', RubNode.factory)
+    Node.app.register_node('fader~', FaderNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
@@ -3880,6 +3881,8 @@ class StringNode(SynthNode):
                                   minimum=0.0, maximum=0.5, speed=0.01)
         self.add_modulation_input('stiffness', self.unit.stiffness_in,
                                   minimum=0.0, maximum=0.9, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
 
         self.mode_input = self.add_input('mode', widget_type='combo',
                                          default_value=mode,
@@ -4285,6 +4288,8 @@ class ModalNode(ModeTableNode):
                 'passes the excite input through alongside the ring; with a '
                 'fixed frequency and a short decay this turns the bank into '
                 'a body around whatever is patched in')
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
 
         self._add_mode_table_ports(material)
         self._add_mode_table_options()
@@ -4353,6 +4358,8 @@ class RubNode(ModeTableNode):
         self.add_modulation_input('decay', self.unit.decay_in,
                                   minimum=0.01, maximum=60.0, speed=0.05,
                                   slider=False)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
 
         self._add_mode_table_ports(material)
         self._add_mode_table_options()
@@ -4410,6 +4417,8 @@ class WindNode(SynthNode):
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('breath', self.unit.noise_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
 
         self.model_input = self.add_input('model', widget_type='combo',
                                           default_value=model,
@@ -4467,10 +4476,76 @@ class BowNode(SynthNode):
         self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
         self.add_modulation_input('brightness', self.unit.brightness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
 
         self.signal_output = self.add_signal_output('out', self.unit.out)
         self.add_switch()
         self.finish_synth_node()
+
+
+class FaderNode(SynthNode):
+    """A channel fader: long-throw vertical handle, desk taper, dB readout.
+
+    Unity sits at three quarters of the travel, +6 dB above it, 60 dB of
+    dB-linear reach below, and the bottom twentieth fades to true silence.
+    The handle is also an inlet, so automation rides the same taper as the
+    hand. Stereo when something is patched to the right inlet. The face is
+    kept to the throw: pins say only left and right (which side of the node
+    they sit on says the rest), and there is no bypass -- a fader's own
+    bottom is its off.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return FaderNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = FaderUnit(synth_graph.sample_rate)
+
+        # Bare 'left' and 'right': which side of the node a pin sits on
+        # already says in or out, and a fader wants no more face than its
+        # throw. No bypass either -- a fader's own bottom is its off.
+        self.add_signal_input('left', self.unit.signal_in)
+        self.add_signal_input('right', self.unit.right_in)
+        # A plain widget input rather than a modulation row: the handle is
+        # its own display, so the name/value/depth columns would only be
+        # width. The inlet stays patchable at full depth.
+        self.fader_input = self.add_input(
+            'fader', widget_type='slider_float_vertical',
+            default_value=FaderUnit.UNITY_POSITION,
+            min=0.0, max=1.0, callback=self.parameters_changed)
+        self.fader_input.synth_inlet = self.unit.position_in
+        self.signal_inputs.append(self.fader_input)
+        self._parameter_bindings.append((self.fader_input,
+                                         self.unit.position_in))
+        if self.fader_input.widget is not None:
+            self.fader_input.widget.slider_height = 150
+            self.fader_input.widget._label = '##fader'
+            self.fader_input.widget.set_tooltip(
+                'desk taper: unity at 3/4 travel, +6 dB at the top, '
+                'true silence at the bottom')
+        self.db_display = self.add_property('dB', widget_type='label',
+                                            default_value='+0.0 dB')
+
+        self.signal_output = self.add_signal_output('left', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.finish_synth_node()
+        self._shown_db = 0.0
+
+    def synth_frame_task(self):
+        db = self.unit.current_db()
+        if db is None:
+            if self._shown_db is not None:
+                self._shown_db = None
+                if self.db_display.widget is not None:
+                    self.db_display.widget.set('-inf dB')
+            return
+        if self._shown_db is None or abs(db - self._shown_db) > 0.05:
+            self._shown_db = db
+            if self.db_display.widget is not None:
+                self.db_display.widget.set(f'{db:+.1f} dB')
 
 
 class CaptureNode(SynthNode):

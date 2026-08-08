@@ -1194,6 +1194,22 @@ class SliderFloat(FloatWidget):
                              min_value=mn, max_value=mx)
 
 
+class VerticalSliderFloat(FloatWidget):
+    """A long-throw vertical slider: the fader~ handle.
+
+    Height is the travel, so it is settable (slider_height, before drawing)
+    where horizontal widgets set width. Everything else -- value, save,
+    callbacks -- is the ordinary slider."""
+    def _draw_widget(self):
+        mn, mx = self._get_limits(0.0, 1.0)
+        dpg.add_slider_float(label=self._label, vertical=True,
+                             width=min(self.widget_width, 32),
+                             height=getattr(self, 'slider_height', 120),
+                             tag=self.uuid, user_data=self.node,
+                             default_value=self.default_value,
+                             min_value=mn, max_value=mx)
+
+
 class KnobFloat(FloatWidget):
     def _draw_widget(self):
         if self.min is None: self.min = 0
@@ -1778,6 +1794,7 @@ class WidgetFactory:
     _REGISTRY = {
         'drag_float': DragFloat,
         'slider_float': SliderFloat,
+        'slider_float_vertical': VerticalSliderFloat,
         'knob_float': KnobFloat,
         'input_float': InputFloat,
         'drag_int': DragInt,

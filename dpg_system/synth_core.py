@@ -194,6 +194,8 @@ class Unit:
         self._switched_off = False
         self._gate_level = 1.0
         self._gate_ramp = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._level_glide = 1.0
+        self._level_ramp = np.zeros(MAX_BLOCK, dtype=np.float64)
 
     def new_inlet(self, base=0.0, depth=1.0, minimum=None, maximum=None):
         inlet = Inlet(base, depth, minimum, maximum)
@@ -387,6 +389,35 @@ class Unit:
         limit = self.sample_rate * 0.49
         np.clip(increment, -limit, limit, out=increment)
         increment /= self.sample_rate
+
+    def _apply_level(self, buffer, level, frames):
+        """Scale a rendered block by a level inlet.
+
+        The physical models' loudness is emergent -- a strike rings to its
+        table, a bow blooms to wherever the friction settles -- so they
+        carry an output level rather than sending every voice through a
+        vca~. A knob steps once a block like any control, so a constant
+        level glides over a few blocks; a patched signal is already audio
+        rate and is applied as it arrives.
+        """
+        if level.constant:
+            target = min(2.0, max(0.0, level.value))
+            start = self._level_glide
+            landing = start + (target - start) * 0.35
+            self._level_glide = landing
+            if start == landing:
+                if landing != 1.0:
+                    buffer *= landing
+                return
+            # Ramped across the block, not stepped at its edge: a glide
+            # applied as one factor per block is still a staircase.
+            ramp = self._level_ramp[:frames]
+            np.multiply(_INDEX_RAMP[:frames], (landing - start) / frames,
+                        out=ramp)
+            ramp += start
+            buffer *= ramp
+        else:
+            buffer *= level.data[:frames]
 
     def _build_hertz(self, curve, frequency, pitch, frames, minimum):
         """Frequency in Hz into `curve`, scaled by the exponential pitch inlet.
@@ -5583,6 +5614,7 @@ class StringUnit(Unit):
         self.brightness_in = self.new_inlet(base=0.7, minimum=0.0, maximum=1.0)
         self.position_in = self.new_inlet(base=0.2, minimum=0.0, maximum=0.5)
         self.stiffness_in = self.new_inlet(base=0.0, minimum=0.0, maximum=0.9)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
         self.mode = 0
         self.pluck_color = 0.3
@@ -5699,6 +5731,7 @@ class StringUnit(Unit):
         brightness = self.brightness_in.eval(frames)
         position = self.position_in.eval(frames)
         stiffness = self.stiffness_in.eval(frames)
+        out_level = self.level_in.eval(frames)
 
         out = self.out
         if not _svf_ready.is_set():
@@ -5799,6 +5832,7 @@ class StringUnit(Unit):
             polarity, self._low, self._dc_x, self._dc_y, self._in_x,
             self._in_y, result)
 
+        self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
         scratch = self._scratch[:frames]
@@ -5874,6 +5908,7 @@ class ModalUnit(Unit):
         self.drive_in = self.new_inlet(base=ModalUnit.DRIVE_GAIN,
                                        minimum=0.0, maximum=2.0)
         self.dry_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
         self.threshold = 0.5
         # ratio, weight, decay multiple -- one row per mode. Replaced whole
@@ -5974,6 +6009,7 @@ class ModalUnit(Unit):
         position = self.position_in.eval(frames)
         drive_level = self.drive_in.eval(frames)
         dry = self.dry_in.eval(frames)
+        out_level = self.level_in.eval(frames)
 
         out = self.out
         if not _svf_ready.is_set():
@@ -6159,6 +6195,7 @@ class ModalUnit(Unit):
                             out=scratch)
             result += scratch
 
+        self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
         scratch = self._scratch[:frames]
@@ -6272,6 +6309,7 @@ class RubUnit(Unit):
                                            minimum=RubUnit.MIN_FREQUENCY)
         self.pitch_in = self.new_inlet()
         self.decay_in = self.new_inlet(base=3.0, minimum=0.01, maximum=60.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
         self._modes = np.array([[1.0, 1.0, 1.0]], dtype=np.float64)
         self._weight_norm = 1.0
@@ -6337,6 +6375,7 @@ class RubUnit(Unit):
         frequency = self.frequency_in.eval(frames)
         pitch = self.pitch_in.eval(frames)
         decay = self.decay_in.eval(frames)
+        out_level = self.level_in.eval(frames)
 
         out = self.out
         if not _svf_ready.is_set():
@@ -6462,6 +6501,7 @@ class RubUnit(Unit):
             self._s1[:count], self._s2[:count], self._free[:count],
             dc_pole, self._dc_x, self._dc_y, result)
 
+        self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
         scratch = self._scratch[:frames]
@@ -6709,6 +6749,7 @@ class WindUnit(Unit):
         self.embouchure_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.brightness_in = self.new_inlet(base=0.7, minimum=0.0, maximum=1.0)
         self.noise_in = self.new_inlet(base=0.06, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
         self.mode = 0
 
@@ -6758,6 +6799,7 @@ class WindUnit(Unit):
         embouchure = self.embouchure_in.eval(frames)
         brightness = self.brightness_in.eval(frames)
         noise = self.noise_in.eval(frames)
+        out_level = self.level_in.eval(frames)
 
         out = self.out
         if not _svf_ready.is_set():
@@ -6833,6 +6875,7 @@ class WindUnit(Unit):
 
         if scale != 1.0:
             result *= scale
+        self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
         scratch = self._scratch[:frames]
@@ -6887,6 +6930,7 @@ class BowUnit(Unit):
         self.pitch_in = self.new_inlet()
         self.brightness_in = self.new_inlet(base=0.75, minimum=0.0,
                                             maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
         size = int(self.sample_rate / BowUnit.MIN_FREQUENCY) + 8
         self.neck = np.zeros(size, dtype=np.float64)
@@ -6925,6 +6969,7 @@ class BowUnit(Unit):
         frequency = self.frequency_in.eval(frames)
         pitch = self.pitch_in.eval(frames)
         brightness = self.brightness_in.eval(frames)
+        out_level = self.level_in.eval(frames)
 
         out = self.out
         if not _svf_ready.is_set():
@@ -7007,10 +7052,109 @@ class BowUnit(Unit):
             self._low, self._dc_x, self._dc_y, result)
 
         result *= 1.5
+        self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
         np.abs(result, out=scratch)
         self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+class FaderUnit(Unit):
+    """A mixing-desk fader on the signal passing through.
+
+    What separates a fader from a multiply is the taper. Loudness lives in
+    dB, so the throw is dB-linear through the working range -- unity at
+    three quarters of the travel where a desk puts its 0 mark, +6 dB of
+    push above it, 60 dB of reach below -- and the last twentieth fades
+    linearly to a true zero, which no finite number of decibels reaches.
+    Equal distances on the handle are equal loudness changes, which is what
+    makes a ride feel right.
+
+    The gain glides and is ramped across each block, so riding the handle
+    -- the entire point of a fader -- never zippers. The position is an
+    inlet like any other: patch an envelope or an effort stream and the
+    automation moves through the same taper as the hand, at control rate.
+
+    Stereo the way vcf~ is: one fader, two channels, and the right outlet
+    carries the left signal until something is patched to the right inlet.
+    Bypassed, it stands aside and the signal passes untouched.
+    """
+
+    UNITY_POSITION = 0.75
+    FLOOR_POSITION = 0.05
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.position_in = self.new_inlet(base=FaderUnit.UNITY_POSITION,
+                                          minimum=0.0, maximum=1.0)
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+
+    @staticmethod
+    def taper(position):
+        """Fader position 0..1 to linear gain, desk-law shaped."""
+        position = min(1.0, max(0.0, position))
+        if position >= FaderUnit.UNITY_POSITION:
+            db = (position - FaderUnit.UNITY_POSITION) * 24.0
+            return 10.0 ** (db / 20.0)
+        if position <= FaderUnit.FLOOR_POSITION:
+            floor_gain = 10.0 ** (-60.0 / 20.0)
+            return floor_gain * position / FaderUnit.FLOOR_POSITION
+        span = FaderUnit.UNITY_POSITION - FaderUnit.FLOOR_POSITION
+        db = -60.0 * (FaderUnit.UNITY_POSITION - position) / span
+        return 10.0 ** (db / 20.0)
+
+    def current_db(self):
+        """Where the glide actually is, for the node's readout."""
+        if self._level_glide <= 1.0e-6:
+            return None
+        return 20.0 * math.log10(self._level_glide)
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
+
+    def _scale_into(self, source, outlet, start, landing, frames):
+        if source.constant and start == landing:
+            outlet.set_constant(source.value * landing)
+            return
+        buffer = outlet.data[:frames]
+        np.copyto(buffer, source.array(frames))
+        if start == landing:
+            if landing != 1.0:
+                buffer *= landing
+        else:
+            ramp = self._level_ramp[:frames]
+            np.multiply(_INDEX_RAMP[:frames], (landing - start) / frames,
+                        out=ramp)
+            ramp += start
+            buffer *= ramp
+        outlet.constant = False
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        right_in = self.right_in.eval(frames)
+        position = self.position_in.eval(frames)
+
+        p = position.value if position.constant else float(position.data[0])
+        target = FaderUnit.taper(p)
+        start = self._level_glide
+        landing = start + (target - start) * 0.35
+        if abs(landing - target) < 1.0e-6:
+            landing = target
+        self._level_glide = landing
+
+        self._scale_into(signal, self.out, start, landing, frames)
+        if self.right_in.sources:
+            self._scale_into(right_in, self.right, start, landing, frames)
+        elif self.out.constant:
+            self.right.set_constant(self.out.value)
+        else:
+            np.copyto(self.right.data[:frames], self.out.data[:frames])
+            self.right.constant = False
 
 
 class CaptureUnit(Unit):
