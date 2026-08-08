@@ -142,10 +142,25 @@ class SynthNode(Node):
 
     # -- port construction --------------------------------------------------
 
+    # What today's port names used to be called. The loader resolves a saved
+    # cord by name first -- the stored index is only a hint, and a port whose
+    # label has changed is searched for by name and then by this archive
+    # before the link is given up on. So a rename without an archive entry
+    # silently disconnects every old patch that used the port; these entries
+    # are what let 'in' become 'left in' without costing anyone a cord.
+    LEGACY_PORT_NAMES = {
+        'left in': ('in',),
+        'left carrier': ('carrier',),
+        'left out': ('signal', 'left'),
+        'right out': ('right',),
+    }
+
     def add_signal_input(self, label, inlet):
         """An inlet that only accepts a patched signal (an audio input)."""
         port = self.add_input(label)
         port.synth_inlet = inlet
+        for old_name in SynthNode.LEGACY_PORT_NAMES.get(label, ()):
+            port.name_archive.append(old_name)
         self.signal_inputs.append(port)
         return port
 
@@ -341,6 +356,8 @@ class SynthNode(Node):
         port = self.add_output(label)
         port.synth_signal = signal
         port.synth_unit = self.unit
+        for old_name in SynthNode.LEGACY_PORT_NAMES.get(label, ()):
+            port.name_archive.append(old_name)
         self.signal_outputs.append(port)
         return port
 
@@ -808,7 +825,7 @@ class OneEuroNode(SynthNode):
         if len(numbers) > 1:
             self.unit.beta_in.base = max(0.0, numbers[1])
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         self.add_modulation_input('min cutoff', self.unit.min_cutoff_in,
                                   default_value=self.unit.min_cutoff_in.base,
@@ -827,8 +844,8 @@ class OneEuroNode(SynthNode):
         self.reset_option = self.add_option('reset', widget_type='button',
                                             callback=self.reset_filter)
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
 
@@ -874,9 +891,9 @@ class VcoNode(SynthNode):
     there are two dozen of them. Phase stops where it is and carries on from
     there when it comes back.
 
-    The 'right' outlet carries the other half of the stereo spread. At one
-    voice, or with spread at 0, it carries the same signal as 'signal', so a
-    mono patch can ignore it. For the spread to survive to the speakers the
+    The 'right out' outlet carries the other half of the stereo spread. At
+    one voice, or with spread at 0, it carries the same signal as 'left out',
+    so a mono patch can ignore it. For the spread to survive to the speakers the
     chain after it has to be stereo too -- two vcf~, two vca~ -- which costs
     about a tenth of what the unison saves.
     """
@@ -954,10 +971,10 @@ class VcoNode(SynthNode):
         self.reset_option = self.add_option('reset phase', widget_type='button',
                                             callback=self.reset_phase)
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
         # Appended, so links saved against the old single outlet keep their
         # index and existing patches load unchanged.
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
 
@@ -1771,7 +1788,7 @@ class DelayNode(SynthNode):
         self.unit.feedback_in.base = feedback
         self.unit.mode = DelayUnit.MODES.index(mode)
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         # A wide range whose useful part is all at the bottom: a slider could
         # never be set to the few milliseconds that make a comb.
@@ -1792,8 +1809,8 @@ class DelayNode(SynthNode):
                                          callback=self.parameters_changed)
         self.mode_input.widget.combo_items = list(DelayUnit.MODES)
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
 
         self.freeze_option = self.add_option('freeze', widget_type='checkbox',
                                              default_value=False,
@@ -1919,7 +1936,7 @@ class FoldNode(SynthNode):
         self.unit.shape_in.base = shape
         self.unit.drive_in.base = drive
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         self.drive_input = self.add_modulation_input(
             'drive', self.unit.drive_in, default_value=drive, minimum=0.0,
@@ -1937,8 +1954,8 @@ class FoldNode(SynthNode):
             self.shape_input.widget.set_tooltip(
                 '0 tanh, 1 clip, 2 fold, 3 sine -- and every point between')
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
 
         self.antialias_option = self.add_option(
             'antialias', widget_type='checkbox', default_value=True,
@@ -2027,7 +2044,7 @@ class CrushNode(SynthNode):
         self.unit.bits_in.base = bits
         self.unit.rate_in.base = rate
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         self.bits_input = self.add_modulation_input(
             'bits', self.unit.bits_in, default_value=bits, minimum=1.0,
@@ -2038,8 +2055,8 @@ class CrushNode(SynthNode):
             'rate', self.unit.rate_in, default_value=rate, minimum=1.0,
             maximum=synth_graph.sample_rate, speed=20.0, slider=False)
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
 
@@ -2059,8 +2076,8 @@ class VcfNode(SynthNode):
     one envelope, both channels. That is the point of it being one node: the
     coefficients are worked out once and the channels cannot drift apart the
     way two vcf~ with separately patched cutoffs can. Leave it unpatched and
-    nothing changes; 'right' then carries the same signal as 'signal', so a
-    mono chain can ignore it.
+    nothing changes; 'right out' then carries the same signal as 'left out',
+    so a mono chain can ignore it.
     """
 
     @staticmethod
@@ -2085,7 +2102,7 @@ class VcfNode(SynthNode):
         self.unit.mode = VcfUnit.MODES.index(mode)
         self.unit.cutoff_in.base = cutoff
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         self.add_modulation_input('cutoff', self.unit.cutoff_in,
                                   default_value=cutoff, minimum=1.0, speed=5.0)
@@ -2100,9 +2117,9 @@ class VcfNode(SynthNode):
                                          callback=self.parameters_changed)
         self.mode_input.widget.combo_items = list(VcfUnit.MODES)
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
         # Appended, so links saved against the single outlet keep their index.
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
 
@@ -2167,7 +2184,7 @@ class FormantNode(SynthNode):
             self.unit.q_in.base = max(0.5, numbers[1])
         self.unit.vowel_in.base = vowel
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         self.add_modulation_input('vowel', self.unit.vowel_in,
                                   default_value=vowel, minimum=0.0,
@@ -2184,8 +2201,8 @@ class FormantNode(SynthNode):
         self.vowel_display = self.add_property('formants', widget_type='label',
                                                default_value='')
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
         self._shown = ''
@@ -2263,7 +2280,7 @@ class VocoderNode(SynthNode):
             self.unit.high = numbers[2]
 
         self.add_signal_input('modulator', self.unit.modulator_in)
-        self.add_signal_input('carrier', self.unit.carrier_in)
+        self.add_signal_input('left carrier', self.unit.carrier_in)
         self.add_signal_input('right carrier', self.unit.right_carrier_in)
         self.add_modulation_input('attack', self.unit.attack_in,
                                   minimum=0.0, speed=0.001,
@@ -2282,8 +2299,8 @@ class VocoderNode(SynthNode):
                                            default_value=False,
                                            callback=self.parameters_changed)
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.bands_output = self.add_output('bands')
 
         self.bands_option = self.add_option('bands', widget_type='slider_int',
@@ -2356,8 +2373,8 @@ class VcaNode(SynthNode):
     at 0 with an adsr~ into the gain inlet.
 
     Patch 'right in' and it amplifies in stereo, one gain curve driving both
-    channels. Unpatched it is the mono vca~ it always was, and 'right' carries
-    the same signal as 'signal'.
+    channels. Unpatched it is the mono vca~ it always was, and 'right out'
+    carries the same signal as 'left out'.
     """
 
     RESPONSES = ('linear', 'exponential')
@@ -2384,7 +2401,7 @@ class VcaNode(SynthNode):
         self.unit.gain_in.base = gain
         self.unit.response = VcaNode.RESPONSES.index(response)
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         self.add_modulation_input('gain', self.unit.gain_in,
                                   default_value=gain, minimum=0.0, speed=0.01)
@@ -2394,9 +2411,9 @@ class VcaNode(SynthNode):
                                              callback=self.parameters_changed)
         self.response_input.widget.combo_items = list(VcaNode.RESPONSES)
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
         # Appended, so links saved against the single outlet keep their index.
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
 
@@ -3162,8 +3179,8 @@ class PanNode(SynthNode):
         self.add_modulation_input('position', self.unit.position_in,
                                   minimum=-1.0, maximum=1.0, speed=0.01)
 
-        self.left_output = self.add_signal_output('left', self.unit.left)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.left_output = self.add_signal_output('left out', self.unit.left)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
 
@@ -3680,8 +3697,8 @@ class SamplerOscNode(SynthNode):
         self.name_display = self.add_property('sample', widget_type='label',
                                               default_value='(no sample)')
 
-        self.left_output = self.add_signal_output('left', self.unit.left)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.left_output = self.add_signal_output('left out', self.unit.left)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.length_output = self.add_output('length')
 
         self.reverse_option = self.add_option('reverse', widget_type='checkbox',
@@ -4353,7 +4370,7 @@ class VstNode(SynthNode):
         self._reported_error = ''
         self._cost_countdown = 0
 
-        self.add_signal_input('in', self.unit.signal_in)
+        self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
         self.add_modulation_input('mix', self.unit.mix_in, default_value=1.0,
                                   minimum=0.0, maximum=1.0, speed=0.01,
@@ -4415,8 +4432,8 @@ class VstNode(SynthNode):
             default_value='pedalboard not installed'
             if not plugin_hosting_available() else 'no plugin')
 
-        self.signal_output = self.add_signal_output('signal', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
         self.add_switch()
         self.finish_synth_node()
 
