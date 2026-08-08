@@ -4534,8 +4534,43 @@ class PanUnit(Unit):
         self.right.constant = False
 
 
+AUDIO_OUT_SPACES = ('stereo', 'ring', 'corners')
+
+
 class AudioOutUnit(Unit):
-    """Terminus. Mixes its input into the engine's output buffer."""
+    """Terminus. Mixes its input into the engine's output buffer.
+
+    With two channels this is the stereo output it always was, per-sample pan
+    law included. With more it becomes a spatializer, in one of two readings
+    of the same channel list:
+
+    'ring' takes the listed channels as speakers equally spaced around a
+    circle, in the order given, and pans pairwise between neighbours --
+    at any moment a source is in at most two speakers, which keeps the image
+    sharp as it moves. 'pan' becomes azimuth: 0 is front centre (between the
+    first two speakers listed), +-0.5 the sides, +-1 the rear, where the two
+    ends meet.
+
+    'corners' takes them as the corners of the room: bottom front-left,
+    front-right, rear-left, rear-right, then the same four again on top.
+    Position is three faders -- left/right, front/rear, top/bottom -- each
+    an equal-power law, and a speaker's gain is the product of its three
+    axes, so power holds anywhere in the space. Every fader reads the same
+    way: its second-named side is +1. Four channels are one layer and
+    ignore top/bottom; two are plain stereo; other counts have no corners
+    to sit in and are treated as a ring.
+
+    'width' separates a stereo pair: at 0 the two inputs merge to a single
+    point in space, and widening pulls them apart -- around the ring in
+    ring mode, along the left/right axis in corners mode. A mono source is
+    always a single point and ignores width.
+
+    Spatial gains move at block rate and are ramped across each block, so a
+    swept pan is click-free; the per-sample law is kept only for the stereo
+    pair, where it always existed.
+    """
+
+    MAX_SPEAKERS = 16
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
@@ -4543,11 +4578,81 @@ class AudioOutUnit(Unit):
         self.right_in = self.new_inlet()
         self.level_in = self.new_inlet(base=0.5, minimum=0.0)
         self.position_in = self.new_inlet(base=0.0, minimum=-1.0, maximum=1.0)
+        self.width_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+        self.depth_in = self.new_inlet(base=0.0, minimum=-1.0, maximum=1.0)
+        self.height_in = self.new_inlet(base=0.0, minimum=-1.0, maximum=1.0)
         self.stereo = False
         self.muted = False
         self.peak = 0.0
+        self.space = 'stereo'
+        # Which columns of the engine mix this output lands on, 0-based, in
+        # ring or corner order. The engine opens the device at its full
+        # width, so an interface's outputs are addressed here rather than by
+        # opening streams per pair.
+        self.channels = [0, 1]
         self._left = np.zeros(MAX_BLOCK, dtype=np.float32)
         self._right = np.zeros(MAX_BLOCK, dtype=np.float32)
+        # Spatial gains, [source row (left/right), speaker]. Targets are set
+        # in render, and mix_into ramps from what the previous block ended on,
+        # so a jumped fader is a short fade rather than a step.
+        self._target = np.zeros((2, AudioOutUnit.MAX_SPEAKERS))
+        self._previous = np.zeros((2, AudioOutUnit.MAX_SPEAKERS))
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float32)
+        self._ramp = np.zeros(MAX_BLOCK, dtype=np.float32)
+
+    def active_space(self):
+        """What the channel list can actually support."""
+        count = len(self.channels)
+        if count <= 2:
+            return 'stereo'
+        if self.space == 'corners' and count in (4, 8):
+            return 'corners'
+        if self.space in ('ring', 'corners'):
+            return 'ring'
+        return 'ring'
+
+    @staticmethod
+    def _axis_gains(value):
+        """Equal-power split of one axis: (toward -1, toward +1)."""
+        if value < -1.0:
+            value = -1.0
+        elif value > 1.0:
+            value = 1.0
+        angle = (value + 1.0) * (math.pi * 0.25)
+        return math.cos(angle), math.sin(angle)
+
+    def _ring_gains(self, pan, count, row):
+        """Pairwise pan around the ring; pan wraps rather than clamps."""
+        self._target[row, :count] = 0.0
+        azimuth = (pan * 0.5 + 0.5 / count) % 1.0
+        scaled = azimuth * count
+        index = int(scaled) % count
+        fraction = scaled - int(scaled)
+        angle = fraction * (math.pi * 0.5)
+        self._target[row, index] = math.cos(angle)
+        self._target[row, (index + 1) % count] = math.sin(angle)
+
+    def _corner_gains(self, x, y, z, count, row):
+        """Corner order is binary: bit 0 right, bit 1 rear, bit 2 top layer.
+
+        Every axis reads the same way: the second-named side of its fader is
+        +1. left/right puts right at +1, front/rear puts rear at +1, and
+        top/bottom puts bottom at +1 -- so the listed channels start with the
+        bottom layer, and z at -1 lifts everything to the top four.
+        """
+        toward_left, toward_right = self._axis_gains(x)
+        toward_front, toward_rear = self._axis_gains(y)
+        toward_top, toward_bottom = self._axis_gains(z)
+        for index in range(count):
+            gain = toward_right if index & 1 else toward_left
+            gain *= toward_rear if index & 2 else toward_front
+            if count == 8:
+                gain *= toward_top if index & 4 else toward_bottom
+            self._target[row, index] = gain
+
+    @staticmethod
+    def _scalar(signal, frames):
+        return signal.value if signal.constant else float(signal.data[frames - 1])
 
     def render(self, frames):
         if self.muted:
@@ -4576,24 +4681,90 @@ class AudioOutUnit(Unit):
             left *= gain
             right *= gain
 
-        if position.constant:
-            if position.value != 0.0:
-                angle = (position.value + 1.0) * (math.pi * 0.25)
-                left *= math.cos(angle) * math.sqrt(2.0)
-                right *= math.sin(angle) * math.sqrt(2.0)
+        space = self.active_space()
+        if space == 'stereo':
+            # The original stereo law, per sample, exactly as it always was.
+            if position.constant:
+                if position.value != 0.0:
+                    angle = (position.value + 1.0) * (math.pi * 0.25)
+                    left *= math.cos(angle) * math.sqrt(2.0)
+                    right *= math.sin(angle) * math.sqrt(2.0)
+            else:
+                angle = (position.data[:frames] + 1.0) * (math.pi * 0.25)
+                left *= np.cos(angle) * math.sqrt(2.0)
+                right *= np.sin(angle) * math.sqrt(2.0)
         else:
-            angle = (position.data[:frames] + 1.0) * (math.pi * 0.25)
-            left *= np.cos(angle) * math.sqrt(2.0)
-            right *= np.sin(angle) * math.sqrt(2.0)
+            count = len(self.channels)
+            pan = self._scalar(position, frames)
+            # A mono source is one point in space and takes one set of gains;
+            # only a genuinely stereo input occupies two. Spatializing the
+            # mirrored copy as well would land the same sound twice at the
+            # same spot and double it.
+            if self.stereo:
+                width = self._scalar(self.width_in.eval(frames), frames)
+                positions = (pan - width * 0.5, pan + width * 0.5)
+            else:
+                positions = (pan, None)
+            if space == 'ring':
+                for row, at in enumerate(positions):
+                    if at is None:
+                        self._target[row, :count] = 0.0
+                    else:
+                        self._ring_gains(at, count, row)
+            else:
+                depth = self._scalar(self.depth_in.eval(frames), frames)
+                height = self._scalar(self.height_in.eval(frames), frames)
+                for row, at in enumerate(positions):
+                    if at is None:
+                        self._target[row, :count] = 0.0
+                    else:
+                        self._corner_gains(at, depth, height, count, row)
 
         self.peak = float(max(np.max(np.abs(left)), np.max(np.abs(right))))
 
     def mix_into(self, mix, frames):
         if self.muted:
             return
-        mix[:frames, 0] += self._left[:frames]
-        if mix.shape[1] > 1:
-            mix[:frames, 1] += self._right[:frames]
+        # A channel beyond the device's width is silent rather than an error:
+        # a patch addressing outputs 5/6 still loads and runs on a laptop
+        # with two, and sounds again when the interface is back.
+        available = mix.shape[1]
+        channels = self.channels
+        count = len(channels)
+
+        if self.active_space() == 'stereo':
+            if count > 0 and 0 <= channels[0] < available:
+                if count == 1:
+                    # One channel: the stereo pair folded, at the usual -6 dB.
+                    mix[:frames, channels[0]] += self._left[:frames] * 0.5
+                    mix[:frames, channels[0]] += self._right[:frames] * 0.5
+                else:
+                    mix[:frames, channels[0]] += self._left[:frames]
+            if count > 1 and 0 <= channels[1] < available:
+                mix[:frames, channels[1]] += self._right[:frames]
+            return
+
+        ramp = self._ramp[:frames]
+        np.multiply(_INDEX_RAMP[:frames], 1.0 / frames, out=ramp)
+        scratch = self._scratch[:frames]
+        for row, source in ((0, self._left[:frames]),
+                            (1, self._right[:frames])):
+            for speaker in range(count):
+                channel = channels[speaker]
+                if not 0 <= channel < available:
+                    continue
+                begin = self._previous[row, speaker]
+                end = self._target[row, speaker]
+                if begin == 0.0 and end == 0.0:
+                    continue
+                if begin == end:
+                    np.multiply(source, end, out=scratch)
+                else:
+                    np.multiply(ramp, end - begin, out=scratch)
+                    scratch += begin
+                    scratch *= source
+                mix[:frames, channel] += scratch
+        self._previous[:, :count] = self._target[:, :count]
 
 
 SAMPLER_MODES = ('loop', 'oneshot', 'scrub', 'follow', 'granular')
