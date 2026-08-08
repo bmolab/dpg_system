@@ -7059,6 +7059,203 @@ class BowUnit(Unit):
         self._quiet = bool(scratch.max() < 1.0e-5)
 
 
+class StrokeUnit(Unit):
+    """A bow arm: the coordinated velocity/force pair, as two outlets.
+
+    Guettler's finding, made patchable: a clean bow stroke is not a
+    velocity shape, it is a coordination -- clean attacks live in a wedge
+    of the acceleration/force plane, which is why no single LFO waveform
+    ever bows well. Velocity here is a trapezoid with raised-cosine
+    corners, fast enough through the low-speed region that the string
+    never settles into a wrong regime, never discontinuous because no arm
+    is. Force is its counter-phase: 'lean' raises it exactly where
+    velocity dips, which is the pressure a player keeps through the bow
+    change so the widened sticking region carries the string across.
+
+    'run' strokes continuously at 'rate'; 'dip' is how low the turnaround
+    goes -- 1 is seamless legato, 0 lifts off the string between strokes.
+    'gate' draws the bow while the gate is high and lifts on release, both
+    over 'corner' seconds. A trigger fires one complete stroke from rest
+    to rest in either mode. 'swell' arches the cruise of each stroke (and
+    so, through 'lean', eases the force mid-stroke); it shapes run and
+    triggered strokes, where there is a stroke to arch, not a held gate.
+
+    'tick' pulses one sample high at each turnaround: bowing as a clock,
+    for whatever should happen in time with the arm.
+
+    The outputs are absolute positions of the arm, so the destination's
+    own velocity and force knobs should sit at zero -- the inlet triad
+    sums, and a knob left up would ride on top of the gesture.
+
+    Gesture timing is block-granular (a stroke is seconds long; a block
+    is twelve milliseconds), and rate and corner are read once per block.
+    """
+
+    MODES = ('run', 'gate')
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.rate_in = self.new_inlet(base=1.0, minimum=0.05, maximum=8.0)
+        self.speed_in = self.new_inlet(base=0.8, minimum=0.0, maximum=1.5)
+        self.dip_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.corner_in = self.new_inlet(base=0.03, minimum=0.005, maximum=0.3)
+        self.force_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.lean_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.swell_in = self.new_inlet(base=0.2, minimum=0.0, maximum=1.0)
+        self.gate_in = self.new_inlet()
+        self.trigger_in = self.new_inlet()
+
+        self.mode = 0
+        self.threshold = 0.5
+        self._phase = 0.0
+        self._edge = 0.0            # gate mode: where the draw has reached
+        self._one_shot = False
+        self._gate_open = False
+        self._trigger_armed = True
+        self._fire_requests = 0
+        self._fire_served = 0
+
+        self.velocity_out = self.new_outlet()
+        self.force_out = self.new_outlet()
+        self.tick_out = self.new_outlet()
+        self._phi = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._n = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._work = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._push = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def fire(self):
+        """Request one stroke from the node layer. Served next block."""
+        self._fire_requests += 1
+
+    def reset(self):
+        self._phase = 0.0
+        self._edge = 0.0
+        self._one_shot = False
+
+    def render(self, frames):
+        rate = self.rate_in.eval(frames)
+        speed = self.speed_in.eval(frames)
+        dip = self.dip_in.eval(frames)
+        corner = self.corner_in.eval(frames)
+        force = self.force_in.eval(frames)
+        lean = self.lean_in.eval(frames)
+        swell = self.swell_in.eval(frames)
+        gate = self.gate_in.eval(frames)
+        trigger = self.trigger_in.eval(frames)
+
+        def scalar(signal):
+            return signal.value if signal.constant else float(signal.data[0])
+
+        rate_now = min(8.0, max(0.05, scalar(rate)))
+        speed_now = min(1.5, max(0.0, scalar(speed)))
+        dip_now = min(1.0, max(0.0, scalar(dip)))
+        corner_now = min(0.3, max(0.005, scalar(corner)))
+        force_now = min(1.0, max(0.0, scalar(force)))
+        lean_now = min(1.0, max(0.0, scalar(lean)))
+        swell_now = min(1.0, max(0.0, scalar(swell)))
+
+        # Triggers: from the node layer, and rising through the inlet.
+        fired = False
+        if self._fire_requests != self._fire_served:
+            self._fire_served = self._fire_requests
+            fired = True
+        high = scalar(trigger) >= self.threshold
+        if high and self._trigger_armed:
+            fired = True
+        self._trigger_armed = not high
+        if fired:
+            self._one_shot = True
+            self._phase = 0.0
+            self._edge = 0.0
+
+        gate_now = scalar(gate) >= self.threshold
+        self._gate_open = gate_now
+
+        tick_at = -1
+        n = self._n[:frames]
+
+        if self._one_shot or self.mode == 0:
+            # A stroke is one turn of the phasor, shaped. The corner is
+            # asked for in seconds and clamped as a fraction of the stroke,
+            # since a corner longer than the stroke is not a corner.
+            one_shot_block = self._one_shot
+            increment = rate_now / self.sample_rate
+            cf = min(0.45, max(0.02, corner_now * rate_now))
+            phi = self._phi[:frames]
+            np.multiply(_INDEX_RAMP[:frames], increment, out=phi)
+            phi += self._phase - increment
+            wrapped = phi >= 1.0
+            if wrapped.any():
+                tick_at = int(np.argmax(wrapped))
+                phi -= np.floor(phi)
+            self._phase = float(phi[-1]) + increment
+
+            if one_shot_block and tick_at >= 0:
+                # The stroke completes at the wrap and the arm comes to
+                # rest; the tail of the block stays lifted.
+                phi[tick_at:] = 0.0
+                self._phase = 0.0
+                self._edge = 0.0
+                self._one_shot = False
+
+            # A triggered stroke starts and ends at rest; a running one
+            # only dips at its turnarounds.
+            floor = 0.0 if one_shot_block else dip_now
+            np.minimum(phi, 1.0 - phi, out=n)
+            n /= cf
+            np.clip(n, 0.0, 1.0, out=n)
+            n *= math.pi
+            np.cos(n, out=n)
+            np.subtract(1.0, n, out=n)
+            n *= 0.5 * (1.0 - floor)
+            n += floor
+            if swell_now > 0.0:
+                arch = self._work[:frames]
+                np.multiply(phi, math.pi, out=arch)
+                np.sin(arch, out=arch)
+                arch *= 0.4 * swell_now
+                arch += 1.0
+                n *= arch
+        else:
+            # Gate mode: the draw slews toward on or off over the corner
+            # time, cosine-shaped so the start and the lift are arms too.
+            step = 1.0 / max(1.0, corner_now * self.sample_rate)
+            target_dir = step if gate_now else -step
+            edge = self._edge
+            path = self._phi[:frames]
+            np.multiply(_INDEX_RAMP[:frames], target_dir, out=path)
+            path += edge
+            np.clip(path, 0.0, 1.0, out=path)
+            self._edge = float(path[-1])
+            np.multiply(path, math.pi, out=n)
+            np.cos(n, out=n)
+            np.subtract(1.0, n, out=n)
+            n *= 0.5
+
+        velocity = self.velocity_out
+        buffer = velocity.data[:frames]
+        np.multiply(n, speed_now, out=buffer, casting='unsafe')
+        velocity.constant = False
+
+        push = self._push[:frames]
+        np.subtract(1.0, n, out=push)
+        push *= lean_now
+        push += 1.0
+        push *= force_now
+        np.clip(push, 0.0, 1.0, out=push)
+        out_force = self.force_out
+        np.copyto(out_force.data[:frames], push, casting='unsafe')
+        out_force.constant = False
+
+        tick = self.tick_out
+        if tick_at >= 0:
+            tick.data[:frames] = 0.0
+            tick.data[tick_at] = 1.0
+            tick.constant = False
+        else:
+            tick.set_constant(0.0)
+
+
 class FaderUnit(Unit):
     """A mixing-desk fader on the signal passing through.
 

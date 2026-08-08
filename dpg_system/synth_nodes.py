@@ -26,6 +26,7 @@ from dpg_system.synth_core import (
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
+    StrokeUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -88,6 +89,8 @@ def register_synth_nodes():
     Node.app.register_node('rub~', RubNode.factory)
     Node.app.register_node('glass~', RubNode.factory)
     Node.app.register_node('fader~', FaderNode.factory)
+    Node.app.register_node('stroke~', StrokeNode.factory)
+    Node.app.register_node('bowing~', StrokeNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
@@ -4482,6 +4485,89 @@ class BowNode(SynthNode):
         self.signal_output = self.add_signal_output('out', self.unit.out)
         self.add_switch()
         self.finish_synth_node()
+
+
+class StrokeNode(SynthNode):
+    """A bow arm: coordinated velocity and force from one gesture.
+
+    Patch 'velocity' and 'force' to the same inlets on bow~ or rub~ (with
+    the destination's own knobs at zero -- the triad sums), and the two
+    outputs move the way a player's arm does: velocity a cornered
+    trapezoid that crosses the awkward low-speed region quickly, force
+    leaning in exactly where velocity dips. 'tick' pulses at each
+    turnaround, so anything else can happen in time with the bowing.
+
+    'run' strokes continuously; 'gate' draws while the gate is high and
+    lifts on release; the trigger plays one complete stroke either way.
+    Also blows: velocity into wind~'s pressure phrases breathing.
+
+    stroke~ <rate>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return StrokeNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = StrokeUnit(synth_graph.sample_rate)
+
+        rate = 1.0
+        mode = 'run'
+        if args is not None:
+            for arg in args:
+                if arg in StrokeUnit.MODES:
+                    mode = arg
+                else:
+                    try:
+                        rate = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+        self.unit.rate_in.base = rate
+        self.unit.mode = StrokeUnit.MODES.index(mode)
+
+        self.add_modulation_input('gate', self.unit.gate_in,
+                                  widget_type='checkbox', default_value=False,
+                                  attenuverter=False)
+        self.add_trigger_signal_input('stroke', self.unit.trigger_in,
+                                      self.stroke)
+        self.add_modulation_input('rate', self.unit.rate_in,
+                                  default_value=rate, minimum=0.05,
+                                  maximum=8.0, speed=0.01, slider=False)
+        self.add_modulation_input('speed', self.unit.speed_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        self.add_modulation_input('dip', self.unit.dip_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('corner', self.unit.corner_in,
+                                  minimum=0.005, maximum=0.3, speed=0.002,
+                                  slider=False)
+        self.add_modulation_input('force', self.unit.force_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('lean', self.unit.lean_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('swell', self.unit.swell_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+
+        self.mode_input = self.add_input('mode', widget_type='combo',
+                                         default_value=mode,
+                                         callback=self.parameters_changed)
+        self.mode_input.widget.combo_items = list(StrokeUnit.MODES)
+
+        self.velocity_output = self.add_signal_output('velocity',
+                                                      self.unit.velocity_out)
+        self.force_output = self.add_signal_output('force',
+                                                   self.unit.force_out)
+        self.tick_output = self.add_signal_output('tick', self.unit.tick_out)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def stroke(self):
+        self.unit.fire()
+
+    def sync_options(self):
+        mode = any_to_string(self.mode_input())
+        if mode in StrokeUnit.MODES:
+            self.unit.mode = StrokeUnit.MODES.index(mode)
 
 
 class FaderNode(SynthNode):
