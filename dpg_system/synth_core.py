@@ -3348,6 +3348,9 @@ def _warm_up_filter():
                          0.0, 0.0, 0.0, 0.0, 0.0, output)
         _bow_kernel(breath, breath, line.copy(), line.copy(), 0,
                     taps, taps, zeros, 0.995, 0.0, 0.0, 0.0, output)
+        _rub_kernel(breath, breath.copy(), breath.copy(), bank.copy(),
+                    bank.copy(), bank.copy(), bank.copy(), state.copy(),
+                    state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -5883,6 +5886,9 @@ class ModalUnit(Unit):
         self._b1 = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._b2 = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._gains_live = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._live_count = 0
+        self._level_live = ModalUnit.DRIVE_GAIN
         self._drive_gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._fm = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._theta = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
@@ -6083,7 +6089,32 @@ class ModalUnit(Unit):
             np.multiply(_INDEX_RAMP[:count], math.pi * struck_at, out=pattern)
             np.sin(pattern, out=pattern)
             np.abs(pattern, out=pattern)
+            # Position 0 means the idealized uniform strike, but the node
+            # pattern's own limit there is every weight at zero -- a cliff.
+            # The first twentieth of the travel crossfades between the two
+            # readings, so leaving 0 is a slope rather than a step.
+            blend = min(1.0, struck_at / 0.05)
+            if blend < 1.0:
+                pattern *= blend
+                pattern += 1.0 - blend
             gains *= pattern
+
+        # Gain-shaping controls -- position, brightness, the table's own
+        # weights -- arrive as block-rate steps, and a step in input gain
+        # under a sustained drive is a click once a block for as long as
+        # the knob moves. The gains the kernel sees glide toward their
+        # target over a few blocks instead; a change of mode count adopts
+        # the target at once, since gliding between different modes would
+        # bleed one mode's level into another's.
+        live = self._gains_live[:count]
+        if count != self._live_count:
+            np.copyto(live, gains)
+            self._live_count = count
+        else:
+            step = self._mode_scratch[:count]
+            np.subtract(gains, live, out=step)
+            step *= 0.35
+            live += step
 
         # The audio path is a drive, not a mallet, and its gain is the
         # compromise a linear resonator cannot make on its own. Impulse
@@ -6095,15 +6126,17 @@ class ModalUnit(Unit):
         # soft stop on the mode states in the kernel.
         level = (drive_level.value if drive_level.constant
                  else float(drive_level.data[0]))
+        level = min(2.0, max(0.0, level))
+        self._level_live += (level - self._level_live) * 0.35
         drive = self._drive_gains[:count]
         np.subtract(1.0, radius, out=drive)
         np.sqrt(drive, out=drive)
-        drive *= gains
-        drive *= min(2.0, max(0.0, level))
+        drive *= live
+        drive *= self._level_live
 
         result = self._y[:frames]
         self._dc_x, self._dc_y = _modal_kernel(
-            exc, pulse, b1, b2, drive, gains, self._s1[:count],
+            exc, pulse, b1, b2, drive, live, self._s1[:count],
             self._s2[:count], self._dc_x, self._dc_y, result)
 
         # The dry tap: the input as patched, not the excitation buffer --
@@ -6125,6 +6158,309 @@ class ModalUnit(Unit):
                 np.multiply(dry.data[:frames], signal.data[:frames],
                             out=scratch)
             result += scratch
+
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _rub_kernel_source(velocity, contact, force, b1, b2, inject, pickup,
+                       s1, s2, free, dc_pole, dc_x, dc_y, out):
+    """Friction closed around the modal bank: bowed glass, sample by sample.
+
+    Where bow~'s friction negotiates with a string's delay lines, this one
+    negotiates with the modes themselves. Per sample: every mode rings
+    freely from its own history, their velocities sum into the surface the
+    bow hair is touching, the velocity difference goes through the same
+    friction curve as bow~, and the resulting force is poured back into
+    every mode. The loop is why a bowed mode blooms rather than just being
+    filtered noise -- each slip lands in phase with the motion that caused
+    it.
+
+    What the loop does with an inharmonic table is the sound of bowed
+    glass: the modes cannot phase-lock into a shared cycle the way a
+    string's harmonics do, so the friction captures one -- nearly a pure
+    tone -- and pushing harder or faster makes it jump modes rather than
+    brighten. None of that is coded here; it is what the physics does.
+
+    'contact' is how firmly the hair is on the surface, following bow
+    speed: a stopping bow lifts off, so the glass rings out at its own
+    decay instead of being damped dead by a parked bow. The DC blocker
+    takes out the static deflection of a surface leaned on by a moving
+    bow.
+    """
+    modes = b1.shape[0]
+    for i in range(velocity.shape[0]):
+        surface = 0.0
+        for m in range(modes):
+            ring = b1[m] * s1[m] + b2[m] * s2[m]
+            free[m] = ring
+            surface += pickup[m] * (ring - s1[m])
+        dv = velocity[i] - surface
+        sl = 5.0 - 4.0 * force[i]
+        t = abs(dv * sl) + 0.75
+        c = 1.0 / (t * t * t * t)
+        if c > 1.0:
+            c = 1.0
+        friction = dv * c * contact[i]
+        total = 0.0
+        for m in range(modes):
+            y = free[m] + inject[m] * friction
+            if y > 1.5:
+                y = 1.5 + np.tanh(y - 1.5)
+            elif y < -1.5:
+                y = -1.5 - np.tanh(-y - 1.5)
+            s2[m] = s1[m]
+            s1[m] = y
+            total += y
+        o = total - dc_x + dc_pole * dc_y
+        dc_x = total
+        dc_y = o
+        out[i] = o
+    return dc_x, dc_y
+
+
+if _HAVE_NUMBA:
+    _rub_kernel = njit(cache=True, fastmath=True)(_rub_kernel_source)
+else:
+    _rub_kernel = _rub_kernel_source
+
+
+class RubUnit(Unit):
+    """Bowed modal object: glass, bowl, bar or bell under a bow.
+
+    The complement of modal~'s mallet, and the second half of the pair
+    bow~ began: friction fused with a resonator, this time the resonator
+    being the mode table rather than a string. It shares modal~'s tables
+    and bow~'s hands -- velocity is the bow's speed, force its weight (a
+    heavier bow widens the sticking region and presses the tone quieter),
+    position where on the object the hair lands, silencing the modes with
+    a node there.
+
+    Played gently it locks to the lowest live mode and sings nearly pure,
+    which is what a wine glass does and why; faster bowing pulls the tone
+    sharp and then breaks upward to higher modes -- the squeal -- and
+    velocity past 1 is deliberately into that territory. Slowing to a stop
+    lifts the bow, and the object rings down at its own decay; there is no
+    trigger anywhere, and striking belongs to modal~.
+
+    Mode tables arrive through set_modes() as everywhere; edits while
+    sounding retune the ring live, count changes clear it.
+    """
+
+    MAX_MODES = 24
+    MIN_FREQUENCY = 20.0
+    # Friction-to-bank coupling: gentle enough that the capture is clean
+    # and the fundamental regime wide. Found empirically, like everything
+    # about a nonlinear oscillator's operating point.
+    COUPLING = 0.5
+    # User velocity 0..1 onto the internal range where the fundamental
+    # regime lives; past 1 climbs into the mode-jump squeals.
+    VELOCITY_SCALE = 0.12
+    # Below this internal speed the hair is lifting off: contact fades so
+    # a stopped bow releases the ring instead of damping it dead.
+    CONTACT_VELOCITY = 0.005
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.velocity_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.force_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.position_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.frequency_in = self.new_inlet(base=440.0,
+                                           minimum=RubUnit.MIN_FREQUENCY)
+        self.pitch_in = self.new_inlet()
+        self.decay_in = self.new_inlet(base=3.0, minimum=0.01, maximum=60.0)
+
+        self._modes = np.array([[1.0, 1.0, 1.0]], dtype=np.float64)
+        self._weight_norm = 1.0
+
+        self._s1 = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._s2 = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._b1 = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._b2 = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._inject = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._pickup = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._inject_live = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._pickup_live = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._live_count = 0
+        self._free = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._fm = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._theta = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._radius = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+        self._mode_scratch = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
+
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._vel = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._contact = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._force = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._freq = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def set_modes(self, table):
+        """Main thread: adopt a mode table, rows of (ratio, weight, decay).
+
+        Same live-edit contract as modal~: value edits retune the ring,
+        only a change of mode count clears it.
+        """
+        rows = [row for row in table[:RubUnit.MAX_MODES]]
+        if not rows:
+            rows = [(1.0, 1.0, 1.0)]
+        fresh = np.array(rows, dtype=np.float64)
+        resized = fresh.shape[0] != self._modes.shape[0]
+        self._modes = fresh
+        self._weight_norm = max(1.0, float(np.sum(np.abs(fresh[:, 1]))))
+        if resized:
+            self._s1[:] = 0.0
+            self._s2[:] = 0.0
+
+    def reset(self):
+        self._s1[:] = 0.0
+        self._s2[:] = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def render(self, frames):
+        velocity = self.velocity_in.eval(frames)
+        force = self.force_in.eval(frames)
+        position = self.position_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        decay = self.decay_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        vel = self._vel[:frames]
+        if velocity.constant:
+            vel[:] = velocity.value
+            idle = abs(velocity.value) < 1.0e-4
+        else:
+            np.copyto(vel, velocity.data[:frames])
+            idle = False
+        np.clip(vel, 0.0, 2.0, out=vel)
+        vel *= RubUnit.VELOCITY_SCALE
+
+        if self._quiet and idle:
+            out.set_constant(0.0)
+            return
+
+        contact = self._contact[:frames]
+        np.divide(vel, RubUnit.CONTACT_VELOCITY, out=contact)
+        np.clip(contact, 0.0, 1.0, out=contact)
+
+        push = self._force[:frames]
+        if force.constant:
+            push[:] = force.value
+        else:
+            np.copyto(push, force.data[:frames], casting='unsafe')
+        np.clip(push, 0.0, 1.0, out=push)
+
+        freq = self._freq[:frames]
+        self._build_hertz(freq, frequency, pitch, frames,
+                          RubUnit.MIN_FREQUENCY)
+        f0 = float(freq[0])
+
+        modes = self._modes
+        count = modes.shape[0]
+        ratios = modes[:, 0]
+        weights = modes[:, 1]
+        decay_scale = modes[:, 2]
+
+        seconds = decay.value if decay.constant else float(decay.data[0])
+        seconds = min(60.0, max(0.01, seconds))
+
+        fm = self._fm[:count]
+        np.multiply(ratios, f0, out=fm)
+        limit = self.sample_rate * 0.45
+
+        theta = self._theta[:count]
+        np.clip(fm, 1.0, limit, out=theta)
+        theta *= 2.0 * math.pi / self.sample_rate
+
+        radius = self._radius[:count]
+        np.multiply(decay_scale, seconds * self.sample_rate, out=radius)
+        np.clip(radius, 1.0, None, out=radius)
+        np.divide(-6.907755, radius, out=radius)
+        np.exp(radius, out=radius)
+
+        b1 = self._b1[:count]
+        np.cos(theta, out=b1)
+        b1 *= radius
+        b1 *= 2.0
+        b2 = self._b2[:count]
+        np.multiply(radius, radius, out=b2)
+        np.negative(b2, out=b2)
+
+        inject = self._inject[:count]
+        np.sin(theta, out=inject)
+        inject *= weights
+        inject /= self._weight_norm
+        inject *= RubUnit.COUPLING
+        alive = self._mode_scratch[:count]
+        np.less_equal(fm, limit, out=alive, casting='unsafe')
+        inject *= alive
+
+        pickup = self._pickup[:count]
+        pickup[:] = 1.0
+        pickup *= alive
+        struck_at = position.value if position.constant else float(
+            position.data[0])
+        struck_at = min(1.0, max(0.0, struck_at))
+        if struck_at > 0.0:
+            pattern = self._mode_scratch[:count]
+            np.multiply(_INDEX_RAMP[:count], math.pi * struck_at, out=pattern)
+            np.sin(pattern, out=pattern)
+            np.abs(pattern, out=pattern)
+            # Continuous out of 0 for the same reason as modal~: the
+            # pattern's limit there contradicts the uniform reading.
+            blend = min(1.0, struck_at / 0.05)
+            if blend < 1.0:
+                pattern *= blend
+                pattern += 1.0 - blend
+            # Both ends of the coupling: bowing at a mode's node neither
+            # hears nor moves it, which is reciprocity.
+            inject *= pattern
+            pickup *= pattern
+
+        # Coupling weights glide toward their targets, as modal~'s gains
+        # do: a position sweep while bowing would otherwise step the
+        # friction's grip on the modes once a block, which is a click.
+        inject_live = self._inject_live[:count]
+        pickup_live = self._pickup_live[:count]
+        if count != self._live_count:
+            np.copyto(inject_live, inject)
+            np.copyto(pickup_live, pickup)
+            self._live_count = count
+        else:
+            step = self._mode_scratch[:count]
+            np.subtract(inject, inject_live, out=step)
+            step *= 0.35
+            inject_live += step
+            np.subtract(pickup, pickup_live, out=step)
+            step *= 0.35
+            pickup_live += step
+
+        corner = min(40.0, max(1.0, f0 * 0.25))
+        dc_pole = math.exp(-2.0 * math.pi * corner / self.sample_rate)
+
+        result = self._y[:frames]
+        self._dc_x, self._dc_y = _rub_kernel(
+            vel, contact, push, b1, b2, inject_live, pickup_live,
+            self._s1[:count], self._s2[:count], self._free[:count],
+            dc_pole, self._dc_x, self._dc_y, result)
 
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False

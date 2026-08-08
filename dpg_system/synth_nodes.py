@@ -25,7 +25,7 @@ from dpg_system.synth_core import (
     MixUnit, MultUnit, PanUnit, AudioOutUnit, AUDIO_OUT_SPACES,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
-    StringUnit, ModalUnit, WindUnit, BowUnit,
+    StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -85,6 +85,8 @@ def register_synth_nodes():
     Node.app.register_node('flute~', WindNode.factory)
     Node.app.register_node('bow~', BowNode.factory)
     Node.app.register_node('bowed~', BowNode.factory)
+    Node.app.register_node('rub~', RubNode.factory)
+    Node.app.register_node('glass~', RubNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
@@ -3916,6 +3918,18 @@ class StringNode(SynthNode):
 # where physics did not -- and hearing one table against another is hearing
 # why those objects sound like themselves. Weights and decay multiples are
 # voiced by ear against the references the ratios come from.
+#
+# Two kinds of table live here, used oppositely. The struck objects (bell,
+# bar, membrane... and 'wood', which is honestly a block of wood) are
+# pitch-relative: the table rides the frequency knob and you play it. The
+# bodies (violin, guitar) are the other thing entirely -- an instrument box
+# is engineered *against* singular resonance: its lowest mode is the air of
+# the chamber, above it a deliberately irregular forest of plate modes of
+# comparable weight, overlapping by mid-range so no note finds a wolf. A
+# body table is referenced to its air mode, so it is used by FIXING the
+# frequency there (violin ~275 Hz, guitar ~100 Hz), keeping decay short
+# (0.05-0.15 s: body Q, where the modes widen into a landscape), and
+# balancing drive against dry around whatever is patched in.
 MODAL_MATERIALS = {
     'bell': [
         (0.5, 0.8, 1.6), (1.0, 1.0, 1.0), (1.2, 0.8, 0.8), (1.5, 0.6, 0.7),
@@ -3965,65 +3979,45 @@ MODAL_MATERIALS = {
         (3.81, 0.3, 0.35), (4.5, 0.25, 0.3), (5.19, 0.2, 0.25),
         (6.02, 0.15, 0.2), (6.9, 0.1, 0.15), (7.84, 0.07, 0.1),
     ],
+    # Ratio 1 is the Helmholtz air mode (fix frequency ~275 Hz); then CBR,
+    # B1-, B1+, and the plate forest rising into the bridge hill around
+    # ratio 7.5-9. Spacings are irregular on purpose; that is what a good
+    # box is.
+    'violin': [
+        (1.0, 0.9, 1.0), (1.47, 0.5, 0.8), (1.66, 1.0, 0.8),
+        (1.96, 0.95, 0.7), (2.36, 0.55, 0.6), (2.65, 0.6, 0.55),
+        (3.05, 0.5, 0.5), (3.45, 0.55, 0.45), (3.93, 0.45, 0.4),
+        (4.44, 0.5, 0.38), (5.05, 0.45, 0.34), (5.75, 0.4, 0.3),
+        (6.55, 0.45, 0.28), (7.45, 0.5, 0.25), (8.5, 0.55, 0.22),
+        (9.7, 0.5, 0.2), (11.1, 0.35, 0.18), (12.7, 0.25, 0.15),
+    ],
+    # Ratio 1 is the soundhole's air mode (fix frequency ~100 Hz), then the
+    # top plate, the back, and the forest.
+    'guitar': [
+        (1.0, 1.0, 1.0), (1.93, 0.9, 0.8), (2.5, 0.6, 0.7),
+        (2.9, 0.5, 0.6), (3.4, 0.55, 0.55), (4.05, 0.5, 0.5),
+        (4.8, 0.45, 0.45), (5.7, 0.5, 0.4), (6.8, 0.45, 0.35),
+        (8.1, 0.4, 0.3), (9.6, 0.35, 0.28), (11.4, 0.3, 0.25),
+        (13.5, 0.25, 0.22), (16.0, 0.2, 0.2),
+    ],
 }
 
 
-class ModalNode(SynthNode):
-    """Struck resonator bank: bells, bars, bowls, membranes as mode tables.
+class ModeTableNode(SynthNode):
+    """Base for nodes whose instrument is a mode table.
 
-    'material' picks the tuning table, 'frequency' places it, 'decay' and
-    'brightness' stretch it, 'hardness' is the mallet and 'position' where it
-    lands. Strike it from the button, from a trigger signal (its height is
-    the velocity), or drive it continuously through 'excite in' -- noise
-    through a slow envelope bows it, and a body's effort stream resonates
-    through it.
-
-    'dry' is the difference between being an instrument and being a body.
-    At 0 only the modes speak: strike it, it is a bell. Raised, the excite
-    input passes through alongside the ring -- and with the frequency held
-    fixed (not tracking the player's pitch) and the decay short enough to
-    widen the modes into formants, the bank becomes the resonant box around
-    whatever is patched in: bow~ through a wood table at decay 0.1 and dry
-    up is a violin.
-
-    The mode table itself is drawn on the node: one stem per mode, standing
-    at its ratio, as tall as its weight, colored by how long it rings. Drag
-    a stem to tune and weight it, shift-drag vertically to set its ring
-    time, right-click to add or remove one. A material is a starting point:
-    edit it and the combo says 'custom', and the table you drew is what the
-    patch saves. Edits land while the bank is ringing -- drag a sounding
-    mode and it glisses. The same gestures arrive as messages (mode / add /
-    remove), a table sent to 'modes' replaces the drawing, and 'modes out'
-    reports every edit, so tables can be built, morphed and sequenced by
-    patch.
-
-    modal~ <frequency> <material>, e.g. modal~ 220 marimba.
+    modal~ strikes its table and rub~ bows it, but the table itself -- the
+    stem editor, the material presets and their 'custom' discipline, the
+    modes in/out ports, what the patch saves -- means the same thing on
+    both, so it lives here once. A subclass builds its unit, calls
+    _init_mode_editor before its ports, and places _add_mode_table_ports
+    and _add_mode_table_options where its face wants them.
     """
 
     CUSTOM = 'custom'
+    SAVE_KEY = 'modes_table'
 
-    @staticmethod
-    def factory(name, data, args=None):
-        return ModalNode(name, data, args)
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.unit = ModalUnit(synth_graph.sample_rate)
-
-        frequency = 220.0
-        material = 'bell'
-        if args is not None:
-            for arg in args:
-                if arg in MODAL_MATERIALS:
-                    material = arg
-                else:
-                    try:
-                        frequency = float(arg)
-                    except (ValueError, TypeError):
-                        continue
-        self.unit.frequency_in.base = frequency
-        self.unit.set_modes(MODAL_MATERIALS[material])
-
+    def _init_mode_editor(self, label, material):
         self.plot_width = 220
         self.plot_height = 96
         from dpg_system.interface_nodes import ModeEditor
@@ -4041,52 +4035,21 @@ class ModalNode(SynthNode):
         for name in ModeEditor.MESSAGES:
             self.message_handlers[name] = self.modes_message
 
-        self.add_signal_input('excite in', self.unit.excite_in)
-        self.add_trigger_signal_input('strike', self.unit.trigger_in,
-                                      self.strike)
-        self.add_modulation_input('frequency', self.unit.frequency_in,
-                                  default_value=frequency, minimum=1.0,
-                                  speed=1.0)
-        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
-        self.add_modulation_input('decay', self.unit.decay_in,
-                                  minimum=0.01, maximum=60.0, speed=0.05,
-                                  slider=False)
-        self.add_modulation_input('brightness', self.unit.brightness_in,
-                                  minimum=0.0, maximum=1.0, speed=0.01)
-        self.add_modulation_input('hardness', self.unit.hardness_in,
-                                  minimum=0.0, maximum=1.0, speed=0.01)
-        self.add_modulation_input('position', self.unit.position_in,
-                                  minimum=0.0, maximum=1.0, speed=0.01)
-        drive_port = self.add_modulation_input('drive', self.unit.drive_in,
-                                               minimum=0.0, maximum=2.0,
-                                               speed=0.01)
-        if drive_port.widget is not None:
-            drive_port.widget.set_tooltip(
-                'how hard the excite input speaks through the modes; its '
-                'partner below is how much of it passes around them')
-        dry_port = self.add_modulation_input('dry', self.unit.dry_in,
-                                             minimum=0.0, maximum=1.0,
-                                             speed=0.01)
-        if dry_port.widget is not None:
-            dry_port.widget.set_tooltip(
-                'passes the excite input through alongside the ring; with a '
-                'fixed frequency and a short decay this turns the bank into '
-                'a body around whatever is patched in')
-
+    def _add_mode_table_ports(self, material):
         self.modes_input = self.add_input('modes',
                                           callback=self.modes_received)
         self.material_input = self.add_input('material', widget_type='combo',
                                              default_value=material,
                                              callback=self.material_changed)
-        self.material_input.widget.combo_items = ([ModalNode.CUSTOM]
+        self.material_input.widget.combo_items = ([ModeTableNode.CUSTOM]
                                                   + list(MODAL_MATERIALS))
-
         self.modes_display = self.add_display('')
         self.modes_display.submit_callback = self.submit_display
 
+    def _add_mode_table_options(self):
         self.modes_option = self.add_option('modes', widget_type='slider_int',
-                                            default_value=ModalUnit.MAX_MODES,
-                                            min=1, max=ModalUnit.MAX_MODES,
+                                            default_value=self.unit.MAX_MODES,
+                                            min=1, max=self.unit.MAX_MODES,
                                             callback=self.parameters_changed)
         if self.modes_option.widget is not None:
             self.modes_option.widget.set_tooltip(
@@ -4098,14 +4061,6 @@ class ModalNode(SynthNode):
         self.height_option = self.add_option('height', widget_type='drag_int',
                                              default_value=self.plot_height,
                                              callback=self.size_changed)
-
-        self.signal_output = self.add_signal_output('out', self.unit.out)
-        self.modes_output = self.add_output('modes out')
-        self.add_switch()
-        self.finish_synth_node()
-
-    def strike(self):
-        self.unit.fire()
 
     # -- the editor ----------------------------------------------------------
 
@@ -4134,11 +4089,11 @@ class ModalNode(SynthNode):
 
     def push_modes(self):
         """The editor's table, capped by the modes option, into the unit."""
-        count = ModalUnit.MAX_MODES
+        count = self.unit.MAX_MODES
         if getattr(self, 'modes_option', None) is not None:
             wanted = any_to_int(self.modes_option())
             if wanted > 0:
-                count = min(wanted, ModalUnit.MAX_MODES)
+                count = min(wanted, self.unit.MAX_MODES)
         self.unit.set_modes(self.editor.get_modes()[:count])
 
     def sync_options(self):
@@ -4151,7 +4106,7 @@ class ModalNode(SynthNode):
         if chosen == self._material_shown:
             return
         self._material_shown = chosen
-        if chosen == ModalNode.CUSTOM:
+        if chosen == ModeTableNode.CUSTOM:
             return
         # During a load the table is restored by load_custom; applying the
         # material now would overwrite what the loader is putting back.
@@ -4175,11 +4130,11 @@ class ModalNode(SynthNode):
         Without this, reloading would re-apply the material over the edit --
         the combo would still say 'bell' and would be believed.
         """
-        if self._material_shown == ModalNode.CUSTOM:
+        if self._material_shown == ModeTableNode.CUSTOM:
             return
-        self._material_shown = ModalNode.CUSTOM
+        self._material_shown = ModeTableNode.CUSTOM
         if self.material_input.widget is not None:
-            self.material_input.widget.set(ModalNode.CUSTOM)
+            self.material_input.widget.set(ModeTableNode.CUSTOM)
 
     def update_parameters_from_widgets(self):
         # Patches saved before the editor existed carry only the combo, so a
@@ -4233,13 +4188,179 @@ class ModalNode(SynthNode):
     # -- persistence ---------------------------------------------------------
 
     def save_custom(self, container):
-        container['modal_modes'] = self.editor.get_modes()
+        container[self.SAVE_KEY] = self.editor.get_modes()
 
     def load_custom(self, container):
-        if 'modal_modes' in container:
+        if self.SAVE_KEY in container:
             self._modes_loaded = True
-            self.editor.set_modes(container['modal_modes'], notify=False)
+            self.editor.set_modes(container[self.SAVE_KEY], notify=False)
             self.push_modes()
+
+
+class ModalNode(ModeTableNode):
+    """Struck resonator bank: bells, bars, bowls, membranes as mode tables.
+
+    'material' picks the tuning table, 'frequency' places it, 'decay' and
+    'brightness' stretch it, 'hardness' is the mallet and 'position' where it
+    lands. Strike it from the button, from a trigger signal (its height is
+    the velocity), or drive it continuously through 'excite in' -- noise
+    through a slow envelope bows it, and a body's effort stream resonates
+    through it.
+
+    'dry' is the difference between being an instrument and being a body.
+    At 0 only the modes speak: strike it, it is a bell. Raised, the excite
+    input passes through alongside the ring -- and with the frequency held
+    fixed (not tracking the player's pitch) and the decay short enough to
+    widen the modes into formants, the bank becomes the resonant box around
+    whatever is patched in: bow~ through a wood table at decay 0.1 and dry
+    up is a violin.
+
+    The mode table itself is drawn on the node: one stem per mode, standing
+    at its ratio, as tall as its weight, colored by how long it rings. Drag
+    a stem to tune and weight it, shift-drag vertically to set its ring
+    time, right-click to add or remove one. A material is a starting point:
+    edit it and the combo says 'custom', and the table you drew is what the
+    patch saves. Edits land while the bank is ringing -- drag a sounding
+    mode and it glisses. The same gestures arrive as messages (mode / add /
+    remove), a table sent to 'modes' replaces the drawing, and 'modes out'
+    reports every edit, so tables can be built, morphed and sequenced by
+    patch.
+
+    modal~ <frequency> <material>, e.g. modal~ 220 marimba.
+    """
+
+    SAVE_KEY = 'modal_modes'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ModalNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = ModalUnit(synth_graph.sample_rate)
+
+        frequency = 220.0
+        material = 'bell'
+        if args is not None:
+            for arg in args:
+                if arg in MODAL_MATERIALS:
+                    material = arg
+                else:
+                    try:
+                        frequency = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+        self.unit.frequency_in.base = frequency
+        self.unit.set_modes(MODAL_MATERIALS[material])
+        self._init_mode_editor(label, material)
+
+        self.add_signal_input('excite in', self.unit.excite_in)
+        self.add_trigger_signal_input('strike', self.unit.trigger_in,
+                                      self.strike)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency, minimum=1.0,
+                                  speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.add_modulation_input('decay', self.unit.decay_in,
+                                  minimum=0.01, maximum=60.0, speed=0.05,
+                                  slider=False)
+        self.add_modulation_input('brightness', self.unit.brightness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('hardness', self.unit.hardness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('position', self.unit.position_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        drive_port = self.add_modulation_input('drive', self.unit.drive_in,
+                                               minimum=0.0, maximum=2.0,
+                                               speed=0.01)
+        if drive_port.widget is not None:
+            drive_port.widget.set_tooltip(
+                'how hard the excite input speaks through the modes; its '
+                'partner below is how much of it passes around them')
+        dry_port = self.add_modulation_input('dry', self.unit.dry_in,
+                                             minimum=0.0, maximum=1.0,
+                                             speed=0.01)
+        if dry_port.widget is not None:
+            dry_port.widget.set_tooltip(
+                'passes the excite input through alongside the ring; with a '
+                'fixed frequency and a short decay this turns the bank into '
+                'a body around whatever is patched in')
+
+        self._add_mode_table_ports(material)
+        self._add_mode_table_options()
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.modes_output = self.add_output('modes out')
+        self.add_switch()
+        self.finish_synth_node()
+
+    def strike(self):
+        self.unit.fire()
+
+
+class RubNode(ModeTableNode):
+    """Bowed glass: modal~'s tables under bow~'s hands.
+
+    The friction curve is fused with the mode bank inside the unit, which
+    is what makes this bowing an object rather than filtering a bow sound:
+    played gently it locks to one mode and sings nearly pure -- the wine
+    glass -- and faster bowing breaks upward into mode-jump squeals, none
+    of it programmed. Slow the bow to a stop and the object rings down at
+    its own decay; strike it with a modal~ on the same table if it also
+    needs a mallet.
+
+    The mode table is the same drawn editor as modal~, with the same
+    materials, messages, modes in/out and 'custom' discipline.
+
+    rub~ <frequency> <material>, e.g. rub~ 440 glass.
+    """
+
+    SAVE_KEY = 'rub_modes'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RubNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = RubUnit(synth_graph.sample_rate)
+
+        frequency = 440.0
+        material = 'glass'
+        if args is not None:
+            for arg in args:
+                if arg in MODAL_MATERIALS:
+                    material = arg
+                else:
+                    try:
+                        frequency = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+        self.unit.frequency_in.base = frequency
+        self.unit.set_modes(MODAL_MATERIALS[material])
+        self._init_mode_editor(label, material)
+
+        self.add_modulation_input('velocity', self.unit.velocity_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        self.add_modulation_input('force', self.unit.force_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('position', self.unit.position_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency,
+                                  minimum=RubUnit.MIN_FREQUENCY, speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.add_modulation_input('decay', self.unit.decay_in,
+                                  minimum=0.01, maximum=60.0, speed=0.05,
+                                  slider=False)
+
+        self._add_mode_table_ports(material)
+        self._add_mode_table_options()
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.modes_output = self.add_output('modes out')
+        self.add_switch()
+        self.finish_synth_node()
 
 
 class WindNode(SynthNode):
