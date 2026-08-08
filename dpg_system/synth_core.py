@@ -388,6 +388,29 @@ class Unit:
         np.clip(increment, -limit, limit, out=increment)
         increment /= self.sample_rate
 
+    def _build_hertz(self, curve, frequency, pitch, frames, minimum):
+        """Frequency in Hz into `curve`, scaled by the exponential pitch inlet.
+
+        The physical models want a frequency curve rather than a phase
+        increment: what they tune is a delay length, not a phase step. Same
+        octave semantics as _build_increment, clamped into the band where a
+        delay-line model can actually play.
+        """
+        if frequency.constant and pitch.constant:
+            curve[:] = frequency.value * (2.0 ** pitch.value)
+        elif pitch.constant:
+            np.multiply(frequency.data[:frames], 2.0 ** pitch.value,
+                        out=curve, casting='unsafe')
+        else:
+            np.multiply(pitch.data[:frames], math.log(2.0), out=curve,
+                        casting='unsafe')
+            np.exp(curve, out=curve)
+            if frequency.constant:
+                curve *= frequency.value
+            else:
+                curve *= frequency.data[:frames]
+        np.clip(curve, minimum, self.sample_rate * 0.4, out=curve)
+
     def _sync_segments(self, sync, frames):
         """(end_index, reset_at_segment_start) covering the whole block.
 
@@ -3309,6 +3332,14 @@ def _warm_up_filter():
         for shape in (0, 1):
             _delay_kernel(wide, line, 0, taps, zeros, zeros, output,
                           0.0, 0.0, 8.0, 8.0, 0.01, shape, 0)
+        allpass = np.zeros(2, dtype=np.float64)
+        gains = np.full(wide.shape[0], 0.9)
+        _string_kernel(wide, line, 0, line.copy(), 0, taps, gains, zeros,
+                       0.2, 0.1, allpass, allpass.copy(), 1.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, output)
+        _modal_kernel(wide, wide.copy(), bank.copy(), bank.copy(),
+                      bank.copy(), bank.copy(), state.copy(), state.copy(),
+                      0.0, 0.0, output)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -5306,6 +5337,782 @@ class SamplerOscUnit(Unit):
                 alive.append(grain)
 
         self._grains = alive
+
+
+# ----------------------------------------------------------------------------
+# string~ / modal~  --  physical models
+# ----------------------------------------------------------------------------
+#
+# Two shapes cover most struck and plucked acoustics. A string is a delay loop
+# with a little loss -- energy bounces between the ends, darkening as it goes --
+# and everything from guitar to pipe is that loop with different reflections.
+# A bell is not a loop at all but a set of independent resonances, each ringing
+# down at its own rate; bars, membranes and bowls are the same bank with
+# different tuning tables. Between them: pluck a string, strike a bell, and
+# both take arbitrary audio as excitation, which is where a body driving a
+# resonator gets interesting.
+
+
+def _excitation_events(trigger, frames, threshold, armed):
+    """Rising edges of a trigger signal, with the level at each crossing.
+
+    Returns ((index, level), ...) and the new armed state. The level is the
+    trigger's own height at the crossing sample, so the same cord carries
+    timing and velocity: a taller trigger strikes harder, and an envelope or
+    effort value patched here plays dynamics without a second connection.
+    """
+    if trigger.constant:
+        high = trigger.value >= threshold
+        if high and armed:
+            return ((0, abs(trigger.value)),), False
+        return (), not high
+    data = trigger.data[:frames]
+    above = data >= threshold
+    events = []
+    if above[0] and armed:
+        events.append((0, abs(float(data[0]))))
+    edges = np.flatnonzero(above[1:] & ~above[:-1]) + 1
+    for edge in edges:
+        events.append((int(edge), abs(float(data[edge]))))
+    return tuple(events), not bool(above[-1])
+
+
+def _string_kernel_source(x, line, write, ex_line, ex_write, delay, gain,
+                          damp, position, stiffness, ap_x, ap_y, polarity,
+                          low, dc_x, dc_y, in_x, in_y, out):
+    """A waveguide string: a delay loop with loss, sample by sample.
+
+    The loop is the string. What is written now depends on what is read now,
+    so like the delay kernel this cannot be vectorised. Per sample: read the
+    far end of the line, darken it through a one pole (the string's internal
+    loss -- high partials die first, which is most of what makes a decaying
+    note sound plucked rather than filtered), scale by the round-trip gain
+    that sets the decay time, disperse it through a short allpass chain
+    (stiffness: high partials travel faster in a stiff string, which is the
+    piano's inharmonicity), and write it back in with the new excitation.
+
+    The excitation passes through a comb before it enters -- a pluck at 1/5 of
+    the length cannot excite the modes with a node there, and cancelling a
+    delayed copy of the excitation is exactly that. Position 0 turns it off.
+
+    Two DC blockers: one on the excitation (a slow signal patched in as an
+    exciter would otherwise be multiplied by the loop's DC gain and pin the
+    line against its soft stop), one on the output (the loop can hold a small
+    standing offset that is nothing musical).
+
+    The soft stop from the delay kernel guards the loop: gains reach 1 when
+    long decays meet a bright setting, and the failure should be a settled
+    oscillation rather than a runaway.
+    """
+    size = line.shape[0]
+    ex_size = ex_line.shape[0]
+    limit = size - 3.0
+    for i in range(x.shape[0]):
+        want = delay[i]
+        if want < 2.0:
+            want = 2.0
+        elif want > limit:
+            want = limit
+
+        e = x[i]
+        hp = e - in_x + 0.995 * in_y
+        in_x = e
+        in_y = hp
+        ex_line[ex_write] = hp
+        if position > 0.0:
+            back = want * position
+            if back < 1.0:
+                back = 1.0
+            elif back > ex_size - 3.0:
+                back = ex_size - 3.0
+            read = ex_write - back
+            if read < 0.0:
+                read += ex_size
+            hp -= _cubic_read(ex_line, ex_size, read)
+        ex_write += 1
+        if ex_write >= ex_size:
+            ex_write = 0
+
+        read = write - want
+        if read < 0.0:
+            read += size
+        y = _cubic_read(line, size, read)
+
+        low += (y - low) * (1.0 - damp[i])
+        fed = low * gain[i] * polarity
+
+        for k in range(ap_x.shape[0]):
+            v = -stiffness * fed + ap_x[k] + stiffness * ap_y[k]
+            ap_x[k] = fed
+            ap_y[k] = v
+            fed = v
+
+        if fed > 1.5:
+            fed = 1.5 + np.tanh(fed - 1.5)
+        elif fed < -1.5:
+            fed = -1.5 - np.tanh(-fed - 1.5)
+
+        line[write] = hp + fed
+
+        o = y - dc_x + 0.995 * dc_y
+        dc_x = y
+        dc_y = o
+        out[i] = o
+
+        write += 1
+        if write >= size:
+            write = 0
+    return write, ex_write, low, dc_x, dc_y, in_x, in_y
+
+
+def _modal_kernel_source(x, pulse, b1, b2, gains, strike_gains, s1, s2,
+                         dc_x, dc_y, out):
+    """A bank of two-pole resonators: struck through one gain, driven
+    through another.
+
+    Same shape as the formant bank -- modes are independent, so the inner
+    loop vectorises and the input is read once for all of them -- but where
+    a formant filters what passes through it, a mode *rings*: the pole radius
+    is set from a decay time, so an impulse in produces a tone that dies away
+    on its own. Coefficients hold for the block and are computed outside.
+
+    The two inputs are the same bank meaning two different things, and they
+    cannot share a gain. A resonator's steady-state gain at its own frequency
+    exceeds its impulse-response amplitude by its Q -- thousands, at a long
+    decay -- so gains that make a strike ring at its table weight make a
+    sustained tone parked on a mode a runaway, and gains that bound the
+    steady state make the first half-second of bowing inaudible. The strike
+    path (the internal mallet) is impulse-normalized; the audio path is
+    normalized by sqrt(1-r) -- heard at once, growing while held -- and the
+    growth is bounded by the soft stop on the states rather than by the
+    gain.
+
+    The DC blocker guards the audio path: a low mode with a long decay still
+    has real gain near DC, and a slow control signal used as a drive would
+    ride the bank up on its offset. The strike pulse skips it -- a mallet
+    tap is one-sided by nature and has nothing to block.
+    """
+    modes = b1.shape[0]
+    for i in range(x.shape[0]):
+        e = x[i]
+        hp = e - dc_x + 0.995 * dc_y
+        dc_x = e
+        dc_y = hp
+        tap = pulse[i]
+        total = 0.0
+        for m in range(modes):
+            y = (gains[m] * hp + strike_gains[m] * tap
+                 + b1[m] * s1[m] + b2[m] * s2[m])
+            # The soft stop from the delay loop, on each mode's state: a
+            # drive parked on a resonance grows toward this and settles
+            # against it instead of running away, and everything below the
+            # knee stays exactly linear -- struck rings never touch it.
+            if y > 1.5:
+                y = 1.5 + np.tanh(y - 1.5)
+            elif y < -1.5:
+                y = -1.5 - np.tanh(-y - 1.5)
+            s2[m] = s1[m]
+            s1[m] = y
+            total += y
+        out[i] = total
+    return dc_x, dc_y
+
+
+if _HAVE_NUMBA:
+    _string_kernel = njit(cache=True, fastmath=True)(_string_kernel_source)
+    _modal_kernel = njit(cache=True, fastmath=True)(_modal_kernel_source)
+else:
+    _string_kernel = _string_kernel_source
+    _modal_kernel = _modal_kernel_source
+
+
+class StringUnit(Unit):
+    """Plucked string by extended Karplus-Strong, with a tube mode.
+
+    The classic algorithm is a delay line the length of one period with a
+    lossy loop; everything else here is what forty years of extensions found
+    worth adding. 'decay' is the time to -60 dB, held constant across pitch
+    by computing the round-trip gain from the current period -- without that
+    a string tuned up decays faster, which is physical but unplayable.
+    'brightness' is the loop's internal loss, 'position' the pluck-point comb,
+    'stiffness' a dispersion chain that stretches the upper partials sharp,
+    toward piano and away from nylon.
+
+    Excitation is two things at once, and either alone works. A rising edge
+    on 'trigger' injects one period of noise -- the pluck, its level taken
+    from the trigger's own height, its spectrum set by pluck_color between
+    fresh white noise and a darker, mellower burst. And whatever arrives at
+    the audio inlet enters the loop continuously, so a noise envelope bows
+    the string, a click strikes it, and a body's effort stream plays it as a
+    sustained instrument no burst could.
+
+    'tube' flips the sign of the reflection, which is what the closed end of
+    a pipe does: even harmonics cancel and the fundamental sits an octave
+    below the loop length, so the delay is halved to keep the pitch. Blow it
+    with noise at the audio inlet rather than plucking it.
+
+    The delay is compensated for the group delay of the loop filter and the
+    dispersion chain, so the string plays in tune until the compensation runs
+    into the 2-sample floor at the very top of the range.
+    """
+
+    MODES = ('string', 'tube')
+    MIN_FREQUENCY = 20.0
+    DISPERSION_STAGES = 4
+    NOISE_SAMPLES = 1 << 16
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.excite_in = self.new_inlet()
+        self.trigger_in = self.new_inlet()
+        self.frequency_in = self.new_inlet(base=220.0,
+                                           minimum=StringUnit.MIN_FREQUENCY)
+        self.pitch_in = self.new_inlet()
+        self.decay_in = self.new_inlet(base=2.0, minimum=0.01, maximum=60.0)
+        self.brightness_in = self.new_inlet(base=0.7, minimum=0.0, maximum=1.0)
+        self.position_in = self.new_inlet(base=0.2, minimum=0.0, maximum=0.5)
+        self.stiffness_in = self.new_inlet(base=0.0, minimum=0.0, maximum=0.9)
+
+        self.mode = 0
+        self.pluck_color = 0.3
+        self.threshold = 0.5
+
+        size = int(self.sample_rate / StringUnit.MIN_FREQUENCY) + 8
+        self.line = np.zeros(size, dtype=np.float64)
+        self.ex_line = np.zeros(size, dtype=np.float64)
+        self._write = 0
+        self._ex_write = 0
+        self._low = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._in_x = 0.0
+        self._in_y = 0.0
+        self._ap_x = np.zeros(StringUnit.DISPERSION_STAGES, dtype=np.float64)
+        self._ap_y = np.zeros(StringUnit.DISPERSION_STAGES, dtype=np.float64)
+
+        # Two noise tables made once: white, and the same noise through a one
+        # pole. pluck_color crossfades between them, which is how the burst
+        # gets a variable spectrum without running a filter on the audio
+        # thread. The read point advances table-length-agnostically, so
+        # successive plucks draw different noise but a patch reloaded sounds
+        # the same.
+        generator = np.random.default_rng(20260807)
+        white = generator.uniform(-1.0, 1.0, StringUnit.NOISE_SAMPLES)
+        dark = np.empty_like(white)
+        coefficient = math.exp(-2.0 * math.pi * 800.0 / self.sample_rate)
+        if scipy_signal is not None:
+            dark[:] = scipy_signal.lfilter([1.0 - coefficient],
+                                           [1.0, -coefficient], white)
+        else:
+            level = 0.0
+            for index in range(white.shape[0]):
+                level += (white[index] - level) * (1.0 - coefficient)
+                dark[index] = level
+        dark *= float(np.std(white) / max(1.0e-9, np.std(dark)))
+        self._white = white
+        self._dark = dark
+        self._noise_at = 0
+        self._burst_remaining = 0
+        self._burst_amp = 0.0
+        self._trigger_armed = True
+        self._fire_requests = 0
+        self._fire_served = 0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._exc = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._freq = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._delay = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._gain = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._damp = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._noise_a = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._noise_b = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def fire(self):
+        """Request one pluck from the node layer. Served on the next block."""
+        self._fire_requests += 1
+
+    def reset(self):
+        self.line[:] = 0.0
+        self.ex_line[:] = 0.0
+        self._low = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._in_x = 0.0
+        self._in_y = 0.0
+        self._ap_x[:] = 0.0
+        self._ap_y[:] = 0.0
+        self._burst_remaining = 0
+        self._quiet = True
+
+    def deactivate(self):
+        # Same reasoning as the delay: coming back to a stale line is a seam
+        # the read head finds later, long after the fade has finished.
+        self.reset()
+
+    def _add_burst(self, exc, start, stop):
+        """Mix the active noise burst into exc[start:stop], advancing it."""
+        remaining = self._burst_remaining
+        if remaining <= 0 or stop <= start:
+            return
+        count = min(stop - start, remaining)
+        color = min(1.0, max(0.0, self.pluck_color))
+        amp = self._burst_amp
+        at = start
+        left = count
+        while left > 0:
+            position = self._noise_at
+            chunk = min(left, StringUnit.NOISE_SAMPLES - position)
+            piece = self._noise_a[:chunk]
+            np.multiply(self._white[position:position + chunk],
+                        (1.0 - color) * amp, out=piece)
+            if color > 0.0:
+                shade = self._noise_b[:chunk]
+                np.multiply(self._dark[position:position + chunk],
+                            color * amp, out=shade)
+                piece += shade
+            exc[at:at + chunk] += piece
+            self._noise_at = (position + chunk) % StringUnit.NOISE_SAMPLES
+            at += chunk
+            left -= chunk
+        self._burst_remaining = remaining - count
+
+    def render(self, frames):
+        signal = self.excite_in.eval(frames)
+        trigger = self.trigger_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        decay = self.decay_in.eval(frames)
+        brightness = self.brightness_in.eval(frames)
+        position = self.position_in.eval(frames)
+        stiffness = self.stiffness_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            # Kernel still compiling (or numba missing): a silent string
+            # rather than a stalled callback.
+            out.set_constant(0.0)
+            return
+
+        exc = self._exc[:frames]
+        if signal.constant:
+            exc[:] = signal.value
+            silent_input = signal.value == 0.0
+        else:
+            np.copyto(exc, signal.data[:frames])
+            silent_input = False
+
+        events, self._trigger_armed = _excitation_events(
+            trigger, frames, self.threshold, self._trigger_armed)
+        if self._fire_requests != self._fire_served:
+            self._fire_served = self._fire_requests
+            events = ((0, 1.0),) + events
+
+        # A settled string with nothing exciting it renders nothing, so a
+        # patch full of idle strings costs what an idle patch should.
+        if (self._quiet and not events and silent_input
+                and self._burst_remaining <= 0):
+            out.set_constant(0.0)
+            return
+
+        freq = self._freq[:frames]
+        self._build_hertz(freq, frequency, pitch, frames,
+                          StringUnit.MIN_FREQUENCY)
+
+        # The pluck is one period of noise -- the burst the original
+        # algorithm filled its buffer with, delivered through the inlet so
+        # it passes the position comb like any other excitation.
+        period = self.sample_rate / float(freq[0])
+        cursor = 0
+        for index, amp in events:
+            self._add_burst(exc, cursor, index)
+            cursor = index
+            self._burst_remaining = int(min(max(32.0, period), 4096.0))
+            # Half, so a velocity-1 pluck peaks near the +-1 the oscillators
+            # put out rather than twice it.
+            self._burst_amp = min(2.0, amp) * 0.5
+        self._add_burst(exc, cursor, frames)
+
+        damp = self._damp[:frames]
+        if brightness.constant:
+            damp[:] = 1.0 - brightness.value
+        else:
+            np.subtract(1.0, brightness.data[:frames], out=damp,
+                        casting='unsafe')
+        np.clip(damp, 0.0, 0.95, out=damp)
+
+        # Round-trip gain from the decay time: -60 dB after f * t60 trips.
+        gain = self._gain[:frames]
+        if decay.constant:
+            np.multiply(freq, max(0.01, decay.value), out=gain)
+        else:
+            scratch = self._scratch[:frames]
+            np.copyto(scratch, decay.data[:frames], casting='unsafe')
+            np.clip(scratch, 0.01, 60.0, out=scratch)
+            np.multiply(freq, scratch, out=gain)
+        np.divide(-6.907755, gain, out=gain)
+        np.exp(gain, out=gain)
+
+        stiff = stiffness.value if stiffness.constant else float(
+            stiffness.data[0])
+        stiff = min(0.9, max(0.0, stiff))
+
+        taps = self._delay[:frames]
+        np.divide(self.sample_rate, freq, out=taps)
+        polarity = 1.0
+        if self.mode == 1:
+            # A closed pipe reflects inverted; the octave that costs is
+            # bought back by halving the line.
+            taps *= 0.5
+            polarity = -1.0
+        # What the loop already delays, the line must not: the one pole's
+        # group delay plus one sample and change per allpass stage.
+        darkness = float(damp[0])
+        compensation = darkness / (1.0 - darkness)
+        compensation += StringUnit.DISPERSION_STAGES * (1.0 + stiff) / (
+            1.0 - stiff)
+        taps -= compensation
+        np.clip(taps, 2.0, self.line.shape[0] - 3.0, out=taps)
+
+        pluck_point = position.value if position.constant else float(
+            position.data[0])
+        pluck_point = min(0.5, max(0.0, pluck_point))
+
+        result = self._y[:frames]
+        (self._write, self._ex_write, self._low, self._dc_x, self._dc_y,
+         self._in_x, self._in_y) = _string_kernel(
+            exc, self.line, self._write, self.ex_line, self._ex_write,
+            taps, gain, damp, pluck_point, stiff, self._ap_x, self._ap_y,
+            polarity, self._low, self._dc_x, self._dc_y, self._in_x,
+            self._in_y, result)
+
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+class ModalUnit(Unit):
+    """A struck object as a bank of ringing modes.
+
+    Bells, bars, bowls, membranes: none of them is a loop, all of them are a
+    handful of resonances, each with its own frequency ratio, weight and
+    decay. The mode table carries those three columns and is what makes one
+    material sound unlike another; the node layer owns the tables, this unit
+    just rings whatever it is given via set_modes().
+
+    'frequency' places the first mode and the rest follow their ratios, so a
+    bell transposes as an object rather than as a chord of independent
+    partials. 'decay' is the -60 dB time of that first mode; the others scale
+    by their table entries, which is where 'low modes outlast high ones'
+    lives. 'brightness' tilts the mode weights around the fundamental, and
+    'position' imposes the node pattern of striking off-centre -- weights go
+    as sin(m * pi * position), so some modes vanish exactly as they do under
+    a mallet at their node. Position 0 is the idealized uniform strike.
+
+    A strike is a raised-cosine tap whose width comes from 'hardness': a
+    soft mallet is a wide pulse that cannot excite the high modes, a hard
+    one is nearly a click that reaches them all -- which is the physical
+    reason hardness reads as brightness of attack. Level rides on the
+    trigger's height, and anything at the audio inlet excites the bank
+    continuously: noise bows it, a body's effort stream makes it a resonator
+    for movement.
+
+    The two ways in are normalized differently, because they mean different
+    things. The trigger is a mallet: impulse-normalized, so every mode rings
+    up to its table weight wherever it sits in frequency, and a strike
+    sounds the same at any decay. The audio inlet is a drive, normalized by
+    sqrt(1-r): bowing is heard the moment it touches, swells while it is
+    held, and a drive parked on a mode settles against the soft stop on the
+    mode states instead of being multiplied out to the mode's Q -- which at
+    a three-second decay would be thousands. The price is that a click
+    patched into the audio inlet rings only faintly; strikes belong to the
+    trigger, which carries velocity anyway. Modes driven past Nyquist are
+    muted rather than folded.
+
+    'dry' passes the audio input straight through alongside the ring, and it
+    is what separates the unit's two lives. At 0 (the default) the bank IS
+    the instrument, and only the modes speak. Opened up -- with the
+    frequency fixed rather than tracking, and the decay short enough that
+    each mode widens from a partial into a formant -- the bank becomes a
+    body: the input carries the note, the modes color it, exactly a bow~
+    into a violin box. The dry tap is the input as patched, before the DC
+    blocker and without the internal strike, whose click belongs to the
+    struck sound and not to a pass-through.
+    """
+
+    MAX_MODES = 24
+    # Default level of the audio-drive path against the sqrt(1-r)
+    # normalization: how hard bowing and driving speak, before the state
+    # soft-stop has its say. The 'drive' inlet scales from here.
+    DRIVE_GAIN = 0.7
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.excite_in = self.new_inlet()
+        self.trigger_in = self.new_inlet()
+        self.frequency_in = self.new_inlet(base=220.0, minimum=1.0)
+        self.pitch_in = self.new_inlet()
+        self.decay_in = self.new_inlet(base=3.0, minimum=0.01, maximum=60.0)
+        self.brightness_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.hardness_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.position_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.drive_in = self.new_inlet(base=ModalUnit.DRIVE_GAIN,
+                                       minimum=0.0, maximum=2.0)
+        self.dry_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+
+        self.threshold = 0.5
+        # ratio, weight, decay multiple -- one row per mode. Replaced whole
+        # via set_modes so the audio thread never sees a half-updated table.
+        self._modes = np.array([[1.0, 1.0, 1.0]], dtype=np.float64)
+        self._weight_norm = 1.0
+
+        self._s1 = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._s2 = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._b1 = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._b2 = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._drive_gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._fm = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._theta = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._radius = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._mode_scratch = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._pulse_remaining = 0
+        self._pulse_length = 1
+        self._pulse_at = 0
+        self._pulse_amp = 0.0
+        self._trigger_armed = True
+        self._fire_requests = 0
+        self._fire_served = 0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._exc = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._pulse = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def set_modes(self, table):
+        """Main thread: adopt a mode table, rows of (ratio, weight, decay)."""
+        rows = [row for row in table[:ModalUnit.MAX_MODES]]
+        if not rows:
+            rows = [(1.0, 1.0, 1.0)]
+        self._modes = np.array(rows, dtype=np.float64)
+        self._weight_norm = max(1.0, float(np.sum(np.abs(self._modes[:, 1]))))
+        self._s1[:] = 0.0
+        self._s2[:] = 0.0
+
+    def fire(self):
+        """Request one strike from the node layer. Served on the next block."""
+        self._fire_requests += 1
+
+    def reset(self):
+        self._s1[:] = 0.0
+        self._s2[:] = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._pulse_remaining = 0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def _add_pulse(self, exc, start, stop):
+        """Mix the active strike pulse into exc[start:stop], advancing it."""
+        remaining = self._pulse_remaining
+        if remaining <= 0 or stop <= start:
+            return
+        count = min(stop - start, remaining)
+        window = self._scratch[:count]
+        np.add(_INDEX_RAMP[:count], float(self._pulse_at - 1), out=window)
+        window *= 2.0 * math.pi / self._pulse_length
+        np.cos(window, out=window)
+        np.subtract(1.0, window, out=window)
+        window *= 0.5 * self._pulse_amp
+        exc[start:start + count] += window
+        self._pulse_at += count
+        self._pulse_remaining = remaining - count
+
+    def render(self, frames):
+        signal = self.excite_in.eval(frames)
+        trigger = self.trigger_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        decay = self.decay_in.eval(frames)
+        brightness = self.brightness_in.eval(frames)
+        hardness = self.hardness_in.eval(frames)
+        position = self.position_in.eval(frames)
+        drive_level = self.drive_in.eval(frames)
+        dry = self.dry_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        exc = self._exc[:frames]
+        if signal.constant:
+            exc[:] = signal.value
+            silent_input = signal.value == 0.0
+        else:
+            np.copyto(exc, signal.data[:frames])
+            silent_input = False
+
+        events, self._trigger_armed = _excitation_events(
+            trigger, frames, self.threshold, self._trigger_armed)
+        if self._fire_requests != self._fire_served:
+            self._fire_served = self._fire_requests
+            events = ((0, 1.0),) + events
+
+        if (self._quiet and not events and silent_input
+                and self._pulse_remaining <= 0):
+            out.set_constant(0.0)
+            return
+
+        # Mallet width from hardness: 8 ms of felt down to a third of a
+        # millisecond of wood, exponentially, since hardness is heard as the
+        # ratio of width to period rather than as milliseconds.
+        hard = hardness.value if hardness.constant else float(hardness.data[0])
+        hard = min(1.0, max(0.0, hard))
+        width = int(max(8.0, 0.008 * (0.04 ** hard) * self.sample_rate))
+        pulse = self._pulse[:frames]
+        pulse[:] = 0.0
+        cursor = 0
+        for index, amp in events:
+            self._add_pulse(pulse, cursor, index)
+            cursor = index
+            self._pulse_length = width
+            self._pulse_remaining = width
+            self._pulse_at = 0
+            # Area-normalized: a mallet integrates over its dwell, so without
+            # this a soft strike would land tens of times harder than a hard
+            # one of the same velocity.
+            self._pulse_amp = min(2.0, amp) * 2.0 / width
+        self._add_pulse(pulse, cursor, frames)
+
+        # Coefficients hold for the block: a handful of vector ops over at
+        # most MAX_MODES values, into preallocated views.
+        modes = self._modes
+        count = modes.shape[0]
+        ratios = modes[:, 0]
+        weights = modes[:, 1]
+        decay_scale = modes[:, 2]
+
+        f0 = frequency.value if frequency.constant else float(
+            frequency.data[0])
+        if not pitch.constant:
+            f0 *= 2.0 ** float(pitch.data[0])
+        elif pitch.value != 0.0:
+            f0 *= 2.0 ** pitch.value
+        f0 = min(self.sample_rate * 0.45, max(1.0, f0))
+
+        seconds = decay.value if decay.constant else float(decay.data[0])
+        seconds = min(60.0, max(0.01, seconds))
+
+        fm = self._fm[:count]
+        np.multiply(ratios, f0, out=fm)
+        limit = self.sample_rate * 0.45
+
+        theta = self._theta[:count]
+        np.clip(fm, 1.0, limit, out=theta)
+        theta *= 2.0 * math.pi / self.sample_rate
+
+        radius = self._radius[:count]
+        np.multiply(decay_scale, seconds * self.sample_rate, out=radius)
+        np.clip(radius, 1.0, None, out=radius)
+        np.divide(-6.907755, radius, out=radius)
+        np.exp(radius, out=radius)
+
+        b1 = self._b1[:count]
+        np.cos(theta, out=b1)
+        b1 *= radius
+        b1 *= 2.0
+        b2 = self._b2[:count]
+        np.multiply(radius, radius, out=b2)
+        np.negative(b2, out=b2)
+
+        gains = self._gains[:count]
+        np.sin(theta, out=gains)
+        gains *= weights
+        # Divided through by the table's total weight, a velocity-1 strike
+        # peaks near +-1 whatever the material and however many modes ring.
+        gains /= self._weight_norm
+        # Mute rather than fold whatever the transposition pushed past
+        # Nyquist. The comparison writes 0/1 straight into a float scratch.
+        alive = self._mode_scratch[:count]
+        np.less_equal(fm, limit, out=alive, casting='unsafe')
+        gains *= alive
+
+        bright = brightness.value if brightness.constant else float(
+            brightness.data[0])
+        tilt = (min(1.0, max(0.0, bright)) - 0.5) * 2.0
+        if tilt != 0.0:
+            shape = self._mode_scratch[:count]
+            np.power(ratios, tilt, out=shape)
+            gains *= shape
+
+        struck_at = position.value if position.constant else float(
+            position.data[0])
+        struck_at = min(1.0, max(0.0, struck_at))
+        if struck_at > 0.0:
+            pattern = self._mode_scratch[:count]
+            np.multiply(_INDEX_RAMP[:count], math.pi * struck_at, out=pattern)
+            np.sin(pattern, out=pattern)
+            np.abs(pattern, out=pattern)
+            gains *= pattern
+
+        # The audio path is a drive, not a mallet, and its gain is the
+        # compromise a linear resonator cannot make on its own. Impulse
+        # normalization (none) makes a sustained drive explode by the mode's
+        # Q; full filter normalization (1-r) makes the first half-second of
+        # bowing inaudible at any long decay. sqrt(1-r) splits the
+        # difference -- the drive is heard the moment it arrives, grows as
+        # it is held, and what would have grown past bounds is taken by the
+        # soft stop on the mode states in the kernel.
+        level = (drive_level.value if drive_level.constant
+                 else float(drive_level.data[0]))
+        drive = self._drive_gains[:count]
+        np.subtract(1.0, radius, out=drive)
+        np.sqrt(drive, out=drive)
+        drive *= gains
+        drive *= min(2.0, max(0.0, level))
+
+        result = self._y[:frames]
+        self._dc_x, self._dc_y = _modal_kernel(
+            exc, pulse, b1, b2, drive, gains, self._s1[:count],
+            self._s2[:count], self._dc_x, self._dc_y, result)
+
+        # The dry tap: the input as patched, not the excitation buffer --
+        # the strike pulse stays out of it.
+        if dry.constant:
+            if dry.value != 0.0:
+                if signal.constant:
+                    if signal.value != 0.0:
+                        result += dry.value * signal.value
+                else:
+                    scratch = self._scratch[:frames]
+                    np.multiply(signal.data[:frames], dry.value, out=scratch)
+                    result += scratch
+        else:
+            scratch = self._scratch[:frames]
+            if signal.constant:
+                np.multiply(dry.data[:frames], signal.value, out=scratch)
+            else:
+                np.multiply(dry.data[:frames], signal.data[:frames],
+                            out=scratch)
+            result += scratch
+
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
 
 
 class CaptureUnit(Unit):
