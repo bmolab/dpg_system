@@ -5676,6 +5676,12 @@ class StringUnit(Unit):
         self._noise_a = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._noise_b = np.zeros(MAX_BLOCK, dtype=np.float64)
 
+    def bypass_pairs(self):
+        # A string has an audio input, so its switch is a bypass: standing
+        # aside means the excitation reaches the output unplayed, not that
+        # the signal disappears.
+        return ((self.excite_in, self.out),)
+
     def fire(self):
         """Request one pluck from the node layer. Served on the next block."""
         self._fire_requests += 1
@@ -5969,6 +5975,11 @@ class ModalUnit(Unit):
         if resized:
             self._s1[:] = 0.0
             self._s2[:] = 0.0
+
+    def bypass_pairs(self):
+        # Same reasoning as the string: an object with an audio input
+        # bypasses to that input, not to silence.
+        return ((self.excite_in, self.out),)
 
     def fire(self):
         """Request one strike from the node layer. Served on the next block."""

@@ -155,6 +155,7 @@ class SynthNode(Node):
         self.switch_input = None
         self._is_processor = False
         self._switch_placed = True     # armed by add_switch
+        self._proportional_ports = []
         self._labels_aligned = False
         self._align_attempts = 0
         self._registered = False
@@ -331,6 +332,33 @@ class SynthNode(Node):
         self._custom_bindings.append((port, setter))
         return port
 
+    def make_drag_proportional(self, port, fraction=0.04, floor=0.002,
+                               ceiling=1.0):
+        """Drag speed that follows the value: exponential travel, honestly.
+
+        A decay knob spans twenty milliseconds to a minute. A fixed drag
+        step is too coarse at one end or takes all day at the other; a
+        hidden exponential mapping would fix the feel but the number shown
+        would stop being seconds. Proportional stepping keeps the number
+        and the feel: each pixel moves the value by a fraction of itself,
+        so short values adjust finely and long ones sweep.
+        """
+        self._proportional_ports.append((port, fraction, floor, ceiling))
+        self._sync_proportional_speeds()
+
+    def _sync_proportional_speeds(self):
+        for port, fraction, floor, ceiling in self._proportional_ports:
+            if port.widget is None:
+                continue
+            value = abs(any_to_float(port()))
+            speed = min(ceiling, max(floor, value * fraction))
+            port.widget.speed = speed
+            if dpg.does_item_exist(port.widget.uuid):
+                try:
+                    dpg.configure_item(port.widget.uuid, speed=speed)
+                except Exception:
+                    pass
+
     def add_trigger_signal_input(self, label, inlet, callback):
         """A signal inlet that is also a button, and answers a bang.
 
@@ -461,6 +489,7 @@ class SynthNode(Node):
             ticked = any_to_bool(self.switch_input())
             # 'bypass' is the same flag read the other way round.
             self.unit.enabled = (not ticked) if self._is_processor else ticked
+        self._sync_proportional_speeds()
         self.sync_options()
 
     def sync_options(self):
@@ -3877,9 +3906,10 @@ class StringNode(SynthNode):
                                   default_value=frequency,
                                   minimum=StringUnit.MIN_FREQUENCY, speed=1.0)
         self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
-        self.add_modulation_input('decay', self.unit.decay_in,
-                                  minimum=0.01, maximum=60.0, speed=0.05,
-                                  slider=False)
+        self.make_drag_proportional(
+            self.add_modulation_input('decay', self.unit.decay_in,
+                                      minimum=0.01, maximum=60.0, speed=0.05,
+                                      slider=False))
         self.add_modulation_input('brightness', self.unit.brightness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('position', self.unit.position_in,
@@ -4269,9 +4299,10 @@ class ModalNode(ModeTableNode):
                                   default_value=frequency, minimum=1.0,
                                   speed=1.0)
         self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
-        self.add_modulation_input('decay', self.unit.decay_in,
-                                  minimum=0.01, maximum=60.0, speed=0.05,
-                                  slider=False)
+        self.make_drag_proportional(
+            self.add_modulation_input('decay', self.unit.decay_in,
+                                      minimum=0.01, maximum=60.0, speed=0.05,
+                                      slider=False))
         self.add_modulation_input('brightness', self.unit.brightness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('hardness', self.unit.hardness_in,
@@ -4360,9 +4391,10 @@ class RubNode(ModeTableNode):
                                   default_value=frequency,
                                   minimum=RubUnit.MIN_FREQUENCY, speed=1.0)
         self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
-        self.add_modulation_input('decay', self.unit.decay_in,
-                                  minimum=0.01, maximum=60.0, speed=0.05,
-                                  slider=False)
+        self.make_drag_proportional(
+            self.add_modulation_input('decay', self.unit.decay_in,
+                                      minimum=0.01, maximum=60.0, speed=0.05,
+                                      slider=False))
         self.add_modulation_input('level', self.unit.level_in,
                                   minimum=0.0, maximum=2.0, speed=0.01)
 
