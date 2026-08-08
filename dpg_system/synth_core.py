@@ -3340,6 +3340,12 @@ def _warm_up_filter():
         _modal_kernel(wide, wide.copy(), bank.copy(), bank.copy(),
                       bank.copy(), bank.copy(), state.copy(), state.copy(),
                       0.0, 0.0, output)
+        breath = np.full(wide.shape[0], 0.8)
+        for shape in (0, 1):
+            _wind_kernel(breath, zeros, line, 0, line.copy(), 0,
+                         line.copy(), 0, taps, taps, zeros,
+                         -0.3, 0.6, 0.6, shape,
+                         0.0, 0.0, 0.0, 0.0, 0.0, output)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -6108,6 +6114,291 @@ class ModalUnit(Unit):
                             out=scratch)
             result += scratch
 
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _wind_kernel_source(pressure, noise_amt, noise, noise_at,
+                        bore, bwrite, jet, jwrite,
+                        bore_delay, jet_delay, damp,
+                        slope, jet_refl, end_refl, mode,
+                        low, dcb_x, dcb_y, dc_x, dc_y, out):
+    """Breath through a nonlinear valve into a bore, sample by sample.
+
+    Unlike the string, nothing here is triggered: the tone is a limit cycle.
+    Breath pressure feeds a nonlinearity whose gain depends on the very wave
+    coming back up the bore, and above a threshold the loop's small
+    disturbances grow into oscillation -- which is what starting a note on a
+    wind instrument is. The noise riding on the breath is not decoration; it
+    is the perturbation the jet amplifies into speech, and the reed's
+    breathiness.
+
+    mode 0 is a reed on a closed bore, after Smith/Cook: the returning wave
+    is reflected inverted, and the reed table -- a clipped linear reflection
+    coefficient in the pressure difference -- lets more energy through as the
+    player bites. Odd harmonics, speaks near half pressure, clarinet.
+
+    mode 1 is an air jet across an open bore, after Cook's flute: the bore's
+    return steers a jet whose own travel time (the jet line, a fraction of
+    the bore set by embouchure) delays that steering, and the cubic
+    x*(x*x - 1) is the jet switching sides. It needs most of a full breath
+    before it speaks, overblows as the jet length leaves the middle of its
+    range -- to the octave one way, the twelfth the other -- and
+    has a narrow wolf just past full pressure where the jet's operating
+    point crosses the outer zero of the cubic and the note cracks an octave
+    down -- as the real instrument does.
+
+    Both bores are clamped at +-2: the failure mode of a nonlinear loop
+    driven hard should be saturation, never runaway.
+    """
+    bsize = bore.shape[0]
+    jsize = jet.shape[0]
+    blimit = bsize - 3.0
+    jlimit = jsize - 3.0
+    nsize = noise.shape[0]
+    for i in range(pressure.shape[0]):
+        breath = pressure[i]
+        breath += breath * noise_amt[i] * noise[noise_at]
+        noise_at += 1
+        if noise_at >= nsize:
+            noise_at = 0
+
+        want = bore_delay[i]
+        if want < 2.0:
+            want = 2.0
+        elif want > blimit:
+            want = blimit
+        read = bwrite - want
+        if read < 0.0:
+            read += bsize
+        bore_out = _cubic_read(bore, bsize, read)
+
+        low += (bore_out - low) * (1.0 - damp[i])
+
+        if mode == 0:
+            pd = -0.95 * low - breath
+            r = 0.7 + slope * pd
+            if r > 1.0:
+                r = 1.0
+            elif r < -1.0:
+                r = -1.0
+            v = breath + pd * r
+        else:
+            temp = low - dcb_x + 0.995 * dcb_y
+            dcb_x = low
+            dcb_y = temp
+
+            jwant = jet_delay[i]
+            if jwant < 2.0:
+                jwant = 2.0
+            elif jwant > jlimit:
+                jwant = jlimit
+            jread = jwrite - jwant
+            if jread < 0.0:
+                jread += jsize
+            x = _cubic_read(jet, jsize, jread)
+            jet[jwrite] = breath - jet_refl * temp
+            jwrite += 1
+            if jwrite >= jsize:
+                jwrite = 0
+
+            v = x * (x * x - 1.0)
+            if v > 1.0:
+                v = 1.0
+            elif v < -1.0:
+                v = -1.0
+            v += end_refl * temp
+
+        if v > 2.0:
+            v = 2.0
+        elif v < -2.0:
+            v = -2.0
+        bore[bwrite] = v
+
+        o = bore_out - dc_x + 0.995 * dc_y
+        dc_x = bore_out
+        dc_y = o
+        out[i] = o
+
+        bwrite += 1
+        if bwrite >= bsize:
+            bwrite = 0
+    return bwrite, jwrite, noise_at, low, dcb_x, dcb_y, dc_x, dc_y
+
+
+if _HAVE_NUMBA:
+    _wind_kernel = njit(cache=True, fastmath=True)(_wind_kernel_source)
+else:
+    _wind_kernel = _wind_kernel_source
+
+
+class WindUnit(Unit):
+    """Blown instrument: reed or flute, played entirely by pressure.
+
+    There is no trigger anywhere on this unit, because a wind instrument has
+    none. 'pressure' is the whole interface -- a knob to lean on, an adsr~
+    for tongued notes, an LFO for breath vibrato, or an effort stream so that
+    a body's exertion is literally what blows the note. The reed speaks from
+    about half pressure; the flute wants most of a full breath, whispers
+    filtered air below that, and cracks octaves when pushed past 1 -- all of
+    it emergent from the model rather than programmed.
+
+    'embouchure' is the mouth: on the reed it is the bite (reed stiffness,
+    where it speaks and how reedy it is), on the flute the jet length, which
+    selects the register: fundamental through the middle of the range, bent
+    expressively flat and sharp along the way, breaking to the octave above
+    ~0.8 and the twelfth at the very bottom. 'brightness' is bore loss as
+    everywhere else, and 'breath' is how much turbulence rides on the
+    pressure, from pure tone to half air.
+
+    Tuning is calibrated: the reed's bore is compensated for its reflection
+    filter (within a few cents across the range), the flute needs none.
+    """
+
+    MODES = ('reed', 'flute')
+    MIN_FREQUENCY = 30.0
+    NOISE_SAMPLES = 1 << 16
+    # The flute's playable range is engineered so the wolf -- the jet's
+    # outer-zero crossing -- sits just past nominal full breath.
+    FLUTE_BREATH_SCALE = 0.92
+    FLUTE_OUTPUT_SCALE = 0.5
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.pressure_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.frequency_in = self.new_inlet(base=220.0,
+                                           minimum=WindUnit.MIN_FREQUENCY)
+        self.pitch_in = self.new_inlet()
+        self.embouchure_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.brightness_in = self.new_inlet(base=0.7, minimum=0.0, maximum=1.0)
+        self.noise_in = self.new_inlet(base=0.06, minimum=0.0, maximum=1.0)
+
+        self.mode = 0
+
+        size = int(self.sample_rate / WindUnit.MIN_FREQUENCY) + 8
+        self.bore = np.zeros(size, dtype=np.float64)
+        self.jet = np.zeros(size, dtype=np.float64)
+        self._bwrite = 0
+        self._jwrite = 0
+        self._low = 0.0
+        self._dcb_x = 0.0
+        self._dcb_y = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+
+        generator = np.random.default_rng(20260808)
+        self._noise = generator.uniform(-1.0, 1.0, WindUnit.NOISE_SAMPLES)
+        self._noise_at = 0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._press = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._namt = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._freq = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._bore_delay = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._jet_delay = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._damp = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self.bore[:] = 0.0
+        self.jet[:] = 0.0
+        self._low = 0.0
+        self._dcb_x = 0.0
+        self._dcb_y = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def render(self, frames):
+        pressure = self.pressure_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        embouchure = self.embouchure_in.eval(frames)
+        brightness = self.brightness_in.eval(frames)
+        noise = self.noise_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        press = self._press[:frames]
+        if pressure.constant:
+            press[:] = pressure.value
+            idle = abs(pressure.value) < 1.0e-4
+        else:
+            np.copyto(press, pressure.data[:frames])
+            idle = False
+        np.clip(press, 0.0, 2.0, out=press)
+
+        # No breath and nothing still sounding in the bore: skip the block.
+        if self._quiet and idle:
+            out.set_constant(0.0)
+            return
+
+        freq = self._freq[:frames]
+        self._build_hertz(freq, frequency, pitch, frames,
+                          WindUnit.MIN_FREQUENCY)
+
+        damp = self._damp[:frames]
+        if brightness.constant:
+            damp[:] = 1.0 - brightness.value
+        else:
+            np.subtract(1.0, brightness.data[:frames], out=damp,
+                        casting='unsafe')
+        np.clip(damp, 0.0, 0.95, out=damp)
+
+        namt = self._namt[:frames]
+        if noise.constant:
+            namt[:] = noise.value
+        else:
+            np.copyto(namt, noise.data[:frames], casting='unsafe')
+        np.clip(namt, 0.0, 1.0, out=namt)
+
+        emb = embouchure.value if embouchure.constant else float(
+            embouchure.data[0])
+        emb = min(1.0, max(0.0, emb))
+
+        bore_delay = self._bore_delay[:frames]
+        jet_delay = self._jet_delay[:frames]
+        slope = 0.0
+        scale = 1.0
+        if self.mode == 0:
+            # Closed bore: half-period line, inverted reflection. The bite
+            # sets the reed table's slope.
+            slope = -(0.16 + 0.28 * emb)
+            np.divide(self.sample_rate * 0.5, freq, out=bore_delay)
+            darkness = float(damp[0])
+            bore_delay -= darkness / (1.0 - darkness)
+        else:
+            np.divide(self.sample_rate, freq, out=bore_delay)
+            # The jet line is a fraction of the bore; embouchure slides it,
+            # and with it which register the jet locks to.
+            np.multiply(bore_delay, 0.2 + 0.6 * emb, out=jet_delay)
+            press *= WindUnit.FLUTE_BREATH_SCALE
+            scale = WindUnit.FLUTE_OUTPUT_SCALE
+        np.clip(bore_delay, 2.0, self.bore.shape[0] - 3.0, out=bore_delay)
+
+        result = self._y[:frames]
+        (self._bwrite, self._jwrite, self._noise_at, self._low,
+         self._dcb_x, self._dcb_y, self._dc_x, self._dc_y) = _wind_kernel(
+            press, namt, self._noise, self._noise_at,
+            self.bore, self._bwrite, self.jet, self._jwrite,
+            bore_delay, jet_delay, damp,
+            slope, 0.6, 0.6, self.mode,
+            self._low, self._dcb_x, self._dcb_y, self._dc_x, self._dc_y,
+            result)
+
+        if scale != 1.0:
+            result *= scale
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
         scratch = self._scratch[:frames]

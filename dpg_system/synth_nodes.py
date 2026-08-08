@@ -25,7 +25,7 @@ from dpg_system.synth_core import (
     MixUnit, MultUnit, PanUnit, AudioOutUnit, AUDIO_OUT_SPACES,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
-    StringUnit, ModalUnit,
+    StringUnit, ModalUnit, WindUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -80,6 +80,9 @@ def register_synth_nodes():
     Node.app.register_node('pluck~', StringNode.factory)
     Node.app.register_node('modal~', ModalNode.factory)
     Node.app.register_node('resonator~', ModalNode.factory)
+    Node.app.register_node('wind~', WindNode.factory)
+    Node.app.register_node('reed~', WindNode.factory)
+    Node.app.register_node('flute~', WindNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
@@ -4073,6 +4076,69 @@ class ModalNode(SynthNode):
         if material != self._material or len(table) != self.unit._modes.shape[0]:
             self._material = material
             self.unit.set_modes(table)
+
+
+class WindNode(SynthNode):
+    """Blown instrument -- no trigger, only breath.
+
+    Everything about playing it lives in the pressure inlet: lean on the
+    slider, patch an adsr~ for tongued notes, an lfo~ for vibrato, or an
+    effort stream so that moving hard is blowing hard. The reed speaks from
+    about half pressure; the flute wants nearly a full breath and cracks when
+    pushed past it, which is the model being honest about flutes.
+
+    wind~ <frequency> <model>; reed~ and flute~ are the same node with its
+    model preset.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return WindNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = WindUnit(synth_graph.sample_rate)
+
+        frequency = 220.0
+        model = 'flute' if label == 'flute~' else 'reed'
+        if args is not None:
+            for arg in args:
+                if arg in WindUnit.MODES:
+                    model = arg
+                else:
+                    try:
+                        frequency = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+        self.unit.frequency_in.base = frequency
+        self.unit.mode = WindUnit.MODES.index(model)
+
+        self.add_modulation_input('pressure', self.unit.pressure_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency,
+                                  minimum=WindUnit.MIN_FREQUENCY, speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.add_modulation_input('embouchure', self.unit.embouchure_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('brightness', self.unit.brightness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('breath', self.unit.noise_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+
+        self.model_input = self.add_input('model', widget_type='combo',
+                                          default_value=model,
+                                          callback=self.parameters_changed)
+        self.model_input.widget.combo_items = list(WindUnit.MODES)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def sync_options(self):
+        model = any_to_string(self.model_input())
+        if model in WindUnit.MODES:
+            self.unit.mode = WindUnit.MODES.index(model)
 
 
 class CaptureNode(SynthNode):
