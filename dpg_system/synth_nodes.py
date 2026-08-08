@@ -136,6 +136,7 @@ class SynthNode(Node):
         # alone and are never switched.
         self.switch_input = None
         self._is_processor = False
+        self._switch_placed = True     # armed by add_switch
         self._labels_aligned = False
         self._align_attempts = 0
         self._registered = False
@@ -350,7 +351,44 @@ class SynthNode(Node):
                 if self._is_processor else
                 'off fades out over a few ms and then stops rendering'
                 ' altogether')
+        # Created last, so every other port keeps the link index it has
+        # always had -- and then *drawn* up under the audio inputs, where a
+        # bypass reads as what it is: a valve on what comes in. Display and
+        # link order are separate concerns; the move happens in the frame
+        # task once the rows exist to be moved.
+        self._switch_placed = False
         return self.switch_input
+
+    def place_switch(self):
+        """Draw the switch under the audio-in rows; sources get it on top.
+
+        The row after the plain signal inputs -- the widgetless ports at the
+        head of the node, 'left in' and 'right in' on a processor -- is where
+        the switch is moved to. A source has no such prefix, so its 'enable'
+        becomes the first row instead, which is where the master switch of a
+        sound-maker belongs anyway.
+        """
+        port = self.switch_input
+        if port is None:
+            return True
+        if not dpg.does_item_exist(port.uuid):
+            return False
+        target = None
+        for candidate in self.inputs:
+            if candidate is port:
+                continue
+            if candidate in self.signal_inputs and candidate.widget is None:
+                target = None      # still inside the audio-in prefix
+                continue
+            target = candidate
+            break
+        if target is None or not dpg.does_item_exist(target.uuid):
+            return True            # nothing after the prefix; last is fine
+        try:
+            dpg.move_item(port.uuid, parent=self.uuid, before=target.uuid)
+        except Exception as error:
+            print(self.label + ': could not place switch (' + str(error) + ')')
+        return True
 
     def add_signal_output(self, label, signal):
         port = self.add_output(label)
@@ -421,6 +459,8 @@ class SynthNode(Node):
         # Any synth node drives the shared topology check; it acts once per
         # frame no matter how many nodes call it.
         synth_graph.tick(Node.app.frame_number)
+        if not self._switch_placed:
+            self._switch_placed = self.place_switch()
         if not self._labels_aligned:
             # Retried until it settles, since none of it can be measured
             # before something has been drawn -- and given up on eventually,
