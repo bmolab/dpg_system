@@ -3382,6 +3382,9 @@ def _warm_up_filter():
         _rub_kernel(breath, breath.copy(), breath.copy(), bank.copy(),
                     bank.copy(), bank.copy(), bank.copy(), state.copy(),
                     state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
+        _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, 0.5, 0.9, 0.5,
+                       0.0, 0.0, 0.5, 0.99, np.uint64(12345), 0.0, 0.0,
+                       output.copy(), output)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -7055,6 +7058,259 @@ class BowUnit(Unit):
         self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _rand01_source(state):
+    """xorshift64*: one uniform draw in [0, 1) and the state that follows.
+
+    A table of precomputed randoms loops -- at one entry per sample even a
+    generous table repeats every few seconds, which at low density is an
+    audibly identical pattern of rain. This is a real generator: period
+    2^64, a handful of integer ops, nothing to loop.
+    """
+    state ^= state >> np.uint64(12)
+    state ^= state << np.uint64(25)
+    state ^= state >> np.uint64(27)
+    scrambled = (state * np.uint64(2685821657736338717)) >> np.uint64(11)
+    return state, np.float64(scrambled) * (1.0 / 9007199254740992.0)
+
+
+if _HAVE_NUMBA:
+    _rand01 = njit(cache=True, inline='always')(_rand01_source)
+else:
+    _rand01 = _rand01_source
+
+
+def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
+                          vary, amp, theta, radius, jingle,
+                          energy, sound, th, gd, rng, y1, y2, out_raw, out):
+    """Cook's PhISEM, sample by sample: percussion as statistics.
+
+    Nothing here is a waveform. 'energy' is how agitated the beans are --
+    pumped by the shaking gesture, settling on its own -- and each sample
+    a collision either happens or does not, with a probability that rises
+    with agitation and bean count. A collision tops up a fast-decaying
+    grain envelope that gates raw noise: one tick of one bean. What the
+    ear hears as maraca, cabasa or rain is only the statistics of those
+    ticks, which is the whole insight of the model.
+
+    The vessel is a single two-pole resonance. With 'jingle' up, every
+    collision retunes it inside a band around the vessel frequency --
+    Cook's trick for tambourines and sleigh bells, where each jingle
+    struck is a different one.
+
+    What persists across blocks is the retuned ANGLE, never a coefficient:
+    both coefficients are derived here from the angle and the current
+    radius together, so they always describe the same filter. A stored
+    b1 meeting a b2 from a radius the knob has since moved would not --
+    that mismatch can put a pole outside the circle, and a resonator gone
+    unstable reaches float range in milliseconds.
+
+    Every random quantity is its own draw from the generator: which
+    sample collides, how hard, how long it rings, where the jingle lands,
+    and the noise being gated. Sharing draws would correlate them --
+    every loud tick also long and detuned -- and reusing a table would
+    loop.
+    """
+    pump = 1.0 - energy_decay
+    b1c = 2.0 * radius * math.cos(th)
+    b2c = -radius * radius
+    vgain = (1.0 - radius) * 2.0
+    for i in range(shake.shape[0]):
+        energy = energy * energy_decay + shake[i] * pump
+        rng, draw = _rand01(rng)
+        if draw < rate_per_sample * energy:
+            rng, strength = _rand01(rng)
+            sound += amp * energy * (0.5 + 0.5 * strength)
+            # A pile of unlucky draws is loud; it must never be unbounded.
+            if sound > 100.0:
+                sound = 100.0
+            # Beans are a size distribution, not a size: each collision
+            # draws its own ring time, up to an octave either side of the
+            # hardness setting. Uniform ticks are what makes a model sound
+            # like a machine gun instead of a gourd.
+            if vary > 0.0:
+                rng, size = _rand01(rng)
+                gd = grain_decay ** (2.0 ** ((0.5 - size) * 2.0 * vary))
+            else:
+                gd = grain_decay
+            if jingle > 0.0:
+                rng, where = _rand01(rng)
+                th = theta * (1.0 + jingle * 0.8 * (where - 0.5))
+                b1c = 2.0 * radius * math.cos(th)
+        sound *= gd
+        rng, hiss = _rand01(rng)
+        grain = sound * (2.0 * hiss - 1.0)
+        y = vgain * grain + b1c * y1 + b2c * y2
+        y2 = y1
+        y1 = y
+        out_raw[i] = grain
+        out[i] = y
+    return energy, sound, th, gd, rng, y1, y2
+
+
+if _HAVE_NUMBA:
+    _shaker_kernel = njit(cache=True, fastmath=True)(_shaker_kernel_source)
+else:
+    _shaker_kernel = _shaker_kernel_source
+
+
+class ShakerUnit(Unit):
+    """Shaken percussion: the texture family, played by agitation.
+
+    'shake' is the whole interface, and it means exactly what it says: how
+    hard the vessel is being moved, right now. A wrist flick is a burst of
+    grains that settles as the beans do; a steady tremble is a sustained
+    wash; stillness is silence. An effort stream patched here needs no
+    translation at all -- shaking a sensor is shaking the shaker.
+
+    'density' is collisions per second at full shake (a handful is
+    countable ticks, thousands is rain), loudness-compensated so it
+    changes texture rather than level. 'settle' is how long the beans
+    keep moving after the gesture stops; 'hardness' how sharp each tick
+    is. The vessel is a tunable resonance ('vessel', 'resonance'), and
+    'jingle' retunes it per collision -- tambourines are many little
+    bells, each collision striking a different one.
+
+    'grains out' carries the raw collisions before the vessel: patch it
+    into modal~ (drive up, dry 0) and the beans rattle inside any object
+    the table editor can draw. The coupling really is one-way -- beans
+    excite the vessel, the vessel does not stir the beans -- so this is
+    the rare physical seam an ordinary cord models honestly.
+    """
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.shake_in = self.new_inlet(base=0.0, minimum=0.0, maximum=2.0)
+        self.density_in = self.new_inlet(base=64.0, minimum=1.0,
+                                         maximum=2000.0)
+        self.settle_in = self.new_inlet(base=0.12, minimum=0.02, maximum=1.0)
+        self.hardness_in = self.new_inlet(base=0.7, minimum=0.0, maximum=1.0)
+        self.vessel_in = self.new_inlet(base=3200.0, minimum=100.0,
+                                        maximum=12000.0)
+        self.resonance_in = self.new_inlet(base=0.7, minimum=0.0, maximum=1.0)
+        self.jingle_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.vary_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        # Each instance gets its own generator stream: deterministic from
+        # run to run, different from shaker to shaker, and never looping.
+        ShakerUnit._seeded += 1
+        seed = (ShakerUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+        self._energy = 0.0
+        self._sound = 0.0
+        self._th = 0.0
+        self._gd = 0.99
+        self._y1 = 0.0
+        self._y2 = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self.grains = self.new_outlet()
+        self._shake = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._raw = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._energy = 0.0
+        self._sound = 0.0
+        self._y1 = 0.0
+        self._y2 = 0.0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def render(self, frames):
+        shake = self.shake_in.eval(frames)
+        density = self.density_in.eval(frames)
+        settle = self.settle_in.eval(frames)
+        hardness = self.hardness_in.eval(frames)
+        vessel = self.vessel_in.eval(frames)
+        resonance = self.resonance_in.eval(frames)
+        jingle = self.jingle_in.eval(frames)
+        vary = self.vary_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            self.grains.set_constant(0.0)
+            return
+
+        gesture = self._shake[:frames]
+        if shake.constant:
+            gesture[:] = shake.value
+            idle = abs(shake.value) < 1.0e-4
+        else:
+            np.copyto(gesture, shake.data[:frames])
+            idle = False
+        np.clip(gesture, 0.0, 2.0, out=gesture)
+
+        # Skip only when the hand is still, the output has faded AND the
+        # beans have stopped moving -- between sparse collisions the output
+        # alone can look silent while the system is still agitated, and
+        # cutting there would truncate the settle after a flick.
+        if self._quiet and idle and self._energy < 1.0e-4:
+            out.set_constant(0.0)
+            self.grains.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        beans = scalar(density, 1.0, 2000.0)
+        settle_now = scalar(settle, 0.02, 1.0)
+        hard = scalar(hardness, 0.0, 1.0)
+        vessel_hz = scalar(vessel, 100.0, min(12000.0,
+                                              self.sample_rate * 0.45))
+        res = scalar(resonance, 0.0, 1.0)
+        jingle_now = scalar(jingle, 0.0, 1.0)
+        vary_now = scalar(vary, 0.0, 1.0)
+
+        energy_decay = math.exp(-1.0 / (settle_now * self.sample_rate))
+        # Hard beans are short ticks: 20 ms of felt down to half a
+        # millisecond of glass, exponentially.
+        grain_seconds = 0.02 * (0.025 ** hard)
+        grain_decay = math.exp(-1.0 / (grain_seconds * self.sample_rate))
+        # Density changes the texture, not the level: grain amplitude is
+        # compensated so rain is not simply louder than a maraca.
+        amp = math.sqrt(64.0 / max(8.0, beans))
+        theta = 2.0 * math.pi * vessel_hz / self.sample_rate
+        radius = 0.85 + 0.145 * res
+        # With no jingle the angle simply follows the knob; jingled, it
+        # keeps the last collision's tuning until the next collision moves
+        # it. Either way the kernel derives both coefficients from angle
+        # and radius together, so the filter is always self-consistent.
+        if jingle_now <= 0.0 or self._th == 0.0:
+            self._th = theta
+
+        raw = self._raw[:frames]
+        result = self._y[:frames]
+        (self._energy, self._sound, self._th, self._gd, rng_state,
+         self._y1, self._y2) = _shaker_kernel(
+            gesture, beans / self.sample_rate, energy_decay, grain_decay,
+            vary_now, amp, theta, radius, jingle_now,
+            self._energy, self._sound, self._th, self._gd, self._rng,
+            self._y1, self._y2, raw, result)
+        # numba hands the state back as a Python int, and a bare int at or
+        # above 2**63 fails the signed conversion on the way back in --
+        # half of all states. It must go home as the unsigned it is.
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        np.copyto(self.grains.data[:frames], raw, casting='unsafe')
+        self.grains.constant = False
+        scratch = self._scratch[:frames]
         np.abs(result, out=scratch)
         self._quiet = bool(scratch.max() < 1.0e-5)
 

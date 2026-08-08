@@ -26,7 +26,7 @@ from dpg_system.synth_core import (
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
-    StrokeUnit,
+    StrokeUnit, ShakerUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -91,6 +91,8 @@ def register_synth_nodes():
     Node.app.register_node('fader~', FaderNode.factory)
     Node.app.register_node('stroke~', StrokeNode.factory)
     Node.app.register_node('bowing~', StrokeNode.factory)
+    Node.app.register_node('shaker~', ShakerNode.factory)
+    Node.app.register_node('rain~', ShakerNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
@@ -4485,6 +4487,131 @@ class BowNode(SynthNode):
         self.signal_output = self.add_signal_output('out', self.unit.out)
         self.add_switch()
         self.finish_synth_node()
+
+
+# A kind is a starting point for the statistics: how many things collide,
+# how long they keep moving, how sharp each tick is, and what they rattle
+# inside. Values go to the knobs, so a kind is somewhere to start from,
+# not a mode the node is in.
+SHAKER_KINDS = {
+    'maraca':      {'density': 64.0, 'settle': 0.10, 'hardness': 0.7,
+                    'vessel': 3200.0, 'resonance': 0.7, 'jingle': 0.0,
+                    'vary': 0.35},
+    'cabasa':      {'density': 400.0, 'settle': 0.06, 'hardness': 0.85,
+                    'vessel': 3000.0, 'resonance': 0.35, 'jingle': 0.0,
+                    'vary': 0.25},
+    'tambourine':  {'density': 24.0, 'settle': 0.15, 'hardness': 0.75,
+                    'vessel': 5300.0, 'resonance': 0.93, 'jingle': 0.7,
+                    'vary': 0.5},
+    'sleighbells': {'density': 300.0, 'settle': 0.2, 'hardness': 0.8,
+                    'vessel': 8000.0, 'resonance': 0.9, 'jingle': 0.5,
+                    'vary': 0.45},
+    'rain':        {'density': 1200.0, 'settle': 0.5, 'hardness': 0.9,
+                    'vessel': 4200.0, 'resonance': 0.3, 'jingle': 0.15,
+                    'vary': 0.7},
+    'gravel':      {'density': 90.0, 'settle': 0.08, 'hardness': 0.4,
+                    'vessel': 900.0, 'resonance': 0.5, 'jingle': 0.1,
+                    'vary': 0.6},
+}
+
+
+class ShakerNode(SynthNode):
+    """Shaken percussion: grains by the statistics of a gesture.
+
+    'shake' is how hard the vessel is moving right now -- a flick is a
+    burst that settles, a tremble is a wash, stillness is silence. Patch
+    an effort stream and shaking a sensor is shaking the shaker; there is
+    no trigger because a shaker has none.
+
+    'kind' loads the statistics of a familiar object onto the knobs and
+    lets go -- edit freely from there. 'grains out' is the raw collisions
+    before the vessel resonance: into modal~ (drive up, dry 0) it puts
+    the beans inside any object the table editor can draw.
+
+    shaker~ <kind>, e.g. shaker~ tambourine. rain~ starts as rain.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShakerNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = ShakerUnit(synth_graph.sample_rate)
+
+        kind = 'rain' if label == 'rain~' else 'maraca'
+        if args is not None:
+            for arg in args:
+                if arg in SHAKER_KINDS:
+                    kind = arg
+        self._kind_shown = kind
+
+        self.add_modulation_input('shake', self.unit.shake_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01,
+                                  slider=False)
+        self.add_modulation_input('density', self.unit.density_in,
+                                  minimum=1.0, maximum=2000.0, speed=2.0,
+                                  slider=False)
+        self.add_modulation_input('settle', self.unit.settle_in,
+                                  minimum=0.02, maximum=1.0, speed=0.005,
+                                  slider=False)
+        self.add_modulation_input('hardness', self.unit.hardness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('vessel', self.unit.vessel_in,
+                                  minimum=100.0, maximum=12000.0, speed=10.0,
+                                  slider=False)
+        self.add_modulation_input('resonance', self.unit.resonance_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('jingle', self.unit.jingle_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        vary_port = self.add_modulation_input('vary', self.unit.vary_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if vary_port.widget is not None:
+            vary_port.widget.set_tooltip(
+                'bean size spread: each collision draws its own ring time, '
+                'up to an octave either side of hardness at full')
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.kind_input = self.add_input('kind', widget_type='combo',
+                                         default_value=kind,
+                                         callback=self.kind_changed)
+        self.kind_input.widget.combo_items = list(SHAKER_KINDS)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.grains_output = self.add_signal_output('grains out',
+                                                    self.unit.grains)
+        self.add_switch()
+        self.finish_synth_node()
+
+    KIND_PORTS = ('density', 'settle', 'hardness', 'vessel', 'resonance',
+                  'jingle')
+
+    def custom_create(self, from_file):
+        # A node made by hand starts as its kind; a loaded one keeps the
+        # knobs the patch saved.
+        if not from_file:
+            self.apply_kind(self._kind_shown)
+
+    def kind_changed(self):
+        chosen = any_to_string(self.kind_input())
+        if chosen == self._kind_shown:
+            return
+        self._kind_shown = chosen
+        if chosen not in SHAKER_KINDS or self.in_loading_process:
+            return
+        self.apply_kind(chosen)
+
+    def apply_kind(self, name):
+        recipe = SHAKER_KINDS.get(name)
+        if recipe is None:
+            return
+        for port in self.inputs:
+            name = port.get_label()
+            if name in recipe and port.widget is not None:
+                port.widget.set(recipe[name])
+        self.parameters_changed()
 
 
 class StrokeNode(SynthNode):
