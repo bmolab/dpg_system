@@ -3346,6 +3346,8 @@ def _warm_up_filter():
                          line.copy(), 0, taps, taps, zeros,
                          -0.3, 0.6, 0.6, shape,
                          0.0, 0.0, 0.0, 0.0, 0.0, output)
+        _bow_kernel(breath, breath, line.copy(), line.copy(), 0,
+                    taps, taps, zeros, 0.995, 0.0, 0.0, 0.0, output)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -6235,6 +6237,92 @@ else:
     _wind_kernel = _wind_kernel_source
 
 
+def _bow_kernel_source(velocity, force, neck, bridge, write,
+                       neck_delay, bridge_delay, damp, dc_pole,
+                       low, dc_x, dc_y, out):
+    """Bow against string: friction between two delay lines, sample by sample.
+
+    The bow point cuts the string in two, so there are two lines -- bow to
+    nut and bow to bridge -- each reflecting inverted, the bridge side
+    through the loss filter. Where they meet, the bow: the velocity
+    difference between bow hair and string passes through a friction curve
+    that is flat near zero (sticking -- the string travels with the bow) and
+    collapses as the difference grows (slipping). Stick, slip once per round
+    trip, stick again: that alternation is Helmholtz motion, and the
+    sawtooth at the bridge is what a bowed string is. Nothing here makes a
+    sawtooth on purpose.
+
+    The curve is Smith's: friction = (|dv * slope| + 0.75)^-4, clipped to 1.
+    Slope comes from bow force -- pressing harder widens the sticking region,
+    which is why force gates how fast the bow may move and still hold the
+    fundamental (the Schelleng diagram, found empirically in the unit's
+    velocity mapping).
+    """
+    size = neck.shape[0]
+    limit = size - 3.0
+    for i in range(velocity.shape[0]):
+        nd = neck_delay[i]
+        if nd < 2.0:
+            nd = 2.0
+        elif nd > limit:
+            nd = limit
+        bd = bridge_delay[i]
+        if bd < 2.0:
+            bd = 2.0
+        elif bd > limit:
+            bd = limit
+
+        read = write - bd
+        if read < 0.0:
+            read += size
+        bridge_out = _cubic_read(bridge, size, read)
+        read = write - nd
+        if read < 0.0:
+            read += size
+        neck_out = _cubic_read(neck, size, read)
+
+        low += (bridge_out - low) * (1.0 - damp[i])
+        bridge_refl = -0.95 * low
+        nut_refl = -neck_out
+
+        dv = velocity[i] - (bridge_refl + nut_refl)
+        slope = 5.0 - 4.0 * force[i]
+        t = abs(dv * slope) + 0.75
+        c = 1.0 / (t * t * t * t)
+        if c > 1.0:
+            c = 1.0
+        new_vel = dv * c
+
+        v = bridge_refl + new_vel
+        if v > 2.0:
+            v = 2.0
+        elif v < -2.0:
+            v = -2.0
+        neck[write] = v
+        v = nut_refl + new_vel
+        if v > 2.0:
+            v = 2.0
+        elif v < -2.0:
+            v = -2.0
+        bridge[write] = v
+
+        o = bridge_out - dc_x + dc_pole * dc_y
+        dc_x = bridge_out
+        dc_y = o
+        out[i] = o
+
+        write += 1
+        if write >= size:
+            write = 0
+    return write, low, dc_x, dc_y
+
+
+if _HAVE_NUMBA:
+    _bow_kernel = njit(cache=True, fastmath=True)(_bow_kernel_source)
+else:
+    _bow_kernel = _bow_kernel_source
+
+
 class WindUnit(Unit):
     """Blown instrument: reed or flute, played entirely by pressure.
 
@@ -6402,6 +6490,179 @@ class WindUnit(Unit):
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
         scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+class BowUnit(Unit):
+    """Bowed string, played by velocity and force -- no trigger, no pluck.
+
+    'velocity' is the bow's speed across the string and 'force' how hard it
+    presses. Fundamental tone lives on a diagonal of that plane -- a faster
+    bow needs more weight behind it -- and the unit maps the nominal 0..1
+    ranges onto that diagonal, so the middle of both sliders bows cleanly at
+    any pitch while the edges stay expressive: velocity past 1 with a light
+    bow breaks into the octave whistle, slow and heavy crushes into
+    subharmonic scratch. Patched from effort data, the mapping means moving
+    faster is bowing faster and pressing is leaning in, and the instrument
+    misbehaves in the same directions the real one does.
+
+    The internal bow speed also scales with 1/sqrt(pitch), which is what
+    keeps the same gesture playable on a low string and a high one -- the
+    empirical version of a player lightening the bow as they go up.
+
+    'position' is where the bow lands between bridge (small) and fingerboard:
+    sul ponticello to sul tasto, a timbre control. 'brightness' is string
+    loss, as everywhere.
+
+    What comes out is the bridge wave -- the raw string, deliberately without
+    a violin body. A body is just a resonator, and resonators are patchable:
+    bow~ into modal~ (wood) or formant~ is a violin; into a bell table it is
+    a bowed bell, which no luthier will build you.
+
+    The range runs down to 5 Hz, well below any string that plays a note:
+    down there the stick-slip cycle slows from pitch into event, and the bow
+    becomes a creak, a groan, a door hinge -- texture rather than tone. The
+    output DC blocker tracks the fundamental (a quarter of it, capped where
+    it always was) so the bottom octaves keep their weight instead of being
+    filtered away by their own protection.
+    """
+
+    MIN_FREQUENCY = 5.0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.velocity_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.force_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.position_in = self.new_inlet(base=0.127, minimum=0.05,
+                                          maximum=0.4)
+        self.frequency_in = self.new_inlet(base=220.0,
+                                           minimum=BowUnit.MIN_FREQUENCY)
+        self.pitch_in = self.new_inlet()
+        self.brightness_in = self.new_inlet(base=0.75, minimum=0.0,
+                                            maximum=1.0)
+
+        size = int(self.sample_rate / BowUnit.MIN_FREQUENCY) + 8
+        self.neck = np.zeros(size, dtype=np.float64)
+        self.bridge = np.zeros(size, dtype=np.float64)
+        self._write = 0
+        self._low = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._vel = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._force = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._freq = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._neck_delay = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._bridge_delay = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._damp = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self.neck[:] = 0.0
+        self.bridge[:] = 0.0
+        self._low = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def render(self, frames):
+        velocity = self.velocity_in.eval(frames)
+        force = self.force_in.eval(frames)
+        position = self.position_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        brightness = self.brightness_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        vel = self._vel[:frames]
+        if velocity.constant:
+            vel[:] = velocity.value
+            idle = abs(velocity.value) < 1.0e-4
+        else:
+            np.copyto(vel, velocity.data[:frames])
+            idle = False
+        np.clip(vel, 0.0, 2.0, out=vel)
+
+        # Bow lifted and string rung down: nothing to do.
+        if self._quiet and idle:
+            out.set_constant(0.0)
+            return
+
+        push = self._force[:frames]
+        if force.constant:
+            push[:] = force.value
+        else:
+            np.copyto(push, force.data[:frames], casting='unsafe')
+        np.clip(push, 0.0, 1.0, out=push)
+
+        freq = self._freq[:frames]
+        self._build_hertz(freq, frequency, pitch, frames,
+                          BowUnit.MIN_FREQUENCY)
+
+        # Velocity onto the Schelleng diagonal: what the string will accept
+        # scales with force, and shrinks as the pitch rises. Past 1 the
+        # mapping lets go on purpose -- the overflow bypasses the coupling,
+        # more readily the lighter the bow, which is where the octave
+        # whistle lives. A heavy bow driven past 1 just plays louder.
+        f0 = float(freq[0])
+        reach = min(1.5, (220.0 / f0) ** 0.5)
+        scratch = self._scratch[:frames]
+        over = self._y[:frames]
+        np.subtract(vel, 1.0, out=over)
+        np.clip(over, 0.0, None, out=over)
+        np.clip(vel, 0.0, 1.0, out=vel)
+        np.multiply(push, 0.09, out=scratch)
+        scratch += 0.05
+        vel *= scratch
+        np.multiply(push, -0.125, out=scratch)
+        scratch += 0.25
+        over *= scratch
+        vel += over
+        vel *= reach
+
+        damp = self._damp[:frames]
+        if brightness.constant:
+            damp[:] = 1.0 - brightness.value
+        else:
+            np.subtract(1.0, brightness.data[:frames], out=damp,
+                        casting='unsafe')
+        np.clip(damp, 0.0, 0.95, out=damp)
+
+        beta = position.value if position.constant else float(
+            position.data[0])
+        beta = min(0.4, max(0.05, beta))
+
+        neck_delay = self._neck_delay[:frames]
+        bridge_delay = self._bridge_delay[:frames]
+        np.divide(self.sample_rate, freq, out=neck_delay)
+        np.multiply(neck_delay, beta, out=bridge_delay)
+        neck_delay *= 1.0 - beta
+
+        # The output DC blocker follows the note down: a fixed corner sat
+        # near 35 Hz and would thin every fundamental below it.
+        corner = min(40.0, max(1.0, f0 * 0.25))
+        dc_pole = math.exp(-2.0 * math.pi * corner / self.sample_rate)
+
+        result = self._y[:frames]
+        self._write, self._low, self._dc_x, self._dc_y = _bow_kernel(
+            vel, push, self.neck, self.bridge, self._write,
+            neck_delay, bridge_delay, damp, dc_pole,
+            self._low, self._dc_x, self._dc_y, result)
+
+        result *= 1.5
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
         np.abs(result, out=scratch)
         self._quiet = bool(scratch.max() < 1.0e-5)
 

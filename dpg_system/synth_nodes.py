@@ -25,7 +25,7 @@ from dpg_system.synth_core import (
     MixUnit, MultUnit, PanUnit, AudioOutUnit, AUDIO_OUT_SPACES,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
-    StringUnit, ModalUnit, WindUnit,
+    StringUnit, ModalUnit, WindUnit, BowUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -83,6 +83,8 @@ def register_synth_nodes():
     Node.app.register_node('wind~', WindNode.factory)
     Node.app.register_node('reed~', WindNode.factory)
     Node.app.register_node('flute~', WindNode.factory)
+    Node.app.register_node('bow~', BowNode.factory)
+    Node.app.register_node('bowed~', BowNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
@@ -4139,6 +4141,53 @@ class WindNode(SynthNode):
         model = any_to_string(self.model_input())
         if model in WindUnit.MODES:
             self.unit.mode = WindUnit.MODES.index(model)
+
+
+class BowNode(SynthNode):
+    """Bowed string: velocity and force are the whole bow arm.
+
+    The two sliders are mapped so their middles bow cleanly at any pitch;
+    the misbehavior at the edges -- octave whistle from a fast light bow,
+    subharmonic scratch from a slow heavy one -- is the model's own, in the
+    same directions as the instrument's. The output is the raw bridge wave:
+    patch it into modal~ or formant~ to give it a body.
+
+    bow~ <frequency>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return BowNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = BowUnit(synth_graph.sample_rate)
+
+        frequency = 220.0
+        if args is not None:
+            for arg in args:
+                try:
+                    frequency = float(arg)
+                except (ValueError, TypeError):
+                    continue
+        self.unit.frequency_in.base = frequency
+
+        self.add_modulation_input('velocity', self.unit.velocity_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        self.add_modulation_input('force', self.unit.force_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('position', self.unit.position_in,
+                                  minimum=0.05, maximum=0.4, speed=0.005)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency,
+                                  minimum=BowUnit.MIN_FREQUENCY, speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.add_modulation_input('brightness', self.unit.brightness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
 
 
 class CaptureNode(SynthNode):
