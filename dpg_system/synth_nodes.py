@@ -22,7 +22,7 @@ from dpg_system.synth_core import (
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
-    MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit,
+    MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
@@ -42,6 +42,8 @@ AUDIO_FILE_EXTENSIONS = ('.wav', '.aif', '.aiff', '.mp3', '.flac', '.ogg', '.m4a
 def register_synth_nodes():
     Node.app.register_node('audio_out~', AudioOutNode.factory)
     Node.app.register_node('place~', PlaceNode.factory)
+    Node.app.register_node('clean~', CleanNode.factory)
+    Node.app.register_node('condition~', CleanNode.factory)
     Node.app.register_node('sig~', SigNode.factory)
     Node.app.register_node('ramp~', RampNode.factory)
     Node.app.register_node('line~', RampNode.factory)
@@ -3276,6 +3278,57 @@ class PanNode(SynthNode):
 # ----------------------------------------------------------------------------
 # audio_out~ / snapshot~
 # ----------------------------------------------------------------------------
+
+class CleanNode(SynthNode):
+    """Conditioner: subsonics off the bottom, fizz off the top.
+
+    The channel strip's hygiene stage -- source -> fader~ -> clean~ ->
+    place~ -> audio_out~ -- for when a bowed 5 Hz or a blooming low mode
+    is eating headroom without being music. 24 dB per octave each way,
+    flat and resonance-free between; bypassed, the signal passes
+    untouched. Pull 'low cut' down when the subsonics are the point.
+
+    clean~ <low> <high>, e.g. clean~ 30 12000.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return CleanNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = CleanUnit(synth_graph.sample_rate)
+
+        numbers = []
+        if args is not None:
+            for arg in args:
+                try:
+                    numbers.append(float(arg))
+                except (ValueError, TypeError):
+                    continue
+        if len(numbers) > 0:
+            self.unit.low_in.base = max(5.0, min(300.0, numbers[0]))
+        if len(numbers) > 1:
+            self.unit.high_in.base = max(1000.0, min(20000.0, numbers[1]))
+
+        self.add_signal_input('left in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+        self.make_drag_proportional(
+            self.add_modulation_input('low cut', self.unit.low_in,
+                                      default_value=self.unit.low_in.base,
+                                      minimum=5.0, maximum=300.0,
+                                      slider=False))
+        self.add_modulation_input('high cut', self.unit.high_in,
+                                  default_value=self.unit.high_in.base,
+                                  minimum=1000.0, maximum=20000.0,
+                                  speed=50.0, slider=False)
+
+        self.signal_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out',
+                                                   self.unit.right)
+        self.add_switch()
+        self.finish_synth_node()
+
 
 class PlaceNode(SynthNode):
     """Spatializer: put a source somewhere among the speakers.

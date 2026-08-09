@@ -3386,6 +3386,9 @@ def _warm_up_filter():
         _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, 0.5, 0.9, 0.5,
                        0.0, 0.0, 0.5, 0.99, np.uint64(12345), 0.0, 0.0,
                        output.copy(), output)
+        quads = np.zeros((4, 5))
+        quads[:, 0] = 1.0
+        _clean_kernel(wide, quads, np.zeros((4, 2)), output)
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
@@ -4608,6 +4611,169 @@ class PanUnit(Unit):
                         casting='unsafe')
 
         self.left.constant = False
+        self.right.constant = False
+
+
+def _clean_kernel_source(x, coeffs, states, out):
+    """Four biquads in cascade, sample by sample: the conditioning filter.
+
+    coeffs is [section, (b0, b1, b2, a1, a2)], states [section, 2], both
+    per channel. Transposed direct form II, which keeps the state small
+    and well-behaved when coefficients move between blocks.
+    """
+    sections = coeffs.shape[0]
+    for i in range(x.shape[0]):
+        value = x[i]
+        for s in range(sections):
+            b0 = coeffs[s, 0]
+            b1 = coeffs[s, 1]
+            b2 = coeffs[s, 2]
+            a1 = coeffs[s, 3]
+            a2 = coeffs[s, 4]
+            y = b0 * value + states[s, 0]
+            states[s, 0] = b1 * value - a1 * y + states[s, 1]
+            states[s, 1] = b2 * value - a2 * y
+            value = y
+        out[i] = value
+    return 0
+
+
+if _HAVE_NUMBA:
+    _clean_kernel = njit(cache=True, fastmath=True)(_clean_kernel_source)
+else:
+    _clean_kernel = _clean_kernel_source
+
+
+class CleanUnit(Unit):
+    """Conditioner: takes off what no patch means to keep.
+
+    The physical models are honest about infrasound -- a bow at 5 Hz, a
+    drive leaning on a low mode -- and honesty eats headroom. This is the
+    hygiene stage of a channel strip: a fourth-order Butterworth highpass
+    under the music and the same lowpass over it, 24 dB per octave each,
+    flat and resonance-free in between. Not an instrument and not an EQ;
+    it removes what was never meant, and passes everything that was.
+
+    'low cut' defaults just under the lowest audible fundamental; pull it
+    down when the subsonics ARE the material. 'high cut' catches the
+    aliasing-adjacent fizz of hard folding and crushing. Both are inlets,
+    so a patch can duck its own mud.
+
+    Stereo the way vcf~ is: one set of coefficients, two channels of
+    state, the right outlet carrying the left signal until something is
+    patched to the right inlet. Bypassed, the signal passes untouched.
+    """
+
+    SECTIONS = 4
+    # Butterworth Q pairs for a 4th-order response, one pair per slope.
+    Q_PAIR = (0.5411961, 1.3065630)
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.low_in = self.new_inlet(base=25.0, minimum=5.0, maximum=300.0)
+        self.high_in = self.new_inlet(base=16000.0, minimum=1000.0,
+                                      maximum=20000.0)
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+        self._coeffs = np.zeros((CleanUnit.SECTIONS, 5))
+        self._states = np.zeros((CleanUnit.SECTIONS, 2))
+        self._states_right = np.zeros((CleanUnit.SECTIONS, 2))
+        self._x = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._last_low = 0.0
+        self._last_high = 0.0
+
+    def reset(self):
+        self._states[:, :] = 0.0
+        self._states_right[:, :] = 0.0
+
+    def deactivate(self):
+        self.reset()
+
+    def bypass_pairs(self):
+        if self.right_in.sources:
+            return ((self.signal_in, self.out), (self.right_in, self.right))
+        return ((self.signal_in, self.out), (self.signal_in, self.right))
+
+    def _biquad(self, section, kind, frequency, q):
+        """RBJ cookbook coefficients, normalized by a0."""
+        frequency = min(frequency, self.sample_rate * 0.45)
+        w0 = 2.0 * math.pi * frequency / self.sample_rate
+        cw = math.cos(w0)
+        alpha = math.sin(w0) / (2.0 * q)
+        if kind == 'high':
+            b0 = (1.0 + cw) * 0.5
+            b1 = -(1.0 + cw)
+            b2 = (1.0 + cw) * 0.5
+        else:
+            b0 = (1.0 - cw) * 0.5
+            b1 = 1.0 - cw
+            b2 = (1.0 - cw) * 0.5
+        a0 = 1.0 + alpha
+        self._coeffs[section, 0] = b0 / a0
+        self._coeffs[section, 1] = b1 / a0
+        self._coeffs[section, 2] = b2 / a0
+        self._coeffs[section, 3] = (-2.0 * cw) / a0
+        self._coeffs[section, 4] = (1.0 - alpha) / a0
+
+    def _update_coefficients(self, low, high):
+        if low == self._last_low and high == self._last_high:
+            return
+        self._last_low = low
+        self._last_high = high
+        self._biquad(0, 'high', low, CleanUnit.Q_PAIR[0])
+        self._biquad(1, 'high', low, CleanUnit.Q_PAIR[1])
+        self._biquad(2, 'low', high, CleanUnit.Q_PAIR[0])
+        self._biquad(3, 'low', high, CleanUnit.Q_PAIR[1])
+
+    def _mirror(self, frames):
+        if self.out.constant:
+            self.right.set_constant(self.out.value)
+            return
+        np.copyto(self.right.data[:frames], self.out.data[:frames])
+        self.right.constant = False
+
+    def render(self, frames):
+        signal = self.signal_in.eval(frames)
+        low = self.low_in.eval(frames)
+        high = self.high_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            # Kernel still compiling: pass audio rather than stall or click.
+            source = signal.array(frames)
+            np.copyto(out.data[:frames], source)
+            out.constant = False
+            self._mirror(frames)
+            return
+
+        stereo = bool(self.right_in.sources)
+        if signal.constant and signal.value == 0.0 and not stereo:
+            out.set_constant(0.0)
+            self.right.set_constant(0.0)
+            return
+
+        low_now = low.value if low.constant else float(low.data[0])
+        high_now = high.value if high.constant else float(high.data[0])
+        self._update_coefficients(min(300.0, max(5.0, low_now)),
+                                  min(20000.0, max(1000.0, high_now)))
+
+        source = self._x[:frames]
+        np.copyto(source, signal.array(frames), casting='unsafe')
+        result = self._y[:frames]
+        _clean_kernel(source, self._coeffs, self._states, result)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+
+        if not stereo:
+            self._mirror(frames)
+            return
+        np.copyto(source, self.right_in.eval(frames).array(frames),
+                  casting='unsafe')
+        _clean_kernel(source, self._coeffs, self._states_right, result)
+        np.copyto(self.right.data[:frames], result, casting='unsafe')
         self.right.constant = False
 
 
