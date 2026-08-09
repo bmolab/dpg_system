@@ -4614,6 +4614,67 @@ class PanUnit(Unit):
         self.right.constant = False
 
 
+class VuUnit(Unit):
+    """Level meter: a tap on the signal, with eyes and no hands.
+
+    A meter is a gauge, so it is not even in the signal path: branch a
+    cord into it from anywhere and the chain it watches is untouched by
+    construction -- there are no audio outlets to route through. Per
+    block it takes the RMS and the absolute peak of each channel and
+    smooths them the way a meter needle moves: rising fast enough to
+    catch a transient (~25 ms), falling slowly enough to read (~300 ms),
+    the peak held for most of a second before it lets go.
+
+    Unpatched, the right channel reads as the left, so a mono tap fills
+    both bars rather than leaving one dark.
+    """
+
+    ATTACK_SECONDS = 0.025
+    RELEASE_SECONDS = 0.3
+    PEAK_HOLD_SECONDS = 0.8
+    # Linear fraction kept after one second of falling: -12 dB/s, the
+    # customary PPM fallback -- readable, without lying for long.
+    PEAK_FALL_PER_SECOND = 0.25
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self.levels = [0.0, 0.0]        # smoothed rms per channel
+        self.peaks = [0.0, 0.0]         # held peaks per channel
+        self._hold = [0.0, 0.0]
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def _watch(self, buffer, channel, seconds):
+        scratch = self._scratch[:buffer.shape[0]]
+        np.multiply(buffer, buffer, out=scratch, casting='unsafe')
+        rms = math.sqrt(float(np.mean(scratch)))
+        peak = math.sqrt(float(scratch.max()))
+        smoothed = self.levels[channel]
+        if rms > smoothed:
+            k = 1.0 - math.exp(-seconds / VuUnit.ATTACK_SECONDS)
+        else:
+            k = 1.0 - math.exp(-seconds / VuUnit.RELEASE_SECONDS)
+        self.levels[channel] = smoothed + (rms - smoothed) * k
+        if peak >= self.peaks[channel]:
+            self.peaks[channel] = peak
+            self._hold[channel] = 0.0
+        else:
+            self._hold[channel] += seconds
+            if self._hold[channel] > VuUnit.PEAK_HOLD_SECONDS:
+                self.peaks[channel] *= VuUnit.PEAK_FALL_PER_SECOND ** seconds
+
+    def render(self, frames):
+        seconds = frames / self.sample_rate
+        signal = self.signal_in.eval(frames)
+        self._watch(signal.array(frames), 0, seconds)
+        if self.right_in.sources:
+            self._watch(self.right_in.eval(frames).array(frames), 1, seconds)
+        else:
+            self.levels[1] = self.levels[0]
+            self.peaks[1] = self.peaks[0]
+
+
 def _clean_kernel_source(x, coeffs, states, out):
     """Four biquads in cascade, sample by sample: the conditioning filter.
 

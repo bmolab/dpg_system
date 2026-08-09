@@ -13,6 +13,7 @@ there is no penalty for exposing all of them.
 """
 
 import dearpygui.dearpygui as dpg
+import math
 import time
 
 from dpg_system.node import Node
@@ -22,7 +23,7 @@ from dpg_system.synth_core import (
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
-    MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit,
+    MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit, VuUnit,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
@@ -44,6 +45,8 @@ def register_synth_nodes():
     Node.app.register_node('place~', PlaceNode.factory)
     Node.app.register_node('clean~', CleanNode.factory)
     Node.app.register_node('condition~', CleanNode.factory)
+    Node.app.register_node('vu~', VuNode.factory)
+    Node.app.register_node('meter~', VuNode.factory)
     Node.app.register_node('sig~', SigNode.factory)
     Node.app.register_node('ramp~', RampNode.factory)
     Node.app.register_node('line~', RampNode.factory)
@@ -3278,6 +3281,122 @@ class PanNode(SynthNode):
 # ----------------------------------------------------------------------------
 # audio_out~ / snapshot~
 # ----------------------------------------------------------------------------
+
+class VuNode(SynthNode):
+    """Level meter: branch a cord into it, and watch.
+
+    A tap, not a link -- there are no audio outlets, so the chain it
+    reads is untouched by construction. Two bars with meter ballistics
+    (quick up, slow down) over a dimmed color scale, and a peak readout
+    in dB, held long enough to see. Bypassing a gauge means nothing, so
+    there is no switch either. The 'peak' outlet reports the held peak
+    each frame for patch logic -- ducking, auto-gain, a warning light.
+    """
+
+    METER_FLOOR_DB = -60.0
+    METER_CEIL_DB = 6.0
+    METER_WIDTH = 150
+    METER_HEIGHT = 13
+    # (from dB, to dB, color): the customary reading -- comfortable,
+    # hot, and about to be sorry.
+    ZONES = ((-60.0, -12.0, (70, 190, 105, 255)),
+             (-12.0, -3.0, (235, 180, 70, 255)),
+             (-3.0, 6.0, (235, 85, 70, 255)))
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return VuNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = VuUnit(synth_graph.sample_rate)
+
+        self.add_signal_input('left in', self.unit.signal_in)
+        self.add_signal_input('right in', self.unit.right_in)
+
+        self.meter_display = self.add_display('')
+        self.meter_display.submit_callback = self.submit_display
+        self._bar_tags = []
+        self.db_property = self.add_property('dB', widget_type='label',
+                                             default_value='-inf dB')
+
+        self.peak_output = self.add_output('peak')
+        self.finish_synth_node()
+        self._shown = (-999.0, -999.0, -999.0, -999.0)
+
+    def submit_display(self):
+        width = VuNode.METER_WIDTH
+        height = VuNode.METER_HEIGHT
+        self._bar_tags = []
+        for _channel in range(2):
+            drawlist = dpg.add_drawlist(width=width, height=height)
+            fills = []
+            for low, high, color in VuNode.ZONES:
+                x0 = self._bar_fraction(low) * width
+                x1 = self._bar_fraction(high) * width
+                # The scale itself, dimmed: the zones are visible before
+                # anything reaches them, which is what makes them a scale.
+                dpg.draw_rectangle(pmin=(x0, 0), pmax=(x1, height),
+                                   fill=(color[0], color[1], color[2], 48),
+                                   color=(0, 0, 0, 0), parent=drawlist)
+            for low, high, color in VuNode.ZONES:
+                x0 = self._bar_fraction(low) * width
+                fills.append(dpg.draw_rectangle(
+                    pmin=(x0, 1), pmax=(x0, height - 1), fill=color,
+                    color=(0, 0, 0, 0), parent=drawlist))
+            peak = dpg.draw_line((0, 0), (0, height),
+                                 color=(230, 230, 230, 0), thickness=2,
+                                 parent=drawlist)
+            self._bar_tags.append({'fills': fills, 'peak': peak})
+
+    @staticmethod
+    def _to_db(value):
+        if value <= 1.0e-6:
+            return None
+        return 20.0 * math.log10(value)
+
+    def _bar_fraction(self, db):
+        if db is None:
+            return 0.0
+        span = VuNode.METER_CEIL_DB - VuNode.METER_FLOOR_DB
+        return min(1.0, max(0.0, (db - VuNode.METER_FLOOR_DB) / span))
+
+    def synth_frame_task(self):
+        state = tuple(self.unit.levels) + tuple(self.unit.peaks)
+        if all(abs(now - was) < 0.001 for now, was in zip(state, self._shown)):
+            return
+        self._shown = state
+        width = VuNode.METER_WIDTH
+        height = VuNode.METER_HEIGHT
+        for channel, meter in enumerate(self._bar_tags):
+            level_frac = self._bar_fraction(
+                self._to_db(self.unit.levels[channel]))
+            for zone, (low, high, _color) in enumerate(VuNode.ZONES):
+                tag = meter['fills'][zone]
+                if not dpg.does_item_exist(tag):
+                    continue
+                x0 = self._bar_fraction(low) * width
+                x1 = max(x0, min(level_frac,
+                                 self._bar_fraction(high)) * width)
+                dpg.configure_item(tag, pmin=(x0, 1), pmax=(x1, height - 1))
+            peak_db = self._to_db(self.unit.peaks[channel])
+            tag = meter['peak']
+            if dpg.does_item_exist(tag):
+                if peak_db is None:
+                    dpg.configure_item(tag, color=(230, 230, 230, 0))
+                else:
+                    x = self._bar_fraction(peak_db) * width
+                    hot = peak_db >= 0.0
+                    dpg.configure_item(
+                        tag, p1=(x, 0), p2=(x, height),
+                        color=(235, 85, 70, 255) if hot
+                        else (230, 230, 230, 180))
+        peak_db = self._to_db(max(self.unit.peaks))
+        if self.db_property.widget is not None:
+            self.db_property.widget.set(
+                '-inf dB' if peak_db is None else '%+.1f dB' % peak_db)
+        self.peak_output.send(float(max(self.unit.peaks)))
+
 
 class CleanNode(SynthNode):
     """Conditioner: subsonics off the bottom, fizz off the top.
