@@ -3399,7 +3399,8 @@ def _warm_up_filter():
                        bank.copy(), bank.copy(), bank.copy(), bank.copy(),
                        state.copy(), state.copy(), ap, ap.copy(),
                        0.0, 0.0, 0.01, 0.0, 0.99, 0.0, 0.1, 1.0, 0.0, 0.0,
-                       0.0, 1.0e-6, np.uint64(777), 0.2, output.copy(),
+                       0.0, 800.0, 0.3, 0.0, 0.0, 0.0, 0.99, 100.0,
+                       1.0e-6, np.uint64(777), 0.2, output.copy(),
                        output)
         quads = np.zeros((4, 5))
         quads[:, 0] = 1.0
@@ -8009,7 +8010,9 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
                           theta, radius, b1, b2, gains, ggains, s1, s2,
                           ap_x, ap_y, s_prev, stress, threshold, pulse, gd,
                           sq_phase, sq_rate, tune, vel_env, g_lp,
-                          max_strain, recover, rng, dry, out_raw, out):
+                          pew_scale, pew_w, c_phase, c_time, c_amp, c_dec,
+                          c_t0, max_strain, recover, rng, dry,
+                          out_raw, out):
     """The strain engine: solids under stress, sample by sample.
 
     'strain' is not a control but the physical variable the model runs
@@ -8080,6 +8083,18 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
                 tune = 2.0 ** ((u4 - 0.5) * 2.0 * vary_oct)
                 for m in range(modes):
                     b1[m] = 2.0 * radius[m] * math.cos(theta[m] * tune)
+            # Launch this event's pew: flexural dispersion arrives high
+            # first and sweeps down as 1/t^2, longer the farther away the
+            # fracture -- which is what 'chirp' scales, jittered so every
+            # crack comes from somewhere else.
+            if pew_scale > 0.0:
+                rng, u5 = _rand01(rng)
+                tau = pew_scale * (0.6 + 0.8 * u5)
+                c_dec = math.exp(-1.0 / tau)
+                c_t0 = tau * 0.12
+                c_time = 0.0
+                c_amp = amp_scale * size * novel * overshoot * 0.9
+                c_phase = 0.0
             stress = 0.0
             rng, u2 = _rand01(rng)
             threshold = thresh * (0.35 + spread * 1.3 * u2 * u2)
@@ -8121,6 +8136,13 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
             ap_x[k] = ev
             ap_y[k] = v
             ev = v
+        if c_amp > 1.0e-5:
+            u = c_t0 / (c_t0 + c_time)
+            c_phase += pew_w * u * u
+            attack = c_time / (0.02 * c_t0 + c_time + 1.0)
+            ev += c_amp * attack * math.sin(c_phase)
+            c_amp *= c_dec
+            c_time += 1.0
         grind_sig = grind_gain * vel_env * g_lp * tex_comp
         raw = ev + grind_sig
 
@@ -8141,7 +8163,8 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
         out_raw[i] = raw
         out[i] = total + dry * raw
     return (s_prev, stress, threshold, pulse, gd, sq_phase, sq_rate,
-            tune, vel_env, g_lp, max_strain, rng)
+            tune, vel_env, g_lp, c_phase, c_time, c_amp, c_dec, c_t0,
+            max_strain, rng)
 
 
 if _HAVE_NUMBA:
@@ -8223,6 +8246,11 @@ class StrainUnit(Unit):
         self._tune = 1.0
         self._vel_env = 0.0
         self._g_lp = 0.0
+        self._c_phase = 0.0
+        self._c_time = 0.0
+        self._c_amp = 0.0
+        self._c_dec = 0.99
+        self._c_t0 = 1.0
         self._max_strain = 0.0
         StrainUnit._seeded = getattr(StrainUnit, '_seeded', 0) + 1
         seed = (StrainUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
@@ -8405,12 +8433,20 @@ class StrainUnit(Unit):
         current = float(np.sum(ggains * ggains * lp_psd * energy))
         if current > 1.0e-18:
             ggains *= math.sqrt(target / current)
+        # The pew: chirp scales how long each event's dispersive sweep
+        # lasts (a farther fracture), starting well above the body and
+        # sweeping down through it.
+        pew_scale = chirp_now * 0.35 * self.sample_rate
+        pew_w = (2.0 * math.pi
+                 * min(0.35 * self.sample_rate, f0 * 12.0)
+                 / self.sample_rate)
         recover = 1.0 / (20.0 * self.sample_rate)
 
         result = self._y[:frames]
         (self._s_prev, self._stress, self._threshold, self._pulse,
          self._gd, self._sq_phase, self._sq_rate, self._tune,
-         self._vel_env, self._g_lp, self._max_strain,
+         self._vel_env, self._g_lp, self._c_phase, self._c_time,
+         self._c_amp, self._c_dec, self._c_t0, self._max_strain,
          rng_state) = _strain_kernel(
             bend, thresh_eff, self.spread, self.alpha, self.size_cap,
             self.habituate, grain_samples, amp_eff, chirp_a,
@@ -8421,7 +8457,9 @@ class StrainUnit(Unit):
             self._ap_x, self._ap_y,
             self._s_prev, self._stress, self._threshold, self._pulse,
             self._gd, self._sq_phase, self._sq_rate, self._tune,
-            self._vel_env, self._g_lp, self._max_strain, recover,
+            self._vel_env, self._g_lp, pew_scale, pew_w,
+            self._c_phase, self._c_time, self._c_amp, self._c_dec,
+            self._c_t0, self._max_strain, recover,
             self._rng, dry_now, self._raw[:frames], result)
         self._rng = np.uint64(rng_state)
 

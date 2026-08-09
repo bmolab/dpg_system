@@ -4736,6 +4736,11 @@ class StrainNode(ModeTableNode):
             'chirp', self.unit.chirp_in,
             default_value=STRAIN_REGIMES[regime]['chirp'],
             minimum=0.0, maximum=1.0, speed=0.01)
+        if self.chirp_input.widget is not None:
+            self.chirp_input.widget.set_tooltip(
+                'dispersion: each event arrives high-first and sweeps '
+                'down, longer with more chirp -- the fracture is farther '
+                'away. Lake ice at 0.6 and up')
         self.add_modulation_input('frequency', self.unit.frequency_in,
                                   default_value=frequency, minimum=20.0,
                                   speed=1.0)
