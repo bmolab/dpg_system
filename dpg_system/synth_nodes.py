@@ -22,7 +22,7 @@ from dpg_system.synth_core import (
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
-    MixUnit, MultUnit, PanUnit, AudioOutUnit, AUDIO_OUT_SPACES,
+    MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
@@ -41,6 +41,7 @@ AUDIO_FILE_EXTENSIONS = ('.wav', '.aif', '.aiff', '.mp3', '.flac', '.ogg', '.m4a
 
 def register_synth_nodes():
     Node.app.register_node('audio_out~', AudioOutNode.factory)
+    Node.app.register_node('place~', PlaceNode.factory)
     Node.app.register_node('sig~', SigNode.factory)
     Node.app.register_node('ramp~', RampNode.factory)
     Node.app.register_node('line~', RampNode.factory)
@@ -3276,117 +3277,58 @@ class PanNode(SynthNode):
 # audio_out~ / snapshot~
 # ----------------------------------------------------------------------------
 
-class AudioOutNode(SynthNode):
-    """Graph terminus. Mixes into the shared SamplerEngine output stream.
+class PlaceNode(SynthNode):
+    """Spatializer: put a source somewhere among the speakers.
 
-    Nothing is heard without one of these. Every registered unit still renders
-    whether or not it reaches an output -- a snapshot~ with no audio_out~ is a
-    legitimate patch -- but only audio_out~ contributes to the stream.
+    One outlet per speaker, patched onward to audio_out~'s inputs; several
+    place~ into one output sum at its inlets, which is how each source gets
+    its own position in the room. Stereo is a fact, not a switch: patch
+    'right in' and the pair is held apart by 'width'; a mono source is a
+    single point and width goes quiet.
 
-    'channels' lists which of the device's outputs this node lands on,
-    counted from 1 the way the interface's front panel counts them. Two
-    channels is the stereo output it always was. More, and 'space' chooses
-    how the same list is read:
+    'ring': speakers around a circle in outlet order, 'pan' the angle -- 0
+    front centre, +-0.5 the sides, +-1 the rear. 'corners': outlets are the
+    corners of the room (bottom front-left, front-right, rear-left,
+    rear-right, then the top four), position is three equal-power faders,
+    and pan wears 'left/right' since that is what it means there. Corners
+    wants 4 or 8 speakers; other counts fall back to the ring. All four
+    position controls are inlets, so an lfo~ orbits a sound and effort
+    data pushes it around the room.
 
-    'ring' -- speakers around a circle, in the order listed, panned pairwise
-    between neighbours. 'pan' is the angle: 0 front centre, +-0.5 the sides,
-    +-1 the rear. Sweep it and the sound goes around the room.
-
-    'corners' -- speakers at the corners of the space, listed bottom
-    front-left, front-right, rear-left, rear-right, then the top four in
-    the same order. Position is three equal-power faders -- left/right,
-    front/rear, top/bottom -- each running from its first-named side at -1
-    to its second at +1. Four channels are one layer and ignore top/bottom.
-    Corners wants 2, 4 or 8 channels; any other count is treated as a ring.
-
-    Each space shows only its own controls: stereo is just pan, ring adds
-    width, corners shows the three axis faders (pan relabelled left/right)
-    and width. An inlet with a cord patched in stays visible even when the
-    current space ignores it. 'width' holds a stereo pair apart -- at 0 the
-    two inputs merge to a single point in space, wider pulls them apart,
-    around the ring or along the left/right axis. All four position
-    controls are modulation inlets, so an lfo~ can orbit a sound, or effort
-    data can push it around the room. A channel the current device does not
-    have is silent rather than an error, so an eight-speaker patch still
-    runs on a stereo laptop and sounds again when the rig is back.
-
-    'device' picks the output device, and is engine-wide: there is one
-    stream, shared with the sampler, so changing it here changes it for
-    everything. Choosing a device opens it at its full width, all channels
-    addressable at once. The device list is what existed at launch.
-
-    Arguments: audio_out~ <level>, or a channel list with an optional space:
-    'audio_out~ 3 4', 'audio_out~ 1 2 3 4 ring',
-    'audio_out~ 1 2 3 4 5 6 7 8 corners'. Two or more whole numbers read as
-    channels; a single number reads as level.
+    place~ <speakers> <space>, e.g. place~ 8 corners. Speaker count is
+    fixed when the node is made.
     """
 
     @staticmethod
     def factory(name, data, args=None):
-        return AudioOutNode(name, data, args)
+        return PlaceNode(name, data, args)
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.unit = AudioOutUnit(synth_graph.sample_rate)
 
-        level = 0.5
-        channel_list = [1, 2]
-        space = None
-        if args is not None and len(args) > 0:
-            values = [decode_arg(args, index) for index in range(len(args))]
-            whole = [int(value) for value, kind in values if kind == int]
-            words = [str(value) for value, kind in values
-                     if isinstance(value, str) and value in AUDIO_OUT_SPACES]
-            if words:
-                space = words[0]
-            if len(whole) >= 2:
-                channel_list = whole
-            elif not words and values[0][1] in [float, int]:
-                level = float(values[0][0])
-        if space is None:
-            space = 'stereo' if len(channel_list) <= 2 else 'ring'
-        self.unit.level_in.base = level
-        self.unit.channels = [max(0, channel - 1) for channel in channel_list]
+        count = 4
+        space = 'ring'
+        if args is not None:
+            for arg in args:
+                if arg in SpaceUnit.SPACES:
+                    space = arg
+                else:
+                    try:
+                        count = int(float(arg))
+                    except (ValueError, TypeError):
+                        continue
+        self.unit = SpaceUnit(synth_graph.sample_rate, count)
         self.unit.space = space
-        # A stereo pair one speaker apart in a ring, or fully separated
-        # across the left/right axis of a room, is where stereo material
-        # starts making sense; the knob is the user's after that.
-        if space == 'ring':
-            self.unit.width_in.base = 2.0 / max(2, len(channel_list))
-        elif space == 'corners':
-            self.unit.width_in.base = 2.0
-        self._device_pending = False
 
         self.add_signal_input('left in', self.unit.signal_in)
         self.add_signal_input('right in', self.unit.right_in)
-        self.add_modulation_input('level', self.unit.level_in,
-                                  default_value=level, minimum=0.0, speed=0.01,
-                                  attenuverter=False)
         self.pan_input = self.add_modulation_input(
             'pan', self.unit.position_in,
             minimum=-1.0, maximum=1.0, speed=0.01, attenuverter=False)
         if self.pan_input.widget is not None:
             self.pan_input.widget.set_tooltip(
-                'ring: 0 front centre, +-0.5 sides, +-1 rear · '
-                'corners: -1 left, +1 right')
-
-        # Mute is created here, at the index it has always had: creation
-        # order is link order, and a cord saved into a port keeps its
-        # position in the node, so new inputs only ever append. Where a row
-        # is *drawn* is a separate question -- _arrange_rows moves this one
-        # up under 'level' so the four position controls read as one block.
-        self.mute_input = self.add_input('mute', widget_type='checkbox',
-                                         default_value=False,
-                                         callback=self.parameters_changed)
-
-        self.depth_input = self.add_modulation_input(
-            'front/rear', self.unit.depth_in,
-            minimum=-1.0, maximum=1.0, speed=0.01, attenuverter=False)
-        self.height_input = self.add_modulation_input(
-            'top/bottom', self.unit.height_in,
-            minimum=-1.0, maximum=1.0, speed=0.01, attenuverter=False)
-        # Width reads as a modifier of the position above it, so it sits
-        # under the axis faders rather than among them.
+                'pair: -1 left, +1 right · ring: 0 front centre, +-0.5 '
+                'sides, +-1 rear · corners: -1 left, +1 right')
         self.width_input = self.add_modulation_input(
             'width', self.unit.width_in,
             default_value=self.unit.width_in.base,
@@ -3395,20 +3337,118 @@ class AudioOutNode(SynthNode):
             self.width_input.widget.set_tooltip(
                 'stereo separation: 0 merges the pair to one point in '
                 'space, wider pulls left and right apart')
-        self.stereo_option = self.add_option('stereo', widget_type='checkbox',
-                                             default_value=False,
-                                             callback=self.parameters_changed)
+        self.depth_input = self.add_modulation_input(
+            'front/rear', self.unit.depth_in,
+            minimum=-1.0, maximum=1.0, speed=0.01, attenuverter=False)
+        self.height_input = self.add_modulation_input(
+            'top/bottom', self.unit.height_in,
+            minimum=-1.0, maximum=1.0, speed=0.01, attenuverter=False)
+
+        self.space_option = self.add_option('space', widget_type='combo',
+                                            default_value=space,
+                                            callback=self.parameters_changed)
+        if self.space_option.widget is not None:
+            self.space_option.widget.combo_items = list(SpaceUnit.SPACES)
+
+        for speaker in range(self.unit.count):
+            self.add_signal_output('out %d' % (speaker + 1),
+                                   self.unit.outs[speaker])
+        self.add_switch()
+        self.finish_synth_node()
+        self._space_applied = False
+
+    def sync_options(self):
+        chosen = any_to_string(self.space_option()).strip()
+        if chosen in SpaceUnit.SPACES:
+            self.unit.space = chosen
+        self._space_applied = False
+
+    def _relabel(self, port, text):
+        widget = port.widget
+        if widget is None or widget.prefix_label == text:
+            return
+        widget.prefix_label = text
+        prefix = getattr(widget, 'prefix_uuid', None)
+        if prefix is not None and dpg.does_item_exist(prefix):
+            dpg.set_value(prefix, text)
+        self._labels_aligned = False
+        self._align_attempts = 0
+
+    @staticmethod
+    def _show_port(port, visible):
+        """Hide a control the current space ignores -- unless something is
+        patched into it. A hidden cord would misreport the patch."""
+        if port._parents:
+            visible = True
+        if dpg.does_item_exist(port.uuid):
+            if visible:
+                dpg.show_item(port.uuid)
+            else:
+                dpg.hide_item(port.uuid)
+
+    def synth_frame_task(self):
+        if not self._space_applied:
+            if dpg.does_item_exist(self.height_input.uuid):
+                corners = self.unit.active_space() == 'corners'
+                self._relabel(self.pan_input,
+                              'left/right' if corners else 'pan')
+                self._show_port(self.depth_input, corners)
+                self._show_port(self.height_input, corners)
+                self._space_applied = True
+
+
+class AudioOutNode(SynthNode):
+    """Graph terminus: which inputs land on which device channels.
+
+    Nothing is heard without one of these, and this is all it is now: a
+    socket. One input per listed channel, a mute, the device. Level is
+    fader~'s job and position is place~'s; patch them in front, several
+    place~ summing into these inputs as everywhere else.
+
+    'channels' lists the device outputs, counted from 1 the way the
+    interface's front panel counts them; input k lands on the k-th listed
+    channel. A channel the device does not have is silent rather than an
+    error, so a wide patch still runs on a laptop.
+
+    'device' is engine-wide: one stream, shared with the sampler, so
+    changing it here changes it for everything.
+
+    audio_out~ <channels...>, e.g. audio_out~ 3 4, audio_out~ 1 2 3 4 5 6.
+    The input count is fixed when the node is made.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return AudioOutNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        channel_list = [1, 2]
+        if args is not None and len(args) > 0:
+            values = [decode_arg(args, index) for index in range(len(args))]
+            whole = [int(value) for value, kind in values if kind == int]
+            if len(whole) >= 2:
+                channel_list = whole[:AudioOutUnit.MAX_CHANNELS]
+            elif len(values) == 1 and values[0][1] in (float, int):
+                print('audio_out~: a bare number used to be level; '
+                      'level lives on fader~ now')
+        self.unit = AudioOutUnit(synth_graph.sample_rate, len(channel_list))
+        self.unit.channels = [max(0, channel - 1) for channel in channel_list]
+        self._device_pending = False
+
+        names = ['left in', 'right in'] if self.unit.count >= 2 else ['in']
+        names += ['in %d' % (index + 1) for index in range(2, self.unit.count)]
+        for name, inlet in zip(names, self.unit.ins):
+            self.add_signal_input(name, inlet)
+        self.mute_input = self.add_input('mute', widget_type='checkbox',
+                                         default_value=False,
+                                         callback=self.parameters_changed)
 
         self.channels_option = self.add_option(
             'channels', widget_type='text_input', width=140,
             default_value=' '.join(str(channel) for channel in channel_list),
             callback=self.parameters_changed)
-        self.space_option = self.add_option('space', widget_type='combo',
-                                            default_value=space,
-                                            callback=self.parameters_changed)
-        if self.space_option.widget is not None:
-            self.space_option.widget.combo_items = list(AUDIO_OUT_SPACES)
-
         self._devices = self.list_output_devices()
         self.device_option = self.add_option('device', widget_type='combo',
                                              default_value='',
@@ -3420,17 +3460,18 @@ class AudioOutNode(SynthNode):
                 'engine-wide: one stream is shared with the sampler, so this '
                 'changes the device for everything')
 
+        # Two lines rather than one long one: the device is one fact, where
+        # this node's channels land is another.
         self.device_property = self.add_property('out', widget_type='label',
                                                  default_value='')
+        self.channels_property = self.add_property('ch', widget_type='label',
+                                                   default_value='')
 
         self.level_output = self.add_output('peak')
         self.status_output = self.add_output('status')
         self._last_status = ''
         self._last_device_text = ''
-        # Nothing can be hidden yet: the node's dpg items are drawn after
-        # __init__, so the first application happens in the frame task, the
-        # same way label alignment waits for something to measure.
-        self._spatial_applied = False
+        self._last_channel_text = ''
         self.finish_synth_node()
 
     @staticmethod
@@ -3474,91 +3515,26 @@ class AudioOutNode(SynthNode):
 
     def sync_options(self):
         self.unit.muted = any_to_bool(self.mute_input())
-        self.unit.stereo = any_to_bool(self.stereo_option())
-        chosen = any_to_string(self.space_option()).strip()
-        if chosen in AUDIO_OUT_SPACES:
-            self.unit.space = chosen
         parsed = []
-        for word in any_to_string(self.channels_option()).replace(',', ' ').split():
+        for word in any_to_string(
+                self.channels_option()).replace(',', ' ').split():
             try:
                 parsed.append(max(1, min(32, int(word))))
             except (ValueError, TypeError):
                 continue
         if parsed:
-            self.unit.channels = [channel - 1
-                                  for channel in parsed[:AudioOutUnit.MAX_SPEAKERS]]
-        if (self.unit.space == 'corners'
-                and len(self.unit.channels) not in (2, 4, 8)):
-            self.status_output.send('corners wants 2, 4 or 8 channels; '
-                                    'using ring')
-        self.update_spatial_controls()
-
-    def _arrange_rows(self):
-        """Draw mute under level, leaving the position block contiguous.
-
-        Display order and link order part company here: dpg draws node
-        attributes in child order, which move_item can change, while links
-        save and restore against the input's position in node.inputs, which
-        nothing here touches. So the row can sit where it reads best without
-        costing any patch its cords.
-        """
-        mute = self.mute_input.uuid
-        pan = self.pan_input.uuid
-        if dpg.does_item_exist(mute) and dpg.does_item_exist(pan):
-            try:
-                dpg.move_item(mute, parent=self.uuid, before=pan)
-            except Exception as error:
-                print('audio_out~: could not arrange rows (' + str(error) + ')')
-
-    def _relabel(self, port, text):
-        """Only the drawn prefix changes; links and saved values key on the
-        port's built label, exactly as with vst~ slot renaming."""
-        widget = port.widget
-        if widget is None or widget.prefix_label == text:
-            return
-        widget.prefix_label = text
-        prefix = getattr(widget, 'prefix_uuid', None)
-        if prefix is not None and dpg.does_item_exist(prefix):
-            dpg.set_value(prefix, text)
-        self._labels_aligned = False
-        self._align_attempts = 0
-
-    @staticmethod
-    def _show_port(port, visible):
-        """Hide a control the current space ignores -- unless something is
-        patched into it. A hidden cord would misreport the patch; an inert
-        but visible inlet only misreports the moment."""
-        if port._parents:
-            visible = True
-        if dpg.does_item_exist(port.uuid):
-            if visible:
-                dpg.show_item(port.uuid)
-            else:
-                dpg.hide_item(port.uuid)
-
-    def update_spatial_controls(self):
-        """Each space shows its own controls under its own names.
-
-        stereo: pan alone. ring: pan (an angle) and width. corners: the
-        three axis faders and width, with pan wearing 'left/right' since
-        that is what it means there. The inlets themselves never move, so
-        cords and saved values survive every change of space.
-        """
-        space = self.unit.active_space()
-        self._relabel(self.pan_input,
-                      'left/right' if space == 'corners' else 'pan')
-        self._show_port(self.width_input, space != 'stereo')
-        self._show_port(self.depth_input, space == 'corners')
-        self._show_port(self.height_input, space == 'corners')
+            if len(parsed) != self.unit.count:
+                self.status_output.send(
+                    'this audio_out~ has %d inputs; using the first %d '
+                    'channels listed' % (self.unit.count, self.unit.count))
+            listed = parsed[:self.unit.count]
+            while len(listed) < self.unit.count:
+                listed.append(listed[-1] + 1 if listed else 1)
+            self.unit.channels = [channel - 1 for channel in listed]
 
     def synth_frame_task(self):
         # Re-attach if the sampler engine was restarted or replaced.
         engine = ensure_engine()
-        if not self._spatial_applied:
-            self._spatial_applied = dpg.does_item_exist(self.height_input.uuid)
-            if self._spatial_applied:
-                self._arrange_rows()
-            self.update_spatial_controls()
         if self._device_pending:
             self._device_pending = False
             self.apply_device_choice()
@@ -3567,18 +3543,19 @@ class AudioOutNode(SynthNode):
         if status != self._last_status:
             self._last_status = status
             self.status_output.send(status if status else 'ok')
-        # The face shows where this node's channels actually land, which is
-        # worth a glance precisely when it is not what the panel promises.
+        # The face shows where the channels actually land, which is worth a
+        # glance precisely when it is not what the panel promises.
         if engine is not None:
+            device_text = engine.device_name or 'default'
             listed = '/'.join(str(channel + 1)
                               for channel in self.unit.channels)
-            space = self.unit.active_space()
-            text = '%s  ch %s of %d%s' % (
-                engine.device_name or 'default', listed, engine.channels,
-                '' if space == 'stereo' else '  ' + space)
-            if text != self._last_device_text:
-                self._last_device_text = text
-                self.device_property.set(text)
+            channel_text = 'ch %s of %d' % (listed, engine.channels)
+            if device_text != self._last_device_text:
+                self._last_device_text = device_text
+                self.device_property.set(device_text)
+            if channel_text != self._last_channel_text:
+                self._last_channel_text = channel_text
+                self.channels_property.set(channel_text)
 
 
 class SnapshotNode(SynthNode):
