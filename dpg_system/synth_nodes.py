@@ -4994,24 +4994,27 @@ class BowNode(SynthNode):
 # how long they keep moving, how sharp each tick is, and what they rattle
 # inside. Values go to the knobs, so a kind is somewhere to start from,
 # not a mode the node is in.
+# resonance rides an exponential ring-time curve (3 ms thud at 0 to a
+# tenth-of-a-second bell at 1): the dry kinds live near the bottom, the
+# jingled kinds up where the members truly ring past each other.
 SHAKER_KINDS = {
     'maraca':      {'density': 64.0, 'settle': 0.10, 'hardness': 0.7,
-                    'vessel': 3200.0, 'resonance': 0.7, 'jingle': 0.0,
+                    'vessel': 3200.0, 'resonance': 0.17, 'jingle': 0.0,
                     'vary': 0.35},
     'cabasa':      {'density': 400.0, 'settle': 0.06, 'hardness': 0.85,
-                    'vessel': 3000.0, 'resonance': 0.35, 'jingle': 0.0,
+                    'vessel': 3000.0, 'resonance': 0.06, 'jingle': 0.0,
                     'vary': 0.25},
     'tambourine':  {'density': 24.0, 'settle': 0.15, 'hardness': 0.75,
-                    'vessel': 5300.0, 'resonance': 0.93, 'jingle': 0.7,
+                    'vessel': 5300.0, 'resonance': 0.8, 'jingle': 0.7,
                     'vary': 0.5},
     'sleighbells': {'density': 300.0, 'settle': 0.2, 'hardness': 0.8,
-                    'vessel': 8000.0, 'resonance': 0.9, 'jingle': 0.5,
+                    'vessel': 8000.0, 'resonance': 0.88, 'jingle': 0.5,
                     'vary': 0.45},
     'rain':        {'density': 1200.0, 'settle': 0.5, 'hardness': 0.9,
-                    'vessel': 4200.0, 'resonance': 0.3, 'jingle': 0.15,
+                    'vessel': 4200.0, 'resonance': 0.05, 'jingle': 0.15,
                     'vary': 0.7},
     'gravel':      {'density': 90.0, 'settle': 0.08, 'hardness': 0.4,
-                    'vessel': 900.0, 'resonance': 0.5, 'jingle': 0.1,
+                    'vessel': 900.0, 'resonance': 0.1, 'jingle': 0.1,
                     'vary': 0.6},
 }
 
@@ -5061,10 +5064,23 @@ class ShakerNode(SynthNode):
         self.add_modulation_input('vessel', self.unit.vessel_in,
                                   minimum=100.0, maximum=12000.0, speed=10.0,
                                   slider=False)
-        self.add_modulation_input('resonance', self.unit.resonance_in,
-                                  minimum=0.0, maximum=1.0, speed=0.01)
-        self.add_modulation_input('jingle', self.unit.jingle_in,
-                                  minimum=0.0, maximum=1.0, speed=0.01)
+        res_port = self.add_modulation_input('resonance',
+                                             self.unit.resonance_in,
+                                             minimum=0.0, maximum=1.0,
+                                             speed=0.01)
+        if res_port.widget is not None:
+            res_port.widget.set_tooltip(
+                'ring time, exponential: a 3 ms thud at 0 to a tenth of a '
+                'second of bell at 1. Tambourine and sleighbells live in '
+                'the top third')
+        jingle_port = self.add_modulation_input('jingle', self.unit.jingle_in,
+                                                minimum=0.0, maximum=1.0,
+                                                speed=0.01)
+        if jingle_port.widget is not None:
+            jingle_port.widget.set_tooltip(
+                'the vessel is eight bells: jingle spreads their fixed '
+                'tunings around the vessel pitch, each collision striking '
+                'one while the others ring on. 0 is a single voice')
         vary_port = self.add_modulation_input('vary', self.unit.vary_in,
                                               minimum=0.0, maximum=1.0,
                                               speed=0.01)

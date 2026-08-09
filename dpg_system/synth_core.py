@@ -3386,8 +3386,10 @@ def _warm_up_filter():
         _rub_kernel(breath, breath.copy(), breath.copy(), bank.copy(),
                     bank.copy(), bank.copy(), bank.copy(), state.copy(),
                     state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
-        _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, 0.5, 0.9, 0.5,
-                       0.0, 0.0, 0.5, 0.99, np.uint64(12345), 0.0, 0.0,
+        members = np.full(8, 0.5)
+        _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, members, 0.9,
+                       0.0, members.copy(), members.copy(), members.copy(),
+                       members.copy(), np.uint64(12345),
                        output.copy(), output)
         _whoosh_kernel(breath, breath.copy(), breath.copy(), 0.4,
                        0.99, 0.02, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0,
@@ -7623,71 +7625,65 @@ else:
 
 
 def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
-                          vary, amp, theta, radius, jingle,
-                          energy, sound, th, gd, rng, y1, y2, out_raw, out):
-    """Cook's PhISEM, sample by sample: percussion as statistics.
+                          vary, amp, thetas, radius,
+                          energy, sounds, gds, y1, y2, rng, out_raw, out):
+    """Cook's PhISEM, sample by sample -- with a polyphonic vessel.
 
-    Nothing here is a waveform. 'energy' is how agitated the beans are --
-    pumped by the shaking gesture, settling on its own -- and each sample
-    a collision either happens or does not, with a probability that rises
-    with agitation and bean count. A collision tops up a fast-decaying
-    grain envelope that gates raw noise: one tick of one bean. What the
-    ear hears as maraca, cabasa or rain is only the statistics of those
-    ticks, which is the whole insight of the model.
+    'energy' is how agitated the beans are, pumped by the gesture and
+    settling on its own; each sample a collision happens or does not,
+    with probability rising with agitation and bean count.
 
-    The vessel is a single two-pole resonance. With 'jingle' up, every
-    collision retunes it inside a band around the vessel frequency --
-    Cook's trick for tambourines and sleigh bells, where each jingle
-    struck is a different one.
+    The vessel is not one resonator but a small ensemble: a tambourine
+    is a dozen jingles, each with its own pitch, and a collision strikes
+    ONE of them -- its own grain envelope, its own ring -- while the
+    others keep sounding. The members' tunings are fixed per instance
+    (the jingle knob spreads them), which is what makes overlapping
+    decays at distinct pitches: polyphony, where a single retuned
+    resonator could only ever play the last note.
 
-    What persists across blocks is the retuned ANGLE, never a coefficient:
-    both coefficients are derived here from the angle and the current
-    radius together, so they always describe the same filter. A stored
-    b1 meeting a b2 from a radius the knob has since moved would not --
-    that mismatch can put a pole outside the circle, and a resonator gone
-    unstable reaches float range in milliseconds.
-
-    Every random quantity is its own draw from the generator: which
-    sample collides, how hard, how long it rings, where the jingle lands,
-    and the noise being gated. Sharing draws would correlate them --
-    every loud tick also long and detuned -- and reusing a table would
-    loop.
+    Coefficients are derived from angle and radius together, per block,
+    never stored across a radius change.
     """
+    members = thetas.shape[0]
     pump = 1.0 - energy_decay
-    b1c = 2.0 * radius * math.cos(th)
-    b2c = -radius * radius
-    vgain = (1.0 - radius) * 2.0
+    b2 = -radius * radius
+    # Energy-constant with respect to ring time: each grain's ring holds
+    # its loudness as resonance stretches it, rather than thinning away.
+    vgain = 0.3 * math.sqrt((1.0 - radius) / 0.15)
     for i in range(shake.shape[0]):
         energy = energy * energy_decay + shake[i] * pump
         rng, draw = _rand01(rng)
         if draw < rate_per_sample * energy:
+            rng, pick = _rand01(rng)
+            member = int(pick * members)
+            if member >= members:
+                member = members - 1
             rng, strength = _rand01(rng)
-            sound += amp * energy * (0.5 + 0.5 * strength)
-            # A pile of unlucky draws is loud; it must never be unbounded.
-            if sound > 100.0:
-                sound = 100.0
-            # Beans are a size distribution, not a size: each collision
-            # draws its own ring time, up to an octave either side of the
-            # hardness setting. Uniform ticks are what makes a model sound
-            # like a machine gun instead of a gourd.
+            sounds[member] += amp * energy * (0.5 + 0.5 * strength)
+            if sounds[member] > 100.0:
+                sounds[member] = 100.0
             if vary > 0.0:
                 rng, size = _rand01(rng)
-                gd = grain_decay ** (2.0 ** ((0.5 - size) * 2.0 * vary))
+                gds[member] = grain_decay ** (2.0 ** ((0.5 - size)
+                                                     * 2.0 * vary))
             else:
-                gd = grain_decay
-            if jingle > 0.0:
-                rng, where = _rand01(rng)
-                th = theta * (1.0 + jingle * 0.8 * (where - 0.5))
-                b1c = 2.0 * radius * math.cos(th)
-        sound *= gd
-        rng, hiss = _rand01(rng)
-        grain = sound * (2.0 * hiss - 1.0)
-        y = vgain * grain + b1c * y1 + b2c * y2
-        y2 = y1
-        y1 = y
-        out_raw[i] = grain
-        out[i] = y
-    return energy, sound, th, gd, rng, y1, y2
+                gds[member] = grain_decay
+        rng, nz = _rand01(rng)
+        noise = 2.0 * nz - 1.0
+        raw = 0.0
+        total = 0.0
+        for m in range(members):
+            sounds[m] *= gds[m]
+            grain = sounds[m] * noise
+            raw += grain
+            b1 = 2.0 * radius * math.cos(thetas[m])
+            y = vgain * grain + b1 * y1[m] + b2 * y2[m]
+            y2[m] = y1[m]
+            y1[m] = y
+            total += y
+        out_raw[i] = raw
+        out[i] = total
+    return energy, rng
 
 
 if _HAVE_NUMBA:
@@ -7709,9 +7705,14 @@ class ShakerUnit(Unit):
     countable ticks, thousands is rain), loudness-compensated so it
     changes texture rather than level. 'settle' is how long the beans
     keep moving after the gesture stops; 'hardness' how sharp each tick
-    is. The vessel is a tunable resonance ('vessel', 'resonance'), and
-    'jingle' retunes it per collision -- tambourines are many little
-    bells, each collision striking a different one.
+    is. The vessel is a tunable resonance ('vessel', 'resonance') -- and
+    it is plural: an ensemble of eight members, each with its own fixed
+    tuning spread across the 'jingle' band, each collision striking one
+    while the others keep ringing. A tambourine is a dozen jingles and
+    sleighbells are a strap of bells; what makes them them is overlapping
+    decays at distinct pitches, and that needs polyphony, not a single
+    resonator retuned out from under its own ring. At jingle 0 the
+    members coincide and the vessel is one voice again.
 
     'grains out' carries the raw collisions before the vessel: patch it
     into modal~ (drive up, dry 0) and the beans rattle inside any object
@@ -7742,12 +7743,17 @@ class ShakerUnit(Unit):
         seed = (ShakerUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
         self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
         self._energy = 0.0
-        self._sound = 0.0
-        self._th = 0.0
-        self._gd = 0.99
-        self._y1 = 0.0
-        self._y2 = 0.0
         self._quiet = True
+        # The ensemble's tunings: fixed per instance, drawn from the same
+        # seed, so this shaker's bells are ITS bells, every run.
+        MEMBERS = 8
+        spread_rng = np.random.RandomState(seed & 0xFFFFFFFF or 1)
+        self._offsets = spread_rng.uniform(-0.5, 0.5, MEMBERS)
+        self._thetas = np.zeros(MEMBERS, dtype=np.float64)
+        self._sounds = np.zeros(MEMBERS, dtype=np.float64)
+        self._gds = np.full(MEMBERS, 0.99, dtype=np.float64)
+        self._ry1 = np.zeros(MEMBERS, dtype=np.float64)
+        self._ry2 = np.zeros(MEMBERS, dtype=np.float64)
 
         self.out = self.new_outlet()
         self.grains = self.new_outlet()
@@ -7758,9 +7764,9 @@ class ShakerUnit(Unit):
 
     def reset(self):
         self._energy = 0.0
-        self._sound = 0.0
-        self._y1 = 0.0
-        self._y2 = 0.0
+        self._sounds[:] = 0.0
+        self._ry1[:] = 0.0
+        self._ry2[:] = 0.0
         self._quiet = True
 
     def deactivate(self):
@@ -7823,22 +7829,26 @@ class ShakerUnit(Unit):
         # compensated so rain is not simply louder than a maraca.
         amp = math.sqrt(64.0 / max(8.0, beans))
         theta = 2.0 * math.pi * vessel_hz / self.sample_rate
-        radius = 0.85 + 0.145 * res
-        # With no jingle the angle simply follows the knob; jingled, it
-        # keeps the last collision's tuning until the next collision moves
-        # it. Either way the kernel derives both coefficients from angle
-        # and radius together, so the filter is always self-consistent.
-        if jingle_now <= 0.0 or self._th == 0.0:
-            self._th = theta
+        # Exponential from a 3 ms thud to a tenth-of-a-second bell ring:
+        # the whole audible range of ring time, most of it living in the
+        # top third of the knob, where tambourine and sleighbells are.
+        radius = 1.0 - 0.15 * math.pow(750.0, -res)
+        # Spread the ensemble across the jingle band around the vessel
+        # knob. The members' offsets are fixed; jingle only opens the fan.
+        # The kernel derives both coefficients from angle and radius
+        # together, per block, so the filters are always self-consistent.
+        np.multiply(self._offsets, jingle_now * 0.8, out=self._thetas)
+        self._thetas += 1.0
+        self._thetas *= theta
+        np.clip(self._thetas, 1.0e-3, math.pi * 0.95, out=self._thetas)
 
         raw = self._raw[:frames]
         result = self._y[:frames]
-        (self._energy, self._sound, self._th, self._gd, rng_state,
-         self._y1, self._y2) = _shaker_kernel(
+        self._energy, rng_state = _shaker_kernel(
             gesture, beans / self.sample_rate, energy_decay, grain_decay,
-            vary_now, amp, theta, radius, jingle_now,
-            self._energy, self._sound, self._th, self._gd, self._rng,
-            self._y1, self._y2, raw, result)
+            vary_now, amp, self._thetas, radius,
+            self._energy, self._sounds, self._gds,
+            self._ry1, self._ry2, self._rng, raw, result)
         # numba hands the state back as a Python int, and a bare int at or
         # above 2**63 fails the signed conversion on the way back in --
         # half of all states. It must go home as the unsigned it is.
