@@ -27,7 +27,7 @@ from dpg_system.synth_core import (
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
-    StrokeUnit, ShakerUnit, BrassUnit, StrainUnit,
+    StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -96,6 +96,8 @@ def register_synth_nodes():
     Node.app.register_node('horn~', BrassNode.factory)
     Node.app.register_node('strain~', StrainNode.factory)
     Node.app.register_node('creak~', StrainNode.factory)
+    Node.app.register_node('whoosh~', WhooshNode.factory)
+    Node.app.register_node('swish~', WhooshNode.factory)
     Node.app.register_node('rub~', RubNode.factory)
     Node.app.register_node('glass~', RubNode.factory)
     Node.app.register_node('fader~', FaderNode.factory)
@@ -4588,6 +4590,51 @@ STRAIN_REGIMES = {
                 'habituate': 0.1, 'grain': 0.0008, 'amp': 0.1,
                 'chirp': 0.6, 'decay': 1.5, 'stretch': 0.2, 'squeal': 0.15, 'vary': 0.1, 'grind': 0.1, 'texture': 0.35},
 }
+
+
+class WhooshNode(SynthNode):
+    """Motion through air: patch a speed, hear the swish.
+
+    Pitch is speed over size -- the physics of vortex shedding, not a
+    mapping anyone chose -- and loudness rises steeply the way aeolian
+    sound does, so slow motion whispers, fast motion roars, and
+    stillness is silent. 'size' runs thin edge (sings high) to thick
+    limb (rumbles); 'edge' is how bladelike the shedding is; 'wake'
+    mixes the broadband hiss of stirred air.
+
+    whoosh~ <size>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return WhooshNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = WhooshUnit(synth_graph.sample_rate)
+
+        if args is not None:
+            for arg in args:
+                try:
+                    self.unit.size_in.base = max(0.0, min(1.0, float(arg)))
+                except (ValueError, TypeError):
+                    continue
+
+        self.add_modulation_input('speed', self.unit.speed_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        self.add_modulation_input('size', self.unit.size_in,
+                                  default_value=self.unit.size_in.base,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('edge', self.unit.edge_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('wake', self.unit.wake_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
 
 
 class StrainNode(ModeTableNode):

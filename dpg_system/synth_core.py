@@ -3389,6 +3389,9 @@ def _warm_up_filter():
         _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, 0.5, 0.9, 0.5,
                        0.0, 0.0, 0.5, 0.99, np.uint64(12345), 0.0, 0.0,
                        output.copy(), output)
+        _whoosh_kernel(breath, breath.copy(), breath.copy(), 0.4,
+                       0.99, 0.02, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0,
+                       np.uint64(99), output)
         ap = np.zeros(3)
         _strain_kernel(wide, 0.01, 0.5, 0.6, 10.0, 0.5, 100.0, 1.0, 0.2,
                        0.5, 0.1, 0.2, 10.0, 0.01, 0.5, 1.7,
@@ -7845,6 +7848,155 @@ class ShakerUnit(Unit):
         out.constant = False
         np.copyto(self.grains.data[:frames], raw, casting='unsafe')
         self.grains.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _whoosh_kernel_source(speed, omega, amp, wake_mix, shed_r, shed_g,
+                          wake_k, smooth_k, vel, y1, y2, lp, rng, out):
+    """Aeolian sound, sample by sample: motion through air.
+
+    A moving object sheds vortices at a frequency set by its speed over
+    its size, and the shedding sings: a resonant bandpass on turbulence,
+    centred wherever the speed says, per sample. Behind it the wake --
+    broadband, lowpassed, the hiss of stirred air. Speed is smoothed
+    over a few milliseconds on the way in, so a control-rate effort
+    stream drives it without zippering.
+    """
+    for i in range(speed.shape[0]):
+        vel += (speed[i] - vel) * smooth_k
+        rng, n1 = _rand01(rng)
+        noise = 2.0 * n1 - 1.0
+        w = omega[i] * vel
+        if w > 2.8:
+            w = 2.8
+        b1 = 2.0 * shed_r * math.cos(w)
+        y = shed_g * noise + b1 * y1 - shed_r * shed_r * y2
+        y2 = y1
+        y1 = y
+        rng, n2 = _rand01(rng)
+        lp += ((2.0 * n2 - 1.0) - lp) * wake_k
+        out[i] = amp[i] * ((1.0 - wake_mix) * y + wake_mix * 2.5 * lp)
+    return vel, y1, y2, lp, rng
+
+
+if _HAVE_NUMBA:
+    _whoosh_kernel = njit(cache=True, fastmath=True)(_whoosh_kernel_source)
+else:
+    _whoosh_kernel = _whoosh_kernel_source
+
+
+class WhooshUnit(Unit):
+    """Motion through air: the whoosh, with speed as its only player.
+
+    The most legible mapping in the rack, because it is the physics
+    itself: vortex shedding puts the pitch of the swish at speed over
+    size, and aeolian radiation makes loudness rise steeply with speed
+    -- slow motion whispers, fast motion roars, stillness is silent.
+    Patch a limb's speed into 'speed' and the air does the rest.
+
+    'size' is the object: a thin edge sings high, a thick limb rumbles.
+    'edge' is how bladelike the shedding is -- a taut wire whistles, a
+    hand merely swishes. 'wake' mixes in the broadband hiss of stirred
+    air behind the object.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.speed_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.size_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.edge_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.wake_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        WhooshUnit._seeded = getattr(WhooshUnit, '_seeded', 0) + 1
+        seed = (WhooshUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+        self._vel = 0.0
+        self._y1 = 0.0
+        self._y2 = 0.0
+        self._lp = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._speed = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._omega = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._amp = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._vel = 0.0
+        self._y1 = 0.0
+        self._y2 = 0.0
+        self._lp = 0.0
+        self._quiet = True
+
+    def render(self, frames):
+        speed = self.speed_in.eval(frames)
+        size = self.size_in.eval(frames)
+        edge = self.edge_in.eval(frames)
+        wake = self.wake_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        gust = self._speed[:frames]
+        if speed.constant:
+            gust[:] = speed.value
+            still = abs(speed.value) < 1.0e-4
+        else:
+            np.copyto(gust, speed.data[:frames])
+            still = False
+        np.clip(gust, 0.0, 1.5, out=gust)
+
+        if self._quiet and still and self._vel < 1.0e-4:
+            out.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        size_now = scalar(size, 0.0, 1.0)
+        edge_now = scalar(edge, 0.0, 1.0)
+        wake_now = scalar(wake, 0.0, 1.0)
+
+        # The shedding line: a thin edge at full speed sings near 6 kHz, a
+        # thick limb near 120 Hz, and the frequency is linear in speed as
+        # Strouhal says it should be.
+        f_full = 6000.0 * (0.02 ** size_now)
+        omega = self._omega[:frames]
+        omega[:] = 2.0 * math.pi * f_full / self.sample_rate
+
+        # Aeolian loudness: steep in speed. The whisper-to-roar curve is
+        # most of what makes a whoosh read as effort.
+        amp = self._amp[:frames]
+        np.power(gust, 2.5, out=amp)
+        amp *= 0.85
+
+        # The shedding's sharpness: a wire whistles, a hand swishes.
+        q = 1.5 + edge_now * 28.0
+        f_now = max(40.0, f_full * max(0.05, float(gust[0])))
+        shed_r = math.exp(-math.pi * f_now / (q * self.sample_rate))
+        shed_g = (1.0 - shed_r) * (1.2 + 2.0 * edge_now)
+        wake_cut = 150.0 + 0.4 * f_now
+        wake_k = 1.0 - math.exp(-2.0 * math.pi * wake_cut / self.sample_rate)
+        smooth_k = 1.0 - math.exp(-1.0 / (0.004 * self.sample_rate))
+
+        result = self._y[:frames]
+        (self._vel, self._y1, self._y2, self._lp, rng_state) = _whoosh_kernel(
+            gust, omega, amp, wake_now, shed_r, shed_g, wake_k, smooth_k,
+            self._vel, self._y1, self._y2, self._lp, self._rng, result)
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
         scratch = self._scratch[:frames]
         np.abs(result, out=scratch)
         self._quiet = bool(scratch.max() < 1.0e-5)
