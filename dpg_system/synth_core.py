@@ -3380,6 +3380,9 @@ def _warm_up_filter():
                          0.0, 0.0, 0.0, 0.0, 0.0, output)
         _bow_kernel(breath, breath, line.copy(), line.copy(), 0,
                     taps, taps, zeros, 0.995, 0.0, 0.0, 0.0, output)
+        _brass_kernel(breath, zeros, line, 0, line.copy(), 0, taps,
+                      zeros, 1.9, -0.98, 0.04, 0.5, 0.0, 0.0, 0.0,
+                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, output)
         _rub_kernel(breath, breath.copy(), breath.copy(), bank.copy(),
                     bank.copy(), bank.copy(), bank.copy(), state.copy(),
                     state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
@@ -6884,6 +6887,269 @@ if _HAVE_NUMBA:
     _wind_kernel = njit(cache=True, fastmath=True)(_wind_kernel_source)
 else:
     _wind_kernel = _wind_kernel_source
+
+
+def _brass_kernel_source(pressure, noise_amt, noise, noise_at,
+                         bore, write, delay, damp,
+                         lip_b1, lip_b2, lip_b0, bias,
+                         low, rb_x, rb_y, dp1, dp2, y1, y2, dc_x, dc_y,
+                         out):
+    """The lip valve against the bore, sample by sample.
+
+    The lip is not a table but an oscillator: a bandpass resonator (it
+    answers the pressure WAVE, not the pressure -- a lip held open by
+    static breath is just open) whose displacement, plus the static
+    aperture 'bias', sets the opening area, and the transmitted pressure
+    is the crossfade between mouth and bore by that area -- a convex
+    combination, bounded by construction. The drive is the returning
+    wave minus the breath: the lip is blown open by the bore's reply,
+    the outward-striking door, which is the sign that locks the coupled
+    system ON the bore's harmonics rather than between them.
+
+    Two vents keep the loop honest: the bell vents DC (a bore is open --
+    static pressure escapes, waves return), without which the bore
+    charges up to the breath and the pressure difference that drives
+    everything collapses.
+
+    What the coupled system does from there is brass: the sounding pitch
+    locks to whichever bore harmonic sits nearest the lip's resonance,
+    a continuous lip sweep climbs the series in discrete steps, and too
+    much breath cracks the lock down to the pedal. None of it is coded;
+    it is what a valve with its own resonance does against a comb of
+    bore modes.
+    """
+    size = bore.shape[0]
+    limit = size - 3.0
+    nsize = noise.shape[0]
+    for i in range(pressure.shape[0]):
+        want = delay[i]
+        if want < 2.0:
+            want = 2.0
+        elif want > limit:
+            want = limit
+        read = write - want
+        if read < 0.0:
+            read += size
+        p_bore = _cubic_read(bore, size, read)
+
+        low += (p_bore - low) * (1.0 - damp[i])
+        r = 0.95 * low
+        refl = r - rb_x + 0.995 * rb_y
+        rb_x = r
+        rb_y = refl
+
+        breath = pressure[i]
+        breath += breath * noise_amt[i] * noise[noise_at]
+        noise_at += 1
+        if noise_at >= nsize:
+            noise_at = 0
+
+        dp = refl - breath
+        y = lip_b0 * (dp - dp2) + lip_b1 * y1 + lip_b2 * y2
+        dp2 = dp1
+        dp1 = dp
+        y2 = y1
+        y1 = y
+
+        opening = y + bias
+        area = opening * opening
+        if area > 1.0:
+            area = 1.0
+        v = area * breath + (1.0 - area) * refl
+        if v > 2.0:
+            v = 2.0
+        elif v < -2.0:
+            v = -2.0
+        bore[write] = v
+
+        o = p_bore - dc_x + 0.995 * dc_y
+        dc_x = p_bore
+        dc_y = o
+        out[i] = o
+
+        write += 1
+        if write >= size:
+            write = 0
+    return (write, noise_at, low, rb_x, rb_y, dp1, dp2, y1, y2, dc_x, dc_y)
+
+
+if _HAVE_NUMBA:
+    _brass_kernel = njit(cache=True, fastmath=True)(_brass_kernel_source)
+else:
+    _brass_kernel = _brass_kernel_source
+
+
+class BrassUnit(Unit):
+    """A brass instrument: one bore, many notes, chosen by the lip.
+
+    The third of the pressure-played instruments, and the one where the
+    valve has a will of its own. wind~'s reed is fast and obedient;
+    brass lips are an oscillator with their own resonance, and the note
+    that sounds is a negotiation between that resonance and the bore's
+    harmonic comb: the system locks to the nearest bore mode, so
+    'frequency' is the size of the instrument (its pedal fundamental)
+    and 'lip' -- tension, mapped across the first sixteen harmonics --
+    picks which partial speaks. Sweep it and the pitch climbs the series
+    in steps, like a bugler; nobody quantized anything.
+
+    'pressure' is the breath, with the family's usual habits: a
+    threshold to speak, dynamics above it, and -- being brass -- pushed
+    hard it cracks the lock and blats down toward the pedal. 'breath'
+    is turbulence, 'brightness' the bell's keeping of highs. No trigger
+    anywhere: tonguing is an adsr~ on pressure, and an effort stream is
+    an embouchure.
+    """
+
+    MODES = ()
+    MIN_FREQUENCY = 20.0
+    LIP_BIAS = 0.5
+    LIP_GAIN = 4.0
+    # The embouchure tightens as it climbs: Q rises with tension, which is
+    # both the physiology and what keeps the high partials projecting.
+    LIP_Q_LOW = 8.0
+    LIP_Q_HIGH = 24.0
+    MAX_HARMONIC = 16.0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.pressure_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.lip_in = self.new_inlet(base=0.14, minimum=0.0, maximum=1.0)
+        self.frequency_in = self.new_inlet(base=110.0,
+                                           minimum=BrassUnit.MIN_FREQUENCY)
+        self.pitch_in = self.new_inlet()
+        self.brightness_in = self.new_inlet(base=0.7, minimum=0.0,
+                                            maximum=1.0)
+        self.noise_in = self.new_inlet(base=0.02, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        size = int(self.sample_rate / BrassUnit.MIN_FREQUENCY) + 8
+        self.bore = np.zeros(size, dtype=np.float64)
+        self._write = 0
+        self._low = 0.0
+        self._rb_x = 0.0
+        self._rb_y = 0.0
+        self._dp1 = 0.0
+        self._dp2 = 0.0
+        self._y1 = 0.0
+        self._y2 = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+
+        generator = np.random.default_rng(20260810)
+        self._noise = generator.uniform(-1.0, 1.0, 1 << 16)
+        self._noise_at = 0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._press = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._namt = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._freq = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._delay = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._damp = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self.bore[:] = 0.0
+        self._low = 0.0
+        self._rb_x = 0.0
+        self._rb_y = 0.0
+        self._dp1 = 0.0
+        self._dp2 = 0.0
+        self._y1 = 0.0
+        self._y2 = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def render(self, frames):
+        pressure = self.pressure_in.eval(frames)
+        lip = self.lip_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        brightness = self.brightness_in.eval(frames)
+        noise = self.noise_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        press = self._press[:frames]
+        if pressure.constant:
+            press[:] = pressure.value
+            idle = abs(pressure.value) < 1.0e-4
+        else:
+            np.copyto(press, pressure.data[:frames])
+            idle = False
+        np.clip(press, 0.0, 2.0, out=press)
+
+        if self._quiet and idle:
+            out.set_constant(0.0)
+            return
+
+        freq = self._freq[:frames]
+        self._build_hertz(freq, frequency, pitch, frames,
+                          BrassUnit.MIN_FREQUENCY)
+        f0 = float(freq[0])
+
+        damp = self._damp[:frames]
+        if brightness.constant:
+            damp[:] = 1.0 - brightness.value
+        else:
+            np.subtract(1.0, brightness.data[:frames], out=damp,
+                        casting='unsafe')
+        np.clip(damp, 0.0, 0.95, out=damp)
+
+        namt = self._namt[:frames]
+        if noise.constant:
+            namt[:] = noise.value
+        else:
+            np.copyto(namt, noise.data[:frames], casting='unsafe')
+        np.clip(namt, 0.0, 1.0, out=namt)
+
+        taps = self._delay[:frames]
+        np.divide(self.sample_rate, freq, out=taps)
+        np.clip(taps, 2.0, self.bore.shape[0] - 3.0, out=taps)
+
+        # The lip resonator, tuned along the harmonic series at constant
+        # Q: its bandwidth scales with its frequency, so it can single
+        # out a partial on a big bore and a small one alike.
+        tension = lip.value if lip.constant else float(lip.data[0])
+        tension = min(1.0, max(0.0, tension))
+        harmonic = 1.0 + tension * (BrassUnit.MAX_HARMONIC - 1.0)
+        f_lip = min(self.sample_rate * 0.45, harmonic * f0)
+        theta = 2.0 * math.pi * f_lip / self.sample_rate
+        lip_q = (BrassUnit.LIP_Q_LOW
+                 + tension * (BrassUnit.LIP_Q_HIGH - BrassUnit.LIP_Q_LOW))
+        r_lip = math.exp(-math.pi * f_lip / (lip_q * self.sample_rate))
+        lip_b1 = 2.0 * r_lip * math.cos(theta)
+        lip_b2 = -r_lip * r_lip
+        lip_b0 = BrassUnit.LIP_GAIN * (1.0 - r_lip)
+
+        result = self._y[:frames]
+        (self._write, self._noise_at, self._low, self._rb_x, self._rb_y,
+         self._dp1, self._dp2, self._y1, self._y2, self._dc_x,
+         self._dc_y) = _brass_kernel(
+            press, namt, self._noise, self._noise_at,
+            self.bore, self._write, taps, damp,
+            lip_b1, lip_b2, lip_b0, BrassUnit.LIP_BIAS,
+            self._low, self._rb_x, self._rb_y, self._dp1, self._dp2,
+            self._y1, self._y2, self._dc_x, self._dc_y, result)
+
+        # Down to the family's level: a locked partial peaks near +-1
+        # like the other instruments, with the blat above that.
+        result *= 0.6
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
 
 
 def _bow_kernel_source(velocity, force, neck, bridge, write,

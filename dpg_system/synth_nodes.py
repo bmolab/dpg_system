@@ -27,7 +27,7 @@ from dpg_system.synth_core import (
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
-    StrokeUnit, ShakerUnit,
+    StrokeUnit, ShakerUnit, BrassUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -92,6 +92,8 @@ def register_synth_nodes():
     Node.app.register_node('flute~', WindNode.factory)
     Node.app.register_node('bow~', BowNode.factory)
     Node.app.register_node('bowed~', BowNode.factory)
+    Node.app.register_node('brass~', BrassNode.factory)
+    Node.app.register_node('horn~', BrassNode.factory)
     Node.app.register_node('rub~', RubNode.factory)
     Node.app.register_node('glass~', RubNode.factory)
     Node.app.register_node('fader~', FaderNode.factory)
@@ -4601,8 +4603,12 @@ class WindNode(SynthNode):
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('brightness', self.unit.brightness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
-        self.add_modulation_input('breath', self.unit.noise_in,
-                                  minimum=0.0, maximum=1.0, speed=0.01)
+        # Breath lives logarithmically: the audible difference is between
+        # 0.02 and 0.06, not 0.6 and 0.9, so the drag is proportional.
+        self.make_drag_proportional(
+            self.add_modulation_input('breath', self.unit.noise_in,
+                                      minimum=0.0, maximum=1.0,
+                                      slider=False))
         self.add_modulation_input('level', self.unit.level_in,
                                   minimum=0.0, maximum=2.0, speed=0.01)
 
@@ -4619,6 +4625,65 @@ class WindNode(SynthNode):
         model = any_to_string(self.model_input())
         if model in WindUnit.MODES:
             self.unit.mode = WindUnit.MODES.index(model)
+
+
+class BrassNode(SynthNode):
+    """Brass: one bore, the note chosen by the lip.
+
+    'frequency' is the instrument's size -- its pedal fundamental -- and
+    'lip' is the embouchure, mapped across the first sixteen harmonics:
+    sweep it and the pitch climbs the series in steps, like a bugler,
+    because the lip's own resonance locks to the nearest bore mode.
+    'pressure' is the breath: a threshold to speak, dynamics above it,
+    and pushed hard it cracks the lock and blats toward the pedal, as
+    brass does. No trigger: tonguing is an adsr~ on pressure.
+
+    brass~ <frequency>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return BrassNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = BrassUnit(synth_graph.sample_rate)
+
+        frequency = 110.0
+        if args is not None:
+            for arg in args:
+                try:
+                    frequency = float(arg)
+                except (ValueError, TypeError):
+                    continue
+        self.unit.frequency_in.base = frequency
+
+        self.add_modulation_input('pressure', self.unit.pressure_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        lip_port = self.add_modulation_input('lip', self.unit.lip_in,
+                                             minimum=0.0, maximum=1.0,
+                                             speed=0.005)
+        if lip_port.widget is not None:
+            lip_port.widget.set_tooltip(
+                'embouchure: tension across the first sixteen harmonics; '
+                'the pitch climbs the series in steps -- the arpeggio '
+                'below halfway, the near-scale of the high series above')
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency,
+                                  minimum=BrassUnit.MIN_FREQUENCY, speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.add_modulation_input('brightness', self.unit.brightness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.make_drag_proportional(
+            self.add_modulation_input('breath', self.unit.noise_in,
+                                      minimum=0.0, maximum=1.0,
+                                      slider=False))
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
 
 
 class BowNode(SynthNode):
