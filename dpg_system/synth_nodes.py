@@ -27,7 +27,7 @@ from dpg_system.synth_core import (
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
-    StrokeUnit, ShakerUnit, BrassUnit,
+    StrokeUnit, ShakerUnit, BrassUnit, StrainUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
     LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
@@ -94,6 +94,8 @@ def register_synth_nodes():
     Node.app.register_node('bowed~', BowNode.factory)
     Node.app.register_node('brass~', BrassNode.factory)
     Node.app.register_node('horn~', BrassNode.factory)
+    Node.app.register_node('strain~', StrainNode.factory)
+    Node.app.register_node('creak~', StrainNode.factory)
     Node.app.register_node('rub~', RubNode.factory)
     Node.app.register_node('glass~', RubNode.factory)
     Node.app.register_node('fader~', FaderNode.factory)
@@ -4168,6 +4170,18 @@ MODAL_MATERIALS = {
         (3.81, 0.3, 0.35), (4.5, 0.25, 0.3), (5.19, 0.2, 0.25),
         (6.02, 0.15, 0.2), (6.9, 0.1, 0.15), (7.84, 0.07, 0.1),
     ],
+    # Lake ice: low, inharmonic, ringing -- the body under the pew.
+    'ice': [
+        (1.0, 1.0, 1.0), (1.83, 0.7, 0.8), (2.51, 0.6, 0.65),
+        (3.42, 0.5, 0.5), (4.6, 0.45, 0.4), (6.1, 0.35, 0.3),
+        (8.2, 0.25, 0.22), (10.9, 0.15, 0.15),
+    ],
+    # Paper: barely a resonator at all -- a few broad, instantly damped
+    # modes. The crumple is the events; this is only their coloration.
+    'paper': [
+        (1.0, 1.0, 0.06), (1.7, 0.8, 0.05), (2.9, 0.65, 0.04),
+        (4.3, 0.5, 0.03), (6.5, 0.35, 0.025),
+    ],
     # Ratio 1 is the Helmholtz air mode (fix frequency ~275 Hz); then CBR,
     # B1-, B1+, and the plate forest rising into the bridge hill around
     # ratio 7.5-9. Spacings are irregular on purpose; that is what a good
@@ -4556,6 +4570,195 @@ class RubNode(ModeTableNode):
         self.modes_output = self.add_output('modes out')
         self.add_switch()
         self.finish_synth_node()
+
+
+# A regime is the statistics of release: how much motion builds a
+# threshold's worth of stress, how the sizes are distributed, how sharply
+# the material remembers where it has already been bent. The values that
+# go to knobs (chirp, and a suggested body) are set through the widgets so
+# they stay the user's after; the rest are the physics of the regime.
+STRAIN_REGIMES = {
+    'creak':   {'thresh': 0.004, 'spread': 0.5, 'alpha': 0.0, 'cap': 2.0,
+                'habituate': 0.6, 'grain': 0.003, 'amp': 0.25,
+                'chirp': 0.0, 'decay': 0.3, 'stretch': 0.3, 'squeal': 0.55, 'vary': 0.15, 'grind': 0.4, 'texture': 0.45},
+    'crumple': {'thresh': 0.006, 'spread': 1.0, 'alpha': 0.6, 'cap': 15.0,
+                'habituate': 0.25, 'grain': 0.0012, 'amp': 0.15,
+                'chirp': 0.1, 'decay': 0.15, 'stretch': 0.1, 'squeal': 0.05, 'vary': 0.3, 'grind': 0.25, 'texture': 0.7},
+    'crack':   {'thresh': 0.03, 'spread': 1.5, 'alpha': 0.8, 'cap': 40.0,
+                'habituate': 0.1, 'grain': 0.0008, 'amp': 0.1,
+                'chirp': 0.6, 'decay': 1.5, 'stretch': 0.2, 'squeal': 0.15, 'vary': 0.1, 'grind': 0.1, 'texture': 0.35},
+}
+
+
+class StrainNode(ModeTableNode):
+    """Solids under stress: bending made audible.
+
+    The first node whose input is effort itself: patch a joint angle, a
+    stretch, a slow fader into 'strain' and the model runs on it --
+    motion releases events, stillness is silent by construction, and the
+    material remembers where it has been bent (repeat movements quiet
+    down; rest restores them over tens of seconds). 'regime' is what the
+    material does under stress -- a hinge creaks every time, paper is
+    loud only in new territory, ice cracks rarely and hugely -- and the
+    body it rings is a mode table, drawn in the same editor as modal~.
+    'resist' runs tissue paper to oak door; 'chirp' disperses each event
+    the way lake ice does.
+
+    strain~ <frequency> <regime> <material>, e.g. strain~ 300 crack ice.
+    """
+
+    SAVE_KEY = 'strain_modes'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return StrainNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = StrainUnit(synth_graph.sample_rate)
+
+        frequency = 700.0
+        regime = 'creak'
+        material = 'wood'
+        if args is not None:
+            for arg in args:
+                if arg in STRAIN_REGIMES:
+                    regime = arg
+                elif arg in MODAL_MATERIALS:
+                    material = arg
+                else:
+                    try:
+                        frequency = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+        self.unit.frequency_in.base = frequency
+        self.unit.set_modes(MODAL_MATERIALS[material])
+        self._init_mode_editor(label, material)
+        self._regime_shown = regime
+        self.apply_regime_constants(regime)
+
+        self.add_modulation_input('strain', self.unit.strain_in,
+                                  minimum=0.0, maximum=1.0, speed=0.002)
+        self.add_modulation_input('resist', self.unit.resist_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        stretch_port = self.add_modulation_input(
+            'stretch', self.unit.stretch_in,
+            default_value=STRAIN_REGIMES[regime]['stretch'],
+            minimum=-1.0, maximum=1.0, speed=0.005)
+        if stretch_port.widget is not None:
+            stretch_port.widget.set_tooltip(
+                'how the body stiffens under load: its resonances climb '
+                '(or fall, negative) with the strain, up to an octave -- '
+                'the rings bend as the bending continues')
+        squeal_port = self.add_modulation_input(
+            'squeal', self.unit.squeal_in,
+            default_value=STRAIN_REGIMES[regime]['squeal'],
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if squeal_port.widget is not None:
+            squeal_port.widget.set_tooltip(
+                'the voice of each slip: granular at 0, the interface\'s '
+                'own friction oscillation at 1 -- pitch riding load and '
+                'drooping through each slip, the hinge\'s eee-uh')
+        grind_port = self.add_modulation_input(
+            'grind', self.unit.grind_in,
+            default_value=STRAIN_REGIMES[regime]['grind'],
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if grind_port.widget is not None:
+            grind_port.widget.set_tooltip(
+                'continuous frictional shear between the slips, riding '
+                'speed and load: what breath is to the winds, the scrub '
+                'of surfaces is to a bend')
+        texture_port = self.add_modulation_input(
+            'texture', self.unit.texture_in,
+            default_value=STRAIN_REGIMES[regime]['texture'],
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if texture_port.widget is not None:
+            texture_port.widget.set_tooltip(
+                'where the grind sits spectrally: fine surfaces rub dark, '
+                'coarse ones bright -- character, not level')
+        vary_port = self.add_modulation_input(
+            'vary', self.unit.vary_in,
+            default_value=STRAIN_REGIMES[regime]['vary'],
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if vary_port.widget is not None:
+            vary_port.widget.set_tooltip(
+                'ensemble: each release retunes the body up to half an '
+                'octave -- a walk crosses many boards, not one. Best with '
+                'short decay; with long, the ringing tails gliss')
+        self.chirp_input = self.add_modulation_input(
+            'chirp', self.unit.chirp_in,
+            default_value=STRAIN_REGIMES[regime]['chirp'],
+            minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency, minimum=20.0,
+                                  speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.make_drag_proportional(
+            self.add_modulation_input('decay', self.unit.decay_in,
+                                      default_value=STRAIN_REGIMES[regime]['decay'],
+                                      minimum=0.01, maximum=60.0, speed=0.05,
+                                      slider=False))
+        dry_port = self.add_modulation_input('dry', self.unit.dry_in,
+                                             minimum=0.0, maximum=1.0,
+                                             speed=0.01)
+        if dry_port.widget is not None:
+            dry_port.widget.set_tooltip(
+                'the raw slips and scrapes alongside the body: what keeps '
+                'a strain from being only its resonance')
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.regime_input = self.add_input('regime', widget_type='combo',
+                                           default_value=regime,
+                                           callback=self.regime_changed)
+        self.regime_input.widget.combo_items = list(STRAIN_REGIMES)
+
+        self._add_mode_table_ports(material)
+        self._add_mode_table_options()
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.grains_output = self.add_signal_output('grains out',
+                                                    self.unit.grains)
+        self.modes_output = self.add_output('modes out')
+        self.add_switch()
+        self.finish_synth_node()
+
+    def apply_regime_constants(self, name):
+        p = STRAIN_REGIMES[name]
+        self.unit.thresh = p['thresh']
+        self.unit.spread = p['spread']
+        self.unit.alpha = p['alpha']
+        self.unit.size_cap = p['cap']
+        self.unit.habituate = p['habituate']
+        self.unit.grain_seconds = p['grain']
+        self.unit.amp = p['amp']
+
+    def regime_changed(self):
+        chosen = any_to_string(self.regime_input())
+        if chosen == self._regime_shown or chosen not in STRAIN_REGIMES:
+            return
+        self._regime_shown = chosen
+        self.apply_regime_constants(chosen)
+        # The knobs a regime suggests are set through their widgets, so
+        # they stay the user's afterwards -- and stay put during a load.
+        if not self.in_loading_process:
+            p = STRAIN_REGIMES[chosen]
+            if self.chirp_input.widget is not None:
+                self.chirp_input.widget.set(p['chirp'])
+            for port in self.inputs:
+                name = port.get_label()
+                if name in ('decay', 'stretch', 'squeal', 'vary',
+                            'grind', 'texture') and port.widget is not None:
+                    port.widget.set(p[name])
+        self.parameters_changed()
+
+    def update_parameters_from_widgets(self):
+        # Restore the regime's physics before the knobs land on top.
+        chosen = any_to_string(self.regime_input())
+        if chosen in STRAIN_REGIMES:
+            self._regime_shown = chosen
+            self.apply_regime_constants(chosen)
+        super().update_parameters_from_widgets()
 
 
 class WindNode(SynthNode):

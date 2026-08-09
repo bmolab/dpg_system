@@ -3389,6 +3389,15 @@ def _warm_up_filter():
         _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, 0.5, 0.9, 0.5,
                        0.0, 0.0, 0.5, 0.99, np.uint64(12345), 0.0, 0.0,
                        output.copy(), output)
+        ap = np.zeros(3)
+        _strain_kernel(wide, 0.01, 0.5, 0.6, 10.0, 0.5, 100.0, 1.0, 0.2,
+                       0.5, 0.1, 0.2, 10.0, 0.01, 0.5, 1.7,
+                       bank.copy(), bank.copy(),
+                       bank.copy(), bank.copy(), bank.copy(), bank.copy(),
+                       state.copy(), state.copy(), ap, ap.copy(),
+                       0.0, 0.0, 0.01, 0.0, 0.99, 0.0, 0.1, 1.0, 0.0, 0.0,
+                       0.0, 1.0e-6, np.uint64(777), 0.2, output.copy(),
+                       output)
         quads = np.zeros((4, 5))
         quads[:, 0] = 1.0
         _clean_kernel(wide, quads, np.zeros((4, 2)), output)
@@ -7839,6 +7848,440 @@ class ShakerUnit(Unit):
         scratch = self._scratch[:frames]
         np.abs(result, out=scratch)
         self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
+                          habituate, grain_samples, amp_scale, chirp_a,
+                          squeal, squeal_inc, vary_oct, grind_gain, vel_k,
+                          tex_k, tex_comp,
+                          theta, radius, b1, b2, gains, ggains, s1, s2,
+                          ap_x, ap_y, s_prev, stress, threshold, pulse, gd,
+                          sq_phase, sq_rate, tune, vel_env, g_lp,
+                          max_strain, recover, rng, dry, out_raw, out):
+    """The strain engine: solids under stress, sample by sample.
+
+    'strain' is not a control but the physical variable the model runs
+    on -- a joint angle, a stretch, a load. Motion accumulates stress
+    (displacement since the last release); stress against a randomized
+    threshold releases an event; the event is a noise grain sized by
+    what was released, dispersed through an allpass chain (flexural
+    waves travel faster at high frequency, which is why lake ice
+    chirps), and rung through the mode bank. No motion, no stress, no
+    sound -- stillness is silent by construction, and a release rate
+    that follows speed is what makes a creak legible as effort.
+
+    The material remembers: strain beyond the old maximum releases at
+    full strength, familiar territory at the habituated fraction, and
+    the memory relaxes over tens of seconds. Paper is loud once; a
+    hinge creaks every time; ice cracks and is done. One number per
+    regime says which.
+    """
+    modes = b1.shape[0]
+    stages = ap_x.shape[0]
+    # Each release may come from a slightly different object -- a walk
+    # crosses many boards, a crumple has many facets. 'tune' is this
+    # event's member of the ensemble, and b1 is always derived from the
+    # angle and the current radius together, never stored across a
+    # radius change (the shaker taught that lesson).
+    for m in range(modes):
+        b1[m] = 2.0 * radius[m] * math.cos(theta[m] * tune)
+    for i in range(strain.shape[0]):
+        s = strain[i]
+        ds = s - s_prev
+        s_prev = s
+        speed = abs(ds)
+        stress += speed
+        # The grind: continuous frictional shearing between the slips,
+        # following how fast the strain is moving -- what breath is to
+        # the winds, the scrub of surfaces is to a bend.
+        vel_env += (speed - vel_env) * vel_k
+
+        if stress > threshold:
+            rng, u = _rand01(rng)
+            if alpha > 0.0:
+                size = (0.05 + u) ** (-alpha)
+                if size > size_cap:
+                    size = size_cap
+            else:
+                size = 0.5 + u
+            novel = 1.0 if s > max_strain else habituate
+            # A slip releases at most what static friction was holding:
+            # sudden huge motion makes a loud event, not an unbounded one.
+            overshoot = stress / thresh
+            if overshoot > 3.0:
+                overshoot = 3.0
+            pulse += amp_scale * size * novel * overshoot
+            if pulse > 50.0:
+                pulse = 50.0
+            # A big slip is a longer event -- a brief scrape, not a louder
+            # click. The grain's ring time follows the released size.
+            span = size
+            if span > 3.0:
+                span = 3.0
+            gd = math.exp(-1.0 / (grain_samples * (0.4 + 0.8 * span)))
+            # Each slip squeals at its own pitch, near the interface's
+            # resonance, jittered slip to slip.
+            rng, u3 = _rand01(rng)
+            sq_rate = squeal_inc * (0.75 + 0.5 * u3)
+            if vary_oct > 0.0:
+                rng, u4 = _rand01(rng)
+                tune = 2.0 ** ((u4 - 0.5) * 2.0 * vary_oct)
+                for m in range(modes):
+                    b1[m] = 2.0 * radius[m] * math.cos(theta[m] * tune)
+            stress = 0.0
+            rng, u2 = _rand01(rng)
+            threshold = thresh * (0.35 + spread * 1.3 * u2 * u2)
+
+        if s > max_strain:
+            max_strain = s
+        else:
+            max_strain += (s - max_strain) * recover
+
+        pulse *= gd
+        rng, nz = _rand01(rng)
+        # The slip's voice: noise at squeal 0, a friction oscillation at
+        # 1 -- the micro-rub of the interface itself. Its pitch droops as
+        # the grain decays, which is the swoop a real hinge makes as the
+        # slip decelerates.
+        hiss = 2.0 * nz - 1.0
+        drive = pulse if pulse < 1.0 else 1.0
+        sq_phase += sq_rate * (0.6 + 0.4 * drive)
+        if sq_phase > 6.283185307179586:
+            sq_phase -= 6.283185307179586
+        # The oscillation drives the bank coherently where noise
+        # spreads; scaled so the blend does not change the level.
+        voice = (1.0 - squeal) * hiss + squeal * 0.6 * math.sin(sq_phase)
+        # Cubed noise is coarse where white noise is smooth: heavy-tailed,
+        # gravelly, the texture of surfaces actually scrubbing.
+        rng, gz = _rand01(rng)
+        coarse = 2.0 * gz - 1.0
+        coarse = coarse * coarse * coarse
+        # Texture is where the grind sits spectrally: fine surfaces rub
+        # dark, coarse ones bright. One pole, loudness-compensated, so
+        # the knob moves the character and not the level.
+        g_lp += (coarse - g_lp) * tex_k
+
+        # Chirp is an event phenomenon -- a crack disperses, a steady
+        # scrub does not -- so only the events pass the allpass chain.
+        ev = pulse * voice
+        for k in range(stages):
+            v = -chirp_a * ev + ap_x[k] + chirp_a * ap_y[k]
+            ap_x[k] = ev
+            ap_y[k] = v
+            ev = v
+        grind_sig = grind_gain * vel_env * g_lp * tex_comp
+        raw = ev + grind_sig
+
+        # The grind excites the bank through its own gain vector: through
+        # a comb of resonators, WHICH modes are rubbed is audible where a
+        # spectral tilt of the noise is not.
+        total = 0.0
+        for m in range(modes):
+            y = (gains[m] * ev + ggains[m] * grind_sig
+                 + b1[m] * s1[m] + b2[m] * s2[m])
+            if y > 1.5:
+                y = 1.5 + np.tanh(y - 1.5)
+            elif y < -1.5:
+                y = -1.5 - np.tanh(-y - 1.5)
+            s2[m] = s1[m]
+            s1[m] = y
+            total += y
+        out_raw[i] = raw
+        out[i] = total + dry * raw
+    return (s_prev, stress, threshold, pulse, gd, sq_phase, sq_rate,
+            tune, vel_env, g_lp, max_strain, rng)
+
+
+if _HAVE_NUMBA:
+    _strain_kernel = njit(cache=True, fastmath=True)(_strain_kernel_source)
+else:
+    _strain_kernel = _strain_kernel_source
+
+
+class StrainUnit(Unit):
+    """Solids under stress: creak, crumple and crack from a strain input.
+
+    The first unit whose input is effort itself rather than an
+    instrument's controls: patch a joint angle or a stretch into
+    'strain' and the model runs on it. Bending releases stick-slip
+    events whose rate follows how fast you bend and whose loudness
+    follows 'resist' -- tissue paper to oak door -- and stillness is
+    silent by construction. The regime constants (set by the node's
+    combo) make the difference between a hinge that creaks every time,
+    paper that is loud only in new territory, and ice that cracks
+    rarely, hugely, and once.
+
+    'chirp' disperses each event the way a plate does -- flexural waves
+    outrun their lows -- which is the lake-ice pew. The body is a mode
+    table, drawn in the same editor as modal~ and rub~.
+    """
+
+    MAX_MODES = 24
+    CHIRP_STAGES = 12
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.strain_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.resist_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.stretch_in = self.new_inlet(base=0.3, minimum=-1.0, maximum=1.0)
+        self.squeal_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.grind_in = self.new_inlet(base=0.2, minimum=0.0, maximum=1.0)
+        self.texture_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.vary_in = self.new_inlet(base=0.15, minimum=0.0, maximum=1.0)
+        self.chirp_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.frequency_in = self.new_inlet(base=700.0, minimum=20.0)
+        self.pitch_in = self.new_inlet()
+        self.decay_in = self.new_inlet(base=0.4, minimum=0.01, maximum=60.0)
+        self.dry_in = self.new_inlet(base=0.2, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        # Regime statistics, set by the node's combo.
+        self.thresh = 0.004
+        self.spread = 0.5
+        self.alpha = 0.0
+        self.size_cap = 2.0
+        self.habituate = 0.6
+        self.grain_seconds = 0.003
+        self.amp = 0.25
+
+        self._modes = np.array([[1.0, 1.0, 1.0]], dtype=np.float64)
+        self._weight_norm = 1.0
+        self._s1 = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._s2 = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._b1 = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._b2 = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._gains = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._gains_live = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._ggains = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._live_count = 0
+        self._fm = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._theta = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._radius = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._mode_scratch = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._ap_x = np.zeros(StrainUnit.CHIRP_STAGES, dtype=np.float64)
+        self._ap_y = np.zeros(StrainUnit.CHIRP_STAGES, dtype=np.float64)
+
+        self._s_prev = 0.0
+        self._stress = 0.0
+        self._threshold = self.thresh
+        self._pulse = 0.0
+        self._gd = 0.99
+        self._sq_phase = 0.0
+        self._sq_rate = 0.0
+        self._tune = 1.0
+        self._vel_env = 0.0
+        self._g_lp = 0.0
+        self._max_strain = 0.0
+        StrainUnit._seeded = getattr(StrainUnit, '_seeded', 0) + 1
+        seed = (StrainUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self.grains = self.new_outlet()
+        self._raw = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._strain = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def set_modes(self, table):
+        """Same live-edit contract as modal~ and rub~."""
+        rows = [row for row in table[:StrainUnit.MAX_MODES]]
+        if not rows:
+            rows = [(1.0, 1.0, 1.0)]
+        fresh = np.array(rows, dtype=np.float64)
+        resized = fresh.shape[0] != self._modes.shape[0]
+        self._modes = fresh
+        self._weight_norm = max(1.0, float(np.sum(np.abs(fresh[:, 1]))))
+        if resized:
+            self._s1[:] = 0.0
+            self._s2[:] = 0.0
+
+    def reset(self):
+        self._s1[:] = 0.0
+        self._s2[:] = 0.0
+        self._ap_x[:] = 0.0
+        self._ap_y[:] = 0.0
+        self._stress = 0.0
+        self._pulse = 0.0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def render(self, frames):
+        strain = self.strain_in.eval(frames)
+        resist = self.resist_in.eval(frames)
+        stretch = self.stretch_in.eval(frames)
+        squeal = self.squeal_in.eval(frames)
+        grind = self.grind_in.eval(frames)
+        texture = self.texture_in.eval(frames)
+        vary = self.vary_in.eval(frames)
+        chirp = self.chirp_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        decay = self.decay_in.eval(frames)
+        dry = self.dry_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        bend = self._strain[:frames]
+        if strain.constant:
+            bend[:] = strain.value
+            still = True
+        else:
+            np.copyto(bend, strain.data[:frames])
+            still = False
+        np.clip(bend, 0.0, 1.0, out=bend)
+
+        # Stillness makes no events; once the body has rung down there is
+        # nothing left to render. A held strain is stillness too.
+        if self._quiet and still and self._pulse < 1.0e-6:
+            self._s_prev = float(bend[0])
+            out.set_constant(0.0)
+            self.grains.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        resist_now = scalar(resist, 0.0, 1.0)
+        chirp_now = scalar(chirp, 0.0, 1.0)
+        seconds = scalar(decay, 0.01, 60.0)
+
+        curve = self._scratch[:frames]
+        self._build_hertz(curve, frequency, pitch, frames, 20.0)
+        f0 = float(curve[0])
+        # The body is under load: stress-stiffening shifts its resonances
+        # with the strain itself, up to an octave across the full bend.
+        # The coefficients rebuild per block over persistent ring states,
+        # so the rings BEND as the bending continues -- a groan that rises
+        # through the gesture rather than a row of identical pings.
+        stretch_now = scalar(stretch, -1.0, 1.0)
+        f0 *= 2.0 ** (stretch_now * float(bend[0]))
+
+        modes = self._modes
+        count = modes.shape[0]
+        ratios = modes[:, 0]
+        weights = modes[:, 1]
+        decay_scale = modes[:, 2]
+
+        fm = self._fm[:count]
+        np.multiply(ratios, f0, out=fm)
+        limit = self.sample_rate * 0.45
+        theta = self._theta[:count]
+        np.clip(fm, 1.0, limit, out=theta)
+        theta *= 2.0 * math.pi / self.sample_rate
+        radius = self._radius[:count]
+        np.multiply(decay_scale, seconds * self.sample_rate, out=radius)
+        np.clip(radius, 1.0, None, out=radius)
+        np.divide(-6.907755, radius, out=radius)
+        np.exp(radius, out=radius)
+        # b1 is the kernel's to derive (per-event ensemble
+        # retuning); only the ingredients are prepared here.
+        b1 = self._b1[:count]
+        b2 = self._b2[:count]
+        np.multiply(radius, radius, out=b2)
+        np.negative(b2, out=b2)
+        gains = self._gains[:count]
+        np.sin(theta, out=gains)
+        gains *= weights
+        gains /= self._weight_norm
+        alive = self._mode_scratch[:count]
+        np.less_equal(fm, limit, out=alive, casting='unsafe')
+        gains *= alive
+        live = self._gains_live[:count]
+        if count != self._live_count:
+            np.copyto(live, gains)
+            self._live_count = count
+        else:
+            step = self._mode_scratch[:count]
+            np.subtract(gains, live, out=step)
+            step *= 0.35
+            live += step
+
+        # 'resist': tissue paper to oak door. Heavier resistance means
+        # sparser, bigger, louder releases.
+        thresh_eff = self.thresh * (4.0 ** (2.0 * resist_now - 1.0))
+        amp_eff = self.amp * (2.0 ** (2.0 * resist_now - 1.0))
+        grain_samples = self.grain_seconds * self.sample_rate
+        chirp_a = chirp_now * 0.5
+        squeal_now = scalar(squeal, 0.0, 1.0)
+        # The interface's own resonance sits above the body and rides both
+        # the load and the stretched state: heavier and tighter squeal
+        # higher, and the whole system agrees about where the strain is.
+        squeal_hz = min(self.sample_rate * 0.4,
+                        f0 * 2.5 * (0.6 + 0.8 * resist_now))
+        squeal_inc = 2.0 * math.pi * squeal_hz / self.sample_rate
+        vary_oct = scalar(vary, 0.0, 1.0) * 0.5
+        dry_now = scalar(dry, 0.0, 1.0)
+        # Grind rides speed (in strain-units per second, enveloped over
+        # ~20 ms) and leans on the load like everything frictional.
+        # Full knob is a modest scrub: the useful range of a texture is
+        # narrow, so the whole travel is spent inside it.
+        grind_gain = (scalar(grind, 0.0, 1.0) * (0.4 + 0.8 * resist_now)
+                      * 0.12 * self.sample_rate)
+        vel_k = 1.0 - math.exp(-1.0 / (0.02 * self.sample_rate))
+        tex_now = scalar(texture, 0.0, 1.0)
+        tex_cut = 150.0 * (80.0 ** tex_now)
+        tex_k = 1.0 - math.exp(-2.0 * math.pi * tex_cut / self.sample_rate)
+        tex_comp = math.sqrt((2.0 - tex_k) / tex_k)
+        # Dark rubs the low modes, bright the high: the grind's own
+        # injection gains, tilted by texture and held at equal total.
+        ggains = self._ggains[:count]
+        np.power(ratios, (tex_now - 0.5) * 3.0, out=ggains)
+        ggains *= live
+        # Held at equal POWER, exactly: the two-pole's noise-energy
+        # transfer has a closed form, and the one-pole pre-filter shapes
+        # what each mode receives at its own frequency. Both go into the
+        # balance, referenced to white injection through the live gains,
+        # so turning the texture knob moves character and nothing else.
+        r2 = radius * radius
+        cos2 = np.cos(2.0 * theta)
+        energy = (1.0 + r2) / ((1.0 - r2)
+                               * (1.0 - 2.0 * r2 * cos2 + r2 * r2))
+        one_minus_k = 1.0 - tex_k
+        lp_psd = ((tex_comp * tex_k) ** 2
+                  / (1.0 - 2.0 * one_minus_k * np.cos(theta)
+                     + one_minus_k * one_minus_k))
+        target = float(np.sum(live * live * energy))
+        current = float(np.sum(ggains * ggains * lp_psd * energy))
+        if current > 1.0e-18:
+            ggains *= math.sqrt(target / current)
+        recover = 1.0 / (20.0 * self.sample_rate)
+
+        result = self._y[:frames]
+        (self._s_prev, self._stress, self._threshold, self._pulse,
+         self._gd, self._sq_phase, self._sq_rate, self._tune,
+         self._vel_env, self._g_lp, self._max_strain,
+         rng_state) = _strain_kernel(
+            bend, thresh_eff, self.spread, self.alpha, self.size_cap,
+            self.habituate, grain_samples, amp_eff, chirp_a,
+            squeal_now, squeal_inc, vary_oct, grind_gain, vel_k,
+            tex_k, tex_comp,
+            theta, radius, b1, b2,
+            live, ggains, self._s1[:count], self._s2[:count],
+            self._ap_x, self._ap_y,
+            self._s_prev, self._stress, self._threshold, self._pulse,
+            self._gd, self._sq_phase, self._sq_rate, self._tune,
+            self._vel_env, self._g_lp, self._max_strain, recover,
+            self._rng, dry_now, self._raw[:frames], result)
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+        np.copyto(self.grains.data[:frames], self._raw[:frames],
+                  casting='unsafe')
+        self.grains.constant = False
 
 
 class StrokeUnit(Unit):
