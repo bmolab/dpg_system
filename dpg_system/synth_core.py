@@ -8575,6 +8575,7 @@ class StrainUnit(Unit):
         self.texture_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.vary_in = self.new_inlet(base=0.15, minimum=0.0, maximum=1.0)
         self.chirp_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.pops_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.frequency_in = self.new_inlet(base=700.0, minimum=20.0)
         self.pitch_in = self.new_inlet()
         self.decay_in = self.new_inlet(base=0.4, minimum=0.01, maximum=60.0)
@@ -8679,6 +8680,7 @@ class StrainUnit(Unit):
         texture = self.texture_in.eval(frames)
         vary = self.vary_in.eval(frames)
         chirp = self.chirp_in.eval(frames)
+        pops = self.pops_in.eval(frames)
         frequency = self.frequency_in.eval(frames)
         pitch = self.pitch_in.eval(frames)
         decay = self.decay_in.eval(frames)
@@ -8792,7 +8794,24 @@ class StrainUnit(Unit):
         # they are entirely the loop's unsteadiness, and the bank hears
         # only the rare macro pops.
         mix = min(1.0, 2.0 * squeal_now)
-        macro_thresh = thresh_eff * 45.0
+        # How often the geometry lets go, exponentially: 0.5 is the
+        # natural rate, 0 is never, 1 is a rolling grumble of releases.
+        # An inlet, so an effort stream can DEMAND a pop.
+        pops_now = scalar(pops, 0.0, 1.0)
+        if pops_now < 0.005:
+            macro_thresh = 1.0e12
+            # The armed threshold predates the knob hitting zero: never
+            # means never, including the one already in the chamber.
+            if self._threshold2 < 1.0e11:
+                self._threshold2 = 1.0e12
+        else:
+            macro_thresh = thresh_eff * 45.0 * (8.0 ** (1.0 - 2.0 * pops_now))
+            # Thresholds redraw only at a release, so a knob turned UP
+            # must re-arm the pending one -- otherwise a spell at zero
+            # (or at rare) leaves an armed threshold too far away to
+            # ever fire at the new rate.
+            if self._threshold2 > macro_thresh * 1.6:
+                self._threshold2 = macro_thresh
         pop_amp = amp_eff * 1.5
         pk = 0.5 * self.sample_rate / (2.0 * math.pi * f0)
         vary_oct = scalar(vary, 0.0, 1.0) * 0.5

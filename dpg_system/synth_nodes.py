@@ -4810,6 +4810,14 @@ class StrainNode(ModeTableNode):
                 'dispersion: each event arrives high-first and sweeps '
                 'down, longer with more chirp -- the fracture is farther '
                 'away. Lake ice at 0.6 and up')
+        pops_port = self.add_modulation_input(
+            'pops', self.unit.pops_in, default_value=0.5,
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if pops_port.widget is not None:
+            pops_port.widget.set_tooltip(
+                'how often the geometry lets go, exponentially: 0 never, '
+                '0.5 occasional, 1 a rolling grumble of releases. Each '
+                'pop also jolts the squeal')
         self.add_modulation_input('frequency', self.unit.frequency_in,
                                   default_value=frequency, minimum=20.0,
                                   speed=1.0)
