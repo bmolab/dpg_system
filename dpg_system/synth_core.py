@@ -3403,6 +3403,12 @@ def _warm_up_filter():
         _bounce_kernel(breath, 1.0e-6, 0.7, 0.9, 100.0, 1000.0, 1.0e-4,
                        0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
                        np.uint64(3), output)
+        _motor_kernel(breath, 0.001, 4, 0.4, 0.3, state.copy(),
+                      0.2, 0.35, 0.3, 0.2, 0.1, 0.5,
+                      1.9, -0.97, 0.03, 1.9, -0.96, 0.04,
+                      0.05, 0.0, -1, 1.0, 0.0, 0.0,
+                      0.0, 0.0, 0.0, 0.0, 0.99, 0.0, 0.0,
+                      np.uint64(5), output)
         _drum_kernel(breath, bank.copy(), bank.copy(), bank.copy(),
                      bank.copy(), state.copy(), state.copy(),
                      0.2, 0.01, 0.5, 0.1, 0.015, 0.3,
@@ -8800,6 +8806,238 @@ class DrumUnit(Unit):
             dc_pole, self._env, self._tune_dev, self._hp,
             self._wy1, self._wy2,
             self._dc_x, self._dc_y, self._rng, result)
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
+                         offsets, jit_amt, amp_lo, amp_hi,
+                         grind_gain, grind_k, body_mix,
+                         bb1a, bb2a, bga, bb1b, bb2b, bgb,
+                         smooth_k, phase, prev_k, strength, vel,
+                         g_lp, ya1, ya2, yb1, yb2, dc_pole, dc_x, dc_y,
+                         rng, out):
+    """Rotating machinery, sample by sample: speed and load as streams.
+
+    The rotation phase advances with the (smoothed) speed; each of the
+    'parts' firings per revolution is a raised-cosine pulse whose width
+    is the tone -- narrow knocks to smooth hum. Every part carries a
+    fixed strength offset (throb spreads them), so uneven firing beats
+    at once per revolution: the idle lope of a real engine, not an LFO.
+    Load adds per-firing jitter and the grind of bearings underneath.
+    The housing is two fixed broad resonances -- housings do not track
+    RPM -- and a DC blocker takes out the pulse train's offset.
+    """
+    n_parts = offsets.shape[0]
+    for i in range(speed.shape[0]):
+        vel += (speed[i] - vel) * smooth_k
+        f = vel * rate_norm
+        phase += f
+        if phase >= 1.0:
+            phase -= 1.0
+        fphase = phase * parts
+        k = int(fphase)
+        if k >= parts:
+            k = parts - 1
+        frac = fphase - k
+        if k != prev_k:
+            prev_k = k
+            rng, u = _rand01(rng)
+            idx = k % n_parts
+            strength = (1.0 + throb * offsets[idx]) \
+                * (1.0 + jit_amt * (2.0 * u - 1.0))
+        p = 0.0
+        if frac < w_frac:
+            p = 0.5 * (1.0 - math.cos(6.283185307179586 * frac / w_frac))
+        amp = 0.55 * vel ** 0.6 if vel > 0.0 else 0.0
+        tone_sig = p * strength * amp * (amp_lo + amp_hi)
+        rng, nz = _rand01(rng)
+        coarse = 2.0 * nz - 1.0
+        coarse = coarse * coarse * coarse
+        g_lp += (coarse - g_lp) * grind_k
+        raw = tone_sig + grind_gain * amp * g_lp
+        ya = bga * raw + bb1a * ya1 + bb2a * ya2
+        ya2 = ya1
+        ya1 = ya
+        yb = bgb * raw + bb1b * yb1 + bb2b * yb2
+        yb2 = yb1
+        yb1 = yb
+        o = raw * (1.0 - 0.5 * body_mix) + body_mix * (ya + yb)
+        od = o - dc_x + dc_pole * dc_y
+        dc_x = o
+        dc_y = od
+        out[i] = od
+    return (phase, prev_k, strength, vel, g_lp, ya1, ya2, yb1, yb2,
+            dc_x, dc_y, rng)
+
+
+if _HAVE_NUMBA:
+    _motor_kernel = njit(cache=True, fastmath=True)(_motor_kernel_source)
+else:
+    _motor_kernel = _motor_kernel_source
+
+
+class MotorUnit(Unit):
+    """A machine: rotation as pitch, load as violence.
+
+    The second unit after whoosh~ whose mapping IS the physics, and the
+    first that wants two effort streams at once: 'speed' is rotation
+    (pitch linear in it, loudness rising, stillness silent), 'load' is
+    torque (each firing punchier and less regular, the grind of
+    bearings rising underneath). Velocity into one, torque into the
+    other, and a joint is an engine.
+
+    'rate' is the full-speed rotation in Hz. 'parts' is firings per
+    revolution -- one is a thumper, four an engine, eight a turbine's
+    whine. 'tone' widens the firing pulse from knock to electric hum.
+    'throb' spreads the parts' fixed strengths so the engine lopes at
+    once per revolution, which is what an idle shudder is. 'housing'
+    is a fixed pair of broad body resonances; for a specific machine,
+    patch through modal~ or formant~ instead.
+    """
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.speed_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.load_in = self.new_inlet(base=0.3, minimum=0.0, maximum=1.0)
+        self.rate_in = self.new_inlet(base=45.0, minimum=2.0, maximum=200.0)
+        self.parts_in = self.new_inlet(base=4.0, minimum=1.0, maximum=12.0)
+        self.tone_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.throb_in = self.new_inlet(base=0.35, minimum=0.0, maximum=1.0)
+        self.grind_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.housing_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        MotorUnit._seeded += 1
+        seed = (MotorUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+        # Each part's fixed unevenness: this motor's cylinders, every
+        # run, drawn once from the instance seed.
+        spread_rng = np.random.RandomState(seed & 0xFFFFFFFF or 1)
+        self._offsets = spread_rng.uniform(-0.5, 0.5, 12)
+        self._phase = 0.0
+        self._prev_k = -1
+        self._strength = 1.0
+        self._vel = 0.0
+        self._g_lp = 0.0
+        self._ya1 = 0.0
+        self._ya2 = 0.0
+        self._yb1 = 0.0
+        self._yb2 = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._speed = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._phase = 0.0
+        self._prev_k = -1
+        self._strength = 1.0
+        self._vel = 0.0
+        self._g_lp = 0.0
+        self._ya1 = 0.0
+        self._ya2 = 0.0
+        self._yb1 = 0.0
+        self._yb2 = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+    def render(self, frames):
+        speed = self.speed_in.eval(frames)
+        load = self.load_in.eval(frames)
+        rate = self.rate_in.eval(frames)
+        parts = self.parts_in.eval(frames)
+        tone = self.tone_in.eval(frames)
+        throb = self.throb_in.eval(frames)
+        grind = self.grind_in.eval(frames)
+        housing = self.housing_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        drive = self._speed[:frames]
+        if speed.constant:
+            drive[:] = speed.value
+            idle = abs(speed.value) < 1.0e-4
+        else:
+            np.copyto(drive, speed.data[:frames])
+            idle = False
+        np.clip(drive, 0.0, 1.5, out=drive)
+
+        if self._quiet and idle and self._vel < 1.0e-4:
+            out.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        load_now = scalar(load, 0.0, 1.0)
+        rate_now = scalar(rate, 2.0, 200.0)
+        parts_now = int(round(scalar(parts, 1.0, 12.0)))
+        tone_now = scalar(tone, 0.0, 1.0)
+        throb_now = scalar(throb, 0.0, 1.0)
+        grind_now = scalar(grind, 0.0, 1.0)
+        housing_now = scalar(housing, 0.0, 1.0)
+
+        rate_norm = rate_now / self.sample_rate
+        # Knock to hum: the firing pulse widens from a sixth of its
+        # interval to all of it, where it fuses into a near-sine.
+        w_frac = 0.16 + 0.84 * tone_now
+        # Load is punch and irregularity at once, as torque is.
+        jit_amt = 0.35 * load_now
+        amp_lo = 0.35
+        amp_hi = 0.65 * load_now
+        grind_gain = grind_now * (0.15 + 0.85 * load_now) * 0.8
+        grind_cut = 400.0 + 2600.0 * min(1.0, float(drive[0]))
+        grind_k = 1.0 - math.exp(-2.0 * math.pi * grind_cut
+                                 / self.sample_rate)
+        smooth_k = 1.0 - math.exp(-1.0 / (0.004 * self.sample_rate))
+        # The housing: two fixed broad resonances. Housings do not
+        # track RPM, which is why climbing through them reads as real.
+        r_a = 0.985
+        th_a = 2.0 * math.pi * 150.0 / self.sample_rate
+        r_b = 0.98
+        th_b = 2.0 * math.pi * 420.0 / self.sample_rate
+        bb1a = 2.0 * r_a * math.cos(th_a)
+        bb2a = -r_a * r_a
+        # (1-r)*sin(theta): unity at the peak. The third time this
+        # normalization has been learned; may it be the last.
+        bga = (1.0 - r_a) * math.sin(th_a) * 1.2
+        bb1b = 2.0 * r_b * math.cos(th_b)
+        bb2b = -r_b * r_b
+        bgb = (1.0 - r_b) * math.sin(th_b) * 1.2
+        corner = min(30.0, max(2.0, rate_now * 0.3))
+        dc_pole = math.exp(-2.0 * math.pi * corner / self.sample_rate)
+
+        result = self._y[:frames]
+        (self._phase, self._prev_k, self._strength, self._vel, self._g_lp,
+         self._ya1, self._ya2, self._yb1, self._yb2,
+         self._dc_x, self._dc_y, rng_state) = _motor_kernel(
+            drive, rate_norm, parts_now, w_frac, throb_now,
+            self._offsets, jit_amt, amp_lo, amp_hi,
+            grind_gain, grind_k, housing_now,
+            bb1a, bb2a, bga, bb1b, bb2b, bgb,
+            smooth_k, self._phase, self._prev_k, self._strength,
+            self._vel, self._g_lp, self._ya1, self._ya2,
+            self._yb1, self._yb2, dc_pole, self._dc_x, self._dc_y,
+            self._rng, result)
         self._rng = np.uint64(rng_state)
 
         self._apply_level(result, out_level, frames)

@@ -30,7 +30,7 @@ from dpg_system.synth_core import (
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
-    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit)
+    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit, MotorUnit)
 
 import os
 
@@ -93,6 +93,8 @@ def register_synth_nodes():
     Node.app.register_node('bowed~', BowNode.factory)
     Node.app.register_node('brass~', BrassNode.factory)
     Node.app.register_node('horn~', BrassNode.factory)
+    Node.app.register_node('motor~', MotorNode.factory)
+    Node.app.register_node('engine~', MotorNode.factory)
     Node.app.register_node('bounce~', BounceNode.factory)
     Node.app.register_node('drop~', BounceNode.factory)
     Node.app.register_node('drum~', DrumNode.factory)
@@ -4630,6 +4632,84 @@ class BounceNode(SynthNode):
                 'leaning into the roll: faster returns, deader rebound, '
                 'sooner buzz. THE roll control -- map an effort here')
         self.add_modulation_input('hardness', self.unit.hardness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
+
+
+class MotorNode(SynthNode):
+    """A machine: speed and load as two effort streams.
+
+    The mapping is the physics: 'speed' is rotation -- pitch linear in
+    it, loudness rising, stillness silent -- and 'load' is torque:
+    each firing punchier and less regular, the bearing grind rising
+    underneath. Velocity into one, torque into the other, and a joint
+    is an engine.
+
+    'rate' is full-speed rotation in Hz; 'parts' the firings per
+    revolution (one thumps, four is an engine, eight whines); 'tone'
+    widens the firing from knock to electric hum; 'throb' spreads the
+    parts' fixed strengths into a once-per-revolution lope -- the
+    idle shudder; 'grind' the bearings; 'housing' a fixed pair of
+    body resonances. For a specific machine, patch through modal~ or
+    formant~ instead.
+
+    motor~ <rate>, e.g. motor~ 30. engine~ is the same node.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MotorNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = MotorUnit(synth_graph.sample_rate)
+
+        if args is not None:
+            for arg in args:
+                try:
+                    self.unit.rate_in.base = max(2.0, min(200.0,
+                                                          float(arg)))
+                except (ValueError, TypeError):
+                    continue
+
+        speed_port = self.add_modulation_input('speed', self.unit.speed_in,
+                                               minimum=0.0, maximum=1.5,
+                                               speed=0.01)
+        if speed_port.widget is not None:
+            speed_port.widget.set_tooltip(
+                'rotation: pitch linear in it, loudness rising with it, '
+                'stillness silent. A velocity stream belongs here')
+        load_port = self.add_modulation_input('load', self.unit.load_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if load_port.widget is not None:
+            load_port.widget.set_tooltip(
+                'torque: punchier, rougher firings and rising bearing '
+                'grind. An effort or torque stream belongs here')
+        rate_port = self.add_modulation_input(
+            'rate', self.unit.rate_in,
+            default_value=self.unit.rate_in.base,
+            minimum=2.0, maximum=200.0, speed=0.2, slider=False)
+        self.make_drag_proportional(rate_port)
+        self.add_modulation_input('parts', self.unit.parts_in,
+                                  minimum=1.0, maximum=12.0, speed=0.05)
+        self.add_modulation_input('tone', self.unit.tone_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        throb_port = self.add_modulation_input('throb', self.unit.throb_in,
+                                               minimum=0.0, maximum=1.0,
+                                               speed=0.01)
+        if throb_port.widget is not None:
+            throb_port.widget.set_tooltip(
+                'uneven firing: this motor\'s own cylinders, loping at '
+                'once per revolution. The idle shudder')
+        self.add_modulation_input('grind', self.unit.grind_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('housing', self.unit.housing_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('level', self.unit.level_in,
                                   minimum=0.0, maximum=2.0, speed=0.01)
