@@ -3381,8 +3381,12 @@ def _warm_up_filter():
         _bow_kernel(breath, breath, line.copy(), line.copy(), 0,
                     taps, taps, zeros, 0.995, 0.0, 0.0, 0.0, output)
         _brass_kernel(breath, zeros, line, 0, line.copy(), 0, taps,
-                      zeros, 1.9, -0.98, 0.04, 0.5, 0.0, 0.0, 0.0,
-                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, output)
+                      zeros, 1.9, -0.98, 0.04, 0.5,
+                      0.95, 0.3, 0.08, 1.8, -0.88, 0.05,
+                      1.5, -0.9, 0.06, 0.2, 0.8, 0.8,
+                      line.copy(), 40, 0.6, 0.7,
+                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                      0.0, 0.0, 0.0, 0, 0.0, 0.0, output)
         _rub_kernel(breath, breath.copy(), breath.copy(), bank.copy(),
                     bank.copy(), bank.copy(), bank.copy(), state.copy(),
                     state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
@@ -6943,8 +6947,11 @@ else:
 def _brass_kernel_source(pressure, noise_amt, noise, noise_at,
                          bore, write, delay, damp,
                          lip_b1, lip_b2, lip_b0, bias,
-                         low, rb_x, rb_y, dp1, dp2, y1, y2, dc_x, dc_y,
-                         out):
+                         refl_gain, mute, hp_k, fb1, fb2, fg,
+                         bb1, bb2, bg, m_dir, m_buzz, m_stem,
+                         cav, comb_d, comb_g, bark,
+                         low, rb_x, rb_y, dp1, dp2, y1, y2, f1, f2,
+                         g1, g2, hpst, cidx, dc_x, dc_y, out):
     """The lip valve against the bore, sample by sample.
 
     The lip is not a table but an oscillator: a bandpass resonator (it
@@ -6961,6 +6968,17 @@ def _brass_kernel_source(pressure, noise_amt, noise, noise_at,
     static pressure escapes, waves return), without which the bore
     charges up to the breath and the pressure difference that drives
     everything collapses.
+
+    The mute is a harmon: a cork-sealed cavity in the bell. It works
+    on both sides. To the lips, the seal reflects more back across
+    more of the spectrum -- the stuffed feel. To the room, the seal
+    strips the body from the sound (a highpass: the fundamental
+    barely escapes, which is the famous thinness), and what remains
+    leaves through the small hole -- its own fixed buzzy resonance,
+    stem out -- or through the stem, whose resonance is the surface
+    the hand plays: 'wah' sweeps it, working on the thinned sound,
+    which is why a harmon wah talks where a plain formant only
+    filters.
 
     What the coupled system does from there is brass: the sounding pitch
     locks to whichever bore harmonic sits nearest the lip's resonance,
@@ -6984,7 +7002,7 @@ def _brass_kernel_source(pressure, noise_amt, noise, noise_at,
         p_bore = _cubic_read(bore, size, read)
 
         low += (p_bore - low) * (1.0 - damp[i])
-        r = 0.95 * low
+        r = refl_gain * low
         refl = r - rb_x + 0.995 * rb_y
         rb_x = r
         rb_y = refl
@@ -7016,12 +7034,52 @@ def _brass_kernel_source(pressure, noise_amt, noise, noise_at,
         o = p_bore - dc_x + 0.995 * dc_y
         dc_x = p_bore
         dc_y = o
-        out[i] = o
+        hpst += (o - hpst) * hp_k
+        thin = o - hpst
+        # The stem is a tube from INSIDE the seal: its resonance taps
+        # the full bell sound, lows and all, which is why a closed
+        # hand can still honk dark instead of vanishing.
+        fm = fg * o + fb1 * f1 + fb2 * f2
+        f2 = f1
+        f1 = fm
+        bz = bg * thin + bb1 * g1 + bb2 * g2
+        g2 = g1
+        g1 = bz
+        esc = m_dir * thin + m_buzz * bz
+        # The bark: sound squeezing through a small hole is not
+        # linear -- louder moments snarl. Odd, DC-free, bounded.
+        a = esc if esc >= 0.0 else -esc
+        if a > 1.2:
+            a = 1.2
+        esc = esc * (1.0 + bark * a)
+        # The hollowness AND the tin: the cavity is a shallow metal
+        # space. Feedforward cuts the notches (cupped hands);
+        # feedback makes it RING at its harmonics -- the small tin
+        # chamber answering the jet.
+        rd = cidx - comb_d
+        if rd < 0:
+            rd += cav.shape[0]
+        held = cav[rd]
+        hollow = (esc - comb_g * held) * 0.8
+        cav[cidx] = esc + 0.55 * held
+        cidx += 1
+        if cidx >= cav.shape[0]:
+            cidx = 0
+        # The stem tube passes THROUGH the cork to open air: its voice
+        # joins after the cavity, not inside it, which is why the wah
+        # keeps its full vowel over the hollow. It barks on its own.
+        sfm = m_stem * fm
+        a2 = sfm if sfm >= 0.0 else -sfm
+        if a2 > 1.2:
+            a2 = 1.2
+        sfm = sfm * (1.0 + bark * a2)
+        out[i] = (1.0 - mute) * o + mute * (hollow + sfm)
 
         write += 1
         if write >= size:
             write = 0
-    return (write, noise_at, low, rb_x, rb_y, dp1, dp2, y1, y2, dc_x, dc_y)
+    return (write, noise_at, low, rb_x, rb_y, dp1, dp2, y1, y2, f1, f2,
+            g1, g2, hpst, cidx, dc_x, dc_y)
 
 
 if _HAVE_NUMBA:
@@ -7071,6 +7129,9 @@ class BrassUnit(Unit):
         self.brightness_in = self.new_inlet(base=0.7, minimum=0.0,
                                             maximum=1.0)
         self.noise_in = self.new_inlet(base=0.02, minimum=0.0, maximum=1.0)
+        self.mute_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.stem_in = self.new_inlet(base=1.0, minimum=0.0, maximum=1.0)
+        self.wah_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
         size = int(self.sample_rate / BrassUnit.MIN_FREQUENCY) + 8
@@ -7083,6 +7144,14 @@ class BrassUnit(Unit):
         self._dp2 = 0.0
         self._y1 = 0.0
         self._y2 = 0.0
+        self._f1 = 0.0
+        self._f2 = 0.0
+        self._g1 = 0.0
+        self._g2 = 0.0
+        self._hpst = 0.0
+        self._cav = np.zeros(256, dtype=np.float64)
+        self._cidx = 0
+        self._wah_live = 0.5
         self._dc_x = 0.0
         self._dc_y = 0.0
 
@@ -7109,6 +7178,13 @@ class BrassUnit(Unit):
         self._dp2 = 0.0
         self._y1 = 0.0
         self._y2 = 0.0
+        self._f1 = 0.0
+        self._f2 = 0.0
+        self._g1 = 0.0
+        self._g2 = 0.0
+        self._hpst = 0.0
+        self._cav[:] = 0.0
+        self._cidx = 0
         self._dc_x = 0.0
         self._dc_y = 0.0
         self._quiet = True
@@ -7123,6 +7199,9 @@ class BrassUnit(Unit):
         pitch = self.pitch_in.eval(frames)
         brightness = self.brightness_in.eval(frames)
         noise = self.noise_in.eval(frames)
+        mute = self.mute_in.eval(frames)
+        stem = self.stem_in.eval(frames)
+        wah = self.wah_in.eval(frames)
         out_level = self.level_in.eval(frames)
 
         out = self.out
@@ -7148,6 +7227,17 @@ class BrassUnit(Unit):
                           BrassUnit.MIN_FREQUENCY)
         f0 = float(freq[0])
 
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        mute_now = scalar(mute, 0.0, 1.0)
+        stem_now = scalar(stem, 0.0, 1.0)
+        wah_now = scalar(wah, 0.0, 1.0)
+        # The formant glides rather than steps: a hand over a harmon
+        # stem is not quantized to blocks.
+        self._wah_live += (wah_now - self._wah_live) * 0.2
+
         damp = self._damp[:frames]
         if brightness.constant:
             damp[:] = 1.0 - brightness.value
@@ -7155,6 +7245,10 @@ class BrassUnit(Unit):
             np.subtract(1.0, brightness.data[:frames], out=damp,
                         casting='unsafe')
         np.clip(damp, 0.0, 0.95, out=damp)
+        # The mute's small aperture widens what the bell reflects: the
+        # lips get more back, across more of the spectrum. Stuffiness.
+        if mute_now > 0.0:
+            damp *= 1.0 - 0.45 * mute_now
 
         namt = self._namt[:frames]
         if noise.constant:
@@ -7182,15 +7276,56 @@ class BrassUnit(Unit):
         lip_b2 = -r_lip * r_lip
         lip_b0 = BrassUnit.LIP_GAIN * (1.0 - r_lip)
 
+        refl_gain = 0.95 + 0.035 * mute_now
+        # The mute cavity: a vocal formant on what escapes, swept by
+        # wah from closed hand (dark) to open (bright). The crossfade
+        # completes by seventy percent of the knob -- past that the
+        # horn speaks only through the cavity, which is what a harmon
+        # is -- and the formant is sharp enough to be a vowel.
+        mute_mix = min(1.0, mute_now * 1.4)
+        # The seal: the cavity strips the body from what escapes.
+        hp_k = 1.0 - math.exp(-2.0 * math.pi * 600.0 / self.sample_rate)
+        # The stem: the hand's surface, swept by wah on the THINNED
+        # sound -- which is why the harmon vowel talks.
+        f_mute = 260.0 * 9.0 ** self._wah_live
+        th_f = 2.0 * math.pi * min(f_mute, 0.4 * self.sample_rate) \
+            / self.sample_rate
+        r_f = 0.965
+        fb1 = 2.0 * r_f * math.cos(th_f)
+        fb2 = -r_f * r_f
+        fg = (1.0 - r_f) * math.sin(th_f) * 1.3
+        # The small hole itself: fixed, buzzy, the stem-out voice.
+        th_b = 2.0 * math.pi * min(2600.0, 0.4 * self.sample_rate) \
+            / self.sample_rate
+        r_b = 0.95
+        bb1 = 2.0 * r_b * math.cos(th_b)
+        bb2 = -r_b * r_b
+        bg = (1.0 - r_b) * math.sin(th_b) * 1.2
+        # The stem sits IN the hole but air still rushes through the
+        # annulus around it: inserting the stem keeps the bright buzz
+        # and ADDS the vocal tube over it. The high timbre stays.
+        m_dir = 0.18 * (1.0 - 0.7 * stem_now)
+        m_buzz = 1.3 * (1.0 - 0.2 * stem_now)
+        m_stem = 2.3 * stem_now
+        # The cavity's depth, well under a millisecond: notches and
+        # ring harmonics every twelve hundred hertz or so. Tin.
+        comb_d = max(8, min(250, int(0.0008 * self.sample_rate)))
+
         result = self._y[:frames]
         (self._write, self._noise_at, self._low, self._rb_x, self._rb_y,
-         self._dp1, self._dp2, self._y1, self._y2, self._dc_x,
-         self._dc_y) = _brass_kernel(
+         self._dp1, self._dp2, self._y1, self._y2, self._f1, self._f2,
+         self._g1, self._g2, self._hpst, self._cidx,
+         self._dc_x, self._dc_y) = _brass_kernel(
             press, namt, self._noise, self._noise_at,
             self.bore, self._write, taps, damp,
             lip_b1, lip_b2, lip_b0, BrassUnit.LIP_BIAS,
+            refl_gain, mute_mix, hp_k, fb1, fb2, fg,
+            bb1, bb2, bg, m_dir, m_buzz, m_stem,
+            self._cav, comb_d, 0.65, 1.4,
             self._low, self._rb_x, self._rb_y, self._dp1, self._dp2,
-            self._y1, self._y2, self._dc_x, self._dc_y, result)
+            self._y1, self._y2, self._f1, self._f2,
+            self._g1, self._g2, self._hpst, self._cidx,
+            self._dc_x, self._dc_y, result)
 
         # Down to the family's level: a locked partial peaks near +-1
         # like the other instruments, with the blat above that.

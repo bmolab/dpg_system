@@ -5406,6 +5406,30 @@ class BrassNode(SynthNode):
             self.add_modulation_input('breath', self.unit.noise_in,
                                       minimum=0.0, maximum=1.0,
                                       slider=False))
+        mute_port = self.add_modulation_input('mute', self.unit.mute_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if mute_port.widget is not None:
+            mute_port.widget.set_tooltip(
+                'the harmon: a cork-sealed cavity in the bell. More back '
+                'to the lips, the body stripped from what escapes. 0 is '
+                'the open horn, exactly')
+        stem_port = self.add_modulation_input('stem', self.unit.stem_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if stem_port.widget is not None:
+            stem_port.widget.set_tooltip(
+                'the harmon stem: out (0) is the bare small hole, thin '
+                'and buzzy; in (1) is the tube the hand plays -- wah '
+                'works on this')
+        wah_port = self.add_modulation_input('wah', self.unit.wah_in,
+                                             minimum=0.0, maximum=1.0,
+                                             speed=0.01)
+        if wah_port.widget is not None:
+            wah_port.widget.set_tooltip(
+                'the hand over the harmon stem: the mute cavity sweeps '
+                'dark to bright. Only audible with mute up -- patch a '
+                'slow stream here and the horn talks')
         self.add_modulation_input('level', self.unit.level_in,
                                   minimum=0.0, maximum=2.0, speed=0.01)
 
