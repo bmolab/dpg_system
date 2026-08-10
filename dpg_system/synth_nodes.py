@@ -30,7 +30,7 @@ from dpg_system.synth_core import (
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
-    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit)
+    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit)
 
 import os
 
@@ -93,6 +93,10 @@ def register_synth_nodes():
     Node.app.register_node('bowed~', BowNode.factory)
     Node.app.register_node('brass~', BrassNode.factory)
     Node.app.register_node('horn~', BrassNode.factory)
+    Node.app.register_node('bounce~', BounceNode.factory)
+    Node.app.register_node('drop~', BounceNode.factory)
+    Node.app.register_node('drum~', DrumNode.factory)
+    Node.app.register_node('skin~', DrumNode.factory)
     Node.app.register_node('strain~', StrainNode.factory)
     Node.app.register_node('creak~', StrainNode.factory)
     Node.app.register_node('noise~', NoiseNode.factory)
@@ -4573,6 +4577,208 @@ class RubNode(ModeTableNode):
         self.modes_output = self.add_output('modes out')
         self.add_switch()
         self.finish_synth_node()
+
+
+class BounceNode(SynthNode):
+    """A dropped mallet: rolls and rebounds as gravity, not patterns.
+
+    'drop' rising from zero drops the mallet from that height; the
+    bounces accelerate and weaken geometrically until the buzz, which
+    is just what gravity does. An LFO here is a stroke per cycle; a
+    hand's height is a roll played by lowering it. 'gravity' is the
+    first fall's time, 'bounce' the rebound, 'press' the lean into the
+    roll -- faster, deader, sooner buzz -- 'hardness' each contact.
+
+    The output is a train of half-cosine force pulses: patch it into
+    drum~'s or modal~'s excite in. bounce~ <fall-time>, drop~ too.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return BounceNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = BounceUnit(synth_graph.sample_rate)
+
+        if args is not None:
+            for arg in args:
+                try:
+                    self.unit.gravity_in.base = max(0.02, min(2.0,
+                                                              float(arg)))
+                except (ValueError, TypeError):
+                    continue
+
+        self.add_modulation_input('drop', self.unit.drop_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        gravity_port = self.add_modulation_input(
+            'gravity', self.unit.gravity_in,
+            default_value=self.unit.gravity_in.base,
+            minimum=0.02, maximum=2.0, speed=0.005, slider=False)
+        self.make_drag_proportional(gravity_port)
+        if gravity_port.widget is not None:
+            gravity_port.widget.set_tooltip(
+                'the first fall, in seconds: the timescale everything '
+                'else follows')
+        self.add_modulation_input('bounce', self.unit.bounce_in,
+                                  minimum=0.0, maximum=0.99, speed=0.01)
+        press_port = self.add_modulation_input('press', self.unit.press_in,
+                                               minimum=0.0, maximum=1.0,
+                                               speed=0.01)
+        if press_port.widget is not None:
+            press_port.widget.set_tooltip(
+                'leaning into the roll: faster returns, deader rebound, '
+                'sooner buzz. THE roll control -- map an effort here')
+        self.add_modulation_input('hardness', self.unit.hardness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
+
+
+# What the kinds carry is a drum, not just a tuning: head frequency and
+# ring, how much the pitch rides the hit, whether wires are on the far
+# side, and which table the head is.
+DRUM_KINDS = {
+    'kick':  {'frequency': 55.0, 'decay': 0.35, 'tension': 0.5,
+              'snares': 0.0, 'hardness': 0.35, 'position': 0.5,
+              'material': 'membrane'},
+    'snare': {'frequency': 185.0, 'decay': 0.18, 'tension': 0.15,
+              'snares': 0.85, 'hardness': 0.8, 'position': 0.35,
+              'material': 'membrane'},
+    'tom':   {'frequency': 110.0, 'decay': 0.5, 'tension': 0.45,
+              'snares': 0.0, 'hardness': 0.55, 'position': 0.35,
+              'material': 'membrane'},
+    'tabla': {'frequency': 170.0, 'decay': 0.7, 'tension': 0.9,
+              'snares': 0.0, 'hardness': 0.75, 'position': 0.2,
+              'material': 'tabla'},
+    'frame': {'frequency': 90.0, 'decay': 0.9, 'tension': 0.25,
+              'snares': 0.0, 'hardness': 0.4, 'position': 0.45,
+              'material': 'membrane'},
+}
+
+
+class DrumNode(ModeTableNode):
+    """A drum: the membrane bank plus the physics modal~ leaves out.
+
+    A hard hit lands pitched sharp and bends down through its ring --
+    'tension', where tabla and toms live -- and 'snares' are wires
+    shaken by the head itself, rattling while the drum speaks and
+    dying with it. 'hit' is the mallet (trigger height is velocity);
+    'excite in' hears audio, which is where bounce~ goes, and a roll
+    is bounce~ pressed into the head. The head is a mode table in the
+    same editor as modal~.
+
+    drum~ <kind>, e.g. drum~ snare. Kinds load the knobs and let go.
+    """
+
+    SAVE_KEY = 'drum_modes'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return DrumNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = DrumUnit(synth_graph.sample_rate)
+
+        kind = 'tom'
+        if args is not None:
+            for arg in args:
+                if arg in DRUM_KINDS:
+                    kind = arg
+        self._kind_shown = kind
+        preset = DRUM_KINDS[kind]
+        material = preset['material']
+        self.unit.frequency_in.base = preset['frequency']
+        self.unit.set_modes(MODAL_MATERIALS[material])
+        self._init_mode_editor(label, material)
+
+        self.add_signal_input('excite in', self.unit.excite_in)
+        self.add_trigger_signal_input('hit', self.unit.trigger_in,
+                                      self.hit)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=preset['frequency'],
+                                  minimum=20.0, speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.make_drag_proportional(
+            self.add_modulation_input('decay', self.unit.decay_in,
+                                      default_value=preset['decay'],
+                                      minimum=0.01, maximum=30.0,
+                                      speed=0.05, slider=False))
+        self.add_modulation_input('hardness', self.unit.hardness_in,
+                                  default_value=preset['hardness'],
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('position', self.unit.position_in,
+                                  default_value=preset['position'],
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        tension_port = self.add_modulation_input(
+            'tension', self.unit.tension_in,
+            default_value=preset['tension'],
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if tension_port.widget is not None:
+            tension_port.widget.set_tooltip(
+                'the head stiffens as it moves: a hard hit lands sharp '
+                'and bends down through its ring. Tabla at the top')
+        snares_port = self.add_modulation_input(
+            'snares', self.unit.snares_in,
+            default_value=preset['snares'],
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if snares_port.widget is not None:
+            snares_port.widget.set_tooltip(
+                'wires shaken by the head itself: they rattle while the '
+                'drum speaks and die with it')
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.kind_input = self.add_input('kind', widget_type='combo',
+                                         default_value=kind,
+                                         callback=self.kind_changed)
+        self.kind_input.widget.combo_items = list(DRUM_KINDS)
+
+        self._add_mode_table_ports(material)
+        self._add_mode_table_options()
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.modes_output = self.add_output('modes out')
+        self.add_switch()
+        self.finish_synth_node()
+
+    def hit(self):
+        self.unit.fire()
+
+    def custom_create(self, from_file):
+        super().custom_create(from_file)
+        # A node made by hand starts as its kind; a loaded one keeps the
+        # knobs the patch saved.
+        if not from_file:
+            self.apply_kind(self._kind_shown)
+
+    def kind_changed(self):
+        chosen = any_to_string(self.kind_input())
+        if chosen == self._kind_shown:
+            return
+        self._kind_shown = chosen
+        if chosen not in DRUM_KINDS or self.in_loading_process:
+            return
+        self.apply_kind(chosen)
+
+    def apply_kind(self, name):
+        recipe = DRUM_KINDS.get(name)
+        if recipe is None:
+            return
+        for port in self.inputs:
+            label = port.get_label()
+            if label in recipe and port.widget is not None:
+                port.widget.set(recipe[label])
+        self.parameters_changed()
+        material = recipe['material']
+        if any_to_string(self.material_input()) != material:
+            self.material_input.widget.set(material)
+            self.material_changed()
 
 
 # A regime is the statistics of release: how much motion builds a

@@ -3400,6 +3400,15 @@ def _warm_up_filter():
                       0.5, 0.1, 0.2, 0.001, 0.99, 0.05,
                       0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
                       np.uint64(7), output)
+        _bounce_kernel(breath, 1.0e-6, 0.7, 0.9, 100.0, 1000.0, 1.0e-4,
+                       0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
+                       np.uint64(3), output)
+        _drum_kernel(breath, bank.copy(), bank.copy(), bank.copy(),
+                     bank.copy(), state.copy(), state.copy(),
+                     0.2, 0.01, 0.5, 0.1, 0.015, 0.3,
+                     0.1, 0.1, 1.9, -0.92, 0.99,
+                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                     np.uint64(11), output)
         ap = np.zeros(3)
         _strain_kernel(wide, 0.01, 0.5, 0.6, 10.0, 0.5, 100.0, 1.0, 0.2,
                        0.3, 3.0, 0.05, 0.3, 20.0, 44100.0, 0.2,
@@ -8232,6 +8241,565 @@ class NoiseUnit(Unit):
             spit_gain, spit_decay, smooth_k,
             self._pres, self._gate, self._open, self._spit, self._blocked,
             self._lp, self._hp, self._rng, result)
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _bounce_kernel_source(drop, g, restitution, press_kill,
+                          contact_samples, strike_scale, vmin,
+                          h, v, armed, pulse_amp, pulse_at, pulse_len,
+                          rng, out):
+    """A dropped mallet, integrated at audio rate.
+
+    Height and velocity are the whole state. Each impact reverses the
+    velocity through the restitution, so the intervals and strengths
+    shrink geometrically -- the accelerating cadence of a dropped ball
+    and of a drum roll is not a pattern here, it is gravity. The strike
+    itself is a half-cosine force pulse, the real shape of a mallet
+    contact: click-free by construction, wider for soft mallets.
+
+    Pressing kills the rebound; the ball is judged at rest when its
+    next flight would be shorter than its own contact, which is where
+    a roll's buzz ends.
+    """
+    for i in range(drop.shape[0]):
+        d = drop[i]
+        if armed > 0.5:
+            if d > 1.0e-4:
+                h = d
+                v = 0.0
+                armed = 0.0
+        elif d <= 1.0e-4:
+            armed = 1.0
+        if h > 0.0 or v != 0.0:
+            v -= g
+            h += v
+            if h <= 0.0 and v < 0.0:
+                speed = -v
+                h = 0.0
+                if speed > vmin:
+                    rng, u = _rand01(rng)
+                    v = speed * restitution * press_kill \
+                        * (0.94 + 0.12 * u)
+                    pulse_amp = speed * strike_scale
+                    if pulse_amp > 3.0:
+                        pulse_amp = 3.0
+                    pulse_at = 0.0
+                    pulse_len = contact_samples
+                else:
+                    v = 0.0
+        s = 0.0
+        if pulse_at < pulse_len:
+            s = pulse_amp * 0.5 \
+                * (1.0 - math.cos(6.283185307179586 * pulse_at
+                                  / pulse_len))
+            pulse_at += 1.0
+        out[i] = s
+    return h, v, armed, pulse_amp, pulse_at, pulse_len, rng
+
+
+if _HAVE_NUMBA:
+    _bounce_kernel = njit(cache=True, fastmath=True)(_bounce_kernel_source)
+else:
+    _bounce_kernel = _bounce_kernel_source
+
+
+class BounceUnit(Unit):
+    """A dropped mallet: the excitation drum rolls are made of.
+
+    'drop' is the gesture: rising from zero drops the mallet from that
+    height, and everything after is gravity -- bounces accelerate and
+    weaken geometrically until the buzz, exactly as a dropped stick
+    does on a drum head. Patch an LFO and every cycle is a stroke;
+    patch a hand's height and lowering it to the surface IS the roll.
+
+    'gravity' is the first fall's time, 'bounce' the restitution,
+    'press' the player leaning into the roll -- faster returns, deader
+    rebound, sooner buzz -- and 'hardness' the contact time of each
+    strike. The output is a train of half-cosine force pulses sized by
+    impact speed: feed it to drum~'s or modal~'s excite input.
+    """
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.drop_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.gravity_in = self.new_inlet(base=0.35, minimum=0.02,
+                                         maximum=2.0)
+        self.bounce_in = self.new_inlet(base=0.75, minimum=0.0,
+                                        maximum=0.99)
+        self.press_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.hardness_in = self.new_inlet(base=0.6, minimum=0.0,
+                                          maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        BounceUnit._seeded += 1
+        seed = (BounceUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+        self._h = 0.0
+        self._v = 0.0
+        self._armed = 1.0
+        self._pulse_amp = 0.0
+        self._pulse_at = 0.0
+        self._pulse_len = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._drop = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._h = 0.0
+        self._v = 0.0
+        self._armed = 1.0
+        self._pulse_amp = 0.0
+        self._pulse_at = 0.0
+        self._pulse_len = 0.0
+        self._quiet = True
+
+    def render(self, frames):
+        drop = self.drop_in.eval(frames)
+        gravity = self.gravity_in.eval(frames)
+        bounce = self.bounce_in.eval(frames)
+        press = self.press_in.eval(frames)
+        hardness = self.hardness_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        gesture = self._drop[:frames]
+        if drop.constant:
+            gesture[:] = drop.value
+            idle = drop.value <= 1.0e-4
+        else:
+            np.copyto(gesture, drop.data[:frames])
+            idle = False
+        np.clip(gesture, 0.0, 1.0, out=gesture)
+
+        if (self._quiet and idle and self._armed > 0.5
+                and self._h <= 0.0 and self._v == 0.0):
+            out.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        fall = scalar(gravity, 0.02, 2.0)
+        rest = scalar(bounce, 0.0, 0.99)
+        press_now = scalar(press, 0.0, 1.0)
+        hard = scalar(hardness, 0.0, 1.0)
+
+        # Fall time in seconds from a full-height drop sets gravity;
+        # pressing adds the player's weight to it.
+        n_fall = fall * self.sample_rate
+        g = 2.0 / (n_fall * n_fall) * (1.0 + 3.0 * press_now)
+        press_kill = 1.0 - 0.7 * press_now
+        # Contact: 8 ms of felt down to a third of a millisecond, the
+        # mallet family's whole range, as everywhere in the rack.
+        contact = max(4.0, 0.008 * (0.04 ** hard) * self.sample_rate)
+        # Impact speed from a full drop is sqrt(2 g h): normalize so a
+        # full-height drop strikes with unit AREA -- force integrates
+        # over the contact, and the drum downstream rings by momentum,
+        # so hardness changes the color of a strike and not its weight.
+        full_speed = math.sqrt(2.0 * g)
+        strike_scale = (1.0 / full_speed) * (2.0 / contact)
+        # At rest when the next flight would be shorter than the
+        # contact itself: flight = 2 v / g samples.
+        vmin = 0.5 * g * contact
+
+        result = self._y[:frames]
+        (self._h, self._v, self._armed, self._pulse_amp, self._pulse_at,
+         self._pulse_len, rng_state) = _bounce_kernel(
+            gesture, g, rest, press_kill, contact, strike_scale, vmin,
+            self._h, self._v, self._armed, self._pulse_amp,
+            self._pulse_at, self._pulse_len, self._rng, result)
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _drum_kernel_source(exc, b1_base, b1_slope, b2, gains, s1, s2,
+                        bend_amt, bend_k, env_a, env_r, gap, snare_gain,
+                        hp_k, wire_g, wire_b1, wire_b2,
+                        dc_pole, env, tune_dev, hp, wy1, wy2,
+                        dc_x, dc_y, rng, out):
+    """A membrane, with the two nonlinearities that make it a drum.
+
+    Tension modulation: displacement stiffens the head, so a hard hit
+    lands pitched sharp and glides down as the ring decays. The bank's
+    own envelope drives a smoothed frequency deviation, applied as a
+    first-order retune per sample -- cheap, and smooth enough that the
+    bend is a glide rather than a zipper.
+
+    Snares: bright noise gated by the ring's own envelope through a
+    soft valve, with a mild metallic formant from the wires' resonance
+    laid over it -- smooth in time, wires in spectrum. They rattle
+    while the drum speaks and die with it, because the drum is what is
+    shaking them. No timer anywhere.
+    """
+    modes = b1_base.shape[0]
+    for i in range(exc.shape[0]):
+        drive = exc[i]
+        total = 0.0
+        for m in range(modes):
+            b1m = b1_base[m] + b1_slope[m] * tune_dev
+            y = gains[m] * drive + b1m * s1[m] + b2[m] * s2[m]
+            if y > 1.5:
+                y = 1.5 + np.tanh(y - 1.5)
+            elif y < -1.5:
+                y = -1.5 - np.tanh(-y - 1.5)
+            s2[m] = s1[m]
+            s1[m] = y
+            total += y
+        a = total if total >= 0.0 else -total
+        if a > env:
+            env += (a - env) * env_a
+        else:
+            env += (a - env) * env_r
+        target = bend_amt * env * env
+        if target > 0.5:
+            target = 0.5
+        tune_dev += (target - tune_dev) * bend_k
+        rattle = 0.0
+        if snare_gain > 0.0:
+            rng, nz = _rand01(rng)
+            noise = 2.0 * nz - 1.0
+            hp += (noise - hp) * hp_k
+            bright = noise - hp
+            wy = wire_g * bright + wire_b1 * wy1 + wire_b2 * wy2
+            if wy > 1.5:
+                wy = 1.5 + np.tanh(wy - 1.5)
+            elif wy < -1.5:
+                wy = -1.5 - np.tanh(-wy - 1.5)
+            wy2 = wy1
+            wy1 = wy
+            lift = env - gap
+            if lift > 0.0:
+                rattle = snare_gain * (lift / (lift + 0.15)) \
+                    * (bright + 0.8 * wy)
+        o = total + rattle
+        od = o - dc_x + dc_pole * dc_y
+        dc_x = o
+        dc_y = od
+        out[i] = od
+    return env, tune_dev, hp, wy1, wy2, dc_x, dc_y, rng
+
+
+if _HAVE_NUMBA:
+    _drum_kernel = njit(cache=True, fastmath=True)(_drum_kernel_source)
+else:
+    _drum_kernel = _drum_kernel_source
+
+
+class DrumUnit(Unit):
+    """A drum: modal~'s membrane plus what modal~ cannot do.
+
+    Two nonlinearities separate a drum from a bank of modes. The head
+    stiffens as it moves, so a hard hit lands pitched sharp and bends
+    down through its ring -- 'tension' is how much, and tabla and toms
+    live on it. And 'snares' are wires shaken BY the head: their
+    rattle rides the ring's own envelope through a soft valve, so they
+    speak when the drum speaks and die when it dies.
+
+    'hit' is the mallet: a trigger whose height is velocity, shaped by
+    'hardness' into a raised-cosine contact. 'excite in' hears any
+    audio -- bounce~ belongs here, and a roll is bounce~ pressed into
+    the head. The mode table is drawn in the same editor as modal~;
+    membrane and tabla tables are the natural starting points.
+    """
+
+    MAX_MODES = 24
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.excite_in = self.new_inlet()
+        self.trigger_in = self.new_inlet()
+        self.frequency_in = self.new_inlet(base=120.0, minimum=20.0)
+        self.pitch_in = self.new_inlet()
+        self.decay_in = self.new_inlet(base=0.5, minimum=0.01, maximum=30.0)
+        self.hardness_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.position_in = self.new_inlet(base=0.35, minimum=0.0,
+                                          maximum=1.0)
+        self.tension_in = self.new_inlet(base=0.3, minimum=0.0, maximum=1.0)
+        self.snares_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        DrumUnit._seeded += 1
+        seed = (DrumUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+
+        self._modes = np.array([[1.0, 1.0, 1.0]], dtype=np.float64)
+        self._weight_norm = 1.0
+        self._s1 = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._s2 = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._b1 = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._slope = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._b2 = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._gains = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._gains_live = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._live_count = 0
+        self._fm = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._theta = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._radius = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+        self._mode_scratch = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
+
+        self.threshold = 0.05
+        self._trigger_armed = True
+        self._fire_requests = 0
+        self._fire_served = 0
+        self._pulse_amp = 0.0
+        self._pulse_at = 0
+        self._pulse_remaining = 0
+        self._pulse_length = 1.0
+
+        self._env = 0.0
+        self._tune_dev = 0.0
+        self._hp = 0.0
+        self._wy1 = 0.0
+        self._wy2 = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._exc = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def set_modes(self, table):
+        rows = [row for row in table[:DrumUnit.MAX_MODES]]
+        if not rows:
+            rows = [(1.0, 1.0, 1.0)]
+        fresh = np.array(rows, dtype=np.float64)
+        resized = fresh.shape[0] != self._modes.shape[0]
+        self._modes = fresh
+        self._weight_norm = max(1.0, float(np.sum(np.abs(fresh[:, 1]))))
+        if resized:
+            self._s1[:] = 0.0
+            self._s2[:] = 0.0
+
+    def bypass_pairs(self):
+        return ((self.excite_in, self.out),)
+
+    def fire(self):
+        self._fire_requests += 1
+
+    def reset(self):
+        self._s1[:] = 0.0
+        self._s2[:] = 0.0
+        self._env = 0.0
+        self._tune_dev = 0.0
+        self._hp = 0.0
+        self._wy1 = 0.0
+        self._wy2 = 0.0
+        self._dc_x = 0.0
+        self._dc_y = 0.0
+        self._pulse_remaining = 0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def _add_pulse(self, exc, start, stop):
+        remaining = self._pulse_remaining
+        if remaining <= 0 or stop <= start:
+            return
+        count = min(stop - start, remaining)
+        window = self._scratch[:count]
+        np.add(_INDEX_RAMP[:count], float(self._pulse_at - 1), out=window)
+        window *= 2.0 * math.pi / self._pulse_length
+        np.cos(window, out=window)
+        np.subtract(1.0, window, out=window)
+        window *= 0.5 * self._pulse_amp
+        exc[start:start + count] += window
+        self._pulse_at += count
+        self._pulse_remaining = remaining - count
+
+    def render(self, frames):
+        signal = self.excite_in.eval(frames)
+        trigger = self.trigger_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        decay = self.decay_in.eval(frames)
+        hardness = self.hardness_in.eval(frames)
+        position = self.position_in.eval(frames)
+        tension = self.tension_in.eval(frames)
+        snares = self.snares_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        exc = self._exc[:frames]
+        if signal.constant:
+            exc[:] = signal.value
+            silent_input = signal.value == 0.0
+        else:
+            np.copyto(exc, signal.data[:frames])
+            silent_input = False
+
+        events, self._trigger_armed = _excitation_events(
+            trigger, frames, self.threshold, self._trigger_armed)
+        if self._fire_requests != self._fire_served:
+            self._fire_served = self._fire_requests
+            events = ((0, 1.0),) + events
+
+        if (self._quiet and not events and silent_input
+                and self._pulse_remaining <= 0):
+            out.set_constant(0.0)
+            return
+
+        def scalar(signal_, lo, hi):
+            value = signal_.value if signal_.constant \
+                else float(signal_.data[0])
+            return min(hi, max(lo, value))
+
+        hard = scalar(hardness, 0.0, 1.0)
+        pos = scalar(position, 0.0, 1.0)
+        tension_now = scalar(tension, 0.0, 1.0)
+        snares_now = scalar(snares, 0.0, 1.0)
+        seconds = scalar(decay, 0.01, 30.0)
+
+        # The mallet: raised-cosine contact, 8 ms of felt to a third
+        # of a millisecond of stick.
+        width = max(2.0, 0.008 * (0.04 ** hard) * self.sample_rate)
+        offset = 0
+        for when, height in events:
+            self._add_pulse(exc, offset, when)
+            # Area-normalized, as modal~'s mallet: force integrates over
+            # the dwell, so a soft strike must not land fifty times
+            # harder than a hard one of the same velocity.
+            self._pulse_amp = min(2.0, height) * 2.0 / width
+            self._pulse_length = width
+            self._pulse_at = 0
+            self._pulse_remaining = int(width)
+            offset = when
+        self._add_pulse(exc, offset, frames)
+
+        curve = self._scratch[:frames]
+        self._build_hertz(curve, frequency, pitch, frames, 20.0)
+        f0 = float(curve[0])
+
+        modes = self._modes
+        count = modes.shape[0]
+        ratios = modes[:, 0]
+        weights = modes[:, 1]
+        decay_scale = modes[:, 2]
+
+        fm = self._fm[:count]
+        np.multiply(ratios, f0, out=fm)
+        limit = self.sample_rate * 0.45
+        theta = self._theta[:count]
+        np.clip(fm, 1.0, limit, out=theta)
+        theta *= 2.0 * math.pi / self.sample_rate
+        radius = self._radius[:count]
+        np.multiply(decay_scale, seconds * self.sample_rate, out=radius)
+        np.clip(radius, 1.0, None, out=radius)
+        np.divide(-6.907755, radius, out=radius)
+        np.exp(radius, out=radius)
+        b1 = self._b1[:count]
+        np.cos(theta, out=b1)
+        b1 *= radius
+        b1 *= 2.0
+        # The tension retune, linearized: d b1 / d tune at the table's
+        # tuning, applied per sample against the smoothed deviation.
+        slope = self._slope[:count]
+        np.sin(theta, out=slope)
+        slope *= theta
+        slope *= radius
+        slope *= -2.0
+        b2 = self._b2[:count]
+        np.multiply(radius, radius, out=b2)
+        np.negative(b2, out=b2)
+        # Impulse-normalized, the mallet convention: sin(theta) cancels
+        # the two-pole's 1/sin(theta) impulse-response peak, so a
+        # unit-area strike rings each mode up to its table weight
+        # wherever it sits in frequency. The excite input is a strike
+        # train (bounce~), not a bow -- modal~ owns the bowing
+        # normalization.
+        gains = self._gains[:count]
+        np.sin(theta, out=gains)
+        gains *= weights
+        gains /= self._weight_norm
+        alive = self._mode_scratch[:count]
+        np.less_equal(fm, limit, out=alive, casting='unsafe')
+        gains *= alive
+        if pos > 0.0:
+            pattern = self._mode_scratch[:count]
+            np.multiply(_INDEX_RAMP[:count], math.pi * pos, out=pattern)
+            np.sin(pattern, out=pattern)
+            np.abs(pattern, out=pattern)
+            blend = min(1.0, pos / 0.05)
+            if blend < 1.0:
+                pattern *= blend
+                pattern += 1.0 - blend
+            gains *= pattern
+        live = self._gains_live[:count]
+        if count != self._live_count:
+            np.copyto(live, gains)
+            self._live_count = count
+        else:
+            step = self._mode_scratch[:count]
+            np.subtract(gains, live, out=step)
+            step *= 0.35
+            live += step
+
+        env_a = 1.0 - math.exp(-1.0 / (0.001 * self.sample_rate))
+        env_r = 1.0 - math.exp(-1.0 / (0.04 * self.sample_rate))
+        bend_k = 1.0 - math.exp(-1.0 / (0.002 * self.sample_rate))
+        # Referenced to the honest ring level of a full hit (env near
+        # a half): up to a third sharp at full tension, the tabla and
+        # rototom register, quadratic in the hit below it.
+        bend_amt = tension_now * 2.5
+        # The wires: chatter at a few thousand contacts a second at a
+        # full ring, each grain rung through the wires' own metallic
+        # band, up around 1.7 kHz with a snappy few-millisecond decay.
+        # Wires: mostly the bright noise itself (smooth in time), with
+        # a broad metallic formant laid over it. Chatter was tried and
+        # heard as gravel; the truth of a snare buzz is closer to
+        # colored noise than to countable grains.
+        hp_k = 1.0 - math.exp(-2.0 * math.pi * 1200.0 / self.sample_rate)
+        theta_w = 2.0 * math.pi * min(2200.0, 0.4 * self.sample_rate) \
+            / self.sample_rate
+        r_w = 0.9
+        wire_b1 = 2.0 * r_w * math.cos(theta_w)
+        wire_b2 = -r_w * r_w
+        wire_g = 1.0 - r_w
+        snare_gain = snares_now * 0.5
+        corner = min(40.0, max(1.0, f0 * 0.25))
+        dc_pole = math.exp(-2.0 * math.pi * corner / self.sample_rate)
+
+        result = self._y[:frames]
+        (self._env, self._tune_dev, self._hp, self._wy1, self._wy2,
+         self._dc_x, self._dc_y, rng_state) = _drum_kernel(
+            exc, b1, self._slope[:count], b2, live,
+            self._s1[:count], self._s2[:count],
+            bend_amt, bend_k, env_a, env_r, 0.015, snare_gain,
+            hp_k, wire_g, wire_b1, wire_b2,
+            dc_pole, self._env, self._tune_dev, self._hp,
+            self._wy1, self._wy2,
+            self._dc_x, self._dc_y, self._rng, result)
         self._rng = np.uint64(rng_state)
 
         self._apply_level(result, out_level, frames)
