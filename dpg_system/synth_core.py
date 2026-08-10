@@ -3388,9 +3388,10 @@ def _warm_up_filter():
                     state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
         members = np.full(8, 0.5)
         _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, members, 0.9,
+                       members.copy(), members.copy(), members.copy(),
                        0.0, members.copy(), members.copy(), members.copy(),
-                       members.copy(), np.uint64(12345),
-                       output.copy(), output)
+                       members.copy(), members.copy(), members.copy(),
+                       np.uint64(12345), output.copy(), output)
         _whoosh_kernel(breath, breath.copy(), breath.copy(), 0.4,
                        0.99, 0.02, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0,
                        np.uint64(99), output)
@@ -7625,8 +7626,9 @@ else:
 
 
 def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
-                          vary, amp, thetas, radius,
-                          energy, sounds, gds, y1, y2, rng, out_raw, out):
+                          vary, amp, thetas, radius, b1s, b1zs, g2s,
+                          energy, sounds, gds, y1, y2, z1, z2, rng,
+                          out_raw, out):
     """Cook's PhISEM, sample by sample -- with a polyphonic vessel.
 
     'energy' is how agitated the beans are, pumped by the gesture and
@@ -7650,6 +7652,23 @@ def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
     # Energy-constant with respect to ring time: each grain's ring holds
     # its loudness as resonance stretches it, rather than thinning away.
     vgain = 0.3 * math.sqrt((1.0 - radius) / 0.15)
+    # Tunings are fixed within a block, so the trig lives out here.
+    # The second stage steepens the skirt so the strike's noise burst
+    # arrives already in the bell's voice -- but at a fixed BROAD
+    # resonance (about a millisecond), because a second narrow stage
+    # would swell over its own ring time and a struck bell does not
+    # swell. It is the clapper contact shaped by the bell's body.
+    # Normalized to unity at its peak, it reshapes without relevelling.
+    r2 = radius
+    if r2 > 0.977:
+        r2 = 0.977
+    b2z = -r2 * r2
+    for m in range(members):
+        b1s[m] = 2.0 * radius * math.cos(thetas[m])
+        b1zs[m] = 2.0 * r2 * math.cos(thetas[m])
+        # 2.5x makeup: the steeper skirt sheds broadband energy, and
+        # the family should sit at the level it always did.
+        g2s[m] = 2.5 * (1.0 - r2) * math.sin(thetas[m])
     for i in range(shake.shape[0]):
         energy = energy * energy_decay + shake[i] * pump
         rng, draw = _rand01(rng)
@@ -7676,11 +7695,13 @@ def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
             sounds[m] *= gds[m]
             grain = sounds[m] * noise
             raw += grain
-            b1 = 2.0 * radius * math.cos(thetas[m])
-            y = vgain * grain + b1 * y1[m] + b2 * y2[m]
+            y = vgain * grain + b1s[m] * y1[m] + b2 * y2[m]
             y2[m] = y1[m]
             y1[m] = y
-            total += y
+            z = g2s[m] * y + b1zs[m] * z1[m] + b2z * z2[m]
+            z2[m] = z1[m]
+            z1[m] = z
+            total += z
         out_raw[i] = raw
         out[i] = total
     return energy, rng
@@ -7754,6 +7775,11 @@ class ShakerUnit(Unit):
         self._gds = np.full(MEMBERS, 0.99, dtype=np.float64)
         self._ry1 = np.zeros(MEMBERS, dtype=np.float64)
         self._ry2 = np.zeros(MEMBERS, dtype=np.float64)
+        self._rz1 = np.zeros(MEMBERS, dtype=np.float64)
+        self._rz2 = np.zeros(MEMBERS, dtype=np.float64)
+        self._b1s = np.zeros(MEMBERS, dtype=np.float64)
+        self._b1zs = np.zeros(MEMBERS, dtype=np.float64)
+        self._g2s = np.zeros(MEMBERS, dtype=np.float64)
 
         self.out = self.new_outlet()
         self.grains = self.new_outlet()
@@ -7767,6 +7793,8 @@ class ShakerUnit(Unit):
         self._sounds[:] = 0.0
         self._ry1[:] = 0.0
         self._ry2[:] = 0.0
+        self._rz1[:] = 0.0
+        self._rz2[:] = 0.0
         self._quiet = True
 
     def deactivate(self):
@@ -7846,9 +7874,11 @@ class ShakerUnit(Unit):
         result = self._y[:frames]
         self._energy, rng_state = _shaker_kernel(
             gesture, beans / self.sample_rate, energy_decay, grain_decay,
-            vary_now, amp, self._thetas, radius,
+            vary_now, amp, self._thetas, radius, self._b1s, self._b1zs,
+            self._g2s,
             self._energy, self._sounds, self._gds,
-            self._ry1, self._ry2, self._rng, raw, result)
+            self._ry1, self._ry2, self._rz1, self._rz2, self._rng,
+            raw, result)
         # numba hands the state back as a Python int, and a bare int at or
         # above 2**63 fails the signed conversion on the way back in --
         # half of all states. It must go home as the unsigned it is.
