@@ -3387,11 +3387,12 @@ def _warm_up_filter():
                     bank.copy(), bank.copy(), bank.copy(), state.copy(),
                     state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
         members = np.full(8, 0.5)
-        _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, members, 0.9,
-                       members.copy(), members.copy(), members.copy(),
+        _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, 0.3, members,
+                       0.9, members.copy(), members.copy(), members.copy(),
                        0.0, members.copy(), members.copy(), members.copy(),
                        members.copy(), members.copy(), members.copy(),
-                       np.uint64(12345), output.copy(), output)
+                       members.copy(), np.uint64(12345),
+                       output.copy(), output)
         _whoosh_kernel(breath, breath.copy(), breath.copy(), 0.4,
                        0.99, 0.02, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0,
                        np.uint64(99), output)
@@ -7626,9 +7627,9 @@ else:
 
 
 def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
-                          vary, amp, thetas, radius, b1s, b1zs, g2s,
-                          energy, sounds, gds, y1, y2, z1, z2, rng,
-                          out_raw, out):
+                          vary, amp, attack_k, thetas, radius, b1s, b1zs,
+                          g2s, energy, sounds, gds, envs, y1, y2, z1, z2,
+                          rng, out_raw, out):
     """Cook's PhISEM, sample by sample -- with a polyphonic vessel.
 
     'energy' is how agitated the beans are, pumped by the gesture and
@@ -7693,7 +7694,11 @@ def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
         total = 0.0
         for m in range(members):
             sounds[m] *= gds[m]
-            grain = sounds[m] * noise
+            # A soft contact rises slowly as well as decaying slowly:
+            # the envelope follows its target with an attack lag scaled
+            # to the grain length, so hardness 0 has no leading edge.
+            envs[m] += (sounds[m] - envs[m]) * attack_k
+            grain = envs[m] * noise
             raw += grain
             y = vgain * grain + b1s[m] * y1[m] + b2 * y2[m]
             y2[m] = y1[m]
@@ -7772,6 +7777,7 @@ class ShakerUnit(Unit):
         self._offsets = spread_rng.uniform(-0.5, 0.5, MEMBERS)
         self._thetas = np.zeros(MEMBERS, dtype=np.float64)
         self._sounds = np.zeros(MEMBERS, dtype=np.float64)
+        self._envs = np.zeros(MEMBERS, dtype=np.float64)
         self._gds = np.full(MEMBERS, 0.99, dtype=np.float64)
         self._ry1 = np.zeros(MEMBERS, dtype=np.float64)
         self._ry2 = np.zeros(MEMBERS, dtype=np.float64)
@@ -7791,6 +7797,7 @@ class ShakerUnit(Unit):
     def reset(self):
         self._energy = 0.0
         self._sounds[:] = 0.0
+        self._envs[:] = 0.0
         self._ry1[:] = 0.0
         self._ry2[:] = 0.0
         self._rz1[:] = 0.0
@@ -7853,6 +7860,8 @@ class ShakerUnit(Unit):
         # millisecond of glass, exponentially.
         grain_seconds = 0.02 * (0.025 ** hard)
         grain_decay = math.exp(-1.0 / (grain_seconds * self.sample_rate))
+        attack_k = 1.0 - math.exp(-1.0 / (0.15 * grain_seconds
+                                          * self.sample_rate))
         # Density changes the texture, not the level: grain amplitude is
         # compensated so rain is not simply louder than a maraca.
         amp = math.sqrt(64.0 / max(8.0, beans))
@@ -7874,9 +7883,9 @@ class ShakerUnit(Unit):
         result = self._y[:frames]
         self._energy, rng_state = _shaker_kernel(
             gesture, beans / self.sample_rate, energy_decay, grain_decay,
-            vary_now, amp, self._thetas, radius, self._b1s, self._b1zs,
-            self._g2s,
-            self._energy, self._sounds, self._gds,
+            vary_now, amp, attack_k, self._thetas, radius,
+            self._b1s, self._b1zs, self._g2s,
+            self._energy, self._sounds, self._gds, self._envs,
             self._ry1, self._ry2, self._rz1, self._rz2, self._rng,
             raw, result)
         # numba hands the state back as a Python int, and a bare int at or
