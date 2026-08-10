@@ -4770,9 +4770,11 @@ class StrainNode(ModeTableNode):
             minimum=0.0, maximum=1.0, speed=0.01)
         if squeal_port.widget is not None:
             squeal_port.widget.set_tooltip(
-                'the voice of each slip: granular at 0, the interface\'s '
-                'own friction oscillation at 1 -- pitch riding load and '
-                'drooping through each slip, the hinge\'s eee-uh')
+                'how firmly the sliding interface engages the body: the '
+                'top third sings, locking onto a mode and jumping like '
+                'brass; full leans hard enough to groan. It only sounds '
+                'while actually sliding, and only at hinge speeds -- too '
+                'slow judders, too fast breaks up, like a real door')
         grind_port = self.add_modulation_input(
             'grind', self.unit.grind_in,
             default_value=STRAIN_REGIMES[regime]['grind'],

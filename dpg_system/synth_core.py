@@ -3402,12 +3402,16 @@ def _warm_up_filter():
                       np.uint64(7), output)
         ap = np.zeros(3)
         _strain_kernel(wide, 0.01, 0.5, 0.6, 10.0, 0.5, 100.0, 1.0, 0.2,
-                       0.5, 0.1, 0.2, 10.0, 0.01, 0.5, 1.7,
+                       0.3, 3.0, 0.05, 0.3, 20.0, 44100.0, 0.2,
+                       0.3, 0.5, 0.3, 0.01, 1.0, 1.0,
+                       10.0, 0.01, 0.5, 1.7,
                        bank.copy(), bank.copy(),
                        bank.copy(), bank.copy(), bank.copy(), bank.copy(),
+                       bank.copy(),
                        state.copy(), state.copy(), ap, ap.copy(),
-                       0.0, 0.0, 0.01, 0.0, 0.99, 0.0, 0.1, 1.0, 0.0, 0.0,
-                       0.0, 800.0, 0.3, 0.0, 0.0, 0.0, 0.99, 100.0,
+                       0.0, 0.0, 0.01, 0.0, 0.0, 0.99, 0.0, 1.0, 0.0,
+                       0.0, 1.0, 0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.0, 0.99,
+                       100.0, 0.0,
                        1.0e-6, np.uint64(777), 0.2, output.copy(),
                        output)
         quads = np.zeros((4, 5))
@@ -8240,11 +8244,14 @@ class NoiseUnit(Unit):
 
 def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
                           habituate, grain_samples, amp_scale, chirp_a,
-                          squeal, squeal_inc, vary_oct, grind_gain, vel_k,
-                          tex_k, tex_comp,
-                          theta, radius, b1, b2, gains, ggains, s1, s2,
-                          ap_x, ap_y, s_prev, stress, threshold, pulse, gd,
-                          sq_phase, sq_rate, tune, vel_env, g_lp,
+                          contact, sl, v50, vdg, pk, srate, vary_oct,
+                          atk_k, mix, jgain, jit_k, macro_thresh, pop_amp,
+                          grind_gain, vel_k, tex_k, tex_comp,
+                          theta, radius, b1, b2, gains, ggains, ring,
+                          s1, s2, ap_x, ap_y,
+                          s_prev, stress, threshold, pulse, penv, gd,
+                          stress2, threshold2, jit_lp,
+                          sv, tune, vel_env, g_lp,
                           pew_scale, pew_w, c_phase, c_time, c_amp, c_dec,
                           c_t0, max_strain, recover, rng, dry,
                           out_raw, out):
@@ -8285,6 +8292,9 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
         # following how fast the strain is moving -- what breath is to
         # the winds, the scrub of surfaces is to a bend.
         vel_env += (speed - vel_env) * vel_k
+        # Signed sliding velocity in strain-units per second: the hinge
+        # face's actual motion, direction and all, for the friction loop.
+        sv += (ds * srate - sv) * vel_k
 
         if stress > threshold:
             rng, u = _rand01(rng)
@@ -8300,24 +8310,33 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
             overshoot = stress / thresh
             if overshoot > 3.0:
                 overshoot = 3.0
-            pulse += amp_scale * size * novel * overshoot
-            if pulse > 50.0:
-                pulse = 50.0
-            # A big slip is a longer event -- a brief scrape, not a louder
-            # click. The grain's ring time follows the released size.
+            # A slip's duration is physical: the released distance over
+            # the sliding speed. Sparse heavy slips (much stress, slow
+            # slide) are long SCRAPES; dense light ones are short
+            # grains; a sudden jump releases fast and stays a crack.
+            # Fixed-length grains made every sparse event a knock --
+            # nineteen wooden taps a second read as tap-dancing, not
+            # creaking.
             span = size
             if span > 3.0:
                 span = 3.0
-            gd = math.exp(-1.0 / (grain_samples * (0.4 + 0.8 * span)))
-            # Each slip squeals at its own pitch, near the interface's
-            # resonance, jittered slip to slip.
-            rng, u3 = _rand01(rng)
-            sq_rate = squeal_inc * (0.75 + 0.5 * u3)
-            if vary_oct > 0.0:
-                rng, u4 = _rand01(rng)
-                tune = 2.0 ** ((u4 - 0.5) * 2.0 * vary_oct)
-                for m in range(modes):
-                    b1[m] = 2.0 * radius[m] * math.cos(theta[m] * tune)
+            iv = 0.25 * threshold / (vel_env + 1.0e-12)
+            lo = grain_samples * 0.4
+            hi = grain_samples * 6.0
+            if iv < lo:
+                iv = lo
+            elif iv > hi:
+                iv = hi
+            iv *= 0.4 + 0.8 * span
+            gd = math.exp(-1.0 / iv)
+            # Constant energy per released unit: a longer scrape is
+            # proportionally quieter than a short knock.
+            escale = 1.0
+            if iv > grain_samples:
+                escale = math.sqrt(grain_samples / iv)
+            pulse += amp_scale * size * novel * overshoot * escale
+            if pulse > 50.0:
+                pulse = 50.0
             # Launch this event's pew: flexural dispersion arrives high
             # first and sweeps down as 1/t^2, longer the farther away the
             # fracture -- which is what 'chirp' scales, jittered so every
@@ -8334,25 +8353,58 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
             rng, u2 = _rand01(rng)
             threshold = thresh * (0.35 + spread * 1.3 * u2 * u2)
 
+        # The second scale of release: most slips are micro (they live
+        # in the squeal), but stress also accumulates toward the RARE
+        # letting-go of the geometry itself -- the percussive pop a
+        # real strain gives occasionally, not nineteen times a second.
+        stress2 += speed
+        if stress2 > threshold2:
+            rng, up = _rand01(rng)
+            pulse += pop_amp * (0.6 + 0.8 * up)
+            if pulse > 50.0:
+                pulse = 50.0
+            gd = math.exp(-1.0 / grain_samples)
+            # A pop is the geometry actually shifting, so THIS is where
+            # the ensemble retunes ('vary'). Retuning on every micro
+            # slip stepped the pitch of a singing squeal nineteen times
+            # a second, and each step was a click.
+            if vary_oct > 0.0:
+                rng, u4 = _rand01(rng)
+                tune = 2.0 ** ((u4 - 0.5) * 2.0 * vary_oct)
+                for m in range(modes):
+                    b1[m] = 2.0 * radius[m] * math.cos(theta[m] * tune)
+            if pew_scale > 0.0:
+                rng, u6 = _rand01(rng)
+                tau = pew_scale * (0.6 + 0.8 * u6)
+                c_dec = math.exp(-1.0 / tau)
+                c_t0 = tau * 0.12
+                c_time = 0.0
+                # Scaled to the sweep's length: a short dispersion is
+                # a subtle zing on the pop, not a concentrated blast --
+                # and the sweep is coherent, ringing the modes it
+                # passes, so even the long ones need less to land.
+                c_amp = pop_amp * (0.6 + 0.8 * up) * 0.9
+                c_phase = 0.0
+            stress2 = 0.0
+            rng, u7 = _rand01(rng)
+            threshold2 = macro_thresh * (0.4 + 1.2 * u7)
+
         if s > max_strain:
             max_strain = s
         else:
             max_strain += (s - max_strain) * recover
 
         pulse *= gd
+        # A slip's release is not instantaneous: the envelope follows
+        # its target with an attack lag scaled to the grain length, so
+        # an event swells in over a fraction of its own life instead of
+        # arriving as an edge (the sleighbells lesson, again).
+        penv += (pulse - penv) * atk_k
         rng, nz = _rand01(rng)
-        # The slip's voice: noise at squeal 0, a friction oscillation at
-        # 1 -- the micro-rub of the interface itself. Its pitch droops as
-        # the grain decays, which is the swoop a real hinge makes as the
-        # slip decelerates.
-        hiss = 2.0 * nz - 1.0
-        drive = pulse if pulse < 1.0 else 1.0
-        sq_phase += sq_rate * (0.6 + 0.4 * drive)
-        if sq_phase > 6.283185307179586:
-            sq_phase -= 6.283185307179586
-        # The oscillation drives the bank coherently where noise
-        # spreads; scaled so the blend does not change the level.
-        voice = (1.0 - squeal) * hiss + squeal * 0.6 * math.sin(sq_phase)
+        # The slip itself is broadband -- the TONE of a squeal is not in
+        # the event but in the loop below, where the interface sings
+        # against the bank.
+        voice = 2.0 * nz - 1.0
         # Cubed noise is coarse where white noise is smooth: heavy-tailed,
         # gravelly, the texture of surfaces actually scrubbing.
         rng, gz = _rand01(rng)
@@ -8365,7 +8417,18 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
 
         # Chirp is an event phenomenon -- a crack disperses, a steady
         # scrub does not -- so only the events pass the allpass chain.
-        ev = pulse * voice
+        # With the squeal engaged, micro-slip energy crossfades OUT of
+        # the bank and INTO the friction loop as slide jitter: the
+        # micro-slips ARE the squeal's unsteadiness, not knocks on the
+        # body. Pops arrive through 'pulse' too, and stay loud because
+        # they are rare and big.
+        ev_all = penv * voice
+        ev = ev_all * (1.0 - mix)
+        # Slow: unsteadiness is the roughness of the surface passing
+        # under the interface, tens of milliseconds, not a percussive
+        # kick per micro-slip. The slips' energy drifts the operating
+        # point and the squeal wavers.
+        jit_lp += (ev_all * mix * jgain - jit_lp) * jit_k
         for k in range(stages):
             v = -chirp_a * ev + ap_x[k] + chirp_a * ap_y[k]
             ap_x[k] = ev
@@ -8381,13 +8444,43 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
         grind_sig = grind_gain * vel_env * g_lp * tex_comp
         raw = ev + grind_sig
 
+        # The squeal, regenerative: rub~'s loop closed around this bank.
+        # Every mode rings freely from its own history; their velocities
+        # sum into the surface the hinge faces are touching; the slide
+        # velocity against that surface goes through the friction curve;
+        # and the force pours back into every mode. Nothing here sets
+        # the squeal's pitch -- the loop locks onto a mode of the body
+        # and jumps between modes as load and speed move, which is the
+        # staircase brass taught us to trust. The interface engages only
+        # while the strain is actually sliding (a Hill valve on speed),
+        # so stillness stays silent by construction.
+        surface = 0.0
+        for m in range(modes):
+            r_ = b1[m] * s1[m] + b2[m] * s2[m]
+            ring[m] = r_
+            surface += r_ - s1[m]
+        h = sv if sv >= 0.0 else -sv
+        # Squared Hill: engagement lets go decisively below hinge
+        # speeds, so the turnarounds of a gesture pass through the
+        # judder region quietly instead of knocking.
+        engage = contact * (h * h / (h * h + v50 * v50))
+        # pk puts the bank's motion in true velocity units (the raw
+        # two-pole difference is smaller by the mode angle), so the
+        # surface speaks the same language as the slide.
+        dv = sv * vdg - surface * pk + jit_lp
+        t = abs(dv * sl) + 0.75
+        c = 1.0 / (t * t * t * t)
+        if c > 1.0:
+            c = 1.0
+        fr = dv * c * engage
+
         # The grind excites the bank through its own gain vector: through
         # a comb of resonators, WHICH modes are rubbed is audible where a
         # spectral tilt of the noise is not.
         total = 0.0
         for m in range(modes):
-            y = (gains[m] * ev + ggains[m] * grind_sig
-                 + b1[m] * s1[m] + b2[m] * s2[m])
+            y = (gains[m] * (ev + fr) + ggains[m] * grind_sig
+                 + ring[m])
             if y > 1.5:
                 y = 1.5 + np.tanh(y - 1.5)
             elif y < -1.5:
@@ -8397,7 +8490,8 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
             total += y
         out_raw[i] = raw
         out[i] = total + dry * raw
-    return (s_prev, stress, threshold, pulse, gd, sq_phase, sq_rate,
+    return (s_prev, stress, threshold, pulse, penv, gd,
+            stress2, threshold2, jit_lp, sv,
             tune, vel_env, g_lp, c_phase, c_time, c_amp, c_dec, c_t0,
             max_strain, rng)
 
@@ -8424,6 +8518,14 @@ class StrainUnit(Unit):
     'chirp' disperses each event the way a plate does -- flexural waves
     outrun their lows -- which is the lake-ice pew. The body is a mode
     table, drawn in the same editor as modal~ and rub~.
+
+    'squeal' is regenerative: rub~'s friction loop closed around this
+    unit's own bank, driven by the strain's actual sliding velocity.
+    Nothing sets its pitch -- it locks onto a mode and jumps between
+    modes as load and speed move, sings only in a window of sliding
+    speed (slower judders, faster breaks up), and past the singing
+    region it groans. All of that is what the physics does; none of it
+    is coded as behavior.
     """
 
     MAX_MODES = 24
@@ -8468,6 +8570,7 @@ class StrainUnit(Unit):
         self._theta = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
         self._radius = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
         self._mode_scratch = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
+        self._ring = np.zeros(StrainUnit.MAX_MODES, dtype=np.float64)
         self._ap_x = np.zeros(StrainUnit.CHIRP_STAGES, dtype=np.float64)
         self._ap_y = np.zeros(StrainUnit.CHIRP_STAGES, dtype=np.float64)
 
@@ -8475,9 +8578,12 @@ class StrainUnit(Unit):
         self._stress = 0.0
         self._threshold = self.thresh
         self._pulse = 0.0
+        self._penv = 0.0
         self._gd = 0.99
-        self._sq_phase = 0.0
-        self._sq_rate = 0.0
+        self._stress2 = 0.0
+        self._threshold2 = 1.0
+        self._jit_lp = 0.0
+        self._sv = 0.0
         self._tune = 1.0
         self._vel_env = 0.0
         self._g_lp = 0.0
@@ -8519,6 +8625,10 @@ class StrainUnit(Unit):
         self._ap_y[:] = 0.0
         self._stress = 0.0
         self._pulse = 0.0
+        self._penv = 0.0
+        self._stress2 = 0.0
+        self._jit_lp = 0.0
+        self._sv = 0.0
         self._quiet = True
 
     def deactivate(self):
@@ -8625,14 +8735,29 @@ class StrainUnit(Unit):
         thresh_eff = self.thresh * (4.0 ** (2.0 * resist_now - 1.0))
         amp_eff = self.amp * (2.0 ** (2.0 * resist_now - 1.0))
         grain_samples = self.grain_seconds * self.sample_rate
+        atk_k = 1.0 - math.exp(-1.0 / (0.25 * max(4.0, grain_samples)))
+        jit_k = 1.0 - math.exp(-1.0 / (0.03 * self.sample_rate))
         chirp_a = chirp_now * 0.5
         squeal_now = scalar(squeal, 0.0, 1.0)
-        # The interface's own resonance sits above the body and rides both
-        # the load and the stretched state: heavier and tighter squeal
-        # higher, and the whole system agrees about where the strain is.
-        squeal_hz = min(self.sample_rate * 0.4,
-                        f0 * 2.5 * (0.6 + 0.8 * resist_now))
-        squeal_inc = 2.0 * math.pi * squeal_hz / self.sample_rate
+        # The squeal is regenerative: 'squeal' is how firmly the
+        # interface engages the body, 'resist' how wide its sticking
+        # region is, and the pitch is in neither number -- the friction
+        # loop locks onto whichever mode of the bank will carry it.
+        # Placed from the measured map: the loop is damped below about
+        # 0.5, sings from 0.7, and tips into groaning chaos past 1.2 --
+        # so the knob's top third is the singing region and full squeal
+        # leans on the door hard enough to groan. There is also a speed
+        # window, as with a real hinge: too slow judders, too fast
+        # breaks up, and neither is an error.
+        contact = squeal_now * (0.4 + 0.6 * resist_now) * 1.75
+        sl = 5.0 - 4.0 * resist_now
+        # Micro-slips move house as the squeal engages: by squeal 0.5
+        # they are entirely the loop's unsteadiness, and the bank hears
+        # only the rare macro pops.
+        mix = min(1.0, 2.0 * squeal_now)
+        macro_thresh = thresh_eff * 45.0
+        pop_amp = amp_eff * 3.0
+        pk = 0.5 * self.sample_rate / (2.0 * math.pi * f0)
         vary_oct = scalar(vary, 0.0, 1.0) * 0.5
         dry_now = scalar(dry, 0.0, 1.0)
         # Grind rides speed (in strain-units per second, enveloped over
@@ -8679,19 +8804,23 @@ class StrainUnit(Unit):
 
         result = self._y[:frames]
         (self._s_prev, self._stress, self._threshold, self._pulse,
-         self._gd, self._sq_phase, self._sq_rate, self._tune,
+         self._penv, self._gd, self._stress2, self._threshold2,
+         self._jit_lp, self._sv, self._tune,
          self._vel_env, self._g_lp, self._c_phase, self._c_time,
          self._c_amp, self._c_dec, self._c_t0, self._max_strain,
          rng_state) = _strain_kernel(
             bend, thresh_eff, self.spread, self.alpha, self.size_cap,
             self.habituate, grain_samples, amp_eff, chirp_a,
-            squeal_now, squeal_inc, vary_oct, grind_gain, vel_k,
-            tex_k, tex_comp,
+            contact, sl, 0.09, 0.45, pk, float(self.sample_rate), vary_oct,
+            atk_k, mix, 0.5, jit_k, macro_thresh, pop_amp,
+            grind_gain, vel_k, tex_k, tex_comp,
             theta, radius, b1, b2,
-            live, ggains, self._s1[:count], self._s2[:count],
+            live, ggains, self._ring[:count],
+            self._s1[:count], self._s2[:count],
             self._ap_x, self._ap_y,
             self._s_prev, self._stress, self._threshold, self._pulse,
-            self._gd, self._sq_phase, self._sq_rate, self._tune,
+            self._penv, self._gd, self._stress2, self._threshold2,
+            self._jit_lp, self._sv, self._tune,
             self._vel_env, self._g_lp, pew_scale, pew_w,
             self._c_phase, self._c_time, self._c_amp, self._c_dec,
             self._c_t0, self._max_strain, recover,
