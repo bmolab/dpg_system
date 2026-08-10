@@ -3396,6 +3396,10 @@ def _warm_up_filter():
         _whoosh_kernel(breath, breath.copy(), breath.copy(), 0.4,
                        0.99, 0.02, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0,
                        np.uint64(99), output)
+        _noise_kernel(breath, 0.35, 0.5, 0.6, 0.01, 0.001, 0.002,
+                      0.5, 0.1, 0.2, 0.001, 0.99, 0.05,
+                      0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+                      np.uint64(7), output)
         ap = np.zeros(3)
         _strain_kernel(wide, 0.01, 0.5, 0.6, 10.0, 0.5, 100.0, 1.0, 0.2,
                        0.5, 0.1, 0.2, 10.0, 0.01, 0.5, 1.7,
@@ -8042,6 +8046,188 @@ class WhooshUnit(Unit):
         (self._vel, self._y1, self._y2, self._lp, rng_state) = _whoosh_kernel(
             gust, omega, amp, wake_now, shed_r, shed_g, wake_k, smooth_k,
             self._vel, self._y1, self._y2, self._lp, self._rng, result)
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _noise_kernel_source(pressure, amp_scale, color_k, bright, hp_k,
+                         p_close, p_open, gate_atk, gate_rel, gate_floor,
+                         spit_gain, spit_decay, smooth_k,
+                         pres, gate, is_open, spit, blocked, lp, hp, rng,
+                         out):
+    """A leak, sample by sample: pressure escaping through an orifice.
+
+    The hiss is turbulence -- white noise through a one-pole whose
+    cutoff is the color knob, power-compensated so color changes the
+    timbre and never the level, brightening a little as pressure rises
+    the way a harder leak does.
+
+    Sputter is a telegraph process, not a wobble: the orifice blocks
+    (condensation, debris) and blows back open. While it is blocked the
+    pressure behind it builds, so the reopening SPITS -- an overshoot
+    burst scaled by how long the blockage held. Blocked spells run
+    shorter than open ones, partial at low sputter, hard dropouts at
+    full. The gate reopens faster than it closes, because blow-through
+    is abrupt and clogging is not.
+    """
+    for i in range(pressure.shape[0]):
+        pres += (pressure[i] - pres) * smooth_k
+        rng, u = _rand01(rng)
+        if is_open > 0.5:
+            if u < p_close:
+                is_open = 0.0
+                blocked = 0.0
+        else:
+            blocked += 1.0
+            if u < p_open:
+                is_open = 1.0
+                s = blocked * spit_gain
+                if s > 1.2:
+                    s = 1.2
+                spit += s
+        target = 1.0 if is_open > 0.5 else gate_floor
+        if target > gate:
+            gate += (target - gate) * gate_atk
+        else:
+            gate += (target - gate) * gate_rel
+        spit *= spit_decay
+        rng, nz = _rand01(rng)
+        white = 2.0 * nz - 1.0
+        k = color_k * (0.4 + bright * pres)
+        if k > 1.0:
+            k = 1.0
+        lp += (white - lp) * k
+        v = lp * math.sqrt((2.0 - k) / k)
+        hp += (v - hp) * hp_k
+        v -= hp
+        out[i] = v * amp_scale * (pres ** 1.8) * (gate + spit)
+    return pres, gate, is_open, spit, blocked, lp, hp, rng
+
+
+if _HAVE_NUMBA:
+    _noise_kernel = njit(cache=True, fastmath=True)(_noise_kernel_source)
+else:
+    _noise_kernel = _noise_kernel_source
+
+
+class NoiseUnit(Unit):
+    """A leak: the noise source the rack was missing, played by pressure.
+
+    Every other unit keeps its noise inside; this one hands it to the
+    patch. 'pressure' is the whole interface -- loudness rises steeply
+    with it as turbulence does, brightness rises gently, stillness is
+    silence -- and it is smoothed on the way in so a control-rate
+    effort stream drives it without zippering.
+
+    'color' tilts the spectrum from dark rumble to full white at
+    constant power. 'sputter' breaks the flow up: a telegraph blockage
+    that builds pressure while closed and spits on reopening, partial
+    flutter at low values, hard dropouts at high. 'rate' is its tempo,
+    slow gulps to buzzy flutter.
+
+    Downstream it is a source like any other: through formant~ it is
+    breath, through modal~ it is a rattling surface, through vcf~ it
+    is classic subtractive hiss.
+    """
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.pressure_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+        self.color_in = self.new_inlet(base=0.85, minimum=0.0, maximum=1.0)
+        self.sputter_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.rate_in = self.new_inlet(base=10.0, minimum=0.2, maximum=200.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        NoiseUnit._seeded += 1
+        seed = (NoiseUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+        self._pres = 0.0
+        self._gate = 1.0
+        self._open = 1.0
+        self._spit = 0.0
+        self._blocked = 0.0
+        self._lp = 0.0
+        self._hp = 0.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._pressure = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._pres = 0.0
+        self._gate = 1.0
+        self._open = 1.0
+        self._spit = 0.0
+        self._lp = 0.0
+        self._hp = 0.0
+        self._quiet = True
+
+    def render(self, frames):
+        pressure = self.pressure_in.eval(frames)
+        color = self.color_in.eval(frames)
+        sputter = self.sputter_in.eval(frames)
+        rate = self.rate_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        drive = self._pressure[:frames]
+        if pressure.constant:
+            drive[:] = pressure.value
+            idle = abs(pressure.value) < 1.0e-4
+        else:
+            np.copyto(drive, pressure.data[:frames])
+            idle = False
+        np.clip(drive, 0.0, 2.0, out=drive)
+
+        if self._quiet and idle and self._pres < 1.0e-4:
+            out.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        color_now = scalar(color, 0.0, 1.0)
+        sputter_now = scalar(sputter, 0.0, 1.0)
+        rate_now = scalar(rate, 0.2, 200.0)
+
+        # Dark rumble to full white, exponentially: 30 Hz to the top.
+        cutoff = 30.0 * (800.0 ** color_now)
+        color_k = 1.0 - math.exp(-2.0 * math.pi * cutoff / self.sample_rate)
+        hp_k = 1.0 - math.exp(-2.0 * math.pi * 25.0 / self.sample_rate)
+        # Blockage arrives only as sputter opens; reopening runs faster
+        # than clogging, so blocked spells stay the shorter ones.
+        p_close = rate_now * 1.2 * sputter_now / self.sample_rate
+        p_open = rate_now * 2.0 / self.sample_rate
+        gate_atk = 1.0 - math.exp(-1.0 / (0.0012 * self.sample_rate))
+        gate_rel = 1.0 - math.exp(-1.0 / (0.005 * self.sample_rate))
+        gate_floor = 1.0 - sputter_now
+        spit_gain = 1.2 * sputter_now / (0.06 * self.sample_rate)
+        spit_decay = math.exp(-1.0 / (0.007 * self.sample_rate))
+        smooth_k = 1.0 - math.exp(-1.0 / (0.004 * self.sample_rate))
+
+        result = self._y[:frames]
+        (self._pres, self._gate, self._open, self._spit, self._blocked,
+         self._lp, self._hp, rng_state) = _noise_kernel(
+            drive, 0.35, color_k, 0.6, hp_k,
+            p_close, p_open, gate_atk, gate_rel, gate_floor,
+            spit_gain, spit_decay, smooth_k,
+            self._pres, self._gate, self._open, self._spit, self._blocked,
+            self._lp, self._hp, self._rng, result)
         self._rng = np.uint64(rng_state)
 
         self._apply_level(result, out_level, frames)

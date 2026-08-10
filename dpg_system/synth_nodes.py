@@ -30,8 +30,7 @@ from dpg_system.synth_core import (
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
-    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES,
-)
+    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit)
 
 import os
 
@@ -96,6 +95,8 @@ def register_synth_nodes():
     Node.app.register_node('horn~', BrassNode.factory)
     Node.app.register_node('strain~', StrainNode.factory)
     Node.app.register_node('creak~', StrainNode.factory)
+    Node.app.register_node('noise~', NoiseNode.factory)
+    Node.app.register_node('hiss~', NoiseNode.factory)
     Node.app.register_node('whoosh~', WhooshNode.factory)
     Node.app.register_node('swish~', WhooshNode.factory)
     Node.app.register_node('rub~', RubNode.factory)
@@ -4629,6 +4630,72 @@ class WhooshNode(SynthNode):
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('wake', self.unit.wake_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
+
+
+class NoiseNode(SynthNode):
+    """A leak: the rack's noise source, played by pressure.
+
+    'pressure' is the whole interface -- loudness rises steeply with it
+    as turbulence does, brightness gently, stillness is silence -- and
+    a control-rate effort stream drives it without zippering. 'color'
+    tilts dark rumble to full white at constant loudness. 'sputter'
+    breaks the flow up physically: a blockage that builds pressure
+    while closed and spits on reopening -- flutter at low values, hard
+    dropouts at full -- with 'rate' its tempo, slow gulps to buzz.
+
+    Through formant~ it is breath, through modal~ a rattling surface,
+    through vcf~ classic subtractive hiss.
+
+    noise~ <color>, e.g. noise~ 0.5. hiss~ is the same node.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return NoiseNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = NoiseUnit(synth_graph.sample_rate)
+
+        if args is not None:
+            for arg in args:
+                try:
+                    self.unit.color_in.base = max(0.0, min(1.0, float(arg)))
+                except (ValueError, TypeError):
+                    continue
+
+        press_port = self.add_modulation_input('pressure',
+                                               self.unit.pressure_in,
+                                               default_value=1.0,
+                                               minimum=0.0, maximum=2.0,
+                                               speed=0.01)
+        if press_port.widget is not None:
+            press_port.widget.set_tooltip(
+                'how hard the leak is driven: loudness rises steeply, '
+                'brightness gently. 0 is silence -- patch an effort '
+                'stream here and stillness stays still')
+        self.add_modulation_input('color', self.unit.color_in,
+                                  default_value=self.unit.color_in.base,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        sputter_port = self.add_modulation_input('sputter',
+                                                 self.unit.sputter_in,
+                                                 minimum=0.0, maximum=1.0,
+                                                 speed=0.01)
+        if sputter_port.widget is not None:
+            sputter_port.widget.set_tooltip(
+                'the flow breaking up: a blockage that builds pressure '
+                'and spits on reopening. Partial flutter low, hard '
+                'dropouts at full')
+        rate_port = self.add_modulation_input('rate', self.unit.rate_in,
+                                              minimum=0.2, maximum=200.0,
+                                              speed=0.1, slider=False)
+        self.make_drag_proportional(rate_port)
         self.add_modulation_input('level', self.unit.level_in,
                                   minimum=0.0, maximum=2.0, speed=0.01)
 
