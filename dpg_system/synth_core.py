@@ -3411,9 +3411,12 @@ def _warm_up_filter():
                         state.copy(), state.copy(), state.copy(),
                         0.0, 0.0, 1.0, np.uint64(21), output)
         _motor_kernel(breath, 0.001, 4, 0.4, 0.3, state.copy(),
-                      0.2, 0.35, 0.3, 0.2, 0.1, 0.5,
+                      0.2, 0.35, 0.3, 0.2, 0.1, 6.7, 0.97,
+                      0.4, 0.96, 0.05, 0.1, 1000.0, 2000.0, 0.01, 0.5,
                       1.9, -0.97, 0.03, 1.9, -0.96, 0.04,
                       0.05, 0.0, -1, 1.0, 0.0, 0.0,
+                      0.0, 0.0, 0.0, 0.0, 0.4, 0.0,
+                      0.0, 0.1, 0.0, 0.0, 0.99, 0.0,
                       0.0, 0.0, 0.0, 0.0, 0.99, 0.0, 0.0,
                       np.uint64(5), output)
         _drum_kernel(breath, bank.copy(), bank.copy(), bank.copy(),
@@ -8825,10 +8828,14 @@ class DrumUnit(Unit):
 
 def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
                          offsets, jit_amt, amp_lo, amp_hi,
-                         grind_gain, grind_k, body_mix,
+                         grind_gain, grind_k, bp_ratio, bdec,
+                         bw_th, bw_r, bw_g, p_squeal, sq_lo, sq_span,
+                         flut_k, body_mix,
                          bb1a, bb2a, bga, bb1b, bb2b, bgb,
                          smooth_k, phase, prev_k, strength, vel,
-                         g_lp, ya1, ya2, yb1, yb2, dc_pole, dc_x, dc_y,
+                         g_lp, bphase, benv, bw1, bw2, bw_w, bw_sw,
+                         sq_ph, sq_w, sq_wr, sq_amp, sq_dec, flut,
+                         ya1, ya2, yb1, yb2, dc_pole, dc_x, dc_y,
                          rng, out):
     """Rotating machinery, sample by sample: speed and load as streams.
 
@@ -8837,7 +8844,15 @@ def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
     is the tone -- narrow knocks to smooth hum. Every part carries a
     fixed strength offset (throb spreads them), so uneven firing beats
     at once per revolution: the idle lope of a real engine, not an LFO.
-    Load adds per-firing jitter and the grind of bearings underneath.
+    Load adds per-firing jitter, and the grind underneath is BAD
+    BEARINGS, not a noise floor: defects strike at a non-integer
+    multiple of the rotation (so the rattle beats against the firing
+    pattern, as real bearing faults do), each impact rung at its own
+    drawn pitch in the bearing's metallic band and SWEEPING as it
+    rings, harder under load, faster with speed. And sometimes an
+    impact sticks and SINGS: a swept whine of thirty to a hundred
+    milliseconds, likelier under load -- the squeak of the wheel that
+    needs the grease. A whisper of broadband scrub remains beneath.
     The housing is two fixed broad resonances -- housings do not track
     RPM -- and a DC blocker takes out the pulse train's offset.
     """
@@ -8868,7 +8883,62 @@ def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
         coarse = 2.0 * nz - 1.0
         coarse = coarse * coarse * coarse
         g_lp += (coarse - g_lp) * grind_k
-        raw = tone_sig + grind_gain * amp * g_lp
+        # The bearing: defect impacts at bp_ratio times the rotation,
+        # each rung at its own pitch and sweeping while it rings.
+        bphase += f * bp_ratio
+        if bphase >= 1.0:
+            bphase -= 1.0
+            rng, ub = _rand01(rng)
+            benv += 0.4 + 0.9 * ub
+            if benv > 3.0:
+                benv = 3.0
+            rng, ud = _rand01(rng)
+            bw_w = bw_th * (0.75 + 0.5 * ud)
+            rng, ud2 = _rand01(rng)
+            bw_sw = bw_w * 0.2 * (ud2 - 0.35) * (1.0 - bdec)
+            rng, us = _rand01(rng)
+            if us < p_squeal:
+                rng, ua = _rand01(rng)
+                sq_amp = 0.5 + 0.5 * ua
+                rng, uda = _rand01(rng)
+                dur = sq_lo + sq_span * uda
+                sq_dec = math.exp(-1.0 / dur)
+                rng, uw = _rand01(rng)
+                sq_w = bw_th * (0.45 + 0.3 * uw)
+                sq_wr = sq_w * 0.2 / dur
+                sq_ph = 0.0
+        benv *= bdec
+        bw_w += bw_sw
+        if bw_w < bw_th * 0.4:
+            bw_w = bw_th * 0.4
+        elif bw_w > bw_th * 1.7:
+            bw_w = bw_th * 1.7
+        b1w = 2.0 * bw_r * math.cos(bw_w)
+        rng, nb = _rand01(rng)
+        bhit = benv * (2.0 * nb - 1.0)
+        bw = bw_g * bhit + b1w * bw1 - bw_r * bw_r * bw2
+        bw2 = bw1
+        bw1 = bw
+        # Roughness for the squeal: slow noise that flutters both its
+        # loudness and its pitch. A pure swept sine is a bird or a
+        # drip; a bearing's whine wavers and rasps.
+        rng, nf = _rand01(rng)
+        flut += ((2.0 * nf - 1.0) - flut) * flut_k
+        sq_sig = 0.0
+        if sq_amp > 1.0e-4:
+            sq_w += sq_wr
+            sq_ph += sq_w * (1.0 + 0.12 * flut)
+            if sq_ph > 6.283185307179586:
+                sq_ph -= 6.283185307179586
+            sq_sig = sq_amp * (0.6 + 0.7 * flut) * math.sin(sq_ph)
+            sq_amp *= sq_dec
+        # The narrow band keeps little of the impact's energy, so the
+        # ring is driven hard to sit audibly under the tone.
+        # The machine is what shakes the bearing: the whole grind
+        # stack pumps with the firing pulses, which is what welds it
+        # INTO the engine instead of leaving it beside one.
+        raw = tone_sig + grind_gain * amp * (0.45 + 0.75 * p) \
+            * (14.0 * bw + 0.3 * g_lp + 2.2 * sq_sig) * 1.2
         ya = bga * raw + bb1a * ya1 + bb2a * ya2
         ya2 = ya1
         ya1 = ya
@@ -8880,8 +8950,9 @@ def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
         dc_x = o
         dc_y = od
         out[i] = od
-    return (phase, prev_k, strength, vel, g_lp, ya1, ya2, yb1, yb2,
-            dc_x, dc_y, rng)
+    return (phase, prev_k, strength, vel, g_lp, bphase, benv, bw1, bw2,
+            bw_w, bw_sw, sq_ph, sq_w, sq_wr, sq_amp, sq_dec, flut,
+            ya1, ya2, yb1, yb2, dc_x, dc_y, rng)
 
 
 if _HAVE_NUMBA:
@@ -8935,6 +9006,18 @@ class MotorUnit(Unit):
         self._strength = 1.0
         self._vel = 0.0
         self._g_lp = 0.0
+        self._bphase = 0.0
+        self._benv = 0.0
+        self._bw1 = 0.0
+        self._bw2 = 0.0
+        self._bw_w = 0.4
+        self._bw_sw = 0.0
+        self._sq_ph = 0.0
+        self._sq_w = 0.0
+        self._sq_wr = 0.0
+        self._sq_amp = 0.0
+        self._sq_dec = 0.99
+        self._flut = 0.0
         self._ya1 = 0.0
         self._ya2 = 0.0
         self._yb1 = 0.0
@@ -8954,6 +9037,14 @@ class MotorUnit(Unit):
         self._strength = 1.0
         self._vel = 0.0
         self._g_lp = 0.0
+        self._bphase = 0.0
+        self._benv = 0.0
+        self._bw1 = 0.0
+        self._bw2 = 0.0
+        self._bw_w = 0.4
+        self._bw_sw = 0.0
+        self._sq_amp = 0.0
+        self._flut = 0.0
         self._ya1 = 0.0
         self._ya2 = 0.0
         self._yb1 = 0.0
@@ -9015,6 +9106,23 @@ class MotorUnit(Unit):
         grind_cut = 400.0 + 2600.0 * min(1.0, float(drive[0]))
         grind_k = 1.0 - math.exp(-2.0 * math.pi * grind_cut
                                  / self.sample_rate)
+        # The bearing's numbers: a defect-pass ratio that never lines
+        # up with the firing pattern, a millisecond-and-a-half of ring
+        # per impact, and a metallic band near 2.8 kHz at unity peak.
+        bp_ratio = 6.71
+        bdec = math.exp(-1.0 / (0.0015 * self.sample_rate))
+        # Down out of the songbird register: machinery moans near two
+        # kilohertz, it does not tweet at three.
+        th_w = 2.0 * math.pi * min(1900.0, 0.4 * self.sample_rate) \
+            / self.sample_rate
+        r_w = 0.97
+        bw_g = (1.0 - r_w) * math.sin(th_w) * 1.2
+        # The squeak of the wheel: likelier under load, thirty to a
+        # hundred milliseconds, rising as stick-slip squeals do.
+        p_squeal = 0.0015 + 0.007 * load_now
+        sq_lo = 0.03 * self.sample_rate
+        sq_span = 0.07 * self.sample_rate
+        flut_k = 1.0 - math.exp(-2.0 * math.pi * 90.0 / self.sample_rate)
         smooth_k = 1.0 - math.exp(-1.0 / (0.004 * self.sample_rate))
         # The housing: two fixed broad resonances. Housings do not
         # track RPM, which is why climbing through them reads as real.
@@ -9035,14 +9143,23 @@ class MotorUnit(Unit):
 
         result = self._y[:frames]
         (self._phase, self._prev_k, self._strength, self._vel, self._g_lp,
+         self._bphase, self._benv, self._bw1, self._bw2,
+         self._bw_w, self._bw_sw, self._sq_ph, self._sq_w,
+         self._sq_wr, self._sq_amp, self._sq_dec, self._flut,
          self._ya1, self._ya2, self._yb1, self._yb2,
          self._dc_x, self._dc_y, rng_state) = _motor_kernel(
             drive, rate_norm, parts_now, w_frac, throb_now,
             self._offsets, jit_amt, amp_lo, amp_hi,
-            grind_gain, grind_k, housing_now,
+            grind_gain, grind_k, bp_ratio, bdec,
+            th_w, r_w, bw_g, p_squeal, sq_lo, sq_span,
+            flut_k, housing_now,
             bb1a, bb2a, bga, bb1b, bb2b, bgb,
             smooth_k, self._phase, self._prev_k, self._strength,
-            self._vel, self._g_lp, self._ya1, self._ya2,
+            self._vel, self._g_lp,
+            self._bphase, self._benv, self._bw1, self._bw2,
+            self._bw_w, self._bw_sw, self._sq_ph, self._sq_w,
+            self._sq_wr, self._sq_amp, self._sq_dec, self._flut,
+            self._ya1, self._ya2,
             self._yb1, self._yb2, dc_pole, self._dc_x, self._dc_y,
             self._rng, result)
         self._rng = np.uint64(rng_state)
