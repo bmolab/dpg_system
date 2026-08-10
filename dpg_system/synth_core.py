@@ -3410,13 +3410,14 @@ def _warm_up_filter():
                         state.copy(), state.copy(), state.copy(),
                         state.copy(), state.copy(), state.copy(),
                         0.0, 0.0, 1.0, np.uint64(21), output)
-        _motor_kernel(breath, 0.001, 4, 0.4, 0.3, state.copy(),
+        _motor_kernel(breath, 0.001, 4, 5, 0.5, 0.4, 0.3, state.copy(),
                       0.2, 0.35, 0.3, 0.2, 0.1, 6.7, 0.97,
-                      0.4, 0.96, 0.05, 0.1, 1000.0, 2000.0, 0.01, 0.5,
+                      0.4, 0.96, 0.05, 0.1, 1000.0, 2000.0,
+                      0.3, 0.02, 0.01, 0.5,
                       1.9, -0.97, 0.03, 1.9, -0.96, 0.04,
-                      0.05, 0.0, -1, 1.0, 0.0, 0.0,
+                      0.05, 0.0, -1, -1, 1.0, 1.0, 0.0, 0.0,
                       0.0, 0.0, 0.0, 0.0, 0.4, 0.0,
-                      0.0, 0.1, 0.0, 0.0, 0.99, 0.0,
+                      0.0, 0.1, 0.0, 0.0, 0.99, 0.0, 0.0,
                       0.0, 0.0, 0.0, 0.0, 0.99, 0.0, 0.0,
                       np.uint64(5), output)
         _drum_kernel(breath, bank.copy(), bank.copy(), bank.copy(),
@@ -8826,15 +8827,18 @@ class DrumUnit(Unit):
         self._quiet = bool(scratch.max() < 1.0e-5)
 
 
-def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
+def _motor_kernel_source(speed, rate_norm, parts_a, parts_b, xfade,
+                         w_frac, throb,
                          offsets, jit_amt, amp_lo, amp_hi,
                          grind_gain, grind_k, bp_ratio, bdec,
                          bw_th, bw_r, bw_g, p_squeal, sq_lo, sq_span,
-                         flut_k, body_mix,
+                         beat, slip, flut_k, body_mix,
                          bb1a, bb2a, bga, bb1b, bb2b, bgb,
-                         smooth_k, phase, prev_k, strength, vel,
+                         smooth_k, phase, prev_ka, prev_kb,
+                         str_a, str_b, vel,
                          g_lp, bphase, benv, bw1, bw2, bw_w, bw_sw,
-                         sq_ph, sq_w, sq_wr, sq_amp, sq_dec, flut,
+                         sq_ph, sq_w, sq_wr, sq_amp, sq_dec,
+                         bt_phase, flut,
                          ya1, ya2, yb1, yb2, dc_pole, dc_x, dc_y,
                          rng, out):
     """Rotating machinery, sample by sample: speed and load as streams.
@@ -8863,22 +8867,38 @@ def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
         phase += f
         if phase >= 1.0:
             phase -= 1.0
-        fphase = phase * parts
-        k = int(fphase)
-        if k >= parts:
-            k = parts - 1
-        frac = fphase - k
-        if k != prev_k:
-            prev_k = k
-            rng, u = _rand01(rng)
-            idx = k % n_parts
-            strength = (1.0 + throb * offsets[idx]) \
-                * (1.0 + jit_amt * (2.0 * u - 1.0))
-        p = 0.0
-        if frac < w_frac:
-            p = 0.5 * (1.0 - math.cos(6.283185307179586 * frac / w_frac))
+        # Fractional parts: two firing patterns share the rotation
+        # phase and crossfade, so the count GLIDES -- an engine caught
+        # between natures, continuous at the integers by construction.
+        fpa = phase * parts_a
+        ka = int(fpa)
+        if ka >= parts_a:
+            ka = parts_a - 1
+        fra = fpa - ka
+        if ka != prev_ka:
+            prev_ka = ka
+            rng, ua = _rand01(rng)
+            str_a = (1.0 + throb * offsets[ka % n_parts]) \
+                * (1.0 + jit_amt * (2.0 * ua - 1.0))
+        pa = 0.0
+        if fra < w_frac:
+            pa = 0.5 * (1.0 - math.cos(6.283185307179586 * fra / w_frac))
+        fpb = phase * parts_b
+        kb = int(fpb)
+        if kb >= parts_b:
+            kb = parts_b - 1
+        frb = fpb - kb
+        if kb != prev_kb:
+            prev_kb = kb
+            rng, ub2 = _rand01(rng)
+            str_b = (1.0 + throb * offsets[kb % n_parts]) \
+                * (1.0 + jit_amt * (2.0 * ub2 - 1.0))
+        pb = 0.0
+        if frb < w_frac:
+            pb = 0.5 * (1.0 - math.cos(6.283185307179586 * frb / w_frac))
+        p = (1.0 - xfade) * pa * str_a + xfade * pb * str_b
         amp = 0.55 * vel ** 0.6 if vel > 0.0 else 0.0
-        tone_sig = p * strength * amp * (amp_lo + amp_hi)
+        tone_sig = p * amp * (amp_lo + amp_hi)
         rng, nz = _rand01(rng)
         coarse = 2.0 * nz - 1.0
         coarse = coarse * coarse * coarse
@@ -8939,6 +8959,14 @@ def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
         # INTO the engine instead of leaving it beside one.
         raw = tone_sig + grind_gain * amp * (0.45 + 0.75 * p) \
             * (14.0 * bw + 0.3 * g_lp + 2.2 * sq_sig) * 1.2
+        # The slip beat: a second shaft a few percent behind, beating
+        # at slip times rotation -- so the slow breathing of the
+        # machine speeds up and slows down WITH it.
+        bt_phase += f * slip
+        if bt_phase >= 1.0:
+            bt_phase -= 1.0
+        raw *= 1.0 - beat * 0.85 \
+            * (0.5 - 0.5 * math.cos(6.283185307179586 * bt_phase))
         ya = bga * raw + bb1a * ya1 + bb2a * ya2
         ya2 = ya1
         ya1 = ya
@@ -8950,8 +8978,10 @@ def _motor_kernel_source(speed, rate_norm, parts, w_frac, throb,
         dc_x = o
         dc_y = od
         out[i] = od
-    return (phase, prev_k, strength, vel, g_lp, bphase, benv, bw1, bw2,
-            bw_w, bw_sw, sq_ph, sq_w, sq_wr, sq_amp, sq_dec, flut,
+    return (phase, prev_ka, prev_kb, str_a, str_b, vel, g_lp,
+            bphase, benv, bw1, bw2,
+            bw_w, bw_sw, sq_ph, sq_w, sq_wr, sq_amp, sq_dec,
+            bt_phase, flut,
             ya1, ya2, yb1, yb2, dc_x, dc_y, rng)
 
 
@@ -8990,6 +9020,8 @@ class MotorUnit(Unit):
         self.parts_in = self.new_inlet(base=4.0, minimum=1.0, maximum=12.0)
         self.tone_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
         self.throb_in = self.new_inlet(base=0.35, minimum=0.0, maximum=1.0)
+        self.beat_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.slip_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.grind_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
         self.housing_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
@@ -8998,12 +9030,16 @@ class MotorUnit(Unit):
         seed = (MotorUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
         self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
         # Each part's fixed unevenness: this motor's cylinders, every
-        # run, drawn once from the instance seed.
+        # run, drawn once from the instance seed -- and this motor's
+        # own slip, so no two beat alike.
         spread_rng = np.random.RandomState(seed & 0xFFFFFFFF or 1)
         self._offsets = spread_rng.uniform(-0.5, 0.5, 12)
+        self._slip_flavor = 0.85 + 0.3 * spread_rng.uniform()
         self._phase = 0.0
-        self._prev_k = -1
-        self._strength = 1.0
+        self._prev_ka = -1
+        self._prev_kb = -1
+        self._str_a = 1.0
+        self._str_b = 1.0
         self._vel = 0.0
         self._g_lp = 0.0
         self._bphase = 0.0
@@ -9017,6 +9053,7 @@ class MotorUnit(Unit):
         self._sq_wr = 0.0
         self._sq_amp = 0.0
         self._sq_dec = 0.99
+        self._bt_phase = 0.0
         self._flut = 0.0
         self._ya1 = 0.0
         self._ya2 = 0.0
@@ -9033,8 +9070,10 @@ class MotorUnit(Unit):
 
     def reset(self):
         self._phase = 0.0
-        self._prev_k = -1
-        self._strength = 1.0
+        self._prev_ka = -1
+        self._prev_kb = -1
+        self._str_a = 1.0
+        self._str_b = 1.0
         self._vel = 0.0
         self._g_lp = 0.0
         self._bphase = 0.0
@@ -9044,6 +9083,7 @@ class MotorUnit(Unit):
         self._bw_w = 0.4
         self._bw_sw = 0.0
         self._sq_amp = 0.0
+        self._bt_phase = 0.0
         self._flut = 0.0
         self._ya1 = 0.0
         self._ya2 = 0.0
@@ -9060,6 +9100,8 @@ class MotorUnit(Unit):
         parts = self.parts_in.eval(frames)
         tone = self.tone_in.eval(frames)
         throb = self.throb_in.eval(frames)
+        beat = self.beat_in.eval(frames)
+        slip = self.slip_in.eval(frames)
         grind = self.grind_in.eval(frames)
         housing = self.housing_in.eval(frames)
         out_level = self.level_in.eval(frames)
@@ -9088,9 +9130,22 @@ class MotorUnit(Unit):
 
         load_now = scalar(load, 0.0, 1.0)
         rate_now = scalar(rate, 2.0, 200.0)
-        parts_now = int(round(scalar(parts, 1.0, 12.0)))
+        parts_f = scalar(parts, 1.0, 12.0)
+        parts_a = int(parts_f)
+        xfade = parts_f - parts_a
+        parts_b = parts_a + 1
+        if parts_b > 12:
+            parts_b = 12
+            xfade = 0.0
         tone_now = scalar(tone, 0.0, 1.0)
         throb_now = scalar(throb, 0.0, 1.0)
+        beat_now = scalar(beat, 0.0, 1.0)
+        # Half a percent to eight percent of the rotation,
+        # exponentially, with this instance's own flavor on top: the
+        # breath from geological to seasick, still never quite shared
+        # between two motors.
+        slip_now = (0.002 * 100.0 ** scalar(slip, 0.0, 1.0)
+                    * self._slip_flavor)
         grind_now = scalar(grind, 0.0, 1.0)
         housing_now = scalar(housing, 0.0, 1.0)
 
@@ -9142,23 +9197,27 @@ class MotorUnit(Unit):
         dc_pole = math.exp(-2.0 * math.pi * corner / self.sample_rate)
 
         result = self._y[:frames]
-        (self._phase, self._prev_k, self._strength, self._vel, self._g_lp,
+        (self._phase, self._prev_ka, self._prev_kb,
+         self._str_a, self._str_b, self._vel, self._g_lp,
          self._bphase, self._benv, self._bw1, self._bw2,
          self._bw_w, self._bw_sw, self._sq_ph, self._sq_w,
-         self._sq_wr, self._sq_amp, self._sq_dec, self._flut,
+         self._sq_wr, self._sq_amp, self._sq_dec,
+         self._bt_phase, self._flut,
          self._ya1, self._ya2, self._yb1, self._yb2,
          self._dc_x, self._dc_y, rng_state) = _motor_kernel(
-            drive, rate_norm, parts_now, w_frac, throb_now,
+            drive, rate_norm, parts_a, parts_b, xfade, w_frac, throb_now,
             self._offsets, jit_amt, amp_lo, amp_hi,
             grind_gain, grind_k, bp_ratio, bdec,
             th_w, r_w, bw_g, p_squeal, sq_lo, sq_span,
-            flut_k, housing_now,
+            beat_now, slip_now, flut_k, housing_now,
             bb1a, bb2a, bga, bb1b, bb2b, bgb,
-            smooth_k, self._phase, self._prev_k, self._strength,
+            smooth_k, self._phase, self._prev_ka, self._prev_kb,
+            self._str_a, self._str_b,
             self._vel, self._g_lp,
             self._bphase, self._benv, self._bw1, self._bw2,
             self._bw_w, self._bw_sw, self._sq_ph, self._sq_w,
-            self._sq_wr, self._sq_amp, self._sq_dec, self._flut,
+            self._sq_wr, self._sq_amp, self._sq_dec,
+            self._bt_phase, self._flut,
             self._ya1, self._ya2,
             self._yb1, self._yb2, dc_pole, self._dc_x, self._dc_y,
             self._rng, result)

@@ -4800,6 +4800,23 @@ class MotorNode(SynthNode):
             throb_port.widget.set_tooltip(
                 'uneven firing: this motor\'s own cylinders, loping at '
                 'once per revolution. The idle shudder')
+        beat_port = self.add_modulation_input('beat', self.unit.beat_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if beat_port.widget is not None:
+            beat_port.widget.set_tooltip(
+                'depth of the slip beat: a second shaft slightly behind, '
+                'beating at slip times rotation -- the slow breathing '
+                'speeds up and slows down with the machine')
+        slip_port = self.add_modulation_input('slip', self.unit.slip_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if slip_port.widget is not None:
+            slip_port.widget.set_tooltip(
+                'how far behind the second shaft runs: half a percent to '
+                'eight percent of the rotation, exponentially -- the '
+                'beat from near-still to seasick, always scaling with '
+                'speed')
         self.add_modulation_input('grind', self.unit.grind_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('housing', self.unit.housing_in,
