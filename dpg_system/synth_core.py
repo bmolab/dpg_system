@@ -3403,15 +3403,15 @@ def _warm_up_filter():
         ap = np.zeros(3)
         _strain_kernel(wide, 0.01, 0.5, 0.6, 10.0, 0.5, 100.0, 1.0, 0.2,
                        0.3, 3.0, 0.05, 0.3, 20.0, 44100.0, 0.2,
-                       0.3, 0.5, 0.3, 0.01, 1.0, 1.0,
+                       0.3, 0.5, 0.3, 0.01, 1.0, 1.0, 0.9,
                        10.0, 0.01, 0.5, 1.7,
                        bank.copy(), bank.copy(),
                        bank.copy(), bank.copy(), bank.copy(), bank.copy(),
                        bank.copy(),
                        state.copy(), state.copy(), ap, ap.copy(),
                        0.0, 0.0, 0.01, 0.0, 0.0, 0.99, 0.0, 1.0, 0.0,
-                       0.0, 1.0, 0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.0, 0.99,
-                       100.0, 0.0,
+                       0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.0,
+                       0.99, 100.0, 0.0,
                        1.0e-6, np.uint64(777), 0.2, output.copy(),
                        output)
         quads = np.zeros((4, 5))
@@ -8246,11 +8246,11 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
                           habituate, grain_samples, amp_scale, chirp_a,
                           contact, sl, v50, vdg, pk, srate, vary_oct,
                           atk_k, mix, jgain, jit_k, macro_thresh, pop_amp,
-                          grind_gain, vel_k, tex_k, tex_comp,
+                          gd2, grind_gain, vel_k, tex_k, tex_comp,
                           theta, radius, b1, b2, gains, ggains, ring,
                           s1, s2, ap_x, ap_y,
                           s_prev, stress, threshold, pulse, penv, gd,
-                          stress2, threshold2, jit_lp,
+                          stress2, threshold2, jit_lp, pulse2,
                           sv, tune, vel_env, g_lp,
                           pew_scale, pew_w, c_phase, c_time, c_amp, c_dec,
                           c_t0, max_strain, recover, rng, dry,
@@ -8341,13 +8341,17 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
             # first and sweeps down as 1/t^2, longer the farther away the
             # fracture -- which is what 'chirp' scales, jittered so every
             # crack comes from somewhere else.
-            if pew_scale > 0.0:
+            if pew_scale > 0.0 and mix < 1.0:
                 rng, u5 = _rand01(rng)
                 tau = pew_scale * (0.6 + 0.8 * u5)
                 c_dec = math.exp(-1.0 / tau)
                 c_t0 = tau * 0.12
                 c_time = 0.0
-                c_amp = amp_scale * size * novel * overshoot * 0.9
+                # Micro events pew only as far as they still strike the
+                # bank at all: with the squeal carrying them, nineteen
+                # pews a second was the chirp knob 'going crazy'.
+                c_amp = (amp_scale * size * novel * overshoot * 0.9
+                         * (1.0 - mix))
                 c_phase = 0.0
             stress = 0.0
             rng, u2 = _rand01(rng)
@@ -8360,10 +8364,27 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
         stress2 += speed
         if stress2 > threshold2:
             rng, up = _rand01(rng)
-            pulse += pop_amp * (0.6 + 0.8 * up)
-            if pulse > 50.0:
-                pulse = 50.0
-            gd = math.exp(-1.0 / grain_samples)
+            # The pop has its own envelope, straight into the bank: it
+            # is the geometry letting go, and no amount of squeal
+            # routing should be able to swallow it. Its size shares the
+            # motion's energy -- a release mid-heave is bigger than one
+            # at the edge of stillness.
+            h2 = sv if sv >= 0.0 else -sv
+            punch = 0.5 + h2 / (h2 + 0.15)
+            pa = pop_amp * (0.6 + 0.8 * up) * punch
+            pulse2 += pa
+            if pulse2 > 50.0:
+                pulse2 = 50.0
+            # And the release goes THROUGH the interface: the geometry
+            # jumping is a spike of sliding velocity, so the squeal
+            # yelps at the moment of the pop. This is the violence --
+            # the pop and the squeal are the same event seen twice.
+            rng, uk = _rand01(rng)
+            kick = 0.6 * (0.8 + 0.7 * uk)
+            if sv >= 0.0:
+                sv += kick
+            else:
+                sv -= kick
             # A pop is the geometry actually shifting, so THIS is where
             # the ensemble retunes ('vary'). Retuning on every micro
             # slip stepped the pitch of a singing squeal nineteen times
@@ -8383,7 +8404,10 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
                 # a subtle zing on the pop, not a concentrated blast --
                 # and the sweep is coherent, ringing the modes it
                 # passes, so even the long ones need less to land.
-                c_amp = pop_amp * (0.6 + 0.8 * up) * 0.9
+                depth = tau / (0.08 * srate)
+                if depth > 1.0:
+                    depth = 1.0
+                c_amp = pa * 0.28 * math.sqrt(depth)
                 c_phase = 0.0
             stress2 = 0.0
             rng, u7 = _rand01(rng)
@@ -8422,8 +8446,9 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
         # micro-slips ARE the squeal's unsteadiness, not knocks on the
         # body. Pops arrive through 'pulse' too, and stay loud because
         # they are rare and big.
+        pulse2 *= gd2
         ev_all = penv * voice
-        ev = ev_all * (1.0 - mix)
+        ev = ev_all * (1.0 - mix) + pulse2 * voice
         # Slow: unsteadiness is the roughness of the surface passing
         # under the interface, tens of milliseconds, not a percussive
         # kick per micro-slip. The slips' energy drifts the operating
@@ -8436,11 +8461,20 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
             ev = v
         if c_amp > 1.0e-5:
             u = c_t0 / (c_t0 + c_time)
-            c_phase += pew_w * u * u
-            attack = c_time / (0.02 * c_t0 + c_time + 1.0)
-            ev += c_amp * attack * math.sin(c_phase)
-            c_amp *= c_dec
-            c_time += 1.0
+            # The sweep ENDS when the slow waves arrive: fading out as
+            # it bottoms, rather than crawling through the low register
+            # for seconds like a radio hunting for a station.
+            if u < 0.08:
+                c_amp = 0.0
+            else:
+                c_phase += pew_w * u * u
+                attack = c_time / (0.02 * c_t0 + c_time + 1.0)
+                fade = (u - 0.08) * 8.0
+                if fade > 1.0:
+                    fade = 1.0
+                ev += c_amp * attack * fade * math.sin(c_phase)
+                c_amp *= c_dec
+                c_time += 1.0
         grind_sig = grind_gain * vel_env * g_lp * tex_comp
         raw = ev + grind_sig
 
@@ -8491,7 +8525,7 @@ def _strain_kernel_source(strain, thresh, spread, alpha, size_cap,
         out_raw[i] = raw
         out[i] = total + dry * raw
     return (s_prev, stress, threshold, pulse, penv, gd,
-            stress2, threshold2, jit_lp, sv,
+            stress2, threshold2, jit_lp, pulse2, sv,
             tune, vel_env, g_lp, c_phase, c_time, c_amp, c_dec, c_t0,
             max_strain, rng)
 
@@ -8583,6 +8617,7 @@ class StrainUnit(Unit):
         self._stress2 = 0.0
         self._threshold2 = 1.0
         self._jit_lp = 0.0
+        self._pulse2 = 0.0
         self._sv = 0.0
         self._tune = 1.0
         self._vel_env = 0.0
@@ -8628,6 +8663,7 @@ class StrainUnit(Unit):
         self._penv = 0.0
         self._stress2 = 0.0
         self._jit_lp = 0.0
+        self._pulse2 = 0.0
         self._sv = 0.0
         self._quiet = True
 
@@ -8737,6 +8773,7 @@ class StrainUnit(Unit):
         grain_samples = self.grain_seconds * self.sample_rate
         atk_k = 1.0 - math.exp(-1.0 / (0.25 * max(4.0, grain_samples)))
         jit_k = 1.0 - math.exp(-1.0 / (0.03 * self.sample_rate))
+        gd2 = math.exp(-1.0 / grain_samples)
         chirp_a = chirp_now * 0.5
         squeal_now = scalar(squeal, 0.0, 1.0)
         # The squeal is regenerative: 'squeal' is how firmly the
@@ -8756,7 +8793,7 @@ class StrainUnit(Unit):
         # only the rare macro pops.
         mix = min(1.0, 2.0 * squeal_now)
         macro_thresh = thresh_eff * 45.0
-        pop_amp = amp_eff * 3.0
+        pop_amp = amp_eff * 1.5
         pk = 0.5 * self.sample_rate / (2.0 * math.pi * f0)
         vary_oct = scalar(vary, 0.0, 1.0) * 0.5
         dry_now = scalar(dry, 0.0, 1.0)
@@ -8796,7 +8833,9 @@ class StrainUnit(Unit):
         # The pew: chirp scales how long each event's dispersive sweep
         # lasts (a farther fracture), starting well above the body and
         # sweeping down through it.
-        pew_scale = chirp_now * 0.35 * self.sample_rate
+        # Squared: most of the knob's travel lives in short, subtle
+        # dispersions, and the lake only opens up near the top.
+        pew_scale = chirp_now * chirp_now * 0.35 * self.sample_rate
         pew_w = (2.0 * math.pi
                  * min(0.35 * self.sample_rate, f0 * 12.0)
                  / self.sample_rate)
@@ -8805,14 +8844,14 @@ class StrainUnit(Unit):
         result = self._y[:frames]
         (self._s_prev, self._stress, self._threshold, self._pulse,
          self._penv, self._gd, self._stress2, self._threshold2,
-         self._jit_lp, self._sv, self._tune,
+         self._jit_lp, self._pulse2, self._sv, self._tune,
          self._vel_env, self._g_lp, self._c_phase, self._c_time,
          self._c_amp, self._c_dec, self._c_t0, self._max_strain,
          rng_state) = _strain_kernel(
             bend, thresh_eff, self.spread, self.alpha, self.size_cap,
             self.habituate, grain_samples, amp_eff, chirp_a,
             contact, sl, 0.09, 0.45, pk, float(self.sample_rate), vary_oct,
-            atk_k, mix, 0.5, jit_k, macro_thresh, pop_amp,
+            atk_k, mix, 0.5, jit_k, macro_thresh, pop_amp, gd2,
             grind_gain, vel_k, tex_k, tex_comp,
             theta, radius, b1, b2,
             live, ggains, self._ring[:count],
@@ -8820,7 +8859,7 @@ class StrainUnit(Unit):
             self._ap_x, self._ap_y,
             self._s_prev, self._stress, self._threshold, self._pulse,
             self._penv, self._gd, self._stress2, self._threshold2,
-            self._jit_lp, self._sv, self._tune,
+            self._jit_lp, self._pulse2, self._sv, self._tune,
             self._vel_env, self._g_lp, pew_scale, pew_w,
             self._c_phase, self._c_time, self._c_amp, self._c_dec,
             self._c_t0, self._max_strain, recover,
