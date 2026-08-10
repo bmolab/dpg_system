@@ -4995,24 +4995,29 @@ class BowNode(SynthNode):
 # inside. Values go to the knobs, so a kind is somewhere to start from,
 # not a mode the node is in.
 # resonance rides an exponential ring-time curve (3 ms thud at 0 to a
-# tenth-of-a-second bell at 1): the dry kinds live near the bottom, the
-# jingled kinds up where the members truly ring past each other.
+# tenth-of-a-second bell at 1); the jingled kinds live where the
+# members truly ring past each other. Values here are David's, tuned
+# by ear 2026-08 (cabasa is a sketch: chain beads scraping a ridged
+# steel cylinder -- bright, dense, dead vessel).
 SHAKER_KINDS = {
-    'maraca':      {'density': 64.0, 'settle': 0.10, 'hardness': 0.7,
-                    'vessel': 3200.0, 'resonance': 0.17, 'jingle': 0.0,
-                    'vary': 0.35},
-    'cabasa':      {'density': 400.0, 'settle': 0.06, 'hardness': 0.85,
-                    'vessel': 3000.0, 'resonance': 0.06, 'jingle': 0.0,
-                    'vary': 0.25},
-    'tambourine':  {'density': 24.0, 'settle': 0.15, 'hardness': 0.75,
-                    'vessel': 5300.0, 'resonance': 0.8, 'jingle': 0.7,
-                    'vary': 0.5},
-    'sleighbells': {'density': 300.0, 'settle': 0.2, 'hardness': 0.8,
-                    'vessel': 8000.0, 'resonance': 0.88, 'jingle': 0.5,
-                    'vary': 0.45},
-    'rain':        {'density': 1200.0, 'settle': 0.5, 'hardness': 0.9,
-                    'vessel': 4200.0, 'resonance': 0.05, 'jingle': 0.15,
+    'maraca':      {'density': 800.0, 'settle': 0.08, 'hardness': 0.294,
+                    'vessel': 4270.0, 'resonance': 0.17, 'jingle': 0.118,
+                    'vary': 0.56},
+    'cabasa':      {'density': 1200.0, 'settle': 0.03, 'hardness': 0.85,
+                    'vessel': 6000.0, 'resonance': 0.03, 'jingle': 0.4,
+                    'vary': 0.3},
+    'tambourine':  {'density': 144.0, 'settle': 0.03, 'hardness': 0.0,
+                    'vessel': 5750.0, 'resonance': 0.7, 'jingle': 0.3,
                     'vary': 0.7},
+    'sleighbells': {'density': 800.0, 'settle': 0.09, 'hardness': 0.6,
+                    'vessel': 8000.0, 'resonance': 0.779, 'jingle': 1.0,
+                    'vary': 0.838},
+    'rain':        {'density': 2000.0, 'settle': 0.02, 'hardness': 1.0,
+                    'vessel': 5000.0, 'resonance': 0.088, 'jingle': 1.0,
+                    'vary': 1.0},
+    'downpour':    {'density': 2000.0, 'settle': 0.02, 'hardness': 0.0,
+                    'vessel': 5000.0, 'resonance': 0.088, 'jingle': 1.0,
+                    'vary': 1.0},
     'gravel':      {'density': 90.0, 'settle': 0.08, 'hardness': 0.4,
                     'vessel': 900.0, 'resonance': 0.1, 'jingle': 0.1,
                     'vary': 0.6},
