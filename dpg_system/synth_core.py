@@ -3403,6 +3403,13 @@ def _warm_up_filter():
         _bounce_kernel(breath, 1.0e-6, 0.7, 0.9, 100.0, 1000.0, 1.0e-4,
                        0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
                        np.uint64(3), output)
+        _bubbles_kernel(breath, 0.002, 500.0, 1.0, 0.5, 0.3,
+                        0.3, 0.3, 0.5, 1.0, 0.99, 0.05, 44100.0,
+                        state.copy(), state.copy(), state.copy(),
+                        state.copy(), state.copy(), state.copy(),
+                        state.copy(), state.copy(), state.copy(),
+                        state.copy(), state.copy(), state.copy(),
+                        0.0, 0.0, 1.0, np.uint64(21), output)
         _motor_kernel(breath, 0.001, 4, 0.4, 0.3, state.copy(),
                       0.2, 0.35, 0.3, 0.2, 0.1, 0.5,
                       1.9, -0.97, 0.03, 1.9, -0.96, 0.04,
@@ -9037,6 +9044,284 @@ class MotorUnit(Unit):
             smooth_k, self._phase, self._prev_k, self._strength,
             self._vel, self._g_lp, self._ya1, self._ya2,
             self._yb1, self._yb2, dc_pole, self._dc_x, self._dc_y,
+            self._rng, result)
+        self._rng = np.uint64(rng_state)
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _bubbles_kernel_source(flow, rate_norm, f_center, spread_oct,
+                           chirp_amt, gulp, bloom_frac, amp_base, reg,
+                           ring_mult, atk_dec, smooth_k,
+                           srate, ph, w, wr, amp, dec, atk1,
+                           ph2, w2, wr2, amp2, dec2, atk2, vel,
+                           acc, nxt, rng, out):
+    """Water, one bubble at a time: the Minnaert chorus.
+
+    Each bubble is a decaying sine at the frequency its size dictates,
+    and its pitch RISES as it dies -- the rate of rise tied to the
+    decay rate, so small quick bubbles chirp fast and big glugs bend
+    slowly. That inflection is what makes water sound like water; at
+    chirp 0 the same voices are the pure pings of bubbles deep under
+    the surface.
+
+    Arrivals ride the (smoothed) flow through an accumulator whose
+    fill threshold is drawn between exponential (a Poisson stream, the
+    boil) and constant (metronomic, the glug-glug-glug of a dumped
+    bottle) -- 'regular' is that draw, at identical mean rate all the
+    way across, and nothing else touches the timing. 'gulp' is the
+    onset twin of chirp: each birth carries a partial born well below
+    the bubble that glides up into it and dies -- the bwup of a glug,
+    fast rise, soft landing, time-scaled to the ring. Eight voices overlap, a new bubble
+    taking the quietest slot: the gurgle is polyphony, as the
+    tambourine taught.
+    """
+    voices = ph.shape[0]
+    for i in range(flow.shape[0]):
+        vel += (flow[i] - vel) * smooth_k
+        acc += rate_norm * vel
+        if acc >= nxt:
+            acc -= nxt
+            rng, ui = _rand01(rng)
+            draw = -math.log(ui + 1.0e-12)
+            nxt = reg + (1.0 - reg) * draw
+            # The search starts at a random voice: a deterministic
+            # weakest-slot rotation stamped an amplitude pattern with
+            # period voices-times-interval on a dense stream -- heard
+            # as periodic bursts that no water makes.
+            rng, us = _rand01(rng)
+            start = int(us * voices)
+            if start >= voices:
+                start = voices - 1
+            weakest = start
+            smallest = amp[start]
+            for v in range(1, voices):
+                idx = start + v
+                if idx >= voices:
+                    idx -= voices
+                if amp[idx] < smallest:
+                    smallest = amp[idx]
+                    weakest = idx
+            rng, u1 = _rand01(rng)
+            rng, u2 = _rand01(rng)
+            fr = f_center * 2.0 ** ((u1 + u2 - 1.0) * spread_oct)
+            if fr > 0.4 * srate:
+                fr = 0.4 * srate
+            wv = 6.283185307179586 * fr / srate
+            rng, u3 = _rand01(rng)
+            cycles = (25.0 + 45.0 * u3) * ring_mult
+            tau = cycles * srate / fr
+            d = math.exp(-1.0 / tau)
+            rng, u4 = _rand01(rng)
+            # A vigorous stream makes stronger bubbles, which is what
+            # keeps loudness rising with flow even once the pond is
+            # full and masking caps the count.
+            a0 = amp_base * (f_center / fr) ** 0.4 * (0.7 + 0.6 * u4) \
+                * (0.55 + 0.6 * vel)
+            if a0 > 0.8:
+                a0 = 0.8
+            # A full pond masks a new bubble: when even the quietest
+            # voice still rings within an eighth of the newcomer's
+            # strength, the newcomer is lost in the mass -- truncating
+            # a live ring to make room was a click and a hole at once,
+            # and at high rates a zipper of them.
+            if smallest <= 0.15 * a0:
+                ph[weakest] = 0.0
+                w[weakest] = wv
+                # The bubble's own onset is fast but not one sample:
+                # under a millisecond of rise, which is what separates
+                # a birth from a click.
+                atk1[weakest] = 1.0
+                # The rise: chirp times about half the frequency over
+                # one ring time -- van den Doel's sigma in kernel terms.
+                wr[weakest] = chirp_amt * 0.6 * wv / tau
+                amp[weakest] = a0
+                dec[weakest] = d
+                # The glug: born well below the bubble and GLIDING up
+                # into it -- fast rise, soft landing, a one-pole toward
+                # the bubble's own (possibly chirping) frequency, gone
+                # in a third of the ring. The bwup, time-scaled so fizz
+                # flicks and glugs woop.
+                ph2[weakest] = 0.0
+                w2[weakest] = wv * 0.3
+                tau2 = tau * 0.35
+                wr2[weakest] = 1.0 - math.exp(-1.0 / (bloom_frac
+                                                       * tau2))
+                amp2[weakest] = a0 * gulp * 1.6
+                dec2[weakest] = math.exp(-1.0 / tau2)
+                # Resonance swells; only percussion starts loud. The
+                # attack rides the same clock as the glide, so the
+                # bloom peaks as the pitch lands.
+                atk2[weakest] = 1.0
+        s = 0.0
+        for v in range(voices):
+            if amp[v] > 1.0e-5:
+                w[v] += wr[v]
+                ph[v] += w[v]
+                if ph[v] > 6.283185307179586:
+                    ph[v] -= 6.283185307179586
+                s += amp[v] * (1.0 - atk1[v]) * math.sin(ph[v])
+                amp[v] *= dec[v]
+                atk1[v] *= atk_dec
+            if amp2[v] > 1.0e-5:
+                w2[v] += (w[v] - w2[v]) * wr2[v]
+                ph2[v] += w2[v]
+                if ph2[v] > 6.283185307179586:
+                    ph2[v] -= 6.283185307179586
+                s += amp2[v] * (1.0 - atk2[v]) * math.sin(ph2[v])
+                amp2[v] *= dec2[v]
+                atk2[v] *= 1.0 - wr2[v]
+        out[i] = s
+    return vel, acc, nxt, rng
+
+
+if _HAVE_NUMBA:
+    _bubbles_kernel = njit(cache=True, fastmath=True)(_bubbles_kernel_source)
+else:
+    _bubbles_kernel = _bubbles_kernel_source
+
+
+class BubblesUnit(Unit):
+    """Liquid: bubbles as they actually sound, played by flow.
+
+    'flow' is the whole interface -- arrival rate rides it, stillness
+    is silence -- and each arrival is a bubble: a decaying sine at its
+    Minnaert frequency whose pitch rises as it dies. 'size' places the
+    band (fizz to glug), 'spread' widens the population, 'chirp' is
+    the upward inflection (surface gurgle) down to pure submerged
+    pings, 'gulp' clusters arrivals on the slow air-exchange cycle of
+    a pouring bottle. Layer noise~ underneath for the splash.
+    """
+
+    VOICES = 8
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.flow_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.size_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.spread_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.chirp_in = self.new_inlet(base=0.6, minimum=0.0, maximum=1.0)
+        self.gulp_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.bloom_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.regular_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.decay_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
+        self.density_in = self.new_inlet(base=80.0, minimum=5.0,
+                                         maximum=400.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        BubblesUnit._seeded += 1
+        seed = (BubblesUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x853C49E6748FEA9B)
+        self._ph = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._w = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._wr = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._amp = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._dec = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._atk1 = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._ph2 = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._w2 = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._wr2 = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._amp2 = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._dec2 = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._atk2 = np.zeros(BubblesUnit.VOICES, dtype=np.float64)
+        self._vel = 0.0
+        self._acc = 0.0
+        self._nxt = 1.0
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self._flow = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def reset(self):
+        self._ph[:] = 0.0
+        self._w[:] = 0.0
+        self._wr[:] = 0.0
+        self._amp[:] = 0.0
+        self._dec[:] = 0.0
+        self._amp2[:] = 0.0
+        self._vel = 0.0
+        self._acc = 0.0
+        self._nxt = 1.0
+        self._quiet = True
+
+    def render(self, frames):
+        flow = self.flow_in.eval(frames)
+        size = self.size_in.eval(frames)
+        spread = self.spread_in.eval(frames)
+        chirp = self.chirp_in.eval(frames)
+        gulp = self.gulp_in.eval(frames)
+        bloom = self.bloom_in.eval(frames)
+        regular = self.regular_in.eval(frames)
+        decay = self.decay_in.eval(frames)
+        density = self.density_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        stream = self._flow[:frames]
+        if flow.constant:
+            stream[:] = flow.value
+            idle = abs(flow.value) < 1.0e-4
+        else:
+            np.copyto(stream, flow.data[:frames])
+            idle = False
+        np.clip(stream, 0.0, 1.5, out=stream)
+
+        if self._quiet and idle and self._vel < 1.0e-4:
+            out.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        size_now = scalar(size, 0.0, 1.0)
+        spread_now = scalar(spread, 0.0, 1.0)
+        chirp_now = scalar(chirp, 0.0, 1.0)
+        gulp_now = scalar(gulp, 0.0, 1.0)
+        bloom_now = scalar(bloom, 0.0, 1.0)
+        reg_now = scalar(regular, 0.0, 1.0)
+        decay_now = scalar(decay, 0.0, 1.0)
+        dens = scalar(density, 5.0, 400.0)
+
+        # Fizz at 5 kHz down to a 60 Hz glug: Minnaert, by the knob.
+        f_center = 5000.0 * (0.012 ** size_now)
+        spread_oct = spread_now * 2.5
+        rate_norm = dens / self.sample_rate
+        # Density is texture, not loudness, as with the shaker's beans.
+        amp_base = 0.5 * math.sqrt(80.0 / max(20.0, dens))
+        # A quarter of the physical ring up to four times it: dry drip
+        # to droplet in a cave, exponentially about the truth.
+        ring_mult = 16.0 ** (decay_now - 0.5)
+        # The glug's shared glide-and-swell clock, as a fraction of its
+        # life: a tenth (snappy blip) to four-fifths (lazy cavity),
+        # with the old feel at the middle.
+        bloom_frac = 0.1 * 8.0 ** bloom_now
+        atk_dec = math.exp(-1.0 / (0.0007 * self.sample_rate))
+        smooth_k = 1.0 - math.exp(-1.0 / (0.004 * self.sample_rate))
+
+        result = self._y[:frames]
+        (self._vel, self._acc, self._nxt,
+         rng_state) = _bubbles_kernel(
+            stream, rate_norm, f_center, spread_oct, chirp_now,
+            gulp_now, bloom_frac, amp_base, reg_now, ring_mult,
+            atk_dec, smooth_k,
+            float(self.sample_rate),
+            self._ph, self._w, self._wr, self._amp, self._dec, self._atk1,
+            self._ph2, self._w2, self._wr2, self._amp2, self._dec2,
+            self._atk2, self._vel, self._acc, self._nxt,
             self._rng, result)
         self._rng = np.uint64(rng_state)
 

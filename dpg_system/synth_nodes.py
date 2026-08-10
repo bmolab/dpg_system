@@ -30,7 +30,7 @@ from dpg_system.synth_core import (
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
-    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit, MotorUnit)
+    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit, MotorUnit, BubblesUnit)
 
 import os
 
@@ -93,6 +93,8 @@ def register_synth_nodes():
     Node.app.register_node('bowed~', BowNode.factory)
     Node.app.register_node('brass~', BrassNode.factory)
     Node.app.register_node('horn~', BrassNode.factory)
+    Node.app.register_node('bubbles~', BubblesNode.factory)
+    Node.app.register_node('gurgle~', BubblesNode.factory)
     Node.app.register_node('motor~', MotorNode.factory)
     Node.app.register_node('engine~', MotorNode.factory)
     Node.app.register_node('bounce~', BounceNode.factory)
@@ -4633,6 +4635,97 @@ class BounceNode(SynthNode):
                 'sooner buzz. THE roll control -- map an effort here')
         self.add_modulation_input('hardness', self.unit.hardness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.add_switch()
+        self.finish_synth_node()
+
+
+class BubblesNode(SynthNode):
+    """Liquid: the Minnaert chorus, played by flow.
+
+    Each bubble is a decaying sine at the pitch its size dictates,
+    rising as it dies -- the inflection that makes water sound like
+    water. 'flow' is the whole interface: rate rides it, stillness is
+    silent. 'size' runs fizz to glug, 'spread' widens the population,
+    'chirp' is the upward inflection (0 is submerged pings), 'gulp'
+    the low mouth-cavity breath under each birth, 'regular' the
+    timing from boil to dumped-bottle metronome, 'density' arrivals
+    per second at full flow. Layer noise~ underneath for the splash.
+
+    bubbles~ <size>, e.g. bubbles~ 0.8. gurgle~ is the same node.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return BubblesNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = BubblesUnit(synth_graph.sample_rate)
+
+        if args is not None:
+            for arg in args:
+                try:
+                    self.unit.size_in.base = max(0.0, min(1.0, float(arg)))
+                except (ValueError, TypeError):
+                    continue
+
+        flow_port = self.add_modulation_input('flow', self.unit.flow_in,
+                                              minimum=0.0, maximum=1.5,
+                                              speed=0.01)
+        if flow_port.widget is not None:
+            flow_port.widget.set_tooltip(
+                'the stream: bubble arrivals ride it, stillness is '
+                'silent. An effort stream belongs here')
+        self.add_modulation_input('size', self.unit.size_in,
+                                  default_value=self.unit.size_in.base,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('spread', self.unit.spread_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        chirp_port = self.add_modulation_input('chirp', self.unit.chirp_in,
+                                               minimum=0.0, maximum=1.0,
+                                               speed=0.01)
+        if chirp_port.widget is not None:
+            chirp_port.widget.set_tooltip(
+                'the upward inflection of each bubble as it dies: 0 is '
+                'pings deep under the surface, up is the gurgle')
+        gulp_port = self.add_modulation_input('gulp', self.unit.gulp_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if gulp_port.widget is not None:
+            gulp_port.widget.set_tooltip(
+                'the onset twin of chirp: a deeper, quickly-dying partial '
+                'under each bubble\'s birth -- the mouth-cavity breath of '
+                'a glug. Timing is untouched')
+        bloom_port = self.add_modulation_input(
+            'bloom', self.unit.bloom_in,
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if bloom_port.widget is not None:
+            bloom_port.widget.set_tooltip(
+                'the glug\'s glide-and-swell clock: snappy blip at 0, '
+                'lazy resonant cavity at 1')
+        regular_port = self.add_modulation_input(
+            'regular', self.unit.regular_in,
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if regular_port.widget is not None:
+            regular_port.widget.set_tooltip(
+                'arrival timing from fully random (a boil) to metronomic '
+                '(a dumped bottle), same rate throughout')
+        decay_port = self.add_modulation_input(
+            'decay', self.unit.decay_in,
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if decay_port.widget is not None:
+            decay_port.widget.set_tooltip(
+                'each bubble\'s ring: a quarter of the physical length '
+                'to four times it -- dry drip to droplet in a cave')
+        self.make_drag_proportional(
+            self.add_modulation_input('density', self.unit.density_in,
+                                      default_value=80.0,
+                                      minimum=5.0, maximum=400.0,
+                                      speed=0.5, slider=False))
         self.add_modulation_input('level', self.unit.level_in,
                                   minimum=0.0, maximum=2.0, speed=0.01)
 
