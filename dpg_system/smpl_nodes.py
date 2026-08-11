@@ -2112,7 +2112,15 @@ class SMPLTorqueNode(SMPLNode):
         # pose. 0 = trans follows smooth_input_window (legacy).
         self.smooth_trans_window_ms_prop = self.add_property('smooth_trans_window_ms', widget_type='drag_float', default_value=50.0)
         self.zmp_sg_window_prop = self.add_property('zmp_sg_window', widget_type='drag_int', default_value=0)
-        self.acc_smooth_window_prop = self.add_property('acc_smooth_window', widget_type='drag_int', default_value=0)
+        # Savitzky-Golay acceleration window in ms (fps-scaled), replacing the
+        # old acc_smooth_window frame count. A frame count changes duration
+        # with the capture rate — 7 frames is 70 ms on Shadow at 100 Hz but
+        # 58 ms at 120 and 117 at 60 — and dynamic torque sits directly
+        # downstream, so the same movement produced different transients at
+        # different rates (measured on CMU 120 vs 60 Hz: p99 differed 9%,
+        # high-frequency content 39%). 0 = off. 70 reproduces the tuned
+        # 7-frame window at Shadow's 100 Hz.
+        self.acc_smooth_ms_prop = self.add_property('acc_smooth_ms', widget_type='drag_float', default_value=0.0)
         self.torque_smooth_window_prop = self.add_property('torque_smooth_window', widget_type='drag_int', default_value=0)
 
         # --- Coherence gate / adaptive front-end (popping response) ---
@@ -2377,7 +2385,8 @@ class SMPLTorqueNode(SMPLNode):
                 enable_body_contacts=self.enable_body_contacts_prop() if hasattr(self, 'enable_body_contacts_prop') else False,
 
                 enable_one_euro_filter=False,
-                acc_smooth_window=self.acc_smooth_window_prop() if hasattr(self, 'acc_smooth_window_prop') else 0,
+                acc_smooth_window=0,
+                acc_smooth_ms=self.acc_smooth_ms_prop() if hasattr(self, 'acc_smooth_ms_prop') else 0.0,
                 torque_smooth_window=self.torque_smooth_window_prop() if hasattr(self, 'torque_smooth_window_prop') else 0,
                 smooth_contact_forces=False,
                 enable_velocity_gate=False,

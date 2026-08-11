@@ -1344,7 +1344,16 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         smooth_contact_forces=False,
 
         # Acceleration smoothing (Savitzky-Golay derivative window)
+        # PINNED TO LEGACY, explicitly: acc_smooth_ms=0 keeps the window at a
+        # fixed 7 FRAMES rather than a fixed duration. This matches the
+        # processor default, so the pin is currently redundant — it is here to
+        # state the intent. The detector's thresholds were tuned and validated
+        # corpus-wide against the frame-count behaviour, so moving it to a
+        # ms-based window (70 ms → 9 frames at 120 Hz, 5 at 60) would change
+        # its front end and invalidate that validation. Revisit deliberately,
+        # with a re-validation pass, not as a side effect.
         acc_smooth_window=7,
+        acc_smooth_ms=0.0,
         torque_smooth_window=0,
 
         # CoM One Euro filter params — match node widget defaults
