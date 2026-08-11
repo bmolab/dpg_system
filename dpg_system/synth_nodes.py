@@ -5088,6 +5088,21 @@ class NoiseNode(SynthNode):
                 'the flow breaking up: a blockage that builds pressure '
                 'and spits on reopening. Partial flutter low, hard '
                 'dropouts at full')
+        aperture_port = self.add_modulation_input(
+            'aperture', self.unit.aperture_in,
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if aperture_port.widget is not None:
+            aperture_port.widget.set_tooltip(
+                'the hole the jet sings through: a pinhole whistles high '
+                'and tight, a wide gap breathes low and broad. Rises a '
+                'little with pressure')
+        whistle_port = self.add_modulation_input(
+            'whistle', self.unit.whistle_in,
+            minimum=0.0, maximum=1.0, speed=0.01)
+        if whistle_port.widget is not None:
+            whistle_port.widget.set_tooltip(
+                'tightness of the jet resonance: breathy at 0, piercing '
+                'near-pure at 1')
         rate_port = self.add_modulation_input('rate', self.unit.rate_in,
                                               minimum=0.2, maximum=200.0,
                                               speed=0.1, slider=False)

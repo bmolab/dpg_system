@@ -3401,8 +3401,10 @@ def _warm_up_filter():
                        0.99, 0.02, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0,
                        np.uint64(99), output)
         _noise_kernel(breath, 0.35, 0.5, 0.6, 0.01, 0.001, 0.002,
-                      0.5, 0.1, 0.2, 0.001, 0.99, 0.05,
-                      0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+                      0.5, 0.1, 0.2, 0.001, 0.99, 0.9, 0.3, 0.999,
+                      0.99, 1.5, -0.87, 0.06, 0.05, 0.3, 1.2, 0.05,
+                      0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                       np.uint64(7), output)
         _bounce_kernel(breath, 1.0e-6, 0.7, 0.9, 100.0, 1000.0, 1.0e-4,
                        0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
@@ -8223,15 +8225,22 @@ class WhooshUnit(Unit):
 
 def _noise_kernel_source(pressure, amp_scale, color_k, bright, hp_k,
                          p_close, p_open, gate_atk, gate_rel, gate_floor,
-                         spit_gain, spit_decay, smooth_k,
-                         pres, gate, is_open, spit, blocked, lp, hp, rng,
+                         spit_gain, spit_decay, crk_dec, ch_w0, ch_fall,
+                         ch_dec, ab1, ab2, ag, ag2, m_dry, m_res,
+                         smooth_k,
+                         pres, gate, is_open, spit, blocked, lp, hp,
+                         a1, a2, a3, a4, crk, crk_lp, ch_ph, ch_w,
+                         ch_amp, rng,
                          out):
     """A leak, sample by sample: pressure escaping through an orifice.
 
     The hiss is turbulence -- white noise through a one-pole whose
     cutoff is the color knob, power-compensated so color changes the
     timbre and never the level, brightening a little as pressure rises
-    the way a harder leak does.
+    the way a harder leak does. And the jet SINGS: the aperture puts a
+    resonant hump on the noise at the frequency its size dictates --
+    a pinhole whistles high and tight, a wide gap breathes low and
+    broad -- rising a little with pressure, as a harder jet does.
 
     Sputter is a telegraph process, not a wobble: the orifice blocks
     (condensation, debris) and blows back open. While it is blocked the
@@ -8240,6 +8249,12 @@ def _noise_kernel_source(pressure, amp_scale, color_k, bright, hp_k,
     shorter than open ones, partial at low sputter, hard dropouts at
     full. The gate reopens faster than it closes, because blow-through
     is abrupt and clogging is not.
+
+    And a spit is an EVENT, not just a louder moment: it crackles --
+    discrete micro-pops peppering its short life, the fire sound of
+    droplets flashing -- and it can pip: a brief falling whistle as
+    the pressure releases through the wet orifice, the kettle's chirp,
+    pitched and present differently every time.
     """
     for i in range(pressure.shape[0]):
         pres += (pressure[i] - pres) * smooth_k
@@ -8256,23 +8271,70 @@ def _noise_kernel_source(pressure, amp_scale, color_k, bright, hp_k,
                 if s > 1.2:
                     s = 1.2
                 spit += s
+                rng, uc = _rand01(rng)
+                if uc < 0.7:
+                    rng, uw = _rand01(rng)
+                    ch_w = ch_w0 * (0.6 + 0.8 * uw)
+                    rng, ua = _rand01(rng)
+                    ch_amp = s * (0.5 + 0.9 * ua)
+                    ch_ph = 0.0
         target = 1.0 if is_open > 0.5 else gate_floor
         if target > gate:
             gate += (target - gate) * gate_atk
         else:
             gate += (target - gate) * gate_rel
         spit *= spit_decay
+        # The crackle: micro-pops arriving densely while the spit is
+        # alive, each a tiny heavy-tailed click.
+        rng, up = _rand01(rng)
+        if up < 0.3 * spit:
+            rng, up2 = _rand01(rng)
+            crk += 0.5 + up2
+            if crk > 3.0:
+                crk = 3.0
+        crk *= crk_dec
+        # The pip: a falling whistle, gone in tens of milliseconds.
+        pip = 0.0
+        if ch_amp > 1.0e-4:
+            ch_ph += ch_w
+            if ch_ph > 6.283185307179586:
+                ch_ph -= 6.283185307179586
+            ch_w *= ch_fall
+            pip = ch_amp * math.sin(ch_ph)
+            ch_amp *= ch_dec
         rng, nz = _rand01(rng)
         white = 2.0 * nz - 1.0
         k = color_k * (0.4 + bright * pres)
         if k > 1.0:
             k = 1.0
         lp += (white - lp) * k
-        v = lp * math.sqrt((2.0 - k) / k)
+        cc = math.sqrt((2.0 - k) / k)
+        v = lp * cc
         hp += (v - hp) * hp_k
         v -= hp
-        out[i] = v * amp_scale * (pres ** 1.8) * (gate + spit)
-    return pres, gate, is_open, spit, blocked, lp, hp, rng
+        apv = ag * v + ab1 * a1 + ab2 * a2
+        a2 = a1
+        a1 = apv
+        # Twice through the jet's resonance: one two-pole's skirt
+        # leaks a broadband floor beside a quiet whistle; two make
+        # the hole pass its note and nothing else.
+        apv2 = ag2 * apv + ab1 * a3 + ab2 * a4
+        a4 = a3
+        a3 = apv2
+        v = m_dry * v + m_res * apv2
+        rng, nc = _rand01(rng)
+        coarse = 2.0 * nc - 1.0
+        coarse = coarse * coarse * coarse
+        # The crackle leaves through the same passage as the hiss: a
+        # dark leak crackles dark, at the same compensated power.
+        crk_lp += (coarse - crk_lp) * k
+        loud = amp_scale * (pres ** 1.8)
+        # A spit is STATIC, not a gust: its voice is the crackle, and
+        # the noise path gets only a modest lift.
+        out[i] = loud * (v * (gate + 0.35 * spit)
+                         + 2.2 * crk * crk_lp * cc + 0.9 * pip)
+    return (pres, gate, is_open, spit, blocked, lp, hp, a1, a2, a3, a4,
+            crk, crk_lp, ch_ph, ch_w, ch_amp, rng)
 
 
 if _HAVE_NUMBA:
@@ -8308,6 +8370,9 @@ class NoiseUnit(Unit):
         self.pressure_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
         self.color_in = self.new_inlet(base=0.85, minimum=0.0, maximum=1.0)
         self.sputter_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.aperture_in = self.new_inlet(base=0.35, minimum=0.0,
+                                          maximum=1.0)
+        self.whistle_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.rate_in = self.new_inlet(base=10.0, minimum=0.2, maximum=200.0)
         self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
@@ -8321,6 +8386,15 @@ class NoiseUnit(Unit):
         self._blocked = 0.0
         self._lp = 0.0
         self._hp = 0.0
+        self._a1 = 0.0
+        self._a2 = 0.0
+        self._a3 = 0.0
+        self._a4 = 0.0
+        self._crk = 0.0
+        self._crk_lp = 0.0
+        self._ch_ph = 0.0
+        self._ch_w = 0.0
+        self._ch_amp = 0.0
         self._quiet = True
 
         self.out = self.new_outlet()
@@ -8335,12 +8409,21 @@ class NoiseUnit(Unit):
         self._spit = 0.0
         self._lp = 0.0
         self._hp = 0.0
+        self._a1 = 0.0
+        self._a2 = 0.0
+        self._a3 = 0.0
+        self._a4 = 0.0
+        self._crk = 0.0
+        self._crk_lp = 0.0
+        self._ch_amp = 0.0
         self._quiet = True
 
     def render(self, frames):
         pressure = self.pressure_in.eval(frames)
         color = self.color_in.eval(frames)
         sputter = self.sputter_in.eval(frames)
+        aperture = self.aperture_in.eval(frames)
+        whistle = self.whistle_in.eval(frames)
         rate = self.rate_in.eval(frames)
         out_level = self.level_in.eval(frames)
 
@@ -8368,31 +8451,84 @@ class NoiseUnit(Unit):
 
         color_now = scalar(color, 0.0, 1.0)
         sputter_now = scalar(sputter, 0.0, 1.0)
+        aperture_now = scalar(aperture, 0.0, 1.0)
+        whistle_now = scalar(whistle, 0.0, 1.0)
         rate_now = scalar(rate, 0.2, 200.0)
 
         # Dark rumble to full white, exponentially: 30 Hz to the top.
         cutoff = 30.0 * (800.0 ** color_now)
         color_k = 1.0 - math.exp(-2.0 * math.pi * cutoff / self.sample_rate)
         hp_k = 1.0 - math.exp(-2.0 * math.pi * 25.0 / self.sample_rate)
-        # Blockage arrives only as sputter opens; reopening runs faster
-        # than clogging, so blocked spells stay the shorter ones.
-        p_close = rate_now * 1.2 * sputter_now / self.sample_rate
-        p_open = rate_now * 2.0 / self.sample_rate
+        # Blockage arrives only as sputter opens. Rate is a TEMPO: it
+        # sets how often the flow breaks, and the gaps never stretch
+        # past about sixty milliseconds however slow the tempo -- a
+        # rare sputter is a rare NORMAL sputter, not a long outage.
+        # Harder flow flutters faster: the tempo breathes with the
+        # (smoothed) pressure.
+        rate_eff = rate_now * (0.4 + 0.8 * min(1.5, self._pres))
+        p_close = rate_eff * 1.2 * sputter_now / self.sample_rate
+        p_open = max(16.0, rate_eff * 1.1) / self.sample_rate
         gate_atk = 1.0 - math.exp(-1.0 / (0.0012 * self.sample_rate))
         gate_rel = 1.0 - math.exp(-1.0 / (0.005 * self.sample_rate))
         gate_floor = 1.0 - sputter_now
         spit_gain = 1.2 * sputter_now / (0.06 * self.sample_rate)
-        spit_decay = math.exp(-1.0 / (0.007 * self.sample_rate))
+        spit_decay = math.exp(-1.0 / (0.010 * self.sample_rate))
+        # Crackle pops die in under a millisecond; the pip starts near
+        # three kilohertz and falls an octave in a dozen milliseconds.
+        crk_dec = math.exp(-1.0 / (0.0008 * self.sample_rate))
+        ch_w0 = 2.0 * math.pi * min(2900.0, 0.4 * self.sample_rate) \
+            / self.sample_rate
+        ch_fall = math.exp(-1.0 / (0.017 * self.sample_rate))
+        ch_dec = math.exp(-1.0 / (0.012 * self.sample_rate))
+        # The jet's song: a pinhole at seven kilohertz down to a wide
+        # gap near six hundred, exponentially, pulled up a little by
+        # pressure the way a harder jet whistles sharper. A small hole
+        # BLOCKS what does not fit through it: at the pinhole the
+        # whistle is nearly the whole voice and it is tight; a wide
+        # gap mostly just breathes.
+        f_ap = 16000.0 * (0.032 ** aperture_now) \
+            * (0.8 + 0.3 * min(1.5, self._pres))
+        th_a = 2.0 * math.pi * min(f_ap, 0.45 * self.sample_rate) \
+            / self.sample_rate
+        # 'whistle' is the tightness of the jet's resonance: breathy
+        # at 0, piercing near-pure at 1, the old feel at the middle.
+        r_a = 0.90 + 0.08 * (1.0 - aperture_now) \
+            + 0.18 * (whistle_now - 0.5)
+        if r_a > 0.995:
+            r_a = 0.995
+        elif r_a < 0.6:
+            r_a = 0.6
+        ab1 = 2.0 * r_a * math.cos(th_a)
+        ab2 = -r_a * r_a
+        ag = (1.0 - r_a) * math.sin(th_a) * 1.1
+        # Second pass, unity at its own peak: reshapes without
+        # relevelling.
+        ag2 = (1.0 - r_a) * math.sin(th_a)
+        # No floor on the bypass: a pinprick passes ONLY its whistle.
+        m_dry = 0.8 * aperture_now ** 1.3
+        # Narrow bands carry little energy: makeup as the hole closes,
+        # so the pinprick sings at a usable level -- and as the
+        # whistle tightens, energy-constant against the mid-knob
+        # reference, so tight does not mean vanishing.
+        r_mid = 0.90 + 0.08 * (1.0 - aperture_now)
+        m_res = 1.8 * (1.0 - 0.45 * aperture_now) \
+            * (1.0 + 2.2 * (1.0 - aperture_now)) \
+            * math.sqrt((1.0 - r_mid) / (1.0 - r_a))
         smooth_k = 1.0 - math.exp(-1.0 / (0.004 * self.sample_rate))
 
         result = self._y[:frames]
         (self._pres, self._gate, self._open, self._spit, self._blocked,
-         self._lp, self._hp, rng_state) = _noise_kernel(
+         self._lp, self._hp, self._a1, self._a2, self._a3, self._a4,
+         self._crk, self._crk_lp, self._ch_ph, self._ch_w,
+         self._ch_amp, rng_state) = _noise_kernel(
             drive, 0.35, color_k, 0.6, hp_k,
             p_close, p_open, gate_atk, gate_rel, gate_floor,
-            spit_gain, spit_decay, smooth_k,
+            spit_gain, spit_decay, crk_dec, ch_w0, ch_fall, ch_dec,
+            ab1, ab2, ag, ag2, m_dry, m_res, smooth_k,
             self._pres, self._gate, self._open, self._spit, self._blocked,
-            self._lp, self._hp, self._rng, result)
+            self._lp, self._hp, self._a1, self._a2, self._a3, self._a4,
+            self._crk, self._crk_lp, self._ch_ph, self._ch_w,
+            self._ch_amp, self._rng, result)
         self._rng = np.uint64(rng_state)
 
         self._apply_level(result, out_level, frames)
