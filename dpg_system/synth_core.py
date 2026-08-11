@@ -6241,6 +6241,7 @@ class ModalUnit(Unit):
         self._gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._gains_live = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._live_count = 0
+        self._coef_key = None
         self._level_live = ModalUnit.DRIVE_GAIN
         self._drive_gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._fm = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
@@ -6398,65 +6399,77 @@ class ModalUnit(Unit):
         seconds = decay.value if decay.constant else float(decay.data[0])
         seconds = min(60.0, max(0.01, seconds))
 
-        fm = self._fm[:count]
-        np.multiply(ratios, f0, out=fm)
-        limit = self.sample_rate * 0.45
-
-        theta = self._theta[:count]
-        np.clip(fm, 1.0, limit, out=theta)
-        theta *= 2.0 * math.pi / self.sample_rate
-
-        radius = self._radius[:count]
-        np.multiply(decay_scale, seconds * self.sample_rate, out=radius)
-        np.clip(radius, 1.0, None, out=radius)
-        np.divide(-6.907755, radius, out=radius)
-        np.exp(radius, out=radius)
-
-        b1 = self._b1[:count]
-        np.cos(theta, out=b1)
-        b1 *= radius
-        b1 *= 2.0
-        b2 = self._b2[:count]
-        np.multiply(radius, radius, out=b2)
-        np.negative(b2, out=b2)
-
-        gains = self._gains[:count]
-        np.sin(theta, out=gains)
-        gains *= weights
-        # Divided through by the table's total weight, a velocity-1 strike
-        # peaks near +-1 whatever the material and however many modes ring.
-        gains /= self._weight_norm
-        # Mute rather than fold whatever the transposition pushed past
-        # Nyquist. The comparison writes 0/1 straight into a float scratch.
-        alive = self._mode_scratch[:count]
-        np.less_equal(fm, limit, out=alive, casting='unsafe')
-        gains *= alive
-
         bright = brightness.value if brightness.constant else float(
             brightness.data[0])
-        tilt = (min(1.0, max(0.0, bright)) - 0.5) * 2.0
-        if tilt != 0.0:
-            shape = self._mode_scratch[:count]
-            np.power(ratios, tilt, out=shape)
-            gains *= shape
-
         struck_at = position.value if position.constant else float(
             position.data[0])
         struck_at = min(1.0, max(0.0, struck_at))
-        if struck_at > 0.0:
-            pattern = self._mode_scratch[:count]
-            np.multiply(_INDEX_RAMP[:count], math.pi * struck_at, out=pattern)
-            np.sin(pattern, out=pattern)
-            np.abs(pattern, out=pattern)
-            # Position 0 means the idealized uniform strike, but the node
-            # pattern's own limit there is every weight at zero -- a cliff.
-            # The first twentieth of the travel crossfades between the two
-            # readings, so leaving 0 is a slope rather than a step.
-            blend = min(1.0, struck_at / 0.05)
-            if blend < 1.0:
-                pattern *= blend
-                pattern += 1.0 - blend
-            gains *= pattern
+        # The geometry holds until a knob moves: on a struck object at
+        # rest the table plumbing here was most of the block's python
+        # time. The gain glide below still runs, so sweeps stay smooth.
+        coef_key = (count, f0, seconds, bright, struck_at,
+                    id(self._modes))
+        theta = self._theta[:count]
+        radius = self._radius[:count]
+        b1 = self._b1[:count]
+        b2 = self._b2[:count]
+        gains = self._gains[:count]
+        if coef_key != self._coef_key:
+            self._coef_key = coef_key
+            fm = self._fm[:count]
+            np.multiply(ratios, f0, out=fm)
+            limit = self.sample_rate * 0.45
+
+            np.clip(fm, 1.0, limit, out=theta)
+            theta *= 2.0 * math.pi / self.sample_rate
+
+            np.multiply(decay_scale, seconds * self.sample_rate,
+                        out=radius)
+            np.clip(radius, 1.0, None, out=radius)
+            np.divide(-6.907755, radius, out=radius)
+            np.exp(radius, out=radius)
+
+            np.cos(theta, out=b1)
+            b1 *= radius
+            b1 *= 2.0
+            np.multiply(radius, radius, out=b2)
+            np.negative(b2, out=b2)
+
+            np.sin(theta, out=gains)
+            gains *= weights
+            # Divided through by the table's total weight, a velocity-1
+            # strike peaks near +-1 whatever the material and however
+            # many modes ring.
+            gains /= self._weight_norm
+            # Mute rather than fold whatever the transposition pushed
+            # past Nyquist. The comparison writes 0/1 straight into a
+            # float scratch.
+            alive = self._mode_scratch[:count]
+            np.less_equal(fm, limit, out=alive, casting='unsafe')
+            gains *= alive
+
+            tilt = (min(1.0, max(0.0, bright)) - 0.5) * 2.0
+            if tilt != 0.0:
+                shape = self._mode_scratch[:count]
+                np.power(ratios, tilt, out=shape)
+                gains *= shape
+
+            if struck_at > 0.0:
+                pattern = self._mode_scratch[:count]
+                np.multiply(_INDEX_RAMP[:count], math.pi * struck_at,
+                            out=pattern)
+                np.sin(pattern, out=pattern)
+                np.abs(pattern, out=pattern)
+                # Position 0 means the idealized uniform strike, but
+                # the node pattern's own limit there is every weight at
+                # zero -- a cliff. The first twentieth of the travel
+                # crossfades between the two readings, so leaving 0 is
+                # a slope rather than a step.
+                blend = min(1.0, struck_at / 0.05)
+                if blend < 1.0:
+                    pattern *= blend
+                    pattern += 1.0 - blend
+                gains *= pattern
 
         # Gain-shaping controls -- position, brightness, the table's own
         # weights -- arrive as block-rate steps, and a step in input gain
@@ -6646,6 +6659,7 @@ class RubUnit(Unit):
         self._inject_live = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
         self._pickup_live = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
         self._live_count = 0
+        self._coef_key = None
         self._free = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
         self._fm = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
         self._theta = np.zeros(RubUnit.MAX_MODES, dtype=np.float64)
@@ -6744,58 +6758,67 @@ class RubUnit(Unit):
         seconds = decay.value if decay.constant else float(decay.data[0])
         seconds = min(60.0, max(0.01, seconds))
 
-        fm = self._fm[:count]
-        np.multiply(ratios, f0, out=fm)
-        limit = self.sample_rate * 0.45
-
-        theta = self._theta[:count]
-        np.clip(fm, 1.0, limit, out=theta)
-        theta *= 2.0 * math.pi / self.sample_rate
-
-        radius = self._radius[:count]
-        np.multiply(decay_scale, seconds * self.sample_rate, out=radius)
-        np.clip(radius, 1.0, None, out=radius)
-        np.divide(-6.907755, radius, out=radius)
-        np.exp(radius, out=radius)
-
-        b1 = self._b1[:count]
-        np.cos(theta, out=b1)
-        b1 *= radius
-        b1 *= 2.0
-        b2 = self._b2[:count]
-        np.multiply(radius, radius, out=b2)
-        np.negative(b2, out=b2)
-
-        inject = self._inject[:count]
-        np.sin(theta, out=inject)
-        inject *= weights
-        inject /= self._weight_norm
-        inject *= RubUnit.COUPLING
-        alive = self._mode_scratch[:count]
-        np.less_equal(fm, limit, out=alive, casting='unsafe')
-        inject *= alive
-
-        pickup = self._pickup[:count]
-        pickup[:] = 1.0
-        pickup *= alive
         struck_at = position.value if position.constant else float(
             position.data[0])
         struck_at = min(1.0, max(0.0, struck_at))
-        if struck_at > 0.0:
-            pattern = self._mode_scratch[:count]
-            np.multiply(_INDEX_RAMP[:count], math.pi * struck_at, out=pattern)
-            np.sin(pattern, out=pattern)
-            np.abs(pattern, out=pattern)
-            # Continuous out of 0 for the same reason as modal~: the
-            # pattern's limit there contradicts the uniform reading.
-            blend = min(1.0, struck_at / 0.05)
-            if blend < 1.0:
-                pattern *= blend
-                pattern += 1.0 - blend
-            # Both ends of the coupling: bowing at a mode's node neither
-            # hears nor moves it, which is reciprocity.
-            inject *= pattern
-            pickup *= pattern
+        # The geometry holds until a knob moves; the glide below still
+        # runs every block, so sweeps stay clickless. Most blocks the
+        # table plumbing here cost more python time than the kernel.
+        coef_key = (count, f0, seconds, struck_at, id(modes))
+        theta = self._theta[:count]
+        radius = self._radius[:count]
+        b1 = self._b1[:count]
+        b2 = self._b2[:count]
+        inject = self._inject[:count]
+        pickup = self._pickup[:count]
+        if coef_key != self._coef_key:
+            self._coef_key = coef_key
+            fm = self._fm[:count]
+            np.multiply(ratios, f0, out=fm)
+            limit = self.sample_rate * 0.45
+
+            np.clip(fm, 1.0, limit, out=theta)
+            theta *= 2.0 * math.pi / self.sample_rate
+
+            np.multiply(decay_scale, seconds * self.sample_rate,
+                        out=radius)
+            np.clip(radius, 1.0, None, out=radius)
+            np.divide(-6.907755, radius, out=radius)
+            np.exp(radius, out=radius)
+
+            np.cos(theta, out=b1)
+            b1 *= radius
+            b1 *= 2.0
+            np.multiply(radius, radius, out=b2)
+            np.negative(b2, out=b2)
+
+            np.sin(theta, out=inject)
+            inject *= weights
+            inject /= self._weight_norm
+            inject *= RubUnit.COUPLING
+            alive = self._mode_scratch[:count]
+            np.less_equal(fm, limit, out=alive, casting='unsafe')
+            inject *= alive
+
+            pickup[:] = 1.0
+            pickup *= alive
+            if struck_at > 0.0:
+                pattern = self._mode_scratch[:count]
+                np.multiply(_INDEX_RAMP[:count], math.pi * struck_at,
+                            out=pattern)
+                np.sin(pattern, out=pattern)
+                np.abs(pattern, out=pattern)
+                # Continuous out of 0 for the same reason as modal~:
+                # the pattern's limit there contradicts the uniform
+                # reading.
+                blend = min(1.0, struck_at / 0.05)
+                if blend < 1.0:
+                    pattern *= blend
+                    pattern += 1.0 - blend
+                # Both ends of the coupling: bowing at a mode's node
+                # neither hears nor moves it, which is reciprocity.
+                inject *= pattern
+                pickup *= pattern
 
         # Coupling weights glide toward their targets, as modal~'s gains
         # do: a position sweep while bowing would otherwise step the
@@ -7774,6 +7797,28 @@ class BowUnit(Unit):
         out.constant = False
         np.abs(result, out=scratch)
         self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+def _fast_sin_source(x):
+    """Odd minimax-ish sine on a wrapped phase, for voice stacks.
+
+    Branchless parabolic sine (the classic two-parabola form with one
+    refinement): a few nanoseconds where libm takes ten and branches
+    cost more than math. With sixteen oscillators per sample
+    (bubbles~), that is most of the kernel. Harmonics sit near -44 dB
+    -- inaudible under anything born of noise. Input must already be
+    wrapped to [0, 2pi)."""
+    if x > 3.141592653589793:
+        x -= 6.283185307179586
+    y = 1.2732395447351628 * x - 0.4052847345693511 * x * abs(x)
+    return 0.225 * (y * abs(y) - y) + y
+
+
+if _HAVE_NUMBA:
+    _fast_sin = njit(cache=True, fastmath=True, inline='always')(
+        _fast_sin_source)
+else:
+    _fast_sin = _fast_sin_source
 
 
 def _rand01_source(state):
@@ -8858,6 +8903,7 @@ class DrumUnit(Unit):
         self._pulse_at = 0
         self._pulse_remaining = 0
         self._pulse_length = 1.0
+        self._coef_key = None
 
         self._env = 0.0
         self._tune_dev = 0.0
@@ -8995,54 +9041,63 @@ class DrumUnit(Unit):
         weights = modes[:, 1]
         decay_scale = modes[:, 2]
 
-        fm = self._fm[:count]
-        np.multiply(ratios, f0, out=fm)
-        limit = self.sample_rate * 0.45
+        # The geometry holds until a knob moves: most blocks, on most
+        # drums, nothing here changes, and this python-side plumbing
+        # was costing more than the kernel.
+        coef_key = (count, f0, seconds, pos, id(self._modes))
         theta = self._theta[:count]
-        np.clip(fm, 1.0, limit, out=theta)
-        theta *= 2.0 * math.pi / self.sample_rate
         radius = self._radius[:count]
-        np.multiply(decay_scale, seconds * self.sample_rate, out=radius)
-        np.clip(radius, 1.0, None, out=radius)
-        np.divide(-6.907755, radius, out=radius)
-        np.exp(radius, out=radius)
         b1 = self._b1[:count]
-        np.cos(theta, out=b1)
-        b1 *= radius
-        b1 *= 2.0
-        # The tension retune, linearized: d b1 / d tune at the table's
-        # tuning, applied per sample against the smoothed deviation.
-        slope = self._slope[:count]
-        np.sin(theta, out=slope)
-        slope *= theta
-        slope *= radius
-        slope *= -2.0
         b2 = self._b2[:count]
-        np.multiply(radius, radius, out=b2)
-        np.negative(b2, out=b2)
-        # Impulse-normalized, the mallet convention: sin(theta) cancels
-        # the two-pole's 1/sin(theta) impulse-response peak, so a
-        # unit-area strike rings each mode up to its table weight
-        # wherever it sits in frequency. The excite input is a strike
-        # train (bounce~), not a bow -- modal~ owns the bowing
-        # normalization.
         gains = self._gains[:count]
-        np.sin(theta, out=gains)
-        gains *= weights
-        gains /= self._weight_norm
-        alive = self._mode_scratch[:count]
-        np.less_equal(fm, limit, out=alive, casting='unsafe')
-        gains *= alive
-        if pos > 0.0:
-            pattern = self._mode_scratch[:count]
-            np.multiply(_INDEX_RAMP[:count], math.pi * pos, out=pattern)
-            np.sin(pattern, out=pattern)
-            np.abs(pattern, out=pattern)
-            blend = min(1.0, pos / 0.05)
-            if blend < 1.0:
-                pattern *= blend
-                pattern += 1.0 - blend
-            gains *= pattern
+        if coef_key != self._coef_key:
+            self._coef_key = coef_key
+            fm = self._fm[:count]
+            np.multiply(ratios, f0, out=fm)
+            limit = self.sample_rate * 0.45
+            np.clip(fm, 1.0, limit, out=theta)
+            theta *= 2.0 * math.pi / self.sample_rate
+            np.multiply(decay_scale, seconds * self.sample_rate,
+                        out=radius)
+            np.clip(radius, 1.0, None, out=radius)
+            np.divide(-6.907755, radius, out=radius)
+            np.exp(radius, out=radius)
+            np.cos(theta, out=b1)
+            b1 *= radius
+            b1 *= 2.0
+            # The tension retune, linearized: d b1 / d tune at the
+            # table's tuning, applied per sample against the smoothed
+            # deviation.
+            slope = self._slope[:count]
+            np.sin(theta, out=slope)
+            slope *= theta
+            slope *= radius
+            slope *= -2.0
+            np.multiply(radius, radius, out=b2)
+            np.negative(b2, out=b2)
+            # Impulse-normalized, the mallet convention: sin(theta)
+            # cancels the two-pole's 1/sin(theta) impulse-response
+            # peak, so a unit-area strike rings each mode up to its
+            # table weight wherever it sits in frequency. The excite
+            # input is a strike train (bounce~), not a bow -- modal~
+            # owns the bowing normalization.
+            np.sin(theta, out=gains)
+            gains *= weights
+            gains /= self._weight_norm
+            alive = self._mode_scratch[:count]
+            np.less_equal(fm, limit, out=alive, casting='unsafe')
+            gains *= alive
+            if pos > 0.0:
+                pattern = self._mode_scratch[:count]
+                np.multiply(_INDEX_RAMP[:count], math.pi * pos,
+                            out=pattern)
+                np.sin(pattern, out=pattern)
+                np.abs(pattern, out=pattern)
+                blend = min(1.0, pos / 0.05)
+                if blend < 1.0:
+                    pattern *= blend
+                    pattern += 1.0 - blend
+                gains *= pattern
         live = self._gains_live[:count]
         if count != self._live_count:
             np.copyto(live, gains)
@@ -9612,7 +9667,7 @@ def _bubbles_kernel_source(flow, rate_norm, f_center, spread_oct,
                 ph[v] += w[v]
                 if ph[v] > 6.283185307179586:
                     ph[v] -= 6.283185307179586
-                s += amp[v] * (1.0 - atk1[v]) * math.sin(ph[v])
+                s += amp[v] * (1.0 - atk1[v]) * _fast_sin(ph[v])
                 amp[v] *= dec[v]
                 atk1[v] *= atk_dec
             if amp2[v] > 1.0e-5:
@@ -9620,7 +9675,7 @@ def _bubbles_kernel_source(flow, rate_norm, f_center, spread_oct,
                 ph2[v] += w2[v]
                 if ph2[v] > 6.283185307179586:
                     ph2[v] -= 6.283185307179586
-                s += amp2[v] * (1.0 - atk2[v]) * math.sin(ph2[v])
+                s += amp2[v] * (1.0 - atk2[v]) * _fast_sin(ph2[v])
                 amp2[v] *= dec2[v]
                 atk2[v] *= 1.0 - wr2[v]
         out[i] = s
@@ -10695,11 +10750,16 @@ class FaderUnit(Unit):
     def _meter(self, frames):
         seconds = frames / self.sample_rate
         for channel, outlet in ((0, self.out), (1, self.right)):
-            buffer = outlet.array(frames)
-            scratch = self._scratch[:frames]
-            np.multiply(buffer, buffer, out=scratch, casting='unsafe')
-            rms = math.sqrt(float(np.mean(scratch)))
-            peak = math.sqrt(float(scratch.max()))
+            if outlet.constant:
+                # A constant block needs no numpy: rms and peak are its
+                # magnitude -- and an idle strip is all constant zeros.
+                rms = peak = abs(outlet.value)
+            else:
+                buffer = outlet.array(frames)
+                scratch = self._scratch[:frames]
+                np.multiply(buffer, buffer, out=scratch, casting='unsafe')
+                rms = math.sqrt(float(np.mean(scratch)))
+                peak = math.sqrt(float(scratch.max()))
             smoothed = self.levels[channel]
             if rms > smoothed:
                 k = 1.0 - math.exp(-seconds / VuUnit.ATTACK_SECONDS)
