@@ -6003,6 +6003,16 @@ class ScopeNode(SynthNode):
             self.level_input.widget.speed = 0.01
             self.level_input.widget.set_tooltip(
                 'the signal value the trace starts on -- 0 is a zero crossing')
+        self.time_input = self.add_input(
+            'time', widget_type='drag_float',
+            default_value=self.samples / synth_graph.sample_rate * 1000.0,
+            callback=self.time_changed)
+        if self.time_input.widget is not None:
+            self.time_input.widget.speed = 0.2
+            self.time_input.widget.set_tooltip(
+                'how much time is on screen, in milliseconds -- the easy '
+                'handle on the timescale. The samples option follows')
+        self.make_drag_proportional(self.time_input)
 
         self.scope_display = self.add_display('')
         self.scope_display.submit_callback = self.submit_display
@@ -6131,6 +6141,18 @@ class ScopeNode(SynthNode):
         if self.plot_ready:
             dpg.set_axis_limits(self.x_axis_tag, 0, max(1, self.samples - 1))
         self._shown_readout = ''
+        # The two handles agree: samples moved, milliseconds follow.
+        if getattr(self, 'time_input', None) is not None \
+                and self.time_input.widget is not None:
+            ms = self.samples / synth_graph.sample_rate * 1000.0
+            if abs(any_to_float(self.time_input()) - ms) > 0.05:
+                self.time_input.widget.set(ms)
+
+    def time_changed(self):
+        ms = max(0.05, any_to_float(self.time_input()))
+        samples = self._clamp_samples(ms * 0.001 * synth_graph.sample_rate)
+        self.samples_option.set(samples)
+        self.window_changed()
 
     def range_changed(self):
         low = any_to_float(self.min_y_option())
