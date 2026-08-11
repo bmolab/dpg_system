@@ -10663,6 +10663,12 @@ class FaderUnit(Unit):
                                           minimum=0.0, maximum=1.0)
         self.out = self.new_outlet()
         self.right = self.new_outlet()
+        self.pan_in = self.new_inlet(base=0.0, minimum=-1.0, maximum=1.0)
+        self._pan_glide = 0.0
+        self.levels = [0.0, 0.0]
+        self.peaks = [0.0, 0.0]
+        self._hold = [0.0, 0.0]
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
 
     @staticmethod
     def taper(position):
@@ -10683,6 +10689,31 @@ class FaderUnit(Unit):
         if self._level_glide <= 1.0e-6:
             return None
         return 20.0 * math.log10(self._level_glide)
+
+    # Post-fader metering, with vu~'s ballistics: the fader carries
+    # its own eyes so a strip does not need a second node.
+    def _meter(self, frames):
+        seconds = frames / self.sample_rate
+        for channel, outlet in ((0, self.out), (1, self.right)):
+            buffer = outlet.array(frames)
+            scratch = self._scratch[:frames]
+            np.multiply(buffer, buffer, out=scratch, casting='unsafe')
+            rms = math.sqrt(float(np.mean(scratch)))
+            peak = math.sqrt(float(scratch.max()))
+            smoothed = self.levels[channel]
+            if rms > smoothed:
+                k = 1.0 - math.exp(-seconds / VuUnit.ATTACK_SECONDS)
+            else:
+                k = 1.0 - math.exp(-seconds / VuUnit.RELEASE_SECONDS)
+            self.levels[channel] = smoothed + (rms - smoothed) * k
+            if peak >= self.peaks[channel]:
+                self.peaks[channel] = peak
+                self._hold[channel] = 0.0
+            else:
+                self._hold[channel] += seconds
+                if self._hold[channel] > VuUnit.PEAK_HOLD_SECONDS:
+                    self.peaks[channel] *= \
+                        VuUnit.PEAK_FALL_PER_SECOND ** seconds
 
     def bypass_pairs(self):
         if self.right_in.sources:
@@ -10710,6 +10741,7 @@ class FaderUnit(Unit):
         signal = self.signal_in.eval(frames)
         right_in = self.right_in.eval(frames)
         position = self.position_in.eval(frames)
+        pan = self.pan_in.eval(frames)
 
         p = position.value if position.constant else float(position.data[0])
         target = FaderUnit.taper(p)
@@ -10719,14 +10751,30 @@ class FaderUnit(Unit):
             landing = target
         self._level_glide = landing
 
-        self._scale_into(signal, self.out, start, landing, frames)
-        if self.right_in.sources:
-            self._scale_into(right_in, self.right, start, landing, frames)
-        elif self.out.constant:
-            self.right.set_constant(self.out.value)
-        else:
-            np.copyto(self.right.data[:frames], self.out.data[:frames])
-            self.right.constant = False
+        # Equal-power pan, referenced to unity at center so a patch
+        # that never touches the knob hears exactly what it always
+        # did; the panned-into side gains three dB at the extreme, as
+        # a desk's balance does. Glided like the level: a knob is a
+        # hand, not a step.
+        pv = pan.value if pan.constant else float(pan.data[0])
+        pv = min(1.0, max(-1.0, pv))
+        pg0 = self._pan_glide
+        pg1 = pg0 + (pv - pg0) * 0.35
+        if abs(pg1 - pv) < 1.0e-6:
+            pg1 = pv
+        self._pan_glide = pg1
+        a0 = (pg0 + 1.0) * math.pi * 0.25
+        a1 = (pg1 + 1.0) * math.pi * 0.25
+        root2 = 1.4142135623730951
+        gl0, gl1 = math.cos(a0) * root2, math.cos(a1) * root2
+        gr0, gr1 = math.sin(a0) * root2, math.sin(a1) * root2
+
+        right_src = right_in if self.right_in.sources else signal
+        self._scale_into(signal, self.out,
+                         start * gl0, landing * gl1, frames)
+        self._scale_into(right_src, self.right,
+                         start * gr0, landing * gr1, frames)
+        self._meter(frames)
 
 
 class CaptureUnit(Unit):

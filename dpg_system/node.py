@@ -1199,15 +1199,33 @@ class VerticalSliderFloat(FloatWidget):
 
     Height is the travel, so it is settable (slider_height, before drawing)
     where horizontal widgets set width. Everything else -- value, save,
-    callbacks -- is the ordinary slider."""
+    callbacks -- is the ordinary slider. Set meter_count (before drawing)
+    and the slider draws that many empty meter lanes beside itself in a
+    drawlist (meter_drawlist, meter_lane_width) for the node to paint --
+    the widget owns the layout, the node owns the eyes."""
     def _draw_widget(self):
         mn, mx = self._get_limits(0.0, 1.0)
-        dpg.add_slider_float(label=self._label, vertical=True,
-                             width=min(self.widget_width, 32),
-                             height=getattr(self, 'slider_height', 120),
-                             tag=self.uuid, user_data=self.node,
-                             default_value=self.default_value,
-                             min_value=mn, max_value=mx)
+        height = getattr(self, 'slider_height', 120)
+        meters = getattr(self, 'meter_count', 0)
+        if meters:
+            self.meter_lane_width = 7
+            with dpg.group(horizontal=True):
+                dpg.add_slider_float(label=self._label, vertical=True,
+                                     width=min(self.widget_width, 32),
+                                     height=height,
+                                     tag=self.uuid, user_data=self.node,
+                                     default_value=self.default_value,
+                                     min_value=mn, max_value=mx)
+                self.meter_drawlist = dpg.add_drawlist(
+                    width=meters * self.meter_lane_width + 2,
+                    height=height)
+        else:
+            dpg.add_slider_float(label=self._label, vertical=True,
+                                 width=min(self.widget_width, 32),
+                                 height=height,
+                                 tag=self.uuid, user_data=self.node,
+                                 default_value=self.default_value,
+                                 min_value=mn, max_value=mx)
 
 
 class KnobFloat(FloatWidget):

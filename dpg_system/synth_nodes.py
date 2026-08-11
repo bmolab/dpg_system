@@ -5770,9 +5770,22 @@ class FaderNode(SynthNode):
         if self.fader_input.widget is not None:
             self.fader_input.widget.slider_height = 150
             self.fader_input.widget._label = '##fader'
+            self.fader_input.widget.meter_count = 2
             self.fader_input.widget.set_tooltip(
                 'desk taper: unity at 3/4 travel, +6 dB at the top, '
                 'true silence at the bottom')
+        self.pan_input = self.add_input('pan', widget_type='knob_float',
+                                        default_value=0.0,
+                                        min=-1.0, max=1.0,
+                                        callback=self.parameters_changed)
+        self.pan_input.synth_inlet = self.unit.pan_in
+        self.signal_inputs.append(self.pan_input)
+        self._parameter_bindings.append((self.pan_input, self.unit.pan_in))
+        if self.pan_input.widget is not None:
+            self.pan_input.widget.set_tooltip(
+                'equal-power pan, unity at center: existing patches hear '
+                'no change until the knob moves')
+
         self.db_display = self.add_property('dB', widget_type='label',
                                             default_value='+0.0 dB')
 
@@ -5780,8 +5793,89 @@ class FaderNode(SynthNode):
         self.right_output = self.add_signal_output('right', self.unit.right)
         self.finish_synth_node()
         self._shown_db = 0.0
+        self._meter_tags = None
+        self._meter_shown = (-1.0, -1.0, -1.0, -1.0)
+
+    def _fraction(self, value):
+        # vu~'s scale, standing up: -60 dB at the foot, +6 at the crown.
+        if value <= 1.0e-6:
+            return 0.0
+        db = 20.0 * math.log10(value)
+        span = VuNode.METER_CEIL_DB - VuNode.METER_FLOOR_DB
+        return min(1.0, max(0.0, (db - VuNode.METER_FLOOR_DB) / span))
+
+    def _init_meters(self):
+        widget = self.fader_input.widget
+        drawlist = getattr(widget, 'meter_drawlist', None)
+        if drawlist is None or not dpg.does_item_exist(drawlist):
+            return False
+        lane = widget.meter_lane_width
+        height = widget.slider_height
+        self._meter_tags = []
+        for channel in range(2):
+            x0 = channel * lane + 1
+            x1 = x0 + lane - 2
+            for low, high, color in VuNode.ZONES:
+                ytop = height * (1.0 - self._db_frac(high))
+                ybot = height * (1.0 - self._db_frac(low))
+                dpg.draw_rectangle(pmin=(x0, ytop), pmax=(x1, ybot),
+                                   fill=(color[0], color[1], color[2], 48),
+                                   color=(0, 0, 0, 0), parent=drawlist)
+            fills = []
+            for low, high, color in VuNode.ZONES:
+                ybot = height * (1.0 - self._db_frac(low))
+                fills.append(dpg.draw_rectangle(
+                    pmin=(x0, ybot), pmax=(x1, ybot), fill=color,
+                    color=(0, 0, 0, 0), parent=drawlist))
+            peak = dpg.draw_line((x0, 0), (x1, 0),
+                                 color=(230, 230, 230, 0), thickness=2,
+                                 parent=drawlist)
+            self._meter_tags.append({'fills': fills, 'peak': peak,
+                                     'x0': x0, 'x1': x1})
+        return True
+
+    @staticmethod
+    def _db_frac(db):
+        span = VuNode.METER_CEIL_DB - VuNode.METER_FLOOR_DB
+        return min(1.0, max(0.0, (db - VuNode.METER_FLOOR_DB) / span))
+
+    def _update_meters(self):
+        if self._meter_tags is None:
+            if not self._init_meters():
+                return
+        state = tuple(self.unit.levels) + tuple(self.unit.peaks)
+        if all(abs(now - was) < 0.001
+               for now, was in zip(state, self._meter_shown)):
+            return
+        self._meter_shown = state
+        height = self.fader_input.widget.slider_height
+        for channel, meter in enumerate(self._meter_tags):
+            level_frac = self._fraction(self.unit.levels[channel])
+            for zone, (low, high, _color) in enumerate(VuNode.ZONES):
+                tag = meter['fills'][zone]
+                if not dpg.does_item_exist(tag):
+                    continue
+                fbot = self._db_frac(low)
+                ftop = min(level_frac, self._db_frac(high))
+                ybot = height * (1.0 - fbot)
+                ytop = height * (1.0 - max(fbot, ftop))
+                dpg.configure_item(tag, pmin=(meter['x0'], ytop),
+                                   pmax=(meter['x1'], ybot))
+            peak = self.unit.peaks[channel]
+            tag = meter['peak']
+            if dpg.does_item_exist(tag):
+                if peak <= 1.0e-6:
+                    dpg.configure_item(tag, color=(230, 230, 230, 0))
+                else:
+                    y = height * (1.0 - self._fraction(peak))
+                    hot = peak >= 1.0
+                    dpg.configure_item(
+                        tag, p1=(meter['x0'], y), p2=(meter['x1'], y),
+                        color=(235, 85, 70, 255) if hot
+                        else (230, 230, 230, 180))
 
     def synth_frame_task(self):
+        self._update_meters()
         db = self.unit.current_db()
         if db is None:
             if self._shown_db is not None:
