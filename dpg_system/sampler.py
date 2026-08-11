@@ -1001,10 +1001,36 @@ class Voice:
         return out_buf
 
 
+def output_devices():
+    """(index, name, output channel count) for every device that can play.
+
+    The list reflects what PortAudio saw at process start; a device plugged
+    in later will not appear until the next launch, because rescanning means
+    tearing PortAudio down while streams may be open.
+    """
+    found = []
+    try:
+        for index, info in enumerate(sd.query_devices()):
+            if info.get('max_output_channels', 0) > 0:
+                found.append((index, info['name'],
+                              int(info['max_output_channels'])))
+    except Exception as error:
+        print(f"output_devices: {error}")
+    return found
+
+
 class SamplerEngine:
-    def __init__(self, sample_rate=44100, channels=2):
+    # However many outputs an interface claims, opening more than this many
+    # is beyond what anyone is patching to; it bounds the per-block buffer.
+    MAX_CHANNELS = 32
+
+    def __init__(self, sample_rate=44100, channels=2, device=None):
         self.sample_rate = sample_rate
         self.channels = channels
+        # None means the system default output. Otherwise a PortAudio device
+        # index or name, as sounddevice accepts either.
+        self.device = device
+        self.device_name = ''
         self.voices = [Voice(sample_rate=sample_rate) for _ in range(128)]
         self.stream = None
         self.active = True
@@ -1020,6 +1046,7 @@ class SamplerEngine:
             self.stream = sd.OutputStream(
                 samplerate=self.sample_rate,
                 channels=self.channels,
+                device=self.device,
                 callback=self.audio_callback,
                 blocksize=512
             )
@@ -1029,8 +1056,54 @@ class SamplerEngine:
             self.stream = None
             self.active = False
             return False
+        try:
+            info = sd.query_devices(self.stream.device)
+            self.device_name = info['name']
+        except Exception:
+            self.device_name = str(self.device) if self.device is not None else 'default'
         self.active = True
         return True
+
+    def set_device(self, device=None, channels=None):
+        """Reopen the output on another device, or the same one wider.
+
+        Main thread only, and audibly not free: the stream closes and reopens,
+        so there is a moment of silence. Voices, samples, the synth program
+        and the master volume all survive -- only the stream is replaced.
+
+        `channels` defaults to everything the device has, so a six-channel
+        interface arrives with all six ready to be addressed rather than
+        needing a second call once someone patches channel five.
+
+        Returns (ok, message). On failure the previous device is reopened,
+        so a typo costs an error message, not the audio.
+        """
+        previous = (self.device, self.channels)
+        try:
+            info = sd.query_devices(device if device is not None
+                                    else sd.default.device[1])
+        except Exception as error:
+            return False, f'no such device ({error})'
+        available = int(info.get('max_output_channels', 0))
+        if available < 1:
+            return False, f"{info['name']} has no outputs"
+        wanted = available if channels is None else int(channels)
+        wanted = max(1, min(wanted, available, SamplerEngine.MAX_CHANNELS))
+
+        # stop() mutes before closing so the stream does not click, and that
+        # mute must not outlive the switch.
+        volume = self.master_volume
+        self.stop()
+        self.device = device
+        self.channels = wanted
+        opened = self.start()
+        if not opened:
+            self.device, self.channels = previous
+            self.start()
+            self.master_volume = volume
+            return False, f"could not open {info['name']}; previous device restored"
+        self.master_volume = volume
+        return True, f"{self.device_name}, {self.channels} channels"
 
     def stop(self):
         if self.stream:
@@ -1111,6 +1184,12 @@ class SamplerEngine:
         outdata.fill(0)
         mix = np.zeros((frames, self.channels), dtype=np.float32)
 
+        # Voices are stereo instruments whatever the stream width: they render
+        # at most two channels and land on the first two of the mix. The wider
+        # channels belong to the synth graph, where audio_out~ addresses them
+        # by number.
+        voice_channels = min(2, self.channels)
+
         active_voices = 0
         for v in self.voices:
             # We process even if not 'active' to catch tail end of releases?
@@ -1124,14 +1203,14 @@ class SamplerEngine:
             # BUT process() handles the command queue! We must call process() if there are pending commands!
             if v.active or not v._command_queue.empty():
                 try:
-                    voice_out = v.process(frames, self.channels)
+                    voice_out = v.process(frames, voice_channels)
                 except Exception as e:
                     # Never let a voice exception take down the audio thread.
                     # Disable the voice and surface the error once.
                     v.active = False
                     print(f"SamplerEngine: voice exception, disabling voice ({e})")
                     continue
-                mix += voice_out
+                mix[:, :voice_channels] += voice_out
                 active_voices += 1
 
         # Modular synth graph shares this stream so both worlds land on one

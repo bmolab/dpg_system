@@ -27,6 +27,7 @@
     "vive_tracker_nodes": true,
     "sampler_nodes": true,
     "synth_nodes": true,
+    "gang_nodes": true,
     "visca_nodes": true,
     "pjlink_nodes": true,
     "ndi_nodes": true,
