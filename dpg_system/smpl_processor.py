@@ -368,6 +368,19 @@ class SMPLProcessingOptions:
     # --- Filtering / Signal Processing ---
     enable_one_euro_filter: bool = False
     acc_smooth_window: int = 0   # 0=off, 3/5/7 = Savitzky-Golay derivative window
+    # acc_smooth_window is a FRAME count, so its duration scales with capture
+    # rate: 7 frames is 70 ms at 100 Hz but 58 ms at 120 and 117 ms at 60.
+    # Dynamic torque sits directly downstream, so the same movement captured at
+    # different rates comes out with different transient content -- measured on
+    # CMU at 120 vs 60 Hz, p99 differs by 9% and high-frequency content by 39%.
+    # acc_smooth_ms > 0 fixes the window in TIME instead and is rate
+    # independent; 70 ms reproduces the tuned window of 7 at Shadow's 100 Hz,
+    # which is the data it was refined against.
+    # 0 = fall back to acc_smooth_window verbatim (legacy, rate dependent).
+    # > 0 = smoothing ON at that duration, whatever the capture rate. Left at 0
+    # here so no existing caller changes behaviour silently; the smpl_torque
+    # node exposes this as its only acceleration-smoothing control.
+    acc_smooth_ms: float = 0.0
     torque_smooth_window: int = 0  # 0=off, 3/5/7 = SG output smoothing window
     adaptive_effort_smooth: bool = True  # effort-adaptive EMA: heavy at low effort, light at high
     adaptive_effort_lo: float = 0.1      # effort fraction (||efforts_net||): below this → alpha_min
@@ -526,6 +539,31 @@ class SMPLProcessingOptions:
     
     # --- Spine Geometry ---
     use_s_curve_spine: bool = True      # Use biomechanical S-curve spine instead of SMPL cantilevered spine
+
+
+def resolve_acc_smooth_window(options, dt):
+    """Savitzky-Golay acceleration window, in frames, for this capture rate.
+
+    When acc_smooth_ms is set the window is fixed in time and converted here,
+    so the same movement smooths identically whether it arrives at 60, 100 or
+    120 Hz. Otherwise acc_smooth_window is used verbatim (legacy behaviour,
+    whose duration varies with the rate -- see the field comment).
+
+    Returns an odd count, since the SG derivative wants a centred window, or 0
+    when smoothing is off.
+    """
+    ms = float(getattr(options, 'acc_smooth_ms', 0.0) or 0.0)
+    legacy = int(getattr(options, 'acc_smooth_window', 0) or 0)
+    # acc_smooth_ms > 0 both enables smoothing and sets its duration. It
+    # defaults to 0, so a caller that never sets it keeps the legacy frame
+    # count exactly -- including 0, meaning off.
+    if ms <= 0.0 or not dt or dt <= 0.0:
+        return legacy
+    win = int(round(ms * 0.001 / dt))
+    if win % 2 == 0:
+        win += 1
+    return max(3, win)
+
 
 class SMPLProcessor:
     @staticmethod
@@ -6233,7 +6271,7 @@ class SMPLProcessor:
         # 6. Compute acceleration from velocity differences
         # If acc_smooth_window is set, use Savitzky-Golay derivative
         # over a ring buffer of recent velocities.
-        sg_win = getattr(options, 'acc_smooth_window', 0)
+        sg_win = resolve_acc_smooth_window(options, dt)
         if sg_win >= 3:
             # Cached SG coefficients
             cache_name = f'_ang_sg_cache{state_suffix}'
@@ -6532,7 +6570,7 @@ class SMPLProcessor:
             ).reshape(n_joints, 3)
             
             # Acceleration: Savitzky-Golay derivative when acc_smooth_window > 0
-            sg_win = getattr(options, 'acc_smooth_window', 0)
+            sg_win = resolve_acc_smooth_window(options, dt)
             if sg_win >= 3:
                 # --- Cached SG coefficients (only recomputed when N or dt changes) ---
                 sg_cache = getattr(self, '_com_sg_cache', None)
