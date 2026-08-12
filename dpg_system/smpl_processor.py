@@ -4899,7 +4899,7 @@ class SMPLProcessor:
         # Removed: t_grav_vecs *= g_factor_reshaped
         
         # Note: 'f_grav' used for RNE subtraction later is derived from 'g_vec'.
-        # We rely on 'contact_pressure' being scaled by GRF factor (process_frame logic) 
+        # We rely on 'contact_mass' being scaled by GRF factor (process_frame logic) 
         # to scale the GRF term. 
         # So both T_grav and T_grf scale together. 
         
@@ -4918,11 +4918,11 @@ class SMPLProcessor:
         # Instead of heuristic "Support Logic", we calculate the actual Moment of Ground Reaction Forces.
         # Torque_net = Torque_gravity - Torque_GRF
         
-        if hasattr(self, 'contact_pressure') and self.contact_pressure is not None:
+        if hasattr(self, 'contact_mass') and self.contact_mass is not None:
              # 1. Compute GRF Vectors (With Friction/Alignment)
              # Instead of Pure Vertical GRF (High Torque in wide stance), we align GRF with Support Leg Axis.
              
-             contact_masses = self.contact_pressure # (F, J)
+             contact_masses = self.contact_mass # (F, J)
              if contact_masses.ndim == 1: contact_masses = contact_masses[np.newaxis, :]
              
              f_grf_vecs = np.zeros_like(world_pos)
@@ -6751,7 +6751,7 @@ class SMPLProcessor:
 
         # Optimization: Cache expensive computations across repeated calls within the same frame.
         # global_rot_invs, inertias, and t_dyn_raw are identical across calls since
-        # world_pos, global_rots, and ang_acc don't change — only contact_pressure does.
+        # world_pos, global_rots, and ang_acc don't change — only contact_mass does.
         if _frame_cache is None:
             _frame_cache = {}
         
@@ -7187,7 +7187,7 @@ class SMPLProcessor:
         }
 
         # --- 1. Collect active support points ---
-        pressure = self.contact_pressure  # (F, J)
+        pressure = self.contact_mass  # (F, J)
         if pressure is None or pressure.size == 0:
             return default
 
@@ -7642,16 +7642,16 @@ class SMPLProcessor:
             # Skip both frame_eval and legacy pipelines — they are redundant
             # and cause oscillation artifacts.
             J_cp = world_pos.shape[1]
-            self.contact_pressure = np.zeros((F, J_cp))
+            self.contact_mass = np.zeros((F, J_cp))
             stab_press = getattr(self, '_stability_computed_pressure', None)
             if stab_press is not None and len(stab_press) == J_cp:
                 for f_idx in range(F):
-                    self.contact_pressure[f_idx] = stab_press
+                    self.contact_mass[f_idx] = stab_press
         else:
             # --- Legacy Pressure Pipeline ---
             working_probs = contact_probs_fusion.copy()
             # --- Weighted Mass Distribution (for RNE GRF) ---
-            self.contact_pressure = np.zeros((F, world_pos.shape[1]))
+            self.contact_mass = np.zeros((F, world_pos.shape[1]))
             
             # Per-joint vertical velocity for liftoff suppression
             yd = getattr(self, 'internal_y_dim', 1)
@@ -7872,11 +7872,11 @@ class SMPLProcessor:
                                 weights[toe_j] = weights[foot_j]
                                 weights[foot_j] += excess
                            
-                           self.contact_pressure[f] = weights * total_contact_mass
+                           self.contact_mass[f] = weights * total_contact_mass
                       else:
-                           self.contact_pressure[f] = 0.0
+                           self.contact_mass[f] = 0.0
                  else:
-                      self.contact_pressure[f] = 0.0
+                      self.contact_mass[f] = 0.0
             
             # --- Stability Pressure Override ---
             # When using inverse statics, the stability method computes
@@ -7884,9 +7884,9 @@ class SMPLProcessor:
             # derived pressure entirely.
             if options.contact_method in ('stability_v2',):
                 stab_press = getattr(self, '_stability_computed_pressure', None)
-                if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
+                if stab_press is not None and len(stab_press) == self.contact_mass.shape[1]:
                     for f in range(F):
-                        self.contact_pressure[f] = stab_press
+                        self.contact_mass[f] = stab_press
             # end legacy pressure pipeline
         
         # --- Contact Pressure Smoothing (Asymmetric + Rate Clamp) ---
@@ -7918,15 +7918,15 @@ class SMPLProcessor:
             alpha_down = 1.0 - np.exp(-dt / TAU_DOWN)
             max_change_per_frame = MAX_RATE * dt
 
-            if not hasattr(self, 'prev_contact_pressure_smooth') or self.prev_contact_pressure_smooth is None:
-                self.prev_contact_pressure_smooth = self.contact_pressure.copy()
+            if not hasattr(self, 'prev_contact_mass_smooth') or self.prev_contact_mass_smooth is None:
+                self.prev_contact_mass_smooth = self.contact_mass.copy()
 
-            if self.prev_contact_pressure_smooth.shape != self.contact_pressure.shape:
-                self.prev_contact_pressure_smooth = self.contact_pressure.copy()
+            if self.prev_contact_mass_smooth.shape != self.contact_mass.shape:
+                self.prev_contact_mass_smooth = self.contact_mass.copy()
 
             for f in range(F):
-                curr = self.contact_pressure[f]
-                prev = self.prev_contact_pressure_smooth[0] if F == 1 else self.prev_contact_pressure_smooth[f]
+                curr = self.contact_mass[f]
+                prev = self.prev_contact_mass_smooth[0] if F == 1 else self.prev_contact_mass_smooth[f]
 
                 drop = np.maximum(0, prev - curr)
                 drop_ratio = drop / (np.maximum(prev, 1.0))
@@ -7941,14 +7941,14 @@ class SMPLProcessor:
                 if options.contact_method in ('logodds', 'logodds_valved', 'stability_v2'):
                     smoothed = np.where(curr <= 0, 0.0, smoothed)
 
-                self.contact_pressure[f] = smoothed
+                self.contact_mass[f] = smoothed
                 if F == 1:
-                    self.prev_contact_pressure_smooth = smoothed[np.newaxis, :].copy()
+                    self.prev_contact_mass_smooth = smoothed[np.newaxis, :].copy()
                 else:
-                    self.prev_contact_pressure_smooth[f] = smoothed
+                    self.prev_contact_mass_smooth[f] = smoothed
         else:
             # For unified/equilibrium: use raw pressure directly, update smooth cache
-            self.prev_contact_pressure_smooth = self.contact_pressure.copy()
+            self.prev_contact_mass_smooth = self.contact_mass.copy()
         
         # --- Compute CoM dynamic torque (before final torque call) ---
         t_dyn_com_world = None
@@ -8240,7 +8240,14 @@ class SMPLProcessor:
             'efforts_net': efforts_net,
             'positions': world_pos,
 
-            'contact_pressure': self.contact_pressure,
+            # kilograms, not newtons: this is the body's mass distributed
+            # across contact points (weights * total_contact_mass, ~line 7875),
+            # which is why the internal consumer reads it as contact_masses.
+            # Multiply by 9.81 for weight-equivalent force.
+            'contact_mass': self.contact_mass,
+            # deprecated alias, same array -- remove once out-of-tree readers
+            # (the AMASS archive script) have moved to 'contact_mass'
+            'contact_pressure': self.contact_mass,
             'balance': balance,
         }
         

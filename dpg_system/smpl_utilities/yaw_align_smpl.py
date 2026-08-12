@@ -87,7 +87,7 @@ def collect_processor_data(poses, trans, fps, betas, gender, total_mass, verbose
     T = len(poses)
     # Probe shapes on first frame
     pr.process_frame(reshape_pose(poses[0]), trans[0:1], opts)
-    cp0 = pr.contact_pressure
+    cp0 = pr.contact_mass
     if cp0 is None:
         raise RuntimeError("Processor did not produce contact_pressure on frame 0")
     cp0 = cp0[0] if cp0.ndim > 1 else cp0
@@ -103,7 +103,7 @@ def collect_processor_data(poses, trans, fps, betas, gender, total_mass, verbose
 
     for f in range(1, T):
         pr.process_frame(reshape_pose(poses[f]), trans[f:f + 1], opts)
-        cp = pr.contact_pressure
+        cp = pr.contact_mass
         if cp is not None:
             cp = cp[0] if cp.ndim > 1 else cp
             contact_pressure[f] = cp[:n_j]
