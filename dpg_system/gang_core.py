@@ -689,6 +689,36 @@ class GangGraph:
         self._cache[key] = result
         return result
 
+    def whitened(self, frame_number, bundle):
+        """Whitened deviation of this frame's total torque, and its magnitude.
+
+        Returns (z, magnitude) or None when no prior is available. Shared and
+        cached exactly like evaluate(), so the (n_live, n_live) matvec happens
+        once per frame however many gang nodes ask for it -- each node then
+        projects z onto its own direction, which is a dot product.
+
+        Only the total stream is whitened: see gang_prior for why a dynamic
+        prior was built and rejected.
+        """
+        key = ('white',) + tuple(id(bundle.get(name)) for name in STREAMS)
+        cached = self._cache.get(key)
+        if cached is not None:
+            return cached[0]
+
+        from dpg_system.gang_prior import get_prior, PRIOR_STREAM
+        prior = get_prior()
+        result = None
+        torque = bundle.get(PRIOR_STREAM)
+        if prior is not None and isinstance(torque, np.ndarray):
+            flat = np.asarray(torque, dtype=np.float64).reshape(-1)
+            if flat.size >= 66:
+                flat = flat[:66]
+                magnitude = float(np.linalg.norm(flat[prior.live]))
+                result = (prior.whiten_frame(flat), magnitude)
+        # boxed, so a legitimate None is cached rather than recomputed
+        self._cache[key] = (result,)
+        return result
+
     def row_for(self, spec):
         return self.program.row_of.get(spec)
 

@@ -71,6 +71,10 @@ dpg_system/patch_library/
 dpg_system/wavelets_pytorch/
 dpg_system/*.npz
 dpg_system/*.npy
+# ...but the torque prior is a model artifact, not capture data: 72 KB of
+# mean/covariance/whitening over 12.5M AMASS frames, which gang_prior.py needs
+# in order to report surprise at all. Without it the feature is silently inert.
+!dpg_system/torque_prior.npz
 dpg_system/*.png
 dpg_system/*.otf
 dpg_system/*.ttc
