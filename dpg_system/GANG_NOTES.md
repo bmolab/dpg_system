@@ -1,14 +1,22 @@
 # Torque gangs — working notes
 
-**Status (2026-08-05):** core + nodes built and passing. Preset weight signs
-are UNVALIDATED — that is the next thing to do, and it needs live data.
+**Status (2026-08-12):** core + nodes built and passing, and now characterized
+against 20.4 M frames of AMASS. **Read `CHARACTERIZATION_RESULTS.md` beside
+this file for what the data says** — the ranges any mapping needs, which
+presets the data confirms, which look wrong, and how much of movement the
+vocabulary cannot express. The "Open" section at the end of this file has been
+updated to match; several items there are now answered.
 
 Files:
 
     dpg_system/gang_core.py    formalism, preset table, compiler, registry
     dpg_system/gang_nodes.py   torque_gang / gang / torque_residual nodes
+    dpg_system/gang_prior.py   corpus prior behind the `surprise` outlet
+    dpg_system/torque_prior.npz  mean/covariance over 12.5M clean frames
     dpg_system/dpg_app.py      'gang_nodes' added to optional_import
     dpg_system_config.json     "gang_nodes": true
+
+    dpg_system/CHARACTERIZATION_RESULTS.md    what 20.4M frames say
 
 ---
 
@@ -206,19 +214,33 @@ special path.
 
 ## Open
 
-**1. Preset signs are unvalidated.** ← start here
+**1. Preset signs — partly answered, and the proposed test is weaker than it
+looked.** See `CHARACTERIZATION_RESULTS.md` §4 and §9c.
 
-Which rotation direction is positive in each joint's local frame was never
-checked against real data, and a wrong sign turns a coherent gang into a
-cancelling one. The test is built in: drive a gesture that plainly reads as
-unified and watch `coherence`. A gang sitting near zero during unified
-movement has a flipped weight. Use the `invert` option to try the flip before
-editing the table. `leg_push` (three joints, alternating signs) is the most
-likely to be wrong and the most worth getting right.
+The suggestion below was to drive a unified gesture and watch `coherence` for a
+near-zero reading. That test is weaker than it appeared: coherence is
+magnitude-weighted, so a large term can dominate a small one and keep coherence
+high while the two channels still co-vary against the weighting. `arm_reach`
+reads coherent (median 0.905) while its shoulder and elbow terms correlate
+*positively* against a preset that weights them oppositely. Scale-free
+correlation and magnitude-weighted coherence disagree, and the disagreement is
+itself the finding.
 
-**2. `MAX_TORQUE_NM` duplicates `SMPLProcessor._compute_max_torque_profile`.**
-Importing the real one pulls in torch and the SMPL model to read a small dict.
-Two copies that must be kept in step; commented on both sides.
+Confirmed by the data: `spine_flex`, `spine_bend`, `spine_twist`,
+`arm_elevate|differential`. Worth investigating: `arm_reach` (both sides),
+`leg_twist`, and `leg_push` on the dynamic stream only — subtler than a flipped
+sign. Also flagged: several presets may be reading the wrong AXIS rather than
+the wrong sign — collar↔shoulder couple at r≈0.89 on x and y while
+`arm_elevate` gangs them on z; neck↔head couple more strongly on z than the x
+`head_flex` uses.
+
+`invert` still flips a weight without editing the table.
+
+**2. `MAX_TORQUE_NM` duplicates `SMPLProcessor._compute_max_torque_profile`
+— verified in step, 2026-08-12.** The AMASS torque archive stores the profile
+the processor actually used, and it matches `max_torque_array()` exactly (max
+absolute difference 0). Still two copies that must be kept in step; the archive
+now gives a cheap way to re-check.
 
 **3. Designed but NOT built** — discussed, decided, not implemented:
 
@@ -234,6 +256,39 @@ Two copies that must be kept in step; commented on both sides.
   sort into stages, one matmul per stage. The algorithm to copy is already in
   `synth_core.py:3300`. Most patches would compile to a single stage.
 
-**4. Not yet driven by real data at all.** Everything so far is synthetic
-torque. Nothing is known about the actual dynamic range of `net`/`total` in
-performance, which is what the scaling into audio parameters depends on.
+**4. Driven by real data — done, 2026-08-12.** 20.4 M frames of AMASS, via a
+precomputed torque archive. Full results in `CHARACTERIZATION_RESULTS.md`. The
+short version:
+
+- **Conditioning is the binding constraint.** Median crest (p99/p50) ~11, and
+  p99 spans 22x *between* gangs. Per-gang normalization is not optional, and a
+  soft compressive curve beats linear. The per-gang p50/p90/p99 table is the
+  lookup that fixes it.
+- **Coherence works, but only for multi-term gangs**, and mainly in its low
+  tail. The four single-term presets have coherence identically 1 and carry no
+  coherence information at all — do not patch them as if they did.
+- **Net torque and power are complementary, not ranked.** The differential and
+  gait gangs are quiet in torque and loudest in power; `hip_flex|differential`
+  is 14th by torque and 1st by power. Choosing per gang is a real lever.
+- **The field is not low-dimensional** — ten components under 60%, effective
+  dimensionality ~30 of 56 live channels. No small fixed basis captures it.
+
+**5. Surprise — built, 2026-08-12.** `torque_gang` has a fourth outlet. See
+`gang_prior.py` and `CHARACTERIZATION_RESULTS.md` §10–§13. 46% of all surprise
+lies orthogonal to the span of all 42 gangs: the vocabulary has no word for
+about half of what makes movement unusual.
+
+**6. Nothing has been heard.** All of the above is measurement. No sound has
+been made from any of it, and the ear may overrule findings that look clean in
+a table. Also: the constants are AMASS-specific, dance is barely represented
+(8.3% of DanceDB survives filtering), and Shadow captures far more extreme
+movement — so the ranges and the prior should be rebuilt on Shadow before live
+use. The structural findings are anatomical and should transfer; the constants
+should not.
+
+**7. The analysis scripts are NOT in the repo.** Same trap as the test scripts
+above. `characterize.py`, `power_analysis.py`, `analyze.py`,
+`build_torque_prior.py`, `surprise_core.py`, `filtered_compare.py`,
+`build_noise_index.py`, `fingerprint_archive.py`, `compare_fingerprint.py` all
+lived in a session scratchpad. `CHARACTERIZATION_RESULTS.md` records what they
+produced and how, but re-deriving any number means rewriting them.
