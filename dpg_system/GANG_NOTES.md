@@ -286,9 +286,13 @@ movement — so the ranges and the prior should be rebuilt on Shadow before live
 use. The structural findings are anatomical and should transfer; the constants
 should not.
 
-**7. The analysis scripts are NOT in the repo.** Same trap as the test scripts
-above. `characterize.py`, `power_analysis.py`, `analyze.py`,
-`build_torque_prior.py`, `surprise_core.py`, `filtered_compare.py`,
-`build_noise_index.py`, `fingerprint_archive.py`, `compare_fingerprint.py` all
-lived in a session scratchpad. `CHARACTERIZATION_RESULTS.md` records what they
-produced and how, but re-deriving any number means rewriting them.
+**7. The analysis scripts are in `gang_analysis/` — done, 2026-08-12.** All 17,
+with a README giving the run order, the data paths that need editing, and the
+traps worth knowing (12% histogram resolution; `rate_hz` differencing across
+segment joins; spawn-vs-fork globals). They are working scripts, not a library.
+
+Still true of the **original gang test suite** (`test_gang_core.py`,
+`test_gang_nodes.py`, 81 + 38 checks): those were scratchpad-only and are gone.
+The "Verified" section above lists what they covered. Worth re-creating —
+`gang_analysis/test_gang_surprise_node.py` shows the headless node-test pattern
+that made them awkward before (dpg context first, a stand-in app object).
