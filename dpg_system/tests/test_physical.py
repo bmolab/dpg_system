@@ -1025,6 +1025,1202 @@ check('brass mute 0 is the open horn, bounded',
       np.isfinite(bopen).all() and np.max(np.abs(bopen)) < 4.0
       and _dom_brass(bopen) > 200)
 
+# --------------------------------------------------------------- spin~
+# A settling disc. Everything rests on one law -- the contact point races
+# round the rim at a rate going as one over the square root of the tilt --
+# so most of these check that law arriving at the outlets, plus the three
+# things that make it a disc rather than a sweep: a continuous contact
+# whose LOAD is what varies, two rotations moving opposite ways, and a
+# flop that is the grinding gone sharp rather than any kind of blow.
+def run_spin(seconds=5.0, spin=1.0, hold=0.02, **kw):
+    """Defaults to a cleanly-cast coin.
+
+    Most of the laws below describe a disc that ROLLS -- a monotone
+    settle, a contact that never breaks, a held gesture holding a steady
+    rate. A badly cast one does none of that by design, so the rolling
+    laws are measured where they apply and the cast has its own checks.
+    """
+    kw.setdefault('twist', 1.0)
+    u = sc.SpinUnit(SR)
+    for name, value in kw.items():
+        getattr(u, name + '_in').base = value
+    s = sc.Signal()
+    u.spin_in.sources.append(s)
+    n = int(seconds * SR / BLOCK)
+    got = {k: np.zeros(n * BLOCK)
+           for k in ('out', 'grind', 'landing', 'rate', 'face')}
+    for b in range(n):
+        s.data[:BLOCK] = spin if (b * BLOCK / SR) < hold else 0.0
+        s.constant = False
+        u.render(BLOCK)
+        for k in got:
+            got[k][b*BLOCK:(b+1)*BLOCK] = getattr(u, k).array(BLOCK)
+    got['unit'] = u
+    return got
+
+
+def _spin_rate(radius, tilt):
+    """The precession rate the unit is built on, in Hz."""
+    return np.sqrt(4.0 * 9.80665 / (radius * tilt)) / (2.0 * np.pi)
+
+
+def _spin_blows(sig):
+    """How many discrete events are in an impact outlet."""
+    return int((np.diff((sig != 0.0).astype(int)) > 0).sum())
+
+
+def _spin_brightness(seg):
+    """Where a segment's energy sits: high over total."""
+    mag = np.abs(np.fft.rfft(seg * np.hanning(len(seg)))) ** 2
+    f = np.fft.rfftfreq(len(seg), 1.0 / SR)
+    total = mag.sum()
+    return mag[f > 4000].sum() / total if total > 0 else 0.0
+
+
+def _spin_cycles(seg):
+    """Rate of a bipolar control signal, in Hz, by zero crossings."""
+    flips = (np.diff(np.signbit(seg).astype(int)) != 0).sum()
+    return flips / (len(seg) / SR) / 2.0
+
+
+sg = run_spin()
+slive = sg['rate'][sg['rate'] > 0]
+check('spin sounds', np.max(np.abs(sg['out'])) > 0.01,
+      f'peak={np.max(np.abs(sg["out"])):.3f}')
+check('spin starts at the full-lean precession rate',
+      abs(slive[0] - _spin_rate(0.012, 0.5)) < 0.1,
+      f'{slive[0]:.2f} Hz, law says {_spin_rate(0.012, 0.5):.2f}')
+SPIN_FLAT = 0.5 * 10.0 ** -(0.7 + 2.3 * 0.7)
+check('spin ends at the rate its polish allows',
+      abs(slive[-1] - _spin_rate(0.012, SPIN_FLAT)) < 1.0,
+      f'{slive[-1]:.2f} Hz, law says {_spin_rate(0.012, SPIN_FLAT):.2f}')
+check('spin accelerates, never the other way',
+      np.all(np.diff(slive[::64]) >= -1e-9))
+s_warble = run_spin(twist=0.0, seconds=4.0)['rate']
+s_warble = s_warble[s_warble > 0]
+s_smooth = np.convolve(s_warble, np.ones(2048)/2048, mode='valid')
+check('a badly cast disc warbles in pitch but still trends up',
+      np.any(np.diff(s_warble[::64]) < -1e-9)
+      and s_smooth[-1] > s_smooth[0],
+      f'{s_smooth[0]:.1f} -> {s_smooth[-1]:.1f} Hz through the warble')
+check('spin settles in its settle time', abs(len(slive)/SR - 3.0) < 0.05,
+      f'{len(slive)/SR:.2f} s of a 3 s settle')
+
+# Size is the rate scale: rate goes as one over the square root of the
+# radius, so a tenfold disc turns at a third the speed.
+sbig = run_spin(size=0.12, seconds=4.0)
+check('spin size scales every rate as one over root radius',
+      abs(sbig['rate'][sbig['rate'] > 0][0] - _spin_rate(0.12, 0.5)) < 0.1,
+      f'{sbig["rate"][sbig["rate"]>0][0]:.2f} Hz at 120 mm '
+      f'vs {slive[0]:.2f} at 12 mm')
+
+# The contact is continuous and the load is what varies, so the sound is
+# one voice modulated by the rotation. That modulation is the pitch:
+# the grinding's own spectral peak has to sit on the rate outlet.
+sp = run_spin(wobble=0.4, scrape=0.3, rush=0.0, seconds=5.0)
+splive = np.nonzero(sp['rate'] > 0)[0]
+s_tracked = []
+for _frac in (0.1, 0.5, 0.9):
+    _a = splive[0] + int((splive[-1] - splive[0]) * _frac)
+    _seg = sp['grind'][_a:_a+8192]
+    _mag = np.abs(np.fft.rfft(_seg * np.hanning(len(_seg))))
+    _f = np.fft.rfftfreq(len(_seg), 1.0/SR)
+    _band = (_f > 5) & (_f < 2000)
+    s_tracked.append((sp['rate'][_a], _f[_band][np.argmax(_mag[_band])]))
+check('spin\'s continuous voice is pitched at the precession rate',
+      all(abs(pk - rt) < 0.25 * rt for rt, pk in s_tracked),
+      ' '.join(f'{rt:.0f}->{pk:.0f}Hz' for rt, pk in s_tracked))
+
+# Everything scales as the square root of the tilt, so a settling disc
+# thins as it quickens. This is the half a bouncing model cannot reach:
+# bounces only ever get faster, never smaller.
+squiet_g = run_spin(scrape=0.0)
+sspan = np.nonzero(squiet_g['rate'] > 0)[0]
+seighths = np.array_split(squiet_g['out'][sspan[0]:sspan[-1]], 8)
+speaks = [np.abs(e).max() for e in seighths]
+check('spin thins as the rattle rises', speaks[-1] < 0.25 * speaks[0],
+      f'peak {speaks[0]:.3f} -> {speaks[-1]:.3f} across the tail')
+check('spin thinning is monotone-ish',
+      sum(speaks[i+1] < speaks[i] for i in range(7)) >= 6,
+      f'{[f"{v:.3f}" for v in speaks]}')
+
+# Two rotations, moving opposite ways. The face turns at the tilt times
+# the precession rate, so as the rattle accelerates the face SLOWS -- the
+# counter-motion you can watch on a spinning disc, and the reason 'face'
+# is worth an outlet: nothing else in the rack decelerates.
+sfg = run_spin(wobble=0.8, scrape=0.3, seconds=5.0)
+sflive = np.nonzero(sfg['rate'] > 0)[0]
+sf_face = sfg['face'][sflive[0]:sflive[-1]]
+sf_rate = sfg['rate'][sflive[0]:sflive[-1]]
+_fifth = len(sf_face) // 5
+s_face_early = _spin_cycles(sf_face[:_fifth])
+s_face_late = _spin_cycles(sf_face[-_fifth:])
+s_rate_early = sf_rate[:_fifth].mean()
+s_rate_late = sf_rate[-_fifth:].mean()
+check('spin rattle accelerates while its face slows',
+      s_rate_late > 4.0 * s_rate_early and s_face_late < 0.5 * s_face_early,
+      f'precession {s_rate_early:.0f}->{s_rate_late:.0f} Hz while the face '
+      f'turns {s_face_early:.2f}->{s_face_late:.2f} Hz')
+check('spin face turns at the tilt times the precession rate',
+      abs(s_face_early - s_rate_early * 0.5) < 0.25 * s_rate_early * 0.5,
+      f'{s_face_early:.2f} Hz measured, {s_rate_early*0.5:.2f} predicted')
+check('spin face stays a usable control', -1.05 < sf_face.min()
+      and sf_face.max() < 1.05,
+      f'{sf_face.min():.2f} .. {sf_face.max():.2f}')
+
+# Tested against real coins: a settling disc hardly ever leaves the
+# table. So there is exactly ONE impact in the life of a spin -- the face
+# landing flat at the end -- however violently it wobbles on the way.
+s_blow_counts = [(w, _spin_blows(run_spin(wobble=w, scrape=0.3)['landing']))
+                 for w in (0.0, 0.4, 0.7, 1.0)]
+check('a rolling disc never leaves the table, however untrue the coin',
+      all(n == 1 for w, n in s_blow_counts),
+      f'{[(w, n) for w, n in s_blow_counts]} -- one landing apiece')
+
+# The flop of an off-kilter coin is the grinding gone sharp: a loaded
+# contact engages more surface and stiffens, so deeper wobble makes the
+# grind both LOUDER and BRIGHTER. Both halves matter -- louder alone
+# would be a swell, and it is the brightening that reads as a flop.
+def _spin_grind(wob, seconds=4.0):
+    g = run_spin(wobble=wob, scrape=0.6, hardness=0.9, seconds=seconds)
+    live = np.nonzero(g['rate'] > 0)[0]
+    return g['grind'][live[0]:live[-1]]
+
+
+s_true, s_kilter = _spin_grind(0.15), _spin_grind(1.0)
+check('spin wobble drives the grind harder',
+      np.sqrt(np.mean(s_kilter**2)) > 2.0 * np.sqrt(np.mean(s_true**2)),
+      f'rms {np.sqrt(np.mean(s_true**2)):.4f} true -> '
+      f'{np.sqrt(np.mean(s_kilter**2)):.4f} off-kilter')
+# The sharpening lives IN the cycle: the coin bites while its heavy side
+# is down and merely rolls while it is up, so what deep wobble buys is
+# CONTRAST between the loud part of a turn and the quiet part -- not a
+# uniformly brighter sound.
+def _spin_contrast(wob):
+    g = run_spin(wobble=wob, scrape=0.6, hardness=0.9, seconds=4.0)
+    live = np.nonzero(g['rate'] > 0)[0]
+    seg = g['grind'][live[0]:live[-1]]
+    w = int(0.01 * SR)
+    wins = [seg[a:a+w] for a in range(0, len(seg) - w, w)]
+    lvl = np.array([np.sqrt(np.mean(x**2)) for x in wins])
+    order = np.argsort(lvl)
+    fifth = max(1, len(order) // 5)
+    loud = np.concatenate([wins[i] for i in order[-fifth:]])
+    quiet = np.concatenate([wins[i] for i in order[:fifth]])
+    return _spin_brightness(loud) / max(_spin_brightness(quiet), 1e-9)
+
+
+s_c_true, s_c_kilter = _spin_contrast(0.15), _spin_contrast(1.0)
+check('spin is sharper where it presses hardest',
+      s_c_kilter > 1.3 and s_c_kilter > 1.15 * s_c_true,
+      f'loud-to-quiet brightness {s_c_true:.2f}x true -> '
+      f'{s_c_kilter:.2f}x off-kilter')
+
+# 'hardness' is how sharply the contact answers that load. Soft leans
+# into it, hard cuts -- same load, different edge.
+def _spin_hard(h):
+    g = run_spin(wobble=0.9, scrape=0.6, hardness=h, seconds=4.0)
+    live = np.nonzero(g['rate'] > 0)[0]
+    return _spin_brightness(g['grind'][live[0]:live[-1]])
+
+
+check('spin hardness sets how sharply a flop cuts',
+      _spin_hard(0.95) > 1.3 * _spin_hard(0.05),
+      f'high-frequency share {_spin_hard(0.05):.3f} soft -> '
+      f'{_spin_hard(0.95):.3f} hard')
+
+# And the sharpening comes and goes on the SLOW turn, not the fast one:
+# the coin bites while its heavy side is down. Measured as the depth of
+# the grind envelope's swing at the face rate.
+sbg = run_spin(wobble=1.0, scrape=0.6, hardness=0.9, seconds=5.0)
+sblive = np.nonzero(sbg['rate'] > 0)[0]
+sbseg = np.abs(sbg['grind'][sblive[0]:sblive[-1]])
+S_WIN = int(0.02 * SR)
+s_env = np.array([sbseg[a:a+S_WIN].mean()
+                  for a in range(0, len(sbseg) - S_WIN, S_WIN)])
+s_env = s_env[len(s_env)//5:]
+check('spin flop comes and goes on the slow turn',
+      s_env.max() > 2.0 * np.median(s_env),
+      f'grind envelope peaks {s_env.max()/max(np.median(s_env),1e-12):.1f}x '
+      f'its median')
+
+# A badly spun coin does not trace a circle: its contact runs an eccentric
+# orbit, racing through the tight side and dawdling through the wide one,
+# so a pulse symmetric in ANGLE lands lopsided in TIME. The flops get
+# harder and less even as the coin goes off-kilter.
+def _spin_pulsing(wob):
+    g = run_spin(wobble=wob, scrape=0.7, hardness=0.85, seconds=4.0)
+    live = np.nonzero(g['rate'] > 0)[0]
+    seg = g['grind'][live[0]:live[-1]]
+    w = int(0.01 * SR)
+    lvl = np.array([np.sqrt(np.mean(seg[a:a+w]**2))
+                    for a in range(0, len(seg) - w, w)])
+    o = np.argsort(lvl)
+    fifth = max(1, len(o) // 5)
+    return lvl[o[-fifth:]].mean() / max(lvl[o[:fifth]].mean(), 1e-12)
+
+
+s_pulse = [(w, _spin_pulsing(w)) for w in (0.0, 0.5, 1.0)]
+check('spin flops harder as it goes off-kilter',
+      s_pulse[0][1] < s_pulse[1][1] < s_pulse[2][1]
+      and s_pulse[2][1] > 2.5 * s_pulse[0][1],
+      ' -> '.join(f'{v:.1f}x' for _, v in s_pulse))
+
+# A settling disc runs into a real singularity, and no amount of
+# clamping proves that no corner of the parameter space steps over it.
+# What must be true is that stepping over it is survivable: one bad block
+# is a dropped block, not a voice that is silent for the rest of the
+# session. Both models are checked, because the guard has to be in both.
+for _model in (0, 1):
+    _u = sc.SpinUnit(SR)
+    _u.model = _model
+    _sig = sc.Signal()
+    _u.spin_in.sources.append(_sig)
+    for _b in range(20):
+        _sig.data[:BLOCK] = 1.0 if _b < 2 else 0.0
+        _sig.constant = False
+        _u.render(BLOCK)
+    _u._d_q2 = float('nan')
+    _u._tilt = float('inf')
+    _sig.data[:BLOCK] = 0.0
+    _sig.constant = False
+    _u.render(BLOCK)
+    _clean = all(np.isfinite(getattr(_u, _n).array(BLOCK)).all()
+                 for _n in ('out', 'grind', 'landing', 'rate', 'face'))
+    _sounded = 0.0
+    _finite = True
+    for _b in range(80):
+        _sig.data[:BLOCK] = 1.0 if _b < 2 else 0.0
+        _sig.constant = False
+        _u.render(BLOCK)
+        _y = _u.out.array(BLOCK)
+        _finite = _finite and np.isfinite(_y).all()
+        _sounded = max(_sounded, float(np.abs(_y).max()))
+    check(f'spin survives a poisoned state ({sc.SpinUnit.MODELS[_model]})',
+          _clean and _finite and _sounded > 1e-5,
+          f'block clean={_clean}, recovers and sounds again '
+          f'(peak {_sounded:.4f})')
+
+# --- the cast, which is the continuum this node is really about ------
+# A coin spun true on its edge rolls: the contact drifts round the rim,
+# the lean falls smoothly, nothing ever leaves the table. A coin merely
+# pushed over never rolls at all -- the lean swings past level every
+# cycle, the face slaps, and it rattles to a stop. 'twist' is how much
+# spin was in the fall, and everything between those is a real coin.
+# Counted per second of sounding, not per settle: a bad cast also has a
+# much SHORTER tail, so the total says less than the rate does.
+def _spin_contact_rate(tw):
+    g = run_spin(twist=tw, seconds=5.0)
+    sounding = (g['rate'] > 0).sum() / SR
+    return _spin_blows(g['landing']) / max(sounding, 1e-9), sounding
+
+
+s_cast = [(t,) + _spin_contact_rate(t) for t in (1.0, 0.6, 0.3, 0.0)]
+check('twist runs from a coin that rolls to one that only rattles',
+      s_cast[0][1] < 1.0 and s_cast[-1][1] > 10.0
+      and all(a[1] <= b[1] for a, b in zip(s_cast, s_cast[1:])),
+      ' -> '.join(f'twist {t}: {r:.1f}/s' for t, r, _ in s_cast))
+check('a bad cast also has a shorter tail',
+      s_cast[-1][2] < 0.35 * s_cast[0][2],
+      ' -> '.join(f'{d:.2f} s' for _, _, d in s_cast))
+
+# The lean oscillating is what a bad cast IS, and because the rate goes
+# as one over the square root of the lean, that oscillation is heard as
+# a warble in pitch -- not merely as unevenness in loudness.
+def _spin_warble(tw):
+    r = run_spin(twist=tw, seconds=4.0)['rate']
+    r = r[r > 0]
+    a, b = int(len(r)*0.05), int(len(r)*0.30)
+    seg = r[a:b]
+    trend = np.convolve(seg, np.ones(1024)/1024, mode='valid')
+    ripple = seg[:len(trend)] - trend
+    return np.sqrt(np.mean(ripple**2)) / seg.mean()
+
+
+s_w_clean, s_w_cast = _spin_warble(1.0), _spin_warble(0.2)
+check('a bad cast warbles the pitch, a clean one does not',
+      s_w_clean < 0.02 and s_w_cast > 5.0 * s_w_clean,
+      f'rate ripple {s_w_clean*100:.2f}% clean -> {s_w_cast*100:.1f}% cast')
+
+# And a disc settles into rolling only because its SPIN holds it there,
+# so with no twist at all it never settles -- it flops until it stops.
+s_late_clean = _spin_contact_rate(0.55)[0]
+s_late_none = _spin_contact_rate(0.0)[0]
+check('without spin there is nothing to settle into',
+      s_late_none > 5.0 * max(s_late_clean, 0.2),
+      f'{s_late_clean:.1f} contacts/s at twist 0.55, '
+      f'{s_late_none:.1f}/s at 0')
+
+# The excitation itself has to change KIND, not just level. A contact is
+# a stream of micro-impacts; a rolling rim meets thousands a second and
+# they fuse into a continuous sound, a face coming down delivers one. So
+# the grains thin out and grow as twist falls, at constant power -- which
+# shows up as a crest factor (peak over rms) that climbs steeply while
+# the level does not.
+def _spin_crest(tw):
+    """Impulsiveness by kurtosis, not by crest.
+
+    Crest stopped separating these once the grains were given the
+    power-law sizes a self-affine surface really produces: the tail sets
+    the peak whatever the density is. Kurtosis still reads the thing
+    that matters -- whether the energy arrives in many small pieces or
+    a few large ones.
+    """
+    g = run_spin(twist=tw, seconds=5.0)
+    live = np.nonzero(g['rate'] > 0)[0]
+    seg = g['grind'][live[0]:live[-1]]
+    r = np.sqrt(np.mean(seg**2))
+    kurt = np.mean(seg**4) / max(np.mean(seg**2)**2, 1e-18)
+    return kurt, r
+
+
+s_crest = [(t,) + _spin_crest(t) for t in (1.0, 0.5, 0.0)]
+# The ends, not three points in a strict order: with power-law grains
+# the middle sits within seed noise of either side, so ordering it would
+# be testing the draw rather than the law.
+check('the contact goes from a hiss to separate hits',
+      s_crest[2][1] > 3.0 * s_crest[0][1],
+      ' -> '.join(f'kurtosis {c:.0f}' for _, c, _ in s_crest))
+check('and it does so at roughly constant power, not by getting louder',
+      s_crest[2][2] < s_crest[0][2],
+      ' -> '.join(f'rms {r:.4f}' for _, _, r in s_crest))
+
+# But the lurch must not RETUNE it. The orbit's rate factor is normalized
+# over a turn, so however lopsided the motion becomes the mean precession
+# is untouched -- otherwise wobble would double as a pitch control, and
+# every law above that rests on the rate would shift under it.
+s_tunings = []
+for _w in (0.0, 0.35, 0.7, 1.0):
+    _live = run_spin(wobble=_w, seconds=4.0)['rate']
+    _live = _live[_live > 0]
+    s_tunings.append((_live[0], _live[-1], len(_live)))
+check('spin wobble does not retune the disc',
+      all(abs(t[0] - s_tunings[0][0]) < 1e-6
+          and abs(t[1] - s_tunings[0][1]) < 1e-6
+          and t[2] == s_tunings[0][2] for t in s_tunings),
+      f'{s_tunings[0][0]:.3f} Hz start and {s_tunings[0][1]:.3f} Hz end '
+      f'at every wobble')
+
+# A node out of the box has to put something on every outlet it has.
+sdef = run_spin(seconds=6.0, twist=sc.SpinUnit(SR).twist_in.base)
+check("spin's default settings reach every outlet",
+      _spin_blows(sdef['landing']) >= 1
+      and np.abs(sdef['grind']).max() > 1e-3
+      and sdef['rate'].max() > 1.0
+      and np.abs(sdef['face']).max() > 0.1,
+      f'landing fires {_spin_blows(sdef["landing"])}x, '
+      f'grind peak {np.abs(sdef["grind"]).max():.3f}, '
+      f'rate to {sdef["rate"].max():.0f} Hz, '
+      f'face swing {np.abs(sdef["face"]).max():.2f}')
+
+# The outlets are a split of one sound, not three renderings of it.
+ssum = run_spin(wobble=0.9, scrape=0.5)
+check('spin out is exactly grind plus landing',
+      np.abs(ssum['out'] - (ssum['grind'] + ssum['landing'])).max() < 1e-6,
+      f'{np.abs(ssum["out"] - (ssum["grind"]+ssum["landing"])).max():.2e}')
+sloud = run_spin(wobble=0.9, scrape=0.5, level=1.7)
+# Compared by rms, not by peak: the grains are power-law sized, so a
+# peak is whichever rare large one a given run happened to draw.
+_q_loud = np.sqrt(np.mean(sloud['out']**2))
+_q_ref = np.sqrt(np.mean(ssum['out']**2))
+check('spin outlets stay split when level is not unity',
+      np.abs(sloud['out'] - (sloud['grind'] + sloud['landing'])).max() < 1e-6
+      and _q_loud > 1.3 * _q_ref,
+      f'{_q_loud/_q_ref:.2f}x louder by rms')
+
+# 'rush' is which loss dominates. Measured as the fraction of the tail
+# spent below the sweep's geometric midpoint: an even glide sits at a
+# half, the viscous-air law spends the whole tail below it and then does
+# all of the climbing at once.
+def _spin_lean(rush):
+    live = run_spin(rush=rush, seconds=4.0)['rate']
+    live = live[live > 0]
+    return (live < np.sqrt(live[0] * live[-1])).sum() / len(live)
+
+
+s_even, s_default, s_cliff = _spin_lean(0.0), _spin_lean(0.4), _spin_lean(1.0)
+check('spin rush 0 spreads the climb evenly across the tail',
+      abs(s_even - 0.5) < 0.08,
+      f'{s_even*100:.0f}% of the tail below the midpoint')
+check('spin rush leans the climb towards the end',
+      s_even < s_default < s_cliff and s_cliff > 0.97,
+      f'{s_even*100:.0f}% -> {s_default*100:.0f}% -> {s_cliff*100:.0f}%')
+
+
+# Polish is where flat is, so it sets both the top of the sweep and how
+# much lean is left to land with: a rough surface stops a disc with a
+# clack, a polished one lets it whisper away to nothing.
+def _spin_landing(polish):
+    g = run_spin(polish=polish, scrape=0.0, seconds=4.0)
+    land = np.nonzero(g['rate'] > 0)[0][-1]
+    return g['rate'][land], np.abs(g['landing'][land:land+400]).max()
+
+
+s_rough_hz, s_rough_slap = _spin_landing(0.0)
+s_glass_hz, s_glass_slap = _spin_landing(1.0)
+check('spin polish sets how high the whir climbs',
+      s_glass_hz > 10.0 * s_rough_hz,
+      f'{s_rough_hz:.0f} Hz rough -> {s_glass_hz:.0f} Hz polished')
+check('spin lands with a clack when rough, a whisper when polished',
+      s_rough_slap > 4.0 * s_glass_slap,
+      f'final landing {s_rough_slap:.4f} rough vs {s_glass_slap:.4f} '
+      f'polished, {s_rough_slap/max(s_glass_slap,1e-9):.1f}x')
+
+# The gesture only ever adds energy, so a smaller one leans the disc less:
+# it starts higher and has less to fall through. The tail is bought by the
+# movement, which is the whole reason for patching one in.
+s_starts, s_tails = [], []
+for _level in (1.0, 0.5, 0.25):
+    live = run_spin(spin=_level, seconds=4.0)['rate']
+    live = live[live > 0]
+    s_starts.append(live[0])
+    s_tails.append(len(live) / SR)
+check('spin gesture size sets the pitch it starts from',
+      s_starts[0] < s_starts[1] < s_starts[2],
+      f'{[f"{v:.0f} Hz" for v in s_starts]}')
+check('spin gesture size buys the length of the tail',
+      s_tails[0] > s_tails[1] > s_tails[2],
+      f'{[f"{v:.2f} s" for v in s_tails]}')
+
+# Held movement holds the sound: a disc cannot settle while a hand keeps
+# leaning it over, and the tail begins where the holding stops.
+shu = sc.SpinUnit(SR)
+shu.twist_in.base = 1.0
+shs = sc.Signal()
+shu.spin_in.sources.append(shs)
+_n = int(8.0*SR/BLOCK)
+sheld = np.zeros(_n * BLOCK)
+for b in range(_n):
+    shs.data[:BLOCK] = 0.8 if (b*BLOCK/SR) < 3.0 else 0.0
+    shs.constant = False
+    shu.render(BLOCK)
+    sheld[b*BLOCK:(b+1)*BLOCK] = shu.rate.array(BLOCK)
+s_during = sheld[SR//2:int(2.9*SR)]
+s_after = np.nonzero(sheld[int(3.0*SR):] > 0)[0]
+check('spin holds its sound while the gesture holds',
+      s_during.max() - s_during.min() < 0.01,
+      f'{s_during.min():.2f}-{s_during.max():.2f} Hz over 2.4 s')
+check('spin tail starts when the gesture stops', len(s_after)/SR > 2.0,
+      f'{len(s_after)/SR:.2f} s of tail after release')
+
+# A landed disc set down again starts from the lean it is given, not from
+# the top of the sweep it just finished.
+sru = sc.SpinUnit(SR)
+sru.twist_in.base = 1.0
+sru.settle_in.base = 0.4
+srs = sc.Signal()
+sru.spin_in.sources.append(srs)
+_n = int(2.0*SR/BLOCK)
+sagain = np.zeros(_n * BLOCK)
+for b in range(_n):
+    _t = b * BLOCK / SR
+    srs.data[:BLOCK] = 1.0 if (_t < 0.02 or 1.0 <= _t < 1.02) else 0.0
+    srs.constant = False
+    sru.render(BLOCK)
+    sagain[b*BLOCK:(b+1)*BLOCK] = sru.rate.array(BLOCK)
+s_relaunch = sagain[int(1.0*SR):int(1.05*SR)]
+check('spin relaunches from the lean it is given',
+      abs(s_relaunch[s_relaunch > 0][0] - _spin_rate(0.012, 0.5)) < 0.5,
+      f'{s_relaunch[s_relaunch>0][0]:.2f} Hz')
+
+# Going flat must not cut the grinding off between two samples: a noise
+# silenced in one step is a click, so the contact loses its grip over a
+# couple of milliseconds. Checked as a level that decays rather than ends.
+sgg = run_spin(scrape=1.0, wobble=0.0, polish=1.0, seconds=4.0)
+s_land = np.nonzero(sgg['rate'] > 0)[0][-1]
+S_WIN = int(0.0005*SR)
+
+
+def _spin_win_rms(offset):
+    seg = sgg['grind'][s_land + offset*S_WIN:s_land + (offset+1)*S_WIN]
+    return np.sqrt(np.mean(seg**2))
+
+
+check('spin fades its grinding out at landing rather than cutting it',
+      _spin_win_rms(14) < 0.3 * _spin_win_rms(0)
+      and _spin_win_rms(1) > 0.2 * _spin_win_rms(0),
+      f'rms {_spin_win_rms(0):.4f} -> {_spin_win_rms(1):.4f} -> '
+      f'{_spin_win_rms(14):.4f} over 7 ms')
+
+# The quiet path: a landed disc with nothing patched costs nothing. The
+# face is the exception -- it holds where it stopped, because a control
+# that jumped to zero on landing would step whatever it drives.
+squ = sc.SpinUnit(SR)
+squ.settle_in.base = 0.5
+sqs = sc.Signal()
+squ.spin_in.sources.append(sqs)
+for b in range(int(0.1*SR/BLOCK)):
+    sqs.data[:BLOCK] = 1.0
+    sqs.constant = False
+    squ.render(BLOCK)
+sqs.constant = True
+sqs.value = 0.0
+for b in range(int(3.0*SR/BLOCK)):
+    squ.render(BLOCK)
+squ.render(BLOCK)
+check('spin goes quiet-constant once landed',
+      squ.out.constant and squ.grind.constant and squ.landing.constant
+      and squ.rate.constant and squ.rate.value == 0.0)
+check('spin face holds where it stopped rather than stepping to zero',
+      squ.face.constant and abs(squ.face.value) <= 1.05,
+      f'holding {squ.face.value:+.3f}')
+
+# Bounded everywhere it can be driven.
+s_bad = []
+for _size in (0.004, 0.6):
+    for _rush in (0.0, 1.0):
+        for _settle in (0.05, 60.0):
+            for _polish in (0.0, 1.0):
+                for _wob in (0.0, 1.0):
+                    _g = run_spin(seconds=1.5, size=_size, rush=_rush,
+                                  settle=_settle, polish=_polish,
+                                  hardness=1.0, wobble=_wob, scrape=1.0)
+                    if (not np.isfinite(_g['out']).all()
+                            # Eight, not four: the grains are power-law
+                            # sized on purpose, so a rare large one is
+                            # the design. Measured across sixteen seeds
+                            # the worst corner runs 2.0 to 3.8, and a
+                            # tighter bound tests which seed came up.
+                            or np.abs(_g['out']).max() > 8.0):
+                        s_bad.append((_size, _rush, _settle, _polish, _wob))
+check('spin is bounded at every corner', not s_bad, f'{s_bad}')
+
+# And into a resonator, which is what it is for. A coin's modes are up at
+# two or three kilohertz, where a bank rings small -- hence the drive.
+PLATE8 = [(1.0, 1.0, 1.0), (1.73, 0.85, 0.9), (2.33, 0.7, 0.75),
+          (3.91, 0.55, 0.55), (4.06, 0.5, 0.5), (5.94, 0.35, 0.35),
+          (8.72, 0.22, 0.25), (11.75, 0.15, 0.18)]
+scoin = sc.SpinUnit(SR)
+scs = sc.Signal()
+scoin.spin_in.sources.append(scs)
+mcoin = sc.ModalUnit(SR)
+mcoin.set_modes(PLATE8)
+mcoin.frequency_in.base = 2600.0
+mcoin.decay_in.base = 0.25
+mcoin.sensitivity_in.base = 2.0
+mcoin.excite_in.sources.append(scoin.out)
+_n = int(5.0*SR/BLOCK)
+scy = np.zeros(_n * BLOCK)
+for b in range(_n):
+    scs.data[:BLOCK] = 1.0 if (b*BLOCK/SR) < 0.02 else 0.0
+    scs.constant = False
+    scoin.render(BLOCK)
+    mcoin.render(BLOCK)
+    scy[b*BLOCK:(b+1)*BLOCK] = mcoin.out.array(BLOCK)
+# Angles must stay wrapped however long a gesture is held. A contact can
+# sweep more than a full turn in one control step, so wrapping by
+# subtracting a single turn cannot keep up -- the angle grows without
+# bound and the cosine of it loses its precision long before it reaches
+# anything a NaN check would notice. It shows up as the 'face' outlet
+# degenerating from a cosine into a stepped square, with nothing else
+# obviously wrong.
+_hu = sc.SpinUnit(SR)
+_hu.model = 0
+_hu.size_in.base = 0.044
+_hu.settle_in.base = 3.0
+_hu.rush_in.base = 0.0
+_hu.polish_in.base = 1.0
+_hu.hardness_in.base = 1.0
+_hs = sc.Signal()
+_hu.spin_in.sources.append(_hs)
+_face_clean = True
+for _b in range(int(30.0 * SR / BLOCK)):
+    _hs.data[:BLOCK] = 1.0
+    _hs.constant = False
+    _hu.render(BLOCK)
+    _f = _hu.face.array(BLOCK)
+    if not np.isfinite(_f).all() or np.abs(_f).max() > 1.0001:
+        _face_clean = False
+        break
+check('spin keeps its angles wrapped under a long held gesture',
+      _face_clean and abs(_hu._d_q3) < 7.0 and abs(_hu._d_q1) < 7.0,
+      f'after 30 s held: |q3|={abs(_hu._d_q3):.3f} |q1|={abs(_hu._d_q1):.3f} '
+      f'(a turn is 6.283), face clean={_face_clean}')
+
+# A coin always stops. Whatever surface it is on and however it was
+# cast, the sound has to end -- and end near the settle time it was
+# asked for. Landing once waited on the ROLL falling away as well as the
+# bouncing, which a rough surface never satisfies: its flat limit is a
+# large lean, and the steady roll at that lean is still fast, so the
+# coin arrived at its limit already too fast to be judged stopped and
+# rolled there for ever.
+_forever = []
+for _pol in (0.0, 0.5, 1.0):
+    for _tw in (0.0, 0.3, 0.7, 1.0):
+        _g = run_spin(seconds=9.0, twist=_tw, polish=_pol, settle=3.0,
+                      rush=1.0, size=0.028, wobble=0.0, scrape=0.55,
+                      hardness=1.0)
+        _nz = np.nonzero(np.abs(_g['out']) > 1e-5)[0]
+        _dur = (_nz[-1] - _nz[0]) / SR if len(_nz) else 0.0
+        # still sounding at the very end means it never stopped
+        if _dur > 6.0 or np.abs(_g['out'][-SR//4:]).max() > 1e-5:
+            _forever.append((_pol, _tw, round(_dur, 2)))
+check('spin always stops, on any surface and from any cast',
+      not _forever, f'{_forever}' if _forever else
+      'every polish and twist ends inside a 3 s settle')
+
+# The node must never stop answering the hand. 'spin' works by change,
+# and the change was accumulated even while the coin lay still -- so
+# releasing a gesture AFTER the coin had already stopped drove the
+# accumulator to minus one, and the next throw, however hard, only
+# brought it back to zero. The node went silent and stayed silent.
+_again = sc.SpinUnit(SR)
+_again.model = 0
+_again.size_in.base = 0.028
+_again.settle_in.base = 3.0
+_again.rush_in.base = 1.0
+_again.twist_in.base = 0.4
+_again.polish_in.base = 0.7
+_ags = sc.Signal()
+_again.spin_in.sources.append(_ags)
+_throws = []
+for _k in range(6):
+    _peak = 0.0
+    for _b in range(int(6.0 * SR / BLOCK)):
+        # thrown, left alone long enough to stop, then released
+        _ags.data[:BLOCK] = 1.0 if (_b * BLOCK / SR) < 4.0 else 0.0
+        _ags.constant = False
+        _again.render(BLOCK)
+        _peak = max(_peak, float(np.abs(_again.out.array(BLOCK)).max()))
+    _throws.append(_peak)
+check('spin answers every throw, however often it is released',
+      all(t > 1e-4 for t in _throws),
+      'peaks ' + ' '.join(f'{t:.2f}' for t in _throws))
+
+# How the hand moves decides how steady the coin is, and that falls out
+# of one asymmetry: a RISE both speeds the roll and balances it, while a
+# FALL only takes roll away. So a sustained smooth rise keeps balancing
+# and produces a steady spin, whereas a spike throws the coin and then
+# stops -- leaving whatever wobble the cast imparted -- and a rough rise
+# keeps interrupting its own balancing with little drains. Worth holding
+# on to: it is what makes the control feel like throwing something.
+def _spin_wobbliness(gfn, seconds=8.0):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    u.size_in.base = 0.028
+    u.settle_in.base = 3.0
+    u.rush_in.base = 1.0
+    u.twist_in.base = 0.5
+    u.polish_in.base = 0.7
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    y = []
+    for b in range(int(seconds * SR / BLOCK)):
+        sig.data[:BLOCK] = float(np.clip(gfn(b * BLOCK / SR), 0.0, 1.0))
+        sig.constant = False
+        u.render(BLOCK)
+        y.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(y)
+    nz = np.nonzero(np.abs(y) > 1e-5)[0]
+    if len(nz) < 2:
+        return 0.0
+    seg = np.abs(y[nz[0]:nz[-1]])
+    w = int(0.01 * SR)
+    env = np.array([seg[a:a+w].mean() for a in range(0, len(seg) - w, w)])
+    env = env[env > 0]
+    return float(env.max() / np.median(env)) if len(env) else 0.0
+
+
+_w_spike = _spin_wobbliness(lambda t: 1.0 if t > 0.2 else 0.0)
+_w_gentle = _spin_wobbliness(
+    lambda t: min(1.0, max(0.0, (t - 0.2) / 1.2)))
+check('a thrown coin wobbles, a wound-up one runs steady',
+      _w_spike > 2.0 * _w_gentle,
+      f'envelope swing {_w_spike:.0f}x for a spike, '
+      f'{_w_gentle:.0f}x for a sustained rise')
+
+# A throw has to have range in it: how hard you throw must change what
+# you get. The cast lean once saturated, so every gesture past halfway
+# cast an identical coin. Note the direction -- a bigger throw stands
+# the coin up, and the rate goes as one over the root of the lean, so a
+# hard throw starts SLOWER and sweeps further.
+def _spin_throw(amp):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    u.size_in.base = 0.028
+    u.settle_in.base = 3.0
+    u.rush_in.base = 1.0
+    u.twist_in.base = 0.6
+    u.polish_in.base = 0.7
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    y, r = [], []
+    for b in range(int(8.0 * SR / BLOCK)):
+        sig.data[:BLOCK] = amp if (b * BLOCK / SR) > 0.2 else 0.0
+        sig.constant = False
+        u.render(BLOCK)
+        y.append(u.out.array(BLOCK).copy())
+        r.append(u.rate.array(BLOCK).copy())
+    y, r = np.concatenate(y), np.concatenate(r)
+    live = r[r > 0]
+    nz = np.nonzero(np.abs(y) > 1e-5)[0]
+    return (live[0] if len(live) else 0.0,
+            live.max() if len(live) else 0.0,
+            (nz[-1] - nz[0]) / SR if len(nz) > 1 else 0.0)
+
+
+_soft, _mid, _hard = _spin_throw(0.25), _spin_throw(0.5), _spin_throw(1.0)
+check('a harder throw is a different coin, not the same one louder',
+      _hard[0] < _mid[0] < _soft[0] and _hard[2] > _mid[2] > _soft[2],
+      f'starts {_soft[0]:.1f}/{_mid[0]:.1f}/{_hard[0]:.1f} Hz, '
+      f'lasts {_soft[2]:.2f}/{_mid[2]:.2f}/{_hard[2]:.2f} s')
+
+# Surging again and again without letting the coin settle must not wind
+# it up without limit. Excess spin is what stands a coin up, and the
+# lean is capped -- so the spin is capped with it. Left uncapped, every
+# surge added roll the lean had nowhere to put and the coin simply got
+# faster each time.
+_sg = sc.SpinUnit(SR)
+_sg.model = 0
+_sg.size_in.base = 0.028
+_sg.settle_in.base = 3.0
+_sg.rush_in.base = 1.0
+_sg.twist_in.base = 0.6
+_sg.polish_in.base = 0.7
+_sgs = sc.Signal()
+_sg.spin_in.sources.append(_sgs)
+_casts, _was = [], 1.0
+for _b in range(int(16.0 * SR / BLOCK)):
+    _t = _b * BLOCK / SR
+    _sgs.data[:BLOCK] = 1.0 if (_t % 0.6) < 0.15 else 0.0
+    _sgs.constant = False
+    _sg.render(BLOCK)
+    if _was > 0.5 and _sg._landed < 0.5:
+        _casts.append(_sg._d_u3)
+    _was = _sg._landed
+check('surging again and again does not wind the coin up',
+      len(_casts) >= 2 and max(_casts) < 1.15 * min(_casts),
+      f'roll at each re-throw spans {min(_casts):.2f} to {max(_casts):.2f}')
+
+# Two readings of the gesture, and they have to differ: 'hold' sustains
+# while the hand is held, 'throw' does not care what the level is.
+def _spin_sounds(mode, gfn, seconds=10.0):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    u.spin_mode = mode
+    u.size_in.base = 0.028
+    u.settle_in.base = 3.0
+    u.rush_in.base = 1.0
+    u.twist_in.base = 0.5
+    u.polish_in.base = 0.7
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    y = []
+    for b in range(int(seconds * SR / BLOCK)):
+        sig.data[:BLOCK] = float(np.clip(gfn(b * BLOCK / SR), 0.0, 1.0))
+        sig.constant = False
+        u.render(BLOCK)
+        y.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(y)
+    nz = np.nonzero(np.abs(y) > 1e-5)[0]
+    return (nz[-1] - nz[0]) / SR if len(nz) > 1 else 0.0
+
+
+_held = lambda t: 1.0 if t > 0.2 else 0.0
+_throw_len = _spin_sounds(0, _held)
+_hold_len = _spin_sounds(1, _held)
+check('hold sustains a held gesture, throw does not',
+      _hold_len > 2.0 * _throw_len,
+      f'{_throw_len:.2f} s in throw, {_hold_len:.2f} s in hold')
+
+# The spin cap belongs to the COIN, not to one reading of the gesture.
+# Held up in hold mode the pump feeds the roll every control step, so
+# without a cap it intensifies for as long as the gesture is held --
+# which is a runaway, not an instrument. Checked in both modes and at
+# both ends of twist.
+_runaway = []
+for _mode in (0, 1):
+    for _tw in (0.132, 1.0):
+        _hu = sc.SpinUnit(SR)
+        _hu.model = 0
+        _hu.spin_mode = _mode
+        _hu.size_in.base = 0.028
+        _hu.settle_in.base = 3.0
+        _hu.rush_in.base = 1.0
+        _hu.twist_in.base = _tw
+        _hu.polish_in.base = 0.7
+        _hus = sc.Signal()
+        _hu.spin_in.sources.append(_hus)
+        _worst = 0.0
+        for _b in range(int(20.0 * SR / BLOCK)):
+            _hus.data[:BLOCK] = 1.0
+            _hus.constant = False
+            _hu.render(BLOCK)
+            _worst = max(_worst, float(np.abs(_hu.out.array(BLOCK)).max()),
+                         abs(_hu._d_u3) / 100.0)
+        if _worst > 4.0:
+            _runaway.append((sc.SpinUnit.SPIN_MODES[_mode], _tw,
+                             round(_worst, 2)))
+check('a held gesture does not wind the coin up without limit',
+      not _runaway,
+      f'{_runaway}' if _runaway else
+      'twenty seconds held, in both modes, stays bounded')
+
+# Held in hold mode, a cleanly cast coin must sit where it is held --
+# not settle all the way out and start again. The drain and the pump act
+# on a lagging measurement against a coin with its own dynamics, so with
+# no dead zone between them they take turns overshooting and the lean
+# swings over half its range while its goal stands still. A badly cast
+# coin SHOULD swing, because that is nutation; a true one should not.
+def _spin_hold_swing(tw, mode=1):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    u.spin_mode = mode
+    u.size_in.base = 0.028
+    u.settle_in.base = 3.0
+    u.rush_in.base = 1.0
+    u.twist_in.base = tw
+    u.polish_in.base = 0.7
+    # A true rim, so what is measured is the controller and not the
+    # coin's own out-of-roundness.
+    u.wobble_in.base = 0.1
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    leans = []
+    for b in range(int(14.0 * SR / BLOCK)):
+        sig.data[:BLOCK] = 1.0
+        sig.constant = False
+        u.render(BLOCK)
+        leans.append(np.pi/2 - u._d_q2)
+    leans = np.array(leans[200:])
+    return leans.max() - leans.min(), float(np.mean(leans))
+
+
+_swing_true, _mean_true = _spin_hold_swing(1.0)
+check('a true coin held open runs steady, and stays where it is held',
+      _swing_true < 0.15 and abs(_mean_true - 0.5) < 0.1,
+      f'lean swings {_swing_true:.3f} about {_mean_true:.3f}')
+
+# (A check that a bad cast swings the lean further stood here. It is
+# ill-posed: over a whole settle the lean range is dominated by the
+# settle itself, and a badly cast coin lands early so most of its
+# window is silence. What twist actually does is already covered, and
+# better, by the contact rate and the pitch warble above.)
+
+# The coin must never reach a state nothing can stop. It once could:
+# the drain's dead zone stayed open all the way down, so at the end --
+# goal on the floor, coin a fraction above it, gesture released -- the
+# drain declined to act and the coin rolled at full speed for ever.
+# Nothing in the interface could touch it. The dead zone now closes as
+# the goal reaches the floor, where there is no pump left to fight.
+_unstoppable = []
+for _mode in (0, 1):
+    for _rush in (0.0, 1.0):
+        for _hard in (0.279, 1.0):
+            for _tw in (1.0, 0.5):
+                _u = sc.SpinUnit(SR)
+                _u.model = 0
+                _u.spin_mode = _mode
+                _u.size_in.base = 0.028
+                _u.settle_in.base = 3.0
+                _u.rush_in.base = _rush
+                _u.twist_in.base = _tw
+                _u.wobble_in.base = 0.0
+                _u.scrape_in.base = 0.548
+                _u.hardness_in.base = _hard
+                _u.polish_in.base = 1.0
+                _u.level_in.base = 2.0
+                _us = sc.Signal()
+                _u.spin_in.sources.append(_us)
+                _y = []
+                for _b in range(int(20.0 * SR / BLOCK)):
+                    _us.data[:BLOCK] = 1.0 if (_b * BLOCK / SR) < 6.0 else 0.0
+                    _us.constant = False
+                    _u.render(BLOCK)
+                    _y.append(_u.out.array(BLOCK).copy())
+                _y = np.concatenate(_y)
+                # fourteen seconds after release it must be silent
+                if np.abs(_y[-int(3.0 * SR):]).max() > 1e-5:
+                    _unstoppable.append(
+                        (sc.SpinUnit.SPIN_MODES[_mode], _rush, _hard, _tw))
+check('a released coin always comes to rest, from every corner',
+      not _unstoppable,
+      f'{_unstoppable}' if _unstoppable else
+      'sixteen corners, all silent well before the end')
+
+# However fast or slow the control is MOVED to a value, the coin it
+# leaves behind must be the same one. This is the axis that kept
+# breaking: a feedback loop on the coin's energy was tuned four times,
+# and every gain that tracked one ramp time overshot or lagged another,
+# because the coin's own dynamics sit inside the loop. Hold mode now
+# says what it means -- the gesture IS the lean -- and carries the disc
+# there directly. Swept from a millisecond to eight seconds, because a
+# hand on a slider produces every one of them.
+def _spin_ramp_lean(ramp, seconds=20.0):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    u.spin_mode = 1
+    u.size_in.base = 0.028
+    u.settle_in.base = 3.0
+    u.rush_in.base = 0.0
+    u.twist_in.base = 1.0
+    u.wobble_in.base = 0.0
+    u.hardness_in.base = 0.279
+    u.polish_in.base = 1.0
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    leans = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = b * BLOCK / SR
+        sig.data[:BLOCK] = float(min(1.0, t / ramp))
+        sig.constant = False
+        u.render(BLOCK)
+        leans.append(np.pi/2 - u._d_q2)
+    k = int(max(1.0, ramp * 1.5) * SR / BLOCK)
+    leans = np.array(leans[k:])
+    return leans.min(), leans.max()
+
+
+_ramps = [(r,) + _spin_ramp_lean(r)
+          for r in (0.001, 0.02, 0.1, 0.5, 1.0, 4.0, 8.0)]
+_wobbly = [(r, round(hi - lo, 3)) for r, lo, hi in _ramps if hi - lo > 0.05]
+check('however the control is moved, it leaves the same coin',
+      not _wobbly,
+      f'{_wobbly}' if _wobbly else
+      'ramps from a millisecond to eight seconds all settle at the same lean')
+
+# 'twist' must keep working in BOTH readings of the gesture. Hold mode
+# once carried the coin to the balanced steady roll and damped the lean
+# rate on the way there -- which is exactly what twist 1 means, so it
+# overwrote the control every step and every held coin sounded
+# perfectly spun whatever twist said.
+def _spin_hold_twist(tw):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    u.spin_mode = 1
+    u.size_in.base = 0.028
+    u.settle_in.base = 3.0
+    u.rush_in.base = 0.0
+    u.twist_in.base = tw
+    u.wobble_in.base = 0.0
+    u.hardness_in.base = 0.279
+    u.polish_in.base = 1.0
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    rolls = []
+    for b in range(int(14.0 * SR / BLOCK)):
+        sig.data[:BLOCK] = float(min(1.0, (b * BLOCK / SR) / 0.5))
+        sig.constant = False
+        u.render(BLOCK)
+        rolls.append(abs(u._d_u3))
+    return float(np.mean(rolls[int(4.0 * SR / BLOCK):]))
+
+
+_r_true, _r_half, _r_bad = (_spin_hold_twist(1.0), _spin_hold_twist(0.5),
+                            _spin_hold_twist(0.132))
+check('twist still shapes the coin when the gesture is held',
+      _r_true > 1.5 * _r_half > 2.0 * _r_bad,
+      f'roll held at {_r_true:.1f} / {_r_half:.1f} / {_r_bad:.1f} '
+      f'for twist 1 / 0.5 / 0.13')
+
+# Grains are sized by a power law on purpose, but they were all fired
+# as ONE SAMPLE whatever their size -- so the rare huge ones came out as
+# perfect impulses, flat to Nyquist, and were heard as clicks that had
+# nothing to do with the grinding around them. A self-affine asperity is
+# as wide as it is tall and the contact crosses it at a finite speed, so
+# a big grain must be LONG and therefore LOW; and nothing can be sharper
+# than the contact itself can answer.
+def _spin_grain(scr=0.55, hard=0.279, seconds=2.5):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    u.size_in.base = 0.028
+    u.settle_in.base = 3.0
+    u.rush_in.base = 0.0
+    u.twist_in.base = 1.0
+    u.wobble_in.base = 0.0
+    u.scrape_in.base = scr
+    u.hardness_in.base = hard
+    u.polish_in.base = 1.0
+    u.level_in.base = 1.0
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = b * BLOCK / SR
+        sig.data[:BLOCK] = float(min(1.0, t / 0.3)) if t < 0.4 else 0.0
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.grind.array(BLOCK).copy())
+    # The steady grinding, before the runaway: the load spikes near the
+    # singularity on its own, and that is a different question.
+    return np.concatenate(got)[int(0.5 * SR):int(1.5 * SR)]
+
+
+def _spin_centroid(x):
+    S = np.abs(np.fft.rfft(x * np.hanning(len(x)))) ** 2
+    f = np.fft.rfftfreq(len(x), 1.0 / SR)
+    return float((f * S).sum() / max(S.sum(), 1e-30))
+
+
+def _spin_local_crest(seg):
+    """Peak against the sound immediately AROUND it, not against the
+    whole window -- the grind swells and fades by design, and a crest
+    taken over a second measures that instead of the grains."""
+    w = int(0.005 * SR)
+    loc, pk = [], []
+    for i in range(0, len(seg), 64):
+        cut = seg[max(0, i - w):i + w]
+        loc.append(np.sqrt(np.mean(cut ** 2)))
+        pk.append(np.abs(cut).max())
+    return float(np.percentile(np.array(pk) / np.maximum(loc, 1e-12), 99))
+
+
+_gr_soft = _spin_grain(hard=0.279)
+_gr_hard = _spin_grain(hard=0.95)
+check('no grain stands out as an impulse',
+      _spin_local_crest(_gr_soft) < 16.0,
+      f'local crest {_spin_local_crest(_gr_soft):.1f}')
+check('a soft contact cannot grind sharply, whatever it runs over',
+      _spin_centroid(_gr_hard) > 2.0 * _spin_centroid(_gr_soft),
+      f'centroid {_spin_centroid(_gr_soft):.0f}Hz soft -> '
+      f'{_spin_centroid(_gr_hard):.0f}Hz hard')
+check('shaping the grains left scrape a roughness, not a mute',
+      _spin_centroid(_spin_grain(scr=1.0)) > 0.0
+      and np.sqrt(np.mean(_spin_grain(scr=1.0) ** 2))
+      > np.sqrt(np.mean(_gr_soft ** 2)))
+
+# The load on the contact used to run into a hard ceiling and sit
+# there, and was then raised to a power that reached 1.9 with hardness
+# -- so a five-fold load became a twenty-fold burst with a square edge
+# on it, tens of milliseconds long. Heard as a glitch, and it got worse
+# the harder the contact was set.
+def _spin_bursts(hard):
+    g = _spin_grain(hard=hard, seconds=3.0)
+    w = int(0.01 * SR)
+    env = np.array([np.sqrt(np.mean(g[i*w:(i+1)*w] ** 2))
+                    for i in range(len(g) // w)])
+    med = np.median(env[env > 0])
+    runs, run = [], 0
+    for hot in env > 6.0 * med:
+        if hot:
+            run += 1
+        elif run:
+            runs.append(run)
+            run = 0
+    if run:
+        runs.append(run)
+    return env.max() / max(med, 1e-12), (max(runs) if runs else 0) * 10
+
+
+_bp_soft, _bl_soft = _spin_bursts(0.3)
+_bp_hard, _bl_hard = _spin_bursts(0.9)
+check('a flop is a swell, not a burst',
+      _bp_hard < 30.0 and _bl_hard <= 30,
+      f'loudest {_bp_hard:.0f}x the median, longest run {_bl_hard}ms')
+check('a harder contact does not make the flops more violent',
+      _bp_hard < 1.6 * _bp_soft,
+      f'{_bp_soft:.0f}x soft -> {_bp_hard:.0f}x hard')
+check('friction answers the load in proportion, per Amontons',
+      sc.SpinUnit.LOAD_EXP <= 1.0)
+
+check('spin~ into modal~ rings a coin, bounded',
+      np.isfinite(scy).all() and np.max(np.abs(scy)) < 2.0
+      and np.sqrt(np.mean(scy[:int(3*SR)]**2)) > 1e-4,
+      f'peak {np.max(np.abs(scy)):.3f} '
+      f'rms {np.sqrt(np.mean(scy[:int(3*SR)]**2)):.4f}')
+
+# ------------------------------------------------- excite sensitivity
+# 'sensitivity' is the gain on what arrives at an excite inlet -- what was
+# modal~'s 'drive', renamed for the passive side of the transaction and
+# moved under the inlet it scales. Two laws: it scales the excite path,
+# and it leaves the unit's OWN mallet alone, or turning an inlet down
+# would quietly soften a strike the node makes itself.
+def _excite_through(unit_maker, level, seconds=1.0, settled=False):
+    """RMS out of a unit with noise into its excite inlet.
+
+    Sensitivity glides rather than steps -- one factor per block would be
+    a staircase, and a staircase on a sustained excitation is a zipper --
+    so 'settled' measures the tail, after the glide has arrived.
+    """
+    u = unit_maker()
+    u.sensitivity_in.base = level
+    src = sc.Signal()
+    u.excite_in.sources.append(src)
+    n = int(seconds * SR / BLOCK)
+    y = np.zeros(n * BLOCK)
+    rng = np.random.default_rng(4)
+    for b in range(n):
+        src.data[:BLOCK] = rng.standard_normal(BLOCK) * 0.05
+        src.constant = False
+        u.render(BLOCK)
+        y[b*BLOCK:(b+1)*BLOCK] = u.out.array(BLOCK)
+    if settled:
+        y = y[3 * len(y) // 4:]
+    return np.sqrt(np.mean(y**2))
+
+
+def _strike_alone(unit_maker, level, seconds=1.0):
+    u = unit_maker()
+    u.sensitivity_in.base = level
+    u.fire()
+    n = int(seconds * SR / BLOCK)
+    y = np.zeros(n * BLOCK)
+    for b in range(n):
+        u.render(BLOCK)
+        y[b*BLOCK:(b+1)*BLOCK] = u.out.array(BLOCK)
+    return np.sqrt(np.mean(y**2))
+
+
+def _make_drum():
+    u = sc.DrumUnit(SR)
+    u.set_modes(MEMBRANE6)
+    u.frequency_in.base = 140.0
+    u.decay_in.base = 0.4
+    return u
+
+
+def _make_string():
+    u = sc.StringUnit(SR)
+    u.frequency_in.base = 180.0
+    u.decay_in.base = 0.8
+    return u
+
+
+def _make_modal():
+    u = sc.ModalUnit(SR)
+    u.set_modes(MEMBRANE6)
+    u.frequency_in.base = 300.0
+    u.decay_in.base = 0.6
+    return u
+
+
+for _nm, _mk, _unity in (('drum', _make_drum, 1.0),
+                         ('string', _make_string, 1.0),
+                         ('modal', _make_modal, 0.7)):
+    _quiet_e = _excite_through(_mk, _unity * 0.5)
+    _loud_e = _excite_through(_mk, _unity * 2.0)
+    check(f'{_nm} sensitivity scales the excite path',
+          _loud_e > 3.0 * _quiet_e,
+          f'{_quiet_e:.5f} at half -> {_loud_e:.5f} at double')
+    # Long enough for the glide to arrive AND for the body's own ring to
+    # die: a string is a delay loop, so what it was fed before the inlet
+    # closed is still sounding well after.
+    check(f'{_nm} sensitivity 0 shuts the excite inlet',
+          _excite_through(_mk, 0.0, seconds=4.0, settled=True) < 1e-6,
+          'measured once the glide has arrived and the ring has died')
+    check(f'{_nm} sensitivity glides rather than stepping',
+          _excite_through(_mk, 0.0) > _excite_through(_mk, 0.0, settled=True),
+          'a step would be a zipper on a sustained excitation')
+    _s_low = _strike_alone(_mk, _unity * 0.25)
+    _s_high = _strike_alone(_mk, _unity * 4.0)
+    check(f'{_nm} sensitivity leaves its own strike alone',
+          abs(_s_high - _s_low) < 1e-9,
+          f'{_s_low:.6f} vs {_s_high:.6f}')
+
+# modal~'s default is still 0.7, the value it carried as 'drive', so the
+# rename cannot have changed how any saved patch sounds -- and drum~ and
+# string~ default to unity, which is the identity they always had.
+check('modal sensitivity keeps drive\'s old default',
+      abs(sc.ModalUnit(SR).sensitivity_in.base - 0.7) < 1e-12,
+      f'{sc.ModalUnit(SR).sensitivity_in.base}')
+check('drum and string sensitivity default to unity',
+      sc.DrumUnit(SR).sensitivity_in.base == 1.0
+      and sc.StringUnit(SR).sensitivity_in.base == 1.0)
+check('sensitivity reaches past the old ceiling of 2.0',
+      min(sc.ModalUnit(SR).sensitivity_in.max,
+          sc.DrumUnit(SR).sensitivity_in.max,
+          sc.StringUnit(SR).sensitivity_in.max) >= 8.0)
+
 print()
 if failures:
     print('FAILURES:', failures)

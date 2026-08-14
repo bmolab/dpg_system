@@ -5918,6 +5918,10 @@ class StringUnit(Unit):
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
         self.excite_in = self.new_inlet()
+        # How keenly the string hears what is patched in. Unity by
+        # default, so a string that never had this sounds as it did.
+        self.sensitivity_in = self.new_inlet(base=1.0, minimum=0.0,
+                                             maximum=8.0)
         self.trigger_in = self.new_inlet()
         self.frequency_in = self.new_inlet(base=220.0,
                                            minimum=StringUnit.MIN_FREQUENCY)
@@ -5976,6 +5980,8 @@ class StringUnit(Unit):
 
         self.out = self.new_outlet()
         self._exc = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._sense_glide = 1.0
+        self._sense_ramp = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._freq = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._delay = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._gain = np.zeros(MAX_BLOCK, dtype=np.float64)
@@ -6059,11 +6065,40 @@ class StringUnit(Unit):
             return
 
         exc = self._exc[:frames]
+        # Sensitivity scales what ARRIVES, applied before the unit's own
+        # mallet is written into the same buffer -- turning the inlet down
+        # must not soften a strike the node makes itself. A knob move
+        # glides across the block rather than stepping at its edge: one
+        # factor per block is a staircase, and a staircase on a sustained
+        # excitation is a zipper.
+        sense = self.sensitivity_in.eval(frames)
         if signal.constant:
             exc[:] = signal.value
             silent_input = signal.value == 0.0
         else:
             np.copyto(exc, signal.data[:frames])
+            silent_input = False
+        if sense.constant:
+            target = min(8.0, max(0.0, sense.value))
+            start = self._sense_glide
+            landing = start + (target - start) * 0.35
+            self._sense_glide = landing
+            if start == landing:
+                if landing != 1.0:
+                    exc *= landing
+                silent_input = silent_input or landing == 0.0
+            else:
+                ramp = self._sense_ramp[:frames]
+                np.multiply(_INDEX_RAMP[:frames],
+                            (landing - start) / frames, out=ramp)
+                ramp += start
+                exc *= ramp
+                silent_input = False
+        else:
+            np.clip(sense.data[:frames], 0.0, 8.0,
+                    out=self._sense_ramp[:frames])
+            exc *= self._sense_ramp[:frames]
+            self._sense_glide = float(self._sense_ramp[frames - 1])
             silent_input = False
 
         events, self._trigger_armed = _excitation_events(
@@ -6187,14 +6222,16 @@ class ModalUnit(Unit):
     The two ways in are normalized differently, because they mean different
     things. The trigger is a mallet: impulse-normalized, so every mode rings
     up to its table weight wherever it sits in frequency, and a strike
-    sounds the same at any decay. The audio inlet is a drive, normalized by
-    sqrt(1-r): bowing is heard the moment it touches, swells while it is
-    held, and a drive parked on a mode settles against the soft stop on the
-    mode states instead of being multiplied out to the mode's Q -- which at
-    a three-second decay would be thousands. The price is that a click
-    patched into the audio inlet rings only faintly; strikes belong to the
-    trigger, which carries velocity anyway. Modes driven past Nyquist are
-    muted rather than folded.
+    sounds the same at any decay. The excite inlet is heard rather than
+    struck, normalized by sqrt(1-r): bowing speaks the moment it touches,
+    swells while it is held, and an excitation parked on a mode settles
+    against the soft stop on the mode states instead of being multiplied
+    out to the mode's Q -- which at a three-second decay would be
+    thousands. 'sensitivity' is how keenly that inlet is heard, and it sits
+    directly beneath it. The price of the normalization is that a click
+    patched in rings only faintly; strikes belong to the trigger, which
+    carries velocity anyway. Modes excited past Nyquist are muted rather
+    than folded.
 
     'dry' passes the audio input straight through alongside the ring, and it
     is what separates the unit's two lives. At 0 (the default) the bank IS
@@ -6208,10 +6245,12 @@ class ModalUnit(Unit):
     """
 
     MAX_MODES = 24
-    # Default level of the audio-drive path against the sqrt(1-r)
-    # normalization: how hard bowing and driving speak, before the state
-    # soft-stop has its say. The 'drive' inlet scales from here.
-    DRIVE_GAIN = 0.7
+    # Default level of the excite path against the sqrt(1-r)
+    # normalization: how keenly the body hears what is patched in, before
+    # the state soft-stop has its say. 'sensitivity' scales from here, and
+    # 0.7 is kept as the default so that every patch saved when this was
+    # called 'drive' sounds exactly as it did.
+    SENSE_GAIN = 0.7
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
@@ -6223,8 +6262,11 @@ class ModalUnit(Unit):
         self.brightness_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.hardness_in = self.new_inlet(base=0.5, minimum=0.0, maximum=1.0)
         self.position_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
-        self.drive_in = self.new_inlet(base=ModalUnit.DRIVE_GAIN,
-                                       minimum=0.0, maximum=2.0)
+        # Reaches well past unity: a mode bank up in the kilohertz rings
+        # small, and a sparse excitation into it needs real gain. The old
+        # ceiling of 2.0 was not enough to balance one against another.
+        self.sensitivity_in = self.new_inlet(base=ModalUnit.SENSE_GAIN,
+                                             minimum=0.0, maximum=8.0)
         self.dry_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
         self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
 
@@ -6242,7 +6284,7 @@ class ModalUnit(Unit):
         self._gains_live = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._live_count = 0
         self._coef_key = None
-        self._level_live = ModalUnit.DRIVE_GAIN
+        self._level_live = ModalUnit.SENSE_GAIN
         self._drive_gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._fm = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._theta = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
@@ -6331,7 +6373,7 @@ class ModalUnit(Unit):
         brightness = self.brightness_in.eval(frames)
         hardness = self.hardness_in.eval(frames)
         position = self.position_in.eval(frames)
-        drive_level = self.drive_in.eval(frames)
+        sense_level = self.sensitivity_in.eval(frames)
         dry = self.dry_in.eval(frames)
         out_level = self.level_in.eval(frames)
 
@@ -6496,8 +6538,8 @@ class ModalUnit(Unit):
         # difference -- the drive is heard the moment it arrives, grows as
         # it is held, and what would have grown past bounds is taken by the
         # soft stop on the mode states in the kernel.
-        level = (drive_level.value if drive_level.constant
-                 else float(drive_level.data[0]))
+        level = (sense_level.value if sense_level.constant
+                 else float(sense_level.data[0]))
         level = min(2.0, max(0.0, level))
         self._level_live += (level - self._level_live) * 0.35
         drive = self._drive_gains[:count]
@@ -8109,6 +8151,17 @@ class ShakerUnit(Unit):
         # half of all states. It must go home as the unsigned it is.
         self._rng = np.uint64(rng_state)
 
+        if not self._state_is_sane():
+            # Something stepped over the singularity. Put the coin
+            # down, silence this block, and carry on -- a voice that
+            # cannot recover from one bad block is worse than one
+            # that drops a block.
+            self.reset()
+            for signal in (out, grind_out, strike_out, rate_out,
+                       face_out):
+                signal.set_constant(0.0)
+            return
+
         self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False
@@ -8865,6 +8918,10 @@ class DrumUnit(Unit):
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
         self.excite_in = self.new_inlet()
+        # How keenly the head hears what is patched in. Unity by default,
+        # so a drum that never had this control sounds exactly as it did.
+        self.sensitivity_in = self.new_inlet(base=1.0, minimum=0.0,
+                                             maximum=8.0)
         self.trigger_in = self.new_inlet()
         self.frequency_in = self.new_inlet(base=120.0, minimum=20.0)
         self.pitch_in = self.new_inlet()
@@ -8916,6 +8973,8 @@ class DrumUnit(Unit):
 
         self.out = self.new_outlet()
         self._exc = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._sense_glide = 1.0
+        self._sense_ramp = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
 
@@ -8986,11 +9045,40 @@ class DrumUnit(Unit):
             return
 
         exc = self._exc[:frames]
+        # Sensitivity scales what ARRIVES, applied before the unit's own
+        # mallet is written into the same buffer -- turning the inlet down
+        # must not soften a strike the node makes itself. A knob move
+        # glides across the block rather than stepping at its edge: one
+        # factor per block is a staircase, and a staircase on a sustained
+        # excitation is a zipper.
+        sense = self.sensitivity_in.eval(frames)
         if signal.constant:
             exc[:] = signal.value
             silent_input = signal.value == 0.0
         else:
             np.copyto(exc, signal.data[:frames])
+            silent_input = False
+        if sense.constant:
+            target = min(8.0, max(0.0, sense.value))
+            start = self._sense_glide
+            landing = start + (target - start) * 0.35
+            self._sense_glide = landing
+            if start == landing:
+                if landing != 1.0:
+                    exc *= landing
+                silent_input = silent_input or landing == 0.0
+            else:
+                ramp = self._sense_ramp[:frames]
+                np.multiply(_INDEX_RAMP[:frames],
+                            (landing - start) / frames, out=ramp)
+                ramp += start
+                exc *= ramp
+                silent_input = False
+        else:
+            np.clip(sense.data[:frames], 0.0, 8.0,
+                    out=self._sense_ramp[:frames])
+            exc *= self._sense_ramp[:frames]
+            self._sense_glide = float(self._sense_ramp[frames - 1])
             silent_input = False
 
         events, self._trigger_armed = _excitation_events(
@@ -10684,6 +10772,1808 @@ class StrokeUnit(Unit):
             tick.constant = False
         else:
             tick.set_constant(0.0)
+
+
+def _disc_deriv_source(q2, q3, u1, u2, u3, radius, half_thick,
+                       out_of_round, grav, cos_floor, u_cap):
+    """The rolling coin's equations of motion. Derived, not devised.
+
+    Kane's method on a uniform CYLINDER rolling without slipping on a
+    plane. A knife-edge disc puts its centre of mass one radius from the
+    contact, straight up the lean; a real coin's contact sits on the
+    edge where the rim meets the lower face, so the centre is a radius
+    away radially AND half a thickness along the symmetry axis. That one
+    term is the whole difference, and it keeps the centre of mass from
+    descending to nothing when the coin goes flat.
+
+    The mass cancels, as it must for a rigid body falling under gravity,
+    and so do the yaw and the spin angle -- only the lean matters,
+    because the coin is symmetric and the table is uniform.
+
+    Derived in dpg_system/tests/disc_reference.py and checked against it
+    over five hundred random states, worst relative difference two parts
+    in a hundred million million. With the thickness set to zero it
+    reproduces the knife-edge disc exactly, which is checked there too.
+
+    Clamped HERE rather than only on the finished step: RK4 evaluates
+    this four times per step at states it invents along the way, and
+    near the singularity those can run far past anything the coin
+    reaches -- far enough to overflow, after which infinity minus
+    infinity is a NaN that never leaves.
+    """
+    c = math.cos(q2)
+    if c < cos_floor:
+        c = cos_floor
+    elif c > 1.0:
+        c = 1.0
+    if u3 > u_cap:
+        u3 = u_cap
+    elif u3 < -u_cap:
+        u3 = -u_cap
+    if u1 > u_cap:
+        u1 = u_cap
+    elif u1 < -u_cap:
+        u1 = -u_cap
+    if u2 > u_cap:
+        u2 = u_cap
+    elif u2 < -u_cap:
+        u2 = -u_cap
+    # A real coin's rim is not a circle, and that is geometry rather
+    # than a coefficient: the distance from the centre to the contact
+    # varies with where around the rim the contact currently sits.
+    r = radius * (1.0 + out_of_round * math.cos(q3))
+    th = half_thick
+    s = math.sin(q2)
+    t1 = u3 * s / c
+    t2 = -t1 + u2
+    t3 = r * r
+    t4 = 0.25 * t3
+    t5 = th * th
+    t8 = t4 * u3
+    t9 = u1 * u1
+    t10 = th * u3
+    t11 = r * u2 - t10
+    t12 = 3.0 * t3
+    t13 = 4.0 * t5
+    return (u3 / c,
+            u1,
+            t2,
+            (-grav * c * th + grav * r * s + t2 * t8
+             + r * (t11 * u3 - t9 * th) - th * (-r * t9 - t1 * t11)
+             + t8 * u2) / ((t3 + t5) + t4),
+            -2.0 * r * u1 * (r * u3 + 2.0 * th * u2) / (t12 + t13),
+            (1.0 / 12.0) * u1 * (4.0 * r * t10 + t1 * t12 + t1 * t13
+                                 - 6.0 * t3 * u2)
+            / ((1.0 / 3.0) * t5 + t4))
+
+
+if _HAVE_NUMBA:
+    _disc_deriv = njit(cache=True, inline='always')(_disc_deriv_source)
+else:
+    _disc_deriv = _disc_deriv_source
+
+
+def _spin_real_kernel_source(gesture, radius, grav, tilt_full, tilt_flat,
+                             lift_k, loss, law, twist, wobble, contact,
+                             strike_scale, face_slap, ripple_gain,
+                             scrape_gain, scrape_k, load_exp, sharpen,
+                             sharp_k, bright_norm, stop_k, grain_dens,
+                             grain_floor, grain_ceiling, sweep_ref,
+                             half_thick, absolute, dead_zone, track_k,
+                             drain_side,
+                             inject_gain, balance_gain,
+                             cast_least, cast_gain,
+                             grain_tail, grain_max, grain_norm,
+                             out_of_round, drain_k, nut_kick,
+                             restitution, u_ref, roll_floor, fall_floor,
+                             u3_ceiling,
+                             u_cap, u_floor, load_head, flat_ref,
+                             q2_ceiling,
+                             cos_floor, decim, dt,
+                             sample_rate,
+                             q1, q2, q3, u1, u2, u3, gesture_last, push,
+                             lean_goal, mean_lean,
+                             load_now, sweep_now, prec_now,
+                             slap_amp, slap_at, slap_len, grip, lp, hp,
+                             edge, landed, rng,
+                             hurst_inv, grain_span, grain_least,
+                             grain_head,
+                             out, rate_out, face_out, grind_out,
+                             strike_out, grain_ring):
+    """A disc settling, integrated from its own equations of motion.
+
+    The hand-made version of this unit reproduced a coin by assembling
+    behaviours: a rate law, a load shape, a nutation, an eccentric orbit,
+    each fitted by ear until it sounded right. This one runs the disc
+    instead, and reads the sound off it. The precession, the swing in the
+    lean, the surge in contact load and the speed the contact sweeps the
+    rim are not modelled here at all -- they are what the equations do.
+
+    Dissipation is the one thing not derived, and cannot be: which loss
+    dominates a settling coin (air in the gap, rolling friction, contact
+    damping) is a modelling choice, and Moffatt wrote a paper about
+    exactly that. So the rigid-body motion is integrated honestly and
+    energy is drained from it to follow the settle law the node already
+    had -- 'settle' and 'rush' therefore mean what they always meant,
+    while everything fast comes from the disc.
+
+    The mechanical motion tops out in the hundreds of hertz, so it is
+    integrated once every few samples and read between.
+    """
+    two_pi = 6.283185307179586
+    ring_n = grain_ring.shape[0]
+    head = int(grain_head)
+    count = 0
+    for i in range(gesture.shape[0]):
+        # 'spin' works by CHANGE, not by level. Rising, it puts energy
+        # in; falling, it takes energy out; held still -- at any value
+        # whatever -- it does nothing and the coin settles as it would
+        # have anyway. A hand that stops moving stops playing.
+        move = gesture[i] - gesture_last
+        gesture_last = gesture[i]
+        push += move
+        if landed > 0.5 and push < 0.0:
+            # A coin already at rest has no energy to take away, so a
+            # falling gesture on a stopped coin does nothing. Letting it
+            # accumulate downwards dug a hole the next throw had to
+            # climb out of first -- release after a coin has landed and
+            # an identical rise would only bring the total back to zero,
+            # so the node went silent and stayed silent.
+            push = 0.0
+        want = tilt_full * gesture[i]
+        if absolute > 0.5:
+            # ABSOLUTE: the gesture is the lean it asks for, held for as
+            # long as it is held. Sustained motion keeps the coin going;
+            # letting go lets it settle. This is the older reading of
+            # 'spin', kept because holding a coin open is a different
+            # instrument from throwing one.
+            push = 0.0
+            if want > lean_goal:
+                lean_goal = want if landed > 0.5 \
+                    else lean_goal + (want - lean_goal) * lift_k
+        # A coin has to be thrown far enough over to be a throw. The
+        # flat limit is not that mark -- it is a thousandth of a radian,
+        # so in hold mode the first hair of slider movement cast a coin
+        # already at its end, which collapsed at once, landed, and was
+        # thrown again by the next hair. Sliding the control up read as
+        # a collapse and a resurrection over and over, while pinning it
+        # straight to the top sounded perfect.
+        cast_floor = tilt_full * cast_least
+        if cast_floor < tilt_flat:
+            cast_floor = tilt_flat
+        if landed > 0.5 and (push > cast_least
+                             or (absolute > 0.5 and lean_goal > cast_floor)):
+            # At rest, a rise throws the coin, and how much of a rise
+            # decides how far over. It waits for a real gesture rather
+            # than a trickle: the loss law is steepest where the coin is
+            # flattest, so a coin thrown barely over is already dead
+            # when it lands -- at rush 1 the loss takes lean away some
+            # eight hundred times faster than a slow hand can add it.
+            if absolute < 0.5:
+                lean_goal = tilt_full * push * cast_gain
+                if lean_goal > tilt_full:
+                    lean_goal = tilt_full
+            push = 0.0
+            if lean_goal > tilt_flat:
+                # Only a coin that is actually AT REST gets cast. A
+                # rising gesture on a coin already going must open it
+                # up, not throw it again -- re-cast on every rising
+                # sample and a held gesture rebuilds a fresh disc in
+                # perfect steady roll thousands of times a second,
+                # which is silent by construction and was the cause of
+                # the long featureless openings.
+                landed = 0.0
+                # Cast the coin. 'twist' is the fraction of the steady
+                # roll it was actually given -- and that is the whole of
+                # it, because a disc spun below its equilibrium speed is
+                # not in equilibrium, so the lean falls on its own. The
+                # nutation does not have to be put there; under-spinning
+                # IS the nutation.
+                #
+                # At 1 the coin is cast in exact steady roll and never
+                # wobbles. At 0 it is given no spin at all: it does not
+                # roll, it simply tips onto its face and bounces, which
+                # is what a coin pushed over does. Everything between is
+                # a real throw.
+                #
+                # A kick on the lean rate used to stand in for this,
+                # while the roll was always cast at full speed -- so no
+                # twist still meant a coin spinning perfectly and merely
+                # wobbling, and it read as a fifth of a throw rather
+                # than none of one.
+                q2 = 1.5707963267948966 - lean_goal
+                # The steady roll for a coin with thickness, in closed
+                # form. With no thickness this is the knife edge's
+                # 2*sqrt(g*cos(q2)/r) exactly.
+                _s = math.sin(q2)
+                _c = math.cos(q2)
+                if _c < cos_floor:
+                    _c = cos_floor
+                _tn = _s / _c
+                _num = grav * (radius * _s - half_thick * _c)
+                _den = 0.25 * radius * radius * _tn \
+                    + radius * half_thick + half_thick * half_thick * _tn
+                if _num < 0.0:
+                    _num = 0.0
+                u3 = twist * math.sqrt(_num / _den)
+                u2 = 0.0
+                u1 = 0.0
+                mean_lean = lean_goal
+        hertz = 0.0
+        rolling = 0.0
+        struck = 0.0
+        if landed < 0.5:
+            count += 1
+            if count >= decim:
+                count = 0
+                # --- the disc itself, one RK4 step ---
+                a0, a1, a2, a3, a4, a5 = _disc_deriv(
+                    q2, q3, u1, u2, u3, radius, half_thick, out_of_round,
+                    grav, cos_floor, u_cap)
+                b0, b1, b2, b3, b4, b5 = _disc_deriv(
+                    q2 + 0.5*dt*a1, q3 + 0.5*dt*a2, u1 + 0.5*dt*a3,
+                    u2 + 0.5*dt*a4, u3 + 0.5*dt*a5, radius, half_thick,
+                    out_of_round, grav, cos_floor, u_cap)
+                c0, c1, c2, c3, c4, c5 = _disc_deriv(
+                    q2 + 0.5*dt*b1, q3 + 0.5*dt*b2, u1 + 0.5*dt*b3,
+                    u2 + 0.5*dt*b4, u3 + 0.5*dt*b5, radius, half_thick,
+                    out_of_round, grav, cos_floor, u_cap)
+                e0, e1, e2, e3, e4, e5 = _disc_deriv(
+                    q2 + dt*c1, q3 + dt*c2, u1 + dt*c3, u2 + dt*c4,
+                    u3 + dt*c5, radius, half_thick, out_of_round, grav,
+                    cos_floor, u_cap)
+                q1 += (dt/6.0) * (a0 + 2.0*b0 + 2.0*c0 + e0)
+                q2 += (dt/6.0) * (a1 + 2.0*b1 + 2.0*c1 + e1)
+                q3 += (dt/6.0) * (a2 + 2.0*b2 + 2.0*c2 + e2)
+                u1 += (dt/6.0) * (a3 + 2.0*b3 + 2.0*c3 + e3)
+                u2 += (dt/6.0) * (a4 + 2.0*b4 + 2.0*c4 + e4)
+                u3 += (dt/6.0) * (a5 + 2.0*b5 + 2.0*c5 + e5)
+                # The lean swinging down to nothing is the face meeting
+                # the table. That is a CONTACT, not the end -- the coin
+                # bounces off it and goes on nutating, which is the whole
+                # of what a badly cast one does. Treating it as the end
+                # made a big nutation kill the disc on its first swing,
+                # so the worse the cast, the less there was to hear: the
+                # exact opposite of a real coin.
+                # The bound is the coin standing on its edge, which is
+                # where these equations stop meaning anything -- NOT the
+                # lean the gesture asked for. Clamping at the request
+                # leaves a nutation no headroom above it: hold the
+                # gesture at maximum and every upswing is clipped, the
+                # wobble bleeds away against the ceiling, and what was a
+                # coin becomes a steady tone. The pump aims at the
+                # request; this only stops a runaway.
+                q2_open = q2_ceiling
+                if q2 < q2_open:
+                    q2 = q2_open
+                    if u1 < 0.0:
+                        u1 = 0.0
+                q2_flat = 1.5707963267948966 - tilt_flat
+                if q2 > q2_flat:
+                    q2 = q2_flat
+                    if u1 > 0.0:
+                        # Coming down onto the face. Rebound, and let the
+                        # blow be as hard as the arrival.
+                        hit = u1
+                        u1 = -u1 * restitution
+                        # (A friction scrub on the roll was tried here,
+                        # to make a coin that slams repeatedly lose its
+                        # spin and settle sooner. It changes nothing
+                        # measurable: near flat the term u1*tan(q2)*u3
+                        # amplifies whatever roll is left faster than an
+                        # impact can take it away, so the roll regrows
+                        # between contacts. Removed rather than left in
+                        # doing nothing.)
+                        # As hard as it arrives. Scaling by the lean
+                        # that was left made sense when the only impact
+                        # was the coin finally lying down; for one that
+                        # is BOUNCING it is wrong, and at high polish it
+                        # divided every blow by forty-odd, which is why
+                        # a coin with no spin -- all bounce and no roll
+                        # -- could not be heard at all.
+                        amp = strike_scale * face_slap * (hit / u_ref)
+                        if amp > 3.0:
+                            amp = 3.0
+                        slap_amp = amp
+                        slap_at = 0.0
+                        slap_len = contact * 2.0
+                    # Down when it has stopped BOUNCING. A coin whose
+                    # lean has reached the limit and is no longer
+                    # flopping has settled, whatever its roll is doing:
+                    # the limit is where the surface stops it.
+                    #
+                    # Requiring the roll to be near zero as well looked
+                    # right and was not. With a rough surface the limit
+                    # is a large lean, and the steady roll AT that lean
+                    # is still fast -- so the coin arrived at its limit
+                    # with far too much roll to satisfy the test, the
+                    # drain had nothing left to pull against, and it
+                    # rolled there for ever. That is the whole of why a
+                    # low polish never stopped.
+                    if u1 > -fall_floor and u1 < fall_floor:
+                        landed = 1.0
+                if u1 > u_cap:
+                    u1 = u_cap
+                elif u1 < -u_cap:
+                    u1 = -u_cap
+                # The roll is cast in one direction and stays there. A
+                # disc that reverses its precession mid-settle is the
+                # controller pushing it through zero, not anything a
+                # coin does, and it reads as the rate outlet going
+                # negative.
+                if u3 > u_cap:
+                    u3 = u_cap
+                elif u3 < u_floor:
+                    u3 = u_floor
+                # Wrapped properly, not by subtracting one turn. The
+                # contact can sweep more than a full turn in a single
+                # control step, and a single subtraction cannot keep up
+                # with that -- the angle then grows without bound, and
+                # long before it reaches anything a NaN check would
+                # catch, the cosine of it has lost all its precision.
+                # That is what turns 'face' into a stepped square wave:
+                # not an overflow, an angle no longer worth taking a
+                # cosine of.
+                q1 = q1 % two_pi
+                q3 = q3 % two_pi
+
+                lean = 1.5707963267948966 - q2
+                if lean < 0.0:
+                    lean = 0.0
+                mean_lean += (lean - mean_lean) * 0.02
+
+                # --- the loss, which is the one thing not derived ---
+                # A flopping coin does settle sooner, but that is not
+                # something to write down here: its face contacts are
+                # inelastic and the rebound already takes the energy. A
+                # term for it as well would be counting the same loss
+                # twice, and inventing the coefficient to do it.
+                lean_goal -= loss * decim * lean_goal ** (-law)
+                if lean_goal < tilt_flat:
+                    lean_goal = tilt_flat
+                # Energy in and energy out, by the same handle. The
+                # steady roll goes as the square root of the lean, so
+                # taking speed out lowers the coin and putting it in
+                # opens it -- which makes 'spin' a fluid grip on the
+                # tilt rather than a trigger. Hold a gesture and the
+                # coin stays open, still nutating and still grinding;
+                # release it and the loss law closes it.
+                # Pull down when the coin sits above where it should
+                # be, feed when it sits below -- but not near the mark.
+                # These two act on a measurement that lags, against a
+                # coin with dynamics of its own, so with no dead zone
+                # between them they simply take turns overshooting: the
+                # lean ends up swinging over half its range while its
+                # goal stands still, which is hunting rather than
+                # settling, and it sounds like a coin tumbling.
+                over = (mean_lean - lean_goal) / lean_goal
+                # The dead zone exists so the drain and the pump do not
+                # take turns overshooting each other. It has to CLOSE as
+                # the goal reaches the floor, though: down there the
+                # gesture has released and there is no pump to fight,
+                # and a band that stays open lets the coin park just
+                # inside it -- a fraction above the floor, rolling at
+                # full speed, with nothing left that can bring it down.
+                # That is a coin nothing can stop.
+                near_end = 1.0 - tilt_flat / lean_goal
+                if near_end < 0.0:
+                    near_end = 0.0
+                drain_dead = dead_zone * near_end
+                if over > drain_dead:
+                    scale = 1.0 - drain_k * (over - drain_dead)
+                    if scale < 0.5:
+                        scale = 0.5
+                elif absolute > 0.5 and want > mean_lean:
+                    # HOLD means the gesture IS the lean, so say so
+                    # rather than chase it. A feedback loop on the
+                    # energy was tried and re-tuned four times: every
+                    # gain that tracked one gesture shape overshot or
+                    # lagged another, because the coin's own dynamics
+                    # sit inside the loop. Here the disc is carried
+                    # towards the steady roll the request asks for, at
+                    # a fixed rate, and the physics runs on top of it.
+                    q2_want = 1.5707963267948966 - want
+                    q2 += (q2_want - q2) * track_k
+                    _ws = math.sin(q2)
+                    _wc = math.cos(q2)
+                    if _wc < cos_floor:
+                        _wc = cos_floor
+                    _wt = _ws / _wc
+                    _wn = grav * (radius * _ws - half_thick * _wc)
+                    _wd = (0.25 * radius * radius * _wt
+                           + radius * half_thick
+                           + half_thick * half_thick * _wt)
+                    if _wn < 0.0:
+                        _wn = 0.0
+                    # The roll it is carried to is the one TWIST asks
+                    # for, not the balanced one. Carrying it to the
+                    # steady roll regardless -- and damping the lean
+                    # rate on the way -- is precisely what twist 1 means,
+                    # so it overwrote the control on every step and
+                    # every cast sounded perfectly spun. Under-spinning
+                    # is the nutation, so the wobble is left alone.
+                    u3_want = twist * math.sqrt(_wn / _wd) \
+                        if _wd > 0.0 else u3
+                    u3 += (u3_want - u3) * track_k
+                    scale = 1.0
+                else:
+                    scale = 1.0
+                u1 *= scale
+                u2 *= scale
+                u3 *= scale
+
+                # What the hand did since the last step. Rising, it
+                # spins the coin up AND balances it -- more roll, less
+                # wobble -- which is the same direction as being thrown
+                # well, so enough of a rise carries the coin back to the
+                # balanced spin it would have had from a clean cast, at
+                # a higher rate. Falling, it takes the roll away, which
+                # pushes the coin towards its end and onto its face.
+                if push > 0.0:
+                    boost = 1.0 + push * inject_gain
+                    if boost > 1.6:
+                        boost = 1.6
+                    u3 *= boost
+                    u2 *= boost
+                    steady = 1.0 - push * balance_gain
+                    if steady < 0.0:
+                        steady = 0.0
+                    u1 *= steady
+                    # And it opens the lean itself. Speeding the roll
+                    # alone is not enough: the loss law is steepest
+                    # where the coin is flattest, so a coin wound up
+                    # from near the floor was crushed faster than the
+                    # winding could lift it. A whole sweep of the hand
+                    # is worth a whole lean.
+                    lean_goal += push * tilt_full
+                    if lean_goal > tilt_full:
+                        lean_goal = tilt_full
+                    if mean_lean > lean_goal:
+                        lean_goal = mean_lean
+                elif push < 0.0:
+                    # Taking energy OUT is not the mirror of putting it
+                    # in. Winding a coin up is gradual; the only way to
+                    # take speed off one is to touch it, and a hand that
+                    # touches it hard stops it dead. At the same
+                    # strength as the injection a full release closed
+                    # the lean by its whole range and cut the roll by
+                    # more than half at a stroke -- so letting go of the
+                    # control killed the coin instead of hurrying it.
+                    # It hurries it now: a full release roughly halves
+                    # what is left rather than ending it.
+                    cut = 1.0 + push * inject_gain * drain_side
+                    if cut < 0.93:
+                        # No more than a small bite per step, so a snap
+                        # release is a hand closing on the coin over a
+                        # moment rather than a single grab.
+                        cut = 0.93
+                    u3 *= cut
+                    u2 *= cut
+                    # A fraction of what is LEFT, not of the full
+                    # range. Subtracting a slice of the whole range
+                    # wipes out a coin whose lean is already a small
+                    # part of it -- so any release late in a settle
+                    # slammed the target to the floor at a stroke,
+                    # whatever the gain was set to. That is why making
+                    # the drain gentler changed nothing.
+                    lean_goal *= 1.0 + push * drain_side
+                    if lean_goal < tilt_flat:
+                        lean_goal = tilt_flat
+                push = 0.0
+
+                # A coin cannot be over-spun without limit, whichever
+                # way the energy arrived. Excess spin is what stands a
+                # coin UP -- that is where it goes -- and the lean is
+                # capped, so the spin is capped with it. This belongs to
+                # the coin, not to one reading of the gesture: put it
+                # only in the throwing path and holding the gesture up
+                # feeds the roll every step for ever, which intensifies
+                # until there is nothing left to hear but quantization.
+                if u3 > u3_ceiling:
+                    u3 = u3_ceiling
+                elif u3 < -u3_ceiling:
+                    u3 = -u3_ceiling
+
+                # --- what the disc is doing, read off it ---
+                cq = math.cos(q2)
+                if cq < 1.0e-6:
+                    cq = 1.0e-6
+                prec_now = u3 / cq
+                # Contact load, in units of the disc's own weight: the
+                # centre of mass rides at radius*cos(q2), so the force
+                # is what its vertical acceleration asks of the table.
+                _, _, dq3, du1, _, _ = _disc_deriv(
+                    q2, q3, u1, u2, u3, radius, half_thick, out_of_round,
+                    grav, cos_floor, u_cap)
+                # The centre of mass rides at r(q3)*cos(q2), and r is
+                # moving because the contact is travelling round an
+                # out-of-round rim. Its second derivative carries a
+                # sweep-rate-SQUARED term, which is why an untrue coin
+                # bites harder and harder as the contact accelerates.
+                sq = math.sin(q2)
+                r_now = radius * (1.0 + out_of_round * math.cos(q3))
+                # z = r*cos(q2) + half_thick*sin(q2): the coin's centre
+                # cannot descend below half its own thickness.
+                rd = -radius * out_of_round * math.sin(q3) * dq3
+                # The sweep's own acceleration contributes here too, but
+                # it is smaller than this term by about seventy to one
+                # (the sweep changes over seconds, its square over
+                # milliseconds), so it is left out.
+                rdd = -radius * out_of_round * math.cos(q3) * dq3 * dq3
+                zdd = (rdd * cq - 2.0 * rd * sq * u1
+                       - r_now * (cq * u1 * u1 + sq * du1)
+                       + half_thick * (cq * du1 - sq * u1 * u1))
+                # Past a few times its own weight this is the
+                # integrator near the singularity, not a coin -- but a
+                # hard ceiling FLAT-TOPS, and a load pinned at its limit
+                # for tens of milliseconds is heard as a burst with a
+                # square edge on it. Bend it over instead: identity
+                # while the coin is behaving, asymptotic once it is not.
+                # Only the excess is bent, so a resting coin still reads
+                # exactly its own weight.
+                excess = zdd / grav
+                if excess > 0.0:
+                    excess = load_head * math.tanh(excess / load_head)
+                load_now = 1.0 + excess
+                if load_now < 0.0:
+                    # No adhesion: the contact simply breaks.
+                    load_now = 0.0
+                # How fast the contact travels around the rim, which is
+                # the rate it meets new surface.
+                sweep_now = u2 - math.tan(q2) * u3
+                if sweep_now < 0.0:
+                    sweep_now = -sweep_now
+
+                # (A landing check stood here, left over from before
+                # the face contact learned to rebound. It fired on the
+                # same sample as the rebound -- which clamps the lean to
+                # exactly this value -- so every bounce was converted
+                # into a landing and the coin stopped on first contact.
+                # The rebound above is the one that decides.)
+
+            hertz = prec_now / two_pi
+            lean = 1.5707963267948966 - q2
+            if lean < 1.0e-9:
+                lean = 1.0e-9
+            # The load here is the real one, computed from the disc's
+            # own vertical acceleration -- so unlike the voiced model
+            # there is nothing to scale it by. The equations describe a
+            # perfectly uniform disc, which means the surges come
+            # entirely from the CAST and the coin's own untrueness is
+            # not represented at all. 'wobble' has no physics to attach
+            # to here, and does nothing.
+            press = load_now
+            # Grinding is what the RIM does. As the lean closes on the
+            # limit the face comes down and takes the load off the rim,
+            # and once the coin is bouncing on its face the rim is not
+            # touching anything at all -- so there is nothing to grind.
+            # Without this the sweep term, which carries a tan(q2) and
+            # so runs away exactly there, kept driving a grind through
+            # every face bounce: hundreds of hertz one instant and a few
+            # the next, which is the noise heard at the end of a settle
+            # and is not any coin. The face has its own voice already,
+            # and it is the slap.
+            # Grinding is what the RIM does, and the rim stops being a
+            # rim once the coin is lying almost flat: at a lean of the
+            # order of its own thickness-over-radius the contact is no
+            # longer a point running round an edge, and the equations'
+            # tan(q2) -- which multiplies the roll by a growing factor
+            # every time the lean dips -- stops describing a coin. Left
+            # open, one rock down to a fifteenth of a degree took the
+            # roll from 1.4 to 5.5 and the sweep from 270 to 4130 in
+            # three milliseconds, and the square root of that arrived
+            # as a click. The coin still has a voice down there; it is
+            # the face, and the face has the slap.
+            flat = lean / flat_ref
+            flat *= flat
+            rim = flat / (1.0 + flat)
+            # And while the FACE is down it is the face carrying the
+            # coin, not the rim -- the rim takes the load back as it
+            # rocks up off it. Without this the grind read the rebound
+            # as a load surge: the bounce reverses the lean rate in a
+            # single sample, so the vertical acceleration through it is
+            # a numerical artefact of that discontinuity and drove the
+            # load into its ceiling every time. The blow is already
+            # spoken for; it is the slap.
+            if slap_at < slap_len:
+                rim *= slap_at / slap_len
+            rolling = ripple_gain * math.sqrt(lean) * (press - 1.0) * rim
+            grip = scrape_gain * math.sqrt(sweep_now / sweep_ref) \
+                * press ** load_exp * rim
+            edge = sharpen * (press - 1.0)
+            if edge < 0.0:
+                edge = 0.0
+            elif edge > 1.0:
+                edge = 1.0
+            # Grain density follows the sweep: a contact that travels
+            # meets new surface and fuses into a hiss, one that does not
+            # arrives as separate hits.
+            dens = grain_dens * (sweep_now / sweep_ref) * press
+            if dens > 0.4:
+                dens = 0.4
+            elif dens < grain_floor:
+                dens = grain_floor
+            grain_amp = 1.0 / math.sqrt(dens)
+            if grain_amp > grain_ceiling:
+                grain_amp = grain_ceiling
+            # The same asperity takes less time to cross when the
+            # contact is travelling faster, so a slow scrape is darker
+            # than a fast one -- floored, or a nearly stopped contact
+            # would smear its grains into nothing.
+            swp = sweep_now / sweep_ref
+            if swp < 0.15:
+                swp = 0.15
+            dur_k = grain_span / swp
+        else:
+            grip -= grip * stop_k
+            dens = grain_floor
+            grain_amp = 1.0
+            dur_k = grain_span
+        if grip > 1.0e-9:
+            rng, u = _rand01(rng)
+            if u < dens:
+                # A real surface is self-affine: its asperities have no
+                # characteristic size, so the impulses a contact takes
+                # from them follow a power law rather than all being
+                # much the same. Drawing them uniformly was the reason
+                # this sounded like noise and not like friction --
+                # dense impulses of similar size ARE noise, by the
+                # central limit theorem, at any density whatever.
+                #
+                # Below a tail index of two the variance diverges and
+                # sums stop converging on a Gaussian, which is what
+                # keeps the big events individually audible over the
+                # hiss of the small ones however fast the contact runs.
+                rng, u = _rand01(rng)
+                if u < 1.0e-9:
+                    u = 1.0e-9
+                size = u ** (-grain_tail)
+                if size > grain_max:
+                    size = grain_max
+                rng, u = _rand01(rng)
+                peak = size * grain_amp * grain_norm
+                if u <= 0.5:
+                    peak = -peak
+                # An asperity is as WIDE as it is tall, by the same
+                # self-affinity that set its height, and the contact
+                # crosses it at a finite speed -- so a big grain takes
+                # longer. Its momentum is what it is; delivering that
+                # over a longer time makes it lower, not sharper. Firing
+                # every grain as one sample instead made the rare huge
+                # ones perfect impulses, which is exactly the sound that
+                # does not belong: a click, flat to Nyquist, where the
+                # grinding is narrowband and dark. A faster sweep
+                # crosses the same feature sooner.
+                span = size ** hurst_inv * dur_k
+                dur = int(span)
+                # Nothing the contact does can be sharper than the
+                # contact itself: it has stiffness and the coin has
+                # mass, so it cannot answer a feature crossed quicker
+                # than it can deform. A hard coin on stone floors at a
+                # sample or two; a soft one simply cannot make a sharp
+                # grain, whatever it runs over. Without this floor the
+                # sweep term shortened every grain back to a single
+                # sample exactly where the coin spins fastest -- which
+                # is where the clicks were heard.
+                if dur < grain_least:
+                    dur = grain_least
+                if dur > ring_n - 1:
+                    dur = ring_n - 1
+                if dur == 1:
+                    grain_ring[head] += peak
+                else:
+                    # Held momentum, spread under a raised cosine: the
+                    # area is the same whatever the duration, so the
+                    # peak of a long grain falls instead of towering.
+                    scale = 2.0 * peak / dur
+                    at = head
+                    for k in range(dur):
+                        grain_ring[at] += scale * 0.5 * (
+                            1.0 - math.cos(two_pi * (k + 0.5) / dur))
+                        at += 1
+                        if at >= ring_n:
+                            at = 0
+            noise = grain_ring[head]
+            grain_ring[head] = 0.0
+            head += 1
+            if head >= ring_n:
+                head = 0
+            lp += (noise - lp) * scrape_k
+            base = noise - lp
+            hp += (base - hp) * sharp_k
+            bright = (base - hp) * bright_norm
+            rolling += grip * (base + edge * (bright - base))
+        if slap_at < slap_len:
+            struck += slap_amp * 0.5 \
+                * (1.0 - math.cos(two_pi * slap_at / slap_len))
+            slap_at += 1.0
+        out[i] = rolling + struck
+        rate_out[i] = hertz
+        face_out[i] = math.cos(q3)
+        grind_out[i] = rolling
+        strike_out[i] = struck
+    return (q1, q2, q3, u1, u2, u3, gesture_last, push,
+            lean_goal, mean_lean, load_now,
+            sweep_now, prec_now, slap_amp, slap_at, slap_len, grip, lp,
+            hp, edge, landed, rng, head)
+
+
+if _HAVE_NUMBA:
+    _spin_real_kernel = njit(cache=True, fastmath=True)(
+        _spin_real_kernel_source)
+else:
+    _spin_real_kernel = _spin_real_kernel_source
+
+
+def _spin_kernel_source(gesture, tilt_full, tilt_flat, lift_k, loss, law,
+                        rate_scale, rate_ceiling, contact, strike_scale,
+                        grain_tail, grain_max, grain_norm,
+                        wobble, ecc, orbit_norm, nut_ratio, nut_decay,
+                        nut_max, twist, grain_dens, grain_floor,
+                        grain_ceiling, step_ref, face_slap, ripple_gain,
+                        scrape_gain, scrape_k,
+                        load_exp, sharpen, sharp_k, bright_norm, stop_k,
+                        sample_rate, tilt, phase,
+                        face, profile, nut_phase, nut_amp, rim_down,
+                        slap_amp, slap_at, slap_len, grip, lp,
+                        hp, edge, landed, rng,
+                        out, rate_out, face_out, grind_out, strike_out):
+    """A disc settling towards flat, integrated at audio rate.
+
+    The tilt angle is the whole state, and one law does all the work: a
+    disc rolling on its rim has its contact point race around that rim
+    at a rate going as one over the square root of the tilt. So as the
+    disc gives up its lean the sound rises without limit -- the runaway
+    everyone has heard a dropped coin make. Nothing here is a ramp or an
+    envelope; the acceleration is that exponent, the way bounce~'s
+    quickening is gravity.
+
+    A rolling disc does not strike anything, and -- tested against real
+    coins -- it hardly ever leaves the table either. The contact is
+    continuous and it is the LOAD on that contact that varies, so what
+    is heard is one sound modulated by the rotation. Two rotations
+    modulate it, and they move opposite ways. The rim passes under the
+    contact at the precession rate, which is rising: that ripple in the
+    load is the pitch. The disc's own mass sits unevenly and comes
+    round at the face rate, which is FALLING, since the face turns at
+    the tilt times the precession rate: that is the slow waver in
+    intensity, dragging while the pitch runs away.
+
+    An off-kilter coin flops hard onto its rim once a turn, and that
+    flop is NOT a blow. The contact stays down; it is simply carrying
+    several times the weight for a moment, and a loaded contact engages
+    more of the surface and stiffens against it. So the grinding grows
+    faster than the load and brightens as it grows -- a sharpening, not
+    an impact. Deep wobble therefore buys a harder, sharper grind in
+    the part of each turn where the heavy side is down, which is what a
+    real coin does, and no separate mechanism is needed for it.
+
+    Everything scales as the square root of the tilt, so the sound
+    thins as it quickens: higher, denser and smaller, ending in the one
+    real impact there is, when the face finally lands flat.
+    """
+    two_pi = 6.283185307179586
+    for i in range(gesture.shape[0]):
+        want = tilt_full * gesture[i]
+        if want > tilt:
+            if landed > 0.5:
+                # Set down at that lean. A landed disc must not glide up
+                # through every pitch on its way to being spun again.
+                tilt = want
+            else:
+                tilt += (want - tilt) * lift_k
+            if tilt > tilt_flat:
+                landed = 0.0
+            # Energy going in is a fresh cast of the coin, so it brings
+            # its own unsteadiness with it: all the wobble a launch has
+            # is the spin it was NOT given.
+            fresh = (1.0 - twist) * nut_max
+            if fresh > nut_amp:
+                nut_amp = fresh
+        hertz = 0.0
+        rolling = 0.0
+        struck = 0.0
+        if landed < 0.5:
+            # The losses, as a power of the lean that is left: which
+            # power is the shape of the whole tail.
+            tilt -= loss * tilt ** (-law)
+            if tilt <= tilt_flat:
+                tilt = 0.0
+                landed = 1.0
+                # Going flat is the one real impact: the whole face
+                # lands at once, so it is broader and duller than
+                # anything the rim does -- and only as loud as the lean
+                # it had left, which is why a rough surface stops a coin
+                # with a clack and a polished one lets it whisper away.
+                slap_amp = strike_scale * math.sqrt(tilt_flat) * face_slap
+                slap_at = 0.0
+                slap_len = contact * 3.0
+            else:
+                # NUTATION -- the tilt itself swinging, and the whole
+                # difference between a coin set spinning and a coin
+                # merely dropped.
+                #
+                # Launch a disc into steady precession and it has none:
+                # the contact drifts round the rim in a regular way and
+                # the lean falls smoothly. Launch it short of that
+                # condition and the lean oscillates instead, and since
+                # the rate goes as one over the square root of the
+                # lean, an oscillating lean warbles the RATE as well as
+                # the load -- which is why a badly cast coin sounds
+                # uneven in pitch and not merely uneven in loudness.
+                #
+                # Push it far enough and the lean swings all the way to
+                # flat once a cycle. Then the face is what touches, the
+                # rim is not rolling at all, and the coin rattles to a
+                # stop rather than whirring: the no-spin drop, arrived
+                # at from the same equations.
+                base_step = rate_scale / math.sqrt(tilt)
+                nut_phase += base_step * nut_ratio
+                if nut_phase >= 1.0:
+                    nut_phase -= 1.0
+                dip = 0.5 * (1.0 - math.cos(two_pi * nut_phase))
+                tilt_now = tilt * (1.0 - nut_amp * dip)
+                if tilt_now < tilt_flat:
+                    # The lean has swung right down: the face is on the
+                    # table. This is the only place the rim genuinely
+                    # leaves it, and it is a badly-cast coin's rattle
+                    # rather than anything a well-spun one does.
+                    tilt_now = tilt_flat
+                    if rim_down < 0.5:
+                        rim_down = 1.0
+                        slap_amp = strike_scale * math.sqrt(tilt) \
+                            * face_slap * 0.6
+                        slap_at = 0.0
+                        slap_len = contact * 2.0
+                else:
+                    rim_down = 0.0
+                step = rate_scale / math.sqrt(tilt_now)
+                if step > rate_ceiling:
+                    step = rate_ceiling
+                hertz = step * sample_rate
+                face += step * tilt_now
+                if face >= 1.0:
+                    face -= 1.0
+                # A badly spun coin does not trace a circle. Its contact
+                # runs an eccentric orbit -- racing where the orbit pulls
+                # tight, dawdling where it runs wide -- so the turn is
+                # not uniform in time. Angular momentum does it: the rate
+                # goes as one over the radius squared. And the tight side
+                # is fixed in the coin's own body, so it drifts round at
+                # the face rate rather than sitting still, which is why
+                # the lurch never quite repeats.
+                #
+                # This is what makes a pulse that is symmetric in ANGLE
+                # land lopsided in TIME. Nothing below is asymmetric; the
+                # asymmetry is entirely in how fast the coin gets there.
+                orbit = 1.0 + ecc * math.cos(two_pi * (phase - face))
+                swing = orbit * orbit / orbit_norm
+                phase += step * swing
+                if phase >= 1.0:
+                    phase -= 1.0
+                # A disc left alone finds its steady precession, so the
+                # swing in the lean bleeds away faster than the lean
+                # itself does. What is cast badly does not stay bad
+                # forever -- it merely starts that way.
+                nut_amp -= nut_amp * nut_decay
+                # Where the disc's own weight sits, coming round on the
+                # face's slowing turn. Two harmonics, so it wavers
+                # unevenly the way a real disc does.
+                profile = (0.7 * math.cos(two_pi * face)
+                           + 0.3 * math.cos(2.0 * two_pi * face + 0.7))
+                # How unevenly the disc is made, as the swing in how
+                # hard it presses. This reaches far past its own weight,
+                # because an off-kilter coin flops onto its rim with
+                # several times the load of a true one.
+                depth = wobble * (0.6 + 0.4 * profile)
+                # The rim passing under the contact: peaked, because a
+                # contact riding over a high spot is not a sine, and the
+                # harmonics of that peak are what give the whir a pitch
+                # rather than just a rate. It presses hardest on the
+                # tight side of the orbit, where it is also travelling
+                # fastest -- so the flop is short, hard and early, and
+                # the rest of the turn is the long easy part between.
+                bump = 0.5 * (1.0 + math.cos(two_pi * phase))
+                # It presses harder on the tight side, but only somewhat:
+                # coupling the load to the orbit at full strength stacks
+                # two multiplications on the same peak and the flop turns
+                # into a detonation. Most of the lurch belongs in the
+                # timing, which is where a real coin keeps it.
+                press = 1.0 + (swing - 1.0) * 0.35
+                load = 1.0 + depth * (2.0 * bump * bump - 1.0) * press
+                if load < 0.0:
+                    # Unloaded, but NOT airborne: a settling coin hardly
+                    # ever leaves the table. It merely stops pressing,
+                    # and a contact carrying no weight makes no sound.
+                    load = 0.0
+                # The ripple in the load is the sound: the disc shaken
+                # once a revolution by its own rim.
+                if rim_down > 0.5:
+                    # The rim is off the table; only the face is on it.
+                    load = 0.0
+                rolling = ripple_gain * math.sqrt(tilt_now) * (load - 1.0)
+                # And the roughness under it, heard at the speed the
+                # contact travels and pressed by that same load. The
+                # press does not merely scale it: a loaded contact
+                # engages more of the surface and stiffens against it,
+                # so it grows FASTER than the load and brightens as it
+                # grows. That is what the hard flop of an off-kilter
+                # coin actually is -- not a blow, but the grinding gone
+                # sharp for the part of the turn that its heavy side is
+                # down.
+                grip = scrape_gain * math.sqrt(step) * load ** load_exp
+                # How finely the contact is divided. A rolling rim
+                # travels, so it meets new surface constantly and the
+                # grains fuse; a coin with no spin does not travel at
+                # all and each contact is a single hit. Load matters
+                # too: a pressed contact touches more of the surface at
+                # once. Grain size follows density so the power does
+                # not, which is what makes the sparse end read as hits
+                # rather than as a quieter hiss.
+                dens = grain_dens * twist * (step / step_ref) * load
+                if dens > 0.4:
+                    dens = 0.4
+                elif dens < grain_floor:
+                    dens = grain_floor
+                grain_amp = 1.0 / math.sqrt(dens)
+                if grain_amp > grain_ceiling:
+                    grain_amp = grain_ceiling
+                # Colour, kept separate from level. Raising a filter's
+                # corner brightens by REMOVING what is below it, which
+                # thins a sound rather than sharpening it -- so the
+                # loudness comes from the load above, and this only
+                # crossfades the noise towards its own high end, level
+                # matched. Sharper, not merely thinner.
+                edge = sharpen * (load - 1.0)
+                if edge < 0.0:
+                    edge = 0.0
+                elif edge > 1.0:
+                    edge = 1.0
+        else:
+            # Landing does not cut the grinding off. Silencing a noise
+            # in one sample is a step, and a step is a click -- so the
+            # contact loses its grip over a couple of milliseconds,
+            # which is short enough to still read as stopping dead.
+            grip -= grip * stop_k
+        if grip > 1.0e-9:
+            # A contact is not a hiss, it is a stream of micro-impacts,
+            # and whether it is HEARD as a hiss or as separate hits is
+            # only their density. A rim rolling along the surface sweeps
+            # thousands of asperities a second and fuses into noise; a
+            # face coming down delivers one. Density is the whole
+            # difference, so it is what twist moves -- and power is held
+            # constant across it, which makes sparse grains big and
+            # dense ones small, exactly as the same energy arriving in
+            # fewer pieces must.
+            #
+            # It also fixes something white noise cannot: a contact is
+            # granular and uneven, and noise is far too regular to be
+            # one.
+            rng, u = _rand01(rng)
+            if u < dens:
+                # A real surface is self-affine: its asperities have no
+                # characteristic size, so the impulses a contact takes
+                # from them follow a power law rather than all being
+                # much the same. Drawing them uniformly was the reason
+                # this sounded like noise and not like friction --
+                # dense impulses of similar size ARE noise, by the
+                # central limit theorem, at any density whatever.
+                #
+                # Below a tail index of two the variance diverges and
+                # sums stop converging on a Gaussian, which is what
+                # keeps the big events individually audible over the
+                # hiss of the small ones however fast the contact runs.
+                rng, u = _rand01(rng)
+                if u < 1.0e-9:
+                    u = 1.0e-9
+                size = u ** (-grain_tail)
+                if size > grain_max:
+                    size = grain_max
+                rng, u = _rand01(rng)
+                if u > 0.5:
+                    noise = size * grain_amp * grain_norm
+                else:
+                    noise = -size * grain_amp * grain_norm
+            else:
+                noise = 0.0
+            lp += (noise - lp) * scrape_k
+            base = noise - lp
+            # The sharp tap sits high enough to be heard AS sharpness.
+            # Trimming a few hundred hertz off noise that already runs to
+            # twenty kilohertz changes nothing anyone can hear; the edge
+            # of a loaded contact lives up where the surface is being
+            # torn at, so this pole is in the kilohertz, and it is
+            # scaled back up to sit level with what it replaces.
+            hp += (base - hp) * sharp_k
+            bright = (base - hp) * bright_norm
+            rolling += grip * (base + edge * (bright - base))
+        if slap_at < slap_len:
+            struck += slap_amp * 0.5 \
+                * (1.0 - math.cos(two_pi * slap_at / slap_len))
+            slap_at += 1.0
+        out[i] = rolling + struck
+        rate_out[i] = hertz
+        face_out[i] = profile
+        grind_out[i] = rolling
+        strike_out[i] = struck
+    return (tilt, phase, face, profile, nut_phase, nut_amp, rim_down,
+            slap_amp, slap_at, slap_len, grip, lp, hp, edge, landed, rng)
+
+
+if _HAVE_NUMBA:
+    _spin_kernel = njit(cache=True, fastmath=True)(_spin_kernel_source)
+else:
+    _spin_kernel = _spin_kernel_source
+
+
+class SpinUnit(Unit):
+    """A spinning disc settling: the sound that runs away.
+
+    A coin dropped on a table, a plate set down spinning, a hubcap in
+    the road. All of them do the same thing, and it is not a bounce:
+    the contact point races around the rim at a rate that goes as one
+    over the square root of the tilt, so as the lean bleeds away the
+    sound accelerates without limit and then stops dead. That runaway
+    is this unit's entire mechanism.
+
+    Nor is it a series of blows, and a settling coin hardly ever leaves
+    the table at all. A rolling disc keeps its contact; what varies is
+    the LOAD on it, so this is one continuous sound modulated by the
+    rotation. Two rotations modulate it and they move opposite ways:
+    the rim passes under the contact at the precession rate, which
+    rises, and that ripple is the pitch; the disc's own weight comes
+    round at the face rate, which FALLS, and that is the slow waver in
+    intensity.
+
+    The hard flop of a well-spun but off-kilter coin is not an impact
+    either -- the contact stays down and simply carries several times
+    the weight for a moment. A loaded contact engages more of the
+    surface and stiffens against it, so the grinding grows faster than
+    the load and brightens while it grows. That sharpening IS the flop.
+
+    But roughness is mostly not the coin's doing at all: it is the
+    CAST. Spin a coin true on its edge and it rolls -- the contact
+    drifts round the rim regularly, the lean falls smoothly, nothing
+    ever leaves the table. Push one flat over with no spin and it
+    never rolls at all: the lean swings past level every cycle, the
+    face slaps, and it rattles to a stop. 'twist' is that continuum,
+    and it works by nutation -- the lean itself oscillating rather than
+    falling smoothly. Because the rate goes as one over the square root
+    of the lean, an oscillating lean warbles the PITCH as well as the
+    load, which is why a badly thrown coin sounds unsteady and not just
+    uneven. And since it is spin that holds a disc in steady
+    precession, the swing dies away in proportion to the twist it was
+    given: with none, there is nothing to settle into.
+
+    'spin' is the gesture, and it can only add energy: raising it leans
+    the disc over that far, and everything after is loss. Hold it and
+    the sound holds, at a pitch its own level sets; let go and the disc
+    settles from wherever it had got to. A big gesture is a long low
+    fall, a small one a short high one. This is why movement into
+    'spin' gives a sound with a tail: the tail is what the disc does
+    when the hand has stopped.
+
+    'size' is the disc's radius in metres and sets every rate -- a coin
+    turns about ten times a second at full lean, a dinner plate four.
+    'settle' is the seconds from full lean to flat. 'rush' is which
+    loss dominates, and so where in the tail the acceleration lives: at
+    0 the loss is proportional to energy and the pitch glides up evenly
+    across the whole tail, at seven tenths it is rolling friction and
+    the rise leans towards the end, and at 1 it is the viscous-air
+    exponent Moffatt derived for the toy, which holds the pitch almost
+    still and then spends the last per cent of the settle on the entire
+    scream. That last is honestly what a Euler disc does, and it wants
+    long settle times to be heard as anything but a chirp.
+
+    'wobble' is how unevenly the disc is made -- the swing in how hard
+    it presses, reaching several times its own weight at full. It buys
+    the tone (a true disc has no ripple to hear) and it buys the flop.
+    'scrape' is the roughness under the contact, 'hardness' how sharply
+    that roughness answers a load, and 'polish' how near flat it gets
+    before it lands -- how high the whir climbs, and whether the end is
+    a clack or a vanishing.
+
+    Five outlets, because the dynamics are worth more than the sound.
+    'out' is everything; 'grind' is the rolling, which is nearly all of
+    it, and 'landing' carries the single impact at the end, alone, so
+    it can have its own resonator and its own gain. 'rate' is the
+    precession frequency in Hz, rising, and 'face' the disc's own
+    profile coming round, falling -- two counter-moving controls out of
+    one gesture.
+
+    'landing' fires once per settle and is silent the rest of the time.
+    That is not a fault to be corrected: there is exactly one impact in
+    the life of a settling disc, and this is it.
+    """
+
+    # Full lean is half a radian, about thirty degrees: past that a disc
+    # is falling over rather than settling, and the small-angle rate law
+    # this is built on has stopped meaning anything.
+    TILT_FULL = 0.5
+    # What 'wobble' at 1 means as a swing in contact load: six times the
+    # disc's weight at the peak of the heavy side. Set by ear against
+    # real coins -- the flop of an off-kilter one is a big multiple of
+    # its own weight, not a fraction of it.
+    WOBBLE_DEPTH = 6.0
+    # Two ways to be a coin. 'derived' integrates the disc's own
+    # equations of motion and reads the sound off the result; 'voiced' is
+    # the earlier model, whose behaviours were assembled and fitted by
+    # ear. The first is the truth; the second is kept because it is what
+    # patches saved before this expect, and because a thing that sounds
+    # right is worth being able to go back to.
+    MODELS = ('derived', 'voiced')
+    # Two ways to read 'spin'. 'throw' works by CHANGE: rising injects,
+    # falling drains, holding still does nothing and the coin settles --
+    # a gesture throws a coin. 'hold' works by LEVEL: the gesture is the
+    # lean it asks for and sustained motion keeps the coin going. They
+    # are different instruments and both are worth having.
+    SPIN_MODES = ('throw', 'hold')
+    # How often the disc is stepped, in samples. Its motion tops out in
+    # the hundreds of hertz, so a few kilohertz is ample and the audio
+    # reads between steps.
+    CONTROL_DECIM = 8
+    # Half a coin's thickness as a fraction of its radius: a coin about
+    # 1.75 mm thick with a 12 mm radius.
+    COIN_ASPECT = 0.073
+    # How much a unit of gesture movement is worth as energy, per
+    # control step, and how much of it goes to balancing the spin
+    # rather than merely speeding it. Rising fast enough should carry a
+    # wobbling coin back to a clean balanced spin, which is what a hand
+    # winding one up actually does.
+    # How far from its goal the lean may sit before anything acts on
+    # it. Without a dead zone the drain and the pump hunt each other.
+    DEAD_ZONE = 0.18
+    # How hard the hold tracks the gesture. This has to be strong
+    # enough to FOLLOW the control, not merely lean against it: at a
+    # tenth of this the coin was cast partway up a ramp, the target
+    # jumped ahead of it, and the coin collapsed to its end and had to
+    # be dragged back -- heard as an acceleration and a resurrection
+    # every time the control was slid rather than jumped. Above about
+    # five times it overshoots instead.
+    # How quickly a held gesture carries the coin to the lean it asks
+    # for, per control step -- about a tenth of a second.
+    TRACK = 0.002
+    # How much weaker taking energy out is than putting it in.
+    # Taking energy out is weaker than putting it in, and deliberately
+    # so: winding a coin up is gradual, while the only way to take
+    # speed off one is to touch it. At full strength a release shortens
+    # what is left by about half; this is gentler than that, so letting
+    # go of the control hurries the coin rather than ending it.
+    DRAIN_SIDE = 0.6
+    INJECT_GAIN = 2.5
+    BALANCE_GAIN = 1.5
+    # How much accumulated rise counts as a throw, and how far over that
+    # throw puts the coin. The gain is one so that the whole of a
+    # gesture maps to the whole of the lean -- above one it saturates,
+    # and every throw past halfway casts the coin identically, which is
+    # a control with no range in it.
+    #
+    # Note which way this runs: a BIGGER throw stands the coin up more,
+    # and the rate goes as one over the root of the lean, so it starts
+    # SLOWER -- and then sweeps further and lasts longer. A gentle throw
+    # lands the coin nearly flat, where it buzzes fast and briefly.
+    # That is the physics rather than the intuition.
+    CAST_LEAST = 0.15
+    CAST_GAIN = 1.0
+    # How hard energy is pulled out to follow the settle law.
+    # Gentle enough to be stable, firm enough to follow the settle law.
+    # Measured: an order of magnitude above this and the disc is slammed
+    # into its own singularity; an order below and the tail runs long.
+    DRAIN = 0.002
+    # How much of the lean's arrival survives a face contact. A coin
+    # flopping onto its face keeps a good deal of it, which is why a
+    # badly cast one goes on flopping instead of stopping dead.
+    REBOUND = 0.62
+    # The nutation a cast withholds, as a fraction of the roll speed.
+    # Now that a face contact rebounds instead of ending the disc, this
+    # can be what the reference simulation says a real wobble is, rather
+    # than what the integrator would tolerate.
+    NUT_KICK = 0.35
+    # The derived model's load is the real one, in units of the disc's
+    # weight, so its raw scale has nothing to do with the voiced model's
+    # invented one. This brings the two into line so switching between
+    # them is a change of character and not of volume.
+    DERIVED_GAIN = 0.004
+    # How far out of round the contact's orbit is pulled at full wobble.
+    # At 0.6 the contact runs some sixteen times faster through the tight
+    # side of the turn than the wide one, which is a coin lurching badly
+    # -- and the pulse it makes is short and hard where it races, long
+    # and easy where it does not.
+    ORBIT_ECCENTRIC = 0.6
+    # How fast the lean swings against how fast the contact goes round.
+    # This was invented by ear at 0.5. It is now MEASURED, from a
+    # rolling-disc simulation derived by Kane's method and validated two
+    # ways -- energy conserved to one part in 10^12, and steady
+    # precession reproducing rate^2 = 4g/(radius*tilt) to better than
+    # 0.1% at small tilt, a law that appears nowhere in its derivation.
+    # Perturbing a steady roll and counting the lean's oscillations gives
+    # 0.775, and remarkably flatly: 0.774 at two degrees of tilt, 0.777
+    # at ten, 0.804 at thirty. The ear was 55% low.
+    # See dpg_system/tests/disc_reference.py.
+    NUTATION_RATIO = 0.775
+    # And how quickly a disc finds its steady precession: a third of the
+    # settle, so a bad cast is heard through the first half and is gone
+    # by the end, which is what a coin does.
+    NUTATION_SETTLE = 0.33
+    # How far past level the lean can swing when a coin is merely pushed
+    # over. It has to exceed one, or the face touches the table for a
+    # single sample per cycle instead of lying on it for a real arc of
+    # one -- which is the difference between a rattle and nothing.
+    NUTATION_MAX = 1.8
+    # Grains per sample at a full-lean roll: high enough that a rolling
+    # contact fuses into a continuous sound rather than being heard as
+    # separate events.
+    GRAIN_DENSITY = 0.35
+    # And the sparse end, where a contact is a handful of hits a second.
+    # Also the floor that keeps grain size finite.
+    GRAIN_FLOOR = 0.0004
+    # A self-affine surface ties an asperity's height to its WIDTH: over
+    # a lateral distance L the height wanders by about L**H. So a grain
+    # of height h is about h**(1/H) wide, and the contact -- travelling
+    # at a finite speed -- takes that much longer to cross it. Giving
+    # every grain the same one-sample life, whatever its size, turned
+    # the big ones into perfect impulses: flat to Nyquist, and audibly
+    # nothing to do with the grinding around them. A big feature is
+    # LOWER, not brighter. H near 0.8 is the usual measurement for worn
+    # and machined surfaces.
+    GRAIN_HURST = 0.8
+    # The longest a grain may run, in samples at the reference sweep.
+    # Also the length of the overlap-add ring the kernel schedules into.
+    GRAIN_RING = 64
+    # How much longer the softest contact's shortest grain is than the
+    # hardest one's. Soft contacts cannot make sharp events at all.
+    GRAIN_SOFT = 7.0
+    # The most the contact load is allowed to reach, in coin weights.
+    # Approached smoothly rather than run into.
+    LOAD_MAX = 5.0
+    # How the grinding answers that load. Amontons: friction force is
+    # proportional to the normal load, and rough-contact models put the
+    # exponent between two thirds and one, never above. Raise it and
+    # every flop turns into a burst.
+    LOAD_EXP = 1.0
+    # The lean below which the rim stops being a rim, as a fraction of
+    # the coin's own half-thickness over its radius. Below this the
+    # face is coming down and the rolling description gives out.
+    #
+    # This is a partial measure and worth saying so. The valve itself
+    # modulates the grind at the rocking rate, so opening it wide costs
+    # the thrown/wound-up distinction -- past about 0.15 a steadily
+    # wound coin starts swinging as much as a badly thrown one. This is
+    # the largest setting that leaves that intact. The artefacts it
+    # cannot reach are not really a rim problem: they are the end-phase
+    # dynamics, where the roll has died, the drain and the pump hunt,
+    # and the coin rocks THROUGH near-flat instead of precessing
+    # steadily down to it.
+    FLAT_SCALE = 0.12
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.spin_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.size_in = self.new_inlet(base=0.012, minimum=0.004,
+                                      maximum=0.6)
+        self.settle_in = self.new_inlet(base=3.0, minimum=0.05,
+                                        maximum=60.0)
+        self.rush_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        # Enough of a swing to have a clear tone and an audible flop once
+        # a turn, without being a coin that has been stepped on.
+        self.wobble_in = self.new_inlet(base=0.35, minimum=0.0,
+                                        maximum=1.0)
+        # How cleanly it was set spinning. 1 is a coin spun true on its
+        # edge; 0 is one simply pushed over, which never rolls at all
+        # and only rattles.
+        self.twist_in = self.new_inlet(base=0.8, minimum=0.0, maximum=1.0)
+        self.scrape_in = self.new_inlet(base=0.35, minimum=0.0, maximum=1.0)
+        self.hardness_in = self.new_inlet(base=0.75, minimum=0.0,
+                                          maximum=1.0)
+        self.polish_in = self.new_inlet(base=0.7, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        SpinUnit._seeded += 1
+        seed = (SpinUnit._seeded * 0x9E3779B97F4A7C15) % (1 << 64)
+        self._rng = np.uint64(seed if seed else 0x2545F4914F6CDD1D)
+        self._tilt = 0.0
+        self._phase = 0.0
+        self._face = 0.0
+        self._profile = 0.0
+        self._nut_phase = 0.0
+        self._nut_amp = 0.0
+        self._rim_down = 0.0
+        self._slap_amp = 0.0
+        self._slap_at = 0.0
+        self._slap_len = 0.0
+        self._grip = 0.0
+        self._lp = 0.0
+        self._hp = 0.0
+        self._edge = 0.0
+        self._landed = 1.0
+        self._quiet = True
+        self.model = 1
+        self.spin_mode = 0
+        # The disc's own state, for the derived model.
+        self._d_q1 = 0.0
+        self._d_q2 = 1.5707963267948966
+        self._d_q3 = 0.0
+        self._d_u1 = 0.0
+        self._d_u2 = 0.0
+        self._d_u3 = 0.0
+        self._gesture_last = 0.0
+        self._push = 0.0
+        self._lean_goal = 0.0
+        self._mean_lean = 0.0
+        self._load_now = 1.0
+        self._sweep_now = 0.0
+        self._prec_now = 0.0
+        self._grain_head = 0.0
+
+        self.out = self.new_outlet()
+        self.grind = self.new_outlet()
+        self.landing = self.new_outlet()
+        self.rate = self.new_outlet()
+        self.face = self.new_outlet()
+        self._gesture = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._hz = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._roll = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._hit = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._turn = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+        # Grains outlive the sample that starts them, so what is still
+        # sounding has to be carried across the block edge.
+        self._grain_ring = np.zeros(SpinUnit.GRAIN_RING, dtype=np.float64)
+
+    def reset(self):
+        self._tilt = 0.0
+        self._phase = 0.0
+        self._face = 0.0
+        self._profile = 0.0
+        self._nut_phase = 0.0
+        self._nut_amp = 0.0
+        self._rim_down = 0.0
+        self._slap_amp = 0.0
+        self._slap_at = 0.0
+        self._slap_len = 0.0
+        self._grip = 0.0
+        self._lp = 0.0
+        self._hp = 0.0
+        self._edge = 0.0
+        self._landed = 1.0
+        self._quiet = True
+        self._d_q1 = 0.0
+        self._d_q2 = 1.5707963267948966
+        self._d_q3 = 0.0
+        self._d_u1 = 0.0
+        self._d_u2 = 0.0
+        self._d_u3 = 0.0
+        self._gesture_last = 0.0
+        self._push = 0.0
+        self._lean_goal = 0.0
+        self._mean_lean = 0.0
+        self._load_now = 1.0
+        self._sweep_now = 0.0
+        self._prec_now = 0.0
+        self._grain_head = 0.0
+        self._grain_ring[:] = 0.0
+
+    # Every number this unit carries between blocks. A single infinity
+    # anywhere in here poisons all of them within a block or two, and
+    # then stays -- which is a voice that has gone silent for the rest of
+    # the session and cannot be got back without rebuilding the patch.
+    _STATE = ('_tilt', '_phase', '_face', '_profile', '_nut_phase',
+              '_nut_amp', '_rim_down', '_slap_amp', '_slap_at',
+              '_slap_len', '_grip', '_lp', '_hp', '_edge', '_landed',
+              '_d_q1', '_d_q2', '_d_q3', '_d_u1', '_d_u2', '_d_u3',
+              '_lean_goal', '_mean_lean', '_load_now', '_sweep_now',
+              '_prec_now', '_grain_head')
+
+    def _state_is_sane(self):
+        """True if nothing has gone to infinity or worse.
+
+        A settling disc runs into a genuine singularity, and no amount of
+        clamping proves that some corner of the parameter space cannot
+        step over it. So rather than claim it cannot happen, the unit
+        checks whether it has, and recovers.
+        """
+        for name in SpinUnit._STATE:
+            value = getattr(self, name)
+            if not (value == value) or value > 1.0e30 or value < -1.0e30:
+                return False
+        return True
+
+    def render(self, frames):
+        spin = self.spin_in.eval(frames)
+        size = self.size_in.eval(frames)
+        settle = self.settle_in.eval(frames)
+        rush = self.rush_in.eval(frames)
+        wobble = self.wobble_in.eval(frames)
+        twist = self.twist_in.eval(frames)
+        scrape = self.scrape_in.eval(frames)
+        hardness = self.hardness_in.eval(frames)
+        polish = self.polish_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        grind_out = self.grind
+        strike_out = self.landing
+        rate_out = self.rate
+        face_out = self.face
+        if not _svf_ready.is_set():
+            for signal in (out, grind_out, strike_out, rate_out, face_out):
+                signal.set_constant(0.0)
+            return
+
+        gesture = self._gesture[:frames]
+        if spin.constant:
+            gesture[:] = spin.value
+            idle = spin.value <= 1.0e-4
+        else:
+            np.copyto(gesture, spin.data[:frames])
+            idle = False
+        np.clip(gesture, 0.0, 1.0, out=gesture)
+
+        if self._quiet and idle and self._landed > 0.5:
+            for signal in (out, grind_out, strike_out, rate_out):
+                signal.set_constant(0.0)
+            # The face keeps whatever it stopped at: a control that
+            # jumped to zero on landing would step whatever it drives.
+            face_out.set_constant(self._profile)
+            return
+
+        def scalar(signal, lo, hi):
+            value = signal.value if signal.constant else float(signal.data[0])
+            return min(hi, max(lo, value))
+
+        radius = scalar(size, 0.004, 0.6)
+        tail = scalar(settle, 0.05, 60.0)
+        # Wobble is the swing in how hard the rim presses, and it reaches
+        # far past the disc's own weight: an off-kilter coin flops onto
+        # its rim carrying several times what a true one does, and that
+        # load is where the sharpness comes from. At 0 the disc is
+        # perfectly true, the load never varies, and there is no tone at
+        # all -- only a steady hiss, which is honestly what a perfect
+        # disc on a perfect surface would make.
+        twist_now = scalar(twist, 0.0, 1.0)
+        # A coin pushed over stops quickly; one spun true rings on. So
+        # the cast shortens the tail as well as roughening it -- 'settle'
+        # is the time a cleanly spun disc takes, and a bad throw gets a
+        # fraction of it.
+        cast_tail = tail * (0.15 + 0.85 * twist_now)
+        wob_raw = scalar(wobble, 0.0, 1.0)
+        wob = SpinUnit.WOBBLE_DEPTH * wob_raw
+        # The same off-centre mass that swings the load also pulls the
+        # contact's orbit out of round, so one control owns both. Squared,
+        # so a well-spun coin stays round and the lurch belongs to the
+        # badly spun end where it is actually heard.
+        ecc = SpinUnit.ORBIT_ECCENTRIC * wob_raw * wob_raw
+        # The turn has to keep its average rate whatever shape it takes,
+        # or wobble would retune the disc. This is the mean of the rate
+        # factor over a turn.
+        orbit_norm = 1.0 + 0.5 * ecc * ecc
+        grain_dens = SpinUnit.GRAIN_DENSITY
+        grain_floor = SpinUnit.GRAIN_FLOOR
+        grain_ceiling = 1.0 / math.sqrt(SpinUnit.GRAIN_FLOOR)
+        nut_ratio = SpinUnit.NUTATION_RATIO
+        # A disc settles into steady precession because its SPIN holds it
+        # there; that is what gyroscopic stability is for. So the swing in
+        # the lean bleeds away in proportion to the twist it was given --
+        # and a coin merely pushed over, with no spin at all, never
+        # settles into rolling. It flops until it stops, which is exactly
+        # what the far end of this continuum should do.
+        nut_decay = twist_now / max(1.0, SpinUnit.NUTATION_SETTLE
+                                    * cast_tail * self.sample_rate)
+        scr = scalar(scrape, 0.0, 1.0)
+        hard = scalar(hardness, 0.0, 1.0)
+        pol = scalar(polish, 0.0, 1.0)
+        # Which power of the lean the losses go as. Minus one is loss
+        # proportional to energy, a half is rolling friction, one is drag
+        # on the face, two is Moffatt's viscous gap. Squared, because the
+        # exponents above a half all sound like the same cliff: the knob
+        # spends most of its travel where the tail's shape still changes.
+        spread = scalar(rush, 0.0, 1.0)
+        law = -1.0 + 3.0 * spread * spread
+
+        tilt_full = SpinUnit.TILT_FULL
+        # Flat is not zero: a rim has a thickness and a table has a
+        # texture, and the disc lands when its lean is down among them.
+        # This is the ceiling of the whole pitch sweep.
+        tilt_flat = tilt_full * 10.0 ** -(0.7 + 2.3 * pol)
+        # Precession: rate squared is four g over radius times tilt, in
+        # radians per second. Held here as phase per sample.
+        rate_scale = math.sqrt(4.0 * 9.80665 / radius) \
+            / (6.283185307179586 * self.sample_rate)
+        # 'settle' is the time from full lean to flat, so the loss
+        # constant is that path divided by that time -- which keeps
+        # settle and polish from pulling on each other.
+        if abs(law + 1.0) > 1.0e-6:
+            power = law + 1.0
+            span = (tilt_full ** power - tilt_flat ** power) / power
+        else:
+            span = math.log(tilt_full / tilt_flat)
+        loss = span / (cast_tail * self.sample_rate)
+        # A nudge to a disc already going takes fifteen milliseconds to
+        # arrive, so re-energizing glides rather than steps.
+        lift_k = 1.0 / max(1.0, 0.015 * self.sample_rate)
+        # Contact: six milliseconds of something soft down to under two
+        # tenths for coin on stone.
+        contact = max(4.0, 0.006 * (0.03 ** hard) * self.sample_rate)
+        # The landing at full lean has unit area -- the same convention as
+        # bounce~, so hardness is the colour of a contact, not its weight.
+        strike_scale = (2.0 / contact) / math.sqrt(tilt_full)
+        # The load ripple is the continuous voice, so it is referenced to
+        # full lean rather than to a contact time: how hard the disc is
+        # shaken does not depend on how sharp its rim is.
+        ripple_gain = 0.015 / math.sqrt(tilt_full)
+        # Grinding rises as the square root of the contact's speed,
+        # referenced to full lean so 'scrape' means the same thing at
+        # every size.
+        step_full = rate_scale / math.sqrt(tilt_full)
+        scrape_gain = scr * 0.01 / math.sqrt(step_full)
+        scrape_k = min(0.9, 4000.0 / self.sample_rate)
+        # How scale-free the surface is. A worn or machined surface has
+        # asperities at every size, so its impulses are power-law
+        # distributed; 'scrape' sets how heavy that tail is. Below an
+        # index of two the variance diverges, which is the regime where
+        # a contact keeps sounding granular instead of collapsing into
+        # hiss -- so rougher does not merely mean louder, it means the
+        # big events stay individually audible.
+        tail_index = 2.3 - 1.0 * scr
+        grain_tail = 1.0 / tail_index
+        grain_max = 40.0
+        # Power has to stay put while the tail changes, or 'scrape'
+        # would double as a volume control. This is the mean square of
+        # a Pareto draw clipped at grain_max, in closed form.
+        clip = grain_max ** (-tail_index)
+        power = 1.0 - 2.0 / tail_index
+        if abs(power) > 1.0e-9:
+            spread = (1.0 - clip ** power) / power
+        else:
+            spread = -math.log(clip)
+        mean_square = grain_max * grain_max * clip + spread
+        grain_norm = 1.0 / math.sqrt(max(mean_square, 1.0e-9))
+        # Spreading a grain over its own width moves power about -- a
+        # long grain holds its momentum but spends it slower -- so the
+        # normalisation above is no longer the whole story. Integrate
+        # what the shaped grains actually carry and put the level back.
+        # Only 'scrape' moves it, so it is worked out once and kept.
+        hurst_inv = 1.0 / SpinUnit.GRAIN_HURST
+        grain_span = 1.0
+        # The shortest grain the contact can pass. 'hardness' already
+        # means how sharply a contact answers, so it sets this too.
+        grain_least = int(round(1.0 + (1.0 - hard) * SpinUnit.GRAIN_SOFT))
+        if grain_least < 1:
+            grain_least = 1
+        if getattr(self, '_shape_at', None) != (tail_index, grain_least):
+            u = (np.arange(4096) + 0.5) / 4096.0
+            sizes = np.minimum(u ** (-grain_tail), grain_max)
+            durs = np.clip((sizes ** hurst_inv * grain_span).astype(int),
+                           grain_least, SpinUnit.GRAIN_RING - 1)
+            # A one-sample grain keeps its square; a raised cosine of
+            # length D spends (3/8)D of the square of its own peak, and
+            # that peak is 2/D of the momentum it was given.
+            carried = np.where(durs > 1, 1.5 / durs, 1.0) * sizes * sizes
+            self._shape_norm = float(
+                math.sqrt(max((sizes * sizes).mean(), 1.0e-9)
+                          / max(carried.mean(), 1.0e-30)))
+            self._shape_at = (tail_index, grain_least)
+        # Only the derived model shapes its grains, so only it gets the
+        # compensation. Handing this to the voiced kernel too would make
+        # it louder to correct for something it does not do.
+        grain_norm_shaped = grain_norm * self._shape_norm
+        # How the grinding answers the load. Both of these are what makes
+        # a flop a sharpening rather than a swell: it grows faster than
+        # the press, and it brightens while it grows. Hardness sets how
+        # much of each, so a coin on stone flops sharply and something
+        # soft merely leans on it.
+        # Friction force is PROPORTIONAL to the normal load -- Amontons,
+        # and every rough-contact model from Bowden and Tabor's plastic
+        # junctions to Greenwood and Williamson's elastic ones puts the
+        # exponent between two thirds and one. Never above. This used to
+        # rise to 1.9 with hardness, which turned a five-fold load into
+        # a twenty-fold burst: twenty-six decibels arriving in a few
+        # milliseconds, which is a glitch and not a coin. Hardness earns
+        # its keep on the SPECTRUM instead -- how short a grain the
+        # contact can pass, and how much it brightens under load.
+        # The voiced model is kept as an untouched reference, so it
+        # keeps the exponent it was tuned with; only the derived model
+        # is held to the physics.
+        load_exp = 1.0 + 0.9 * hard
+        load_exp_real = SpinUnit.LOAD_EXP
+        sharpen = 0.1 + 0.5 * hard
+        # A one-pole high-pass on white noise keeps only a fraction of
+        # its power, so the bright tap is scaled back up to sit level
+        # with the noise it replaces.
+        sharp_k = min(0.9, 5000.0 * 6.283185307179586 / self.sample_rate)
+        bright_norm = math.sqrt((2.0 - sharp_k) / sharp_k)
+        stop_k = min(1.0, 1.0 / max(1.0, 0.002 * self.sample_rate))
+
+        if self.model == 0:
+            # The derived model: integrate the disc, read the sound off
+            # it. Everything fast -- precession, the swing in the lean,
+            # the surge in load, the speed the contact sweeps -- comes
+            # out of the equations rather than being shaped here.
+            decim = SpinUnit.CONTROL_DECIM
+            dt = decim / self.sample_rate
+            # The sweep at a full-lean steady roll, as the reference the
+            # grain density and the grinding are measured against.
+            q2_full = 1.5707963267948966 - tilt_full
+            u3_full = 2.0 * math.sqrt(9.80665 * math.cos(q2_full) / radius)
+            sweep_ref = abs(math.tan(q2_full) * u3_full)
+            # The fastest the disc can legitimately turn, set by where it
+            # is stopped: anything past that is the integrator, not the
+            # coin.
+            u_cap = 4.0 * math.sqrt(9.80665 / (radius * tilt_flat))
+            # Zero, not a small positive number. The roll is held from
+            # reversing, but it must be allowed to be NONE -- a coin
+            # given no twist has no spin at all, and a floor above zero
+            # seeds one. Near the singularity the dynamics then amplify
+            # that seed exponentially, so the least-spun coin came out
+            # spinning fastest of all.
+            u_floor = 0.0
+            # Room above the requested lean for the nutation to swing
+            # into. Clamped at the request itself, a held gesture clips
+            # every upswing and the wobble bleeds away against the
+            # ceiling; with no ceiling at all the pump overshoots and
+            # the coin tumbles. Half again is enough for the swing and
+            # still bounds a runaway.
+            # The lean rate a coin arrives with after falling from
+            # full lean, which is what an impact is measured against.
+            fall_speed = math.sqrt(2.0 * 0.8 * 9.80665
+                                   * math.sin(q2_full) * tilt_full / radius)
+            lean_ceiling = min(1.49, tilt_full * 1.6)
+            q2_ceiling = 1.5707963267948966 - lean_ceiling
+            # The derived model earns its shorter tail by flopping, so it
+            # is given the settle time as asked rather than pre-shortened.
+            plain_loss = span / (tail * self.sample_rate)
+            # A coin is a cylinder, not a knife edge. Its thickness runs
+            # about a seventh of its radius; this is half of that, the
+            # offset from the contact edge to the centre along the
+            # symmetry axis.
+            half_thick = radius * SpinUnit.COIN_ASPECT
+            # The fastest roll the ceiling lean can hold in steady
+            # rolling: past this the coin would have to stand up
+            # further, and it is not allowed to.
+            _sc = math.sin(q2_ceiling)
+            _cc = math.cos(q2_ceiling)
+            _tc = _sc / max(_cc, 1.0e-6)
+            _n = 9.80665 * (radius * _sc - half_thick * _cc)
+            _d = (0.25 * radius * radius * _tc + radius * half_thick
+                  + half_thick * half_thick * _tc)
+            u3_ceiling = math.sqrt(max(_n, 0.0) / _d) if _d > 0.0 else u_cap
+            # 'wobble' means something physical here: how far from round
+            # the rim is, as a fraction of the radius. A tenth is a badly
+            # made coin.
+            out_of_round = 0.1 * wob_raw
+            if sweep_ref < 1.0e-6:
+                sweep_ref = 1.0e-6
+            result = self._y[:frames]
+            hertz = self._hz[:frames]
+            rolling = self._roll[:frames]
+            hits = self._hit[:frames]
+            turning = self._turn[:frames]
+            (self._d_q1, self._d_q2, self._d_q3, self._d_u1, self._d_u2,
+             self._d_u3, self._gesture_last, self._push,
+             self._lean_goal, self._mean_lean, self._load_now,
+             self._sweep_now, self._prec_now, self._slap_amp,
+             self._slap_at, self._slap_len, self._grip, self._lp,
+             self._hp, self._edge, self._landed,
+             rng_state, self._grain_head) = _spin_real_kernel(
+                gesture, radius, 9.80665, tilt_full, tilt_flat, lift_k,
+                plain_loss, law, twist_now, wob_raw, contact,
+                strike_scale, 2.5,
+                ripple_gain * SpinUnit.DERIVED_GAIN,
+                scrape_gain * SpinUnit.DERIVED_GAIN, scrape_k,
+                load_exp_real, sharpen,
+                sharp_k, bright_norm, stop_k, grain_dens, grain_floor,
+                grain_ceiling, sweep_ref, half_thick,
+                1.0 if self.spin_mode else 0.0, SpinUnit.DEAD_ZONE,
+                SpinUnit.TRACK, SpinUnit.DRAIN_SIDE,
+                SpinUnit.INJECT_GAIN, SpinUnit.BALANCE_GAIN,
+                SpinUnit.CAST_LEAST, SpinUnit.CAST_GAIN,
+                grain_tail, grain_max,
+                grain_norm_shaped, out_of_round,
+                SpinUnit.DRAIN, SpinUnit.NUT_KICK, SpinUnit.REBOUND,
+                fall_speed, u3_full * 0.05, fall_speed * 0.04,
+                u3_ceiling,
+                u_cap, u_floor, SpinUnit.LOAD_MAX - 1.0,
+                max(1.0e-6, SpinUnit.FLAT_SCALE * half_thick / radius),
+                q2_ceiling,
+                math.sin(tilt_flat), decim, dt,
+                self.sample_rate,
+                self._d_q1, self._d_q2, self._d_q3, self._d_u1,
+                self._d_u2, self._d_u3, self._gesture_last, self._push,
+                self._lean_goal, self._mean_lean,
+                self._load_now, self._sweep_now, self._prec_now,
+                self._slap_amp, self._slap_at, self._slap_len, self._grip,
+                self._lp, self._hp, self._edge, self._landed, self._rng,
+                hurst_inv, grain_span, grain_least, self._grain_head,
+                result, hertz, turning, rolling, hits, self._grain_ring)
+            self._rng = np.uint64(rng_state)
+            if not self._state_is_sane():
+                # Something stepped over the singularity. Put the coin
+                # down, silence this block, and carry on -- a voice that
+                # cannot recover from one bad block is worse than one
+                # that drops a block.
+                self.reset()
+                for signal in (out, grind_out, strike_out, rate_out,
+                               face_out):
+                    signal.set_constant(0.0)
+                return
+            glide = self._level_glide
+            self._apply_level(result, out_level, frames)
+            advanced = self._level_glide
+            self._level_glide = glide
+            self._apply_level(rolling, out_level, frames)
+            self._level_glide = glide
+            self._apply_level(hits, out_level, frames)
+            self._level_glide = advanced
+            np.copyto(out.data[:frames], result, casting='unsafe')
+            out.constant = False
+            np.copyto(grind_out.data[:frames], rolling, casting='unsafe')
+            grind_out.constant = False
+            np.copyto(strike_out.data[:frames], hits, casting='unsafe')
+            strike_out.constant = False
+            np.copyto(rate_out.data[:frames], hertz, casting='unsafe')
+            rate_out.constant = False
+            np.copyto(face_out.data[:frames], turning, casting='unsafe')
+            face_out.constant = False
+            scratch = self._scratch[:frames]
+            np.abs(result, out=scratch)
+            self._quiet = bool(scratch.max() < 1.0e-5)
+            return
+
+        result = self._y[:frames]
+        hertz = self._hz[:frames]
+        rolling = self._roll[:frames]
+        hits = self._hit[:frames]
+        turning = self._turn[:frames]
+        (self._tilt, self._phase, self._face, self._profile,
+         self._nut_phase, self._nut_amp, self._rim_down,
+         self._slap_amp, self._slap_at, self._slap_len, self._grip,
+         self._lp, self._hp, self._edge, self._landed,
+         rng_state) = _spin_kernel(
+            gesture, tilt_full, tilt_flat, lift_k, loss, law, rate_scale,
+            0.4, contact, strike_scale, grain_tail, grain_max, grain_norm,
+            wob, ecc, orbit_norm, nut_ratio,
+            nut_decay, SpinUnit.NUTATION_MAX, twist_now, grain_dens,
+            grain_floor, grain_ceiling, step_full, 2.5,
+            ripple_gain, scrape_gain,
+            scrape_k, load_exp, sharpen, sharp_k, bright_norm, stop_k,
+            self.sample_rate,
+            self._tilt, self._phase, self._face, self._profile,
+            self._nut_phase, self._nut_amp, self._rim_down,
+            self._slap_amp, self._slap_at, self._slap_len,
+            self._grip, self._lp, self._hp, self._edge,
+            self._landed, self._rng, result, hertz, turning, rolling, hits)
+        self._rng = np.uint64(rng_state)
+
+        # Level rides the sound, not the controls: a rate in Hz and a
+        # profile between minus one and one mean what they say, and a
+        # fader on them would be a lie. The glide is rewound between the
+        # three, since it advances once per block and not once per
+        # buffer -- otherwise each outlet would ride a different ramp
+        # and the parts would stop summing to the whole.
+        glide = self._level_glide
+        self._apply_level(result, out_level, frames)
+        advanced = self._level_glide
+        self._level_glide = glide
+        self._apply_level(rolling, out_level, frames)
+        self._level_glide = glide
+        self._apply_level(hits, out_level, frames)
+        self._level_glide = advanced
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        np.copyto(grind_out.data[:frames], rolling, casting='unsafe')
+        grind_out.constant = False
+        np.copyto(strike_out.data[:frames], hits, casting='unsafe')
+        strike_out.constant = False
+        np.copyto(rate_out.data[:frames], hertz, casting='unsafe')
+        rate_out.constant = False
+        np.copyto(face_out.data[:frames], turning, casting='unsafe')
+        face_out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
 
 
 class FaderUnit(Unit):

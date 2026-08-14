@@ -30,7 +30,8 @@ from dpg_system.synth_core import (
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
-    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit, MotorUnit, BubblesUnit)
+    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit, MotorUnit, BubblesUnit,
+    SpinUnit)
 
 import os
 
@@ -99,6 +100,8 @@ def register_synth_nodes():
     Node.app.register_node('engine~', MotorNode.factory)
     Node.app.register_node('bounce~', BounceNode.factory)
     Node.app.register_node('drop~', BounceNode.factory)
+    Node.app.register_node('spin~', SpinNode.factory)
+    Node.app.register_node('coin~', SpinNode.factory)
     Node.app.register_node('drum~', DrumNode.factory)
     Node.app.register_node('skin~', DrumNode.factory)
     Node.app.register_node('strain~', StrainNode.factory)
@@ -194,6 +197,18 @@ class SynthNode(Node):
         'left carrier': ('carrier',),
         'left out': ('signal', 'left'),
         'right out': ('right',),
+        # 'drive' was the wrong voice for it. A resonator is passive --
+        # 'excite in' says so correctly -- and what this sets is how
+        # keenly the body hears what arrives, not how hard something
+        # pushes. It sits under the excite inlet now, where the thing it
+        # scales is.
+        'sensitivity': ('drive',),
+        # spin~ once made a blow every time its rim unloaded. Testing
+        # against real coins said otherwise -- a settling coin stays on
+        # the table and its flop is the grinding gone sharp -- so the
+        # only impact left is the one at the end, and the outlet is
+        # named for it.
+        'landing': ('strikes',),
     }
 
     def add_signal_input(self, label, inlet):
@@ -258,6 +273,13 @@ class SynthNode(Node):
             port.widget.prefix_label = label
             port.widget._label = '##' + label
         port.synth_inlet = inlet
+        # A renamed knob has to answer to what it used to be called, or the
+        # loader searches by name, fails, and drops the cord -- silently,
+        # in every patch that ever used it. Signal ports have carried this
+        # since the stereo rename; modulation ports were missed, which made
+        # renaming one of them a quiet way to break saved work.
+        for old_name in SynthNode.LEGACY_PORT_NAMES.get(label, ()):
+            port.name_archive.append(old_name)
         self.signal_inputs.append(port)
         self._parameter_bindings.append((port, inlet))
         self._modulation_ports.append(port)
@@ -270,6 +292,10 @@ class SynthNode(Node):
             if option.widget is not None:
                 option.widget.speed = 0.01
                 option.widget._label = '##' + label + ' depth'
+                # The depth is saved under its own name, so it needs the
+                # same memory as the knob it belongs to.
+                for old_name in SynthNode.LEGACY_PORT_NAMES.get(label, ()):
+                    option.name_archive.append(old_name + ' depth')
                 option.widget.set_tooltip('depth: scales whatever is patched '
                                           'to the ' + label + ' inlet')
                 option.inline_with = port.widget
@@ -4064,6 +4090,16 @@ class StringNode(SynthNode):
         self.unit.mode = StringUnit.MODES.index(mode)
 
         self.add_signal_input('excite in', self.unit.excite_in)
+        sense_port = self.add_modulation_input(
+            'sensitivity', self.unit.sensitivity_in,
+            default_value=self.unit.sensitivity_in.base,
+            minimum=0.0, maximum=8.0, speed=0.01, slider=False)
+        self.make_drag_proportional(sense_port)
+        if sense_port.widget is not None:
+            sense_port.widget.set_tooltip(
+                'how keenly the string hears what is patched to the excite '
+                'inlet above. Unity leaves it as it always was; it reaches '
+                'past that for excitations too sparse to speak')
         self.add_trigger_signal_input('pluck', self.unit.trigger_in,
                                       self.pluck)
         self.add_modulation_input('frequency', self.unit.frequency_in,
@@ -4168,6 +4204,19 @@ MODAL_MATERIALS = {
     'wood': [
         (1.0, 1.0, 1.0), (2.572, 0.6, 0.5), (4.644, 0.35, 0.3),
         (6.984, 0.2, 0.15),
+    ],
+    # A free circular plate: a coin, a cymbal, a dropped saucepan lid.
+    # The flexural modes of a disc clamped nowhere, so ratio 1 is the
+    # two-nodal-diameter mode rather than any kind of fundamental, and
+    # nothing above it is an integer of anything. Ratios are the free
+    # plate's tabulated series, and only the first few of them are
+    # precise -- the upper rows are voiced by ear, like every other
+    # table's weights. This is what spin~ wants; fix frequency high for
+    # a coin (two to three kHz) and low for a plate.
+    'plate': [
+        (1.0, 1.0, 1.0), (1.73, 0.85, 0.9), (2.33, 0.7, 0.75),
+        (3.91, 0.55, 0.55), (4.06, 0.5, 0.5), (5.94, 0.35, 0.35),
+        (8.72, 0.22, 0.25), (11.75, 0.15, 0.18),
     ],
     'gong': [
         (1.0, 1.0, 1.0), (1.16, 0.9, 0.95), (1.42, 0.85, 0.9),
@@ -4469,6 +4518,16 @@ class ModalNode(ModeTableNode):
         self._init_mode_editor(label, material)
 
         self.add_signal_input('excite in', self.unit.excite_in)
+        sense_port = self.add_modulation_input(
+            'sensitivity', self.unit.sensitivity_in,
+            default_value=self.unit.sensitivity_in.base,
+            minimum=0.0, maximum=8.0, speed=0.01, slider=False)
+        self.make_drag_proportional(sense_port)
+        if sense_port.widget is not None:
+            sense_port.widget.set_tooltip(
+                'how keenly the modes hear what is patched to the excite '
+                'inlet above -- it reaches well past unity, because a '
+                'sparse excitation into a high bank needs real gain')
         self.add_trigger_signal_input('strike', self.unit.trigger_in,
                                       self.strike)
         self.add_modulation_input('frequency', self.unit.frequency_in,
@@ -4485,13 +4544,6 @@ class ModalNode(ModeTableNode):
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('position', self.unit.position_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
-        drive_port = self.add_modulation_input('drive', self.unit.drive_in,
-                                               minimum=0.0, maximum=2.0,
-                                               speed=0.01)
-        if drive_port.widget is not None:
-            drive_port.widget.set_tooltip(
-                'how hard the excite input speaks through the modes; its '
-                'partner below is how much of it passes around them')
         dry_port = self.add_modulation_input('dry', self.unit.dry_in,
                                              minimum=0.0, maximum=1.0,
                                              speed=0.01)
@@ -4641,6 +4693,214 @@ class BounceNode(SynthNode):
         self.signal_output = self.add_signal_output('out', self.unit.out)
         self.add_switch()
         self.finish_synth_node()
+
+
+class SpinNode(SynthNode):
+    """A spinning disc settling: the rattle that runs away.
+
+    A dropped coin, a plate set down spinning, a hubcap in the road --
+    and it is not a bounce. The contact point races around the rim at a
+    rate that goes as one over the square root of the tilt, so as the
+    lean bleeds away the rattle accelerates without limit and then
+    stops dead. That runaway is the whole mechanism; the strikes weaken
+    as the tilt's square root while their rate rises as its inverse
+    square root, which is why a settling disc thins to a shimmer rather
+    than building. And the disc's own face turns slower as the rattle
+    gets faster, heard as a wobble that drags while the pitch runs
+    away.
+
+    'spin' can only add energy: raise it and the disc leans that far,
+    and everything after is loss. Hold it and the clatter holds at the
+    pitch that level sets; let go and it settles from wherever it had
+    got to. That is the point of patching movement here -- the tail is
+    what the disc does after the hand has stopped, and a big gesture
+    buys a long low one.
+
+    'size' is the radius in metres (a coin turns ten times a second at
+    full lean, a dinner plate four), 'settle' the seconds to flat,
+    'rush' where in the tail the acceleration lives -- 0 spreads it
+    evenly, 0.7 is rolling friction, 1 is Moffatt's viscous-air law,
+    which holds still and then spends the last per cent of the settle
+    on the whole scream.
+
+    A rolling disc keeps its contact, and a settling coin hardly ever
+    leaves the table, so this is one continuous sound modulated by the
+    rotation rather than a series of blows. The rim passes under the
+    contact at the precession rate, which rises, and that ripple in the
+    load is the pitch; the disc's own weight comes round at the face
+    rate, which FALLS, and that is the slow waver in intensity.
+
+    'twist' is how much spin was in the fall, and it is the main thing.
+    At 1 the coin was set true on its edge: it rolls, the contact
+    drifts round the rim regularly, nothing leaves the table. At 0 it
+    was simply pushed over: it never rolls at all, the lean swings past
+    level every cycle, the face slaps, and it rattles to a stop. That
+    works by nutation -- the lean oscillating instead of falling
+    smoothly -- so a bad cast warbles the PITCH as well as the load,
+    and since spin is what holds a disc in steady precession, the swing
+    dies away in proportion to the twist it was given.
+
+    'wobble' is the coin's own trueness, which matters but matters
+    less: the swing in how hard it presses, several times its weight at
+    full. It buys the tone (a true disc has no ripple to hear) and the
+    flop. That flop is not an impact; the contact stays down carrying
+    far more weight for a moment, and since a loaded contact engages
+    more surface and stiffens, the grinding grows faster than the load
+    and brightens as it grows. 'hardness' is how sharply it answers
+    that load -- coin on stone cuts, something soft merely leans.
+
+    'scrape' is the roughness under the contact, 'polish' how near flat
+    it gets before it lands -- how high the whir climbs, and whether
+    the end is a clack or a vanishing.
+
+    Five outlets, because the dynamics are worth more than the sound.
+    'out' is everything, 'grind' the rolling, which is nearly all of
+    it, and 'landing' the single impact at the end, alone, so it can
+    have its own resonator and gain. 'rate' is the precession frequency
+    in Hz, rising, and 'face' the disc's profile coming round, falling
+    -- two counter-moving controls out of one gesture, for a pitch, a
+    cutoff, or rub~'s velocity.
+
+    For a coin, into modal~ or drum~ on the 'plate' table. A coin's
+    modes are up at two or three kilohertz and a bank that high rings
+    small, so bring modal~'s drive and level up -- a real coin is not
+    loud. spin~ <radius>, coin~ too.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return SpinNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = SpinUnit(synth_graph.sample_rate)
+
+        if args is not None:
+            for arg in args:
+                try:
+                    self.unit.size_in.base = max(0.004, min(0.6, float(arg)))
+                except (ValueError, TypeError):
+                    continue
+
+        spin_port = self.add_modulation_input('spin', self.unit.spin_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if spin_port.widget is not None:
+            spin_port.widget.set_tooltip(
+                'the lean, and it only ever adds: hold it for the sound, '
+                'release it for the tail. THE control -- map a movement here')
+        size_port = self.add_modulation_input(
+            'size', self.unit.size_in,
+            default_value=self.unit.size_in.base,
+            minimum=0.004, maximum=0.6, speed=0.002, slider=False)
+        self.make_drag_proportional(size_port)
+        if size_port.widget is not None:
+            size_port.widget.set_tooltip(
+                'the disc\'s radius in metres: it sets every rate. 0.012 is '
+                'a coin, 0.12 a dinner plate')
+        settle_port = self.add_modulation_input(
+            'settle', self.unit.settle_in,
+            default_value=self.unit.settle_in.base,
+            minimum=0.05, maximum=60.0, speed=0.01, slider=False)
+        self.make_drag_proportional(settle_port)
+        if settle_port.widget is not None:
+            settle_port.widget.set_tooltip(
+                'seconds from full lean to flat: the length of the tail')
+        rush_port = self.add_modulation_input('rush', self.unit.rush_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if rush_port.widget is not None:
+            rush_port.widget.set_tooltip(
+                'which loss dominates, so where in the tail the acceleration '
+                'lives: 0 spreads it evenly, 0.7 is rolling friction, 1 is '
+                'the viscous-air law -- still, then all of it at once')
+        twist_port = self.add_modulation_input('twist', self.unit.twist_in,
+                                               minimum=0.0, maximum=1.0,
+                                               speed=0.01)
+        if twist_port.widget is not None:
+            twist_port.widget.set_tooltip(
+                'how much spin was in the fall. 1 is a coin set true on '
+                'its edge -- it rolls, and the contact drifts round in a '
+                'regular way. 0 is one simply pushed over: it never rolls '
+                'at all, the lean swings past level every cycle, and it '
+                'rattles to a stop. Everything between is a real throw')
+        wobble_port = self.add_modulation_input('wobble', self.unit.wobble_in,
+                                                minimum=0.0, maximum=1.0,
+                                                speed=0.01)
+        if wobble_port.widget is not None:
+            wobble_port.widget.set_tooltip(
+                'how unevenly the disc is made: the swing in how hard it '
+                'presses, up to several times its own weight, on the face\'s '
+                'own slowing turn. It buys the tone AND the flop -- a true '
+                'disc has no ripple to hear')
+        scrape_port = self.add_modulation_input('scrape', self.unit.scrape_in,
+                                                minimum=0.0, maximum=1.0,
+                                                speed=0.01)
+        if scrape_port.widget is not None:
+            scrape_port.widget.set_tooltip(
+                'the roughness under the contact, rising with the speed it '
+                'travels: the body of the whir')
+        hard_port = self.add_modulation_input('hardness',
+                                              self.unit.hardness_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if hard_port.widget is not None:
+            hard_port.widget.set_tooltip(
+                'how sharply the grinding answers a load: high and each '
+                'flop cuts, low and it merely swells. This is what makes '
+                'a flop sound like a flop')
+        polish_port = self.add_modulation_input('polish', self.unit.polish_in,
+                                                minimum=0.0, maximum=1.0,
+                                                speed=0.01)
+        if polish_port.widget is not None:
+            polish_port.widget.set_tooltip(
+                'how near flat it gets before it lands -- how high the whir '
+                'climbs, and whether the end is a clack or a vanishing')
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.spin_mode_input = self.add_input(
+            'spin mode', widget_type='combo',
+            default_value=SpinUnit.SPIN_MODES[0],
+            callback=self.parameters_changed)
+        self.spin_mode_input.widget.combo_items = list(SpinUnit.SPIN_MODES)
+        if self.spin_mode_input.widget is not None:
+            self.spin_mode_input.widget.set_tooltip(
+                "how 'spin' is read. 'throw' works by CHANGE -- rising "
+                "injects energy, falling drains it, and holding still "
+                "does nothing at all, so a gesture throws a coin. "
+                "'hold' works by LEVEL -- the gesture is the lean it "
+                "asks for, and sustained motion keeps the coin going")
+
+        self.model_input = self.add_input('model', widget_type='combo',
+                                          default_value=SpinUnit.MODELS[1],
+                                          callback=self.parameters_changed)
+        self.model_input.widget.combo_items = list(SpinUnit.MODELS)
+        if self.model_input.widget is not None:
+            self.model_input.widget.set_tooltip(
+                "'derived' integrates the disc's own equations of motion "
+                "and reads the sound off it; 'voiced' is the earlier "
+                "model, assembled behaviour by behaviour and fitted by "
+                "ear. Note that 'wobble' has no meaning under 'derived' "
+                "-- those equations describe a perfectly uniform disc, "
+                "so all of the roughness comes from the cast")
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.grind_output = self.add_signal_output('grind', self.unit.grind)
+        self.landing_output = self.add_signal_output('landing',
+                                                     self.unit.landing)
+        self.rate_output = self.add_signal_output('rate', self.unit.rate)
+        self.face_output = self.add_signal_output('face', self.unit.face)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def sync_options(self):
+        chosen = any_to_string(self.model_input())
+        if chosen in SpinUnit.MODELS:
+            self.unit.model = SpinUnit.MODELS.index(chosen)
+        mode = any_to_string(self.spin_mode_input())
+        if mode in SpinUnit.SPIN_MODES:
+            self.unit.spin_mode = SpinUnit.SPIN_MODES.index(mode)
 
 
 class BubblesNode(SynthNode):
@@ -4888,6 +5148,16 @@ class DrumNode(ModeTableNode):
         self._init_mode_editor(label, material)
 
         self.add_signal_input('excite in', self.unit.excite_in)
+        sense_port = self.add_modulation_input(
+            'sensitivity', self.unit.sensitivity_in,
+            default_value=self.unit.sensitivity_in.base,
+            minimum=0.0, maximum=8.0, speed=0.01, slider=False)
+        self.make_drag_proportional(sense_port)
+        if sense_port.widget is not None:
+            sense_port.widget.set_tooltip(
+                'how keenly the head hears what is patched to the excite '
+                'inlet above. Unity leaves it as it always was; it reaches '
+                'past that for excitations too sparse to speak')
         self.add_trigger_signal_input('hit', self.unit.trigger_in,
                                       self.hit)
         self.add_modulation_input('frequency', self.unit.frequency_in,
