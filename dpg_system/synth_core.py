@@ -8425,17 +8425,6 @@ class ShakerUnit(Unit):
         # half of all states. It must go home as the unsigned it is.
         self._rng = np.uint64(rng_state)
 
-        if not self._state_is_sane():
-            # Something stepped over the singularity. Put the coin
-            # down, silence this block, and carry on -- a voice that
-            # cannot recover from one bad block is worse than one
-            # that drops a block.
-            self.reset()
-            for signal in (out, grind_out, strike_out, rate_out,
-                       face_out):
-                signal.set_constant(0.0)
-            return
-
         self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False

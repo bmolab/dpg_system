@@ -847,6 +847,53 @@ check('bounce~ strikes as hard as bow~ bows',
       f'({20 * np.log10(max(_xbp, 1e-12) / max(_xwp, 1e-12)):+.1f} dB; '
       f'it was -20.7)')
 
+# ------------------------------------------------- every unit renders
+# A block of spin~'s NaN-recovery once got pasted into ShakerUnit's
+# render, referring to outlets that class does not have. It shipped,
+# because nothing here had ever rendered a shaker -- the suite tests the
+# units it has laws for, and says nothing at all about the rest. This
+# says the cheapest possible thing about all of them: that they run, and
+# that what comes out is a number.
+def _every_unit():
+    made, broken = 0, []
+    table = [(1.0, 1.0, 1.0), (2.32, 0.5, 0.75), (4.25, 0.3, 0.5)]
+    drives = ('shake_in', 'excite_in', 'velocity_in', 'pressure_in',
+              'speed_in', 'drop_in', 'spin_in', 'bounce_in', 'breath_in',
+              'trigger_in', 'force_in', 'fill_in')
+    for name, cls in sorted(vars(sc).items()):
+        if not (isinstance(cls, type) and issubclass(cls, sc.Unit)
+                and cls is not sc.Unit):
+            continue
+        try:
+            u = cls(SR)
+            if hasattr(u, 'set_modes'):
+                u.set_modes(table)
+            sig = sc.Signal()
+            for port in drives:
+                if hasattr(u, port):
+                    getattr(u, port).sources.append(sig)
+                    break
+            got = []
+            for _ in range(int(0.3 * SR / BLOCK)):
+                sig.data[:BLOCK] = 0.6
+                sig.constant = False
+                u.render(BLOCK)
+                if hasattr(u, 'out'):
+                    got.append(u.out.array(BLOCK).copy())
+            made += 1
+            if got and not np.isfinite(np.concatenate(got)).all():
+                broken.append(f'{name}: not finite')
+        except Exception as problem:
+            broken.append(f'{name}: {type(problem).__name__}: {problem}')
+    return made, broken
+
+
+_units_made, _units_broken = _every_unit()
+check('every unit renders a block without falling over',
+      not _units_broken and _units_made > 30,
+      f'{_units_made} units rendered'
+      + (f'; broken: {_units_broken}' if _units_broken else ''))
+
 # --------------------------------------------------------- vessel~
 # Water in a ringing vessel does three separate things and they do not
 # agree. Filling takes the pitch DOWN, weighted to the fifth power of
