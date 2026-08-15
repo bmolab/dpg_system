@@ -2113,6 +2113,166 @@ check('a harder contact does not make the flops more violent',
 check('friction answers the load in proportion, per Amontons',
       sc.SpinUnit.LOAD_EXP <= 1.0)
 
+# The kernel integrates every few samples and reads between, and the
+# rates it applies there -- the drain, the hold tracking, the lean it
+# averages -- all ran once per STEP. So the integration rate quietly set
+# how fast the coin gave up its energy: the same settings ran 1.84 s at
+# a decimation of eight and 0.75 s at one. They are per unit time now,
+# and the step can be made finer for accuracy without changing the coin.
+def _spin_settle_at(decim, settle):
+    was = sc.SpinUnit.CONTROL_DECIM
+    try:
+        sc.SpinUnit.CONTROL_DECIM = decim
+        u = sc.SpinUnit(SR)
+        u.model = 0
+        u.size_in.base = 0.028
+        u.settle_in.base = settle
+        u.rush_in.base = 0.0
+        u.twist_in.base = 1.0
+        u.wobble_in.base = 0.0
+        u.polish_in.base = 1.0
+        sig = sc.Signal()
+        u.spin_in.sources.append(sig)
+        got = []
+        for b in range(int(6.0 * SR / BLOCK)):
+            t = b * BLOCK / SR
+            sig.data[:BLOCK] = float(min(1.0, t / 0.3)) if t < 0.4 else 0.0
+            sig.constant = False
+            u.render(BLOCK)
+            got.append(u.out.array(BLOCK).copy())
+        y = np.concatenate(got)
+        alive = np.nonzero(np.abs(y) > 1e-5)[0]
+        return alive[-1] / SR if len(alive) else 0.0
+    finally:
+        sc.SpinUnit.CONTROL_DECIM = was
+
+
+_st = [_spin_settle_at(d, 3.0) for d in (4, 2, 1)]
+check('the integration rate does not decide how long a coin spins',
+      max(_st) < 1.05 * min(_st),
+      f'{_st[0]:.3f}s / {_st[1]:.3f}s / {_st[2]:.3f}s at decimation 4/2/1')
+
+# A settling coin gets LOUDER. The steady family says why: as the lean
+# closes from twenty degrees to a tenth the roll falls, 29.9 to 2.2, but
+# the precession rises fourteenfold and the contact sweep fifteenfold,
+# so the grind -- riding the square root of that sweep -- gains about
+# twelve decibels on the way down. A real coin recorded settling gains
+# nine, brightens by a third, and is loudest at the very end. The model
+# used to FADE by twenty-eight decibels instead, because the drain
+# scaled the roll away rather than letting the lean carry it: the coin
+# was left with a tenth of the roll its lean called for, could not
+# precess, and merely rocked.
+def _spin_arc(**kw):
+    u = sc.SpinUnit(SR)
+    u.model = 0
+    base = dict(size=0.028, settle=3.0, rush=0.0, twist=1.0, wobble=0.0,
+                scrape=0.55, hardness=0.279, polish=1.0, level=1.0)
+    base.update(kw)
+    for name, value in base.items():
+        getattr(u, name + '_in').base = value
+    sig = sc.Signal()
+    u.spin_in.sources.append(sig)
+    got, rate = [], []
+    for b in range(int(8.0 * SR / BLOCK)):
+        t = b * BLOCK / SR
+        sig.data[:BLOCK] = float(min(1.0, t / 0.3)) if t < 0.4 else 0.0
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+        rate.append(u.rate.array(BLOCK).copy())
+    y, r = np.concatenate(got), np.concatenate(rate)
+    w = int(0.25 * SR)
+    env = np.array([np.sqrt(np.mean(y[i*w:(i+1)*w] ** 2))
+                    for i in range(len(y) // w)])
+    rr = np.array([r[i*w:(i+1)*w].mean() for i in range(len(y) // w)])
+    live = env > env.max() * 0.02
+    e, rl = env[live], rr[live]
+    return (20*np.log10(e[-1]/e[0]), int(np.argmax(e)) / max(1, len(e)-1),
+            rl[0], rl[-1])
+
+
+_rise, _where, _r0, _r1 = _spin_arc()
+check('a settling coin gets louder, not quieter',
+      _rise > 6.0, f'{_rise:+.1f} dB from first quarter-second to last')
+check('and is loudest near the end, where the real one is',
+      _where > 0.8, f'loudest {100*_where:.0f}% of the way through')
+check('the contact rate accelerates into the finish',
+      _r1 > 6.0 * _r0, f'{_r0:.0f} Hz -> {_r1:.0f} Hz')
+
+# A rolling coin meets its OWN rim again every revolution, so whatever
+# is uneven about that rim repeats while the table underneath stays
+# fresh. The rim used to enter as a single cosine -- a coin bent once,
+# swelling smoothly under the contact -- which gives no rhythm and no
+# jump. Measured on a recording of real rolling coins, the excitation
+# (inverse-filtered to take the coin's own ringing out) runs at a
+# kurtosis of 23 against 3 for gaussian noise: impacts, not noise.
+def _spin_kurtosis(wob, harmonics):
+    was = sc.SpinUnit.RIM_HARMONICS
+    try:
+        sc.SpinUnit.RIM_HARMONICS = harmonics
+        u = sc.SpinUnit(SR)
+        u.model = 0
+        for name, value in dict(size=0.028, settle=3.0, rush=0.0, twist=1.0,
+                                wobble=wob, scrape=0.55, hardness=0.279,
+                                polish=1.0, level=1.0).items():
+            getattr(u, name + '_in').base = value
+        sig = sc.Signal()
+        u.spin_in.sources.append(sig)
+        got = []
+        for b in range(int(3.0 * SR / BLOCK)):
+            t = b * BLOCK / SR
+            sig.data[:BLOCK] = float(min(1.0, t / 0.3)) if t < 0.4 else 0.0
+            sig.constant = False
+            u.render(BLOCK)
+            got.append(u.grind.array(BLOCK).copy())
+        seg = np.concatenate(got)[int(0.5 * SR):int(1.5 * SR)]
+        seg = seg - seg.mean()
+        v = np.mean(seg ** 2)
+        return float(np.mean(seg ** 4) / max(v * v, 1e-30))
+    finally:
+        sc.SpinUnit.RIM_HARMONICS = was
+
+
+_k_cos = _spin_kurtosis(0.35, 1)
+_k_rim = _spin_kurtosis(0.35, 8)
+check('an uneven rim makes the contact jump, not swell',
+      _k_rim > 1.3 * _k_cos and _k_rim > 8.0,
+      f'kurtosis {_k_cos:.1f} for one cosine -> {_k_rim:.1f} for a rim '
+      f'(gaussian noise is 3, the real coin 23)')
+check('the rim is a fixed profile, so it repeats every revolution',
+      len(sc.SpinUnit(SR)._rim_amp) == sc.SpinUnit.RIM_HARMONICS
+      and abs(float((sc.SpinUnit(SR)._rim_amp ** 2).sum()) - 1.0) < 1e-9,
+      'unit-power profile, phases fixed per coin')
+
+# A resonator must not pass its own drive. Every mode had a feedforward
+# term straight to the output, and at lag zero those add COHERENTLY
+# across the bank while the rings they excite dephase within a sample --
+# so a bank of eight passed eight times the excitation against one
+# mode's worth of tone. On the plate bank the leak measured 100.6% of
+# the whole ring peak: the drive as loud as the resonance, unfiltered
+# and so flat, and audible with the dry mix at zero.
+_lk = sc.ModalUnit(SR)
+_lk.set_modes(PLATE8)
+_lk.frequency_in.base = 2600.0
+_lk.decay_in.base = 0.25
+_lk.sensitivity_in.base = 2.0
+_lks = sc.Signal()
+_lk.excite_in.sources.append(_lks)
+_lky = []
+for _b in range(int(0.5 * SR / BLOCK)):
+    _lks.data[:BLOCK] = 0.0
+    if _b == 0:
+        _lks.data[0] = 1.0
+    _lks.constant = False
+    _lk.render(BLOCK)
+    _lky.append(_lk.out.array(BLOCK).copy())
+_lky = np.concatenate(_lky)
+_ring = float(np.abs(_lky[1:]).max())
+check('modal~ rings its drive rather than passing it',
+      abs(float(_lky[0])) < 1e-9 * max(_ring, 1e-12) and _ring > 1e-4,
+      f'lag-zero feed-through {abs(float(_lky[0])):.3e} against a ring '
+      f'peak of {_ring:.5f}')
+
 check('spin~ into modal~ rings a coin, bounded',
       np.isfinite(scy).all() and np.max(np.abs(scy)) < 2.0
       and np.sqrt(np.mean(scy[:int(3*SR)]**2)) > 1e-4,

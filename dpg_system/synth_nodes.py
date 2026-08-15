@@ -15,6 +15,10 @@ there is no penalty for exposing all of them.
 import dearpygui.dearpygui as dpg
 import math
 import time
+import os
+import json
+
+from fuzzywuzzy import fuzz
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -4256,6 +4260,48 @@ MODAL_MATERIALS = {
     ],
     # Ratio 1 is the soundhole's air mode (fix frequency ~100 Hz), then the
     # top plate, the back, and the forest.
+    # --- added for tailoring, grouped by MODAL_MATERIAL_ORDER ---
+    # A stopped pipe: odd harmonics only, which is the clarinet family
+    # and the one shape none of the others has.
+    'tube': [
+        (1.0, 1.0, 1.0), (3.0, 0.5, 0.6), (5.0, 0.3, 0.35),
+        (7.0, 0.2, 0.22), (9.0, 0.12, 0.14), (11.0, 0.08, 0.1),
+    ],
+    # A thin-walled vessel -- a tin, a dish, a hubcap. Close low-order
+    # partials over a strong ring, which is what a coin spun in a dish
+    # is actually sounding.
+    'can': [
+        (1.0, 1.0, 1.0), (1.28, 0.85, 0.9), (2.15, 0.6, 0.7),
+        (2.94, 0.45, 0.5), (4.36, 0.3, 0.35), (5.72, 0.2, 0.25),
+        (7.31, 0.12, 0.16),
+    ],
+    # Dense and barely tuned: modes crowded close and falling slowly, so
+    # it stays bright for as long as it rings. Where 'gong' has pitch,
+    # this has none.
+    'cymbal': [
+        (1.0, 1.0, 1.0), (1.11, 0.95, 0.95), (1.27, 0.9, 0.9),
+        (1.48, 0.88, 0.85), (1.66, 0.85, 0.82), (1.93, 0.8, 0.8),
+        (2.21, 0.78, 0.75), (2.55, 0.72, 0.7), (2.94, 0.7, 0.68),
+        (3.41, 0.65, 0.62), (3.9, 0.6, 0.58), (4.6, 0.55, 0.52),
+    ],
+    # Solid metal struck: few modes, wide apart, high and hard.
+    'anvil': [
+        (1.0, 1.0, 1.0), (2.71, 0.7, 0.8), (4.93, 0.5, 0.6),
+        (7.68, 0.35, 0.4), (11.2, 0.2, 0.25),
+    ],
+    # Dense and dark: almost everything above the first mode already
+    # gone, which is why stone reads as a thud with a pitch in it.
+    'stone': [
+        (1.0, 1.0, 1.0), (1.84, 0.45, 0.5), (2.93, 0.22, 0.25),
+        (4.31, 0.1, 0.12),
+    ],
+    # A membrane with the life damped out of it -- the same ratios as
+    # 'membrane', the upper modes taken well down. A tom with a cloth on
+    # it rather than a tuned drum.
+    'skin': [
+        (1.0, 1.0, 1.0), (1.594, 0.55, 0.6), (2.136, 0.3, 0.35),
+        (2.296, 0.25, 0.3), (2.653, 0.15, 0.2), (2.918, 0.1, 0.12),
+    ],
     'guitar': [
         (1.0, 1.0, 1.0), (1.93, 0.9, 0.8), (2.5, 0.6, 0.7),
         (2.9, 0.5, 0.6), (3.4, 0.55, 0.55), (4.05, 0.5, 0.5),
@@ -4264,6 +4310,170 @@ MODAL_MATERIALS = {
         (13.5, 0.25, 0.22), (16.0, 0.2, 0.2),
     ],
 }
+
+
+# Dearpygui's combo cannot nest, so the only grouping available is the
+# order things appear in. Families are kept adjacent here rather than
+# renamed, so every patch that already names a material keeps working.
+# Anything not listed -- a material saved since, or one added to the
+# table without being placed -- follows on the end rather than
+# disappearing from the menu.
+MODAL_MATERIAL_ORDER = (
+    'bell', 'gong', 'cymbal', 'metal', 'anvil', 'bowl', 'can', 'plate',
+    'tube',
+    'marimba', 'bar', 'wood',
+    'glass', 'ice', 'stone',
+    'membrane', 'skin', 'tabla',
+    'violin', 'guitar',
+    'paper',
+)
+
+# Materials saved from the editor live beside the app's other state, in
+# the same working directory and under the same naming as
+# dpg_system_config.json. They are merged over the built-ins at import,
+# so a saved material with a built-in's name shadows it -- which is the
+# point: it is how a table gets voiced and kept.
+MODAL_MATERIALS_FILE = 'dpg_system_materials.json'
+CUSTOM_MATERIALS = {}
+
+
+def _clean_mode_table(table):
+    """A table is rows of (ratio, weight, decay), all positive."""
+    rows = []
+    for row in table or ():
+        try:
+            ratio, weight, decay = (float(row[0]), float(row[1]),
+                                    float(row[2]))
+        except (TypeError, ValueError, IndexError):
+            continue
+        if ratio > 0.0:
+            rows.append((ratio, max(0.0, weight), max(0.0, decay)))
+    rows.sort(key=lambda r: r[0])
+    return rows
+
+
+def load_custom_materials(path=MODAL_MATERIALS_FILE):
+    """Read the saved library and merge it in. Missing is not an error --
+    most installations will never have one -- but a file that IS there and
+    will not parse is reported, because silently starting with a library
+    the user has spent time on is worse than saying so."""
+    CUSTOM_MATERIALS.clear()
+    if not os.path.exists(path):
+        return CUSTOM_MATERIALS
+    try:
+        with open(path, 'r') as handle:
+            stored = json.load(handle)
+    except (OSError, ValueError) as problem:
+        print('could not read', path, '--', problem)
+        return CUSTOM_MATERIALS
+    if not isinstance(stored, dict):
+        print(path, 'is not a table of materials')
+        return CUSTOM_MATERIALS
+    for name, table in stored.items():
+        rows = _clean_mode_table(table)
+        if rows:
+            CUSTOM_MATERIALS[str(name)] = rows
+    MODAL_MATERIALS.update(CUSTOM_MATERIALS)
+    return CUSTOM_MATERIALS
+
+
+def save_custom_material(name, table, path=MODAL_MATERIALS_FILE):
+    """Add a material to the library and write it out. Returns the name
+    saved, or None with a reason printed."""
+    name = str(name).strip()
+    if not name:
+        print('save_material needs a name')
+        return None
+    rows = _clean_mode_table(table)
+    if not rows:
+        print('save_material: nothing to save for', name)
+        return None
+    CUSTOM_MATERIALS[name] = rows
+    MODAL_MATERIALS[name] = rows
+    try:
+        with open(path, 'w') as handle:
+            json.dump({key: [list(row) for row in value]
+                       for key, value in CUSTOM_MATERIALS.items()},
+                      handle, indent=1)
+    except OSError as problem:
+        print('could not write', path, '--', problem)
+        return None
+    return name
+
+
+def forget_custom_material(name, path=MODAL_MATERIALS_FILE):
+    """Drop a saved material. A built-in of the same name comes back."""
+    name = str(name).strip()
+    if name not in CUSTOM_MATERIALS:
+        print('no saved material called', name)
+        return None
+    del CUSTOM_MATERIALS[name]
+    if name in BUILTIN_MATERIALS:
+        MODAL_MATERIALS[name] = BUILTIN_MATERIALS[name]
+    else:
+        MODAL_MATERIALS.pop(name, None)
+    try:
+        with open(path, 'w') as handle:
+            json.dump({key: [list(row) for row in value]
+                       for key, value in CUSTOM_MATERIALS.items()},
+                      handle, indent=1)
+    except OSError as problem:
+        print('could not write', path, '--', problem)
+    return name
+
+
+def material_names():
+    """Menu order: families adjacent, saved materials last."""
+    ordered = [name for name in MODAL_MATERIAL_ORDER
+               if name in MODAL_MATERIALS]
+    ordered += [name for name in MODAL_MATERIALS if name not in ordered]
+    return ordered
+
+
+def rank_materials(text, limit=8):
+    """The materials a few keystrokes could mean, best first.
+
+    Exact, then prefix, then fuzzy -- so typing the start of a name
+    always puts it at the top however the scorer feels about it, which
+    is the difference between a finder and a guess.
+    """
+    text = str(text).strip().lower()
+    if not text:
+        return []
+    names = material_names()
+    exact = [name for name in names if name.lower() == text]
+    starts = [name for name in names
+              if name.lower().startswith(text) and name not in exact]
+    rest = []
+    for name in names:
+        if name in exact or name in starts:
+            continue
+        score = (fuzz.partial_ratio(name.lower(), text)
+                 + fuzz.ratio(name.lower(), text)) / 2.0
+        if score > 45.0:
+            rest.append((score, name))
+    rest.sort(key=lambda pair: (-pair[0], pair[1]))
+    return (exact + starts + [name for _, name in rest])[:limit]
+
+
+def find_material(text):
+    """The best material for a few keystrokes, the way the new-object box
+    finds a node. Returns None if nothing is close."""
+    text = str(text).strip().lower()
+    if not text:
+        return None
+    names = material_names()
+    for name in names:
+        if name == text:
+            return name
+    ranked = rank_materials(text, limit=1)
+    return ranked[0] if ranked else None
+
+
+# Kept so 'forget' can put a shadowed built-in back.
+BUILTIN_MATERIALS = {key: list(value) for key, value in
+                     MODAL_MATERIALS.items()}
+load_custom_materials()
 
 
 class ModeTableNode(SynthNode):
@@ -4297,15 +4507,34 @@ class ModeTableNode(SynthNode):
         self._modes_loaded = False
         for name in ModeEditor.MESSAGES:
             self.message_handlers[name] = self.modes_message
+        self.message_handlers['find'] = self.find_material_message
+        self.message_handlers['save_material'] = self.save_material_message
+        self.message_handlers['forget_material'] = self.forget_material_message
 
     def _add_mode_table_ports(self, material):
         self.modes_input = self.add_input('modes',
                                           callback=self.modes_received)
+        # Twenty-odd materials is already more than a combo is pleasant
+        # to hunt through, and dearpygui's combo cannot nest to group
+        # them. Typing a few letters here jumps straight to one, the
+        # way the new-object box finds a node -- the combo stays for
+        # browsing.
+        self.find_input = self.add_input('find', widget_type='text_input',
+                                         widget_width=110,
+                                         callback=self.find_material_typed)
+        # What those keystrokes could mean, best first, hidden until
+        # there are keystrokes. The top one is adopted as you type, so
+        # the table follows the typing and the list says what else was
+        # close; arrow down the list to take one of the others.
+        self.match_list = self.add_property('##matches',
+                                            widget_type='list_box',
+                                            width=110)
+        self._matches = []
         self.material_input = self.add_input('material', widget_type='combo',
                                              default_value=material,
                                              callback=self.material_changed)
         self.material_input.widget.combo_items = ([ModeTableNode.CUSTOM]
-                                                  + list(MODAL_MATERIALS))
+                                                  + material_names())
         self.modes_display = self.add_display('')
         self.modes_display.submit_callback = self.submit_display
 
@@ -4335,6 +4564,7 @@ class ModeTableNode(SynthNode):
     def custom_create(self, from_file):
         self.size_changed()
         self.push_modes()
+        self._show_matches(None)
 
     def size_changed(self):
         self.editor.set_size(any_to_int(self.width_option()),
@@ -4417,6 +4647,164 @@ class ModeTableNode(SynthNode):
 
     def modes_message(self, message='', message_data=[]):
         self.editor.handle_message(message, message_data)
+
+    def _refresh_material_menu(self, select=None):
+        """Put the menu back after the library has changed."""
+        widget = self.material_input.widget
+        if widget is None:
+            return
+        items = [ModeTableNode.CUSTOM] + material_names()
+        widget.combo_items = items
+        if dpg.does_item_exist(widget.uuid):
+            dpg.configure_item(widget.uuid, items=items)
+        if select is not None:
+            self.material_input.set(select)
+
+    def _adopt_material(self, name):
+        """Adopt a material by name and move the combo to match, so the
+        menu never says one thing while the table is another."""
+        if name not in MODAL_MATERIALS:
+            return False
+        self.material_input.set(name)
+        self._material_shown = name
+        self.apply_material(name)
+        return True
+
+    def _show_matches(self, items):
+        """Put the match list up, or take it away when there is nothing
+        to say. Guarded on the widget existing, since ports are built
+        before the window is."""
+        box = getattr(self, 'match_list', None)
+        if box is None or box.widget is None:
+            return
+        if not dpg.does_item_exist(box.widget.uuid):
+            return
+        if not items:
+            dpg.configure_item(box.widget.uuid, show=False)
+            return
+        # Only 'items' and 'show' are configured after creation, which is
+        # the path the new-object box already proves works.
+        dpg.configure_item(box.widget.uuid, items=list(items), show=True)
+
+    def on_edit(self, widget):
+        """Per keystroke, not per return: the match is shown and taken as
+        it is typed, which is the whole point of a finder."""
+        finder = getattr(self, 'find_input', None)
+        box = getattr(self, 'match_list', None)
+        if finder is None or finder.widget is None:
+            return
+        if self._applying_material or self.in_loading_process:
+            return
+        if widget is finder.widget:
+            ranked = rank_materials(dpg.get_value(finder.widget.uuid))
+            self._matches = ranked
+            self._show_matches(ranked)
+            if ranked:
+                if box is not None and box.widget is not None \
+                        and dpg.does_item_exist(box.widget.uuid):
+                    dpg.set_value(box.widget.uuid, ranked[0])
+                self._adopt_material(ranked[0])
+        elif box is not None and widget is box.widget:
+            chosen = dpg.get_value(box.widget.uuid)
+            if chosen:
+                self._adopt_material(chosen)
+                self._end_search()
+
+    def _end_search(self):
+        """The search is over: the list goes away and the field is
+        emptied, so the next few keystrokes start clean rather than
+        landing on the end of the last search."""
+        self._matches = []
+        self._show_matches(None)
+        finder = getattr(self, 'find_input', None)
+        if finder is None or finder.widget is None:
+            return
+        finder.set('')
+        if dpg.does_item_exist(finder.widget.uuid):
+            dpg.set_value(finder.widget.uuid, '')
+
+    def _step_matches(self, widget, step):
+        """Walk the list with the arrow keys. Returns whether the key was
+        ours -- everything else has to reach the widget it was aimed at,
+        or arrowing the node's other controls would stop working."""
+        box = getattr(self, 'match_list', None)
+        finder = getattr(self, 'find_input', None)
+        if box is None or box.widget is None or not self._matches:
+            return False
+        if widget is not box.widget and (finder is None
+                                         or widget is not finder.widget):
+            return False
+        if not dpg.does_item_exist(box.widget.uuid):
+            return False
+        current = dpg.get_value(box.widget.uuid)
+        index = (self._matches.index(current)
+                 if current in self._matches else 0)
+        index += step
+        if index < 0 or index >= len(self._matches):
+            # Consumed at the ends, so arrowing past the edge of the
+            # list does not fall through and start nudging a knob.
+            return True
+        chosen = self._matches[index]
+        dpg.set_value(box.widget.uuid, chosen)
+        self._adopt_material(chosen)
+        return True
+
+    def increment_widget(self, widget):
+        if self._step_matches(widget, -1):
+            return
+        super().increment_widget(widget)
+
+    def decrement_widget(self, widget):
+        if self._step_matches(widget, 1):
+            return
+        super().decrement_widget(widget)
+
+    def on_deactivate(self, widget):
+        """Leaving the field puts the list away -- unless the pointer is
+        on the list itself, which is someone about to pick from it."""
+        finder = getattr(self, 'find_input', None)
+        box = getattr(self, 'match_list', None)
+        if finder is None or widget is not finder.widget:
+            return
+        if box is not None and box.widget is not None \
+                and dpg.does_item_exist(box.widget.uuid):
+            if dpg.is_item_hovered(box.widget.uuid) \
+                    or dpg.is_item_clicked(box.widget.uuid):
+                return
+        self._end_search()
+
+    def find_material_typed(self):
+        # Widgets can fire while a patch is still loading, before the
+        # table being restored has arrived -- adopting a material here
+        # would overwrite it. The same guard the material combo uses.
+        if self._applying_material or self.in_loading_process:
+            return
+        found = find_material(any_to_string(self.find_input()))
+        if found is not None:
+            self._adopt_material(found)
+        # Return was pressed: the search is over either way.
+        self._end_search()
+
+    def find_material_message(self, message='', message_data=[]):
+        found = find_material(' '.join(any_to_list(message_data)))
+        if found is None:
+            print('no material like that')
+            return
+        self._adopt_material(found)
+
+    def save_material_message(self, message='', message_data=[]):
+        """save_material <name> -- put the table being edited into the
+        library, so it is in the menu next time as well as this one."""
+        name = ' '.join(str(part) for part in any_to_list(message_data))
+        saved = save_custom_material(name, self.editor.get_modes())
+        if saved is not None:
+            self._refresh_material_menu(select=saved)
+            self._material_shown = saved
+
+    def forget_material_message(self, message='', message_data=[]):
+        name = ' '.join(str(part) for part in any_to_list(message_data))
+        if forget_custom_material(name) is not None:
+            self._refresh_material_menu()
 
     def modes_received(self):
         """A whole table sent to the 'modes' inlet replaces the drawing.
@@ -4540,6 +4928,20 @@ class ModalNode(ModeTableNode):
                                       slider=False))
         self.add_modulation_input('brightness', self.unit.brightness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
+        tilt_port = self.add_modulation_input('tilt', self.unit.tilt_in,
+                                              minimum=-24.0, maximum=24.0,
+                                              speed=0.1)
+        if tilt_port.widget is not None:
+            tilt_port.widget.set_tooltip(
+                'the same slope brightness works on, in decibels per '
+                'octave of each mode\'s own ratio -- as additive~ tilts '
+                'its partials. Negative takes the upper modes down for a '
+                'duller, heavier object, positive lifts them for a '
+                'thinner brighter one. Brightness is this on a 0-1 knob '
+                'spanning about plus or minus six; this reaches four '
+                'times as far and is worth reading off a number. They '
+                'multiply, so use either. It moves weight BETWEEN the '
+                'modes rather than changing the level')
         self.add_modulation_input('hardness', self.unit.hardness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('position', self.unit.position_in,
@@ -4829,10 +5231,22 @@ class SpinNode(SynthNode):
                                                 speed=0.01)
         if wobble_port.widget is not None:
             wobble_port.widget.set_tooltip(
-                'how unevenly the disc is made: the swing in how hard it '
-                'presses, up to several times its own weight, on the face\'s '
-                'own slowing turn. It buys the tone AND the flop -- a true '
-                'disc has no ripple to hear')
+                'how far off centre the disc is -- the rim once round. '
+                'It swells the load on the face\'s own slowing turn, up '
+                'to several times the disc\'s weight, and buys the tone '
+                'AND the flop. A true disc has no ripple to hear. This '
+                'is a SHAPE, so it swells; it does not chatter')
+        profile_port = self.add_modulation_input(
+            'profile', self.unit.profile_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if profile_port.widget is not None:
+            profile_port.widget.set_tooltip(
+                'the state of the EDGE -- nicks, burrs, a milled rim worn '
+                'unevenly. A different fault from being off centre and it '
+                'sounds different: where wobble swells, this makes the '
+                'contact JUMP, throwing the disc clear of the table and '
+                'back once a turn. It rides the traverse rate SQUARED, so '
+                'it grows as the contact races round the rim')
         scrape_port = self.add_modulation_input('scrape', self.unit.scrape_in,
                                                 minimum=0.0, maximum=1.0,
                                                 speed=0.01)
