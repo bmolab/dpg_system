@@ -5013,6 +5013,14 @@ class VesselNode(ModalNode):
     pattern only one of the pair answers and there is no beat, between
     them both answer and it is deepest. Round every ninety degrees.
 
+    'swirl' is that low point going ROUND, in turns a second, and it is
+    a different sound from a tilt held still. A static tilt gives two
+    pitches beating slowly; a swirl gives sidebands either side of every
+    mode spaced at four times the swirl rate -- a shimmer locked to the
+    hand rather than a beat. It also pushes the water round and round,
+    so swirling near the sloshing rate builds the slop up on itself, the
+    way it does in a glass.
+
     'size' is the radius in metres. It sets the slosh rate only -- the
     ringing pitch is 'frequency', as everywhere else.
     """
@@ -5063,6 +5071,18 @@ class VesselNode(ModalNode):
                 'is deepest. It comes round every ninety degrees, '
                 'because the pattern has four bellies. It moves the '
                 'sound between the two without changing how loud it is')
+        swirl_port = self.add_modulation_input('swirl', self.unit.swirl_in,
+                                               minimum=-8.0, maximum=8.0,
+                                               speed=0.02)
+        if swirl_port.widget is not None:
+            swirl_port.widget.set_tooltip(
+                'turns a second of the low point going round the rim -- '
+                'a swirl rather than a tilt held still. It does not beat '
+                'like a static tilt does; it puts sidebands either side '
+                'of every mode, spaced at FOUR times the swirl, so the '
+                'shimmer is locked to the hand. And it pushes the water '
+                'round: swirl near the sloshing rate (a few hertz, and '
+                '\'size\' sets it) and the slop builds on itself')
         size_port = self.add_modulation_input('size', self.unit.size_in,
                                               minimum=0.005, maximum=0.5,
                                               speed=0.001)

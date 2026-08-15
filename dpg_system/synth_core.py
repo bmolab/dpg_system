@@ -3371,7 +3371,7 @@ def _warm_up_filter():
                        0.0, 0.0, 0.0, 0.0, 0.0, output)
         _modal_kernel(wide, wide.copy(), bank.copy(), bank.copy(),
                       bank.copy(), bank.copy(), state.copy(), state.copy(),
-                      0.0, 0.0, output)
+                      0.0, 0.0, output, state.copy(), 0.0, 0.0, 0.0)
         breath = np.full(wide.shape[0], 0.8)
         for shape in (0, 1):
             _wind_kernel(breath, zeros, line, 0, line.copy(), 0,
@@ -5822,7 +5822,8 @@ def _string_kernel_source(x, line, write, ex_line, ex_write, delay, gain,
 
 
 def _modal_kernel_source(x, pulse, b1, b2, gains, strike_gains, s1, s2,
-                         dc_x, dc_y, out):
+                         dc_x, dc_y, out, rungs, pair_phase, pair_step,
+                         pair_out):
     """A bank of two-pole resonators: struck through one gain, driven
     through another.
 
@@ -5882,9 +5883,30 @@ def _modal_kernel_source(x, pulse, b1, b2, gains, strike_gains, s1, s2,
                 y = -1.5 - np.tanh(-y - 1.5)
             s2[m] = s1[m]
             s1[m] = y
-            total += rung
+            rungs[m] = rung
+            if pair_out < 0.5:
+                total += rung
+        if pair_out > 0.5:
+            # The modes come in pairs whose split is fixed in the frame
+            # of whatever is loading them -- for a vessel, the water. If
+            # that frame TURNS, the pattern turns with it, and a fixed
+            # listener hears the bellies and the nodes go past. So the
+            # pair is mixed at the pickup rather than summed, and the
+            # mix angle walks. Summing them is what a still frame does,
+            # and it is what everything but a swirled vessel wants.
+            cs = math.cos(pair_phase)
+            sn = math.sin(pair_phase)
+            for m in range(0, modes - 1, 2):
+                total += cs * rungs[m] + sn * rungs[m + 1]
+            if modes % 2 == 1:
+                total += rungs[modes - 1]
+            pair_phase += pair_step
+            if pair_phase > 6.283185307179586:
+                pair_phase -= 6.283185307179586
+            elif pair_phase < 0.0:
+                pair_phase += 6.283185307179586
         out[i] = total
-    return dc_x, dc_y
+    return dc_x, dc_y, pair_phase
 
 
 if _HAVE_NUMBA:
@@ -6309,6 +6331,11 @@ class ModalUnit(Unit):
         self._b2 = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._gains = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
         self._gains_live = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        self._rungs = np.zeros(ModalUnit.MAX_MODES, dtype=np.float64)
+        # Only a swirled vessel mixes its pairs; everything else sums.
+        self._pair_phase = 0.0
+        self._pair_step = 0.0
+        self._pair_out = 0.0
         self._live_count = 0
         self._coef_key = None
         self._level_live = ModalUnit.SENSE_GAIN
@@ -6601,9 +6628,11 @@ class ModalUnit(Unit):
         drive *= self._level_live
 
         result = self._y[:frames]
-        self._dc_x, self._dc_y = _modal_kernel(
+        self._dc_x, self._dc_y, self._pair_phase = _modal_kernel(
             exc, pulse, b1, b2, drive, live, self._s1[:count],
-            self._s2[:count], self._dc_x, self._dc_y, result)
+            self._s2[:count], self._dc_x, self._dc_y, result,
+            self._rungs[:count], self._pair_phase, self._pair_step,
+            self._pair_out)
 
         # The dry tap: the input as patched, not the excitation buffer --
         # the strike pulse stays out of it.
@@ -6781,9 +6810,23 @@ class VesselUnit(ModalUnit):
     # dies away.
     SLOSH_KICK = 0.55
     SLOSH_DECAY = 1.6
+    # A swirl does not just point the tilt somewhere new -- it pushes
+    # the water round, over and over, at whatever rate the hand goes.
+    # Near the sloshing rate that pushing is resonant and the water
+    # climbs the wall, which is the entire reason anybody swirls a
+    # glass. Nothing here does the climbing; the slosh oscillator is
+    # simply driven, and being a resonance it answers loudest when it
+    # is asked at its own rate.
+    SWIRL_DRIVE = 2.4
     # Points around the wall for the harmonic that does the splitting.
     # It has converged by a hundred and twenty-eight.
     RIM_POINTS = 128
+    # How fast the pickup walks round the split pair for each turn of
+    # the vessel. The pattern that splits a pair of order two has four
+    # bellies, so it is four -- and the sidebands come out spaced at
+    # four times the swirl, which is what the coupled pair does when it
+    # is integrated directly.
+    SWIRL_ORDER = 4.0
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
@@ -6796,6 +6839,10 @@ class VesselUnit(ModalUnit):
         # is what equal weights meant before there was a control for it.
         self.turn_in = self.new_inlet(base=22.5, minimum=0.0,
                                       maximum=360.0)
+        # Turns per second of the low point going round the rim. A
+        # swirl, as against a tilt held still.
+        self.swirl_in = self.new_inlet(base=0.0, minimum=-8.0,
+                                       maximum=8.0)
         # Every mode becomes two, so the table it is given can hold half
         # what modal~'s can. The materials all fit.
         self._pair = np.zeros((ModalUnit.MAX_MODES, 3), dtype=np.float64)
@@ -6807,6 +6854,7 @@ class VesselUnit(ModalUnit):
         self._slosh_x = 0.0
         self._slosh_v = 0.0
         self._tip_last = None
+        self._swirl_phase = 0.0
         self._geom_cache = None
 
     def reset(self):
@@ -6814,6 +6862,7 @@ class VesselUnit(ModalUnit):
         self._slosh_x = 0.0
         self._slosh_v = 0.0
         self._tip_last = None
+        self._swirl_phase = 0.0
         self._geom_cache = None
 
     def _loading(self, fill, tip_deg):
@@ -6856,6 +6905,19 @@ class VesselUnit(ModalUnit):
         radius = min(0.5, max(0.005, radius))
         turn = self.turn_in.eval(frames)
         turn = turn.value if turn.constant else float(turn.data[0])
+        swirl = self.swirl_in.eval(frames)
+        swirl = swirl.value if swirl.constant else float(swirl.data[0])
+        swirl = min(8.0, max(-8.0, swirl))
+        # Held still, the pair is summed as everything else is summed.
+        # Swirled, the pickup walks round it -- and the walking is what
+        # puts the sidebands there.
+        if swirl == 0.0:
+            self._pair_out = 0.0
+            self._pair_step = 0.0
+        else:
+            self._pair_out = 1.0
+            self._pair_step = (VesselUnit.SWIRL_ORDER * 2.0 * math.pi
+                               * swirl / self.sample_rate)
 
         # Sloshing is set going by a CHANGE of tip, not by tip itself: a
         # vessel held at an angle is still, one just moved is not.
@@ -6868,6 +6930,16 @@ class VesselUnit(ModalUnit):
         omega = math.sqrt(9.80665 * k * math.tanh(k * depth))
         dt = frames / self.sample_rate
         self._slosh_v += (moved / 60.0) * VesselUnit.SLOSH_KICK
+        # And the swirl pushes it round and round.
+        self._swirl_phase += 2.0 * math.pi * swirl * dt
+        if self._swirl_phase > 6.283185307179586:
+            self._swirl_phase -= 6.283185307179586
+        elif self._swirl_phase < 0.0:
+            self._swirl_phase += 6.283185307179586
+        if swirl != 0.0:
+            self._slosh_v += (VesselUnit.SWIRL_DRIVE * abs(swirl)
+                              * (tip / 60.0)
+                              * math.sin(self._swirl_phase) * dt)
         self._slosh_v -= (omega * omega * self._slosh_x
                           + 2.0 * VesselUnit.SLOSH_DECAY * self._slosh_v) * dt
         self._slosh_x += self._slosh_v * dt

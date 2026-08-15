@@ -1030,6 +1030,104 @@ check('turning moves the sound between the pair, it does not fade it',
       f'across the turn (sharing the weight instead of the amplitude '
       f'cost 3 dB)')
 
+# A swirl is not a tilt that moves -- it is a different sound. The split
+# lives in the frame of whatever is loading the vessel, so if that frame
+# turns, the pattern turns with it and a fixed listener hears the
+# bellies go past. Sidebands either side of every mode, spaced at four
+# times the swirl, rather than a beat.
+def _vessel_lines(swirl, quiet_water=True):
+    """The lines a swirled vessel shows.
+
+    With the water held still this is the rotating pickup alone, and it
+    puts one sideband either side at four times the swirl. Let the swirl
+    push the water as well and the slosh modulates the pitch on top of
+    that, which fills in a comb -- true, and a separate thing, so it is
+    switched off here rather than measured through.
+    """
+    was = sc.VesselUnit.SWIRL_DRIVE
+    try:
+        if quiet_water:
+            sc.VesselUnit.SWIRL_DRIVE = 0.0
+        u = sc.VesselUnit(SR)
+        u.set_modes([(1.0, 1.0, 1.0)])
+        u.frequency_in.base = 800.0
+        u.decay_in.base = 30.0
+        u.fill_in.base = 0.5
+        u.tip_in.base = 35.0
+        u.turn_in.base = 0.0
+        u.swirl_in.base = swirl
+        sig = sc.Signal()
+        u.trigger_in.sources.append(sig)
+        got = []
+        for b in range(int(6.0 * SR / BLOCK)):
+            sig.data[:BLOCK] = 0.0
+            if b == 1:
+                sig.data[0] = 1.0
+            sig.constant = False
+            u.render(BLOCK)
+            got.append(u.out.array(BLOCK).copy())
+    finally:
+        sc.VesselUnit.SWIRL_DRIVE = was
+    y = np.concatenate(got)[int(0.5 * SR):]
+    spec = np.abs(np.fft.rfft(y * np.hanning(len(y))))
+    f = np.fft.rfftfreq(len(y), 1.0 / SR)
+    band = (f > 700.0) & (f < 900.0)
+    f, spec = f[band], spec[band]
+    return sorted(f[i] for i in range(2, len(spec) - 2)
+                  if spec[i] > spec[i-1] and spec[i] > spec[i+1]
+                  and spec[i] > 0.15 * spec.max())
+
+
+_sw_still = _vessel_lines(0.0)
+_sw_one = _vessel_lines(1.0)
+_sw_two = _vessel_lines(2.0)
+check('swirling moves the line into a pair either side of where it was',
+      len(_sw_still) == 1 and len(_sw_one) == 2
+      and min(_sw_one) < _sw_still[0] < max(_sw_one),
+      f'{len(_sw_still)} line held still, {len(_sw_one)} swirled -- and '
+      f'the original is GONE from between them, which is what a pickup '
+      f'that goes right round does: the node sweeps fully past, so what '
+      f'is left is the two sidebands and no carrier')
+check('and they sit four times the swirl rate out',
+      abs((max(_sw_one) - _sw_still[0]) - 4.0) < 0.5
+      and abs((max(_sw_two) - _sw_still[0]) - 8.0) < 0.5,
+      f'{max(_sw_one) - _sw_still[0]:.2f} Hz out at one turn a second, '
+      f'{max(_sw_two) - _sw_still[0]:.2f} at two')
+check('and letting the swirl push the water fills that in',
+      len(_vessel_lines(1.0, quiet_water=False)) > len(_sw_one),
+      f'{len(_sw_one)} lines with the water still, '
+      f'{len(_vessel_lines(1.0, quiet_water=False))} with it sloshing')
+
+
+def _vessel_slosh(swirl):
+    u = sc.VesselUnit(SR)
+    u.set_modes([(1.0, 1.0, 1.0), (2.32, 0.5, 0.75)])
+    u.frequency_in.base = 800.0
+    u.decay_in.base = 8.0
+    u.fill_in.base = 0.5
+    u.tip_in.base = 30.0
+    u.swirl_in.base = swirl
+    sig = sc.Signal()
+    u.trigger_in.sources.append(sig)
+    seen = []
+    for b in range(int(6.0 * SR / BLOCK)):
+        # It has to be sounding: a silent bank with a silent input skips
+        # its own render, and then nothing sloshes because nothing runs.
+        sig.data[:BLOCK] = 0.0
+        if b == 1:
+            sig.data[0] = 1.0
+        sig.constant = False
+        u.render(BLOCK)
+        seen.append(u._slosh_x)
+    return float(np.std(np.array(seen[len(seen) // 2:])))
+
+
+check('swirling near the sloshing rate builds the slop up',
+      _vessel_slosh(3.5) > 3.0 * _vessel_slosh(1.0)
+      and _vessel_slosh(3.5) > 3.0 * _vessel_slosh(7.0),
+      f'slop {_vessel_slosh(1.0):.4f} slow, {_vessel_slosh(3.5):.4f} at '
+      f'the rate, {_vessel_slosh(7.0):.4f} fast (resonance is 3.6 Hz)')
+
 check('tipping barely moves the pitch, unlike filling',
       abs(12 * np.log2(_vessel_pitch(run_vessel(fill=0.5, tip=30.0))
                        / _vessel_pitch(run_vessel(fill=0.5)))) < 1.0,
