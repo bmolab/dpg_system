@@ -980,6 +980,56 @@ check('and it beats faster the further it goes over',
       _f_far > 3.0 * _f_warble,
       f'{_f_warble:.2f} Hz at thirty, {_f_far:.2f} Hz at forty-five')
 
+# Tipping splits the ring in two; where the blow lands against where
+# the water is decides which of them answers. On a belly of the pattern
+# only one does and there is no beat at all -- which is also why the
+# simulation of a static tilt showed ONE line, not two, until it was
+# struck off-axis.
+def _vessel_turn(turn):
+    u = sc.VesselUnit(SR)
+    u.set_modes(GLASSV)
+    u.frequency_in.base = 800.0
+    u.decay_in.base = 25.0
+    u.fill_in.base = 0.5
+    u.tip_in.base = 35.0
+    u.turn_in.base = turn
+    sig = sc.Signal()
+    u.trigger_in.sources.append(sig)
+    got = []
+    for b in range(int(8.0 * SR / BLOCK)):
+        sig.data[:BLOCK] = 0.0
+        if b == 1:
+            sig.data[0] = 1.0
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(got)
+    env = np.abs(sig_hilbert(y[int(0.5 * SR):]))[::64]
+    sr = SR / 64.0
+    width = int(sr * 1.0) | 1
+    trend = np.convolve(env, np.ones(width) / width, mode='same')
+    keep = slice(width, len(env) - width)
+    resid = env[keep] / np.maximum(trend[keep], 1e-12) - 1.0
+    return float(np.std(resid)), float(np.sqrt(np.mean(y ** 2)))
+
+
+_t_on, _l_on = _vessel_turn(0.0)
+_t_mid, _l_mid = _vessel_turn(22.5)
+_t_back, _l_back = _vessel_turn(45.0)
+_t_round, _l_round = _vessel_turn(90.0)
+check('turning the vessel decides whether the beat is heard at all',
+      _t_on < 0.05 < _t_mid and _t_back < 0.05,
+      f'{_t_on:.4f} on a belly, {_t_mid:.4f} between, {_t_back:.4f} on '
+      f'the next')
+check('and it comes round every ninety degrees',
+      abs(_t_round - _t_on) < 0.02,
+      f'{_t_on:.4f} at nought, {_t_round:.4f} at ninety')
+check('turning moves the sound between the pair, it does not fade it',
+      max(_l_on, _l_mid, _l_back) < 1.06 * min(_l_on, _l_mid, _l_back),
+      f'level within {20 * np.log10(max(_l_on, _l_mid, _l_back) / min(_l_on, _l_mid, _l_back)):.2f} dB '
+      f'across the turn (sharing the weight instead of the amplitude '
+      f'cost 3 dB)')
+
 check('tipping barely moves the pitch, unlike filling',
       abs(12 * np.log2(_vessel_pitch(run_vessel(fill=0.5, tip=30.0))
                        / _vessel_pitch(run_vessel(fill=0.5)))) < 1.0,

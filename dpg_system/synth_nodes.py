@@ -5008,6 +5008,11 @@ class VesselNode(ModalNode):
     it quickly and it wavers and calms; hold it there and it is steady
     but beating.
 
+    'turn' is where the water sits low against where it is struck, and
+    it decides how much of that beat is heard at all: on a belly of the
+    pattern only one of the pair answers and there is no beat, between
+    them both answer and it is deepest. Round every ninety degrees.
+
     'size' is the radius in metres. It sets the slosh rate only -- the
     ringing pitch is 'frequency', as everywhere else.
     """
@@ -5045,6 +5050,19 @@ class VesselNode(ModalNode):
                 'degrees, a slow warble by thirty, a flutter by '
                 'forty-five. MOVING it also sets the water sloshing, '
                 'which wavers and settles')
+        turn_port = self.add_modulation_input('turn', self.unit.turn_in,
+                                              minimum=0.0, maximum=360.0,
+                                              speed=0.5)
+        if turn_port.widget is not None:
+            turn_port.widget.set_tooltip(
+                'where the water sits low, against where the vessel is '
+                'struck. Tipping splits the ring into two; this is which '
+                'of them a blow wakes. Strike where the pattern has a '
+                'belly and only one answers -- one pitch, no beat at '
+                'all. Strike between them and both answer and the beat '
+                'is deepest. It comes round every ninety degrees, '
+                'because the pattern has four bellies. It moves the '
+                'sound between the two without changing how loud it is')
         size_port = self.add_modulation_input('size', self.unit.size_in,
                                               minimum=0.005, maximum=0.5,
                                               speed=0.001)

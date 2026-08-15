@@ -6791,6 +6791,11 @@ class VesselUnit(ModalUnit):
         self.tip_in = self.new_inlet(base=0.0, minimum=0.0, maximum=60.0)
         self.size_in = self.new_inlet(base=0.035, minimum=0.005,
                                       maximum=0.5)
+        # Where the water sits low, against where the vessel is struck.
+        # A quarter of the pattern's period is the default because that
+        # is what equal weights meant before there was a control for it.
+        self.turn_in = self.new_inlet(base=22.5, minimum=0.0,
+                                      maximum=360.0)
         # Every mode becomes two, so the table it is given can hold half
         # what modal~'s can. The materials all fit.
         self._pair = np.zeros((ModalUnit.MAX_MODES, 3), dtype=np.float64)
@@ -6849,6 +6854,8 @@ class VesselUnit(ModalUnit):
         radius = self.size_in.eval(frames)
         radius = radius.value if radius.constant else float(radius.data[0])
         radius = min(0.5, max(0.005, radius))
+        turn = self.turn_in.eval(frames)
+        turn = turn.value if turn.constant else float(turn.data[0])
 
         # Sloshing is set going by a CHANGE of tip, not by tip itself: a
         # vessel held at an angle is still, one just moved is not.
@@ -6870,14 +6877,30 @@ class VesselUnit(ModalUnit):
             self._slosh_x = -0.5
         wet = min(1.0, max(0.0, fill + self._slosh_x))
 
-        key = (round(wet, 4), round(tip, 3))
+        key = (round(wet, 4), round(tip, 3), round(turn, 2))
         if self._geom_cache is None or self._geom_cache[0] != key:
             mean, fourth = self._loading(wet, tip)
             mu = VesselUnit.MU_FULL * mean
             scale = 1.0 / math.sqrt(1.0 + mu)
             split = mu * fourth / (2.0 * (1.0 + mu))
-            self._geom_cache = (key, scale, split)
-        _, scale, split = self._geom_cache
+            # Which of the split pair a blow wakes depends on where it
+            # lands against where the water is. Strike where the pattern
+            # has a belly and only that one answers -- one frequency, no
+            # beat at all. Strike between them and both answer equally,
+            # which is where the beat is deepest. It goes round every
+            # ninety degrees because the pattern that splits a pair of
+            # order two has four bellies.
+            phase = math.radians(turn) * 2.0
+            # AMPLITUDES, not shares of one. A blow between the bellies
+            # puts as much in as a blow on one -- it just divides it
+            # between the two, and two amplitudes add as their squares.
+            # Splitting the weight instead made the middle of the turn
+            # three decibels quieter than its ends, which is a knob
+            # doubling as a volume control.
+            near = abs(math.cos(phase))
+            far = abs(math.sin(phase))
+            self._geom_cache = (key, scale, split, near, far)
+        _, scale, split, near, far = self._geom_cache
 
         source = self._modes
         count = min(source.shape[0], ModalUnit.MAX_MODES // 2)
@@ -6886,8 +6909,11 @@ class VesselUnit(ModalUnit):
         # so filling a vessel does not also make it louder.
         for index in range(count):
             ratio, weight, decay = source[index]
-            pair[2 * index] = (ratio * (1.0 - split), weight * 0.5, decay)
-            pair[2 * index + 1] = (ratio * (1.0 + split), weight * 0.5,
+            # The two share what the one mode had, so turning the
+            # vessel moves the sound between them without making it
+            # louder or quieter.
+            pair[2 * index] = (ratio * (1.0 - split), weight * near, decay)
+            pair[2 * index + 1] = (ratio * (1.0 + split), weight * far,
                                    decay)
         return pair, scale, (key, count)
 
