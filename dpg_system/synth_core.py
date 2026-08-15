@@ -3397,7 +3397,9 @@ def _warm_up_filter():
                        0.0, members.copy(), members.copy(), members.copy(),
                        members.copy(), members.copy(), members.copy(),
                        members.copy(), np.uint64(12345),
-                       output.copy(), output)
+                       output.copy(), output,
+                       1.0, 1.0, 1.0, 0.0, 1.0, 0.01, 1.1, 0.0, 0.0,
+                       0.0, 0.5, 40.0, 1.0, 1, 1.25, members.copy(), 0.0)
         _whoosh_kernel(breath, breath.copy(), breath.copy(), 0.4,
                        0.99, 0.02, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0,
                        np.uint64(99), output)
@@ -8259,7 +8261,13 @@ else:
 def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
                           vary, amp, attack_k, thetas, radius, b1s, b1zs,
                           g2s, energy, sounds, gds, envs, y1, y2, z1, z2,
-                          rng, out_raw, out):
+                          rng, out_raw, out,
+                          head_on, rate_boost, fine, hold, hold_scale,
+                          hold_k, throw_kick, shake_prev, slide_base,
+                          slide_amp,
+                          slide_tail,
+                          slide_max, slide_norm, slide_least, hurst_inv,
+                          slide_ring, slide_head):
     """Cook's PhISEM, sample by sample -- with a polyphonic vessel.
 
     'energy' is how agitated the beans are, pumped by the gesture and
@@ -8300,16 +8308,62 @@ def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
         # 2.5x makeup: the steeper skirt sheds broadband energy, and
         # the family should sit at the level it always did.
         g2s[m] = 2.5 * (1.0 - r2) * math.sin(thetas[m])
+    ring_n = slide_ring.shape[0]
+    head = int(slide_head)
     for i in range(shake.shape[0]):
-        energy = energy * energy_decay + shake[i] * pump
+        # A shake and a swirl both agitate the beans; what differs is
+        # HOW. A shake throws the whole handful at one end and they
+        # arrive together, so the ticks come in bursts and die between
+        # them. A swirl keeps them tumbling continuously -- over each
+        # other as much as against the wall -- so the agitation never
+        # falls away between strokes and the impacts are finer and more
+        # numerous, being bean on bean rather than handful on shell.
+        #
+        # It is NOT beans pinned to the wall sliding round it. That was
+        # the first guess here and it is wrong: they tumble.
+        if hold > 0.5:
+            # HELD: the gesture IS the agitation. A steady hand gives a
+            # steady wash and letting go stops it at the settle rate.
+            energy += (shake[i] * hold_scale - energy) * hold_k
+        else:
+            # THROWN: the beans answer the CHANGE, not the level, which
+            # is what spin~ means by the same word. A rise throws them
+            # and they carry on by themselves; holding the hand still --
+            # at any height at all -- adds nothing more, because a
+            # shaker held out at arm's length is not being shaken.
+            #
+            # Pumping from the LEVEL, as this did at first, gives a
+            # steady state proportional to the gesture and a tail at the
+            # settle rate -- which is what holding already does. Two
+            # names for one behaviour, and no way to tell them apart.
+            # Either way. Shaking is back AND forth, and the beans are
+            # thrown just as hard on the return -- taking only the rise
+            # threw them on half the strokes and let them settle
+            # through the other half.
+            rise = shake[i] - shake_prev
+            if rise < 0.0:
+                rise = -rise
+            # The stroke goes straight in. Multiplied by 'pump' -- which
+            # is one minus the settle decay, a ten-thousandth -- a whole
+            # sweep of the hand landed twenty times under what holding
+            # the same number gives, and how hard a stroke threw the
+            # beans depended on how long they took to settle afterwards.
+            # A stroke is a stroke; settle says how it DIES.
+            energy = energy * energy_decay
+            energy += rise * throw_kick
+        shake_prev = shake[i]
         rng, draw = _rand01(rng)
-        if draw < rate_per_sample * energy:
+        if draw < rate_per_sample * energy * rate_boost:
             rng, pick = _rand01(rng)
             member = int(pick * members)
             if member >= members:
                 member = members - 1
             rng, strength = _rand01(rng)
-            sounds[member] += amp * energy * (0.5 + 0.5 * strength)
+            # Only what goes INTO the shell rings it. A glancing bean
+            # keeps most of its speed along the wall and gives up little
+            # of it to the wall, so the tick fades as the angle opens.
+            sounds[member] += (amp * fine * head_on * energy
+                               * (0.5 + 0.5 * strength))
             if sounds[member] > 100.0:
                 sounds[member] = 100.0
             if vary > 0.0:
@@ -8318,6 +8372,62 @@ def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
                                                      * 2.0 * vary))
             else:
                 gds[member] = grain_decay
+        # And what they do instead is SLIDE. A bean pinned to the wall
+        # and dragged round it is a contact crossing a rough surface,
+        # which is the same thing a coin's rim does -- so it is the same
+        # grain: sizes drawn from a power law because a surface has no
+        # characteristic asperity, and each one lasting as long as it is
+        # big, because a wide feature takes longer to cross. Firing them
+        # all as single samples would make clicks, not friction.
+        # And what it keeps, it drags along the wall. The two are one
+        # impact seen at an angle: head on it is a tick, tangential it
+        # is a graze, and everything between is both. How much there is
+        # of either is the AGITATION -- there is no separate swirling
+        # gesture, because you cannot shake a maraca while you are
+        # rolling it and you cannot roll it while you are shaking it.
+        slide = 0.0
+        slide_dens = slide_base * energy
+        if slide_dens > 0.45:
+            slide_dens = 0.45
+        if slide_dens > 0.0:
+            rng, su = _rand01(rng)
+            if su < slide_dens:
+                rng, su = _rand01(rng)
+                if su < 1.0e-9:
+                    su = 1.0e-9
+                size = su ** (-slide_tail)
+                if size > slide_max:
+                    size = slide_max
+                rng, su = _rand01(rng)
+                peak = size * slide_amp * slide_norm
+                if su <= 0.5:
+                    peak = -peak
+                dur = int(size ** hurst_inv)
+                if dur < slide_least:
+                    dur = slide_least
+                if dur > ring_n - 1:
+                    dur = ring_n - 1
+                if dur == 1:
+                    slide_ring[head] += peak
+                else:
+                    scale = 2.0 * peak / dur
+                    at = head
+                    for q in range(dur):
+                        slide_ring[at] += scale * 0.5 * (
+                            1.0 - math.cos(6.283185307179586
+                                           * (q + 0.5) / dur))
+                        at += 1
+                        if at >= ring_n:
+                            at = 0
+            # Shared across the ensemble, not handed to each of them:
+            # the heap scuffs one shell, and there are eight members
+            # standing for it. Added per member it came out eight times
+            # over and swamped everything else in the unit.
+            slide = slide_ring[head] / members
+            slide_ring[head] = 0.0
+            head += 1
+            if head >= ring_n:
+                head = 0
         rng, nz = _rand01(rng)
         noise = 2.0 * nz - 1.0
         raw = 0.0
@@ -8328,7 +8438,7 @@ def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
             # the envelope follows its target with an attack lag scaled
             # to the grain length, so hardness 0 has no leading edge.
             envs[m] += (sounds[m] - envs[m]) * attack_k
-            grain = envs[m] * noise
+            grain = envs[m] * noise + slide
             raw += grain
             y = vgain * grain + b1s[m] * y1[m] + b2 * y2[m]
             y2[m] = y1[m]
@@ -8339,7 +8449,7 @@ def _shaker_kernel_source(shake, rate_per_sample, energy_decay, grain_decay,
             total += z
         out_raw[i] = raw
         out[i] = total
-    return energy, rng
+    return energy, rng, head, shake_prev
 
 
 if _HAVE_NUMBA:
@@ -8370,6 +8480,24 @@ class ShakerUnit(Unit):
     resonator retuned out from under its own ring. At jingle 0 the
     members coincide and the vessel is one voice again.
 
+    'swirl' is not a second gesture to be mixed with the first. You
+    cannot shake a maraca while you are rolling it, or roll it while you
+    are shaking it -- there is one agitation, and what changes is the
+    ANGLE it meets the shell at. Head on, a bean stops dead against the
+    wall and rings it: the tick. Tangential, it keeps its speed along
+    the wall and drags: the graze. Everything between is both, and this
+    is where between.
+
+    So opening it moves the sound from one to the other rather than
+    adding a second one, and the impacts get finer and more numerous on
+    the way -- a bean that skips rather than stops makes more contacts
+    and smaller ones.
+
+    Nothing here wobbles it. A real roll surges as the heap comes round,
+    but that is a shape a hand makes, and a hand is what should make it:
+    patch it from the movement, or from an LFO, into 'shake' or into
+    this. An oscillator hidden in here would only be in the way.
+
     'grains out' carries the raw collisions before the vessel: patch it
     into modal~ (drive up, dry 0) and the beans rattle inside any object
     the table editor can draw. The coupling really is one-way -- beans
@@ -8377,11 +8505,53 @@ class ShakerUnit(Unit):
     the rare physical seam an ordinary cord models honestly.
     """
 
+    # How much finer and more numerous the impacts get as the angle
+    # opens. A glancing bean does not stop dead against the wall, it
+    # skips along it, so there are more contacts and each is smaller.
+    FINE_RATE = 5.0
+    # Contacts a second of bean dragging wall, per unit of agitation.
+    # Nine thousand was the first guess and it was wrong the way dense
+    # grains are always wrong: five thousand a second is not friction,
+    # it is the central limit theorem, and it measured a kurtosis of
+    # three, which is gaussian noise exactly.
+    SLIDE_DENSITY = 2500.0
+    SLIDE_GAIN = 0.5
+    SLIDE_RING = 64
+    HOLD_SCALE = 1.0
+    SHAKE_MODES = ('throw', 'hold')
+    # How much a whole sweep of the gesture is worth read as a stroke.
+    THROW_KICK = 1.1
+    # How much longer the beans stay agitated at a full tangential
+    # angle. A swirl's speed never passes through zero, so nothing ever
+    # lets them settle between strokes.
+    SWIRL_SMOOTH = 5.0
+    # How much of the lengthened settle to take back out of the stroke.
+    # Not all of it: strokes only pile up once they start arriving
+    # inside each other's tails, and how soon that happens depends on
+    # how fast the hand is going -- which this cannot know. Taking the
+    # whole of it out assumed they always overlap, and cost the roll
+    # three and a half decibels the moment the angle left zero.
+    # Found by measurement, not by argument: at 1 the roll lost three
+    # and a half decibels the moment the angle left zero, and the whole
+    # of that loss happened in the first quarter of the travel -- the
+    # correction was arriving before there was anything to correct. This
+    # holds it flat within about a decibel from a slow gesture to a fast
+    # one.
+    THROW_NORM = 0.85
+    # What a bean gives the wall even side on. Zero is geometry; a
+    # maraca rolled flat out still has beans in it.
+    HEAD_FLOOR = 0.3
+
     _seeded = 0
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
         self.shake_in = self.new_inlet(base=0.0, minimum=0.0, maximum=2.0)
+        # Where the beans meet the shell, from head on to tangential.
+        # Shake and roll are not two gestures to be mixed -- you cannot
+        # shake a maraca while you are rolling it -- they are one
+        # agitation arriving at an angle, and this is the angle.
+        self.swirl_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
         self.density_in = self.new_inlet(base=64.0, minimum=1.0,
                                          maximum=2000.0)
         self.settle_in = self.new_inlet(base=0.12, minimum=0.02, maximum=1.0)
@@ -8421,6 +8591,12 @@ class ShakerUnit(Unit):
         self.grains = self.new_outlet()
         self._shake = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._raw = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._slide_ring = np.zeros(ShakerUnit.SLIDE_RING, dtype=np.float64)
+        self._slide_head = 0.0
+        # 0 throws the beans, 1 holds them where the gesture says.
+        self.shake_mode = 0
+        self._shake_prev = 0.0
+        self._settle_live = 0.12
         self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
 
@@ -8485,6 +8661,30 @@ class ShakerUnit(Unit):
         jingle_now = scalar(jingle, 0.0, 1.0)
         vary_now = scalar(vary, 0.0, 1.0)
 
+        # A shake is ONE DIMENSIONAL: back and forth, so the hand stops
+        # dead at each turnaround and the agitation pulses -- clear
+        # peaks and troughs, which is what makes it a rhythm. A swirl is
+        # sine AND cosine: the speed never passes through zero, so the
+        # beans are never not being driven and the intensity has no
+        # troughs to fall into. Its peaks are subtler and scrapier.
+        #
+        # So opening the angle lengthens how long they stay agitated.
+        # That is the same lever as 'settle', deliberately: reaching for
+        # settle to get a roll is the right instinct, and this is the
+        # instinct built in.
+        swirl_now = self.swirl_in.eval(frames)
+        swirl_now = abs(swirl_now.value if swirl_now.constant
+                        else float(swirl_now.data[0]))
+        swirl_now = min(1.0, swirl_now)
+        settle_now *= 1.0 + ShakerUnit.SWIRL_SMOOTH * swirl_now
+
+        # Settle glides. Changing it does not reach back into beans that
+        # are already moving: dropping it to end a roll used to cut the
+        # ring off where it stood, which is a thing no hand can do to a
+        # shaker. It arrives over a tenth of a second instead.
+        self._settle_live += ((settle_now - self._settle_live)
+                              * min(1.0, frames / (0.1 * self.sample_rate)))
+        settle_now = self._settle_live
         energy_decay = math.exp(-1.0 / (settle_now * self.sample_rate))
         # Hard beans are short ticks: 20 ms of felt down to half a
         # millisecond of glass, exponentially.
@@ -8509,15 +8709,73 @@ class ShakerUnit(Unit):
         self._thetas *= theta
         np.clip(self._thetas, 1.0e-3, math.pi * 0.95, out=self._thetas)
 
+        # Swirling pins the beans to the wall and they stop being
+        # thrown at it -- they are dragged round it instead. The pull
+        # that pins them is the hand's circle, not the shaker's, and it
+        # beats gravity at just under two turns a second for a wrist.
+        # Soft either side of that, because a hand does not cross it
+        # cleanly and neither do the beans.
+        swirl = swirl_now
+        # One impact, resolved. Head on it rings the shell; tangential
+        # it drags along it. Sine and cosine because the two are
+        # components of the same speed, so opening the angle moves the
+        # sound from one to the other rather than adding a second one.
+        angle = swirl * 0.5 * math.pi
+        # Not all the way to nothing. A fully tangential bean still
+        # gives the wall SOME of itself -- the wall is curved, the beans
+        # are round, and they carom off each other whatever the hand is
+        # doing. A plain cosine reaches zero at the top of the knob and
+        # the ticks vanish with it, so the last tenth of the travel fell
+        # away to almost silence.
+        head_on = (ShakerUnit.HEAD_FLOOR
+                   + (1.0 - ShakerUnit.HEAD_FLOOR) * math.cos(angle))
+        glancing = math.sin(angle)
+
+        # A bean that skips rather than stops makes more contacts and
+        # smaller ones: texture, not level.
+        rate_boost = 1.0 + ShakerUnit.FINE_RATE * swirl
+        fine = 1.0 / math.sqrt(rate_boost)
+        slide_base = (ShakerUnit.SLIDE_DENSITY * glancing
+                      / self.sample_rate)
+        slide_amp = ShakerUnit.SLIDE_GAIN * glancing * amp
+        tail_index = 2.3 - 1.0 * hard
+        slide_tail = 1.0 / tail_index
+        slide_max = 40.0
+        clip = slide_max ** (-tail_index)
+        power = 1.0 - 2.0 / tail_index
+        spread = ((1.0 - clip ** power) / power if abs(power) > 1.0e-9
+                  else -math.log(clip))
+        slide_norm = 1.0 / math.sqrt(max(slide_max * slide_max * clip
+                                         + spread, 1.0e-9))
+        slide_least = int(round(1.0 + (1.0 - hard) * 7.0))
+        # Thrown, the strokes keep arriving while the beans hold their
+        # energy longer -- so rolling did not smooth the sound, it piled
+        # it up: ten decibels by half travel, and the peak agitation
+        # more than tripled. Rolling should change how the strokes JOIN,
+        # not how much each one is worth, so the stroke is scaled
+        # against how long it will now last. The tail still lengthens;
+        # the level does not run away with it.
+        throw_kick = ShakerUnit.THROW_KICK / (
+            (1.0 + ShakerUnit.SWIRL_SMOOTH * swirl)
+            ** ShakerUnit.THROW_NORM)
+        hold = 1.0 if self.shake_mode else 0.0
+        hold_k = min(0.5, 1.0 / max(1.0, settle_now * self.sample_rate))
         raw = self._raw[:frames]
         result = self._y[:frames]
-        self._energy, rng_state = _shaker_kernel(
+        (self._energy, rng_state, self._slide_head,
+         self._shake_prev) = _shaker_kernel(
             gesture, beans / self.sample_rate, energy_decay, grain_decay,
             vary_now, amp, attack_k, self._thetas, radius,
             self._b1s, self._b1zs, self._g2s,
             self._energy, self._sounds, self._gds, self._envs,
             self._ry1, self._ry2, self._rz1, self._rz2, self._rng,
-            raw, result)
+            raw, result,
+            head_on, rate_boost, fine, hold, ShakerUnit.HOLD_SCALE,
+            hold_k, throw_kick, self._shake_prev,
+            slide_base, slide_amp, slide_tail,
+            slide_max,
+            slide_norm, slide_least, 1.25,
+            self._slide_ring, self._slide_head)
         # numba hands the state back as a Python int, and a bare int at or
         # above 2**63 fails the signed conversion on the way back in --
         # half of all states. It must go home as the unsigned it is.

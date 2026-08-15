@@ -847,6 +847,239 @@ check('bounce~ strikes as hard as bow~ bows',
       f'({20 * np.log10(max(_xbp, 1e-12) / max(_xwp, 1e-12)):+.1f} dB; '
       f'it was -20.7)')
 
+# A maraca is not shaken OR rolled with two separate gestures -- you
+# cannot shake one while you are rolling it. There is one agitation and
+# what changes is the ANGLE it meets the shell at: head on a bean stops
+# dead against the wall and rings it, tangential it keeps its speed
+# along the wall and drags. Everything between is both.
+#
+# Two earlier goes at this were wrong. The first pinned the beans to the
+# wall by centripetal force and slid them round it -- a friction
+# mechanism, and they tumble. The second made rolling a second gesture
+# with a rate and a surge of its own, which is a shape a hand makes and
+# has no business being generated in here.
+def run_shaker(shake=0.8, swirl=0.0, hard=0.7, seconds=3.0, mode=1):
+    u = sc.ShakerUnit(SR)
+    u.shake_mode = mode
+    u.hardness_in.base = hard
+    u.swirl_in.base = swirl
+    sig = sc.Signal()
+    u.shake_in.sources.append(sig)
+    got = []
+    for _ in range(int(seconds * SR / BLOCK)):
+        sig.data[:BLOCK] = shake
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    return np.concatenate(got)[int(0.6 * SR):]
+
+
+def _shaker_level(y):
+    return float(np.sqrt(np.mean(y ** 2)))
+
+
+def _shaker_shape(y):
+    y = y - y.mean()
+    v = np.mean(y ** 2)
+    return float(np.mean(y ** 4) / max(v * v, 1e-30))
+
+
+_mk_head = run_shaker(swirl=0.0)
+_mk_tang = run_shaker(swirl=1.0)
+check('head on it ticks, tangential it grazes',
+      _shaker_shape(_mk_head) > 9.0 > _shaker_shape(_mk_tang),
+      f'kurtosis {_shaker_shape(_mk_head):.1f} head on, '
+      f'{_shaker_shape(_mk_tang):.1f} tangential (gaussian noise is 3)')
+check('and opening the angle moves the sound rather than adding to it',
+      -8.0 < 20 * np.log10(_shaker_level(_mk_tang)
+                           / _shaker_level(_mk_head)) < -1.0,
+      f'{20 * np.log10(_shaker_level(_mk_tang) / _shaker_level(_mk_head)):+.1f} dB '
+      f'across the whole continuum -- a roll sits a little under a '
+      f'shake, as it does in a hand')
+check('the angle is not a gesture: on its own it makes nothing',
+      _shaker_level(run_shaker(shake=0.0, swirl=1.0)) < 1e-5,
+      'no agitation, no sound, whatever the angle')
+
+# Nothing in here should wobble. A roll surges as the heap comes round,
+# but that is the hand's shape to make.
+_mk_env = np.abs(sig_hilbert(run_shaker(swirl=0.7, seconds=4.0)))[::64]
+_mk_c = _mk_env - _mk_env.mean()
+_mk_sp = np.abs(np.fft.rfft(_mk_c * np.hanning(len(_mk_c))))
+_mk_f = np.fft.rfftfreq(len(_mk_c), 64.0 / SR)
+_mk_band = (_mk_f > 0.3) & (_mk_f < 20.0)
+check('and there is no oscillator hidden in it',
+      np.max(_mk_sp[_mk_band]) < 6.0 * np.mean(_mk_sp[_mk_band]),
+      f'the envelope has no line in it: strongest is '
+      f'{np.max(_mk_sp[_mk_band]) / np.mean(_mk_sp[_mk_band]):.1f}x the '
+      f'floor, and a surge put there deliberately measured 20x')
+
+
+# Two ways to mean a gesture, as spin~ has. THROWN, it is a stroke and
+# the beans carry on by themselves. HELD, it is how agitated they are
+# right now. Pumping from the LEVEL gives the same steady state and the
+# same tail either way, which is two names for one behaviour.
+def _shaker_mode(mode, seconds=3.0):
+    u = sc.ShakerUnit(SR)
+    u.shake_mode = mode
+    sig = sc.Signal()
+    u.shake_in.sources.append(sig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        sig.data[:BLOCK] = 0.8 if (b * BLOCK / SR) > 0.3 else 0.0
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(got)
+    return (_shaker_level(y[int(0.32 * SR):int(0.55 * SR)]),
+            _shaker_level(y[int(2.0 * SR):int(2.9 * SR)]))
+
+
+_th_e, _th_l = _shaker_mode(0)
+_hd_e, _hd_l = _shaker_mode(1)
+check('a held gesture keeps the beans going; a thrown one is a stroke',
+      _hd_l > 20.0 * max(_th_l, 1e-12) and _th_e > 1e-4,
+      f'a second later: {_th_l:.5f} thrown, {_hd_l:.5f} held')
+check('but a stroke still speaks when it arrives',
+      _th_e > 0.2 * _hd_e,
+      f'as it lands: {_th_e:.5f} thrown against {_hd_e:.5f} held')
+
+
+# Shaking is back AND forth. Taking only the rise threw the beans on
+# half the strokes and let them settle through the other half.
+def _shaker_edges(invert):
+    u = sc.ShakerUnit(SR)
+    u.shake_mode = 0
+    sig = sc.Signal()
+    u.shake_in.sources.append(sig)
+    got = []
+    for b in range(int(2.0 * SR / BLOCK)):
+        high = (b * BLOCK / SR) % 0.5 < 0.25
+        sig.data[:BLOCK] = (0.0 if high else 0.9) if invert else (
+            0.9 if high else 0.0)
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    return _shaker_level(np.concatenate(got)[int(0.4 * SR):])
+
+
+check('a thrown gesture agitates on the way back too',
+      abs(20 * np.log10(_shaker_edges(False)
+                        / max(_shaker_edges(True), 1e-12))) < 1.5,
+      f'{_shaker_edges(False):.5f} leading with the rise, '
+      f'{_shaker_edges(True):.5f} leading with the fall')
+
+# A shake is ONE DIMENSIONAL -- back and forth -- so the hand stops dead
+# at every turnaround and the agitation pulses. That is what makes it a
+# rhythm. A swirl is sine AND cosine: the speed never passes through
+# zero, so there are no troughs to fall into and its peaks are subtler.
+# Opening the angle should therefore fill the troughs in, which is the
+# same lever as 'settle' -- reaching for settle to get a roll is the
+# right instinct and this is that instinct built in.
+def _shaker_troughs(swirl):
+    u = sc.ShakerUnit(SR)
+    u.shake_mode = 1
+    u.swirl_in.base = swirl
+    sig = sc.Signal()
+    u.shake_in.sources.append(sig)
+    got = []
+    for b in range(int(4.0 * SR / BLOCK)):
+        # a softened sawtooth, which is how one is actually driven
+        phase = ((b * BLOCK / SR) * 2.5) % 1.0
+        sig.data[:BLOCK] = 0.9 * (phase ** 0.6)
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(got)[int(0.8 * SR):]
+    env = np.abs(sig_hilbert(y))
+    width = int(0.02 * SR) | 1
+    env = np.convolve(env, np.ones(width) / width, mode='same')
+    env = env[width:-width]
+    return float(np.std(env) / max(np.mean(env), 1e-12))
+
+
+_tr_shake = _shaker_troughs(0.0)
+_tr_roll = _shaker_troughs(1.0)
+check('a shake pulses with the gesture; a roll fills the troughs in',
+      _tr_roll < 0.6 * _tr_shake,
+      f'the level swings {_tr_shake:.2f} of its mean shaken, '
+      f'{_tr_roll:.2f} rolled -- a swirl has no turnaround to stop at')
+
+
+# Rolling changes how the strokes JOIN, not what each one is worth.
+# Thrown, the strokes keep arriving while the beans hold their energy
+# longer, so without scaling the stroke against that the sound piles up
+# instead of smoothing: ten decibels by half travel and the peak
+# agitation more than tripled. And a plain cosine reaches zero at the
+# top of the knob, so the last tenth of the travel fell away to almost
+# nothing -- a maraca rolled flat out still has beans in it.
+def _shaker_continuum(mode, seconds=10.0):
+    """Level across the angle, measured long enough to mean something.
+
+    Each unit seeds its own collisions, so a four-second reading of this
+    carries five decibels of noise -- three identical runs gave -5.6,
+    -2.7 and -0.9 at full roll. Ten seconds brings that under one, which
+    is the difference between a measurement and a coincidence.
+    """
+    out = []
+    for swirl in (0.0, 0.5, 1.0):
+        u = sc.ShakerUnit(SR)
+        u.shake_mode = mode
+        u.swirl_in.base = swirl
+        sig = sc.Signal()
+        u.shake_in.sources.append(sig)
+        got = []
+        for b in range(int(seconds * SR / BLOCK)):
+            phase = ((b * BLOCK / SR) * 2.5) % 1.0
+            sig.data[:BLOCK] = 0.9 * (phase ** 0.6)
+            sig.constant = False
+            u.render(BLOCK)
+            got.append(u.out.array(BLOCK).copy())
+        out.append(_shaker_level(np.concatenate(got)[int(0.8 * SR):]))
+    return out
+
+
+for _mode, _name in ((0, 'thrown'), (1, 'held')):
+    _cn = _shaker_continuum(_mode)
+    _swing = 20 * np.log10(max(_cn) / max(min(_cn), 1e-12))
+    check(f'the angle does not run away with the level ({_name})',
+          _swing < 6.0,
+          f'{_swing:.1f} dB from head on to fully tangential '
+          f'(unscaled, thrown, it was 17)')
+    check(f'and the far end still speaks ({_name})',
+          _cn[-1] > 0.4 * max(_cn),
+          f'{20 * np.log10(_cn[-1] / max(_cn)):+.1f} dB at full roll -- '
+          f'a plain cosine put it at minus infinity')
+
+# Settle must not reach back into beans that are already moving.
+def _shaker_settle_step():
+    u = sc.ShakerUnit(SR)
+    u.shake_mode = 1
+    u.settle_in.base = 0.9
+    sig = sc.Signal()
+    u.shake_in.sources.append(sig)
+    got = []
+    for b in range(int(2.0 * SR / BLOCK)):
+        now = b * BLOCK / SR
+        sig.data[:BLOCK] = 0.8 if now < 0.8 else 0.0
+        sig.constant = False
+        if now >= 0.9:
+            u.settle_in.base = 0.05
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(got)
+    w = int(0.02 * SR)
+    before = float(np.sqrt(np.mean(y[int(0.88 * SR):int(0.88 * SR) + w] ** 2)))
+    after = float(np.sqrt(np.mean(y[int(0.92 * SR):int(0.92 * SR) + w] ** 2)))
+    return before, after
+
+
+_st_b, _st_a = _shaker_settle_step()
+check('and settle glides rather than cutting the ring where it stands',
+      _st_a > 0.25 * _st_b,
+      f'{_st_b:.5f} before the drop, {_st_a:.5f} just after -- it '
+      f'arrives over a tenth of a second, because no hand can stop a '
+      f'shaker where it stands')
+
 # ------------------------------------------------- every unit renders
 # A block of spin~'s NaN-recovery once got pasted into ShakerUnit's
 # render, referring to outlets that class does not have. It shipped,

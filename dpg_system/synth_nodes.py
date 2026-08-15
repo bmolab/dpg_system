@@ -6379,6 +6379,39 @@ class ShakerNode(SynthNode):
         self.add_modulation_input('shake', self.unit.shake_in,
                                   minimum=0.0, maximum=2.0, speed=0.01,
                                   slider=False)
+        self.shake_mode_input = self.add_input(
+            'shake mode', widget_type='combo',
+            default_value=ShakerUnit.SHAKE_MODES[0],
+            callback=self.parameters_changed)
+        self.shake_mode_input.widget.combo_items = list(
+            ShakerUnit.SHAKE_MODES)
+        if self.shake_mode_input.widget is not None:
+            self.shake_mode_input.widget.set_tooltip(
+                "how 'shake' is read. 'throw' is a STROKE: it pumps the "
+                "beans and they carry on by themselves and settle, "
+                "which is what a shaker does in a hand. 'hold' is how "
+                "agitated they are right NOW -- the gesture is the "
+                "agitation, a steady hand gives a steady wash, and "
+                "letting go stops it at the settle rate. An effort "
+                "stream already means the second thing")
+        swirl_port = self.add_modulation_input(
+            'swirl', self.unit.swirl_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if swirl_port.widget is not None:
+            swirl_port.widget.set_tooltip(
+                'the ANGLE the beans meet the shell at, not a second '
+                'gesture. You cannot shake a maraca while you are '
+                'rolling it, or roll it while you are shaking it -- '
+                'there is one agitation and this is how it arrives. At '
+                '0 they go head on and stop dead against the wall and '
+                'ring it: the tick. At 1 they go tangential and keep '
+                'their speed along it and drag: the graze. Between is '
+                'both, and finer and more numerous on the way, because '
+                'a bean that skips rather than stops makes more '
+                'contacts and smaller ones. Nothing in here wobbles it '
+                '-- a real roll surges as the heap comes round, but '
+                'that is a shape a hand makes, so make it: patch the '
+                'movement, or an LFO, into this or into shake')
         self.add_modulation_input('density', self.unit.density_in,
                                   minimum=1.0, maximum=2000.0, speed=2.0,
                                   slider=False)
@@ -6436,6 +6469,11 @@ class ShakerNode(SynthNode):
         # knobs the patch saved.
         if not from_file:
             self.apply_kind(self._kind_shown)
+
+    def sync_options(self):
+        mode = any_to_string(self.shake_mode_input())
+        if mode in ShakerUnit.SHAKE_MODES:
+            self.unit.shake_mode = ShakerUnit.SHAKE_MODES.index(mode)
 
     def kind_changed(self):
         chosen = any_to_string(self.kind_input())
