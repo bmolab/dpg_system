@@ -6335,6 +6335,11 @@ class ModalUnit(Unit):
         self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
 
+    def _geometry(self, frames):
+        """The bank as it stands: the table, a pitch scale, and a key
+        that says whether either has moved. vessel~ overrides this."""
+        return self._modes, 1.0, 0.0
+
     def set_modes(self, table):
         """Main thread: adopt a mode table, rows of (ratio, weight, decay).
 
@@ -6451,7 +6456,10 @@ class ModalUnit(Unit):
 
         # Coefficients hold for the block: a handful of vector ops over at
         # most MAX_MODES values, into preallocated views.
-        modes = self._modes
+        # A subclass can reshape the bank before it is used -- vessel~
+        # splits every mode into a pair and pulls the whole thing flat
+        # as it fills. Here it is the table exactly as given.
+        modes, geom_scale, geom_key = self._geometry(frames)
         count = modes.shape[0]
         ratios = modes[:, 0]
         weights = modes[:, 1]
@@ -6463,6 +6471,7 @@ class ModalUnit(Unit):
             f0 *= 2.0 ** float(pitch.data[0])
         elif pitch.value != 0.0:
             f0 *= 2.0 ** pitch.value
+        f0 *= geom_scale
         f0 = min(self.sample_rate * 0.45, max(1.0, f0))
 
         seconds = decay.value if decay.constant else float(decay.data[0])
@@ -6481,7 +6490,7 @@ class ModalUnit(Unit):
         # rest the table plumbing here was most of the block's python
         # time. The gain glide below still runs, so sweeps stay smooth.
         coef_key = (count, f0, seconds, bright, round(tilt_db, 3),
-                    struck_at, id(self._modes))
+                    struck_at, id(self._modes), geom_key)
         theta = self._theta[:count]
         radius = self._radius[:count]
         b1 = self._b1[:count]
@@ -6716,6 +6725,171 @@ if _HAVE_NUMBA:
     _rub_kernel = njit(cache=True, fastmath=True)(_rub_kernel_source)
 else:
     _rub_kernel = _rub_kernel_source
+
+
+class VesselUnit(ModalUnit):
+    """A vessel with water in it: a glass, a bowl, a can, tipped.
+
+    Three things happen when you put water in a ringing vessel, and they
+    do not agree with each other.
+
+    Water touching a vibrating wall has to move WITH it. That is mass
+    without stiffness, so every mode falls -- and it is weighted by the
+    SQUARE of the wall's amplitude, which for a shell held at its base
+    and free at its rim goes as the height squared. The loading integral
+    is therefore the fill to the FIFTH power: water in the bottom third
+    is worth almost nothing and the last centimetre under the rim is
+    worth everything. Empty to full is about ten semitones, and two
+    thirds of that arrives in the top quarter of the fill.
+
+    TIPPING barely moves the pitch at all -- under a semitone at thirty
+    degrees, which was not what I expected. What tipping does is make
+    the loading uneven AROUND the wall, and that splits the modes. An
+    upright vessel has them in degenerate pairs, cos n0 and sin n0 at
+    one frequency, standing at whatever angle they like; break the
+    symmetry and the pair comes apart, and two close frequencies BEAT.
+    Which perturbation splits which pair is not free: a pair of order n
+    is split by the 2n-th harmonic of the loading and by nothing else. A
+    tilted plane is almost entirely a first harmonic, so at small tips
+    almost nothing happens -- beat periods of minutes. The fourth
+    harmonic only really arrives once the water line runs into the base
+    or the rim, and then it arrives fast. Tip a little and it sits
+    still; past about twenty degrees it starts to warble; tip far and it
+    flutters. That threshold is the geometry, not a curve.
+
+    And tipping sets the water SLOSHING, at three-ish hertz almost
+    regardless of how full it is -- the tanh in the wave speed saturates
+    once the depth passes a third of the radius. That rides on top as a
+    slow waver in pitch while it settles, so a quick tilt warbles and
+    comes to rest the way a real one does.
+
+    'fill' is how full, 'tip' the angle in degrees, 'size' the radius in
+    metres -- which sets the slosh rate and nothing else, the ringing
+    pitch being 'frequency' as everywhere.
+    """
+
+    # Water's effective mass over the shell's own with the vessel full,
+    # for a glass about a millimetre and a half thick. Empty to full is
+    # 1/sqrt(1+this), about ten semitones.
+    MU_FULL = 2.3333
+    # How tall the vessel is against its radius. Sets how far the water
+    # line swings for a given tip, and so how soon it clips.
+    ASPECT = 3.43
+    # First antisymmetric sloshing mode of a cylinder: k = 1.841 / R.
+    SLOSH_K = 1.841
+    # How hard a change of tip throws the water, and how fast the slop
+    # dies away.
+    SLOSH_KICK = 0.55
+    SLOSH_DECAY = 1.6
+    # Points around the wall for the harmonic that does the splitting.
+    # It has converged by a hundred and twenty-eight.
+    RIM_POINTS = 128
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.fill_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.tip_in = self.new_inlet(base=0.0, minimum=0.0, maximum=60.0)
+        self.size_in = self.new_inlet(base=0.035, minimum=0.005,
+                                      maximum=0.5)
+        # Every mode becomes two, so the table it is given can hold half
+        # what modal~'s can. The materials all fit.
+        self._pair = np.zeros((ModalUnit.MAX_MODES, 3), dtype=np.float64)
+        self._theta_ring = (np.arange(VesselUnit.RIM_POINTS)
+                            * (2.0 * math.pi / VesselUnit.RIM_POINTS))
+        self._cos_ring = np.cos(self._theta_ring)
+        self._cos4_ring = np.cos(4.0 * self._theta_ring)
+        self._wet = np.zeros(VesselUnit.RIM_POINTS, dtype=np.float64)
+        self._slosh_x = 0.0
+        self._slosh_v = 0.0
+        self._tip_last = None
+        self._geom_cache = None
+
+    def reset(self):
+        super().reset()
+        self._slosh_x = 0.0
+        self._slosh_v = 0.0
+        self._tip_last = None
+        self._geom_cache = None
+
+    def _loading(self, fill, tip_deg):
+        """Mean loading and the fourth harmonic of it, around the wall.
+
+        The loading is the water line to the fifth power, so it can be
+        had directly -- no integral up the wall. Clipping at the base
+        and the rim is where the fourth harmonic comes from, so it is
+        kept rather than expanded away, and the plane is shifted until
+        the volume comes back to what it was.
+        """
+        span = math.tan(math.radians(max(0.0, tip_deg))) / VesselUnit.ASPECT
+        level = fill
+        ring = self._wet
+        for _ in range(24):
+            np.multiply(self._cos_ring, span, out=ring)
+            ring += level
+            np.clip(ring, 0.0, 1.0, out=ring)
+            level += fill - float(ring.mean())
+        np.multiply(self._cos_ring, span, out=ring)
+        ring += level
+        np.clip(ring, 0.0, 1.0, out=ring)
+        np.power(ring, 5.0, out=ring)
+        mean = float(ring.mean())
+        if mean <= 1.0e-12:
+            return 0.0, 0.0
+        fourth = abs(2.0 * float(np.dot(ring, self._cos4_ring))
+                     / (VesselUnit.RIM_POINTS * mean))
+        return mean, fourth
+
+    def _geometry(self, frames):
+        fill = self.fill_in.eval(frames)
+        fill = fill.value if fill.constant else float(fill.data[0])
+        fill = min(1.0, max(0.0, fill))
+        tip = self.tip_in.eval(frames)
+        tip = tip.value if tip.constant else float(tip.data[0])
+        tip = min(60.0, max(0.0, tip))
+        radius = self.size_in.eval(frames)
+        radius = radius.value if radius.constant else float(radius.data[0])
+        radius = min(0.5, max(0.005, radius))
+
+        # Sloshing is set going by a CHANGE of tip, not by tip itself: a
+        # vessel held at an angle is still, one just moved is not.
+        if self._tip_last is None:
+            self._tip_last = tip
+        moved = tip - self._tip_last
+        self._tip_last = tip
+        depth = max(1.0e-4, fill) * VesselUnit.ASPECT * radius
+        k = VesselUnit.SLOSH_K / radius
+        omega = math.sqrt(9.80665 * k * math.tanh(k * depth))
+        dt = frames / self.sample_rate
+        self._slosh_v += (moved / 60.0) * VesselUnit.SLOSH_KICK
+        self._slosh_v -= (omega * omega * self._slosh_x
+                          + 2.0 * VesselUnit.SLOSH_DECAY * self._slosh_v) * dt
+        self._slosh_x += self._slosh_v * dt
+        if self._slosh_x > 0.5:
+            self._slosh_x = 0.5
+        elif self._slosh_x < -0.5:
+            self._slosh_x = -0.5
+        wet = min(1.0, max(0.0, fill + self._slosh_x))
+
+        key = (round(wet, 4), round(tip, 3))
+        if self._geom_cache is None or self._geom_cache[0] != key:
+            mean, fourth = self._loading(wet, tip)
+            mu = VesselUnit.MU_FULL * mean
+            scale = 1.0 / math.sqrt(1.0 + mu)
+            split = mu * fourth / (2.0 * (1.0 + mu))
+            self._geom_cache = (key, scale, split)
+        _, scale, split = self._geom_cache
+
+        source = self._modes
+        count = min(source.shape[0], ModalUnit.MAX_MODES // 2)
+        pair = self._pair[:count * 2]
+        # The two members of a split pair share what the one mode had,
+        # so filling a vessel does not also make it louder.
+        for index in range(count):
+            ratio, weight, decay = source[index]
+            pair[2 * index] = (ratio * (1.0 - split), weight * 0.5, decay)
+            pair[2 * index + 1] = (ratio * (1.0 + split), weight * 0.5,
+                                   decay)
+        return pair, scale, (key, count)
 
 
 class RubUnit(Unit):

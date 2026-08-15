@@ -12,6 +12,7 @@ shifted."""
 import os
 import sys
 import numpy as np
+from scipy.signal import hilbert as sig_hilbert
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 '..', '..'))
@@ -845,6 +846,97 @@ check('bounce~ strikes as hard as bow~ bows',
       f'bounce~ {_xbp:.3f} against bow~ {_xwp:.3f} '
       f'({20 * np.log10(max(_xbp, 1e-12) / max(_xwp, 1e-12)):+.1f} dB; '
       f'it was -20.7)')
+
+# --------------------------------------------------------- vessel~
+# Water in a ringing vessel does three separate things and they do not
+# agree. Filling takes the pitch DOWN, weighted to the fifth power of
+# the fill because the wall hardly moves at the base and most at the
+# rim. Tipping hardly moves the pitch at all -- it makes the thing BEAT,
+# by loading one side more than the other and splitting mode pairs that
+# were degenerate. And moving the tip sets it sloshing.
+GLASSV = [(1.0, 1.0, 1.0), (2.32, 0.5, 0.75), (4.25, 0.3, 0.5),
+          (6.63, 0.2, 0.32), (9.38, 0.1, 0.2)]
+
+
+def run_vessel(fill=0.0, tip=0.0, seconds=3.0, decay=4.0, freq=800.0):
+    u = sc.VesselUnit(SR)
+    u.set_modes(GLASSV)
+    u.frequency_in.base = freq
+    u.decay_in.base = decay
+    u.fill_in.base = fill
+    u.tip_in.base = tip
+    sig = sc.Signal()
+    u.trigger_in.sources.append(sig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        sig.data[:BLOCK] = 0.0
+        if b == 1:
+            sig.data[0] = 1.0
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    return np.concatenate(got)
+
+
+def _vessel_pitch(y):
+    seg = y[int(0.2 * SR):int(0.2 * SR) + 32768]
+    spec = np.abs(np.fft.rfft(seg * np.hanning(len(seg)))) ** 2
+    spec[:20] = 0
+    return int(np.argmax(spec)) * SR / 32768
+
+
+_vp = {f: _vessel_pitch(run_vessel(fill=f)) for f in (0.0, 0.25, 0.7, 1.0)}
+check('filling a vessel takes its pitch down about ten semitones',
+      -11.5 < 12 * np.log2(_vp[1.0] / _vp[0.0]) < -9.0,
+      f'{12 * np.log2(_vp[1.0] / _vp[0.0]):.2f} semitones empty to full')
+check('and does almost nothing until it is well up the wall',
+      abs(12 * np.log2(_vp[0.25] / _vp[0.0])) < 0.3
+      and 12 * np.log2(_vp[0.7] / _vp[0.0]) < -2.0,
+      f'{12 * np.log2(_vp[0.25] / _vp[0.0]):+.2f} st at a quarter, '
+      f'{12 * np.log2(_vp[0.7] / _vp[0.0]):+.2f} st at seven tenths')
+
+
+def _vessel_beat(fill, tip):
+    """How deeply the ring wavers, with the decay divided out.
+
+    Taking the envelope's spectrum raw does not work: a plain decay is
+    one big low-frequency component and scores HIGHER than a beat. So
+    the trend is removed first -- a one-second moving average is the
+    decay -- and what is left is the beating.
+    """
+    y = run_vessel(fill=fill, tip=tip, seconds=8.0, decay=25.0)
+    env = np.abs(sig_hilbert(y[int(0.5 * SR):]))[::64]
+    sr = SR / 64.0
+    width = int(sr * 1.0) | 1
+    trend = np.convolve(env, np.ones(width) / width, mode='same')
+    keep = slice(width, len(env) - width)
+    resid = env[keep] / np.maximum(trend[keep], 1e-12) - 1.0
+    spec = np.abs(np.fft.rfft((resid - resid.mean()) * np.hanning(len(resid))))
+    f = np.fft.rfftfreq(len(resid), 1.0 / sr)
+    band = (f > 0.15) & (f < 12.0)
+    return float(np.std(resid)), float(f[band][int(np.argmax(spec[band]))])
+
+
+_d_level, _ = _vessel_beat(0.5, 0.0)
+_d_far, _f_far = _vessel_beat(0.5, 45.0)
+_d_some, _ = _vessel_beat(0.5, 20.0)
+_d_warble, _f_warble = _vessel_beat(0.5, 30.0)
+check('tipping a vessel makes it beat; standing level it does not',
+      _d_far > 10.0 * _d_level and _d_level < 0.03,
+      f'waver {_d_level:.4f} level, {_d_far:.4f} tipped right over')
+check('the beat has a threshold in it, as the geometry does',
+      _d_some < 0.05 < _d_warble,
+      f'{_d_some:.4f} at twenty degrees, {_d_warble:.4f} at thirty -- '
+      f'a tilted surface is the wrong shape to split a pair until the '
+      f'water line reaches the base or the rim')
+check('and it beats faster the further it goes over',
+      _f_far > 3.0 * _f_warble,
+      f'{_f_warble:.2f} Hz at thirty, {_f_far:.2f} Hz at forty-five')
+
+check('tipping barely moves the pitch, unlike filling',
+      abs(12 * np.log2(_vessel_pitch(run_vessel(fill=0.5, tip=30.0))
+                       / _vessel_pitch(run_vessel(fill=0.5)))) < 1.0,
+      'under a semitone at thirty degrees')
 
 # ------------------------------------------------------------- motor~
 def run_motor(speed=0.6, load=0.3, parts=4, tone=0.4, throb=0.35,

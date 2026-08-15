@@ -23,6 +23,7 @@ from fuzzywuzzy import fuzz
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
+    VesselUnit,
     synth_graph, start_filter_warm_up,
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
@@ -91,6 +92,7 @@ def register_synth_nodes():
     Node.app.register_node('pluck~', StringNode.factory)
     Node.app.register_node('modal~', ModalNode.factory)
     Node.app.register_node('resonator~', ModalNode.factory)
+    Node.app.register_node('vessel~', VesselNode.factory)
     Node.app.register_node('wind~', WindNode.factory)
     Node.app.register_node('reed~', WindNode.factory)
     Node.app.register_node('flute~', WindNode.factory)
@@ -4886,12 +4888,17 @@ class ModalNode(ModeTableNode):
     def factory(name, data, args=None):
         return ModalNode(name, data, args)
 
+    # So a vessel can be the same node with water in it.
+    UNIT = ModalUnit
+    DEFAULT_MATERIAL = 'bell'
+    DEFAULT_FREQUENCY = 220.0
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.unit = ModalUnit(synth_graph.sample_rate)
+        self.unit = self.UNIT(synth_graph.sample_rate)
 
-        frequency = 220.0
-        material = 'bell'
+        frequency = self.DEFAULT_FREQUENCY
+        material = self.DEFAULT_MATERIAL
         if args is not None:
             for arg in args:
                 if arg in MODAL_MATERIALS:
@@ -4967,6 +4974,86 @@ class ModalNode(ModeTableNode):
 
     def strike(self):
         self.unit.fire()
+
+
+class VesselNode(ModalNode):
+    """A vessel with water in it: glass, bowl, can, and tipped.
+
+    modal~ with the water added, so everything there still holds --
+    material, frequency, decay, the mallet, the excite input. What is
+    new is what the water does, and it does three separate things.
+
+    'fill' takes the pitch DOWN, by about ten semitones from empty to
+    full, because water touching a moving wall has to move with it and
+    that is mass without stiffness. It is nowhere near linear: the wall
+    hardly moves near the base and moves most at the rim, and the
+    loading follows the square of that, so the fill counts to the fifth
+    power. A third full is worth almost nothing; the last centimetre
+    under the rim is worth two thirds of the whole range. That is the
+    real behaviour and it is why a glass has to be nearly full before it
+    sounds full.
+
+    'tip' hardly changes the pitch at all -- under a semitone at thirty
+    degrees. What it does is BEAT. Upright, the modes come in pairs at
+    the same frequency; tipping loads one side more than the other, the
+    pair comes apart, and two close frequencies beat against each other.
+    It has a threshold: below about twenty degrees almost nothing
+    happens, because a tilted surface is the wrong SHAPE to split a
+    pair, and only starts to be the right shape once the water line runs
+    into the base or the rim. Past that it comes on fast -- a slow
+    warble around thirty degrees, a flutter by forty-five.
+
+    And moving 'tip' sets the water sloshing, at around three hertz
+    whatever the fill, which rides on top as a waver that settles. Tilt
+    it quickly and it wavers and calms; hold it there and it is steady
+    but beating.
+
+    'size' is the radius in metres. It sets the slosh rate only -- the
+    ringing pitch is 'frequency', as everywhere else.
+    """
+
+    UNIT = VesselUnit
+    DEFAULT_MATERIAL = 'glass'
+    DEFAULT_FREQUENCY = 800.0
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return VesselNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        fill_port = self.add_modulation_input('fill', self.unit.fill_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if fill_port.widget is not None:
+            fill_port.widget.set_tooltip(
+                'how full, and it takes the pitch DOWN -- about ten '
+                'semitones from empty to full. Weighted to the fifth '
+                'power of the fill, because the wall barely moves at '
+                'the base and moves most at the rim: a third full does '
+                'almost nothing, and the last centimetre does most of '
+                'it')
+        tip_port = self.add_modulation_input('tip', self.unit.tip_in,
+                                             minimum=0.0, maximum=60.0,
+                                             speed=0.1)
+        if tip_port.widget is not None:
+            tip_port.widget.set_tooltip(
+                'degrees off level. Hardly moves the pitch -- under a '
+                'semitone at thirty -- it makes it BEAT, by loading one '
+                'side more than the other and splitting the mode pairs. '
+                'There is a threshold: nothing much under twenty '
+                'degrees, a slow warble by thirty, a flutter by '
+                'forty-five. MOVING it also sets the water sloshing, '
+                'which wavers and settles')
+        size_port = self.add_modulation_input('size', self.unit.size_in,
+                                              minimum=0.005, maximum=0.5,
+                                              speed=0.001)
+        if size_port.widget is not None:
+            size_port.widget.set_tooltip(
+                'the vessel\'s radius in metres. This sets how fast the '
+                'water sloshes and nothing else -- the ringing pitch is '
+                '\'frequency\'. A tumbler is about 0.035, a mixing bowl '
+                '0.12')
 
 
 class RubNode(ModeTableNode):
