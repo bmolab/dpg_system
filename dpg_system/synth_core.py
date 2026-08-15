@@ -3389,7 +3389,8 @@ def _warm_up_filter():
                       0.0, 0.0, 0.0, 0, 0.0, 0.0, output)
         _rub_kernel(breath, breath.copy(), breath.copy(), bank.copy(),
                     bank.copy(), bank.copy(), bank.copy(), state.copy(),
-                    state.copy(), state.copy(), 0.995, 0.0, 0.0, output)
+                    state.copy(), state.copy(), 0.995, 0.0, 0.0, output,
+                    0.2, 0.05, 0.3, 0.5)
         members = np.full(8, 0.5)
         _shaker_kernel(breath, 0.01, 0.999, 0.99, 0.4, 1.0, 0.3, members,
                        0.9, members.copy(), members.copy(), members.copy(),
@@ -3426,8 +3427,9 @@ def _warm_up_filter():
                       0.0, 0.1, 0.0, 0.0, 0.99, 0.0, 0.0,
                       0.0, 0.0, 0.0, 0.0, 0.99, 0.0, 0.0,
                       np.uint64(5), output)
-        _drum_kernel(breath, bank.copy(), bank.copy(), bank.copy(),
-                     bank.copy(), state.copy(), state.copy(),
+        _drum_kernel(breath, breath.copy(), bank.copy(), bank.copy(),
+                     bank.copy(), bank.copy(), bank.copy(),
+                     state.copy(), state.copy(),
                      0.2, 0.01, 0.5, 0.1, 0.015, 0.3,
                      0.1, 0.1, 1.9, -0.92, 0.99,
                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -6623,29 +6625,45 @@ class ModalUnit(Unit):
 
 
 def _rub_kernel_source(velocity, contact, force, b1, b2, inject, pickup,
-                       s1, s2, free, dc_pole, dc_x, dc_y, out):
+                       s1, s2, free, dc_pole, dc_x, dc_y, out,
+                       stick_max, stribeck, mu_floor, sens):
     """Friction closed around the modal bank: bowed glass, sample by sample.
 
     Where bow~'s friction negotiates with a string's delay lines, this one
     negotiates with the modes themselves. Per sample: every mode rings
     freely from its own history, their velocities sum into the surface the
-    bow hair is touching, the velocity difference goes through the same
-    friction curve as bow~, and the resulting force is poured back into
-    every mode. The loop is why a bowed mode blooms rather than just being
-    filtered noise -- each slip lands in phase with the motion that caused
-    it.
+    bow hair is touching, and the force the contact exerts is poured back
+    into every mode. The loop is why a bowed mode blooms rather than just
+    being filtered noise -- each slip lands in phase with the motion that
+    caused it.
 
-    What the loop does with an inharmonic table is the sound of bowed
-    glass: the modes cannot phase-lock into a shared cycle the way a
-    string's harmonics do, so the friction captures one -- nearly a pure
-    tone -- and pushing harder or faster makes it jump modes rather than
-    brighten. None of that is coded here; it is what the physics does.
+    The contact STICKS or it SLIPS, and which one it is gets decided
+    rather than smoothed over. This used to be a single smooth curve of
+    force against relative speed, which never holds the surface: with no
+    stick the amplitude is set by where friction input balances mode
+    damping, and that balance barely moves with bow speed. So the thing
+    had a cliff in it -- silence below the threshold where oscillation
+    can start, then very nearly full voice above it, twenty-five
+    decibels of arrival for a one-and-a-half-fold change in speed, which
+    is not something a hand can aim.
 
-    'contact' is how firmly the hair is on the surface, following bow
-    speed: a stopping bow lifts off, so the glass rings out at its own
-    decay instead of being damped dead by a parked bow. The DC blocker
-    takes out the static deflection of a surface leaned on by a moving
-    bow.
+    A real bowed oscillator is loud in proportion to bow speed, and the
+    reason is kinematic rather than energetic: through the stuck part of
+    every cycle the surface is CARRIED at the speed of the hair, so the
+    distance it travels -- and thus the amplitude -- goes with that
+    speed. It cannot be got from a curve that never quite grips.
+
+    So: the force needed to hold the surface with the hair is worked out
+    directly. The injection lands in the state about to be written, so
+    the surface velocity after it is what it is now plus the force times
+    a sensitivity the bank fixes, and the holding force follows from
+    that with no loop to chase. If that force is within what the contact
+    can supply -- how hard the hair is pressed, which is what 'force'
+    now means -- the surface is held and the two move together. When it
+    is not, the contact lets go and the force falls down a Stribeck
+    curve: highest as it breaks away, settling toward a sliding floor as
+    the speeds diverge. The negative slope in between is what pumps the
+    mode, and it is where the sound comes from.
     """
     modes = b1.shape[0]
     for i in range(velocity.shape[0]):
@@ -6654,13 +6672,29 @@ def _rub_kernel_source(velocity, contact, force, b1, b2, inject, pickup,
             ring = b1[m] * s1[m] + b2[m] * s2[m]
             free[m] = ring
             surface += pickup[m] * (ring - s1[m])
-        dv = velocity[i] - surface
-        sl = 5.0 - 4.0 * force[i]
-        t = abs(dv * sl) + 0.75
-        c = 1.0 / (t * t * t * t)
-        if c > 1.0:
-            c = 1.0
-        friction = dv * c * contact[i]
+        v = velocity[i]
+        # What the contact can hold with: the normal force it is pressed
+        # on with, faded out as the hair lifts off a stopping bow.
+        grip = stick_max * force[i] * contact[i]
+        if sens > 1.0e-12:
+            held = (v - surface) / sens
+        else:
+            held = 0.0
+        if held <= grip and held >= -grip:
+            # Stuck: the surface goes where the hair goes.
+            friction = held
+        else:
+            # Slipping. The force and the speed difference each depend
+            # on the other -- the bank's load line crossing the friction
+            # curve -- so it is settled by a few passes rather than
+            # taken from the last sample, which would put a delay inside
+            # the nonlinearity and blunt the break-away.
+            friction = grip if held > 0.0 else -grip
+            for _ in range(3):
+                dv = v - surface - sens * friction
+                rel = dv / stribeck
+                mu = mu_floor + (1.0 - mu_floor) / (1.0 + rel * rel)
+                friction = grip * mu if dv > 0.0 else -grip * mu
         total = 0.0
         for m in range(modes):
             y = free[m] + inject[m] * friction
@@ -6714,10 +6748,33 @@ class RubUnit(Unit):
     COUPLING = 0.5
     # User velocity 0..1 onto the internal range where the fundamental
     # regime lives; past 1 climbs into the mode-jump squeals.
+    #
+    # This is where the playable wedge SITS on the knob, and it is worth
+    # knowing that moving it does not soften the step into oscillation,
+    # only relocate it. At 0.3 the tone arrives a third of the way up
+    # and the level spreads over ten decibels instead of twenty-five --
+    # but a velocity of 0.7 then locks to a higher mode instead of the
+    # fundamental, so the fundamental regime is what gets paid. Left
+    # where it plays.
     VELOCITY_SCALE = 0.12
     # Below this internal speed the hair is lifting off: contact fades so
     # a stopped bow releases the ring instead of damping it dead.
     CONTACT_VELOCITY = 0.005
+    # What the contact can hold with, per unit of 'force'. 'force' is
+    # the normal force now -- how hard the hair is pressed -- rather
+    # than a width for a curve, which is both what it is called and what
+    # decides when the surface breaks away.
+    STICK_FORCE = 0.2
+    # The speed difference over which sliding friction falls from its
+    # break-away value toward the floor. The negative slope across it is
+    # what pumps the mode, and its width is what decides how far up the
+    # bow speed the fundamental holds before the bank jumps to a higher
+    # mode: narrow and it squeals almost at once, wide and it holds
+    # through most of the range and jumps near the top, which is where
+    # the jump belongs.
+    STRIBECK = 0.2
+    # Sliding friction as a fraction of break-away.
+    MU_FLOOR = 0.3
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
         super().__init__(sample_rate)
@@ -6928,7 +6985,9 @@ class RubUnit(Unit):
         self._dc_x, self._dc_y = _rub_kernel(
             vel, contact, push, b1, b2, inject_live, pickup_live,
             self._s1[:count], self._s2[:count], self._free[:count],
-            dc_pole, self._dc_x, self._dc_y, result)
+            dc_pole, self._dc_x, self._dc_y, result,
+            RubUnit.STICK_FORCE, RubUnit.STRIBECK, RubUnit.MU_FLOOR,
+            float(np.dot(pickup_live, inject_live)))
 
         self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
@@ -8753,6 +8812,21 @@ class BounceUnit(Unit):
     impact speed: feed it to drum~'s or modal~'s excite input.
     """
 
+    # Unit area is the right convention for a strike -- a drum rings by
+    # the momentum it is given, so hardness colors a blow rather than
+    # weighting it -- and area stays constant across hardness, which is
+    # the part that matters.
+    #
+    # The LEVEL was an order of magnitude under everything else that
+    # drives a resonator. At each unit's own full gesture: bow~ peaks at
+    # 0.42, noise~ at 0.68, rub~ at 1.39, and this at 0.039. It only
+    # sounded right into drum~ because drum~ was impulse-normalized and
+    # handed the missing thirty decibels back -- which is the same fact
+    # that made bowing a drum explode. With both banks normalized alike
+    # this can be what it should have been: a dropped mallet in the same
+    # company as a bow.
+    STRIKE_LEVEL = 10.0
+
     _seeded = 0
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
@@ -8841,7 +8915,7 @@ class BounceUnit(Unit):
         # over the contact, and the drum downstream rings by momentum,
         # so hardness changes the color of a strike and not its weight.
         full_speed = math.sqrt(2.0 * g)
-        strike_scale = (1.0 / full_speed) * (2.0 / contact)
+        strike_scale = (BounceUnit.STRIKE_LEVEL / full_speed) * (2.0 / contact)
         # At rest when the next flight would be shorter than the
         # contact itself: flight = 2 v / g samples.
         vmin = 0.5 * g * contact
@@ -8862,7 +8936,8 @@ class BounceUnit(Unit):
         self._quiet = bool(scratch.max() < 1.0e-5)
 
 
-def _drum_kernel_source(exc, b1_base, b1_slope, b2, gains, s1, s2,
+def _drum_kernel_source(exc, pulse, b1_base, b1_slope, b2, gains,
+                        strike_gains, s1, s2,
                         bend_amt, bend_k, env_a, env_r, gap, snare_gain,
                         hp_k, wire_g, wire_b1, wire_b2,
                         dc_pole, env, tune_dev, hp, wy1, wy2,
@@ -8884,17 +8959,25 @@ def _drum_kernel_source(exc, b1_base, b1_slope, b2, gains, s1, s2,
     modes = b1_base.shape[0]
     for i in range(exc.shape[0]):
         drive = exc[i]
+        tap = pulse[i]
         total = 0.0
         for m in range(modes):
             b1m = b1_base[m] + b1_slope[m] * tune_dev
-            y = gains[m] * drive + b1m * s1[m] + b2[m] * s2[m]
+            # The recursive part alone is what the head is DOING. Adding
+            # the drive to the output as well gives every mode a path
+            # around its own filter, and at lag zero those add
+            # coherently across the bank while the rings they excite
+            # dephase within a sample -- the same leak modal~ had. A
+            # drum does not radiate the mallet.
+            rung = b1m * s1[m] + b2[m] * s2[m]
+            y = gains[m] * drive + strike_gains[m] * tap + rung
             if y > 1.5:
                 y = 1.5 + np.tanh(y - 1.5)
             elif y < -1.5:
                 y = -1.5 - np.tanh(-y - 1.5)
             s2[m] = s1[m]
             s1[m] = y
-            total += y
+            total += rung
         a = total if total >= 0.0 else -total
         if a > env:
             env += (a - env) * env_a
@@ -9014,6 +9097,11 @@ class DrumUnit(Unit):
 
         self.out = self.new_outlet()
         self._exc = np.zeros(MAX_BLOCK, dtype=np.float64)
+        # The mallet gets its own buffer. It used to be mixed into the
+        # excitation and so shared its gain, which is what stopped the
+        # two being normalized differently.
+        self._pulse_buf = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._drive_gains = np.zeros(DrumUnit.MAX_MODES, dtype=np.float64)
         self._sense_glide = 1.0
         self._sense_ramp = np.zeros(MAX_BLOCK, dtype=np.float64)
         self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
@@ -9147,9 +9235,11 @@ class DrumUnit(Unit):
         # The mallet: raised-cosine contact, 8 ms of felt to a third
         # of a millisecond of stick.
         width = max(2.0, 0.008 * (0.04 ** hard) * self.sample_rate)
+        pulse = self._pulse_buf[:frames]
+        pulse[:] = 0.0
         offset = 0
         for when, height in events:
-            self._add_pulse(exc, offset, when)
+            self._add_pulse(pulse, offset, when)
             # Area-normalized, as modal~'s mallet: force integrates over
             # the dwell, so a soft strike must not land fifty times
             # harder than a hard one of the same velocity.
@@ -9158,7 +9248,7 @@ class DrumUnit(Unit):
             self._pulse_at = 0
             self._pulse_remaining = int(width)
             offset = when
-        self._add_pulse(exc, offset, frames)
+        self._add_pulse(pulse, offset, frames)
 
         curve = self._scratch[:frames]
         self._build_hertz(curve, frequency, pitch, frames, 20.0)
@@ -9237,6 +9327,24 @@ class DrumUnit(Unit):
             step *= 0.35
             live += step
 
+        # Two normalizations, because the two inputs mean two different
+        # things -- the arrangement modal~ already had and this did not.
+        #
+        # 'live' is impulse-normalized, the mallet convention: a strike
+        # of unit area rings each mode up to its table weight wherever
+        # it sits. That is right for the trigger and wrong for anything
+        # sustained, because a drive parked on a resonance is then
+        # multiplied by the mode's Q -- which is why bowing a drum came
+        # out thirty-two decibels over bowing modal~ and clipped. The
+        # excite path gets the same sqrt(1-r) compromise modal~ uses, so
+        # the SAME signal into either bank now arrives at the same
+        # loudness. A stick on a bass string and a stick on a drum
+        # should be about as loud as each other.
+        drive_live = self._drive_gains[:count]
+        np.subtract(1.0, radius, out=drive_live)
+        np.sqrt(drive_live, out=drive_live)
+        drive_live *= live
+
         env_a = 1.0 - math.exp(-1.0 / (0.001 * self.sample_rate))
         env_r = 1.0 - math.exp(-1.0 / (0.04 * self.sample_rate))
         bend_k = 1.0 - math.exp(-1.0 / (0.002 * self.sample_rate))
@@ -9265,7 +9373,7 @@ class DrumUnit(Unit):
         result = self._y[:frames]
         (self._env, self._tune_dev, self._hp, self._wy1, self._wy2,
          self._dc_x, self._dc_y, rng_state) = _drum_kernel(
-            exc, b1, self._slope[:count], b2, live,
+            exc, pulse, b1, self._slope[:count], b2, drive_live, live,
             self._s1[:count], self._s2[:count],
             bend_amt, bend_k, env_a, env_r, 0.015, snare_gain,
             hp_k, wire_g, wire_b1, wire_b2,

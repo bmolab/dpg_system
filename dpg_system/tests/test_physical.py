@@ -526,6 +526,34 @@ u, sung = run_rub(0.7)
 peak = np.max(np.abs(sung[-16384:]))
 pur, dom = purity_and_dom(sung)
 check('rub sings', peak > 0.2, f'peak={peak:.3f}')
+# A bowed thing is loud in proportion to how fast it is bowed, and the
+# reason is kinematic: through the stuck part of each cycle the surface
+# is carried at the speed of the hair, so the distance it travels goes
+# with that speed. Six decibels a doubling. Without a real stick the
+# amplitude is set instead by where friction balances damping, which
+# hardly moves with bow speed -- so the old smooth friction curve was
+# silent below the threshold where oscillation starts and very nearly
+# full voice above it: twenty-five decibels of arrival for a one-and-a-
+# half-fold change in speed, and not playable.
+_rub_slope = []
+_rub_prev = None
+for _v in (0.05, 0.1, 0.2, 0.3, 0.45, 0.6):
+    _, _ry = run_rub(_v, seconds=1.6)
+    _rr = float(np.sqrt(np.mean(_ry[int(0.7 * SR):] ** 2)))
+    if _rub_prev is not None and _rr > 1e-9 and _rub_prev[1] > 1e-9:
+        _rub_slope.append(20 * np.log10(_rr / _rub_prev[1])
+                          / np.log2(_v / _rub_prev[0]))
+    _rub_prev = (_v, _rr)
+
+check('rub is loud in proportion to bow speed, as Schelleng says',
+      3.5 < float(np.median(_rub_slope)) < 8.5,
+      f'{np.median(_rub_slope):.1f} dB per doubling '
+      f'(6 is the law; a fixed-amplitude oscillator would give 0)')
+check('rub speaks at a slow bow rather than waiting for a threshold',
+      float(np.sqrt(np.mean(run_rub(0.05, seconds=1.6)[1][-8192:] ** 2)))
+      > 1e-4,
+      'a smooth friction curve was silent below about 0.6')
+
 check('rub locks to fundamental, near-pure', pur > 0.8 and abs(dom - 440.0) < 10.0,
       f'purity={pur:.2f} dom={dom:.1f}')
 
@@ -748,6 +776,75 @@ check('bounce~ into drum~ makes a sustained bounded roll',
       np.isfinite(ry).all() and 0.005 < np.sqrt(np.mean(ry[SR:]**2)) < 1.0
       and np.max(np.abs(ry)) < 2.0,
       f'rms {np.sqrt(np.mean(ry[SR:]**2)):.3f}')
+
+# The same excitation should arrive at about the same loudness whatever
+# it is driving. A stick on a bass string and a stick on a drum head are
+# not thirty decibels apart. drum~ used to be impulse-normalized on the
+# one buffer it had -- right for a mallet, and it multiplies anything
+# SUSTAINED by the mode's Q, so bowing a drum came out thirty-two
+# decibels over bowing modal~ and clipped at 2.74. The mallet has its
+# own buffer and gain now, so the strike keeps the impulse convention
+# and the excite input gets the same sqrt(1-r) modal~ uses.
+_xr = np.random.default_rng(4).normal(size=int(1.5 * SR)) * 0.1
+
+
+def _bank_response(unit):
+    sig = sc.Signal()
+    unit.excite_in.sources.append(sig)
+    got = []
+    for _i in range(0, len(_xr) - BLOCK, BLOCK):
+        sig.data[:BLOCK] = _xr[_i:_i + BLOCK]
+        sig.constant = False
+        unit.render(BLOCK)
+        got.append(unit.out.array(BLOCK).copy())
+    y = np.concatenate(got)
+    return float(np.sqrt(np.mean(y ** 2))), float(np.max(np.abs(y)))
+
+
+_xd = sc.DrumUnit(SR)
+_xd.frequency_in.base = 90.0
+_xd.decay_in.base = 0.18
+_xm = sc.ModalUnit(SR)
+_xm.set_modes([(1.0, 1.0, 1.0), (1.594, 0.7, 0.7), (2.136, 0.5, 0.5),
+               (2.296, 0.45, 0.45)])
+_xm.frequency_in.base = 90.0
+_xm.decay_in.base = 0.18
+_xdr, _xdp = _bank_response(_xd)
+_xmr, _xmp = _bank_response(_xm)
+_xgap = 20 * np.log10(max(_xdr, 1e-12) / max(_xmr, 1e-12))
+check('the same drive is about as loud into drum~ as into modal~',
+      abs(_xgap) < 12.0,
+      f'{_xgap:+.1f} dB apart (it was +32.0)')
+check('a bowed drum does not clip',
+      _xdp < 1.0, f'peak {_xdp:.3f} (it was 2.74)')
+
+# The exciters should be in the same company too: a dropped mallet is
+# not a twentieth of a bow.
+_xb = sc.BounceUnit(SR)
+_xbs = sc.Signal()
+_xb.drop_in.sources.append(_xbs)
+_xby = []
+for _i in range(int(2.0 * SR / BLOCK)):
+    _xbs.data[:BLOCK] = 1.0 if (_i * BLOCK / SR) > 0.05 else 0.0
+    _xbs.constant = False
+    _xb.render(BLOCK)
+    _xby.append(_xb.out.array(BLOCK).copy())
+_xbp = float(np.max(np.abs(np.concatenate(_xby))))
+_xw = sc.BowUnit(SR)
+_xws = sc.Signal()
+_xw.velocity_in.sources.append(_xws)
+_xwy = []
+for _i in range(int(2.0 * SR / BLOCK)):
+    _xws.data[:BLOCK] = 0.6
+    _xws.constant = False
+    _xw.render(BLOCK)
+    _xwy.append(_xw.out.array(BLOCK).copy())
+_xwp = float(np.max(np.abs(np.concatenate(_xwy))))
+check('bounce~ strikes as hard as bow~ bows',
+      abs(20 * np.log10(max(_xbp, 1e-12) / max(_xwp, 1e-12))) < 8.0,
+      f'bounce~ {_xbp:.3f} against bow~ {_xwp:.3f} '
+      f'({20 * np.log10(max(_xbp, 1e-12) / max(_xwp, 1e-12)):+.1f} dB; '
+      f'it was -20.7)')
 
 # ------------------------------------------------------------- motor~
 def run_motor(speed=0.6, load=0.3, parts=4, tone=0.4, throb=0.35,
