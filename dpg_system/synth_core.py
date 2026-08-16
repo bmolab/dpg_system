@@ -8463,7 +8463,8 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                           sizes, spring, spin_phase, scatter, tumble,
                           held, support, touching, release,
                           restitution, grip, texture, texture_drag,
-                          asperity, skin, tilt, hold_rough,
+                          asperity, asperity_rough, skin, tilt,
+                          hold_rough,
                           grav, box,
                           speed_cap,
                           rest_speed, rest_steps, slide_gain,
@@ -8557,7 +8558,6 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
             spin_prev_z = sz
             hit_k = 0.0
             hit_s = 0.0
-            hit_t = 0.0
             rub_pow = 0.0
             rub_wsum = 0.0
             tick_pow = 0.0
@@ -8823,7 +8823,22 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                             take = mu * vn * (1.0 + rest_p)
                             if take > ts:
                                 take = ts
-                            hit_t = take
+                            # Part of the BLOW, not of the rubbing.
+                            # A glancing blow does drag as it lands,
+                            # but that drag is impulsive and lasts the
+                            # CONTACT -- it is the contact's colour,
+                            # and it moves with hardness. Sent to the
+                            # scrape outlet it put a blow-shaped,
+                            # hardness-following pulse into the one
+                            # signal that is meant to be nothing but
+                            # rubbing, which is audible and plain on a
+                            # scope. The rub itself does not move with
+                            # hardness at all, and should not. So the
+                            # two impulses of one collision combine
+                            # into one blow, in quadrature, the way
+                            # perpendicular things do.
+                            hit_k = math.sqrt(hit_k * hit_k
+                                              + take * take)
                             f_ = take / ts
                             vx -= f_ * tx
                             vy -= f_ * ty
@@ -8956,7 +8971,7 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                         spin_phase[p] -= 6.283185307179586
                 # Each blow lands where it fell in the block, and is
                 # a contact of some width rather than a single sample.
-                if hit_k > 0.0 or hit_s > 0.0 or hit_t > 0.0:
+                if hit_k > 0.0 or hit_s > 0.0:
                     rng, u01 = _rand01(rng)
                     at0 = head + int(u01 * decim)
                     if at0 >= ring_n:
@@ -8979,7 +8994,20 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                     # rest of the rack is.
                     if hit_k > 0.0:
                         rng, sgn = _rand01(rng)
-                        kp = hit_k * knock_gain / math.sqrt(width)
+                        # A blow carries an IMPULSE, and how hard the
+                        # contact is decides how that impulse is spread
+                        # in time -- not how much of it there is. A
+                        # Hann hump of width W and peak A carries A*W/2,
+                        # so the peak has to go as 1/W to keep it. Going
+                        # as one over the root instead, the impulse GREW
+                        # as the root of the width: a soft contact
+                        # handed the resonator five times the momentum
+                        # of a hard one, and since a mode below the
+                        # contact bandwidth answers the impulse, that
+                        # made hardness a fourteen decibel loudness
+                        # control on everything low. It should change
+                        # the colour and nothing else.
+                        kp = 2.0 * hit_k * knock_gain / width
                         if sgn < 0.5:
                             kp = -kp
                         at = at0
@@ -8988,24 +9016,6 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                                                           * (q + 0.5)
                                                           / width))
                             ring_knock[at] += kp * shape
-                            at += 1
-                            if at >= ring_n:
-                                at = 0
-                    if hit_t > 0.0:
-                        # A blow that lands at an angle rubs as it
-                        # strikes. That is a BLOW's kind of event, not
-                        # a rub's, so it is shaped and scaled like one
-                        # -- the same material answering the same way.
-                        rng, sgn = _rand01(rng)
-                        tp = hit_t * knock_gain / math.sqrt(width)
-                        if sgn < 0.5:
-                            tp = -tp
-                        at = at0
-                        for q in range(width):
-                            shape = 0.5 * (1.0 - math.cos(two_pi
-                                                          * (q + 0.5)
-                                                          / width))
-                            ring_scrape[at] += tp * shape
                             at += 1
                             if at >= ring_n:
                                 at = 0
@@ -9021,10 +9031,29 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                         sw = ring_n - 1
                         rub = math.sqrt(vx * vx + vy * vy + vz * vz)
                         if rub > 1.0e-9:
-                            sw = int(grain_p * asperity / rub
-                                     * decim / dt)
-                        if sw < 2:
-                            sw = 2
+                            # How far apart the bumps of the wall are
+                            # grows with how rough it is: a polished
+                            # shell has fine ones and hisses, a coarse
+                            # one has them further apart and rasps
+                            # lower. That is the vessel's own surface
+                            # speaking, and until now it was a fixed
+                            # constant -- so 'texture' changed how much
+                            # the wall CAUGHT but nothing about what it
+                            # sounded like.
+                            sw = int(grain_p * asperity
+                                     * (1.0 + texture * asperity_rough)
+                                     / rub * decim / dt)
+                        # A rub cannot be sharper than a CONTACT. It is
+                        # a run of tiny impacts and every one of them
+                        # is still a contact, so the same stiffness
+                        # that stops a blow being sharper than this
+                        # stops a rub too. Floored at two samples
+                        # instead, a rub at speed went white -- finer
+                        # than the hardest blow the model allows -- and
+                        # came out at 5900 Hz against a blow's 432 Hz
+                        # from what is supposed to be one material.
+                        if sw < width:
+                            sw = width
                         if sw > ring_n - 1:
                             sw = ring_n - 1
                         # GATHERED, not laid down here. Every rubbing
@@ -9054,7 +9083,6 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                 # proportion to it.
                 hit_k = 0.0
                 hit_s = 0.0
-                hit_t = 0.0
                 pos[3 * p] = rx
                 pos[3 * p + 1] = ry
                 pos[3 * p + 2] = rz
@@ -9067,7 +9095,8 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                 if at >= ring_n:
                     at -= ring_n
                 rng, sgn = _rand01(rng)
-                kp = math.sqrt(tick_pow) * knock_gain / math.sqrt(width)
+                kp = (2.0 * math.sqrt(tick_pow) * knock_gain
+                      / width)
                 if sgn < 0.5:
                     kp = -kp
                 for q in range(width):
@@ -9175,8 +9204,8 @@ class RattleUnit(Unit):
     # How the level climbs with how many things are in there, measured.
     DENSITY_LAW = 0.5
     DENSITY_REF = 1.097
-    KNOCK_GAIN = 10.0
-    SCRAPE_GAIN = 0.158
+    KNOCK_GAIN = 30.6
+    SCRAPE_GAIN = 0.168
     SHAPES = ('sphere', 'box', 'egg')
     # How much longer an egg is than it is wide.
     EGG = 1.7
@@ -9245,7 +9274,18 @@ class RattleUnit(Unit):
     # How far apart the bumps of the surface are, against the size of
     # the things riding over them. Sets how bright a rub is at a given
     # speed.
-    ASPERITY = 0.02
+    # How long a contact lasts, softest to hardest, in seconds.
+    CONTACT_SOFT = 0.008
+    CONTACT_HARD = 0.0000454
+    # How far apart the bumps of the surface are, against the size of
+    # a grain. At a fiftieth of a grain radius this was 120 microns on
+    # a default grain -- coarse sandpaper -- and a crossing took long
+    # enough that it, and not the contact, set how bright a rub could
+    # be. Real surfaces are microns, so the CONTACT is what limits it,
+    # which is what makes a small hard shaker hiss.
+    ASPERITY = 0.002
+    # How much coarser the bumps get as the shell roughens.
+    ASPERITY_ROUGH = 4.0
     # How much riding over the roughness resists, against the friction
     # coefficient itself.
     TEXTURE_DRAG = 0.5
@@ -9277,7 +9317,11 @@ class RattleUnit(Unit):
         # up and let go, over and over, which taps.
         self.texture_in = self.new_inlet(base=0.25, minimum=0.0,
                                          maximum=1.0)
-        self.hardness_in = self.new_inlet(base=0.6, minimum=0.0,
+        # 0.4 rather than 0.6, since the range grew a harder top: this
+        # is the same contact the old 0.6 gave, so the default sound
+        # sits where it was and the new hardness is added ABOVE it
+        # instead of underneath everything.
+        self.hardness_in = self.new_inlet(base=0.4, minimum=0.0,
                                           maximum=1.0)
         self.gravity_in = self.new_inlet(base=9.80665, minimum=0.0,
                                          maximum=40.0)
@@ -9366,7 +9410,13 @@ class RattleUnit(Unit):
         """Drop them in, well inside the wall so none starts embedded."""
         rng = np.random.default_rng(97 + RattleUnit._seeded)
         n = RattleUnit.MAX_PARTICLES
-        self._pos[:] = rng.uniform(-0.4, 0.4, n * 3)
+        # Well inside the wall, and inside THIS wall: scattered over a
+        # fixed four tenths of a metre they landed ten times outside a
+        # default-sized shell, so every one of them started embedded,
+        # was clamped out, and the first few seconds were a crash
+        # rather than a settle.
+        self._pos[:] = (rng.uniform(-0.5, 0.5, n * 3)
+                        * self.size_in.base)
         self._vel[:] = rng.normal(0.0, 0.05, n * 3)
         # A spread of sizes, fixed per handful: this is what they are,
         # not something that changes while they rattle.
@@ -9480,13 +9530,24 @@ class RattleUnit(Unit):
         if self.shape == 2:
             half_z = size * RattleUnit.EGG
         box = 1.0 if self.shape == 1 else 0.0
-        # The same mallet range as everywhere: eight milliseconds of
-        # felt down to a third of a millisecond of glass.
+        # HARDER at the top than the mallet range the rest of the rack
+        # uses, and it has to be: nothing here is a mallet. Contact time
+        # falls with mass, and a light bead on a stiff plastic shell
+        # rings far shorter than the hardest mallet head -- so eight
+        # milliseconds of something soft down to about a twentieth of a
+        # millisecond, which is two samples and as near an impulse as
+        # this can carry. Stopping where a mallet stops, a third of a
+        # millisecond, the contact set a floor under the RUB as well
+        # (a rub is a run of tiny contacts), and a small egg shaker
+        # came out too dark at the top of its range to be white.
+        #
         # In AUDIO samples: the ring is read one per sample, so dividing
         # this by the decimation made every contact eight times shorter
-        # than the mallet it was supposed to be, and a bank of contacts
-        # that short is a bank of clicks.
-        contact = max(2.0, 0.008 * (0.04 ** hard) * self.sample_rate)
+        # than it was supposed to be, and a bank of contacts that short
+        # is a bank of clicks.
+        contact = max(2.0, RattleUnit.CONTACT_SOFT
+                      * (RattleUnit.CONTACT_HARD / RattleUnit.CONTACT_SOFT)
+                      ** hard * self.sample_rate)
         width = int(min(RattleUnit.RING - 1, max(2, contact)))
         if width != self._window_width:
             self._window_width = width
@@ -9524,6 +9585,7 @@ class RattleUnit(Unit):
             self._touching,
             RattleUnit.RELEASE, bounce, grip, texture,
             RattleUnit.TEXTURE_DRAG, RattleUnit.ASPERITY,
+            RattleUnit.ASPERITY_ROUGH,
             RattleUnit.CONTACT_SKIN, RattleUnit.SCATTER_TILT,
             RattleUnit.HOLD_ROUGH,
             grav, box,

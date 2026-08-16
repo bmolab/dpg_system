@@ -1142,11 +1142,15 @@ check('and a circle glances where a line strikes',
 # for MORE scrape against knock in the box, which contradicts its own
 # sentence, and it only ever passed because tumble was wobbling every
 # particle's radius and inventing collisions out of nothing.
-_ra_box = run_rattle('circle', shape=1)
+# Driven hard enough that the box unambiguously knocks. Near the
+# threshold whether it knocks at all depends on where the handful
+# happened to be scattered, which is not what this is asking about.
+_ra_box = run_rattle('circle', shape=1, amp=20.0)
 _ra_bk = (np.sqrt(np.mean(_ra_box[1] ** 2))
           / max(np.sqrt(np.mean(_ra_box[2] ** 2)), 1e-12))
-_ra_ck = (np.sqrt(np.mean(_ra_ck ** 2))
-          / max(np.sqrt(np.mean(_ra_cs ** 2)), 1e-12))
+_ra_sph = run_rattle('circle', shape=0, amp=20.0)
+_ra_ck = (np.sqrt(np.mean(_ra_sph[1] ** 2))
+          / max(np.sqrt(np.mean(_ra_sph[2] ** 2)), 1e-12))
 check('flat walls take a bean head on where a curved one lets it glance',
       _ra_bk > 5.0 * _ra_ck,
       f'knock against scrape {_ra_ck:.3f} in a sphere, {_ra_bk:.3f} in a '
@@ -1348,11 +1352,12 @@ check('none of which stops a hard shake from knocking',
 # stepping as things caught and let go is what made the output jump to
 # random offsets. What radiates from a sliding contact is the part that
 # FLUCTUATES.
-def _rattle_slide(spin=6.0, seconds=5.0):
+def _rattle_slide(spin=6.0, seconds=5.0, hardness=1.0):
     u = sc.RattleUnit(SR)
     u.set_count(48)
     u.texture_in.base = 0.0
     u.friction_in.base = 0.3
+    u.hardness_in.base = hardness
     wx = sc.Signal()
     u.turn_x_in.sources.append(wx)
     got = []
@@ -1384,10 +1389,24 @@ def _rattle_centroid(x):
 _rs_slow = _rattle_centroid(_rattle_slide(spin=1.0))
 _rs_fast = _rattle_centroid(_rattle_slide(spin=25.0))
 check('and a faster slide comes out brighter, without being told to',
-      _rs_fast > 3.0 * _rs_slow,
+      _rs_fast > 2.5 * _rs_slow,
       f'centroid {_rs_slow:.0f} Hz turning at 1 radian a second, '
       f'{_rs_fast:.0f} Hz at 25 -- a rub lasts one bump of the surface '
       f'going by, so its width is the spacing over the speed')
+
+# But only up to what the CONTACT allows. A rub is a run of tiny
+# impacts and each of them is still a contact, so the same stiffness
+# that stops a blow being sharper stops a rub too. Floored at two
+# samples instead of at the contact, a rub at speed went white -- finer
+# than the hardest blow the model can make -- and came out at 5900 Hz
+# against that blow's 432 Hz, from what is meant to be one material.
+_rs_soft = (_rattle_centroid(_rattle_slide(spin=25.0, hardness=0.25))
+            / max(_rattle_centroid(_rattle_slide(spin=1.0,
+                                                 hardness=0.25)), 1e-9))
+check('but no brighter than the contact it is rubbing through',
+      _rs_soft < 0.6 * (_rs_fast / max(_rs_slow, 1e-9)),
+      f'speed buys {_rs_fast / max(_rs_slow, 1e-9):.1f}x of brightness '
+      f'through a hard contact and {_rs_soft:.1f}x through a soft one')
 
 _rk_shaken = run_rattle(amp=1.0)[1]
 check('and a blow does not sit on an offset either',
@@ -1534,6 +1553,261 @@ check('a blow is laid down once, not once for every thing in there',
       f'particle per step instead of once each it went as the count '
       f'itself, and a full container multiplied every blow by a '
       f'hundred and twenty-eight')
+
+
+# What a blow hands a resonator is an IMPULSE. How hard the contact is
+# decides how that impulse is spread in time -- its colour -- and not
+# how much of it there is. A Hann hump of width W and peak A carries
+# A*W/2, so the peak has to go as 1/W to hold the impulse still. Going
+# as one over the ROOT of the width, as it did, the impulse grew as the
+# root of the width instead: a soft contact handed over five times the
+# momentum of a hard one. Since a mode below the contact bandwidth
+# answers the impulse and not the shape, that made hardness a fourteen
+# decibel loudness control on everything low -- softer being LOUDER,
+# and duller with it.
+def _rattle_into_modal(hardness, freq=320.0, shake=8.0, seconds=6.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.shape = 1
+    u.texture_in.base = 0.0
+    u.bounce_in.base = 0.8
+    u.hardness_in.base = hardness
+    sx = sc.Signal()
+    u.shake_x_in.sources.append(sx)
+    m = sc.ModalUnit(SR)
+    m.frequency_in.base = freq
+    m.decay_in.base = 1.2
+    drive = sc.Signal()
+    m.excite_in.sources.append(drive)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sx.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.0 * t)
+        sx.constant = False
+        u.render(BLOCK)
+        drive.data[:BLOCK] = u.knock.array(BLOCK)
+        drive.constant = False
+        m.render(BLOCK)
+        got.append(m.out.array(BLOCK).copy())
+    y = np.concatenate(got)[int(2 * SR):]
+    w = 1 << 15
+    mag = np.abs(np.fft.rfft(y[:w] * np.hanning(w)))
+    freqs = np.fft.rfftfreq(w, 1.0 / SR)
+    return (float(np.sqrt(np.mean(y ** 2))),
+            float((freqs * mag).sum() / max(mag.sum(), 1e-12)))
+
+
+# At a mode well inside every one of these contact bandwidths, so that
+# what is being measured is the WEIGHT and not the roll-off. At 320 Hz
+# a hardness of 0.5 is already at the edge of what a 1.6 ms contact can
+# reach, and the roll-off there is real physics rather than a fault.
+_ri = [_rattle_into_modal(h, freq=120.0) for h in (1.0, 0.75, 0.5)]
+_ri_lv = [x[0] for x in _ri]
+_ri_ct = [x[1] for x in _ri]
+check('softening the contact changes a blow\'s colour, not its weight',
+      max(_ri_lv) < 1.8 * min(_ri_lv),
+      'ringing a 120 Hz resonator: '
+      + ' / '.join(f'{x:.4f}' for x in _ri_lv)
+      + ' at hardness 1.0 / 0.75 / 0.5, within '
+      + f'{20 * np.log10(max(_ri_lv) / min(_ri_lv)):.1f} dB')
+# Measured on the DRIVE. Through the resonator its own mode dominates
+# the centroid and hides what the drive is doing.
+def _rattle_knock_colour(hardness, shake=8.0, seconds=6.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.shape = 1
+    u.texture_in.base = 0.0
+    u.bounce_in.base = 0.8
+    u.hardness_in.base = hardness
+    sx = sc.Signal()
+    u.shake_x_in.sources.append(sx)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sx.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.0 * t)
+        sx.constant = False
+        u.render(BLOCK)
+        got.append(u.knock.array(BLOCK).copy())
+    y = np.concatenate(got)[int(2 * SR):]
+    w = 1 << 15
+    mag = np.abs(np.fft.rfft(y[:w] * np.hanning(w)))
+    freqs = np.fft.rfftfreq(w, 1.0 / SR)
+    return float((freqs * mag).sum() / max(mag.sum(), 1e-12))
+
+
+_ri_ct = [_rattle_knock_colour(h) for h in (1.0, 0.75, 0.5, 0.0)]
+check('and the colour is what it does change',
+      _ri_ct[0] > 4.0 * _ri_ct[-1],
+      'the blows themselves run '
+      + ' / '.join(f'{x:.0f}' for x in _ri_ct)
+      + ' Hz at hardness 1.0 / 0.75 / 0.5 / 0')
+
+# Softer still and the mode stops answering at all, which is right: an
+# eight millisecond contact has no energy left up at 320 Hz. A very
+# soft mallet does not ring a bell.
+_ri_soft = _rattle_into_modal(0.0)[0]
+check('and a contact too soft to reach a mode does not ring it',
+      _ri_soft < 0.2 * _ri_lv[0],
+      f'{_ri_soft:.4f} at hardness 0 against {_ri_lv[0]:.4f} at 1.0, '
+      f'{20 * np.log10(_ri_soft / _ri_lv[0]):.0f} dB down')
+
+
+# The two outlets exist to separate two behaviours, so nothing that
+# follows hardness may appear on the rubbing one. A rub lasts one bump
+# of the surface going by; hardness is how long a CONTACT lasts, and
+# the two have nothing to do with each other. The tangential impulse of
+# a glancing blow was going to the scrape outlet -- real enough as
+# physics, but it is impulsive, it lasts the contact, and it therefore
+# moved with hardness. The result was a blow-shaped, hardness-following
+# pulse sitting in the one signal meant to be nothing but rubbing:
+# audible, and plain on a scope. Both impulses of one collision are one
+# blow now, combined in quadrature the way perpendicular things are.
+def _rattle_scrape_only(hardness, shake=8.0, seconds=10):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.shape = 1
+    u.texture_in.base = 0.0
+    u.bounce_in.base = 0.8
+    u.hardness_in.base = hardness
+    sx = sc.Signal()
+    u.shake_x_in.sources.append(sx)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sx.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.0 * t)
+        sx.constant = False
+        u.render(BLOCK)
+        got.append(u.scrape.array(BLOCK).copy())
+    y = np.concatenate(got)[int(4 * SR):]
+    rms = float(np.sqrt(np.mean(y ** 2)))
+    return rms, float(np.max(np.abs(y)) / max(rms, 1e-12))
+
+
+_so = [_rattle_scrape_only(h) for h in (1.0, 0.5, 0.0)]
+_so_lv = [x[0] for x in _so]
+_so_cr = [x[1] for x in _so]
+check('hardness does not reach the rubbing at all',
+      max(_so_lv) < 1.5 * min(_so_lv),
+      'rub level ' + ' / '.join(f'{x:.4f}' for x in _so_lv)
+      + ' at hardness 1.0 / 0.5 / 0 while things are striking the walls'
+      + f' -- {20 * np.log10(max(_so_lv) / min(_so_lv)):.1f} dB, and it '
+      + 'was 6.2')
+check('and no blow-shaped spike rides in on it',
+      max(_so_cr) < 1.6 * min(_so_cr),
+      'crest ' + ' / '.join(f'{x:.1f}' for x in _so_cr)
+      + ' over the same three -- it was 12.7 / 7.9 / 6.5, following '
+      + 'hardness because a blow was leaking in')
+
+# The settle is a settle, not a crash. Scattered over a fixed four
+# tenths of a metre they landed ten times outside a default-sized
+# shell: every one of them started embedded and was clamped out.
+_rz = sc.RattleUnit(SR)
+_rz.set_count(48)
+_rz_r = np.linalg.norm(_rz._pos[:144].reshape(48, 3), axis=1)
+check('they are dropped in inside the container they are in',
+      float(_rz_r.max()) < _rz.size_in.base,
+      f'furthest starts at {_rz_r.max():.4f} m in a '
+      f'{_rz.size_in.base:.3f} m shell')
+
+
+# One material answers a blow and a rub with the same stiffness, so
+# their colours have to move together. They did not: a rub's width was
+# floored at two samples, so at speed it went white, finer than the
+# hardest blow the model can make -- 5900 Hz of rub against 432 Hz of
+# blow at the same setting. A rub is a run of tiny impacts and every
+# one of them is still a contact.
+def _rattle_colours(hardness, shake=8.0, seconds=10):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.shape = 1
+    u.hardness_in.base = hardness
+    u.bounce_in.base = 0.8
+    sx = sc.Signal()
+    u.shake_x_in.sources.append(sx)
+    knock, scrape = [], []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sx.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.0 * t)
+        sx.constant = False
+        u.render(BLOCK)
+        knock.append(u.knock.array(BLOCK).copy())
+        scrape.append(u.scrape.array(BLOCK).copy())
+    out = []
+    for got in (knock, scrape):
+        y = np.concatenate(got)[int(4 * SR):]
+        w = 1 << 15
+        mag = np.abs(np.fft.rfft(y[:w] * np.hanning(w)))
+        freqs = np.fft.rfftfreq(w, 1.0 / SR)
+        out.append(float((freqs * mag).sum() / max(mag.sum(), 1e-12)))
+    return out
+
+
+_cl = [_rattle_colours(h) for h in (1.0, 0.5, 0.0)]
+_cl_r = [c[1] / max(c[0], 1e-9) for c in _cl]
+check('a blow and a rub are the same material, so they sit in the '
+      'same register',
+      all(0.3 < r < 1.8 for r in _cl_r),
+      'rub against blow '
+      + ' / '.join(f'{r:.2f}' for r in _cl_r)
+      + ' at hardness 1.0 / 0.5 / 0 -- '
+      + ' and '.join(f'{c[0]:.0f} vs {c[1]:.0f} Hz' for c in _cl)
+      + '. At 0.5 it used to be 432 against 5900')
+
+# And the vessel's own surface has a say in it. How far apart the bumps
+# are grows with how rough the shell is, so a polished one hisses and a
+# coarse one rasps lower. Roughness used to be a fixed constant here,
+# so 'texture' changed how much the wall CAUGHT and nothing whatever
+# about what it sounded like.
+def _rattle_rasp(texture, seconds=10):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.texture_in.base = texture
+    u.hardness_in.base = 1.0
+    wx = sc.Signal()
+    u.turn_x_in.sources.append(wx)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        wx.data[:BLOCK] = np.degrees(6.0) * t
+        wx.constant = False
+        u.render(BLOCK)
+        got.append(u.scrape.array(BLOCK).copy())
+    return _rattle_centroid(np.concatenate(got)[int(4 * SR):])
+
+
+_rp = [_rattle_rasp(t) for t in (0.0, 0.25, 0.5, 1.0)]
+# Not strictly step by step at the very top of hardness: down there the
+# bumps are so close together that a crossing is shorter than a CONTACT,
+# and the contact is what limits it until the shell is rough enough for
+# the spacing to take over. That is the right way round.
+check('a polished shell hisses and a coarse one rasps lower',
+      _rp[0] > 2.2 * _rp[-1]
+      and all(b < 1.3 * a for a, b in zip(_rp, _rp[1:])),
+      'rub centroid ' + ' / '.join(f'{x:.0f}' for x in _rp)
+      + ' Hz as the shell roughens')
+
+
+# A small hard shaker hisses. The top of hardness has to reach a rub
+# that is nearly white, and it could not: the range stopped where the
+# rest of the rack's MALLET range stops, a third of a millisecond, and
+# since a rub cannot be sharper than a contact that put a floor under
+# it. Nothing in here is a mallet -- contact time falls with mass, and
+# a light bead on a stiff shell rings far shorter than the hardest
+# mallet head -- so the range runs on down to two samples.
+_wh = _rattle_colours(1.0)
+check('the hardest setting hisses, the way a small shaker does',
+      _wh[1] > 2500.0 and _wh[0] > 4000.0,
+      f'rub {_wh[1]:.0f} Hz against blow {_wh[0]:.0f} Hz at hardness 1 '
+      f'-- it stopped at 1855 Hz of rub while the range stopped where a '
+      f'mallet does')
+
+_wh_contact = sc.RattleUnit(SR)
+_wh_contact.hardness_in.base = 1.0
+_wh_contact.render(BLOCK)
+_wh_w = _wh_contact._window_width
+check('and the hardest contact really is as short as this can carry',
+      _wh_w <= 3,
+      f'{_wh_w} samples, {1000.0 * _wh_w / SR:.3f} ms')
 
 
 # ------------------------------------------------- every unit renders
