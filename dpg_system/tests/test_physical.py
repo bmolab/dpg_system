@@ -13,6 +13,7 @@ import os
 import sys
 import numpy as np
 from scipy.signal import hilbert as sig_hilbert
+from scipy.signal import find_peaks as sig_find_peaks
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 '..', '..'))
@@ -1079,6 +1080,461 @@ check('and settle glides rather than cutting the ring where it stands',
       f'{_st_b:.5f} before the drop, {_st_a:.5f} just after -- it '
       f'arrives over a tenth of a second, because no hand can stop a '
       f'shaker where it stands')
+
+# ------------------------------------------------------------ rattle~
+# Particles in a container, actually simulated. The point of it is that
+# the gesture stops needing translating: shaking along a LINE and
+# swirling round a CIRCLE are the same simulation given a line and a
+# circle, and the difference between them is not modelled anywhere.
+def run_rattle(motion='line', shape=0, count=48, seconds=4.0, amp=3.0,
+               spin=0.0, spin_axis='z'):
+    u = sc.RattleUnit(SR)
+    u.shape = shape
+    u.set_count(count)
+    sx, sy, wz = sc.Signal(), sc.Signal(), sc.Signal()
+    u.shake_x_in.sources.append(sx)
+    u.shake_y_in.sources.append(sy)
+    (u.turn_x_in if spin_axis == 'x' else u.turn_z_in).sources.append(wz)
+    out, knock, scrape = [], [], []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sx.data[:BLOCK] = amp * np.sin(2 * np.pi * 2.5 * t)
+        sx.constant = False
+        sy.data[:BLOCK] = (amp * np.cos(2 * np.pi * 2.5 * t)
+                           if motion == 'circle' else 0.0)
+        sy.constant = False
+        # 'turn' is an angle, so a steady turn is a ramp.
+        wz.data[:BLOCK] = np.degrees(spin) * t
+        wz.constant = False
+        u.render(BLOCK)
+        out.append(u.out.array(BLOCK).copy())
+        knock.append(u.knock.array(BLOCK).copy())
+        scrape.append(u.scrape.array(BLOCK).copy())
+    keep = slice(int(SR), None)
+    return (np.concatenate(out)[keep], np.concatenate(knock)[keep],
+            np.concatenate(scrape)[keep])
+
+
+def _rattle_swing(y):
+    env = np.abs(sig_hilbert(y))
+    width = int(0.02 * SR) | 1
+    env = np.convolve(env, np.ones(width) / width, mode='same')[width:-width]
+    return float(np.std(env) / max(np.mean(env), 1e-12))
+
+
+_ra_line, _ra_lk, _ra_ls = run_rattle('line')
+_ra_circ, _ra_ck, _ra_cs = run_rattle('circle')
+check('a line pulses and a circle does not, with nothing modelled to say so',
+      _rattle_swing(_ra_circ) < 0.5 * _rattle_swing(_ra_line),
+      f'envelope swing {_rattle_swing(_ra_line):.2f} driven along a line, '
+      f'{_rattle_swing(_ra_circ):.2f} round a circle -- a circle never '
+      f'stops the way a line does at each end')
+_ra_lr = (np.sqrt(np.mean(_ra_ls ** 2))
+          / max(np.sqrt(np.mean(_ra_lk ** 2)), 1e-12))
+_ra_cr = (np.sqrt(np.mean(_ra_cs ** 2))
+          / max(np.sqrt(np.mean(_ra_ck ** 2)), 1e-12))
+check('and a circle glances where a line strikes',
+      _ra_cr > 1.2 * _ra_lr,
+      f'scrape against knock {_ra_lr:.2f} along a line, {_ra_cr:.2f} '
+      f'round a circle')
+
+# Stated the other way up from how it used to be. The old form asked
+# for MORE scrape against knock in the box, which contradicts its own
+# sentence, and it only ever passed because tumble was wobbling every
+# particle's radius and inventing collisions out of nothing.
+_ra_box = run_rattle('circle', shape=1)
+_ra_bk = (np.sqrt(np.mean(_ra_box[1] ** 2))
+          / max(np.sqrt(np.mean(_ra_box[2] ** 2)), 1e-12))
+_ra_ck = (np.sqrt(np.mean(_ra_ck ** 2))
+          / max(np.sqrt(np.mean(_ra_cs ** 2)), 1e-12))
+check('flat walls take a bean head on where a curved one lets it glance',
+      _ra_bk > 5.0 * _ra_ck,
+      f'knock against scrape {_ra_ck:.3f} in a sphere, {_ra_bk:.3f} in a '
+      f'box -- a curved wall under a circling gesture is never actually '
+      f'struck, so it does not knock at all; shape is only a boundary '
+      f'test, so this costs nothing')
+
+_ra_counts = [float(np.sqrt(np.mean(run_rattle(count=n)[0] ** 2)))
+              for n in (8, 48, 256)]
+check('how many things are in there changes the texture, not the level',
+      max(_ra_counts) < 1.4 * min(_ra_counts),
+      f'{_ra_counts[0]:.4f} / {_ra_counts[1]:.4f} / {_ra_counts[2]:.4f} '
+      f'for 8, 48 and 256')
+
+# Turning it does something on its own -- the centrifugal push, the
+# Coriolis deflection, the Euler shove. Without them a rotated container
+# would sit there.
+# About an axis ACROSS the pull of gravity, not along it. Turned about
+# the pull itself nothing is dragged anywhere -- everything settles at
+# the bottom and stays held there, and the container is properly
+# silent. That silence is the support angle working, not a fault, but
+# it says nothing about whether turning is a gesture.
+_ra_still = float(np.sqrt(np.mean(run_rattle(amp=0.0, spin=0.0)[0] ** 2)))
+_ra_spun = float(np.sqrt(np.mean(run_rattle(amp=0.0, spin=40.0,
+                                            spin_axis='x')[0] ** 2)))
+check('turning the container is a gesture in itself',
+      _ra_spun > 3.0 * _ra_still,
+      f'{_ra_still:.4f} sitting still, {_ra_spun:.4f} turning at 40 '
+      f'radians a second, with no shaking at all')
+
+# Identical particles in one shared field keep STEP. They differ only in
+# where they started, so they arrive together and a hundred of them
+# sound like eight -- events per particle collapsing from 14 for one
+# alone to 0.5 for a hundred and twenty-eight. Real grains differ in
+# size, and being irregular they scatter off a wall rather than
+# reflecting off it, since which face they present depends on how they
+# are tumbling.
+def _rattle_events(count, variety, seconds=3.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(count)
+    u.variety_in.base = variety
+    sig = sc.Signal()
+    u.shake_x_in.sources.append(sig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sig.data[:BLOCK] = 3.0 * np.sin(2 * np.pi * 2.5 * t)
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(got)[int(0.5 * SR):]
+    y = y[:(len(y) // 64) * 64]
+    rms = float(np.sqrt(np.mean(y ** 2)))
+    # Counted against the NOISE FLOOR, not against the loudest thing in
+    # the run. A threshold set from the maximum moves whenever the
+    # crest moves, so it measures the threshold rather than the sound,
+    # and it reported this effect with the wrong sign.
+    peaks, _ = sig_find_peaks(np.abs(y), height=1.5 * rms,
+                              distance=int(0.001 * SR))
+    env = np.abs(y).reshape(-1, 64).max(axis=1)
+    return (len(peaks) / (len(y) / SR),
+            float(np.std(env) / max(np.mean(env), 1e-12)))
+
+
+_rv_same, _rc_same = _rattle_events(128, 0.0)
+_rv_var, _rc_var = _rattle_events(128, 1.0)
+# Variety genuinely spreads the SIZES now. It never did before: the
+# spread was drawn once at full width whatever variety said, and the
+# control only ever reached the rebound scattering -- so turning it up
+# piled on knocks instead of spreading the trajectories out, which is
+# the opposite of what it is for.
+check('unalike things stop marching in step',
+      _rv_var >= 0.95 * _rv_same,
+      f'{_rv_same:.0f} events a second from identical spheres, '
+      f'{_rv_var:.0f} from a mixed handful -- it must not go DOWN, '
+      f'which is what a big rebound tilt used to do by flinging them '
+      f'across the middle to fly a long way between contacts')
+check('and the sound stops arriving in lumps',
+      _rc_var < 0.92 * _rc_same,
+      f'envelope swing {_rc_same:.2f} identical, {_rc_var:.2f} mixed')
+
+# ------------------------------------------------ the support angle
+# A thing resting on a wall is HELD while the slope under it is
+# shallower than the friction can support, and slides or lets go when
+# it is not. Without that there is no held state at all -- only
+# bookkeeping at the instant of contact, which can say how much speed
+# was lost but not whether anything is being held up. The symptom was
+# that a slow turn on smooth glass came out thirty to one knocks over
+# slide, which is backwards: a slow turn on a fairly smooth surface
+# should slide, and sliding is a continuous sound.
+#
+# Two things vary the angle. TEXTURE is the shell's, and differs from
+# place to place, so a rough shell catches, carries, lets go and
+# catches again somewhere else -- and each letting go is a tap. GRIP is
+# the coefficient itself. A smooth shell holds the same everywhere, so
+# once a thing starts sliding it goes on sliding, and no taps.
+def _rattle_contact(texture, grip, spin=6.0, seconds=6.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.texture_in.base = texture
+    u.friction_in.base = grip
+    wx = sc.Signal()
+    u.turn_x_in.sources.append(wx)
+    knock, scrape = [], []
+    for b in range(int(seconds * SR / BLOCK)):
+        wx.data[:BLOCK] = np.degrees(spin) * ((np.arange(BLOCK)
+                                               + b * BLOCK) / SR)
+        wx.constant = False
+        u.render(BLOCK)
+        knock.append(u.knock.array(BLOCK).copy())
+        scrape.append(u.scrape.array(BLOCK).copy())
+    keep = slice(int(SR), None)
+    k = float(np.sqrt(np.mean(np.concatenate(knock)[keep] ** 2)))
+    sr_ = float(np.sqrt(np.mean(np.concatenate(scrape)[keep] ** 2)))
+    return k, sr_
+
+
+_sa_smooth_k, _sa_smooth_s = _rattle_contact(0.0, 0.15)
+check('a slow turn on a smooth shell slides, and does not knock at all',
+      _sa_smooth_k == 0.0 and _sa_smooth_s > 0.002,
+      f'knock {_sa_smooth_k:.5f}, slide {_sa_smooth_s:.5f} -- nothing '
+      f'lets go, because there is nowhere for it to catch')
+
+_sa_rough_k, _sa_rough_s = _rattle_contact(0.8, 0.15)
+check('roughening the same shell is what makes it tick',
+      _sa_rough_k > 10.0 * max(_sa_smooth_k, 1e-4),
+      f'knock {_sa_smooth_k:.5f} smooth -> {_sa_rough_k:.5f} rough, on '
+      f'the same slow turn, with the slide barely moved '
+      f'({_sa_smooth_s:.5f} -> {_sa_rough_s:.5f})')
+
+_sa_mids = [_rattle_contact(t, 0.15)[0] for t in (0.0, 0.25, 0.5, 0.8)]
+# And it goes on rising all the way. It used to peak and FALL BACK,
+# because roughness was carried into what holds a thing up at full
+# strength -- so a rougher shell held everything harder and let go less
+# often, and roughening it past about a fifth made it quieter.
+check('and it comes in by degrees, not at a threshold',
+      _sa_mids[0] == 0.0
+      and all(b > a for a, b in zip(_sa_mids, _sa_mids[1:])),
+      'knock ' + ' -> '.join(f'{x:.4f}' for x in _sa_mids)
+      + ' as the shell roughens')
+
+# Grip on a shell with no roughness at all buys more SLIDE and still
+# no knock, however hard it grips. A thing held harder is carried
+# further up before the slope stops supporting it, but on a smooth wall
+# there is nothing there to fall off, so letting go is silent. This
+# used to assert the opposite and passed on an artefact: judged by
+# normal speed, anything sliding faster than about a metre a second
+# reported a fresh arrival every step from the curvature alone.
+_sa_grippy_k, _sa_grippy_s = _rattle_contact(0.0, 0.3)
+check('gripping a smooth shell harder buys more slide, and still no knock',
+      _sa_grippy_k == 0.0 and _sa_grippy_s > 1.5 * _sa_smooth_s,
+      f'knock {_sa_smooth_k:.5f} -> {_sa_grippy_k:.5f} and slide '
+      f'{_sa_smooth_s:.5f} -> {_sa_grippy_s:.5f} as grip goes 0.15 -> 0.3')
+
+# Roughness resists as well as catching, so it works where there is no
+# friction coefficient at all -- which it could not before, because a
+# thing only came to rest when its speed fell under grip*press*dt, so
+# with no grip it never rested, never caught, and its support was never
+# drawn. Texture moved knock by a tenth across its whole range.
+_sa_slick_k, _sa_slick_s = _rattle_contact(0.0, 0.0)
+_sa_rasp_k, _sa_rasp_s = _rattle_contact(1.0, 0.0)
+check('roughness holds and rasps even on a shell with no friction at all',
+      _sa_rasp_s > 0.002 and _sa_rasp_s > 100.0 * _sa_slick_s,
+      f'with friction at zero: slide {_sa_slick_s:.8f} -> '
+      f'{_sa_rasp_s:.5f} '
+      f'and knock {_sa_slick_k:.5f} -> {_sa_rasp_k:.5f} as the shell '
+      f'roughens')
+
+# Held means held. With nothing shaking it and nothing turning it,
+# everything comes to rest against the wall and STAYS there.
+_sa_dead = sc.RattleUnit(SR)
+_sa_dead.set_count(48)
+for _ in range(int(6.0 * SR / BLOCK)):
+    _sa_dead.render(BLOCK)
+_sa_quiet = float(np.max(np.abs(_sa_dead.out.array(BLOCK))))
+check('left alone it settles and stays settled',
+      _sa_quiet == 0.0 and float(np.sum(_sa_dead._held)) > 40.0,
+      f'{np.sum(_sa_dead._held):.0f} of 48 held against the wall, and '
+      f'peak {_sa_quiet:.6f} out')
+
+# Shaken hard it still knocks, whatever the shell is like -- the
+# support angle governs resting contact, not arrival.
+_sa_shaken = float(np.sqrt(np.mean(run_rattle(amp=3.0)[1] ** 2)))
+# Not by much, mind, and it should not be by much: a rough shell turned
+# slowly is a rattle in its own right. A rainstick is exactly that, and
+# a rainstick is not quiet.
+check('none of which stops a hard shake from knocking',
+      _sa_shaken > 0.95 * _sa_rough_k and _sa_shaken > 0.02,
+      f'knock {_sa_shaken:.4f} shaken against {_sa_rough_k:.4f} for the '
+      f'roughest slow turn -- neck and neck, which is right')
+
+
+# What comes out of an exciter is a force, and a wall only ever
+# pushes, so a contact really is one-sided. As a SIGNAL that is just an
+# offset. Added one way only, a slide put out one bump per control step
+# for ever and they summed to a constant: mean +0.0083 against an rms
+# of 0.0084, never once below zero, every spectral component under
+# 10 Hz. It was not a sound, it was a force level -- and the level
+# stepping as things caught and let go is what made the output jump to
+# random offsets. What radiates from a sliding contact is the part that
+# FLUCTUATES.
+def _rattle_slide(spin=6.0, seconds=5.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.texture_in.base = 0.0
+    u.friction_in.base = 0.3
+    wx = sc.Signal()
+    u.turn_x_in.sources.append(wx)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        wx.data[:BLOCK] = np.degrees(spin) * ((np.arange(BLOCK)
+                                               + b * BLOCK) / SR)
+        wx.constant = False
+        u.render(BLOCK)
+        got.append(u.scrape.array(BLOCK).copy())
+    return np.concatenate(got)[int(SR):]
+
+
+_rs = _rattle_slide()
+_rs_rms = float(np.sqrt(np.mean(_rs ** 2)))
+check('a slide comes out as a sound and not as a force level',
+      abs(float(np.mean(_rs))) < 0.05 * _rs_rms
+      and 0.4 < float(np.mean(_rs < 0.0)) < 0.6,
+      f'mean {np.mean(_rs):+.6f} against rms {_rs_rms:.5f}, '
+      f'{100.0 * np.mean(_rs < 0.0):.0f}% of it below zero')
+
+
+def _rattle_centroid(x):
+    w = 1 << 15
+    mag = np.abs(np.fft.rfft(x[:w] * np.hanning(w)))
+    freq = np.fft.rfftfreq(w, 1.0 / SR)
+    return float((freq * mag).sum() / max(mag.sum(), 1e-12))
+
+
+_rs_slow = _rattle_centroid(_rattle_slide(spin=1.0))
+_rs_fast = _rattle_centroid(_rattle_slide(spin=25.0))
+check('and a faster slide comes out brighter, without being told to',
+      _rs_fast > 3.0 * _rs_slow,
+      f'centroid {_rs_slow:.0f} Hz turning at 1 radian a second, '
+      f'{_rs_fast:.0f} Hz at 25 -- a rub lasts one bump of the surface '
+      f'going by, so its width is the spacing over the speed')
+
+_rk_shaken = run_rattle(amp=1.0)[1]
+check('and a blow does not sit on an offset either',
+      abs(float(np.mean(_rk_shaken)))
+      < 0.05 * float(np.sqrt(np.mean(_rk_shaken ** 2))),
+      f'mean {np.mean(_rk_shaken):+.6f} against rms '
+      f'{np.sqrt(np.mean(_rk_shaken ** 2)):.5f}')
+
+
+# Touching means AT the wall, not past it. Asking for strictly past it,
+# anything that had come to rest sat exactly on the line and counted as
+# not touching: held and the contact were BOTH cleared, every other
+# step, for ever. Nothing downstream of that could work -- the support
+# was redrawn twice a control period instead of once per catch, so
+# roughness came out as fast noise rather than catch-and-release, and
+# resting contacts kept re-registering as new arrivals. A gentle rock
+# that should have been a pure slide came out five to one knocks.
+def _rattle_rock(spin=30.0, seconds=16.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(128)
+    u.size_in.base = 0.5
+    u.grain_in.base = 0.159
+    u.friction_in.base = 0.28
+    u.texture_in.base = 0.0
+    u.bounce_in.base = 0.0
+    wx = sc.Signal()
+    u.turn_x_in.sources.append(wx)
+    knock, scrape, held = [], [], []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        wx.data[:BLOCK] = spin * np.sin(2 * np.pi * 0.06 * t)
+        wx.constant = False
+        u.render(BLOCK)
+        knock.append(u.knock.array(BLOCK).copy())
+        scrape.append(u.scrape.array(BLOCK).copy())
+        held.append(float(np.sum(u._held[:128])))
+    keep = slice(int(5 * SR), None)
+    return (float(np.sqrt(np.mean(np.concatenate(knock)[keep] ** 2))),
+            float(np.sqrt(np.mean(np.concatenate(scrape)[keep] ** 2))),
+            float(np.mean(held[int(5 * SR / BLOCK):])))
+
+
+_rr_k, _rr_s, _rr_h = _rattle_rock()
+check('a thing that has come to rest stays in contact with the wall',
+      _rr_h > 80.0,
+      f'{_rr_h:.0f} of 128 held through a slow rock -- asking for '
+      f'strictly past the wall this flapped every other step')
+check('so a gentle rock is a slide, with no knocks in it at all',
+      _rr_k == 0.0 and _rr_s > 0.005,
+      f'knock {_rr_k:.5f}, slide {_rr_s:.5f} rocking 30 degrees at '
+      f'0.06 Hz')
+
+
+# A rub is a FORCE, and it has to be emitted as one. Emitted as the
+# speed it took off the particle in a single step, it carried the step
+# SIZE into the sound -- 0.0070 / 0.0098 / 0.0140 at decimation
+# 4 / 8 / 16, a root two per doubling -- so how finely the thing was
+# integrated set how loud it rubbed. The same class of fault as the
+# per-control-step rates in spin~, and it hides just as well.
+_rd_was = sc.RattleUnit.CONTROL_DECIM
+_rd = []
+for _rd_n in (4, 8, 16):
+    sc.RattleUnit.CONTROL_DECIM = _rd_n
+    _rd.append(_rattle_contact(0.0, 0.3)[1])
+sc.RattleUnit.CONTROL_DECIM = _rd_was
+check('how loud a rub is does not depend on how finely it is integrated',
+      max(_rd) < 1.08 * min(_rd),
+      f'{_rd[0]:.5f} / {_rd[1]:.5f} / {_rd[2]:.5f} at decimation '
+      f'4 / 8 / 16')
+
+
+# A blow and a rub are one material answering two ways, so their
+# balance has to come from the physics rather than from two constants
+# tuned apart. Both are forces at the same contact now, through one
+# gain, and the ratio holds still while the gesture changes completely.
+def _rattle_balance(shake=0.0, spin=0.0, texture=0.25, seconds=10.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.texture_in.base = texture
+    u.friction_in.base = 0.3
+    wx, sx = sc.Signal(), sc.Signal()
+    u.turn_x_in.sources.append(wx)
+    u.shake_x_in.sources.append(sx)
+    knock, scrape = [], []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        wx.data[:BLOCK] = np.degrees(spin) * t
+        wx.constant = False
+        sx.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.5 * t)
+        sx.constant = False
+        u.render(BLOCK)
+        knock.append(u.knock.array(BLOCK).copy())
+        scrape.append(u.scrape.array(BLOCK).copy())
+    keep = slice(int(2 * SR), None)
+    k = float(np.sqrt(np.mean(np.concatenate(knock)[keep] ** 2)))
+    s_ = float(np.sqrt(np.mean(np.concatenate(scrape)[keep] ** 2)))
+    return k / max(s_, 1e-12)
+
+
+_rb = [_rattle_balance(shake=1.0), _rattle_balance(shake=2.0),
+       _rattle_balance(spin=6.0), _rattle_balance(spin=10.0)]
+check('a blow and a rub stay in proportion, whatever the gesture',
+      max(_rb) < 1.8 * min(_rb),
+      'blow against rub ' + ' / '.join(f'{x:.2f}' for x in _rb)
+      + ' shaken at 1 g, at 2 g, turned slowly, turned faster')
+
+
+# One blow laid down once. The working variables were cleared once a
+# CONTROL STEP while the laying-down happens once a PARTICLE, so the
+# first thing to register a blow left it standing and everything after
+# it in that step laid the same blow down again. It hides well: the
+# sound is plausible, and what it looks like is blows standing out of
+# all proportion to rubs -- which is what it did. Independent blows add
+# in power, so a handful of them must come out as the ROOT of the
+# count. With the fault in they went as the count itself.
+def _rattle_blow_energy(count, seconds=8.0):
+    u = sc.RattleUnit(SR)
+    u.set_count(count)
+    u.variety_in.base = 0.0
+    sig = sc.Signal()
+    u.shake_x_in.sources.append(sig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sig.data[:BLOCK] = 2.0 * np.sin(2 * np.pi * 2.5 * t)
+        sig.constant = False
+        u.render(BLOCK)
+        got.append(u.knock.array(BLOCK).copy())
+    y = np.concatenate(got)[int(2 * SR):]
+    rms = float(np.sqrt(np.mean(y ** 2)))
+    # Undo the density gain, leaving how the raw sum actually grew.
+    gain = (sc.RattleUnit.DENSITY_REF
+            / max(1.0, count) ** sc.RattleUnit.DENSITY_LAW)
+    return rms / gain
+
+
+_be_n = (4, 16, 64, 256)
+_be = [_rattle_blow_energy(n) for n in _be_n]
+_be_law = float(np.polyfit(np.log(_be_n), np.log(_be), 1)[0])
+check('a blow is laid down once, not once for every thing in there',
+      0.40 < _be_law < 0.62,
+      f'blows grow as the count to the {_be_law:.2f} -- a root, which '
+      f'is independent things adding in power. Laid down once per '
+      f'particle per step instead of once each it went as the count '
+      f'itself, and a full container multiplied every blow by a '
+      f'hundred and twenty-eight')
+
 
 # ------------------------------------------------- every unit renders
 # A block of spin~'s NaN-recovery once got pasted into ShakerUnit's

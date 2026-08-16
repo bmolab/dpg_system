@@ -8458,6 +8458,1111 @@ else:
     _shaker_kernel = _shaker_kernel_source
 
 
+def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
+                          count, half_x, half_y, half_z, grain,
+                          sizes, spring, spin_phase, scatter, tumble,
+                          held, support, touching, release,
+                          restitution, grip, texture, texture_drag,
+                          asperity, skin, tilt, hold_rough,
+                          grav, box,
+                          speed_cap,
+                          rest_speed, rest_steps, slide_gain,
+                          decim, dt, knock_gain, scrape_gain,
+                          contact, window, ring_knock, ring_scrape,
+                          ring_head,
+                          spin_prev_x, spin_prev_y, spin_prev_z,
+                          ang_prev_x, ang_prev_y, ang_prev_z,
+                          down_x, down_y, down_z, rng,
+                          out, knock_out, scrape_out):
+    """Loose things in a shaken container, actually simulated.
+
+    Not a collision RATE driven by an agitation, which is what a PhISEM
+    shaker is -- particles, with positions, in a box or an ellipsoid,
+    hit by the walls when the walls come to them. Everything about how a
+    gesture sounds then follows from the gesture instead of from a curve
+    somebody fitted: shaking along a line and swirling in a circle are
+    the same simulation given a line and a circle, and the difference
+    between them -- more glancing contact, an envelope that stops
+    pulsing -- comes out on its own. Measured on the prototype: two and
+    a half times as much tangential as normal contact driven along a
+    line, four times driven round a circle, and the envelope swing
+    falling from 0.33 to 0.05.
+
+    In the container's frame the particles are pushed by everything the
+    container does. Translating, that is minus its acceleration.
+    ROTATING, it is three more: the centrifugal push outward, the
+    Coriolis deflection of anything already moving, and the Euler shove
+    when the spin itself changes. All three are what a swirl actually
+    is, and without them a rotated container does nothing at all.
+
+    Gravity points down and stays there. Because all of this is worked
+    out in the CONTAINER's coordinates, though, that unmoving direction
+    sweeps around as the container turns under it -- so it is carried
+    along at minus the spin. Nothing rotates but the frame, and that
+    sweep is what a turned container does to what is in it: the contents
+    are drawn down, the wall comes round to meet them, and they drag
+    along it.
+
+    Inter-particle collisions are left out on purpose. They are most of
+    the cost and least of the sound: what is heard is the wall.
+    """
+    ring_n = ring_knock.shape[0]
+    head = int(ring_head)
+    steps = 0
+    two_pi = 6.283185307179586
+    width = int(contact)
+    if width < 2:
+        width = 2
+    if width > ring_n - 1:
+        width = ring_n - 1
+    for i in range(ax.shape[0]):
+        if steps <= 0:
+            steps = decim
+            # --- one step of the world ---
+            # 'turn' is an ANGLE -- where the container is POINTING
+            # about each axis, in radians -- and not a rate. Which way
+            # is down follows straight from it, with nothing integrated
+            # and so nothing to drift: a container held at a tilt holds
+            # gravity at exactly that tilt, for ever. Turning about the
+            # vertical does not move it at all, which is right.
+            #
+            # Gravity itself never moves. It is these coordinates that
+            # turn under it, and that sweep is the whole of what
+            # turning a container does to what is in it: the contents
+            # are drawn down, the wall comes round to meet them, and
+            # they drag along it.
+            tax = wx[i]
+            tay = wy[i]
+            sa = math.sin(tax)
+            ca = math.cos(tax)
+            sb = math.sin(tay)
+            cb = math.cos(tay)
+            down_x = sb
+            down_y = -cb * sa
+            down_z = -cb * ca
+            # The centrifugal, Coriolis and Euler terms want a RATE, so
+            # it is differenced out of the angle, and the rate is
+            # differenced again for Euler.
+            sx = (wx[i] - ang_prev_x) / dt
+            sy = (wy[i] - ang_prev_y) / dt
+            sz = (wz[i] - ang_prev_z) / dt
+            ang_prev_x = wx[i]
+            ang_prev_y = wy[i]
+            ang_prev_z = wz[i]
+            ex = (sx - spin_prev_x) / dt
+            ey = (sy - spin_prev_y) / dt
+            ez = (sz - spin_prev_z) / dt
+            spin_prev_x = sx
+            spin_prev_y = sy
+            spin_prev_z = sz
+            hit_k = 0.0
+            hit_s = 0.0
+            hit_t = 0.0
+            rub_pow = 0.0
+            rub_wsum = 0.0
+            tick_pow = 0.0
+            gx = -ax[i] + grav * down_x
+            gy = -ay[i] + grav * down_y
+            gz = -az[i] + grav * down_z
+            for p in range(count):
+                # Each one its own size. Identical particles in one
+                # shared field keep step -- they differ only in where
+                # they started, so they arrive together and a hundred of
+                # them sound like eight. Real grains are not identical.
+                #
+                # This used to wobble with the tumble as well, standing
+                # the surface off the centre by a changing amount. That
+                # made the wall bob in and out under anything sliding
+                # along it, and every bob read as an arrival: a slow
+                # turn on smooth glass came out 30 to 1 knocks over
+                # slide, which is backwards. A thing's irregularity
+                # belongs in what HOLDS it, below, not in where the
+                # wall is.
+                # What actually resists here: the coefficient plus
+                # what it costs to ride over the roughness. Without the
+                # second term texture could do nothing at all at low
+                # friction -- a thing only ever comes to rest when its
+                # speed falls under grip*press*dt, so with no grip it
+                # never rested, never caught, and the support was never
+                # drawn. A rough surface stops things whether or not it
+                # is sticky.
+                mu = grip + texture * texture_drag
+                grain_p = grain * sizes[p]
+                rx = pos[3 * p]
+                ry = pos[3 * p + 1]
+                rz = pos[3 * p + 2]
+                vx = vel[3 * p]
+                vy = vel[3 * p + 1]
+                vz = vel[3 * p + 2]
+                # spin x r, then spin x that: the centrifugal push
+                cx = sy * rz - sz * ry
+                cy = sz * rx - sx * rz
+                cz = sx * ry - sy * rx
+                fx = gx - (sy * cz - sz * cy)
+                fy = gy - (sz * cx - sx * cz)
+                fz = gz - (sx * cy - sy * cx)
+                # Coriolis, on whatever is already moving
+                fx -= 2.0 * (sy * vz - sz * vy)
+                fy -= 2.0 * (sz * vx - sx * vz)
+                fz -= 2.0 * (sx * vy - sy * vx)
+                # Euler, when the spin itself is changing
+                fx -= ey * rz - ez * ry
+                fy -= ez * rx - ex * rz
+                fz -= ex * ry - ey * rx
+                vx += fx * dt
+                vy += fy * dt
+                vz += fz * dt
+                # Nothing in a shaken container outruns the shaking by
+                # much. Without this a perfectly slippery wall -- which
+                # is what no grip at all asks for -- never takes any
+                # sideways speed away, so it accumulates with every
+                # push: a box measured seventeen times its own level
+                # standing still, and any parameter moved near that
+                # corner threw a spike. It is also the guard against a
+                # wall arriving on something at speed, which is what
+                # resizing the container does.
+                # What counts as 'at rest' is not a fixed speed: it is
+                # whatever the push will give back in one step. A ball
+                # dropped on a floor bounces an infinite number of times
+                # in finite time, and a fixed threshold either cuts that
+                # off too early -- silencing a swirl, whose particles
+                # PRESS rather than arrive -- or too late, and then a
+                # single object micro-bounces three hundred times a
+                # second instead of sounding like one object.
+                push = math.sqrt(fx * fx + fy * fy + fz * fz)
+                floor_v = push * dt * rest_steps
+                if floor_v < rest_speed:
+                    floor_v = rest_speed
+                sp2 = vx * vx + vy * vy + vz * vz
+                if sp2 > speed_cap * speed_cap:
+                    sc_ = speed_cap / math.sqrt(sp2)
+                    vx *= sc_
+                    vy *= sc_
+                    vz *= sc_
+                rx += vx * dt
+                ry += vy * dt
+                rz += vz * dt
+                touch = 0.0
+                nx = 0.0
+                ny = 0.0
+                nz = 0.0
+                if box > 0.5:
+                    # Which wall, and which way it faces. The contact
+                    # itself is decided below, the same way for every
+                    # shape -- a wall is a wall.
+                    #
+                    # Touching means AT the wall, not past it. Asking
+                    # for strictly past it, a thing that had come to
+                    # rest sat exactly on the line and so counted as
+                    # not touching at all: held and the contact itself
+                    # were both cleared, every other step, for ever.
+                    # The support got redrawn twice a control period
+                    # instead of once per catch, so roughness came out
+                    # as fast noise rather than catch-and-release, and
+                    # contacts kept re-registering as new. Hence a skin.
+                    lim = half_x - grain_p
+                    if rx > lim - skin * lim:
+                        if rx > lim:
+                            rx = lim
+                        touch = 1.0
+                        nx = 1.0
+                    elif rx < skin * lim - lim:
+                        if rx < -lim:
+                            rx = -lim
+                        touch = 1.0
+                        nx = -1.0
+                    lim = half_y - grain_p
+                    if ry > lim - skin * lim:
+                        if ry > lim:
+                            ry = lim
+                        touch = 1.0
+                        ny = 1.0
+                    elif ry < skin * lim - lim:
+                        if ry < -lim:
+                            ry = -lim
+                        touch = 1.0
+                        ny = -1.0
+                    lim = half_z - grain_p
+                    if rz > lim - skin * lim:
+                        if rz > lim:
+                            rz = lim
+                        touch = 1.0
+                        nz = 1.0
+                    elif rz < skin * lim - lim:
+                        if rz < -lim:
+                            rz = -lim
+                        touch = 1.0
+                        nz = -1.0
+                    if touch > 0.5:
+                        nl = math.sqrt(nx * nx + ny * ny + nz * nz)
+                        nx /= nl
+                        ny /= nl
+                        nz /= nl
+                else:
+                    qx = (half_x - grain_p)
+                    qy = (half_y - grain_p)
+                    qz = (half_z - grain_p)
+                    ux = rx / qx
+                    uy = ry / qy
+                    uz = rz / qz
+                    d2 = ux * ux + uy * uy + uz * uz
+                    if d2 > (1.0 - skin) * (1.0 - skin):
+                        if d2 > 1.0:
+                            d = math.sqrt(d2)
+                            rx /= d
+                            ry /= d
+                            rz /= d
+                        # The surface's own normal, which on an egg is
+                        # not the way out from the middle.
+                        nx = rx / (qx * qx)
+                        ny = ry / (qy * qy)
+                        nz = rz / (qz * qz)
+                        nl = math.sqrt(nx * nx + ny * ny + nz * nz)
+                        if nl > 1.0e-12:
+                            nx /= nl
+                            ny /= nl
+                            nz /= nl
+                            touch = 1.0
+
+                if touch > 0.5:
+                        nl = math.sqrt(nx * nx + ny * ny + nz * nz)
+                        nx /= nl
+                        ny /= nl
+                        nz /= nl
+                else:
+                    qx = (half_x - grain_p)
+                    qy = (half_y - grain_p)
+                    qz = (half_z - grain_p)
+                    ux = rx / qx
+                    uy = ry / qy
+                    uz = rz / qz
+                    d2 = ux * ux + uy * uy + uz * uz
+                    if d2 > 1.0:
+                        d = math.sqrt(d2)
+                        rx /= d
+                        ry /= d
+                        rz /= d
+                        # The surface's own normal, which on an egg is
+                        # not the way out from the middle.
+                        nx = rx / (qx * qx)
+                        ny = ry / (qy * qy)
+                        nz = rz / (qz * qz)
+                        nl = math.sqrt(nx * nx + ny * ny + nz * nz)
+                        if nl > 1.0e-12:
+                            nx /= nl
+                            ny /= nl
+                            nz /= nl
+                            touch = 1.0
+
+                if touch > 0.5:
+                    # ---- one contact, decided once ----
+                    vn = vx * nx + vy * ny + vz * nz
+                    press = fx * nx + fy * ny + fz * nz
+                    # ARRIVING means a NEW contact, not a fast one.
+                    # Judged on the normal speed instead, anything
+                    # sliding inside a curved shell reports an arrival
+                    # every step: it travels a straight chord between
+                    # steps, lands a little outside the wall, and picks
+                    # up an outward speed of about v*v*dt/R from the
+                    # curvature alone. Against a fixed floor that
+                    # crosses at sqrt(g * rest_steps * R), which here is
+                    # a metre a second -- so everything sliding faster
+                    # than walking pace knocked continuously, and with
+                    # no friction to slow anything down it was ALL
+                    # knock. A contact that was already there is not an
+                    # arrival however fast it is going.
+                    if touching[p] < 0.5 and vn > floor_v:
+                        # ARRIVING. A blow, and it is no longer held.
+                        held[p] = 0.0
+                        hit_k = vn
+                        rest_p = restitution * spring[p]
+                        if rest_p > 0.95:
+                            rest_p = 0.95
+                        kk = (1.0 + rest_p) * vn
+                        # Struck off-centre, an irregular thing comes
+                        # off at a tilt -- but it is the IMPULSE that
+                        # tilts, not the velocity. Tilting the whole
+                        # velocity, a thing sliding fast ALONG the wall
+                        # had that speed turned into speed away from
+                        # it, so raising variety launched the handful
+                        # into free flight and every landing was a
+                        # knock. Tilting the impulse cannot do that:
+                        # the impulse is zero when nothing arrived. And
+                        # tilting it keeps its size, so this neither
+                        # adds energy nor takes it -- scaling it
+                        # instead was a restitution above one half the
+                        # time, and scaling it only downward killed the
+                        # bouncing outright at a whisker of variety.
+                        bx = nx
+                        by = ny
+                        bz = nz
+                        if scatter > 0.0:
+                            rng, r1 = _rand01(rng)
+                            rng, r2 = _rand01(rng)
+                            rng, r3 = _rand01(rng)
+                            cx = nx + tilt * scatter * (2.0 * r1 - 1.0)
+                            cy = ny + tilt * scatter * (2.0 * r2 - 1.0)
+                            cz = nz + tilt * scatter * (2.0 * r3 - 1.0)
+                            cd = cx * nx + cy * ny + cz * nz
+                            cl = math.sqrt(cx * cx + cy * cy + cz * cz)
+                            if cd > 0.0 and cl > 1.0e-9:
+                                bx = cx / cl
+                                by = cy / cl
+                                bz = cz / cl
+                        vx -= kk * bx
+                        vy -= kk * by
+                        vz -= kk * bz
+                        # What the wall takes sideways, bounded by
+                        # Coulomb: what resists, times how hard it hit.
+                        vnn = vx * nx + vy * ny + vz * nz
+                        tx = vx - vnn * nx
+                        ty = vy - vnn * ny
+                        tz = vz - vnn * nz
+                        ts = math.sqrt(tx * tx + ty * ty + tz * tz)
+                        if ts > 1.0e-12:
+                            take = mu * vn * (1.0 + rest_p)
+                            if take > ts:
+                                take = ts
+                            hit_t = take
+                            f_ = take / ts
+                            vx -= f_ * tx
+                            vy -= f_ * ty
+                            vz -= f_ * tz
+                    elif press > 0.0:
+                        touching[p] = 1.0
+                        # RESTING on it, and the only question that
+                        # matters is whether the slope it is sitting on
+                        # still holds it.
+                        #
+                        # Coulomb says held while the sideways pull is
+                        # under the grip times the press -- which is the
+                        # angle of repose and nothing else. A smooth
+                        # shell has one grip everywhere, so once a thing
+                        # starts sliding it goes on sliding: a slow turn
+                        # on smooth glass is a slide, and a slide is a
+                        # continuous sound.
+                        #
+                        # A ROUGH shell does not. Every place it comes
+                        # to rest holds differently, so it catches, is
+                        # carried until that place no longer holds it,
+                        # lets go, drops to the next -- and each letting
+                        # go is a tap. That is the whole difference
+                        # between a hiss and a rattle, and it is one
+                        # number: how much the support varies from
+                        # place to place.
+                        vx -= vn * nx
+                        vy -= vn * ny
+                        vz -= vn * nz
+                        ftn = fx - press * nx
+                        fty = fy - press * ny
+                        ftz = fz - press * nz
+                        pull = math.sqrt(ftn * ftn + fty * fty + ftz * ftz)
+                        ts = math.sqrt(vx * vx + vy * vy + vz * vz)
+                        if held[p] > 0.5:
+                            if pull > support[p] * press:
+                                # Let go. On a rough shell that is a
+                                # drop off whatever was holding it.
+                                held[p] = 0.0
+                                # It does not vanish, it DROPS -- off
+                                # whatever was holding it, through a
+                                # height the roughness sets, arriving
+                                # at the speed that fall gives it. So
+                                # a rougher shell ticks louder because
+                                # its grains sit up higher, and a
+                                # harder press ticks louder because it
+                                # comes down faster. No gain needed.
+                                # Gathered, not laid down separately.
+                                # Letting go is a small dense event and
+                                # there are hundreds a second; at a
+                                # soft contact, writing each one its
+                                # own long pulse was the whole of what
+                                # was left of the load. An ARRIVAL is
+                                # different -- it is one transient and
+                                # it keeps its own place.
+                                tick = release * math.sqrt(
+                                    2.0 * press * texture * grain_p)
+                                tick_pow += tick * tick
+                            else:
+                                vx = 0.0
+                                vy = 0.0
+                                vz = 0.0
+                        else:
+                            drag = mu * press * dt
+                            if ts <= drag:
+                                # Come to rest. What holds it here is
+                                # its own patch of the wall.
+                                vx = 0.0
+                                vy = 0.0
+                                vz = 0.0
+                                held[p] = 1.0
+                                # What this patch of wall will take
+                                # before it lets go. Two things vary
+                                # it: how rough the SHELL is, which
+                                # differs from place to place, and how
+                                # irregular the THING is, which is
+                                # whichever of its corners it came to
+                                # rest on.
+                                rng, rs_ = _rand01(rng)
+                                rng, rt_ = _rand01(rng)
+                                # Roughness WIDENS this; it does not
+                                # raise it. Added on top, every place
+                                # held harder as the shell got rougher,
+                                # so it let go LESS often -- releases
+                                # fell 251 a second to 106 as texture
+                                # went up, which is backwards. Spread
+                                # symmetrically, a rougher shell has
+                                # weaker places as well as stronger
+                                # ones, and it is the weak ones that
+                                # tick.
+                                mu_s = (grip + texture * texture_drag
+                                        * hold_rough)
+                                support[p] = mu_s * (1.0
+                                                     + tumble
+                                                     * (2.0 * rt_ - 1.0)
+                                                     + texture
+                                                     * (2.0 * rs_ - 1.0))
+                            else:
+                                take = drag
+                                # A FORCE, not the speed it took off
+                                # this step. Emitted per control step,
+                                # a per-step quantity carried the step
+                                # SIZE into the sound: the rub came out
+                                # 0.0070 / 0.0098 / 0.0140 at
+                                # decimation 4 / 8 / 16, a root two per
+                                # doubling, so how finely it was
+                                # integrated set how loud it rubbed.
+                                hit_s = (mu * press * slide_gain
+                                         * (1.0 + tumble
+                                            * math.sin(spin_phase[p])))
+                                f_ = take / ts
+                                vx -= f_ * vx
+                                vy -= f_ * vy
+                                vz -= f_ * vz
+                    else:
+                        # Pulled clean off the wall -- whatever was
+                        # holding it is not holding it any more.
+                        held[p] = 0.0
+                        touching[p] = 0.0
+                else:
+                    held[p] = 0.0
+                    touching[p] = 0.0
+                # It turns as fast as it is travelling over the
+                # surface: a thing of radius r going at v rolls at v/r.
+                if grain_p > 1.0e-9:
+                    spin_phase[p] += (math.sqrt(vx * vx + vy * vy
+                                                + vz * vz)
+                                      / grain_p) * dt
+                    if spin_phase[p] > 6.283185307179586:
+                        spin_phase[p] -= 6.283185307179586
+                # Each blow lands where it fell in the block, and is
+                # a contact of some width rather than a single sample.
+                if hit_k > 0.0 or hit_s > 0.0 or hit_t > 0.0:
+                    rng, u01 = _rand01(rng)
+                    at0 = head + int(u01 * decim)
+                    if at0 >= ring_n:
+                        at0 -= ring_n
+                    # SIGNED. A wall only ever pushes, so a contact
+                    # force really is one-sided -- but as an exciter
+                    # that is just an offset. Added one way only, a
+                    # slide put out one bump every control step for
+                    # ever and they summed to a CONSTANT: measured, the
+                    # slide output ran mean +0.0083 against an rms of
+                    # 0.0084, never once went below zero, and had every
+                    # spectral component under 10 Hz. It was not a
+                    # sound at all, it was a force level, and the level
+                    # stepping as things caught and let go is what read
+                    # as the output jumping to random offsets. What
+                    # radiates from a sliding contact is the part that
+                    # FLUCTUATES; the steady drag does not. So each
+                    # contact goes in with a sign, which costs nothing
+                    # and makes both outlets zero-mean, the way the
+                    # rest of the rack is.
+                    if hit_k > 0.0:
+                        rng, sgn = _rand01(rng)
+                        kp = hit_k * knock_gain / math.sqrt(width)
+                        if sgn < 0.5:
+                            kp = -kp
+                        at = at0
+                        for q in range(width):
+                            shape = 0.5 * (1.0 - math.cos(two_pi
+                                                          * (q + 0.5)
+                                                          / width))
+                            ring_knock[at] += kp * shape
+                            at += 1
+                            if at >= ring_n:
+                                at = 0
+                    if hit_t > 0.0:
+                        # A blow that lands at an angle rubs as it
+                        # strikes. That is a BLOW's kind of event, not
+                        # a rub's, so it is shaped and scaled like one
+                        # -- the same material answering the same way.
+                        rng, sgn = _rand01(rng)
+                        tp = hit_t * knock_gain / math.sqrt(width)
+                        if sgn < 0.5:
+                            tp = -tp
+                        at = at0
+                        for q in range(width):
+                            shape = 0.5 * (1.0 - math.cos(two_pi
+                                                          * (q + 0.5)
+                                                          / width))
+                            ring_scrape[at] += tp * shape
+                            at += 1
+                            if at >= ring_n:
+                                at = 0
+                    if hit_s > 0.0:
+                        # How wide a rub is, is not how wide a blow is.
+                        # A blow lasts as long as the contact takes to
+                        # spring back, which is what hardness sets. A
+                        # rub is one bump of the surface going by, so
+                        # it lasts the spacing over the speed -- and
+                        # that means a faster slide comes out brighter
+                        # on its own, which is what a faster slide
+                        # does.
+                        sw = ring_n - 1
+                        rub = math.sqrt(vx * vx + vy * vy + vz * vz)
+                        if rub > 1.0e-9:
+                            sw = int(grain_p * asperity / rub
+                                     * decim / dt)
+                        if sw < 2:
+                            sw = 2
+                        if sw > ring_n - 1:
+                            sw = ring_n - 1
+                        # GATHERED, not laid down here. Every rubbing
+                        # thing writing its own shaped bump into the
+                        # ring every control step cost the count times
+                        # the width times the control rate -- eighteen
+                        # million sample-writes a second on its own,
+                        # and it went up as the contact softened, so
+                        # dropping hardness doubled the load. They are
+                        # independent noises, and independent noises
+                        # add in POWER: one bump carrying the summed
+                        # power is the same sound for a hundredth of
+                        # the work. The width is carried along
+                        # power-weighted so the result keeps the
+                        # brightness of whatever is actually rubbing
+                        # hardest.
+                        hs2 = hit_s * hit_s
+                        rub_pow += hs2
+                        rub_wsum += hs2 * sw
+                # Cleared PER PARTICLE. Cleared only once a control
+                # step, as they were, the first thing to register a
+                # blow left it standing and every thing after it in
+                # that step laid the same blow down again -- a hundred
+                # and twenty-eight times over in a full container. The
+                # rub was gathered correctly and the blows were not,
+                # which is exactly why they stood out of all
+                # proportion to it.
+                hit_k = 0.0
+                hit_s = 0.0
+                hit_t = 0.0
+                pos[3 * p] = rx
+                pos[3 * p + 1] = ry
+                pos[3 * p + 2] = rz
+                vel[3 * p] = vx
+                vel[3 * p + 1] = vy
+                vel[3 * p + 2] = vz
+            if tick_pow > 0.0:
+                rng, u01 = _rand01(rng)
+                at = head + int(u01 * decim)
+                if at >= ring_n:
+                    at -= ring_n
+                rng, sgn = _rand01(rng)
+                kp = math.sqrt(tick_pow) * knock_gain / math.sqrt(width)
+                if sgn < 0.5:
+                    kp = -kp
+                for q in range(width):
+                    shape = 0.5 * (1.0 - math.cos(two_pi * (q + 0.5)
+                                                  / width))
+                    ring_knock[at] += kp * shape
+                    at += 1
+                    if at >= ring_n:
+                        at = 0
+            if rub_pow > 0.0:
+                # One bump for the whole handful. Its size is set so
+                # the sum comes out exactly where all the separate ones
+                # did: each of those carried power hit_s squared times
+                # dt, and spreading that over a width takes a root.
+                sw = int(rub_wsum / rub_pow)
+                if sw < 2:
+                    sw = 2
+                if sw > ring_n - 1:
+                    sw = ring_n - 1
+                rng, u01 = _rand01(rng)
+                at = head + int(u01 * decim)
+                if at >= ring_n:
+                    at -= ring_n
+                rng, sgn = _rand01(rng)
+                spv = scrape_gain * math.sqrt(dt * rub_pow / sw)
+                if sgn < 0.5:
+                    spv = -spv
+                for q in range(sw):
+                    shape = 0.5 * (1.0 - math.cos(two_pi * (q + 0.5)
+                                                  / sw))
+                    ring_scrape[at] += spv * shape
+                    at += 1
+                    if at >= ring_n:
+                        at = 0
+        steps -= 1
+        k = ring_knock[head]
+        sc = ring_scrape[head]
+        ring_knock[head] = 0.0
+        ring_scrape[head] = 0.0
+        head += 1
+        if head >= ring_n:
+            head = 0
+        knock_out[i] = k
+        scrape_out[i] = sc
+        out[i] = k + sc
+    return (head, spin_prev_x, spin_prev_y, spin_prev_z,
+            ang_prev_x, ang_prev_y, ang_prev_z,
+            down_x, down_y, down_z, rng)
+
+
+if _HAVE_NUMBA:
+    _rattle_kernel = njit(cache=True, fastmath=True)(_rattle_kernel_source)
+else:
+    _rattle_kernel = _rattle_kernel_source
+
+
+class RattleUnit(Unit):
+    """Loose things in a container, shaken and turned.
+
+    shaker~ is a collision RATE driven by an agitation -- Cook's PhISEM,
+    and very cheap. This has particles instead: positions, velocities,
+    and walls that hit them when the walls come to them. Everything
+    about how a gesture sounds then follows from the gesture, rather
+    than from a curve fitted to it. Shaking along a line and swirling in
+    a circle are the same simulation given a line and a circle, and what
+    separates them -- more glancing contact, an envelope that stops
+    pulsing -- comes out on its own.
+
+    The gesture is where the container GOES: 'shake x/y/z' is its
+    acceleration and 'turn x/y/z' is how far it is TIPPED, in degrees
+    -- an angle, not a rate. Three-axis
+    movement drives it directly, which is what a body gives, and needs
+    no translating into 'how agitated'.
+
+    Turning it matters, and matters three ways. The centrifugal push
+    throws everything outward; the Coriolis force deflects whatever is
+    already moving, which is what makes a swirled container sound
+    unlike a shaken one at the same speed; and the Euler force shoves
+    when the turning itself changes. Without them a rotated container
+    does nothing at all.
+
+    'shape' is sphere, box or egg, and it is only a boundary test, so it
+    costs nothing and changes a great deal: flat walls take a bean head
+    on where a curved one lets it glance. An egg is the ellipsoid with
+    one axis stretched -- and the normal is the surface's, not the way
+    out from the middle, so the pointed end presents the angle it
+    really presents.
+
+    'knock' and 'scrape' come out separately as well as mixed -- the
+    normal blow and what it drags along the wall. Patch either into a
+    resonator.
+
+    Inter-particle collisions are left out on purpose: most of the cost,
+    least of the sound. What is heard is the wall.
+    """
+
+    MAX_PARTICLES = 256
+    RING = 512
+    # Impulse into signal, in the units the simulation actually works
+    # in -- metres a second of arriving bean. Set so a brisk shake of a
+    # few dozen of them sits where the rest of the rack sits: bow~ peaks
+    # at 0.42, noise~ at 0.68, bounce~ at 0.39.
+    GEE = 9.80665
+    DEG = 0.017453292519943295
+    # How the level climbs with how many things are in there, measured.
+    DENSITY_LAW = 0.5
+    DENSITY_REF = 1.097
+    KNOCK_GAIN = 10.0
+    SCRAPE_GAIN = 0.158
+    SHAPES = ('sphere', 'box', 'egg')
+    # How much longer an egg is than it is wide.
+    EGG = 1.7
+    CONTROL_DECIM = 8
+    # The fastest anything in there is allowed to be going, in metres a
+    # second. A hand shakes at a few; this is well clear of any real
+    # gesture and only catches the corners where the arithmetic would
+    # otherwise run away.
+    SPEED_CAP = 12.0
+    # Below this, arriving at a wall is resting on it. A settled
+    # particle is pushed back into the floor by gravity every step, so
+    # without a threshold each one rings the container at the control
+    # rate for as long as it lies there -- most of the cost, and a noise
+    # floor made of things lying still.
+    #
+    # It has to be SMALL. Set at a sixtieth of a metre a second it also
+    # swallowed the swirl, because centrifugal force pins things to the
+    # wall and they press rather than arrive: a circular drive produced
+    # no collisions whatever. This is low enough to catch only what is
+    # genuinely at rest.
+    REST_SPEED = 0.001
+    # How many steps' worth of the pressing force still counts as rest.
+    # A bounce that will not outlast a few steps is a thing settling,
+    # not a thing arriving.
+    REST_STEPS = 3.0
+    # Sliding contact is quieter than arriving, per unit of momentum
+    # taken -- a graze is not a blow. Found by ear against the knocks.
+    SLIDE_GAIN = 30.0
+    # How far from round a grain is, at full 'variety' -- the fraction
+    # by which its surface stands nearer or further as it turns. A
+    # smooth sphere does not chatter; nothing else is smooth.
+    TUMBLE = 0.35
+    # How wide the spread of sizes is with variety all the way up, and
+    # how wide it stays with variety at nothing. Nothing real comes in
+    # a hundred identical copies, and perfectly identical things in one
+    # shared field keep STEP -- they differ only in where they started,
+    # so they arrive together and a hundred sound like eight. Leaving
+    # no floor made variety-at-zero a degenerate case rather than a
+    # plain one.
+    SIZE_SPREAD = 0.18
+    SIZE_FLOOR = 0.06
+    # How much the springiness varies from one to the next.
+    SPRING_SPREAD = 0.4
+    # How far the rebound is allowed to tilt. Small on purpose: a big
+    # tilt DISPERSES rather than decorrelates -- things get flung right
+    # across the middle, fly a long way between contacts, and the
+    # sound goes sparse and sporadic, which is the opposite of what
+    # variety is for. Measured, a full tilt took the event rate DOWN
+    # 110 -> 70 a second and made it lumpier; a quarter of one takes
+    # it UP 110 -> 132 and makes it smoother, with the level unmoved.
+    SCATTER_TILT = 0.2
+    # How much of the roughness's RESISTANCE also shows up in what
+    # holds a thing up. Roughness resists in full -- that is what makes
+    # it rasp with no friction at all -- but carrying that straight
+    # into the support meant a rougher shell held everything harder and
+    # so let go LESS often: releases fell 287 a second to 150 as
+    # texture went up, and the knocks quietened with them, which is
+    # backwards. At a quarter the rate stays flat (313 / 316 / 322)
+    # while each release grows (0.066 -> 0.098 -> 0.112), which is what
+    # roughening something should do. Not zero: at zero nothing holds
+    # at all on a frictionless shell, and roughness must still catch.
+    HOLD_ROUGH = 0.25
+    # How thick the skin is in which a thing counts as touching the
+    # wall, as a fraction of the shell.
+    CONTACT_SKIN = 0.002
+    # How far apart the bumps of the surface are, against the size of
+    # the things riding over them. Sets how bright a rub is at a given
+    # speed.
+    ASPERITY = 0.02
+    # How much riding over the roughness resists, against the friction
+    # coefficient itself.
+    TEXTURE_DRAG = 0.5
+    # Letting go is a drop, not a blow -- this only says how much of
+    # the roughness height it actually falls through.
+    RELEASE = 0.6
+
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.shake_x_in = self.new_inlet()
+        self.shake_y_in = self.new_inlet()
+        self.shake_z_in = self.new_inlet()
+        self.turn_x_in = self.new_inlet()
+        self.turn_y_in = self.new_inlet()
+        self.turn_z_in = self.new_inlet()
+        self.size_in = self.new_inlet(base=0.04, minimum=0.005,
+                                      maximum=0.5)
+        self.grain_in = self.new_inlet(base=0.15, minimum=0.0,
+                                       maximum=0.6)
+        self.bounce_in = self.new_inlet(base=0.55, minimum=0.0,
+                                        maximum=0.95)
+        # How much purchase the shell has: 0 is glass, 1 grips hard.
+        self.friction_in = self.new_inlet(base=0.3, minimum=0.0,
+                                          maximum=1.0)
+        # And how rough it is, which is a different thing. A smooth
+        # shell lets a thing slide and hiss; a rough one makes it ride
+        # up and let go, over and over, which taps.
+        self.texture_in = self.new_inlet(base=0.25, minimum=0.0,
+                                         maximum=1.0)
+        self.hardness_in = self.new_inlet(base=0.6, minimum=0.0,
+                                          maximum=1.0)
+        self.gravity_in = self.new_inlet(base=9.80665, minimum=0.0,
+                                         maximum=40.0)
+        # How unalike the things in there are, and how irregular. At 0
+        # they are identical smooth spheres, which in one shared field
+        # keep step and sound like a handful however many there are.
+        self.variety_in = self.new_inlet(base=0.35, minimum=0.0,
+                                         maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        RattleUnit._seeded += 1
+        rng = np.random.default_rng(4242 + RattleUnit._seeded)
+        self._sizes = np.ones(RattleUnit.MAX_PARTICLES, dtype=np.float64)
+        # How far each one is off the average size, fixed per handful.
+        # 'variety' scales this: at zero they really are all the same,
+        # which is what the control has always claimed and never did --
+        # the spread was drawn once at full width and variety only ever
+        # reached the rebound scattering.
+        self._size_dev = np.zeros(RattleUnit.MAX_PARTICLES,
+                                  dtype=np.float64)
+        # ...and how springy each one is. Unalike does not only mean
+        # different SIZES. Things that bounce alike keep step however
+        # much their sizes differ, because what decides when a thing
+        # next arrives is how high it came off the wall. Spreading the
+        # springiness is what actually puts them out of phase with each
+        # other, and it neither adds energy nor takes any.
+        self._spring_dev = np.zeros(RattleUnit.MAX_PARTICLES,
+                                    dtype=np.float64)
+        self._spring = np.ones(RattleUnit.MAX_PARTICLES,
+                               dtype=np.float64)
+        self._variety_live = -1.0
+        self._spin_phase = np.zeros(RattleUnit.MAX_PARTICLES,
+                                    dtype=np.float64)
+        # Whether each thing is being HELD by the patch of wall it is
+        # sitting on, and how much that patch will take before it lets
+        # go. A smooth shell holds the same everywhere; a rough one does
+        # not, and that is what turns a slide into a rattle.
+        self._held = np.zeros(RattleUnit.MAX_PARTICLES, dtype=np.float64)
+        self._support = np.zeros(RattleUnit.MAX_PARTICLES,
+                                 dtype=np.float64)
+        # Whether it was against the wall LAST step. An arrival is a
+        # contact that was not there before.
+        self._touching = np.zeros(RattleUnit.MAX_PARTICLES,
+                                  dtype=np.float64)
+        self._pos = np.zeros(RattleUnit.MAX_PARTICLES * 3, dtype=np.float64)
+        self._vel = np.zeros(RattleUnit.MAX_PARTICLES * 3, dtype=np.float64)
+        self._rng_start = rng
+        self._count = 48
+        self.shape = 0
+        self._scatter()
+        self._ring_knock = np.zeros(RattleUnit.RING, dtype=np.float64)
+        self._ring_scrape = np.zeros(RattleUnit.RING, dtype=np.float64)
+        self._ring_head = 0.0
+        self._window = np.zeros(RattleUnit.RING, dtype=np.float64)
+        self._window_width = 0
+        self._size_live = 0.04
+        self._grain_live = 0.006
+        self._friction_live = 0.3
+        self._bounce_live = 0.55
+        self._spin_prev = np.zeros(3, dtype=np.float64)
+        # Where it was pointing last step, so the rate can be got out
+        # of the angle. Primed from the first sample seen, or a patch
+        # that starts already tilted would look like it got there
+        # infinitely fast.
+        self._ang_prev = np.zeros(3, dtype=np.float64)
+        self._turn_primed = False
+        # Which way is down, in the container's own frame.
+        self._down = np.array([0.0, 0.0, -1.0], dtype=np.float64)
+        self._rng = np.uint64(9137 + RattleUnit._seeded * 7919)
+        self._quiet = True
+
+        self.out = self.new_outlet()
+        self.knock = self.new_outlet()
+        self.scrape = self.new_outlet()
+        self._ax = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._ay = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._az = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._wx = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._wy = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._wz = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._yk = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._ys = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def _scatter(self):
+        """Drop them in, well inside the wall so none starts embedded."""
+        rng = np.random.default_rng(97 + RattleUnit._seeded)
+        n = RattleUnit.MAX_PARTICLES
+        self._pos[:] = rng.uniform(-0.4, 0.4, n * 3)
+        self._vel[:] = rng.normal(0.0, 0.05, n * 3)
+        # A spread of sizes, fixed per handful: this is what they are,
+        # not something that changes while they rattle.
+        self._size_dev[:] = np.clip(rng.normal(0.0, 1.0, n), -2.0, 2.0)
+        self._spring_dev[:] = np.clip(rng.normal(0.0, 1.0, n), -2.0, 2.0)
+        self._variety_live = -1.0
+        self._spin_phase[:] = rng.uniform(0.0, 2.0 * math.pi, n)
+
+    def set_count(self, count):
+        count = int(min(RattleUnit.MAX_PARTICLES, max(1, count)))
+        if count != self._count:
+            self._count = count
+            self._scatter()
+
+    def reset(self):
+        self._scatter()
+        self._ring_knock[:] = 0.0
+        self._ring_scrape[:] = 0.0
+        self._ring_head = 0.0
+        self._spin_prev[:] = 0.0
+        self._ang_prev[:] = 0.0
+        self._turn_primed = False
+        self._down[:] = (0.0, 0.0, -1.0)
+        self._quiet = True
+
+    def render(self, frames):
+        out = self.out
+        knock_out = self.knock
+        scrape_out = self.scrape
+        if not self.enabled:
+            for signal in (out, knock_out, scrape_out):
+                signal.set_constant(0.0)
+            return
+
+        def fill(inlet, buffer):
+            got = inlet.eval(frames)
+            if got.constant:
+                buffer[:frames] = got.value
+            else:
+                np.copyto(buffer[:frames], got.data[:frames],
+                          casting='unsafe')
+            return buffer[:frames]
+
+        # Shake arrives in gravities, not in metres per second squared.
+        # Read raw it was silent below about 10, because nothing lifts
+        # off the floor until the shake beats its own weight -- true,
+        # but it put the playable range at 10 to 40 where every other
+        # unit here works over 0.3 to 3.
+        ax = fill(self.shake_x_in, self._ax)
+        ay = fill(self.shake_y_in, self._ay)
+        az = fill(self.shake_z_in, self._az)
+        np.multiply(ax, RattleUnit.GEE, out=ax)
+        np.multiply(ay, RattleUnit.GEE, out=ay)
+        np.multiply(az, RattleUnit.GEE, out=az)
+        # Turn arrives in DEGREES, which is how anyone thinks about
+        # how far a thing is tipped.
+        wx = fill(self.turn_x_in, self._wx)
+        wy = fill(self.turn_y_in, self._wy)
+        wz = fill(self.turn_z_in, self._wz)
+        np.multiply(wx, RattleUnit.DEG, out=wx)
+        np.multiply(wy, RattleUnit.DEG, out=wy)
+        np.multiply(wz, RattleUnit.DEG, out=wz)
+        if not self._turn_primed:
+            self._turn_primed = True
+            self._ang_prev[:] = (wx[0], wy[0], wz[0])
+
+        def scalar(inlet, lo, hi):
+            got = inlet.eval(1)
+            value = got.value if got.constant else float(got.data[0])
+            return min(hi, max(lo, value))
+
+        size = scalar(self.size_in, 0.005, 0.5)
+        grain = scalar(self.grain_in, 0.0, 0.6) * size
+        bounce = scalar(self.bounce_in, 0.0, 0.95)
+        grip = scalar(self.friction_in, 0.0, 1.0)
+        hard = scalar(self.hardness_in, 0.0, 1.0)
+        grav = scalar(self.gravity_in, 0.0, 40.0)
+        level = self.level_in.eval(frames)
+
+        # The container's geometry glides. Dragged, a knob steps the
+        # walls once a block, and a wall that jumps is a wall that
+        # arrives at whatever is standing there.
+        for name, target in (('_size_live', size), ('_grain_live', grain),
+                             ('_friction_live', grip),
+                             ('_bounce_live', bounce)):
+            was = getattr(self, name)
+            setattr(self, name, was + (target - was)
+                    * min(1.0, frames / (0.05 * self.sample_rate)))
+        size = self._size_live
+        grain = self._grain_live
+        scatter = scalar(self.variety_in, 0.0, 1.0)
+        if scatter != self._variety_live:
+            self._variety_live = scatter
+            np.multiply(
+                self._size_dev,
+                RattleUnit.SIZE_FLOOR
+                + (RattleUnit.SIZE_SPREAD - RattleUnit.SIZE_FLOOR)
+                * scatter,
+                out=self._sizes)
+            np.add(self._sizes, 1.0, out=self._sizes)
+            np.clip(self._sizes, 0.25, 2.0, out=self._sizes)
+            np.multiply(self._spring_dev,
+                        RattleUnit.SPRING_SPREAD * scatter,
+                        out=self._spring)
+            np.add(self._spring, 1.0, out=self._spring)
+            np.clip(self._spring, 0.15, 1.85, out=self._spring)
+        grip = self._friction_live
+        texture = scalar(self.texture_in, 0.0, 1.0)
+        bounce = self._bounce_live
+        half_x = half_y = half_z = size
+        if self.shape == 2:
+            half_z = size * RattleUnit.EGG
+        box = 1.0 if self.shape == 1 else 0.0
+        # The same mallet range as everywhere: eight milliseconds of
+        # felt down to a third of a millisecond of glass.
+        # In AUDIO samples: the ring is read one per sample, so dividing
+        # this by the decimation made every contact eight times shorter
+        # than the mallet it was supposed to be, and a bank of contacts
+        # that short is a bank of clicks.
+        contact = max(2.0, 0.008 * (0.04 ** hard) * self.sample_rate)
+        width = int(min(RattleUnit.RING - 1, max(2, contact)))
+        if width != self._window_width:
+            self._window_width = width
+            edge = (np.arange(width) + 0.5) * (2.0 * math.pi / width)
+            self._window[:width] = 0.5 * (1.0 - np.cos(edge))
+        # Density changes the texture, not the level -- the house rule
+        # everywhere in the rack. Independent sources add in POWER, so
+        # a square root does it, and measured that is exactly what it
+        # is: 0.503 / 0.498 / 0.496 across the whole range of variety.
+        #
+        # It read 1.35 while every contact went in one way only and
+        # summed coherently, and 0.85 while blows were being laid down
+        # once per particle per control step instead of once each. Both
+        # of those are gone, and the honest exponent turned up on its
+        # own.
+        #
+        # Anchored at 48, where the level was matched against shaker~.
+        # No floor: flooring it left a single object far quieter than a
+        # handful, which is why one of them could not be heard bouncing
+        # around.
+        gain = (RattleUnit.DENSITY_REF
+                / max(1.0, self._count) ** RattleUnit.DENSITY_LAW)
+
+        result = self._y[:frames]
+        rk = self._yk[:frames]
+        rs = self._ys[:frames]
+        (self._ring_head, self._spin_prev[0], self._spin_prev[1],
+         self._spin_prev[2], self._ang_prev[0], self._ang_prev[1],
+         self._ang_prev[2], self._down[0], self._down[1],
+         self._down[2], rng_state) = _rattle_kernel(
+            ax, ay, az, wx, wy, wz, self._pos, self._vel,
+            self._count, half_x, half_y, half_z, grain,
+            self._sizes, self._spring, self._spin_phase, scatter,
+            RattleUnit.TUMBLE, self._held, self._support,
+            self._touching,
+            RattleUnit.RELEASE, bounce, grip, texture,
+            RattleUnit.TEXTURE_DRAG, RattleUnit.ASPERITY,
+            RattleUnit.CONTACT_SKIN, RattleUnit.SCATTER_TILT,
+            RattleUnit.HOLD_ROUGH,
+            grav, box,
+            RattleUnit.SPEED_CAP,
+            RattleUnit.REST_SPEED, RattleUnit.REST_STEPS,
+            RattleUnit.SLIDE_GAIN,
+            RattleUnit.CONTROL_DECIM,
+            RattleUnit.CONTROL_DECIM / self.sample_rate,
+            RattleUnit.KNOCK_GAIN * gain, RattleUnit.SCRAPE_GAIN * gain,
+            contact, self._window, self._ring_knock, self._ring_scrape,
+            self._ring_head, self._spin_prev[0], self._spin_prev[1],
+            self._spin_prev[2], self._ang_prev[0], self._ang_prev[1],
+            self._ang_prev[2], self._down[0], self._down[1],
+            self._down[2], self._rng, result, rk, rs)
+        self._rng = np.uint64(rng_state)
+
+        if not np.isfinite(result).all():
+            self.reset()
+            for signal in (out, knock_out, scrape_out):
+                signal.set_constant(0.0)
+            return
+
+        glide = self._level_glide
+        self._apply_level(result, level, frames)
+        advanced = self._level_glide
+        self._level_glide = glide
+        self._apply_level(rk, level, frames)
+        self._level_glide = glide
+        self._apply_level(rs, level, frames)
+        self._level_glide = advanced
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        np.copyto(knock_out.data[:frames], rk, casting='unsafe')
+        knock_out.constant = False
+        np.copyto(scrape_out.data[:frames], rs, casting='unsafe')
+        scrape_out.constant = False
+        self._quiet = bool(np.abs(result).max() < 1.0e-6)
+
+
 class ShakerUnit(Unit):
     """Shaken percussion: the texture family, played by agitation.
 

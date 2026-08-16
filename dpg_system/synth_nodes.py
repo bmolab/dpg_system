@@ -23,7 +23,7 @@ from fuzzywuzzy import fuzz
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
-    VesselUnit,
+    VesselUnit, RattleUnit,
     synth_graph, start_filter_warm_up,
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
@@ -122,6 +122,7 @@ def register_synth_nodes():
     Node.app.register_node('stroke~', StrokeNode.factory)
     Node.app.register_node('bowing~', StrokeNode.factory)
     Node.app.register_node('shaker~', ShakerNode.factory)
+    Node.app.register_node('rattle~', RattleNode.factory)
     Node.app.register_node('rain~', ShakerNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
@@ -6343,6 +6344,221 @@ SHAKER_KINDS = {
                     'vessel': 900.0, 'resonance': 0.1, 'jingle': 0.1,
                     'vary': 0.6},
 }
+
+
+class RattleNode(SynthNode):
+    """Loose things in a container, shaken and turned -- simulated.
+
+    shaker~ is a collision RATE driven by an agitation, which is cheap
+    and very good for rain and sleighbells where nobody wants to
+    simulate a hundred thousand grains. This has particles instead:
+    positions, velocities, and walls that hit them when the walls come
+    to them.
+
+    What that buys is that the gesture stops needing translating. Shake
+    it along a line and swirl it in a circle and those are the same
+    simulation given a line and a circle -- and the difference between
+    them comes out on its own: more glancing contact, and an envelope
+    that stops pulsing because a circle never stops the way a line does
+    at each end. None of that is modelled here; it is what happens.
+
+    'shake x/y/z' is where the container is being ACCELERATED, in
+    gravities, and 'turn x/y/z' is how far it is TIPPED, in degrees --
+    an angle, not a rate. A body's movement drives it
+    directly. Turning matters three ways -- the centrifugal push
+    outward, the Coriolis deflection of whatever is already moving, and
+    the Euler shove when the turning itself changes -- and all three are
+    what a swirl is made of.
+
+    'shape' is sphere, box or egg, and it is only a boundary test, so it
+    is nearly free and changes a great deal: flat walls take a bean head
+    on where a curved one lets it glance.
+
+    'knock' and 'scrape' come out separately as well as mixed. Like
+    bounce~, what comes out is a train of force pulses rather than a
+    sound -- patch it into modal~, drum~ or resonator~.
+
+    A thing resting against the wall is HELD while the slope under it is
+    shallower than the friction can support, and slides or lets go when
+    it is not -- so 'friction' and 'texture' are two different things.
+    Friction is the coefficient, one number everywhere, and on a smooth
+    shell a thing that starts sliding goes on sliding. Texture differs
+    from place to place, so a thing catches, is carried, lets go, and
+    catches again somewhere else. A slow turn on a smooth shell is a
+    continuous slide; the same turn on a rough one is a rattle.
+
+    Inter-particle collisions are left out on purpose: most of the cost,
+    least of the sound. What is heard is the wall.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RattleNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = RattleUnit(synth_graph.sample_rate)
+        count = 48
+        if args is not None:
+            for arg in args:
+                try:
+                    count = int(arg)
+                except (ValueError, TypeError):
+                    continue
+        self.unit.set_count(count)
+
+        for axis in ('x', 'y', 'z'):
+            port = self.add_modulation_input(
+                f'shake {axis}', getattr(self.unit, f'shake_{axis}_in'),
+                minimum=-8.0, maximum=8.0, speed=0.02)
+            if port.widget is not None:
+                port.widget.set_tooltip(
+                    f'how hard the container is being accelerated along '
+                    f'{axis}, in GRAVITIES -- 1.0 is its own weight, '
+                    f'which is roughly where things start leaving the '
+                    f'floor. Patch a body: this is what a body gives, '
+                    f'and it needs no translating into how agitated '
+                    f'anything is')
+        for axis in ('x', 'y', 'z'):
+            port = self.add_modulation_input(
+                f'turn {axis}', getattr(self.unit, f'turn_{axis}_in'),
+                minimum=-180.0, maximum=180.0, speed=0.5)
+            if port.widget is not None:
+                port.widget.set_tooltip(
+                    f'how far it is TIPPED about {axis}, in degrees -- '
+                    f'where it is pointing, not how fast it is going. '
+                    f'Send 30 and it sits tipped at 30, and gravity '
+                    f'sits tipped with it. Rock it with a sine and it '
+                    f'rocks through that many degrees. For a continuous '
+                    f'roll, send a ramp. How fast it is turning is '
+                    f'taken from how fast the angle changes, and that '
+                    f'is what throws the particles outward, deflects '
+                    f'whatever is already moving, and shoves them when '
+                    f'the turning changes -- which is what a swirl is, '
+                    f'as against a shake')
+        self.count_input = self.add_input(
+            'count', widget_type='drag_int', default_value=count,
+            callback=self.count_changed)
+        if self.count_input.widget is not None:
+            self.count_input.widget.set_tooltip(
+                'how many things are in there. Changes the texture and '
+                'not the level -- a handful is countable, hundreds is a '
+                'wash')
+        self.shape_input = self.add_input(
+            'shape', widget_type='combo',
+            default_value=RattleUnit.SHAPES[0],
+            callback=self.parameters_changed)
+        self.shape_input.widget.combo_items = list(RattleUnit.SHAPES)
+        if self.shape_input.widget is not None:
+            self.shape_input.widget.set_tooltip(
+                'the container. Only a boundary test, so it costs almost '
+                'nothing and changes a great deal: a box takes a bean '
+                'head on where a sphere lets it glance, and an egg is '
+                'the sphere with one axis stretched -- struck at its '
+                'pointed end it answers at the angle that end really '
+                'presents')
+        size_port = self.add_modulation_input(
+            'size', self.unit.size_in, minimum=0.005, maximum=0.5,
+            speed=0.001)
+        if size_port.widget is not None:
+            size_port.widget.set_tooltip(
+                'how big the container is, as a half-width in METRES: '
+                '0.04 is a maraca, 0.5 is a metre across. It sets the '
+                'pitch of everything, because it sets how far things '
+                'fall and how fast the wall sweeps past when it is '
+                'turned')
+        grain_port = self.add_modulation_input(
+            'grain', self.unit.grain_in, minimum=0.0, maximum=0.6,
+            speed=0.005)
+        if grain_port.widget is not None:
+            grain_port.widget.set_tooltip(
+                'how big each thing in there is, as a FRACTION of the '
+                'container -- so it stays a handful of beans whatever '
+                'size the container is. 0.05 is a bean in a maraca; at '
+                '0.16 a hundred and twenty-eight of them fill over half '
+                'the shell, which is gravel in a bucket. It sets how '
+                'far a thing rides between the bumps of the surface, so '
+                'it sets how bright a rub is')
+        # Small at one end and not at the other, and the useful part is
+        # all down at the bottom -- so each pixel moves these by a
+        # fraction of themselves. That is exponential travel while the
+        # number shown stays a real size, which matters here because
+        # both are modulation inlets: a hidden mapping would quietly
+        # change what a patch cord into them means.
+        self.make_drag_proportional(size_port, fraction=0.05,
+                                    floor=0.0002, ceiling=0.02)
+        self.make_drag_proportional(grain_port, fraction=0.05,
+                                    floor=0.0004, ceiling=0.02)
+        self.add_modulation_input('bounce', self.unit.bounce_in,
+                                  minimum=0.0, maximum=0.95, speed=0.01)
+        grip_port = self.add_modulation_input(
+            'friction', self.unit.friction_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if grip_port.widget is not None:
+            grip_port.widget.set_tooltip(
+                'how much purchase the shell has -- the friction '
+                'coefficient itself, so more of it means more grip, not '
+                'less. It sets the angle a resting thing is held at: '
+                'below that slope it does not move at all, above it it '
+                'slides. Turn a slippery container slowly and the '
+                'contents stay put while the shell goes round under '
+                'them, which is a continuous slide and no knocks. Grip '
+                'it harder and they are carried further up before the '
+                'slope stops holding them, and then they have further '
+                'to fall')
+        texture_port = self.add_modulation_input(
+            'texture', self.unit.texture_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if texture_port.widget is not None:
+            texture_port.widget.set_tooltip(
+                'how rough the inside is. It resists like friction '
+                'does -- riding over bumps costs something, so a rough '
+                'shell holds and rasps even with the friction at zero '
+                '-- but it differs from PLACE to place, where friction '
+                'is one number everywhere. So a thing catches, is '
+                'carried until that place no longer holds it, lets go, '
+                'drops to the next and catches again, and each letting '
+                'go is a tick. That is the whole difference between a '
+                'hiss and a rattle, and it comes in by degrees rather '
+                'than at a threshold. For pure slide and no knocks at '
+                'all, leave this at zero and set friction around 0.15 '
+                'to 0.3')
+        self.add_modulation_input('hardness', self.unit.hardness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        variety_port = self.add_modulation_input(
+            'variety', self.unit.variety_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if variety_port.widget is not None:
+            variety_port.widget.set_tooltip(
+                'how unalike the things in there are: it spreads their '
+                'SIZES, and makes them scatter off a wall rather than '
+                'reflecting off it, since which face an irregular grain '
+                'presents depends on how it is tumbling. At 0 they '
+                'really are identical now -- and identical things in '
+                'one shared field keep STEP, because they differ only '
+                'in where they started, so a hundred of them arrive '
+                'together and sound like eight. That is what makes a '
+                'hundred sound like a hundred. It does not change how '
+                'loud it is')
+        self.add_modulation_input('gravity', self.unit.gravity_in,
+                                  minimum=0.0, maximum=40.0, speed=0.1)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.knock_output = self.add_signal_output('knock',
+                                                   self.unit.knock)
+        self.scrape_output = self.add_signal_output('scrape',
+                                                    self.unit.scrape)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def count_changed(self):
+        self.unit.set_count(any_to_int(self.count_input()))
+
+    def sync_options(self):
+        shape = any_to_string(self.shape_input())
+        if shape in RattleUnit.SHAPES:
+            self.unit.shape = RattleUnit.SHAPES.index(shape)
 
 
 class ShakerNode(SynthNode):
