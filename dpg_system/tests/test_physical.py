@@ -13,6 +13,8 @@ import os
 import sys
 import math
 import numpy as np
+from scipy.signal import butter as sig_butter
+from scipy.signal import sosfiltfilt as sig_sosfiltfilt
 from scipy.signal import hilbert as sig_hilbert
 from scipy.signal import find_peaks as sig_find_peaks
 
@@ -2351,13 +2353,14 @@ from dpg_system import modal_shape as msh
 BAR_BOOK = (1.0, 2.7565, 5.4039, 8.9330)
 
 
-def _bar_ratios(sweep_mode, detail=24, length=1.0, half=0.025):
-    stations = detail if sweep_mode != 'mirror' else detail // 2
+def _bar_ratios(sweep_mode, detail=24, length=1.0, half=0.025,
+                mirror=False):
+    stations = detail // 2 if mirror else detail
     profile = [half] * (stations + 1)
     section = (msh.disc_section(2, 2) if sweep_mode == 'revolve'
                else msh.rect_section(3, 3))
     nodes, hexes = msh.sweep(profile, length, sweep_mode, 2.0 * half,
-                             section)
+                             section, mirror=mirror)
     freq, shape = msh.solve_modes(nodes, hexes, 'steel', want=18)
     table = msh.table_from(nodes, freq, shape, length, strike=1.0,
                            damping=0.0)
@@ -2378,7 +2381,7 @@ check('a bar solved from its shape rings where a bar rings',
 # does differ further up is TORSION, and it has to: twisting stiffness
 # depends very much on the section, so a square bar and a round one are
 # not the same thing to twist.
-_bm, _ = _bar_ratios('mirror')
+_bm, _ = _bar_ratios('extrude', mirror=True)
 _br, _ = _bar_ratios('revolve')
 check('and it does not matter which way the mesh was swept',
       all(abs(a - b) < 0.03 * a for a, b in zip(_bx[:2], _bm[:2]))
@@ -2430,24 +2433,35 @@ check('and which way it is struck thins the table to what it can reach',
 # The point of the whole thing: the shape decides the tuning. A marimba
 # bar is undercut until its second mode lands two octaves up, and the
 # cut is what puts it there.
-def _undercut(cut, detail=24):
+def _undercut(cut, detail=24, carve='depth'):
     x = np.linspace(-1.0, 1.0, detail + 1)
     profile = [0.03 * (1.0 - cut * math.cos(v * math.pi / 2.0) ** 2)
                for v in x]
-    nodes, hexes = msh.sweep(profile, 1.0, 'extrude', 0.05,
-                             msh.rect_section(3, 3))
+    nodes, hexes = msh.sweep(profile, 1.0, 'extrude', 0.06,
+                             msh.rect_section(3, 3), carve)
     freq, shape = msh.solve_modes(nodes, hexes, 'wood', want=18)
     table = msh.table_from(nodes, freq, shape, 1.0, strike=1.0,
                            damping=0.0)
     return [row[0] for row in table]
 
 
-_uc = [_undercut(c)[1] for c in (0.0, 0.15, 0.3, 0.45)]
+_uc = [_undercut(c)[1] for c in (0.0, 0.3, 0.6, 0.8)]
 check('cutting the middle away tunes the second mode up, as it should',
-      all(b > a for a, b in zip(_uc, _uc[1:])) and _uc[-1] > 1.2 * _uc[0],
+      all(b > a for a, b in zip(_uc, _uc[1:])) and _uc[-1] > 3.8,
       'second ratio ' + ' -> '.join(f'{x:.3f}' for x in _uc)
-      + ' as the middle is cut away -- a marimba bar is cut until this '
-      + 'reaches 4.000')
+      + ' as the arch is cut deeper -- a marimba bar is cut until this '
+      + 'reaches 4.000, and it gets there')
+
+# WHICH WAY it is cut is not a detail. The arch goes under the bar, not
+# into its plan, and it has to: bending stiffness goes as the depth
+# CUBED and only as the width itself, so the same cut buys far more one
+# way round than the other.
+_uw = [_undercut(c, carve='width')[1] for c in (0.0, 0.3, 0.6, 0.8)]
+check('and cutting the underside buys far more than cutting the plan',
+      _uc[-1] > 1.2 * _uw[-1] and abs(_uc[0] - _uw[0]) < 1e-3,
+      'the same cuts reach ' + f'{_uc[-1]:.3f}' + ' carved into the depth '
+      + 'and only ' + f'{_uw[-1]:.3f}' + ' across the width, from the same '
+      + f'{_uc[0]:.3f}')
 
 # Three columns, in the shape modal~ eats.
 _tb = msh.mode_table([0.03, 0.028, 0.028, 0.03], length=0.4,
@@ -2473,6 +2487,359 @@ check('and a profile that cannot be swept is refused, not solved',
       _guard,
       'a negative half-width raises rather than returning a spectrum '
       'of nonsense')
+
+
+# MATERIAL BARELY TOUCHES THE TABLE, and cannot: a mode's frequency
+# goes as the root of stiffness over density, so a change of material
+# moves every mode by the same factor and it cancels out of a RATIO.
+# What is left is Poisson's ratio, which is worth under a percent. What
+# material really changes is the PITCH -- and modal~ overrides that with
+# its own 'frequency', so unless the pitch is wired across, changing
+# material is very nearly a no-op, which is exactly how it sounds.
+def _material_table(name):
+    nodes, hexes = msh.sweep([0.03] * 17, 0.4, 'extrude', 0.02,
+                             msh.rect_section(3, 3))
+    freq, shape = msh.solve_modes(nodes, hexes, name, want=12)
+    table = msh.table_from(nodes, freq, shape, 0.4, strike=1.0,
+                           damping=0.0)
+    return float(freq[0]), [row[0] for row in table[:3]]
+
+
+_mt = {name: _material_table(name)
+       for name in ('steel', 'wood', 'nylon', 'rubber', 'brass')}
+_mt_second = [v[1][1] for v in _mt.values()]
+_mt_pitch = [v[0] for v in _mt.values()]
+check('what a thing is made of hardly moves its mode RATIOS',
+      max(_mt_second) < 1.02 * min(_mt_second),
+      'the second ratio runs '
+      + ' / '.join(f'{x:.3f}' for x in _mt_second)
+      + ' over steel, wood, nylon, rubber and brass -- every mode scales '
+      + 'together as the root of stiffness over density, so it cancels')
+check('and moves its PITCH a very long way',
+      max(_mt_pitch) > 10.0 * min(_mt_pitch),
+      'the fundamental runs '
+      + ' / '.join(f'{x:.0f}' for x in _mt_pitch)
+      + ' Hz over the same five -- which is why it comes out of its own '
+      + 'outlet, named for the inlet it feeds: modal~ sets frequency '
+      + 'itself, so without that cord a change of material is very '
+      + 'nearly nothing')
+
+
+# A material's LOSS FACTOR is the one property of it that survives into
+# the sound. Stiffness and density cancel out of a ratio and only move
+# the pitch; the loss factor decides how long the thing rings, and it
+# spreads over three orders of magnitude where nothing else here spreads
+# over one.
+_lf = {name: (lambda f: (f, msh.ring_time(name, f)))(
+           msh.solve_modes(*msh.sweep([0.03] * 17, 0.4, 'extrude', 0.02,
+                                      msh.rect_section(3, 3)),
+                           name, want=6)[0][0])
+       for name in ('steel', 'glass', 'wood', 'rubber')}
+_lf_ring = [v[1] for v in _lf.values()]
+check('what a thing is made of decides how long it rings',
+      max(_lf_ring) > 50.0 * min(_lf_ring),
+      ', '.join(f'{k} {v[1]:.2f}s at {v[0]:.0f} Hz'
+                for k, v in _lf.items())
+      + ' -- three orders of magnitude of loss factor, where stiffness '
+      + 'and density cancel out of a ratio entirely')
+
+# Loss is per CYCLE, so a low thing rings longer in seconds even when it
+# is by far the lossier. Rubber is two hundred times lossier than wood
+# and still outlasts it, because at 36 Hz it gets through its cycles
+# forty times more slowly.
+check('and loss is per CYCLE, so being low buys most of it back',
+      0.5 < _lf['rubber'][1] / _lf['wood'][1] < 2.0
+      and msh.MATERIALS['rubber'][3] > 20.0 * msh.MATERIALS['wood'][3],
+      f'rubber rings {_lf["rubber"][1]:.2f}s and wood '
+      f'{_lf["wood"][1]:.2f}s, though rubber loses '
+      f'{msh.MATERIALS["rubber"][3] / msh.MATERIALS["wood"][3]:.0f} times '
+      f'as much every cycle -- at {_lf["rubber"][0]:.0f} Hz against '
+      f'{_lf["wood"][0]:.0f} it gets through those cycles nineteen times '
+      f'more slowly, which nearly cancels it')
+
+# And a constant loss factor fixes the per-mode column exactly: the same
+# fraction goes every cycle, and a mode an octave up gets through its
+# cycles twice as fast, so it rings half as long.
+_dc = msh.mode_table([0.03] * 17, length=0.4, sweep_mode='extrude',
+                     depth=0.02, material='wood', damping=1.0, count=8)
+check('and a constant loss factor is a decay of one over the ratio',
+      all(abs(row[2] - 1.0 / row[0]) < 1e-9 for row in _dc),
+      'decay column ' + ' / '.join(f'{r[2]:.3f}' for r in _dc[:4])
+      + ' against ratios ' + ' / '.join(f'{r[0]:.3f}' for r in _dc[:4])
+      + ' -- which is what a constant loss factor gives, not a taste')
+
+
+# 'decay' and 'damping' are not the same thing and they multiply.
+# 'decay' is a TIME -- the first mode's sixty decibel fall, in seconds,
+# which is what the material's loss factor and the solved pitch give.
+# 'damping' is a SLOPE across the modes, the third column of the table.
+# Mode i rings for decay times ratio to the minus damping.
+#
+# They feel like one thing because for a material with a constant loss
+# factor the slope is pinned at 1 -- the same fraction goes every cycle,
+# so a mode an octave up rings half as long -- and all the material's
+# character is then in the time. The slope is the knob for what a
+# constant loss factor does not cover: radiation, which climbs with
+# frequency and steepens it, and the way a thing is held, which takes
+# the low modes and flattens it.
+def _two_mode_ring(column, seconds=3.0, decay=2.0):
+    unit = sc.ModalUnit(SR)
+    unit.set_modes([(1.0, 1.0, 1.0), (4.0, 1.0, column)])
+    unit.frequency_in.base = 200.0
+    unit.decay_in.base = decay
+    trig = sc.Signal()
+    unit.trigger_in.sources.append(trig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        trig.data[:BLOCK] = 0.0
+        if b == 2:
+            trig.data[0] = 1.0
+        trig.constant = False
+        unit.render(BLOCK)
+        got.append(unit.out.array(BLOCK).copy())
+    return np.concatenate(got)[int(0.05 * SR):]
+
+
+def _band_t60(x, low, high):
+    sos = sig_butter(4, [low / (SR / 2), high / (SR / 2)], btype='band',
+                     output='sos')
+    env = np.maximum(np.abs(sig_hilbert(sig_sosfiltfilt(sos, x))), 1e-12)
+    db = 20.0 * np.log10(env / env.max())
+    start = int(0.02 * SR)
+    stop = int(np.argmax(db < -30.0)) or len(db)
+    if stop <= start + 100:
+        return float('nan')
+    slope = np.polyfit(np.arange(start, stop) / SR, db[start:stop], 1)[0]
+    return -60.0 / slope
+
+
+_dd = [(d, 4.0 ** (-d)) for d in (0.0, 0.5, 1.0, 1.5)]
+_dd_first = [_band_t60(_two_mode_ring(c), 150.0, 260.0) for _, c in _dd]
+_dd_second = [_band_t60(_two_mode_ring(c), 700.0, 900.0) for _, c in _dd]
+check('decay is a time and damping is a slope, and they multiply',
+      all(abs(x - 2.0) < 0.1 for x in _dd_first)
+      and all(abs(second - 2.0 * col) < 0.1 * max(2.0 * col, 0.2)
+              for (_, col), second in zip(_dd, _dd_second)),
+      'at a decay of 2 s the first mode rings '
+      + ' / '.join(f'{x:.2f}' for x in _dd_first)
+      + ' s whatever the damping, while a mode two octaves up rings '
+      + ' / '.join(f'{x:.2f}' for x in _dd_second)
+      + ' s for damping 0 / 0.5 / 1 / 1.5 -- which is the decay times '
+      + 'its own column, every time')
+
+
+# Size is in METRES over four orders of magnitude, and a bar's ratios do
+# not depend on its size at all -- so this is really a test of the
+# ELEMENTS. A long bar is the more accurate of the two, because it is the
+# more slender and so the closer to what a bar formula describes; and
+# bricks a hundred times longer than they are thick still behave, because
+# the bending happens along the length where there are plenty of them.
+def _sized_bar(length, width=0.03, depth=0.02, detail=16):
+    profile = [width * 0.5] * (detail + 1)
+    nodes, hexes = msh.sweep(profile, length, 'extrude', depth,
+                             msh.rect_section(3, 3))
+    freq, shape = msh.solve_modes(nodes, hexes, 'steel', want=12)
+    table = msh.table_from(nodes, freq, shape, length, strike=1.0,
+                           damping=0.0)
+    return [row[0] for row in table[:3]], float(freq[0])
+
+
+_sz_short = _sized_bar(0.4)
+_sz_long = _sized_bar(20.0, detail=40)
+check('a bar sounds like a bar whatever size it is, and longer is truer',
+      abs(_sz_long[0][1] - BAR_BOOK[1]) < 0.02 * BAR_BOOK[1]
+      and abs(_sz_long[0][1] - BAR_BOOK[1])
+      < abs(_sz_short[0][1] - BAR_BOOK[1]),
+      f'a 20 m bar rings {_sz_long[0][1]:.3f} against the book\'s '
+      f'{BAR_BOOK[1]:.3f} where a 0.4 m one rings {_sz_short[0][1]:.3f} '
+      f'-- the long one is more slender, which is what the book assumes')
+check('and the size is what sets the pitch, over a very wide reach',
+      _sz_short[1] > 100.0 * _sz_long[1],
+      f'{_sz_short[1]:.0f} Hz at 0.4 m against {_sz_long[1]:.2f} Hz at '
+      f'20 m -- a bending frequency goes as one over the length squared, '
+      f'so fifty times the length is two thousand times the pitch')
+
+
+# 'mirror' is an extrude whose outline you only drew half of: the list
+# runs from one END to the MIDDLE and is reflected from there, so the last
+# half-width you give sits at the centre and is not repeated. Reflecting
+# the whole list put that value in twice and left a flat station at the
+# middle that nobody asked for.
+def _swept_outline(profile, mode, mirror=True):
+    nodes, _ = msh.sweep(profile, 1.0, mode, 0.02, msh.rect_section(1, 1),
+                         mirror=mirror)
+    along = nodes[:, 0]
+    out = []
+    for station in np.unique(np.round(along, 9)):
+        here = nodes[np.abs(along - station) < 1e-7]
+        out.append(round(float(np.ptp(here[:, 2]) / 2.0), 6))
+    return out
+
+
+_mi_half = _swept_outline([0.03, 0.02, 0.025], 'extrude')
+_mi_whole = _swept_outline([0.03, 0.02, 0.025, 0.02, 0.03],
+                          'extrude', mirror=False)
+check('a mirrored half is the same shape as writing the whole out',
+      _mi_half == _mi_whole and len(_mi_half) == 5,
+      f'three half-widths mirrored give {_mi_half}, which is exactly the '
+      f'five written out -- and the middle appears ONCE')
+_mi_four = _swept_outline([0.01, 0.02, 0.03, 0.04], 'extrude')
+# Which is the whole reason it stopped being a kind of sweep: as a third
+# sweep it could not be had at the same time as a revolve, and half a
+# vase is an obvious thing to want to draw.
+def _revolved_radii(profile, mirror):
+    nodes, _ = msh.sweep(profile, 1.0, 'revolve', None,
+                         msh.disc_section(2, 2), mirror=mirror)
+    along = nodes[:, 0]
+    return [round(float(np.hypot(nodes[np.abs(along - x) < 1e-7, 1],
+                                 nodes[np.abs(along - x) < 1e-7, 2]).max()), 6)
+            for x in np.unique(np.round(along, 9))]
+
+
+_mv_off = _revolved_radii([0.01, 0.02, 0.03], False)
+_mv_on = _revolved_radii([0.01, 0.02, 0.03], True)
+check('and it works with a revolve too, which is why it is a checkbox',
+      _mv_off == [0.01, 0.02, 0.03]
+      and _mv_on == [0.01, 0.02, 0.03, 0.02, 0.01],
+      f'half a vase drawn as {_mv_off} comes out as {_mv_on} when spun '
+      f'-- impossible while mirroring was a third kind of sweep, since '
+      f'it could not be had at the same time as one')
+check('and n half-widths make 2n-1 stations, not 2n',
+      len(_mi_four) == 7 and _mi_four[3] == 0.04
+      and _mi_four == _mi_four[::-1],
+      f'four give {_mi_four}: seven stations, symmetric, the last one '
+      f'given sitting at the centre')
+
+
+# The SKIN of a solved mesh, for looking at. An inside face is shared by
+# the two bricks either side of it and an outside one is not, so counting
+# how often each face appears finds the skin without any geometry at all.
+_sk_n, _sk_h = msh.sweep([0.025] * 13, 1.0, 'extrude', 0.05,
+                         msh.rect_section(3, 3))
+_sk_v, _sk_t, _sk_nm = msh.surface(_sk_n, _sk_h)
+# A block twelve by three by three has this many faces on the outside.
+_sk_want = 2 * (12 * 3 + 3 * 3 + 12 * 3)
+check('the skin of a mesh is its outside faces and no others',
+      len(_sk_t) // 2 == _sk_want,
+      f'{len(_sk_t) // 2} faces on the skin of {len(_sk_h)} bricks, '
+      f'which have {len(_sk_h) * 6} faces between them -- a block that '
+      f'size has {_sk_want} on the outside')
+
+# A corner where the surface TURNS has to be split, or every face
+# meeting there gets one averaged normal pointing off into the diagonal:
+# the flats bulge and the edges melt. A single brick is the whole test --
+# eight positions, and every one of them belongs to three faces at right
+# angles, so twenty-four corners come out carrying six normals between
+# them and not one more.
+_cr_n, _cr_h = msh.sweep([0.5, 0.5], 1.0, 'extrude', 1.0,
+                         msh.rect_section(1, 1))
+_cr_v, _cr_t, _cr_nm = msh.surface(_cr_n, _cr_h)
+_cr_uniq = np.unique(np.round(_cr_nm, 6), axis=0)
+check('a hard edge stays hard, so a box does not shade like a pillow',
+      len(_cr_v) == 24 and len(_cr_uniq) == 6
+      and np.allclose(np.sort(np.abs(_cr_uniq).sum(axis=1)), 1.0),
+      f'{len(_cr_v)} corners out of 8 positions, carrying '
+      f'{len(_cr_uniq)} normals, every one of them square on')
+
+# And a curve must NOT be split, or a barrel comes out faceted. The two
+# sit either side of sixty degrees: a revolved barrel is a polygon whose
+# facets meet at forty-five at the coarsest section here, and a box turns
+# at ninety.
+_rd_n, _rd_h = msh.sweep([0.025] * 9, 0.4, 'revolve', None,
+                         msh.disc_section(2, 2))
+_rd_v, _rd_t, _rd_nm = msh.surface(_rd_n, _rd_h)
+_rd_r = np.hypot(_rd_v[:, 1], _rd_v[:, 2])
+_rd_x = _rd_v[:, 0]
+_rd_side = ((_rd_r > 0.0245) & (_rd_x > _rd_x.min() + 0.05)
+            & (_rd_x < _rd_x.max() - 0.05))
+_rd_out = np.column_stack([np.zeros(int(_rd_side.sum())),
+                           _rd_v[_rd_side, 1], _rd_v[_rd_side, 2]])
+_rd_out /= np.linalg.norm(_rd_out, axis=1)[:, None]
+_rd_dot = float(np.einsum('ij,ij->i', _rd_nm[_rd_side], _rd_out).mean())
+_rd_cap = (np.abs(_rd_x - _rd_x.max()) < 1e-9) & (_rd_r < 0.015)
+check('and a curve does not, so a barrel is round and its end is flat',
+      _rd_dot > 0.99
+      and float(np.abs(_rd_nm[_rd_cap][:, 0]).mean()) > 0.999,
+      f'on the barrel the normals point straight out ({_rd_dot:.4f}) '
+      f'while the flat end stays flat '
+      f'({float(np.abs(_rd_nm[_rd_cap][:, 0]).mean()):.4f})')
+
+# The outline shapes the WIDTH of an extrude; the depth is the depth.
+# Scaling both by it made a waisted outline pinch in thickness too --
+# a spindle, not a bar with a shaped edge -- and left no way to say the
+# one thing this is for, a bar undercut in one plane only.
+def _waist(carve):
+    nodes, _ = msh.sweep([0.03, 0.02, 0.03], 1.0, 'extrude', 0.04,
+                         msh.rect_section(2, 2), carve)
+    across = [float(np.ptp(nodes[k * 9:(k + 1) * 9, 1])) for k in range(3)]
+    through = [float(np.ptp(nodes[k * 9:(k + 1) * 9, 2])) for k in range(3)]
+    return across, through
+
+
+_wd_across, _wd_through = _waist('depth')
+_ww_across, _ww_through = _waist('width')
+check('an outline shapes ONE way across and leaves the other alone',
+      abs(_wd_through[1] / _wd_through[0] - 2.0 / 3.0) < 0.01
+      and max(_wd_across) - min(_wd_across) < 1e-9
+      and abs(_ww_across[1] / _ww_across[0] - 2.0 / 3.0) < 0.01
+      and max(_ww_through) - min(_ww_through) < 1e-9,
+      'carving the depth: ' + ' / '.join(f'{x:.3f}' for x in _wd_through)
+      + ' through, ' + ' / '.join(f'{x:.3f}' for x in _wd_across)
+      + ' across. Carving the width, the other way about. Scaling BOTH '
+      + 'by it made a waisted outline pinch in thickness too, which is '
+      + 'a spindle and not a bar with a shaped edge')
+_sk_mid = _sk_v.mean(axis=0)
+_sk_out = np.einsum('ij,ij->i', _sk_nm, _sk_v - _sk_mid)
+check('and every normal on it points out',
+      bool((_sk_out > -1e-9).all()),
+      'wound the other way round the whole thing lights inside out')
+
+# A mode is worth looking at, and the eigenvectors are already solved --
+# so pushing the mesh into one costs nothing but the arithmetic. Scaled
+# against the size of the thing, since an eigenvector's own length means
+# nothing.
+_ds_f, _ds_s = msh.solve_modes(_sk_n, _sk_h, 'wood', want=8)
+_ds_span = float(np.abs(_sk_n.max(axis=0) - _sk_n.min(axis=0)).max())
+_ds_moved = [float(np.abs(msh.displaced(_sk_n, _ds_s, m, 1.0)
+                          - _sk_n).max()) for m in (0, 1, 2)]
+check('a mode pushes the shape by a share of the shape, not of itself',
+      all(abs(x - 0.1 * _ds_span) < 0.01 * _ds_span for x in _ds_moved),
+      'moved ' + ' / '.join(f'{1000 * x:.1f}' for x in _ds_moved)
+      + f' mm on a {1000 * _ds_span:.0f} mm bar, for three modes whose '
+      + 'eigenvectors are normalised however the solver felt like')
+check('and asking for no mode leaves it alone',
+      float(np.abs(msh.displaced(_sk_n, _ds_s, -1, 1.0) - _sk_n).max())
+      == 0.0,
+      'show 0 is the shape itself')
+
+# What comes off a cord may be nothing like a mesh. Refusing it is right;
+# raising inside a cord callback is not -- and a face index past the end
+# of the corners would be read off the end of a GPU buffer, which is not
+# a thing to find out about later.
+try:
+    from dpg_system.moderngl_nodes import MGLMeshNode as _MeshNode
+except Exception:                                    # no GL stack here
+    _MeshNode = None
+if _MeshNode is not None:
+    _mn_good = _MeshNode._as_mesh({'vertices': _sk_v, 'faces': _sk_t,
+                                   'normals': _sk_nm})
+    _mn_junk = [_MeshNode._as_mesh(x)
+                for x in ('a shape', [], None, 42, {'vertices': None})]
+    _mn_bad = _MeshNode._as_mesh({'vertices': _sk_v,
+                                  'faces': _sk_t + len(_sk_v)})
+    check('a mesh node takes a mesh and refuses what is not one',
+          _mn_good is not None and len(_mn_good[1]) == len(_sk_t)
+          and all(x is None for x in _mn_junk)
+          and (_mn_bad is None or _mn_bad[1] is None),
+          'the dict goes through; a word, an empty list, None, a number '
+          'and a dict of nothing are all refused without raising; and '
+          'faces pointing past the last corner are dropped rather than '
+          'read off the end of a buffer')
+    _mn_calc = _MeshNode._normals_from(_sk_v.astype('f4'), _sk_t)
+    check('and it works out the same normals if none came with it',
+          float(np.abs(_mn_calc - _sk_nm).max()) < 1e-5,
+          f'{float(np.abs(_mn_calc - _sk_nm).max()):.1e} apart, so a bare '
+          f'pair of vertices and faces lights the same as the full dict')
 
 
 # ------------------------------------------------- every unit renders

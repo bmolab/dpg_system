@@ -52,25 +52,54 @@ import scipy.sparse as sp
 import scipy.sparse.linalg as spl
 
 
-# Young's modulus in pascals, Poisson's ratio, density in kg/m3. Only
-# their proportions matter here, since the table is ratios -- but they
-# are real numbers rather than invented ones, so the frequencies that
-# come out are believable if you ever want to read them.
+# Young's modulus in pascals, Poisson's ratio, density in kg/m3, and the
+# LOSS FACTOR. The first three are real numbers rather than invented
+# ones, so the frequencies that come out are believable if you ever want
+# to read them -- though only their proportions reach the table, since a
+# ratio does not care.
+#
+# The loss factor is the one that decides how long a thing RINGS, and it
+# is the only place a material's own character survives into the sound.
+# An amplitude falls as exp(-pi * eta * f * t), so sixty decibels takes
+# 2.2 / (eta * f) seconds: a steel bar at 440 Hz rings for fifty seconds
+# and a rubber one for a fortieth of one. Spread over three orders of
+# magnitude, which is far more than anything else here varies.
 MATERIALS = {
-    'aluminium': (7.0e10, 0.33, 2700.0),
-    'steel': (2.0e11, 0.30, 7850.0),
-    'brass': (1.0e11, 0.34, 8500.0),
-    'bronze': (1.05e11, 0.34, 8800.0),
-    'copper': (1.2e11, 0.34, 8960.0),
-    'glass': (7.0e10, 0.22, 2500.0),
-    'stone': (5.0e10, 0.25, 2700.0),
-    'wood': (1.1e10, 0.35, 600.0),
-    'bone': (1.8e10, 0.30, 1900.0),
-    'nylon': (3.0e9, 0.40, 1150.0),
-    'rubber': (5.0e7, 0.48, 1100.0),
+    'aluminium': (7.0e10, 0.33, 2700.0, 1.0e-4),
+    'steel': (2.0e11, 0.30, 7850.0, 1.0e-4),
+    'brass': (1.0e11, 0.34, 8500.0, 1.0e-3),
+    'bronze': (1.05e11, 0.34, 8800.0, 1.0e-3),
+    'copper': (1.2e11, 0.34, 8960.0, 2.0e-3),
+    'glass': (7.0e10, 0.22, 2500.0, 6.0e-4),
+    'stone': (5.0e10, 0.25, 2700.0, 3.0e-3),
+    'wood': (1.1e10, 0.35, 600.0, 8.0e-3),
+    'bone': (1.8e10, 0.30, 1900.0, 1.0e-2),
+    'nylon': (3.0e9, 0.40, 1150.0, 3.0e-2),
+    'rubber': (5.0e7, 0.48, 1100.0, 2.0e-1),
 }
 
-SWEEPS = ('revolve', 'extrude', 'mirror')
+
+def ring_time(material, fundamental):
+    """How long the first mode takes to fall sixty decibels, in seconds.
+
+    From the material's loss factor and the pitch it actually came out
+    at, which is the only honest way round: the same steel rings for
+    fifty seconds as a long bar and a fraction of one as a small hard
+    thing, because the loss is per CYCLE and a high mode spends its
+    cycles faster.
+    """
+    eta = (MATERIALS[material][3] if isinstance(material, str)
+           else material[3])
+    if eta <= 0.0 or fundamental <= 0.0:
+        return 60.0
+    return min(60.0, max(0.01, 2.2 / (eta * fundamental)))
+
+# How an outline becomes a volume. Mirroring is NOT one of these: it is
+# something done to the outline before any of them, so it belongs beside
+# them rather than among them -- as a third sweep it could not be had at
+# the same time as a revolve, and a symmetric vase drawn as one half is
+# an obvious thing to want.
+SWEEPS = ('revolve', 'extrude')
 
 # Eight-node brick, corners in the natural cube, and the two-by-two-by-
 # two Gauss points that integrate it.
@@ -89,8 +118,15 @@ def _quad_grid(nx, ny):
     return np.array(quads)
 
 
-def rect_section(across=4, through=2):
-    """A rectangular cross-section on the unit square, [-1, 1] both ways."""
+def rect_section(across=3, through=3):
+    """A rectangular cross-section on the unit square, [-1, 1] both ways.
+
+    Three by three and not fewer. Eight-node bricks LOCK in bending
+    unless a few of them sit across the thickness -- they cannot curve,
+    so they resist by shearing instead and come out far too stiff. Two
+    through the thickness was enough to put a spurious mode within two
+    percent of the fundamental.
+    """
     xs = np.linspace(-1.0, 1.0, across + 1)
     ys = np.linspace(-1.0, 1.0, through + 1)
     pts = np.array([(x, y) for y in ys for x in xs])
@@ -139,7 +175,7 @@ def disc_section(core=2, rings=2):
 
 
 def sweep(profile, length, sweep_mode='revolve', depth=None,
-          section=None):
+          section=None, carve='depth', mirror=False):
     """Sweep an outline into a solid, as a regular grid of bricks.
 
     `profile` is a list of half-widths, evenly spaced along the length.
@@ -150,36 +186,58 @@ def sweep(profile, length, sweep_mode='revolve', depth=None,
       'extrude'  it is a half-width, and the section is that wide by
                  `depth` deep -- a bar with a shaped outline, which is
                  what an undercut marimba bar is.
-      'mirror'   the same, but the outline you gave is HALF the length
-                 and is reflected end to end, so you draw one end of a
-                 symmetric thing and get the whole.
+    `mirror` says the outline is only HALF of one, running from an end
+    to the middle, and reflects it: n half-widths become 2n-1 stations
+    and the last one given sits at the centre. It happens to the outline
+    before the sweep, so it goes with either -- a bar undercut
+    symmetrically, or a vase drawn as one half.
+
+    `carve` says WHICH way an extrude's outline is taken, and it is not
+    a detail: a marimba bar's arch is cut into its UNDERSIDE, not into
+    its plan. Carving the depth moves the second mode 2.70 -> 3.84 for
+    the same cut that moves it only to 3.23 across the width, because
+    bending stiffness goes as the depth cubed and only as the width
+    itself. 'depth' is the default for that reason.
     """
     prof = np.asarray(profile, dtype=float).ravel()
     if prof.size < 2:
         raise ValueError('a profile needs at least two half-widths')
     if np.any(prof <= 0.0):
         raise ValueError('half-widths must all be greater than zero')
-    if sweep_mode == 'mirror':
-        prof = np.concatenate([prof, prof[::-1]])
+    if mirror and prof.size >= 2:
+        # The last half-width given is the MIDDLE of the finished thing,
+        # so the reflection starts one back from it. Reflecting the whole
+        # list instead put the centre value in twice and left a flat
+        # station there that nobody asked for.
+        prof = np.concatenate([prof, prof[-2::-1]])
     if section is None:
         section = (disc_section() if sweep_mode == 'revolve'
                    else rect_section())
     pts2d, quads = section
-    if sweep_mode != 'revolve':
-        if depth is None:
-            depth = float(prof.max())
-        # `depth` is the whole depth, not half of it: the section runs
-        # from minus to plus one, so it wants halving.
-        scale = np.array([1.0,
-                          0.5 * depth / max(float(prof.max()), 1e-12)])
-    else:
-        scale = np.array([1.0, 1.0])
+    if depth is None:
+        depth = 2.0 * float(prof.max())
 
     n_sec = len(pts2d)
     stations = np.linspace(0.0, length, prof.size)
     nodes = np.empty((prof.size * n_sec, 3))
     for s, (z, w) in enumerate(zip(stations, prof)):
-        block = pts2d * scale * w
+        if sweep_mode == 'revolve':
+            # Spun about the axis, so the outline is a radius and both
+            # ways across are the same.
+            block = pts2d * w
+        else:
+            # Pushed along a line, so the outline shapes the WIDTH and
+            # the depth is the depth -- it does not follow the outline.
+            # Scaling both by it made a waisted outline pinch in
+            # thickness as well, which is a spindle and not a bar with a
+            # shaped edge; and it left no way at all to describe the one
+            # thing this is for, a bar undercut in one plane only.
+            if carve == 'width':
+                block = pts2d * np.array([w, 0.5 * depth])
+            else:
+                # The outline is the ARCH under it, and the width is the
+                # width all the way along.
+                block = pts2d * np.array([0.5 * depth, w])
         nodes[s * n_sec:(s + 1) * n_sec, 0] = z
         nodes[s * n_sec:(s + 1) * n_sec, 1:] = block
 
@@ -193,6 +251,119 @@ def sweep(profile, length, sweep_mode='revolve', depth=None,
             hexes.append([a + q[0], b + q[0], a + q[1], b + q[1],
                           a + q[2], b + q[2], a + q[3], b + q[3]])
     return nodes, np.array(hexes)
+
+
+# A brick's six faces, in the corner order `sweep` lays them down --
+# x fastest, then y, then z -- each wound so its normal points OUT of
+# the element.
+_FACES = ((0, 2, 3, 1), (4, 5, 7, 6),
+          (0, 1, 5, 4), (2, 6, 7, 3),
+          (0, 4, 6, 2), (1, 3, 7, 5))
+
+
+def surface(nodes, hexes, crease=60.0):
+    """The skin of a solid mesh, as triangles with normals.
+
+    An inside face is shared by the two bricks either side of it and an
+    outside one is not, so counting how often each face appears finds
+    the skin without any geometry: the ones seen once are the surface.
+
+    Corners are SPLIT at a hard edge. Averaging every face that meets at
+    a corner is right where the surface curves and quite wrong where it
+    turns: a box shaded that way has one normal at each corner pointing
+    off into the diagonal, so its flats bulge and its edges melt. Faces
+    meeting within `crease` of each other are averaged together and
+    everything else gets a corner of its own, which keeps an edge an
+    edge and leaves a barrel smooth.
+
+    Sixty degrees because of what sits either side of it. A revolved
+    barrel is a polygon -- eight-sided at the coarsest section here, so
+    its facets meet at forty-five -- and a box turns at ninety. Anything
+    between those two smooths the one and keeps the other, and forty was
+    on the wrong side of it: the barrels came out faceted.
+    """
+    seen = {}
+    for elem in hexes:
+        for face in _FACES:
+            quad = tuple(int(elem[i]) for i in face)
+            key = tuple(sorted(quad))
+            if key in seen:
+                seen[key] = None          # shared, so inside
+            else:
+                seen[key] = quad
+    tris = []
+    for quad in seen.values():
+        if quad is None:
+            continue
+        a, b, c, d = quad
+        tris.append((a, b, c))
+        tris.append((a, c, d))
+    verts = np.asarray(nodes, dtype=np.float64)
+    if not tris:
+        return verts, np.zeros((0, 3), dtype=np.int32), np.zeros_like(verts)
+    tris = np.array(tris, dtype=np.int32)
+
+    # Face normals, kept unnormalised as well: their length is twice the
+    # triangle's area, which is the weight a corner's average wants.
+    raw = np.cross(verts[tris[:, 1]] - verts[tris[:, 0]],
+                   verts[tris[:, 2]] - verts[tris[:, 0]])
+    span = np.linalg.norm(raw, axis=1)
+    unit = raw / np.where(span < 1e-30, 1.0, span)[:, None]
+
+    incident = [[] for _ in range(len(verts))]
+    for index, tri in enumerate(tris):
+        for corner in tri:
+            incident[corner].append(index)
+
+    limit = math.cos(math.radians(crease))
+    out_pos, out_nrm = [], []
+    # (original corner, which group of faces) -> the corner we emitted
+    where = {}
+    groups = {}
+    for corner, faces in enumerate(incident):
+        reps = []
+        for face in faces:
+            for slot, rep in enumerate(reps):
+                if float(np.dot(unit[face], rep)) >= limit:
+                    groups[(corner, face)] = slot
+                    break
+            else:
+                groups[(corner, face)] = len(reps)
+                reps.append(unit[face])
+        for slot in range(len(reps)):
+            acc = np.zeros(3)
+            for face in faces:
+                if groups[(corner, face)] == slot:
+                    acc += raw[face]
+            length = float(np.linalg.norm(acc))
+            where[(corner, slot)] = len(out_pos)
+            out_pos.append(verts[corner])
+            out_nrm.append(acc / length if length > 1e-30 else reps[slot])
+    remapped = np.array(
+        [[where[(corner, groups[(corner, index)])] for corner in tri]
+         for index, tri in enumerate(tris)], dtype=np.int32)
+    return (np.array(out_pos, dtype=np.float64), remapped,
+            np.array(out_nrm, dtype=np.float64))
+
+
+def displaced(nodes, shape, mode, amount=1.0):
+    """The mesh pushed into the shape of one of its modes.
+
+    Scaled against the size of the thing rather than against the raw
+    eigenvector, whose length means nothing on its own -- so a swell of
+    one moves the surface by a tenth of the object however it was
+    normalised.
+    """
+    verts = np.asarray(nodes, dtype=np.float64)
+    if shape is None or shape.size == 0 or mode < 0 \
+            or mode >= shape.shape[1]:
+        return verts
+    move = shape[:, int(mode)].reshape(-1, 3)
+    peak = float(np.abs(move).max())
+    if peak <= 0.0:
+        return verts
+    span = float(np.abs(verts.max(axis=0) - verts.min(axis=0)).max())
+    return verts + move * (amount * 0.1 * span / peak)
 
 
 def _elastic(young, poisson):
@@ -263,9 +434,9 @@ def assemble(nodes, hexes, young, poisson, density):
 def solve_modes(nodes, hexes, material='aluminium', want=24):
     """Frequencies in hertz and their shapes, ringing modes only."""
     if isinstance(material, str):
-        young, poisson, density = MATERIALS[material]
+        young, poisson, density = MATERIALS[material][:3]
     else:
-        young, poisson, density = material
+        young, poisson, density = material[:3]
     stiff, mass = assemble(nodes, hexes, young, poisson, density)
     # Shifted below zero because free-free leaves the stiffness
     # singular: six ways to move the thing without straining it.
@@ -285,8 +456,9 @@ def solve_modes(nodes, hexes, material='aluminium', want=24):
 
 def mode_table(profile, length=1.0, sweep_mode='revolve',
                material='aluminium', depth=None, strike=1.0,
-               damping=0.5, count=16, section=None,
-               direction=(0.0, 0.0, 1.0), floor=0.02):
+               damping=1.0, count=16, section=None,
+               direction=(0.0, 0.0, 1.0), floor=0.02, carve='depth',
+               mirror=False):
     """The three columns modal~ wants, worked out from a shape.
 
     `strike` is where along the length it is hit, nought at one end and
@@ -303,14 +475,17 @@ def mode_table(profile, length=1.0, sweep_mode='revolve',
     altogether, and the ratios are counted from the lowest mode that
     survives, since that is the one that will be heard as the pitch.
 
-    `damping` is IMPOSED, not solved. Higher modes really do die away
-    faster, but how much faster depends on the material's own losses, on
-    how the thing is held and on what it radiates -- none of which is in
-    here. So it is a power law with a knob on it: 0 leaves every mode
-    ringing as long as the last, and 1 has a mode an octave up die twice
-    as fast.
+    `damping` is a power law, and 1 is not an arbitrary default: a
+    material with a constant loss factor loses the same FRACTION of a
+    mode's energy every cycle, and a mode an octave up gets through its
+    cycles twice as fast, so its ring is exactly half as long. What is
+    still imposed rather than solved is everything that is not a
+    constant loss factor -- how the thing is held, what it radiates,
+    losses that climb or fall with frequency of their own accord -- so
+    the knob is there. 0 leaves every mode ringing as long as the last.
     """
-    nodes, hexes = sweep(profile, length, sweep_mode, depth, section)
+    nodes, hexes = sweep(profile, length, sweep_mode, depth, section,
+                         carve, mirror)
     freq, shape = solve_modes(nodes, hexes, material, want=count)
     return table_from(nodes, freq, shape, length, strike, damping,
                       direction, floor)

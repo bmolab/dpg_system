@@ -4619,9 +4619,20 @@ class ShapeModesNode(Node):
       extrude   it is a HALF-WIDTH, and the section is that wide by
                 'depth' deep: a bar with a shaped outline, which is what
                 an undercut marimba bar is.
-      mirror    the same, but the outline is half the LENGTH and is
-                reflected end to end, so you draw one end of a symmetric
-                thing and get the whole.
+
+    'mirror' is a checkbox beside them, not a third one of them: it says
+    the outline is only half of one, running from an end to the middle,
+    and reflects it. It happens to the OUTLINE, before either sweep, so
+    it goes with both -- a symmetrically undercut bar, or a vase drawn as
+    one half.
+
+    WHAT WAITS FOR 'compute' AND WHAT DOES NOT. Anything you CLICK
+    re-solves at once -- the sweep, the material, how it is carved -- and
+    so does a profile arriving on the cord. Anything you DRAG waits: the
+    length, the width, the depth and the detail, because a solve takes
+    tens to hundreds of milliseconds and you do not want one on every
+    frame of a drag. The mallet controls are free either way, since they
+    only reweigh modes that are already solved.
 
     'strike' is where along it the mallet lands and 'direction' is which
     way, and both matter as much as the shape. A free-free bar has a
@@ -4631,7 +4642,31 @@ class ShapeModesNode(Node):
     stay live; the outline, the size and the material do, so those wait
     for 'compute'.
 
-    What it does NOT work out is decay. Frequencies follow from geometry
+    MATERIAL AND SIZE BARELY TOUCH THE TABLE, and that is not a fault:
+    every mode's frequency scales as the root of stiffness over density,
+    so a change of material moves them all together and cancels out of a
+    RATIO. Only Poisson's ratio is left, which shifts things by under a
+    percent -- though it can push a mode over or under the floor, so one
+    may appear or vanish. What material and size really change is the
+    PITCH, by a factor of twenty-four across the materials here, and
+    modal~ overrides that with its own 'frequency'. Patch this node's
+    'frequency' outlet into it and they are heard -- and note that is
+    modal~'s 'frequency', not its 'pitch', which is a transposition on
+    top of it and takes octaves.
+
+    The three outlets are named for the inlets they feed, so a solved
+    shape is three straight cords: frequency, decay, modes.
+
+    The 'decay' outlet is how long the MATERIAL says it should ring, at
+    the pitch it came out at -- from the loss factor, which is the one
+    property of a material that survives into the sound, since
+    everything else about it cancels out of a ratio. Patch it into
+    modal~'s 'decay' and steel rings for twenty-seven seconds where wood
+    rings for less than one. Note it is per CYCLE, so a low thing rings
+    longer in seconds even when it is lossier: rubber at 36 Hz outlasts
+    wood at 690.
+
+    What it does NOT work out is the rest of decay. Frequencies follow from geometry
     and elasticity; decay follows from the material's own losses, from
     how the thing is held and from what it radiates, none of which is in
     here. 'damping' is an imposed power law, honestly labelled: 0 leaves
@@ -4653,7 +4688,9 @@ class ShapeModesNode(Node):
         self._shape = modal_shape
         self._solved = None
         self._key = None
-        self._profile = [1.0, 0.98, 0.95, 0.95, 0.98, 1.0]
+        # Flat, so what comes up first is a plain bar with straight
+        # edges. A waist by default looked like the drawing was wrong.
+        self._profile = [1.0, 1.0, 1.0, 1.0]
 
         self.profile_input = self.add_input('profile',
                                             callback=self.profile_received)
@@ -4661,23 +4698,75 @@ class ShapeModesNode(Node):
             'sweep', widget_type='combo', default_value='extrude',
             callback=self.solve_and_send)
         self.sweep_input.widget.combo_items = list(modal_shape.SWEEPS)
+        self.mirror_input = self.add_input(
+            'mirror', widget_type='checkbox', default_value=False,
+            callback=self.solve_and_send)
+        if self.mirror_input.widget is not None:
+            self.mirror_input.widget.set_tooltip(
+                'the outline is only HALF of one, running from an end to '
+                'the middle, and is reflected from there: n half-widths '
+                'become 2n-1 stations and the last one you give sits at '
+                'the centre. A checkbox and not a kind of sweep, because '
+                'it happens to the OUTLINE before the sweep does '
+                'anything -- so it goes with a revolve as well, which a '
+                'third sweep could never have done. Draw half a vase')
+        self.carve_input = self.add_input(
+            'carve', widget_type='combo', default_value='depth',
+            callback=self.solve_and_send)
+        self.carve_input.widget.combo_items = ['depth', 'width']
+        if self.carve_input.widget is not None:
+            self.carve_input.widget.set_tooltip(
+                'which way an extruded outline is taken, and it is not a '
+                'detail: a marimba bar\'s arch is cut into its UNDERSIDE, '
+                'not into its plan. Carving the depth takes the second '
+                'mode 2.69 to 3.95 for the same cut that only reaches '
+                '3.20 across the width, because bending stiffness goes '
+                'as the depth CUBED and only as the width itself. '
+                'Nothing to a revolve, which has one way across')
         self.material_input = self.add_input(
             'material', widget_type='combo', default_value='wood',
             callback=self.solve_and_send)
         self.material_input.widget.combo_items = sorted(
             modal_shape.MATERIALS)
+        if self.material_input.widget is not None:
+            self.material_input.widget.set_tooltip(
+                'what it is made of. It hardly touches the TABLE, and '
+                'cannot: every mode scales as the root of stiffness over '
+                'density, so a change of material moves them all '
+                'together and cancels out of a ratio -- only Poisson\'s '
+                'ratio is left, worth under a percent, though it can '
+                'push a mode over or under the floor so one may appear '
+                'or vanish. What it changes is the PITCH, 36 Hz of '
+                'rubber against 858 of glass for the same bar. Patch '
+                'the "frequency" outlet into modal~\'s frequency inlet '
+                'to hear it -- not into its "pitch", which is a '
+                'transposition on top and takes octaves')
+        # All three in METRES, over four orders of magnitude: a two
+        # millimetre tine to a twenty metre beam. Nothing about the
+        # solve minds -- a bar's ratios do not depend on its size at all
+        # -- and a LONG one is the more accurate of the two, since it is
+        # the more slender and so the closer to the ideal a bar formula
+        # describes. Element shape does not seem to matter much either:
+        # bricks a hundred and eighty times longer than they are thick
+        # still gave the book ratios, because the bending happens along
+        # the length where there are plenty of them.
         self.length_input = self.add_input(
             'length', widget_type='drag_float', default_value=0.4,
-            min=0.01, max=4.0)
+            min=0.002, max=20.0, callback=self.sizes_changed)
         self.width_input = self.add_input(
             'width', widget_type='drag_float', default_value=0.05,
-            min=0.002, max=1.0)
+            min=0.0005, max=5.0, callback=self.sizes_changed)
         self.depth_input = self.add_input(
             'depth', widget_type='drag_float', default_value=0.02,
-            min=0.002, max=1.0)
+            min=0.0005, max=5.0, callback=self.sizes_changed)
+        # Waits for 'compute' like the sizes do, and more than any of
+        # them: it is a DRAG, and it is the one control where dragging
+        # costs more the further you drag. Wired to re-solve it fired
+        # thirty-odd solves on the way from 6 to 40, each slower than
+        # the last.
         self.detail_input = self.add_input(
             'detail', widget_type='drag_int', default_value=16,
-            min=6, max=40, callback=self.solve_and_send)
+            min=6, max=40)
         self.strike_input = self.add_input(
             'strike', widget_type='drag_float', default_value=1.0,
             min=0.0, max=1.0, callback=self.send_table)
@@ -4686,21 +4775,49 @@ class ShapeModesNode(Node):
             callback=self.send_table)
         self.direction_input.widget.combo_items = ['face', 'edge', 'along']
         self.damping_input = self.add_input(
-            'damping', widget_type='drag_float', default_value=0.5,
+            'damping', widget_type='drag_float', default_value=1.0,
             min=0.0, max=2.0, callback=self.send_table)
+        # Capped at what the far end will actually hold. modal~ keeps
+        # the first MAX_MODES rows and drops the rest without a word, so
+        # a knob that goes higher only promises modes that are quietly
+        # thrown away.
         self.count_input = self.add_input(
             'count', widget_type='drag_int', default_value=14,
-            min=2, max=32, callback=self.send_table)
+            min=2, max=ModalUnit.MAX_MODES, callback=self.send_table)
+        self.show_input = self.add_input(
+            'show', widget_type='drag_int', default_value=0, min=0, max=32,
+            callback=self.send_mesh)
+        self.swell_input = self.add_input(
+            'swell', widget_type='drag_float', default_value=1.0,
+            min=0.0, max=4.0, callback=self.send_mesh)
         self.compute_input = self.add_input('compute', widget_type='button',
                                             callback=self.solve_and_send)
         self.report_output = self.add_output('report')
+        # Named for the inlet it feeds, like 'decay' and 'modes' beside
+        # it, so the three cords read themselves. NOT 'pitch': modal~
+        # has both, and they are different -- 'frequency' is where the
+        # first mode sits, in hertz, and 'pitch' is a transposition on
+        # top of it, in octaves. An outlet called pitch carrying hertz
+        # would invite the one cord that does not work.
+        self.frequency_output = self.add_output('frequency')
+        self.decay_output = self.add_output('decay')
         self.modes_output = self.add_output('modes')
+        self.mesh_output = self.add_output('mesh')
         for port, tip in (
                 (self.profile_input,
                  'the outline: half-widths along the length, as a list. '
-                 'They are taken as PROPORTIONS and scaled to "width", so '
+                 'A list of at least two numbers. They are taken as '
+                 'PROPORTIONS and scaled to "width", so '
                  'a flat list is a plain bar and a dip in the middle is '
-                 'an undercut one'),
+                 'an undercut one. On an extrude or a mirror it shapes '
+                 'the WIDTH only and "depth" stays the depth all the way '
+                 'along, which is what an undercut bar is; revolved, it '
+                 'is a radius and there is only one way across. '
+                 '[1, 2, 3] and [10, 20, 30] are the same outline. '
+                 'Spaced evenly, and resampled to "detail" stations '
+                 'however many you send. A nought is pulled up to a '
+                 'hundredth of the widest rather than refused, so a cone '
+                 'or a teardrop can come to a point'),
                 (self.strike_input,
                  'where along it the mallet lands, nought at one end and '
                  'one at the other. It decides what you HEAR: a bar has '
@@ -4713,28 +4830,107 @@ class ShapeModesNode(Node):
                  'ones that bend it sideways or twist it, so this thins '
                  'the table down to what a mallet could actually reach'),
                 (self.damping_input,
-                 'how much faster the upper modes die. IMPOSED, not '
-                 'solved: decay comes from losses, from how the thing is '
-                 'held and from what it radiates, and none of that is '
-                 'modelled. 0 rings them all alike, 1 halves the ring an '
-                 'octave up'),
+                 'how much faster the upper modes die. 1 is not an '
+                 'arbitrary default: a material with a constant loss '
+                 'factor loses the same FRACTION of a mode\'s energy '
+                 'every cycle, and a mode an octave up gets through its '
+                 'cycles twice as fast, so its ring is exactly half as '
+                 'long. What is still imposed is everything that is not '
+                 'a constant loss factor -- how it is held, what it '
+                 'radiates -- so the knob is here. 0 rings them all '
+                 'alike'),
                 (self.detail_input,
                  'how finely it is chopped up. The ratios settle by '
                  'about 16 and cost more above that -- worth raising '
                  'once to see whether the answer moves, and leaving low '
-                 'while you draw'),
+                 'while you draw. Waits for "compute", like the sizes: '
+                 'it is the one control where dragging costs more the '
+                 'further you drag'),
+                (self.count_input,
+                 'how many modes to hand over. It is a cut, not a '
+                 'search: all of them are solved either way, and this '
+                 'trims the list that is SENT -- so it costs nothing to '
+                 'move, and the resonator gets a shorter bank to run. '
+                 'The list is in order of frequency, so this keeps the '
+                 'LOWEST, which are usually also the loudest but need '
+                 'not be. Capped at what modal~ holds; above that it '
+                 'drops the extra rows without saying so'),
+                (self.show_input,
+                 'what the mesh outlet shows: 0 the shape itself, 1 and '
+                 'up that numbered mode, pushed into its own shape. Free '
+                 '-- the modes are already solved, this only moves them'),
+                (self.swell_input,
+                 'how far a mode pushes the shape, against the size of '
+                 'the thing: 1 moves the surface about a tenth of it. '
+                 'Only for looking at -- it is not part of the table'),
                 (self.compute_input,
-                 'solve it. The outline, the size and the material need '
-                 'this; the mallet controls do not')):
+                 'solve it. Everything you DRAG waits for this -- the '
+                 'length, width, depth and detail -- because a solve is '
+                 'tens to hundreds of milliseconds and you do not want '
+                 'one per frame of a drag. Everything you CLICK has '
+                 'already re-solved itself, and the mallet controls '
+                 'never needed to')):
             if port.widget is not None:
                 port.widget.set_tooltip(tip)
+
+    def sizes_changed(self):
+        """Each pixel moves a size by a fraction of ITSELF.
+
+        Four orders of magnitude on a linear drag is unusable at the
+        bottom: a step fine enough to set two millimetres takes all day
+        to reach twenty metres, and one coarse enough for twenty metres
+        cannot find two millimetres at all. Proportional stepping keeps
+        the number honest -- it stays metres -- and the feel even.
+
+        These do not re-solve, and neither does 'detail'. The rule is
+        not geometry versus the rest -- the material and the sweep are
+        clicks and they re-solve at once -- it is DRAGS versus clicks: a
+        solve is too slow to want one on every frame of a drag.
+        """
+        for port in (self.length_input, self.width_input,
+                     self.depth_input):
+            widget = port.widget
+            if widget is None:
+                continue
+            speed = min(0.5, max(0.0002,
+                                 abs(any_to_float(port())) * 0.04))
+            widget.speed = speed
+            if dpg.does_item_exist(widget.uuid):
+                try:
+                    dpg.configure_item(widget.uuid, speed=speed)
+                except Exception:
+                    pass
+
+    def custom_create(self, from_file):
+        self.sizes_changed()
+        # NOT in __init__. The widgets do not exist yet there, so every
+        # combo reads back as an empty string and the material lookup
+        # raises before the node is ever drawn. This runs once they do.
         self.solve_and_send()
 
+    # A half-width may not be nothing -- a station of no width at all is
+    # an element of no volume, and the solve would hand back nonsense --
+    # but a POINT is a shape anyone would want: a cone, a teardrop, a
+    # club. So a thin one is pulled up to this fraction of the widest
+    # rather than the whole outline being refused. A tip a hundredth of
+    # the base solves perfectly well and looks pointed.
+    PROFILE_FLOOR = 0.01
+
     def profile_received(self):
+        """An outline off the cord: a list of at least two numbers.
+
+        Taken as PROPORTIONS, not metres. They are divided by the largest
+        of them and scaled to 'width', so [1, 2, 3] and [10, 20, 30] are
+        the same outline, and how wide the thing really is stays 'width's
+        business. Spaced evenly along the length, and resampled to
+        'detail' stations however many you send.
+        """
         data = self.profile_input()
         if isinstance(data, np.ndarray):
             data = data.tolist()
         if not isinstance(data, (list, tuple)):
+            self.report_output.send(['error', 'an outline is a list of '
+                                     'numbers'])
             return
         values = []
         for item in data:
@@ -4742,54 +4938,117 @@ class ShapeModesNode(Node):
                 values.append(float(item))
             except (TypeError, ValueError):
                 continue
-        if len(values) >= 2 and min(values) > 0.0:
-            self._profile = values
-            self.solve_and_send()
+        if len(values) < 2:
+            self.report_output.send(['error', 'an outline needs at least '
+                                     'two numbers'])
+            return
+        peak = max(values)
+        if peak <= 0.0:
+            self.report_output.send(['error', 'an outline needs something '
+                                     'wider than nothing in it'])
+            return
+        floor = peak * ShapeModesNode.PROFILE_FLOOR
+        pulled = sum(1 for value in values if value < floor)
+        self._profile = [max(value, floor) for value in values]
+        if pulled:
+            self.report_output.send(['outline', len(values), 'pulled up',
+                                     pulled, 'to a hundredth of the '
+                                     'widest'])
+        self.solve_and_send()
+
+    DIRECTIONS = {'face': (0.0, 0.0, 1.0),
+                  'edge': (0.0, 1.0, 0.0),
+                  'along': (1.0, 0.0, 0.0)}
 
     def _direction(self):
-        return {'face': (0.0, 0.0, 1.0),
-                'edge': (0.0, 1.0, 0.0),
-                'along': (1.0, 0.0, 0.0)}.get(
-                    any_to_string(self.direction_input()), (0.0, 0.0, 1.0))
+        return ShapeModesNode.DIRECTIONS.get(
+            self._chosen(self.direction_input, ShapeModesNode.DIRECTIONS,
+                         'face'), (0.0, 0.0, 1.0))
+
+    def _chosen(self, port, allowed, fallback):
+        """A combo's value, or the fallback if it is not one we know.
+
+        A widget that has not been made yet reads back as an empty
+        string, and one typed into by hand can read back as anything at
+        all. Neither should raise from inside a solve.
+        """
+        value = any_to_string(port())
+        return value if value in allowed else fallback
 
     def solve_and_send(self):
         """Mesh it and solve it, unless nothing that matters has moved."""
-        sweep_mode = any_to_string(self.sweep_input())
-        material = any_to_string(self.material_input())
+        sweep_mode = self._chosen(self.sweep_input, self._shape.SWEEPS,
+                                  'extrude')
+        mirror = any_to_bool(self.mirror_input())
+        # A patch written while mirroring was a third KIND of sweep still
+        # means what it meant: take it as an extrude with the box ticked,
+        # and move the controls to match so the face stops lying.
+        if any_to_string(self.sweep_input()) == 'mirror':
+            sweep_mode, mirror = 'extrude', True
+            self.sweep_input.set('extrude')
+            self.mirror_input.set(True)
+        material = self._chosen(self.material_input,
+                                self._shape.MATERIALS, 'wood')
         length = max(0.01, any_to_float(self.length_input()))
         width = max(0.002, any_to_float(self.width_input()))
         depth = max(0.002, any_to_float(self.depth_input()))
         detail = max(6, any_to_int(self.detail_input()))
+        carve = self._chosen(self.carve_input, ('depth', 'width'), 'depth')
         peak = max(self._profile)
         profile = [width * 0.5 * v / peak for v in self._profile]
         # Resampled to the asked-for detail, so how finely it is chopped
         # up is not decided by how many numbers were drawn.
-        want = detail if sweep_mode != 'mirror' else max(3, detail // 2)
+        # Halved before doubling back, so a mirrored shape ends up as
+        # finely chopped as an unmirrored one rather than twice.
+        want = max(3, detail // 2) if mirror else detail
         if len(profile) != want + 1:
             src = np.linspace(0.0, 1.0, len(profile))
             profile = list(np.interp(np.linspace(0.0, 1.0, want + 1),
                                      src, profile))
-        key = (tuple(profile), sweep_mode, material, length, depth, detail)
+        key = (tuple(profile), sweep_mode, material, length, depth, detail,
+               carve, mirror)
         if key != self._key:
             try:
                 nodes, hexes = self._shape.sweep(
                     profile, length, sweep_mode, depth,
                     self._shape.disc_section(2, 2)
                     if sweep_mode == 'revolve'
-                    else self._shape.rect_section(3, 3))
+                    else self._shape.rect_section(3, 3), carve, mirror)
                 freq, shape = self._shape.solve_modes(
                     nodes, hexes, material, want=32)
             except (ValueError, RuntimeError) as err:
                 self.report_output.send(['error', str(err)])
                 return
-            self._solved = (nodes, freq, shape, length)
+            self._solved = (nodes, freq, shape, length, hexes)
             self._key = key
         self.send_table()
+        self.send_mesh()
+
+    def send_mesh(self):
+        """The skin of it, for looking at: bare geometry, no drawing.
+
+        A solver has no business owning a graphics context, and the
+        chain's draw runs on its own thread -- so this only hands over
+        vertices, triangles and normals and lets mgl_mesh do the rest,
+        which keeps everything that touches the GPU on the thread that
+        owns it.
+        """
+        if self._solved is None or getattr(self, 'in_loading_process',
+                                           False):
+            return
+        nodes, freq, shape, length, hexes = self._solved
+        which = any_to_int(self.show_input()) - 1
+        if which >= 0:
+            nodes = self._shape.displaced(
+                nodes, shape, which, any_to_float(self.swell_input()))
+        verts, tris, normals = self._shape.surface(nodes, hexes)
+        self.mesh_output.send({'vertices': verts, 'faces': tris,
+                               'normals': normals})
 
     def send_table(self):
-        if self._solved is None:
+        if self._solved is None or getattr(self, 'in_loading_process', False):
             return
-        nodes, freq, shape, length = self._solved
+        nodes, freq, shape, length = self._solved[:4]
         table = self._shape.table_from(
             nodes, freq, shape, length,
             strike=min(1.0, max(0.0, any_to_float(self.strike_input()))),
@@ -4802,6 +5061,22 @@ class ShapeModesNode(Node):
             return
         self.report_output.send(['modes', len(table), 'lowest',
                                  round(float(freq[0]), 2), 'Hz'])
+        # The pitch it worked out, so the material and the size can be
+        # HEARD. They barely touch the table: every mode scales as the
+        # root of stiffness over density together, so that cancels out
+        # of a ratio and only Poisson's ratio is left, which moves things
+        # by under a percent. What they do move is the PITCH -- 36 Hz of
+        # rubber against 858 of glass for the same bar -- and modal~
+        # overrides that with its own 'frequency' unless this is wired
+        # to it.
+        self.frequency_output.send(float(freq[0]))
+        # And how long the material says it should ring, at the pitch it
+        # actually came out at. This is where a material's own character
+        # survives into the sound: everything else about it cancels out
+        # of a ratio, and this does not.
+        self.decay_output.send(self._shape.ring_time(
+            self._chosen(self.material_input, self._shape.MATERIALS,
+                         'wood'), float(freq[0])))
         self.modes_output.send(table)
 
 
