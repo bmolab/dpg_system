@@ -4620,6 +4620,12 @@ class ShapeModesNode(Node):
                 'depth' deep: a bar with a shaped outline, which is what
                 an undercut marimba bar is.
 
+    'wall' hollows whichever of them you chose: a tube, a pipe, a thick
+    bowl, a mortar. It reaches down to a wall a sixth of the radius and
+    no further, which is where solid bricks stop being honest -- a bell
+    or a wine glass has walls of one or two percent, and those want a
+    shell element rather than more mesh.
+
     'mirror' is a checkbox beside them, not a third one of them: it says
     the outline is only half of one, running from an end to the middle,
     and reflects it. It happens to the OUTLINE, before either sweep, so
@@ -4764,6 +4770,21 @@ class ShapeModesNode(Node):
         # costs more the further you drag. Wired to re-solve it fired
         # thirty-odd solves on the way from 6 to 40, each slower than
         # the last.
+        self.wall_input = self.add_input(
+            'wall', widget_type='drag_float', default_value=1.0,
+            min=0.15, max=1.0, callback=self.solve_and_send)
+        if self.wall_input.widget is not None:
+            self.wall_input.widget.set_tooltip(
+                'hollows it, as a fraction of the way in from the '
+                'outside: 1 is solid, 0.4 leaves a wall four tenths of '
+                'the radius. A tube, a pipe, a thick bowl, a mortar. It '
+                'stops at 0.15 on purpose -- bricks hold to about a '
+                'fifth, where bending is still within three percent of a '
+                'bar\'s and the ovalling modes a tube has turn up where '
+                'they should, but a tenth already puts a spurious mode '
+                'just above the fundamental. A bell or a wine glass is '
+                'one or two percent and wants a shell element, which is '
+                'a different job and not done')
         self.detail_input = self.add_input(
             'detail', widget_type='drag_int', default_value=16,
             min=6, max=40)
@@ -4994,6 +5015,7 @@ class ShapeModesNode(Node):
         depth = max(0.002, any_to_float(self.depth_input()))
         detail = max(6, any_to_int(self.detail_input()))
         carve = self._chosen(self.carve_input, ('depth', 'width'), 'depth')
+        wall = min(1.0, max(0.15, any_to_float(self.wall_input())))
         peak = max(self._profile)
         profile = [width * 0.5 * v / peak for v in self._profile]
         # Resampled to the asked-for detail, so how finely it is chopped
@@ -5006,14 +5028,15 @@ class ShapeModesNode(Node):
             profile = list(np.interp(np.linspace(0.0, 1.0, want + 1),
                                      src, profile))
         key = (tuple(profile), sweep_mode, material, length, depth, detail,
-               carve, mirror)
+               carve, mirror, wall)
         if key != self._key:
             try:
+                # No section handed over: sweep picks a solid one or a
+                # hollow one from 'wall', and its defaults are the ones
+                # this used to name.
                 nodes, hexes = self._shape.sweep(
-                    profile, length, sweep_mode, depth,
-                    self._shape.disc_section(2, 2)
-                    if sweep_mode == 'revolve'
-                    else self._shape.rect_section(3, 3), carve, mirror)
+                    profile, length, sweep_mode, depth, None, carve,
+                    mirror, wall)
                 freq, shape = self._shape.solve_modes(
                     nodes, hexes, material, want=32)
             except (ValueError, RuntimeError) as err:

@@ -174,8 +174,52 @@ def disc_section(core=2, rings=2):
     return np.array(pts), np.array(quads)
 
 
+def _loop_ring(loop, wall, through):
+    """Quads filling between a closed loop and a shrunken copy of it.
+
+    Which is all a hollow section is, whatever shape the outside is: a
+    circle gives a tube, a square gives a box with a hole down it. The
+    inner boundary is the outer one scaled about the middle, so the wall
+    is an even thickness in proportion rather than an even distance --
+    right for a turned or moulded thing, which is what these are.
+    """
+    loop = np.asarray(loop, dtype=float)
+    inner = loop * max(0.0, 1.0 - wall)
+    pts, rings = [], []
+    for k in range(through + 1):
+        t = k / through
+        here = inner + (loop - inner) * t
+        rings.append(list(range(len(pts), len(pts) + len(loop))))
+        pts.extend(tuple(point) for point in here)
+    quads = []
+    for k in range(through):
+        low, high = rings[k], rings[k + 1]
+        for a in range(len(loop)):
+            b = (a + 1) % len(loop)
+            # Outward first, then round, as in disc_section: the other
+            # way about is left-handed and every brick comes out inside
+            # out.
+            quads.append([low[a], high[a], low[b], high[b]])
+    return np.array(pts), np.array(quads)
+
+
+def tube_section(wall=0.4, around=16, through=2):
+    """A round hollow section, on the unit disc."""
+    loop = [(math.cos(2.0 * math.pi * a / around),
+             math.sin(2.0 * math.pi * a / around)) for a in range(around)]
+    return _loop_ring(loop, wall, through)
+
+
+def box_tube_section(wall=0.4, per_side=4, through=2):
+    """A square hollow section, on the unit square."""
+    steps = np.linspace(-1.0, 1.0, per_side + 1)[:-1]
+    loop = ([(x, -1.0) for x in steps] + [(1.0, y) for y in steps]
+            + [(-x, 1.0) for x in steps] + [(-1.0, -y) for y in steps])
+    return _loop_ring(loop, wall, through)
+
+
 def sweep(profile, length, sweep_mode='revolve', depth=None,
-          section=None, carve='depth', mirror=False):
+          section=None, carve='depth', mirror=False, wall=1.0):
     """Sweep an outline into a solid, as a regular grid of bricks.
 
     `profile` is a list of half-widths, evenly spaced along the length.
@@ -186,6 +230,15 @@ def sweep(profile, length, sweep_mode='revolve', depth=None,
       'extrude'  it is a half-width, and the section is that wide by
                  `depth` deep -- a bar with a shaped outline, which is
                  what an undercut marimba bar is.
+    `wall` hollows it, as a fraction of the way in from the outside: 1
+    is solid, 0.4 leaves a wall four tenths of the radius. Bricks hold up
+    to about a fifth -- bending comes out within three percent of a
+    bar's, and the ovalling modes a tube has and a bar does not turn up
+    where they should. Below a fifth they start to go: a tenth already
+    puts a spurious mode three percent above the fundamental. A bell or a
+    wine glass is one or two percent and wants a shell element, which is
+    its own job.
+
     `mirror` says the outline is only HALF of one, running from an end
     to the middle, and reflects it: n half-widths become 2n-1 stations
     and the last one given sits at the centre. It happens to the outline
@@ -211,8 +264,12 @@ def sweep(profile, length, sweep_mode='revolve', depth=None,
         # station there that nobody asked for.
         prof = np.concatenate([prof, prof[-2::-1]])
     if section is None:
-        section = (disc_section() if sweep_mode == 'revolve'
-                   else rect_section())
+        if wall >= 0.999:
+            section = (disc_section() if sweep_mode == 'revolve'
+                       else rect_section())
+        else:
+            section = (tube_section(wall) if sweep_mode == 'revolve'
+                       else box_tube_section(wall))
     pts2d, quads = section
     if depth is None:
         depth = 2.0 * float(prof.max())
@@ -458,7 +515,7 @@ def mode_table(profile, length=1.0, sweep_mode='revolve',
                material='aluminium', depth=None, strike=1.0,
                damping=1.0, count=16, section=None,
                direction=(0.0, 0.0, 1.0), floor=0.02, carve='depth',
-               mirror=False):
+               mirror=False, wall=1.0):
     """The three columns modal~ wants, worked out from a shape.
 
     `strike` is where along the length it is hit, nought at one end and
@@ -485,7 +542,7 @@ def mode_table(profile, length=1.0, sweep_mode='revolve',
     the knob is there. 0 leaves every mode ringing as long as the last.
     """
     nodes, hexes = sweep(profile, length, sweep_mode, depth, section,
-                         carve, mirror)
+                         carve, mirror, wall)
     freq, shape = solve_modes(nodes, hexes, material, want=count)
     return table_from(nodes, freq, shape, length, strike, damping,
                       direction, floor)

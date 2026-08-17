@@ -2711,6 +2711,86 @@ check('and n half-widths make 2n-1 stations, not 2n',
       f'given sitting at the centre')
 
 
+# 'wall' hollows a shape, and a hollow one still has to BEND like a bar,
+# since bending ratios do not care what the section looks like. Told
+# apart by shape, not by degeneracy: a tube has OVALLING modes that a
+# solid bar has not, they come in degenerate pairs exactly as bending
+# does, and a pair-counter cannot tell the two apart -- which is how I
+# first read a perfectly good thin wall as garbage.
+def _bend_only(nodes, freq, shape):
+    """Modes where a whole section moves together, not ones that squash
+    it."""
+    along = nodes[:, 0]
+    at = np.flatnonzero(np.abs(along - along.max()) < 1e-9)
+    found = []
+    for i in range(shape.shape[1]):
+        move = shape[:, i].reshape(-1, 3)[at][:, 1:]
+        travel = float(np.linalg.norm(move.mean(axis=0)))
+        squash = float(np.linalg.norm(move - move.mean(axis=0),
+                                      axis=1).mean())
+        if travel > squash:
+            found.append(float(freq[i]))
+    kept = []
+    for value in found:
+        if not kept or value > 1.02 * kept[-1]:
+            kept.append(value)
+    return kept
+
+
+def _hollow_ratios(wall, mode='revolve'):
+    nodes, hexes = msh.sweep([0.025] * 17, 1.0, mode, 0.05, None,
+                             wall=wall)
+    freq, shape = msh.solve_modes(nodes, hexes, 'steel', want=24)
+    kept = _bend_only(nodes, freq, shape)
+    return [x / kept[0] for x in kept[:3]] if len(kept) >= 3 else []
+
+
+_hw = {w: _hollow_ratios(w) for w in (1.0, 0.6, 0.4, 0.25)}
+check('a hollow shape still bends like a bar, down to a thick wall',
+      all(len(r) == 3 and abs(r[1] - BAR_BOOK[1]) < 0.05 * BAR_BOOK[1]
+          for r in _hw.values()),
+      'second ratio '
+      + ' / '.join(f'{r[1]:.3f}' for r in _hw.values())
+      + ' for walls 1.0 / 0.6 / 0.4 / 0.25 of the radius, against the '
+      + f'book\'s {BAR_BOOK[1]:.3f}')
+_hw_sq = {w: _hollow_ratios(w, 'extrude') for w in (1.0, 0.4)}
+check('and a square hollow section does too',
+      all(len(r) == 3 and abs(r[1] - BAR_BOOK[1]) < 0.05 * BAR_BOOK[1]
+          for r in _hw_sq.values()),
+      'a box with a hole down it: '
+      + ' / '.join(f'{r[1]:.3f}' for r in _hw_sq.values())
+      + ' solid and at a wall of 0.4')
+
+# And the skin of one has a BORE: corners facing inward, at the inner
+# radius rather than the outer. A solid one has none at all.
+def _facing(wall):
+    nodes, hexes = msh.sweep([0.025] * 9, 0.4, 'revolve', None, None,
+                             wall=wall)
+    verts, tris, normals = msh.surface(nodes, hexes)
+    along = verts[:, 0]
+    middle = ((along > along.min() + 0.05) & (along < along.max() - 0.05))
+    radial = np.zeros_like(verts)
+    radial[:, 1:] = verts[:, 1:]
+    lengths = np.linalg.norm(radial, axis=1)
+    lengths[lengths < 1e-12] = 1.0
+    facing = np.einsum('ij,ij->i', normals, radial / lengths[:, None])
+    radius = np.hypot(verts[:, 1], verts[:, 2])
+    outward = middle & (facing > 0.9)
+    inward = middle & (facing < -0.9)
+    return (int(outward.sum()), int(inward.sum()),
+            float(radius[inward].mean()) if inward.any() else 0.0)
+
+
+_sk_solid = _facing(1.0)
+_sk_tube = _facing(0.4)
+check('and the skin of a hollow one has a bore to look down',
+      _sk_solid[1] == 0 and _sk_tube[1] > 0
+      and abs(_sk_tube[2] - 0.015) < 0.001,
+      f'solid: {_sk_solid[0]} corners facing out and {_sk_solid[1]} in. '
+      f'Hollowed to 0.4: {_sk_tube[0]} out and {_sk_tube[1]} in, at a '
+      f'radius of {_sk_tube[2]:.4f} -- the bore, not the outside')
+
+
 # The SKIN of a solved mesh, for looking at. An inside face is shared by
 # the two bricks either side of it and an outside one is not, so counting
 # how often each face appears finds the skin without any geometry at all.
