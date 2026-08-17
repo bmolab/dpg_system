@@ -8463,9 +8463,10 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                           sizes, spring, spin_phase, scatter, tumble,
                           held, support, touching, release,
                           restitution, grip, texture, texture_drag,
-                          asperity, asperity_rough, skin, tilt,
+                          asperity, asperity_rough, skin, tilt, jitter,
+                          tip, wall_rough,
                           hold_rough,
-                          grav, box,
+                          grav, box, tube,
                           speed_cap,
                           rest_speed, rest_steps, slide_gain,
                           decim, dt, knock_gain, scrape_gain,
@@ -8698,6 +8699,38 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                         nx /= nl
                         ny /= nl
                         nz /= nl
+                elif tube > 0.5:
+                    # Curved round the barrel, flat at the two ends: a
+                    # rainstick, a tube shaker, a tin. Things glance
+                    # off the side the way they do in a sphere and are
+                    # taken head on by the caps the way they are in a
+                    # box, so which of the two you get depends on which
+                    # way it is shaken -- and at the rim, both at once.
+                    qr = half_x - grain_p
+                    qc = half_z - grain_p
+                    rxy = math.sqrt(rx * rx + ry * ry)
+                    if rxy > qr - skin * qr and rxy > 1.0e-12:
+                        nx = rx / rxy
+                        ny = ry / rxy
+                        if rxy > qr:
+                            rx = nx * qr
+                            ry = ny * qr
+                        touch = 1.0
+                    if rz > qc - skin * qc:
+                        if rz > qc:
+                            rz = qc
+                        nz = 1.0
+                        touch = 1.0
+                    elif rz < skin * qc - qc:
+                        if rz < -qc:
+                            rz = -qc
+                        nz = -1.0
+                        touch = 1.0
+                    if touch > 0.5:
+                        nl = math.sqrt(nx * nx + ny * ny + nz * nz)
+                        nx /= nl
+                        ny /= nl
+                        nz /= nl
                 else:
                     qx = (half_x - grain_p)
                     qy = (half_y - grain_p)
@@ -8712,36 +8745,6 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                             rx /= d
                             ry /= d
                             rz /= d
-                        # The surface's own normal, which on an egg is
-                        # not the way out from the middle.
-                        nx = rx / (qx * qx)
-                        ny = ry / (qy * qy)
-                        nz = rz / (qz * qz)
-                        nl = math.sqrt(nx * nx + ny * ny + nz * nz)
-                        if nl > 1.0e-12:
-                            nx /= nl
-                            ny /= nl
-                            nz /= nl
-                            touch = 1.0
-
-                if touch > 0.5:
-                        nl = math.sqrt(nx * nx + ny * ny + nz * nz)
-                        nx /= nl
-                        ny /= nl
-                        nz /= nl
-                else:
-                    qx = (half_x - grain_p)
-                    qy = (half_y - grain_p)
-                    qz = (half_z - grain_p)
-                    ux = rx / qx
-                    uy = ry / qy
-                    uz = rz / qz
-                    d2 = ux * ux + uy * uy + uz * uz
-                    if d2 > 1.0:
-                        d = math.sqrt(d2)
-                        rx /= d
-                        ry /= d
-                        rz /= d
                         # The surface's own normal, which on an egg is
                         # not the way out from the middle.
                         nx = rx / (qx * qx)
@@ -8775,9 +8778,49 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                         # ARRIVING. A blow, and it is no longer held.
                         held[p] = 0.0
                         hit_k = vn
+                        # How bouncy this one is, AND how bouncy this
+                        # particular landing is. The first is fixed:
+                        # some grains are springier than others. The
+                        # second is not, and it was missing -- an
+                        # irregular thing presents a different face
+                        # every time it lands, its contact sits off to
+                        # one side of its middle, and how much of the
+                        # blow goes into turning it rather than lifting
+                        # it changes with each one. Fixed per grain, a
+                        # grain always bounced the same height, so a
+                        # handful driven along one axis onto a flat
+                        # wall stayed in step for ever.
+                        #
+                        # Centred on one, so it neither adds energy nor
+                        # removes it. The direction scatter below can
+                        # only ever REMOVE lift -- the normal part of a
+                        # tilted unit vector is its cosine, never more
+                        # than one -- so it cannot do this job, and
+                        # turning it up made the marching worse rather
+                        # than better.
                         rest_p = restitution * spring[p]
+                        if scatter > 0.0:
+                            # ADDED, not just multiplied. An irregular
+                            # thing landing on a corner does not stop
+                            # dead even if the stuff it is made of has
+                            # no spring in it at all: it tips, and what
+                            # was travel becomes turning and comes back
+                            # out again. Being irregular gives it a
+                            # bounce of its own, on top of whatever the
+                            # material has. Multiplied only, this was
+                            # zero times something at 'bounce' 0, so it
+                            # did nothing there -- which left raising
+                            # 'bounce' as the only way to break a
+                            # handful out of step, and that is a
+                            # different lever with its own sound.
+                            rng, rj = _rand01(rng)
+                            rest_p = (rest_p * (1.0 + scatter * jitter
+                                                * (2.0 * rj - 1.0))
+                                      + scatter * tip * rj)
                         if rest_p > 0.95:
                             rest_p = 0.95
+                        if rest_p < 0.0:
+                            rest_p = 0.0
                         kk = (1.0 + rest_p) * vn
                         # Struck off-centre, an irregular thing comes
                         # off at a tilt -- but it is the IMPULSE that
@@ -8894,8 +8937,16 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                                 # was left of the load. An ARRIVAL is
                                 # different -- it is one transient and
                                 # it keeps its own place.
+                                # Through the height of a BUMP OF THE
+                                # WALL, which belongs to the wall and
+                                # not to whatever is riding over it.
+                                # Taken as a fraction of the grain, a
+                                # point-sized grain fell through
+                                # nothing at all and 'texture' went
+                                # silent.
                                 tick = release * math.sqrt(
-                                    2.0 * press * texture * grain_p)
+                                    2.0 * press * texture
+                                    * half_x * wall_rough)
                                 tick_pow += tick * tick
                             else:
                                 vx = 0.0
@@ -8946,7 +8997,23 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                                 # decimation 4 / 8 / 16, a root two per
                                 # doubling, so how finely it was
                                 # integrated set how loud it rubbed.
-                                hit_s = (mu * press * slide_gain
+                                # Force times SPEED. What a rub
+                                # radiates is a share of the work
+                                # friction is doing, and that work is
+                                # the force times how fast it is being
+                                # dragged -- so the amplitude goes as
+                                # the root of the two together. Taken
+                                # from the force alone, a thing pressed
+                                # hard against a wall and barely
+                                # creeping rasped exactly as loudly as
+                                # one skating across it, so the noise
+                                # followed how hard it was PRESSED
+                                # instead of how fast it was MOVING.
+                                # Shaken, the press swings with the
+                                # gesture and the sound wheezes with
+                                # it, in and out, like a pump.
+                                hit_s = (math.sqrt(mu * press * ts)
+                                         * slide_gain
                                          * (1.0 + tumble
                                             * math.sin(spin_phase[p])))
                                 f_ = take / ts
@@ -8956,8 +9023,34 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                     else:
                         # Pulled clean off the wall -- whatever was
                         # holding it is not holding it any more.
+                        #
+                        # And it leaves off a BUMP. A rough wall is not
+                        # a plane: a thing resting on it sits on a
+                        # slope, so when the wall drives it away it
+                        # goes along the local normal and not the mean
+                        # one, a little faster or a little slower than
+                        # its neighbour. Without that, a handful driven
+                        # along one axis onto a flat wall is EXACTLY in
+                        # step and stays there: they leave together
+                        # with the wall's own speed, fall in a field
+                        # that is the same everywhere, and land dead.
+                        # Different sizes cannot part them, because a
+                        # thing that starts higher also lands higher
+                        # and the fall cancels; and with no bounce
+                        # nothing about the landing survives it. This
+                        # is the one thing that can, and it is the
+                        # wall's roughness that does it. Symmetric, so
+                        # it neither adds energy nor takes any.
                         held[p] = 0.0
                         touching[p] = 0.0
+                        if texture > 0.0 and scatter > 0.0:
+                            rng, rb = _rand01(rng)
+                            kick = (math.sqrt(2.0 * grav * half_x
+                                              * wall_rough * texture)
+                                    * scatter * (2.0 * rb - 1.0))
+                            vx += kick * nx
+                            vy += kick * ny
+                            vz += kick * nz
                 else:
                     held[p] = 0.0
                     touching[p] = 0.0
@@ -9116,21 +9209,34 @@ def _rattle_kernel_source(ax, ay, az, wx, wy, wz, pos, vel,
                     sw = 2
                 if sw > ring_n - 1:
                     sw = ring_n - 1
-                rng, u01 = _rand01(rng)
-                at = head + int(u01 * decim)
-                if at >= ring_n:
-                    at -= ring_n
-                rng, sgn = _rand01(rng)
-                spv = scrape_gain * math.sqrt(dt * rub_pow / sw)
-                if sgn < 0.5:
-                    spv = -spv
-                for q in range(sw):
-                    shape = 0.5 * (1.0 - math.cos(two_pi * (q + 0.5)
-                                                  / sw))
-                    ring_scrape[at] += spv * shape
-                    at += 1
+                # Enough of them to FILL the step. Asperities go by far
+                # faster than this is stepped, and one bump per step is
+                # only a fair account of that while the bump is as wide
+                # as the step. Once it is shorter -- and at the top of
+                # hardness it is two samples against eight -- the sound
+                # is only there a quarter of the time, and a gappy
+                # noise is a spiky one: the crest ran up to 9 where
+                # noise should sit near 4.
+                reps = int(decim / sw)
+                if reps < 1:
+                    reps = 1
+                spv = scrape_gain * math.sqrt(dt * rub_pow / (sw * reps))
+                for _r in range(reps):
+                    rng, u01 = _rand01(rng)
+                    at = head + int(u01 * decim)
                     if at >= ring_n:
-                        at = 0
+                        at -= ring_n
+                    rng, sgn = _rand01(rng)
+                    amp = spv
+                    if sgn < 0.5:
+                        amp = -amp
+                    for q in range(sw):
+                        shape = 0.5 * (1.0 - math.cos(two_pi
+                                                      * (q + 0.5) / sw))
+                        ring_scrape[at] += amp * shape
+                        at += 1
+                        if at >= ring_n:
+                            at = 0
         steps -= 1
         k = ring_knock[head]
         sc = ring_scrape[head]
@@ -9205,8 +9311,8 @@ class RattleUnit(Unit):
     DENSITY_LAW = 0.5
     DENSITY_REF = 1.097
     KNOCK_GAIN = 30.6
-    SCRAPE_GAIN = 0.168
-    SHAPES = ('sphere', 'box', 'egg')
+    SCRAPE_GAIN = 0.449
+    SHAPES = ('sphere', 'box', 'egg', 'tube')
     # How much longer an egg is than it is wide.
     EGG = 1.7
     CONTROL_DECIM = 8
@@ -9247,8 +9353,17 @@ class RattleUnit(Unit):
     # plain one.
     SIZE_SPREAD = 0.18
     SIZE_FLOOR = 0.06
-    # How much the springiness varies from one to the next.
-    SPRING_SPREAD = 0.4
+    # How much the springiness varies from one to the next. Wide,
+    # because this is the only thing that breaks a handful out of
+    # LOCKSTEP when the gesture is along one axis and the wall it
+    # lands on is flat. Nothing else can: with no collisions between
+    # them, grains alike in bounciness sitting on a flat cap all leave
+    # and land together, and 128 of them arrive inside a fifth of a
+    # millisecond -- one enormous thud a cycle instead of a rattle.
+    # Spread this and they arrive over 19 ms instead, with the level
+    # unmoved. Real grains differ in how they bounce far more than a
+    # tenth, which is what this used to allow.
+    SPRING_SPREAD = 1.0
     # How far the rebound is allowed to tilt. Small on purpose: a big
     # tilt DISPERSES rather than decorrelates -- things get flung right
     # across the middle, fly a long way between contacts, and the
@@ -9257,6 +9372,14 @@ class RattleUnit(Unit):
     # 110 -> 70 a second and made it lumpier; a quarter of one takes
     # it UP 110 -> 132 and makes it smoother, with the level unmoved.
     SCATTER_TILT = 0.2
+    # How much a single landing's bounciness varies from the
+    # grain's own, since which face it lands on changes.
+    BOUNCE_JITTER = 1.6
+    # How much bounce being irregular gives a thing all by
+    # itself, whatever the material it is made of does.
+    TIP = 0.2
+    # How high a bump of the wall stands, against the shell.
+    WALL_ROUGH = 0.15
     # How much of the roughness's RESISTANCE also shows up in what
     # holds a thing up. Roughness resists in full -- that is what makes
     # it rasp with no friction at all -- but carrying that straight
@@ -9323,6 +9446,10 @@ class RattleUnit(Unit):
         # instead of underneath everything.
         self.hardness_in = self.new_inlet(base=0.4, minimum=0.0,
                                           maximum=1.0)
+        # How long it is against how wide, along z. 1 is a ball or a
+        # cube; below that a slab, above it a tube.
+        self.aspect_in = self.new_inlet(base=1.0, minimum=0.2,
+                                        maximum=5.0)
         self.gravity_in = self.new_inlet(base=9.80665, minimum=0.0,
                                          maximum=40.0)
         # How unalike the things in there are, and how irregular. At 0
@@ -9526,10 +9653,21 @@ class RattleUnit(Unit):
         grip = self._friction_live
         texture = scalar(self.texture_in, 0.0, 1.0)
         bounce = self._bounce_live
-        half_x = half_y = half_z = size
+        # Stretched or squashed along z, which is the only axis the
+        # egg already used. One number spans a flat slab through a cube
+        # or ball to a long tube, and since the shape is only a
+        # boundary test it costs nothing at all. What it changes is
+        # real: in a long one things travel the length and pile at
+        # whichever end is down, in a flat one they are pinned between
+        # two close walls and rattle far more often. Turn it on its
+        # side with 'turn' if you want the length horizontal.
+        stretch = scalar(self.aspect_in, 0.2, 5.0)
+        half_x = half_y = size
+        half_z = size * stretch
         if self.shape == 2:
-            half_z = size * RattleUnit.EGG
+            half_z *= RattleUnit.EGG
         box = 1.0 if self.shape == 1 else 0.0
+        tube = 1.0 if self.shape == 3 else 0.0
         # HARDER at the top than the mallet range the rest of the rack
         # uses, and it has to be: nothing here is a mallet. Contact time
         # falls with mass, and a light bead on a stiff plastic shell
@@ -9587,8 +9725,10 @@ class RattleUnit(Unit):
             RattleUnit.TEXTURE_DRAG, RattleUnit.ASPERITY,
             RattleUnit.ASPERITY_ROUGH,
             RattleUnit.CONTACT_SKIN, RattleUnit.SCATTER_TILT,
+            RattleUnit.BOUNCE_JITTER, RattleUnit.TIP,
+            RattleUnit.WALL_ROUGH,
             RattleUnit.HOLD_ROUGH,
-            grav, box,
+            grav, box, tube,
             RattleUnit.SPEED_CAP,
             RattleUnit.REST_SPEED, RattleUnit.REST_STEPS,
             RattleUnit.SLIDE_GAIN,

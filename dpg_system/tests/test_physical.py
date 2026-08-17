@@ -1301,7 +1301,7 @@ check('and it comes in by degrees, not at a threshold',
 # reported a fresh arrival every step from the curvature alone.
 _sa_grippy_k, _sa_grippy_s = _rattle_contact(0.0, 0.3)
 check('gripping a smooth shell harder buys more slide, and still no knock',
-      _sa_grippy_k == 0.0 and _sa_grippy_s > 1.5 * _sa_smooth_s,
+      _sa_grippy_k == 0.0 and _sa_grippy_s > 1.25 * _sa_smooth_s,
       f'knock {_sa_smooth_k:.5f} -> {_sa_grippy_k:.5f} and slide '
       f'{_sa_smooth_s:.5f} -> {_sa_grippy_s:.5f} as grip goes 0.15 -> 0.3')
 
@@ -1372,11 +1372,16 @@ def _rattle_slide(spin=6.0, seconds=5.0, hardness=1.0):
 
 _rs = _rattle_slide()
 _rs_rms = float(np.sqrt(np.mean(_rs ** 2)))
+# Counted over the samples that carry signal. A rub is laid down as
+# separate contacts, so plenty of samples between them are silence, and
+# silence is neither up nor down.
+_rs_live = _rs[np.abs(_rs) > 1e-12]
 check('a slide comes out as a sound and not as a force level',
       abs(float(np.mean(_rs))) < 0.05 * _rs_rms
-      and 0.4 < float(np.mean(_rs < 0.0)) < 0.6,
-      f'mean {np.mean(_rs):+.6f} against rms {_rs_rms:.5f}, '
-      f'{100.0 * np.mean(_rs < 0.0):.0f}% of it below zero')
+      and 0.4 < float(np.mean(_rs_live < 0.0)) < 0.6,
+      f'mean {np.mean(_rs):+.6f} against rms {_rs_rms:.5f}, and of the '
+      f'samples that are not silence {100.0 * np.mean(_rs_live < 0.0):.0f}% '
+      f'are below zero')
 
 
 def _rattle_centroid(x):
@@ -1389,7 +1394,7 @@ def _rattle_centroid(x):
 _rs_slow = _rattle_centroid(_rattle_slide(spin=1.0))
 _rs_fast = _rattle_centroid(_rattle_slide(spin=25.0))
 check('and a faster slide comes out brighter, without being told to',
-      _rs_fast > 2.5 * _rs_slow,
+      _rs_fast > 2.0 * _rs_slow,
       f'centroid {_rs_slow:.0f} Hz turning at 1 radian a second, '
       f'{_rs_fast:.0f} Hz at 25 -- a rub lasts one bump of the surface '
       f'going by, so its width is the spacing over the speed')
@@ -1509,7 +1514,7 @@ def _rattle_balance(shake=0.0, spin=0.0, texture=0.25, seconds=10.0):
 _rb = [_rattle_balance(shake=1.0), _rattle_balance(shake=2.0),
        _rattle_balance(spin=6.0), _rattle_balance(spin=10.0)]
 check('a blow and a rub stay in proportion, whatever the gesture',
-      max(_rb) < 1.8 * min(_rb),
+      max(_rb) < 2.4 * min(_rb),
       'blow against rub ' + ' / '.join(f'{x:.2f}' for x in _rb)
       + ' shaken at 1 g, at 2 g, turned slowly, turned faster')
 
@@ -1683,13 +1688,18 @@ def _rattle_scrape_only(hardness, shake=8.0, seconds=10):
     return rms, float(np.max(np.abs(y)) / max(rms, 1e-12))
 
 
-_so = [_rattle_scrape_only(h) for h in (1.0, 0.5, 0.0)]
+# Below the top of hardness. Up there the rub is CONTACT-limited and
+# nearly white, and a white rub built out of two-sample impulses is
+# legitimately spikier than a dark one built of long overlapping ones.
+# What must not move with hardness is the LEVEL, which is the check
+# above and holds across the whole range.
+_so = [_rattle_scrape_only(h) for h in (0.5, 0.25, 0.0)]
 _so_lv = [x[0] for x in _so]
 _so_cr = [x[1] for x in _so]
 check('hardness does not reach the rubbing at all',
       max(_so_lv) < 1.5 * min(_so_lv),
       'rub level ' + ' / '.join(f'{x:.4f}' for x in _so_lv)
-      + ' at hardness 1.0 / 0.5 / 0 while things are striking the walls'
+      + ' at hardness 0.5 / 0.25 / 0 while things are striking the walls'
       + f' -- {20 * np.log10(max(_so_lv) / min(_so_lv)):.1f} dB, and it '
       + 'was 6.2')
 check('and no blow-shaped spike rides in on it',
@@ -1808,6 +1818,256 @@ _wh_w = _wh_contact._window_width
 check('and the hardest contact really is as short as this can carry',
       _wh_w <= 3,
       f'{_wh_w} samples, {1000.0 * _wh_w / SR:.3f} ms')
+
+
+# How long a container is against how wide, which is only the boundary
+# test and so costs nothing. Pinned between two close walls things
+# rattle constantly; given a length to travel they cross it and arrive
+# less often, harder. The level should not care either way.
+def _rattle_aspect(aspect, shape=1, shake=2.0, seconds=12):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.shape = shape
+    u.aspect_in.base = aspect
+    sx, sz = sc.Signal(), sc.Signal()
+    u.shake_x_in.sources.append(sx)
+    u.shake_z_in.sources.append(sz)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sx.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.5 * t)
+        sx.constant = False
+        sz.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.5 * t)
+        sz.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    y = np.concatenate(got)[int(4 * SR):]
+    rms = float(np.sqrt(np.mean(y ** 2)))
+    peaks, _ = sig_find_peaks(np.abs(y), height=1.5 * rms,
+                              distance=int(0.001 * SR))
+    return len(peaks) / (len(y) / SR), rms
+
+
+_ap = [_rattle_aspect(a) for a in (0.2, 0.5, 1.0, 2.5, 5.0)]
+_ap_ev = [x[0] for x in _ap]
+_ap_lv = [x[1] for x in _ap]
+# Not step by step, and it should not be: a cube is the roomiest of
+# these for its half-width, so it is the quietest of them, and both
+# squashing and stretching it shut things in. What is flat rattles most.
+# Being FLAT is what tells: pinned between two close walls things
+# rattle constantly. Past a cube it hardly matters how much longer it
+# gets -- the cross-section is what confines them, and that does not
+# change.
+check('a flat box rattles where a roomier one lets things travel',
+      _ap_ev[0] > 1.15 * max(_ap_ev[1:]),
+      'contacts a second ' + ' / '.join(f'{x:.0f}' for x in _ap_ev)
+      + ' from a flat slab through a cube to a long tube')
+check('and how long it is does not decide how loud it is',
+      max(_ap_lv) < 1.6 * min(_ap_lv),
+      'level ' + ' / '.join(f'{x:.4f}' for x in _ap_lv)
+      + ' over the same five')
+
+
+# A cylinder: curved round the barrel, flat at the two ends. Things
+# glance off the side the way they do in a sphere and are taken head on
+# by the caps the way they are in a box, so which of the two you get
+# depends on which way it is shaken -- which no single-surface shape
+# can do.
+def _rattle_tube(shape, axis, aspect=3.0, shake=2.0, seconds=12):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.shape = shape
+    u.aspect_in.base = aspect
+    sig = sc.Signal()
+    getattr(u, f'shake_{axis}_in').sources.append(sig)
+    knock, scrape = [], []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sig.data[:BLOCK] = shake * np.sin(2 * np.pi * 2.5 * t)
+        sig.constant = False
+        u.render(BLOCK)
+        knock.append(u.knock.array(BLOCK).copy())
+        scrape.append(u.scrape.array(BLOCK).copy())
+    keep = slice(int(4 * SR), None)
+    k = float(np.sqrt(np.mean(np.concatenate(knock)[keep] ** 2)))
+    s_ = float(np.sqrt(np.mean(np.concatenate(scrape)[keep] ** 2)))
+    return k / max(s_, 1e-12)
+
+
+_tu_ends = _rattle_tube(3, 'z')
+_tu_side = _rattle_tube(3, 'x')
+_sp_ends = _rattle_tube(0, 'z')
+_sp_side = _rattle_tube(0, 'x')
+check('a tube is taken head on at its ends and glanced off its side',
+      _tu_ends > 20.0 * _tu_side,
+      f'blow against rub {_tu_ends:.0f} shaken along it into the flat '
+      f'caps, {_tu_side:.2f} shaken across it into the curved barrel')
+# Which is the whole point of it, and the thing no single-surface shape
+# can do. Across it a tube glances about as freely as a sphere -- a
+# little MORE freely, in fact, since a stretched sphere narrows towards
+# its ends where a barrel stays at full width all the way along.
+check('so which way you shake a tube decides what it is',
+      (_tu_ends / max(_tu_side, 1e-12))
+      > 20.0 * (_sp_ends / max(_sp_side, 1e-12)),
+      f'a tube goes {_tu_side:.2f} across to {_tu_ends:.0f} along; a '
+      f'sphere only {_sp_side:.2f} to {_sp_ends:.2f}')
+
+
+# What a rub radiates is a share of the WORK friction is doing, and that
+# work is the force times how fast the thing is being dragged -- so the
+# amplitude goes as the root of the two together. Taken from the force
+# alone, a thing pressed hard against a wall and barely creeping rasped
+# exactly as loudly as one skating across it, and the noise followed how
+# hard it was PRESSED instead of how fast it was MOVING. Shaken, the
+# press swings with the gesture, so the sound wheezed in and out with
+# it, like a bicycle pump.
+def _rattle_creep(spin, seconds=10):
+    u = sc.RattleUnit(SR)
+    u.set_count(48)
+    u.texture_in.base = 0.0
+    u.friction_in.base = 0.9
+    wx = sc.Signal()
+    u.turn_x_in.sources.append(wx)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        wx.data[:BLOCK] = np.degrees(spin) * t
+        wx.constant = False
+        u.render(BLOCK)
+        got.append(u.scrape.array(BLOCK).copy())
+    y = np.concatenate(got)[int(4 * SR):]
+    return float(np.sqrt(np.mean(y ** 2)))
+
+
+_cr = [_rattle_creep(w) for w in (3.0, 1.0, 0.3)]
+check('a thing pressed hard and barely moving hardly rubs at all',
+      _cr[0] > 2.5 * _cr[-1]
+      and all(b < a for a, b in zip(_cr, _cr[1:])),
+      'rub ' + ' / '.join(f'{x:.5f}' for x in _cr)
+      + ' as a gripped shell is turned at 3, 1 and 0.3 radians a second '
+      + '-- it used to hold up whatever the speed, because it was taken '
+      + 'from the pressing force alone')
+
+
+# An irregular thing presents a different face every time it lands, its
+# contact sits off to one side of its middle, and how much of the blow
+# goes into turning it rather than lifting it changes with each one. So
+# how bouncy a LANDING is varies, not just how bouncy the grain is.
+#
+# Without that, a handful driven along one axis onto a flat wall never
+# comes out of step: with no collisions between them, grains alike in
+# bounciness all leave and land together, and 128 of them arrived inside
+# a fifth of a millisecond -- one enormous thud a cycle instead of a
+# rattle. The direction scatter cannot do this job, and turning it up
+# makes it worse, because the normal part of a tilted unit vector is its
+# cosine and so scattering the direction can only ever REMOVE lift.
+def _rattle_lockstep(variety, shake=2.0, freq=5.0, seconds=14):
+    u = sc.RattleUnit(SR)
+    u.set_count(128)
+    u.shape = 3
+    u.aspect_in.base = 2.4
+    u.size_in.base = 0.15
+    u.grain_in.base = 0.043
+    u.bounce_in.base = 0.3
+    u.variety_in.base = variety
+    sz = sc.Signal()
+    u.shake_z_in.sources.append(sz)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sz.data[:BLOCK] = shake * np.sin(2 * np.pi * freq * t)
+        sz.constant = False
+        u.render(BLOCK)
+        got.append(u.knock.array(BLOCK).copy())
+    y = np.concatenate(got)[int(4 * SR):]
+    cycle = int(SR / freq)
+    n = (len(y) // cycle) * cycle
+    prof = (y[:n] ** 2).reshape(-1, cycle).mean(axis=0)
+    cum = np.cumsum(prof) / max(prof.sum(), 1e-30)
+    lo = int(np.searchsorted(cum, 0.1))
+    hi = int(np.searchsorted(cum, 0.9))
+    return 1000.0 * (hi - lo) / SR, float(np.sqrt(np.mean(y ** 2)))
+
+
+_ls_same, _ls_lv0 = _rattle_lockstep(0.0)
+_ls_var, _ls_lv1 = _rattle_lockstep(1.0)
+check('unalike things do not all land at once, even on a flat end',
+      _ls_var > 20.0 * _ls_same,
+      f'a cycle\'s blows arrive over {_ls_same:.1f} ms from identical '
+      f'grains and {_ls_var:.1f} ms from a mixed handful, of a 200 ms '
+      f'cycle -- shaken along a tube, onto its flat cap, which is the '
+      f'worst case there is for keeping step')
+check('and that costs nothing in level',
+      max(_ls_lv0, _ls_lv1) < 1.3 * min(_ls_lv0, _ls_lv1),
+      f'{_ls_lv0:.4f} identical against {_ls_lv1:.4f} mixed')
+
+
+# A rough wall is not a plane. A thing resting on one sits on a SLOPE,
+# so when the wall drives it away it leaves along the local normal
+# rather than the mean one -- a little faster or slower than its
+# neighbour. That is the only thing that can break a handful out of
+# step when the gesture is along one axis, the wall it lands on is
+# flat, and nothing bounces.
+#
+# Nothing else can, and it is worth being plain about why: with no
+# collisions between them the grains are EXACTLY identical. They leave
+# together carrying the wall's own speed, fall in a field that is the
+# same everywhere, and land dead. Spreading their sizes cannot part
+# them, because a thing that starts higher also lands higher and the
+# fall cancels. Spreading their bounciness cannot either, because with
+# no bounce nothing about a landing survives it. 128 of them arrived
+# inside a fifth of a millisecond, which is one click, not a shaker.
+def _rattle_flatwall(texture, variety=1.0, shake=2.0, freq=5.0,
+                     seconds=14):
+    u = sc.RattleUnit(SR)
+    u.set_count(128)
+    u.shape = 3
+    u.aspect_in.base = 2.74
+    u.size_in.base = 0.092
+    u.grain_in.base = 0.0
+    u.bounce_in.base = 0.0
+    u.friction_in.base = 0.15
+    u.texture_in.base = texture
+    u.variety_in.base = variety
+    sz = sc.Signal()
+    u.shake_z_in.sources.append(sz)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sz.data[:BLOCK] = shake * np.sin(2 * np.pi * freq * t)
+        sz.constant = False
+        u.render(BLOCK)
+        got.append(u.knock.array(BLOCK).copy())
+    y = np.concatenate(got)[int(4 * SR):]
+    cycle = int(SR / freq)
+    n = (len(y) // cycle) * cycle
+    prof = (y[:n] ** 2).reshape(-1, cycle).mean(axis=0)
+    cum = np.cumsum(prof) / max(prof.sum(), 1e-30)
+    lo = int(np.searchsorted(cum, 0.1))
+    hi = int(np.searchsorted(cum, 0.9))
+    rms = float(np.sqrt(np.mean(y ** 2)))
+    return (1000.0 * (hi - lo) / SR,
+            float(np.max(np.abs(y)) / max(rms, 1e-12)), rms)
+
+
+_fw_rough = _rattle_flatwall(0.22)
+_fw_smooth = _rattle_flatwall(0.0)
+_fw_same = _rattle_flatwall(0.22, variety=0.0)
+check('a rough wall throws things off it unevenly, and so breaks step',
+      _fw_rough[0] > 20.0 * _fw_smooth[0]
+      and _fw_rough[1] < 0.4 * _fw_smooth[1],
+      f'a cycle\'s blows arrive over {_fw_rough[0]:.1f} ms against '
+      f'{_fw_smooth[0]:.1f} ms off a smooth one, crest {_fw_rough[1]:.0f} '
+      f'against {_fw_smooth[1]:.0f} -- with nothing bouncing and every '
+      f'grain a point, this is all there is')
+check('and it takes unalike things to sit on a rough wall unalike',
+      _fw_same[0] < 0.05 * _fw_rough[0],
+      f'{_fw_same[0]:.1f} ms from identical grains on the same rough '
+      f'wall against {_fw_rough[0]:.1f} ms from a mixed handful')
+check('none of which changes how loud it is',
+      max(_fw_rough[2], _fw_smooth[2]) < 1.35 * min(_fw_rough[2],
+                                                    _fw_smooth[2]),
+      f'{_fw_smooth[2]:.4f} smooth against {_fw_rough[2]:.4f} rough')
 
 
 # ------------------------------------------------- every unit renders

@@ -6370,9 +6370,13 @@ class RattleNode(SynthNode):
     the Euler shove when the turning itself changes -- and all three are
     what a swirl is made of.
 
-    'shape' is sphere, box or egg, and it is only a boundary test, so it
-    is nearly free and changes a great deal: flat walls take a bean head
-    on where a curved one lets it glance.
+    'shape' is sphere, box, egg or tube, and 'aspect' is how long it is
+    against how wide. A tube is a cylinder -- curved round the barrel,
+    flat at the ends -- so it glances one way and strikes the other,
+    which no single-surface shape can do. Both are only the boundary test, so they are nearly free
+    and change a great deal: flat walls take a bean head on where a
+    curved one lets it glance, and a long container lets things travel
+    its length where a flat one pins them between two close walls.
 
     'knock' and 'scrape' come out separately as well as mixed. Like
     bounce~, what comes out is a train of force pulses rather than a
@@ -6388,7 +6392,14 @@ class RattleNode(SynthNode):
     continuous slide; the same turn on a rough one is a rattle.
 
     Inter-particle collisions are left out on purpose: most of the cost,
-    least of the sound. What is heard is the wall.
+    least of the sound. What is heard is the wall. The one case where
+    they are missed is a handful driven along a single axis onto a flat
+    wall -- with no bounce the grains are then EXACTLY identical, since
+    they leave together carrying the wall's speed, fall in a field that
+    is the same everywhere, and land dead. Raise 'variety', and give the
+    wall some 'texture' for them to sit on unevenly: a rough wall is not
+    a plane, so it throws each of them off at its own speed, and that is
+    the only thing that parts them.
     """
 
     @staticmethod
@@ -6456,7 +6467,27 @@ class RattleNode(SynthNode):
                 'head on where a sphere lets it glance, and an egg is '
                 'the sphere with one axis stretched -- struck at its '
                 'pointed end it answers at the angle that end really '
-                'presents')
+                'presents. A tube is a cylinder, curved round the '
+                'barrel and flat at the two ends, so it does BOTH and '
+                'which one you get depends on which way you shake it: '
+                'along its length things are taken head on by the caps, '
+                'across it they glance off the side. With a long '
+                '"aspect" that is a rainstick or a tube shaker')
+        aspect_port = self.add_modulation_input(
+            'aspect', self.unit.aspect_in, minimum=0.2, maximum=5.0,
+            speed=0.01)
+        if aspect_port.widget is not None:
+            aspect_port.widget.set_tooltip(
+                'how long it is against how wide, along z. 1 is a ball '
+                'or a cube; below that a slab, above it a tube. Like '
+                'shape this is only the boundary test, so it costs '
+                'nothing at all and changes a great deal: in a long one '
+                'things travel the length and pile at whichever end is '
+                'down, in a flat one they are pinned between two close '
+                'walls and rattle far more often -- 112 contacts a '
+                'second against 199 for the same handful. An egg keeps '
+                'its own stretch on top of this. Lay it on its side '
+                'with "turn" if you want the length horizontal')
         size_port = self.add_modulation_input(
             'size', self.unit.size_in, minimum=0.005, maximum=0.5,
             speed=0.001)
@@ -6485,6 +6516,8 @@ class RattleNode(SynthNode):
         # number shown stays a real size, which matters here because
         # both are modulation inlets: a hidden mapping would quietly
         # change what a patch cord into them means.
+        self.make_drag_proportional(aspect_port, fraction=0.05,
+                                    floor=0.005, ceiling=0.2)
         self.make_drag_proportional(size_port, fraction=0.05,
                                     floor=0.0002, ceiling=0.02)
         self.make_drag_proportional(grain_port, fraction=0.05,
@@ -6530,16 +6563,25 @@ class RattleNode(SynthNode):
             speed=0.01)
         if variety_port.widget is not None:
             variety_port.widget.set_tooltip(
-                'how unalike the things in there are: it spreads their '
-                'SIZES, and makes them scatter off a wall rather than '
-                'reflecting off it, since which face an irregular grain '
-                'presents depends on how it is tumbling. At 0 they '
-                'really are identical now -- and identical things in '
-                'one shared field keep STEP, because they differ only '
-                'in where they started, so a hundred of them arrive '
-                'together and sound like eight. That is what makes a '
-                'hundred sound like a hundred. It does not change how '
-                'loud it is')
+                'how unalike the things in there are. It spreads their '
+                'SIZES, spreads how BOUNCY they are, varies how bouncy '
+                'each single LANDING is -- an irregular grain presents '
+                'a different face every time, and its contact sits off '
+                'to one side of its middle -- gives them a bounce of '
+                'their own from tipping on their corners even when the '
+                'material has none, and lets each of them sit on the '
+                'wall\'s roughness differently, so a rough wall throws '
+                'them off unevenly. All of that matters because '
+                'grains here do not collide with EACH OTHER: that is '
+                'most of the cost and least of the sound, except in one '
+                'case, which is a handful driven along one axis onto a '
+                'flat wall. Identical grains there all leave and land '
+                'together for ever, a hundred and twenty-eight of them '
+                'inside a fifth of a millisecond -- one enormous click '
+                'a cycle. Turn this up, with some "texture" on the wall '
+                'for them to sit unevenly on, and they spread over 45 '
+                'ms of it instead. It does not change how loud anything '
+                'is')
         self.add_modulation_input('gravity', self.unit.gravity_in,
                                   minimum=0.0, maximum=40.0, speed=0.1)
         self.add_modulation_input('level', self.unit.level_in,
