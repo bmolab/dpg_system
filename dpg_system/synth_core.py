@@ -5156,6 +5156,91 @@ class AudioOutUnit(Unit):
                 mix[:frames, channel] += self._buffers[index, :frames]
 
 
+class FaderOutUnit(AudioOutUnit):
+    """A fader and the socket it lands on, in one.
+
+    The split between fader~ and audio_out~ is right and stays: level is
+    one job, the wall is another, and a patch with several sources wants
+    several faders into one socket. But almost every new patch begins by
+    making both and joining them, so this is that pair ready-made.
+
+    It is a SUBCLASS of the socket rather than a thing beside one,
+    because that is how the compiler knows a terminus -- it collects
+    sinks by what they are. And it CONTAINS a fader rather than
+    reimplementing one, so the taper, the pan law and the meters are the
+    same code fader~ uses and cannot drift from it. The contained fader
+    is not in the graph: this drives it, once, in its own render, which
+    is why nothing had to change about how the graph is compiled.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE, count=2):
+        # Before the socket's own setup, because that sets 'muted' and
+        # here that is the fader's to hold.
+        self.fader = FaderUnit(sample_rate)
+        super().__init__(sample_rate, max(2, count))
+        # The cords land on the FADER's inlets, so the compiler wires
+        # them there and orders this unit after whatever feeds it.
+        self.signal_in = self.fader.signal_in
+        self.right_in = self.fader.right_in
+        self.position_in = self.fader.position_in
+        self.pan_in = self.fader.pan_in
+        self.ins = [self.fader.signal_in, self.fader.right_in]
+        # And they come out as well as going to the wall, so a meter, a
+        # recorder or a second socket can take the same signal. The
+        # fader's own outlets, not copies: there is one signal here.
+        self.out = self.fader.out
+        self.right = self.fader.right
+
+    @property
+    def levels(self):
+        return self.fader.levels
+
+    @property
+    def peaks(self):
+        return self.fader.peaks
+
+    def current_db(self):
+        return self.fader.current_db()
+
+    @property
+    def muted(self):
+        return self.fader.muted
+
+    @muted.setter
+    def muted(self, value):
+        # One mute, on the fader, so the meters show what the socket
+        # sends. Two of them in one strip would only be a puzzle.
+        self.fader.muted = bool(value)
+
+    def _reset(self):
+        self.fader._reset() if hasattr(self.fader, '_reset') else None
+        self.peak = 0.0
+
+    def _state_is_sane(self):
+        return bool(np.all(np.isfinite(self._buffers)))
+
+    def render(self, frames):
+        self.fader.enabled = self.enabled
+        self.fader.run(frames)
+        peak = 0.0
+        scratch = self._scratch[:frames]
+        for index, source in enumerate((self.fader.out, self.fader.right)):
+            if index >= self.count:
+                break
+            signal = source
+            if signal.constant and signal.value == 0.0:
+                self._live[index] = False
+                continue
+            self._live[index] = True
+            row = self._buffers[index, :frames]
+            np.copyto(row, signal.array(frames), casting='unsafe')
+            np.abs(row, out=scratch)
+            peak = max(peak, float(scratch.max()))
+        for index in range(2, self.count):
+            self._live[index] = False
+        self.peak = peak
+
+
 SAMPLER_MODES = ('loop', 'oneshot', 'scrub', 'follow', 'granular')
 
 
@@ -10622,6 +10707,252 @@ else:
     _bounce_kernel = _bounce_kernel_source
 
 
+class StrikeUnit(Unit):
+    """A deliberate hit, in a choice of characters.
+
+    bounce~ is a mallet DROPPED -- everything after the first fall is
+    gravity, which is what a roll is made of. This is a mallet SWUNG:
+    one hit when you ask for one, and a choice of what kind of hit.
+    Patch the output at any resonator's excite inlet.
+
+    The trigger carries both timing and how hard, the way it does
+    everywhere here: a taller edge hits harder. What that buys is the
+    thing neither bounce~ nor a unit's own strike does --
+
+    A CONTACT STIFFENS AS IT COMPRESSES. Press a ball against a plate
+    and the harder you press the stiffer it gets, since more of it is
+    touching: Hertz's law, force going as the squash to the power three
+    halves. What follows is that a harder blow is a SHORTER one -- the
+    contact time falls as the fifth root of the speed -- so hitting
+    harder does not merely make a thing louder, it makes it brighter.
+    That is most of what dynamics on a struck instrument actually are,
+    and with a fixed contact time none of it happens: everything just
+    gets louder, evenly, which is what a sampler does.
+
+    Every hit keeps its IMPULSE and spends it over a contact whose
+    length the style, the hardness and the force decide -- so hardness
+    colours a blow rather than weighing it, and the resonator answers
+    the momentum it was given.
+
+    The styles differ in three things and nothing else: how long the
+    contact is, how much it stiffens, and how many contacts there are.
+
+      tap     one hard short contact -- a fingernail, a claves, a rim.
+      mallet  one long soft one, and felt stiffens harder than a ball
+              does, so it brightens more steeply as you lean on it.
+      stick   hard, and not gripped tightly, so it comes back once.
+      flam    a grace note and then the hit.
+      drag    three quick ones into the hit.
+      brush   a spray of tiny contacts -- wire, or a bundle of straws.
+
+    'spread' is the time those multiple contacts are laid over, and
+    'scatter' how much they differ from hit to hit, so a repeated
+    figure is not a copy of itself.
+    """
+
+    STYLES = ('tap', 'mallet', 'stick', 'flam', 'drag', 'brush')
+    RING = 16384
+    # The rack's mallet range: eight milliseconds of felt down to a
+    # third of a millisecond of glass, before the style scales it.
+    CONTACT_SOFT = 0.008
+    CONTACT_HARD = 0.00032
+    # Per style: how the contact time scales, how hard it stiffens with
+    # force, and how the contacts are laid out. Hertz gives a fifth for
+    # a ball; felt stiffens harder than that; a spray of small hard
+    # things hardly stiffens at all.
+    _SHAPE = {
+        'tap': (0.35, 0.20, 'single'),
+        'mallet': (1.00, 0.35, 'single'),
+        'stick': (0.30, 0.20, 'rebound'),
+        'flam': (0.35, 0.20, 'flam'),
+        'drag': (0.30, 0.20, 'drag'),
+        'brush': (0.10, 0.08, 'brush'),
+    }
+    BRUSH_HAIRS = 14
+    # What a unit blow is worth at the excite inlet.
+    #
+    # A blow carries an IMPULSE, and one of area one is the honest
+    # convention -- but on its own it is useless, because a resonator's
+    # excite inlet is not calibrated for impulses. It is calibrated for
+    # SIGNALS: each mode is scaled by the root of one minus its pole
+    # radius, so that a sustained drive sounds the same however long the
+    # decay. That is right for a bow, and it means a bare impulse of
+    # area one arrives some forty decibels under what the same impulse
+    # does through the trigger, which is normalised the other way. Two
+    # sensible conventions that do not meet.
+    #
+    # So a unit blow is worth what the trigger's own mallet is worth at
+    # a height of one. Measured over twenty-seven combinations of pitch,
+    # decay and hardness, that wants between eight and two hundred
+    # times -- it cannot be one number, because the excite path's own
+    # normalisation makes an impulse weaker the longer the decay. This
+    # is the middle of them, and 'level' reaches four times it and down
+    # to nothing, which covers the rest.
+    #
+    # It sits above bounce~, deliberately: that is a mallet DROPPED from
+    # a modest height, matched to the sustained exciters, and this is
+    # one SWUNG.
+    STRIKE_LEVEL = 71.0
+    _seeded = 0
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.trigger_in = self.new_inlet()
+        self.force_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+        self.hardness_in = self.new_inlet(base=0.6, minimum=0.0,
+                                          maximum=1.0)
+        self.spread_in = self.new_inlet(base=0.4, minimum=0.0, maximum=1.0)
+        self.scatter_in = self.new_inlet(base=0.3, minimum=0.0, maximum=1.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=4.0)
+        self.out = self.new_outlet()
+        self.style = 0
+        self.threshold = 0.5
+        self._trigger_armed = True
+        self._ring = np.zeros(StrikeUnit.RING, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._head = 0
+        self._quiet = True
+        # Clicks from the face, waiting for the audio thread to lay
+        # them down. Counted rather than flagged so two in one block
+        # are two hits.
+        self._pending = 0
+        StrikeUnit._seeded += 1
+        self._rng = np.random.default_rng(7717 + StrikeUnit._seeded)
+
+    def fire(self):
+        """Hit it once, from the face rather than from a cord."""
+        self._pending += 1
+
+    def _state_is_sane(self):
+        return bool(np.all(np.isfinite(self._ring)))
+
+    def _reset(self):
+        self._ring[:] = 0.0
+        self._head = 0
+        self._quiet = True
+        self._pending = 0
+        self._trigger_armed = True
+
+    def _schedule(self, kind, spread, scatter):
+        """When the contacts land and how strong each is.
+
+        Times in seconds from the trigger, strengths as fractions of the
+        blow. Everything a style is, is in here.
+        """
+        rng = self._rng
+        jitter = lambda: 1.0 + scatter * (2.0 * rng.random() - 1.0)
+        if kind == 'single':
+            return [(0.0, 1.0)]
+        if kind == 'rebound':
+            # A stick held loosely comes back once, weaker and sooner
+            # than the fall that brought it -- one bounce, not the roll
+            # bounce~ is for.
+            gap = (0.012 + 0.05 * spread) * jitter()
+            return [(0.0, 1.0), (gap, 0.22 * jitter())]
+        if kind == 'flam':
+            gap = (0.015 + 0.13 * spread) * jitter()
+            return [(0.0, 0.6 * jitter()), (gap, 1.0)]
+        if kind == 'drag':
+            gap = (0.008 + 0.035 * spread)
+            return [(0.0, 0.34 * jitter()), (gap * jitter(), 0.4 * jitter()),
+                    (2.0 * gap * jitter(), 0.5 * jitter()),
+                    (3.1 * gap * jitter(), 1.0)]
+        # A brush is many small contacts at ONE stroke, not a figure of
+        # several. So the momentum of the swing is divided among the
+        # hairs rather than handed to each of them: they sum to the
+        # blow. The figures above do not, and should not -- a flam is
+        # two strokes and a drag is four, and two strokes really do put
+        # in twice as much as one.
+        span = 0.004 + 0.06 * spread
+        out = [(span * rng.random(), 0.25 + 0.75 * rng.random() ** 2)
+               for _ in range(StrikeUnit.BRUSH_HAIRS)]
+        total = sum(w for _, w in out)
+        return [(t, w / total) for t, w in out]
+
+    def render(self, frames):
+        trigger = self.trigger_in.eval(frames)
+        force_sig = self.force_in.eval(frames)
+        hardness = self.hardness_in.eval(frames)
+        spread_sig = self.spread_in.eval(frames)
+        scatter_sig = self.scatter_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        events, self._trigger_armed = _excitation_events(
+            trigger, frames, self.threshold, self._trigger_armed)
+        if self._pending:
+            events = tuple(events) + ((0, 1.0),) * self._pending
+            self._pending = 0
+        if self._quiet and not events:
+            out.set_constant(0.0)
+            return
+
+        def scalar(signal, lo, hi):
+            value = (signal.value if signal.constant
+                     else float(signal.data[0]))
+            return min(hi, max(lo, value))
+
+        hard = scalar(hardness, 0.0, 1.0)
+        spread = scalar(spread_sig, 0.0, 1.0)
+        scatter = scalar(scatter_sig, 0.0, 1.0)
+        knob = scalar(force_sig, 0.0, 2.0)
+        style = StrikeUnit.STYLES[
+            min(len(StrikeUnit.STYLES) - 1, max(0, int(self.style)))]
+        scale, stiffen, kind = StrikeUnit._SHAPE[style]
+        base = (StrikeUnit.CONTACT_SOFT
+                * (StrikeUnit.CONTACT_HARD / StrikeUnit.CONTACT_SOFT) ** hard
+                * scale)
+        ring_n = StrikeUnit.RING
+
+        for index, level in events:
+            # The trigger's own height and the knob both say how hard,
+            # and they multiply -- so a patched envelope plays dynamics
+            # and the knob still sets the room it plays in.
+            force = knob * max(1.0e-4, level)
+            for when, strength in self._schedule(kind, spread, scatter):
+                blow = force * strength
+                if blow <= 1.0e-9:
+                    continue
+                # Hertz: the contact stiffens as it squashes, so a
+                # harder blow is a shorter one. Impulse is kept and the
+                # peak follows from it, which is what makes hardness a
+                # colour and not a volume.
+                width = int(base * blow ** (-stiffen) * self.sample_rate)
+                width = min(ring_n // 4, max(2, width))
+                start = (self._head + index
+                         + int(when * self.sample_rate)) % ring_n
+                peak = 2.0 * blow * StrikeUnit.STRIKE_LEVEL / width
+                edge = (np.arange(width) + 0.5) * (2.0 * math.pi / width)
+                pulse = peak * 0.5 * (1.0 - np.cos(edge))
+                end = start + width
+                if end <= ring_n:
+                    self._ring[start:end] += pulse
+                else:
+                    cut = ring_n - start
+                    self._ring[start:] += pulse[:cut]
+                    self._ring[:end - ring_n] += pulse[cut:]
+            self._quiet = False
+
+        result = self._y[:frames]
+        head = self._head
+        if head + frames <= ring_n:
+            np.copyto(result, self._ring[head:head + frames])
+            self._ring[head:head + frames] = 0.0
+        else:
+            cut = ring_n - head
+            np.copyto(result[:cut], self._ring[head:])
+            np.copyto(result[cut:], self._ring[:frames - cut])
+            self._ring[head:] = 0.0
+            self._ring[:frames - cut] = 0.0
+        self._head = (head + frames) % ring_n
+
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        self._quiet = bool(float(np.max(np.abs(result))) < 1.0e-9
+                           and not np.any(self._ring))
+
+
 class BounceUnit(Unit):
     """A dropped mallet: the excitation drum rolls are made of.
 
@@ -14872,6 +15203,14 @@ class FaderUnit(Unit):
         self.right = self.new_outlet()
         self.pan_in = self.new_inlet(base=0.0, minimum=-1.0, maximum=1.0)
         self._pan_glide = 0.0
+        # A mute is not the fader pulled down: the whole point is that
+        # the handle stays where it was set, so the balance you had is
+        # the balance you come back to. Ramped rather than switched,
+        # over the same few milliseconds the switch uses, because a
+        # step to silence on a signal that is not at a zero crossing is
+        # a click.
+        self.muted = False
+        self._mute_glide = 1.0
         self.levels = [0.0, 0.0]
         self.peaks = [0.0, 0.0]
         self._hold = [0.0, 0.0]
@@ -14962,6 +15301,33 @@ class FaderUnit(Unit):
         if abs(landing - target) < 1.0e-6:
             landing = target
         self._level_glide = landing
+
+        # The mute rides on top, and the HANDLE is left where it was --
+        # which is the whole difference between muting a channel and
+        # pulling it down. Kept off the stored glide for the same
+        # reason: unmuting comes back to the balance you had, not to
+        # wherever silence left it. Ramped over the block like
+        # everything else here, since a step to nothing on a signal
+        # that is not at a zero crossing is a click.
+        # A definite ramp rather than the one-pole the level uses,
+        # because a mute has to ARRIVE. Chasing the target by a
+        # fraction each block it only ever approaches: forty
+        # milliseconds in it was still forty-six decibels short of
+        # silence rather than at it, so the channel never went quiet and
+        # never let the unit rest. Over the same few milliseconds the
+        # switch fades in, which is under one block, so it lands inside
+        # a block and the ramp across it does the smoothing.
+        mute_target = 0.0 if self.muted else 1.0
+        mute_start = self._mute_glide
+        step = min(1.0, frames / max(1.0, Unit.GATE_SECONDS
+                                     * self.sample_rate))
+        if mute_target > mute_start:
+            mute_land = min(mute_target, mute_start + step)
+        else:
+            mute_land = max(mute_target, mute_start - step)
+        self._mute_glide = mute_land
+        start *= mute_start
+        landing *= mute_land
 
         # Equal-power pan, referenced to unity at center so a patch
         # that never touches the knob hears exactly what it always

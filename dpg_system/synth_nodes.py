@@ -23,7 +23,7 @@ from fuzzywuzzy import fuzz
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
-    VesselUnit, RattleUnit,
+    VesselUnit, RattleUnit, StrikeUnit, FaderOutUnit,
     synth_graph, start_filter_warm_up,
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
@@ -92,6 +92,10 @@ def register_synth_nodes():
     Node.app.register_node('pluck~', StringNode.factory)
     Node.app.register_node('modal~', ModalNode.factory)
     Node.app.register_node('resonator~', ModalNode.factory)
+    Node.app.register_node('shape_modes', ShapeModesNode.factory)
+    Node.app.register_node('strike~', StrikeNode.factory)
+    Node.app.register_node('fader_out~', FaderOutNode.factory)
+    Node.app.register_node('fader_out~', FaderOutNode.factory)
     Node.app.register_node('vessel~', VesselNode.factory)
     Node.app.register_node('wind~', WindNode.factory)
     Node.app.register_node('reed~', WindNode.factory)
@@ -4479,6 +4483,328 @@ BUILTIN_MATERIALS = {key: list(value) for key, value in
 load_custom_materials()
 
 
+class StrikeNode(SynthNode):
+    """A deliberate hit, in a choice of characters.
+
+    bounce~ is a mallet DROPPED, and everything after the first fall is
+    gravity -- which is what a roll is made of. This is a mallet SWUNG:
+    one hit when you ask for one. Patch its output at any resonator's
+    excite inlet -- modal~, drum~, string~, resonator~.
+
+    The trigger carries timing AND how hard, the way it does everywhere
+    here: a taller edge hits harder, so an envelope or an effort value
+    patched there plays dynamics with no second cord. What that buys is
+    the thing neither bounce~ nor a unit's own strike does --
+
+    a contact STIFFENS as it compresses. Press a ball against a plate
+    and the harder you press the stiffer it gets, since more of it is
+    touching. What follows is that a harder blow is a SHORTER one, so
+    hitting harder does not merely make a thing louder, it makes it
+    brighter. That is most of what dynamics on a struck instrument are,
+    and with a fixed contact time none of it happens -- everything just
+    gets louder, evenly, the way a sampler does.
+
+    Every hit keeps its impulse and spends it over a contact the style,
+    the hardness and the force decide, so hardness colours a blow rather
+    than weighing it.
+
+      tap     one hard short contact -- a fingernail, claves, a rim.
+      mallet  one long soft one, and felt stiffens harder than a ball,
+              so it brightens more steeply as you lean on it.
+      stick   hard, held loosely, so it comes back once.
+      flam    a grace note and then the hit.
+      drag    three quick ones into the hit.
+      brush   a spray of tiny contacts -- wire, or a bundle of straws.
+
+    A brush is ONE stroke divided among its hairs, so its momentum is
+    the same as a tap's. A flam is two strokes and a drag is four, and
+    those really do put in more, which is what they are for.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return StrikeNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = StrikeUnit(synth_graph.sample_rate)
+        self.add_trigger_signal_input('hit', self.unit.trigger_in,
+                                      self.hit_once)
+        self.style_input = self.add_input(
+            'style', widget_type='combo', default_value=StrikeUnit.STYLES[0],
+            callback=self.parameters_changed)
+        self.style_input.widget.combo_items = list(StrikeUnit.STYLES)
+        force_port = self.add_modulation_input(
+            'force', self.unit.force_in, minimum=0.0, maximum=2.0,
+            speed=0.01)
+        hard_port = self.add_modulation_input(
+            'hardness', self.unit.hardness_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        spread_port = self.add_modulation_input(
+            'spread', self.unit.spread_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        scatter_port = self.add_modulation_input(
+            'scatter', self.unit.scatter_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        level_port = self.add_modulation_input(
+            'level', self.unit.level_in, minimum=0.0, maximum=4.0,
+            speed=0.02)
+        if level_port.widget is not None:
+            level_port.widget.set_tooltip(
+                'reaches well past unity, and needs to. A unit blow is '
+                'worth what a resonator\'s own trigger is worth at a '
+                'height of one -- but that cannot be ONE number, because '
+                'the excite inlet scales each mode by the root of one '
+                'minus its pole radius, so that a SUSTAINED drive sounds '
+                'the same at any decay. That makes an IMPULSE weaker the '
+                'longer the decay: over a spread of pitches, decays and '
+                'hardnesses the same blow wants anywhere from eight to '
+                'two hundred times. The default is the middle of that '
+                'and this is how you cover the rest')
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        for port, tip in (
+                (self.style_input,
+                 'what kind of hit. The styles differ in three things '
+                 'and nothing else: how long the contact is, how much '
+                 'it stiffens as it squashes, and how many contacts '
+                 'there are'),
+                (force_port,
+                 'how hard, multiplying whatever the trigger\'s own '
+                 'height says -- so an envelope on the cord plays the '
+                 'dynamics and this sets the room it plays in. It moves '
+                 'colour as well as loudness: the impulse goes up with '
+                 'it and the contact time DOWN, as the fifth root, so a '
+                 'harder blow is a brighter one'),
+                (hard_port,
+                 'how long the contact is, eight milliseconds of felt '
+                 'down to a third of one of glass, before the style '
+                 'scales it. Impulse is kept, so this colours a blow '
+                 'rather than weighing it -- and a contact too soft to '
+                 'reach a mode will not ring it, which is why a felt '
+                 'beater does not make a bell speak'),
+                (spread_port,
+                 'how long the multiple contacts are laid over: the gap '
+                 'of a flam, the rate of a drag, the width of a brush. '
+                 'Nothing at all to the single-contact styles'),
+                (scatter_port,
+                 'how much one hit differs from the last, so a repeated '
+                 'figure is not a copy of itself')):
+            if port is not None and port.widget is not None:
+                port.widget.set_tooltip(tip)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def hit_once(self):
+        self.unit.fire()
+
+    def sync_options(self):
+        style = any_to_string(self.style_input())
+        if style in StrikeUnit.STYLES:
+            self.unit.style = StrikeUnit.STYLES.index(style)
+
+
+class ShapeModesNode(Node):
+    """A mode table worked out from a shape, instead of looked up.
+
+    Patch its 'modes' outlet into modal~ or rub~ and their table stops
+    being a preset and becomes whatever you described. Give it an
+    outline -- a list of half-widths along the length -- say how that
+    outline is swept into a volume, and say what it is made of, and it
+    solves for the modes.
+
+    The three sweeps:
+
+      revolve   the outline is a RADIUS, spun about the long axis: a
+                club, an egg, a cone, a turned bead.
+      extrude   it is a HALF-WIDTH, and the section is that wide by
+                'depth' deep: a bar with a shaped outline, which is what
+                an undercut marimba bar is.
+      mirror    the same, but the outline is half the LENGTH and is
+                reflected end to end, so you draw one end of a symmetric
+                thing and get the whole.
+
+    'strike' is where along it the mallet lands and 'direction' is which
+    way, and both matter as much as the shape. A free-free bar has a
+    node at its middle in the second mode, so struck there that mode is
+    simply absent -- which is the model getting something right, not
+    losing something. Neither needs the shape solving again, so they
+    stay live; the outline, the size and the material do, so those wait
+    for 'compute'.
+
+    What it does NOT work out is decay. Frequencies follow from geometry
+    and elasticity; decay follows from the material's own losses, from
+    how the thing is held and from what it radiates, none of which is in
+    here. 'damping' is an imposed power law, honestly labelled: 0 leaves
+    every mode ringing as long as the last, 1 has a mode an octave up
+    die twice as fast.
+
+    Solids only for now. A thin shell -- a bell, a bowl, a can, a glass
+    -- wants a shell element to do properly, since bricks lock in
+    bending unless several sit across the wall.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShapeModesNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        from dpg_system import modal_shape
+        self._shape = modal_shape
+        self._solved = None
+        self._key = None
+        self._profile = [1.0, 0.98, 0.95, 0.95, 0.98, 1.0]
+
+        self.profile_input = self.add_input('profile',
+                                            callback=self.profile_received)
+        self.sweep_input = self.add_input(
+            'sweep', widget_type='combo', default_value='extrude',
+            callback=self.solve_and_send)
+        self.sweep_input.widget.combo_items = list(modal_shape.SWEEPS)
+        self.material_input = self.add_input(
+            'material', widget_type='combo', default_value='wood',
+            callback=self.solve_and_send)
+        self.material_input.widget.combo_items = sorted(
+            modal_shape.MATERIALS)
+        self.length_input = self.add_input(
+            'length', widget_type='drag_float', default_value=0.4,
+            min=0.01, max=4.0)
+        self.width_input = self.add_input(
+            'width', widget_type='drag_float', default_value=0.05,
+            min=0.002, max=1.0)
+        self.depth_input = self.add_input(
+            'depth', widget_type='drag_float', default_value=0.02,
+            min=0.002, max=1.0)
+        self.detail_input = self.add_input(
+            'detail', widget_type='drag_int', default_value=16,
+            min=6, max=40, callback=self.solve_and_send)
+        self.strike_input = self.add_input(
+            'strike', widget_type='drag_float', default_value=1.0,
+            min=0.0, max=1.0, callback=self.send_table)
+        self.direction_input = self.add_input(
+            'direction', widget_type='combo', default_value='face',
+            callback=self.send_table)
+        self.direction_input.widget.combo_items = ['face', 'edge', 'along']
+        self.damping_input = self.add_input(
+            'damping', widget_type='drag_float', default_value=0.5,
+            min=0.0, max=2.0, callback=self.send_table)
+        self.count_input = self.add_input(
+            'count', widget_type='drag_int', default_value=14,
+            min=2, max=32, callback=self.send_table)
+        self.compute_input = self.add_input('compute', widget_type='button',
+                                            callback=self.solve_and_send)
+        self.report_output = self.add_output('report')
+        self.modes_output = self.add_output('modes')
+        for port, tip in (
+                (self.profile_input,
+                 'the outline: half-widths along the length, as a list. '
+                 'They are taken as PROPORTIONS and scaled to "width", so '
+                 'a flat list is a plain bar and a dip in the middle is '
+                 'an undercut one'),
+                (self.strike_input,
+                 'where along it the mallet lands, nought at one end and '
+                 'one at the other. It decides what you HEAR: a bar has '
+                 'a node at its middle in the second mode, so struck '
+                 'there that mode is missing altogether. Free -- it does '
+                 'not need the shape solving again'),
+                (self.direction_input,
+                 'which way it is struck. A bar hit on its face wakes '
+                 'the modes that bend it that way and hardly touches the '
+                 'ones that bend it sideways or twist it, so this thins '
+                 'the table down to what a mallet could actually reach'),
+                (self.damping_input,
+                 'how much faster the upper modes die. IMPOSED, not '
+                 'solved: decay comes from losses, from how the thing is '
+                 'held and from what it radiates, and none of that is '
+                 'modelled. 0 rings them all alike, 1 halves the ring an '
+                 'octave up'),
+                (self.detail_input,
+                 'how finely it is chopped up. The ratios settle by '
+                 'about 16 and cost more above that -- worth raising '
+                 'once to see whether the answer moves, and leaving low '
+                 'while you draw'),
+                (self.compute_input,
+                 'solve it. The outline, the size and the material need '
+                 'this; the mallet controls do not')):
+            if port.widget is not None:
+                port.widget.set_tooltip(tip)
+        self.solve_and_send()
+
+    def profile_received(self):
+        data = self.profile_input()
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        if not isinstance(data, (list, tuple)):
+            return
+        values = []
+        for item in data:
+            try:
+                values.append(float(item))
+            except (TypeError, ValueError):
+                continue
+        if len(values) >= 2 and min(values) > 0.0:
+            self._profile = values
+            self.solve_and_send()
+
+    def _direction(self):
+        return {'face': (0.0, 0.0, 1.0),
+                'edge': (0.0, 1.0, 0.0),
+                'along': (1.0, 0.0, 0.0)}.get(
+                    any_to_string(self.direction_input()), (0.0, 0.0, 1.0))
+
+    def solve_and_send(self):
+        """Mesh it and solve it, unless nothing that matters has moved."""
+        sweep_mode = any_to_string(self.sweep_input())
+        material = any_to_string(self.material_input())
+        length = max(0.01, any_to_float(self.length_input()))
+        width = max(0.002, any_to_float(self.width_input()))
+        depth = max(0.002, any_to_float(self.depth_input()))
+        detail = max(6, any_to_int(self.detail_input()))
+        peak = max(self._profile)
+        profile = [width * 0.5 * v / peak for v in self._profile]
+        # Resampled to the asked-for detail, so how finely it is chopped
+        # up is not decided by how many numbers were drawn.
+        want = detail if sweep_mode != 'mirror' else max(3, detail // 2)
+        if len(profile) != want + 1:
+            src = np.linspace(0.0, 1.0, len(profile))
+            profile = list(np.interp(np.linspace(0.0, 1.0, want + 1),
+                                     src, profile))
+        key = (tuple(profile), sweep_mode, material, length, depth, detail)
+        if key != self._key:
+            try:
+                nodes, hexes = self._shape.sweep(
+                    profile, length, sweep_mode, depth,
+                    self._shape.disc_section(2, 2)
+                    if sweep_mode == 'revolve'
+                    else self._shape.rect_section(3, 3))
+                freq, shape = self._shape.solve_modes(
+                    nodes, hexes, material, want=32)
+            except (ValueError, RuntimeError) as err:
+                self.report_output.send(['error', str(err)])
+                return
+            self._solved = (nodes, freq, shape, length)
+            self._key = key
+        self.send_table()
+
+    def send_table(self):
+        if self._solved is None:
+            return
+        nodes, freq, shape, length = self._solved
+        table = self._shape.table_from(
+            nodes, freq, shape, length,
+            strike=min(1.0, max(0.0, any_to_float(self.strike_input()))),
+            damping=any_to_float(self.damping_input()),
+            direction=self._direction())
+        table = table[:max(2, any_to_int(self.count_input()))]
+        if not table:
+            self.report_output.send(['error', 'nothing that mallet could '
+                                     'reach'])
+            return
+        self.report_output.send(['modes', len(table), 'lowest',
+                                 round(float(freq[0]), 2), 'Hz'])
+        self.modes_output.send(table)
+
+
 class ModeTableNode(SynthNode):
     """Base for nodes whose instrument is a mode table.
 
@@ -6845,7 +7171,10 @@ class FaderNode(SynthNode):
     hand. Stereo when something is patched to the right inlet. The face is
     kept to the throw: pins say only left and right (which side of the node
     they sit on says the rest), and there is no bypass -- a fader's own
-    bottom is its off.
+    bottom is its off. There is a MUTE, though, which is a different
+    thing: it silences the channel and leaves the handle where it was, so
+    unmuting comes back to the balance you had rather than to wherever
+    silence left the hand.
     """
 
     @staticmethod
@@ -6854,7 +7183,11 @@ class FaderNode(SynthNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.unit = FaderUnit(synth_graph.sample_rate)
+        # Through a hook, so a strip that ends at the socket can be this
+        # same face with a different unit under it rather than a copy of
+        # it -- the taper, the pan law and the meters then cannot drift
+        # apart from fader~'s.
+        self.unit = self._make_unit(args)
 
         # Bare 'left' and 'right': which side of the node a pin sits on
         # already says in or out, and a fader wants no more face than its
@@ -6891,15 +7224,37 @@ class FaderNode(SynthNode):
                 'equal-power pan, unity at center: existing patches hear '
                 'no change until the knob moves')
 
+        self.mute_input = self.add_input('mute', widget_type='checkbox',
+                                        default_value=False,
+                                        callback=self.parameters_changed)
+        if self.mute_input.widget is not None:
+            self.mute_input.widget.set_tooltip(
+                'silence without moving the handle -- which is the whole '
+                'difference between muting a channel and pulling it '
+                'down: unmuting comes back to the balance you had. '
+                'Ramped over a few milliseconds, so it does not click')
         self.db_display = self.add_property('dB', widget_type='label',
                                             default_value='+0.0 dB')
 
-        self.signal_output = self.add_signal_output('left', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self._add_outputs()
+        self._extra_face()
         self.finish_synth_node()
         self._shown_db = 0.0
         self._meter_tags = None
         self._meter_shown = (-1.0, -1.0, -1.0, -1.0)
+
+    def sync_options(self):
+        self.unit.muted = any_to_bool(self.mute_input())
+
+    def _make_unit(self, args):
+        return FaderUnit(synth_graph.sample_rate)
+
+    def _add_outputs(self):
+        self.signal_output = self.add_signal_output('left', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+
+    def _extra_face(self):
+        """Anything a subclass wants after the strip and before the end."""
 
     def _fraction(self, value):
         # vu~'s scale, standing up: -60 dB at the foot, +6 at the crown.
@@ -6993,6 +7348,80 @@ class FaderNode(SynthNode):
             if self.db_display.widget is not None:
                 self.db_display.widget.set(f'{db:+.1f} dB')
 
+
+
+class FaderOutNode(FaderNode):
+    """A fader and the socket it lands on, in one.
+
+    The split between fader~ and audio_out~ is right and it stays: level
+    is one job, the wall is another, and a patch with several sources
+    wants several faders into one socket. But almost every new patch
+    begins by making both and joining them, so this is that pair
+    ready-made -- a strip that ends at the device.
+
+    Everything fader~ has, because it IS fader~ with a different unit
+    under it: the long-throw handle on the desk taper, the pan, the pair
+    of meters, the dB readout, the mute. What it adds is the only part of
+    a socket that differs from one strip to the next --
+
+    'channels' is which device outputs it lands on, counted from 1 the
+    way an interface's front panel counts them, so the default 1 2 is the
+    first pair. A channel the device does not have is silent rather than
+    an error, so a patch written for a rig still runs on a laptop.
+
+    There is deliberately no device chooser. The device is ENGINE-WIDE --
+    one stream, shared with the sampler -- so a copy of that control on
+    every strip would be several ways of saying one thing. It follows
+    whatever the engine is on; set it on an audio_out~ if you need to
+    move it.
+
+    Left and right still come out as well as going to the device, so a
+    meter, a recorder or a second socket can take the same signal.
+
+    fader_out~ <channels...>, e.g. fader_out~ 3 4.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return FaderOutNode(name, data, args)
+
+    def _make_unit(self, args):
+        channels = [1, 2]
+        if args is not None and len(args) > 0:
+            values = [decode_arg(args, index) for index in range(len(args))]
+            whole = [int(value) for value, kind in values if kind == int]
+            if len(whole) >= 2:
+                channels = whole[:2]
+        self._channel_list = channels
+        unit = FaderOutUnit(synth_graph.sample_rate)
+        unit.channels = [max(0, channel - 1) for channel in channels]
+        return unit
+
+    def _extra_face(self):
+        self.channels_option = self.add_option(
+            'channels', widget_type='text_input', width=110,
+            default_value=' '.join(str(c) for c in self._channel_list),
+            callback=self.parameters_changed)
+        if self.channels_option.widget is not None:
+            self.channels_option.widget.set_tooltip(
+                'which device outputs this lands on, counted from 1 the '
+                'way the interface\'s front panel counts them. A channel '
+                'the device does not have is silent rather than an error, '
+                'so a patch written for a rig still runs on a laptop. The '
+                'DEVICE itself is engine-wide and is not here -- set it '
+                'on an audio_out~')
+
+    def sync_options(self):
+        super().sync_options()
+        wanted = []
+        for word in any_to_string(
+                self.channels_option()).replace(',', ' ').split():
+            try:
+                wanted.append(max(1, min(32, int(word))))
+            except (ValueError, TypeError):
+                continue
+        if len(wanted) >= 2:
+            self.unit.channels = [max(0, c - 1) for c in wanted[:2]]
 
 class CaptureNode(SynthNode):
     """Signal to numpy array: hands whole blocks of audio to the node world.

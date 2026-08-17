@@ -11,6 +11,7 @@ steered a design decision; a FAIL means a law this rack relies on has
 shifted."""
 import os
 import sys
+import math
 import numpy as np
 from scipy.signal import hilbert as sig_hilbert
 from scipy.signal import find_peaks as sig_find_peaks
@@ -2068,6 +2069,410 @@ check('none of which changes how loud it is',
       max(_fw_rough[2], _fw_smooth[2]) < 1.35 * min(_fw_rough[2],
                                                     _fw_smooth[2]),
       f'{_fw_smooth[2]:.4f} smooth against {_fw_rough[2]:.4f} rough')
+
+
+# ------------------------------------------------- a deliberate hit
+# A CONTACT STIFFENS AS IT COMPRESSES. Press a ball against a plate and
+# the harder you press the stiffer it gets, since more of it is
+# touching: Hertz's law, force going as the squash to the power three
+# halves. What follows is that a harder blow is a SHORTER one -- the
+# contact time falls as the fifth root of the speed, the peak rises as
+# the six fifths -- so hitting harder does not merely make a thing
+# louder, it makes it brighter. That is most of what dynamics on a
+# struck instrument are, and with a fixed contact time none of it
+# happens: everything just gets louder, evenly, the way a sampler does.
+def _strike(style='tap', force=1.0, hardness=0.6, spread=0.4,
+            scatter=0.0, seconds=0.6):
+    u = sc.StrikeUnit(SR)
+    u.style = sc.StrikeUnit.STYLES.index(style)
+    u.force_in.base = force
+    u.hardness_in.base = hardness
+    u.spread_in.base = spread
+    u.scatter_in.base = scatter
+    trig = sc.Signal()
+    u.trigger_in.sources.append(trig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        trig.data[:BLOCK] = 0.0
+        if b == 2:
+            trig.data[10] = 1.0
+        trig.constant = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    return np.concatenate(got)
+
+
+def _blow(y):
+    """Impulse, peak, and how long the contact lasted."""
+    live = np.flatnonzero(np.abs(y) > 1e-12)
+    if live.size == 0:
+        return 0.0, 0.0, 0.0, 0
+    runs = np.split(live, np.flatnonzero(np.diff(live) > 1) + 1)
+    return (float(np.abs(y).sum()), float(np.abs(y).max()),
+            1000.0 * len(runs[0]) / SR, len(runs))
+
+
+_hz = [_blow(_strike(force=f)) for f in (0.25, 0.5, 1.0, 2.0)]
+_hz_imp = [x[0] for x in _hz]
+_hz_dur = [x[2] for x in _hz]
+_hz_pk = [x[1] for x in _hz]
+check('a harder blow puts in more, exactly in proportion',
+      abs(_hz_imp[3] / _hz_imp[0] - 8.0) < 0.02 * 8.0,
+      'impulse ' + ' / '.join(f'{x:.3f}' for x in _hz_imp)
+      + ' for force a quarter, a half, one and two')
+check('and spends it FASTER, as Hertz says: the fifth root of it',
+      abs(_hz_dur[3] / _hz_dur[0] - 8.0 ** -0.2) < 0.05 * 8.0 ** -0.2,
+      'contact ' + ' / '.join(f'{x:.3f}' for x in _hz_dur)
+      + ' ms -- eight times the blow over ' + f'{_hz_dur[3] / _hz_dur[0]:.3f}'
+      + ' of the time, against the eight to the minus a fifth '
+      + f'({8.0 ** -0.2:.3f}) a stiffening contact gives')
+check('so it is brighter as well as louder, which is what dynamics are',
+      abs(_hz_pk[3] / _hz_pk[0] - 8.0 ** 1.2) < 0.08 * 8.0 ** 1.2,
+      f'peak up {_hz_pk[3] / _hz_pk[0]:.1f} times for eight times the '
+      f'blow, against the {8.0 ** 1.2:.1f} that follows -- a fixed '
+      f'contact would have given eight, and only loudness')
+
+# Hardness colours a blow rather than weighing it: the momentum handed
+# over is the same, spent over a longer or shorter contact.
+_hd = [_blow(_strike(hardness=h)) for h in (0.0, 0.5, 1.0)]
+check('hardness colours a blow and does not weigh it',
+      max(x[0] for x in _hd) < 1.02 * min(x[0] for x in _hd)
+      and _hd[0][2] > 8.0 * _hd[2][2],
+      'impulse ' + ' / '.join(f'{x[0]:.3f}' for x in _hd)
+      + ' while the contact runs ' + ' / '.join(f'{x[2]:.3f}' for x in _hd)
+      + ' ms, softest to hardest')
+
+# Each style is a different number of contacts laid out differently, and
+# that is all a style is.
+_st = {name: _blow(_strike(style=name)) for name in sc.StrikeUnit.STYLES}
+check('every style is a different figure of contacts',
+      _st['tap'][3] == 1 and _st['mallet'][3] == 1
+      and _st['stick'][3] == 2 and _st['flam'][3] == 2
+      and _st['drag'][3] == 4 and _st['brush'][3] > 8,
+      ', '.join(f'{k} {v[3]}' for k, v in _st.items())
+      + ' contacts')
+check('and a mallet is a longer contact than a tap',
+      _st['mallet'][2] > 2.0 * _st['tap'][2],
+      f'{_st["tap"][2]:.3f} ms for a tap, {_st["mallet"][2]:.3f} for a '
+      f'mallet')
+
+# A brush is ONE stroke divided among its hairs, so it hands over what a
+# tap does. A flam is two strokes and a drag is four, and those really
+# do put in more -- which is what they are for.
+check('a brush is one stroke shared out, not many strokes',
+      abs(_st['brush'][0] - _st['tap'][0]) < 0.05 * _st['tap'][0]
+      and _st['flam'][0] > 1.3 * _st['tap'][0]
+      and _st['drag'][0] > 1.8 * _st['tap'][0],
+      f'impulse {_st["tap"][0]:.2f} tap, {_st["brush"][0]:.2f} brush, '
+      f'{_st["flam"][0]:.2f} flam, {_st["drag"][0]:.2f} drag')
+
+# 'spread' is the time the figure is laid over, and means nothing at all
+# to a style with one contact in it.
+_sp_near = _blow(_strike(style='flam', spread=0.0))
+_sp_far = _blow(_strike(style='flam', spread=1.0))
+check('spread opens out a figure and leaves a single hit alone',
+      _sp_far[3] == _sp_near[3]
+      and abs(_st['tap'][0] - _blow(_strike(spread=1.0))[0]) < 1e-9,
+      'a flam still two contacts either way, and a tap unmoved by it')
+
+# The trigger's own height carries the dynamics, so one cord does both.
+# Both above the threshold, or the quieter one never fires at all --
+# the trigger has to CROSS to be a strike.
+_tv = []
+for _tv_h in (0.6, 1.2):
+    _tv_u = sc.StrikeUnit(SR)
+    _tv_t = sc.Signal()
+    _tv_u.trigger_in.sources.append(_tv_t)
+    _tv_got = []
+    for _tv_b in range(40):
+        _tv_t.data[:BLOCK] = 0.0
+        if _tv_b == 2:
+            _tv_t.data[10] = _tv_h
+        _tv_t.constant = False
+        _tv_u.render(BLOCK)
+        _tv_got.append(_tv_u.out.array(BLOCK).copy())
+    _tv.append(_blow(np.concatenate(_tv_got)))
+check('and how tall the trigger is, is how hard it hits',
+      _tv[0][0] > 0.0
+      and abs(_tv[1][0] / max(_tv[0][0], 1e-12) - 2.0) < 0.05 * 2.0,
+      f'impulse {_tv[0][0]:.3f} from a trigger of 0.6 and '
+      f'{_tv[1][0]:.3f} from one of 1.2')
+
+
+# And it has to arrive at a useful LEVEL, which an honest impulse does
+# not on its own. A blow of area one is the right convention, but a
+# resonator's excite inlet is not calibrated for impulses -- it is
+# calibrated for SIGNALS, scaling each mode by the root of one minus its
+# pole radius so that a sustained drive sounds the same however long the
+# decay. That is right for a bow, and it leaves a bare unit impulse some
+# forty decibels under what the same impulse does through the trigger,
+# which is normalised the other way about. Two sensible conventions that
+# do not meet, and the gap is not even a constant: because of that
+# normalisation an impulse gets weaker the longer the decay, so the same
+# blow wants anywhere from eight to two hundred times over a spread of
+# settings. A unit blow is worth the middle of that, and 'level' reaches
+# four times it.
+def _strike_against_trigger(freq=220.0, decay=1.2, hardness=0.6,
+                            seconds=1.5):
+    table = [(1.0, 1.0, 1.0), (2.32, 0.8, 0.8), (4.25, 0.6, 0.6),
+             (6.1, 0.4, 0.5)]
+
+    def bank():
+        m = sc.ModalUnit(SR)
+        m.set_modes(table)
+        m.frequency_in.base = freq
+        m.decay_in.base = decay
+        m.hardness_in.base = hardness
+        return m
+
+    ring = bank()
+    trig = sc.Signal()
+    ring.trigger_in.sources.append(trig)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        trig.data[:BLOCK] = 0.0
+        if b == 2:
+            trig.data[10] = 1.0
+        trig.constant = False
+        ring.render(BLOCK)
+        got.append(ring.out.array(BLOCK).copy())
+    button = float(np.sqrt(np.mean(np.concatenate(got) ** 2)))
+
+    hammer = sc.StrikeUnit(SR)
+    hammer.hardness_in.base = hardness
+    fire = sc.Signal()
+    hammer.trigger_in.sources.append(fire)
+    ring2 = bank()
+    drive = sc.Signal()
+    ring2.excite_in.sources.append(drive)
+    got = []
+    for b in range(int(seconds * SR / BLOCK)):
+        fire.data[:BLOCK] = 0.0
+        if b == 2:
+            fire.data[10] = 1.0
+        fire.constant = False
+        hammer.render(BLOCK)
+        drive.data[:BLOCK] = hammer.out.array(BLOCK)
+        drive.constant = False
+        ring2.render(BLOCK)
+        got.append(ring2.out.array(BLOCK).copy())
+    return button, float(np.sqrt(np.mean(np.concatenate(got) ** 2)))
+
+
+_sv = [_strike_against_trigger(freq=f, decay=d)
+       for f in (110.0, 660.0) for d in (0.3, 4.0)]
+_sv_db = [20.0 * math.log10(b / max(a, 1e-12)) for a, b in _sv]
+check('a hit lands where a resonator\'s own trigger lands',
+      all(-11.0 < x < 8.0 for x in _sv_db),
+      'strike~ against the trigger button: '
+      + ' / '.join(f'{x:+.1f}' for x in _sv_db)
+      + ' dB over low and high pitches, short and long decays -- it was '
+      + 'thirty-nine decibels under, which is a unit impulse arriving at '
+      + 'an inlet calibrated for signals')
+check('and level reaches far enough to close what is left',
+      sc.StrikeUnit(SR).level_in.eval(1) is not None
+      and _sv_db and max(_sv_db) - min(_sv_db) < 20.0,
+      f'the spread across those four is '
+      f'{max(_sv_db) - min(_sv_db):.1f} dB, and level reaches four times '
+      f'-- the spread is the excite path making an impulse weaker the '
+      f'longer the decay, which no single gain can answer')
+
+
+# ------------------------------------------------ a strip and its mute
+# A mute is not the fader pulled down. The whole point is that the HANDLE
+# stays where it was set, so the balance you had is the balance you come
+# back to -- and it has to ARRIVE at silence, not merely approach it.
+def _fader_run(mute_at=None, unmute_at=None, blocks=60, unit=None):
+    u = unit if unit is not None else sc.FaderUnit(SR)
+    sig = sc.Signal()
+    u.signal_in.sources.append(sig)
+    got = []
+    for b in range(blocks):
+        t = (np.arange(BLOCK) + b * BLOCK) / SR
+        sig.data[:BLOCK] = 0.5 * np.sin(2 * np.pi * 220.0 * t)
+        sig.constant = False
+        if mute_at is not None and b == mute_at:
+            u.muted = True
+        if unmute_at is not None and b == unmute_at:
+            u.muted = False
+        u.render(BLOCK)
+        got.append(u.out.array(BLOCK).copy())
+    return np.concatenate(got), u
+
+
+_fm, _fu = _fader_run(mute_at=20, unmute_at=40)
+_seg = lambda a, b: float(np.sqrt(np.mean(_fm[a * BLOCK:b * BLOCK] ** 2)))
+check('a mute reaches silence, and does not merely approach it',
+      _seg(25, 39) == 0.0 and _seg(10, 19) > 0.3,
+      f'{_seg(10, 19):.4f} open, {_seg(25, 39):.6f} muted -- chased by a '
+      f'fraction of the way each block it was still 46 dB short of '
+      f'silence forty milliseconds in, so the channel never went quiet')
+check('and unmuting comes back to the balance it had',
+      abs(_seg(50, 59) - _seg(10, 19)) < 0.01 * _seg(10, 19)
+      and abs(_fu.position_in.base - sc.FaderUnit.UNITY_POSITION) < 1e-9,
+      f'{_seg(10, 19):.4f} before, {_seg(50, 59):.4f} after, with the '
+      f'handle still at {_fu.position_in.base:.3f}')
+# The step into silence has to be a ramp, or it is a click: a 220 Hz sine
+# at 0.5 already steps 0.0157 between samples of its own accord, and the
+# mute must not beat that.
+check('and it fades rather than steps, so it does not click',
+      float(np.abs(np.diff(_fm)).max()) < 1.5 * 0.5 * 2.0 * math.pi
+      * 220.0 / SR,
+      f'biggest step between samples {np.abs(np.diff(_fm)).max():.4f}, '
+      f'against the sine\'s own {0.5 * 2 * math.pi * 220.0 / SR:.4f} -- '
+      f'a hard switch would have shown about 0.5')
+
+# The strip is a fader and a socket in one, and it must be a SINK to the
+# compiler, which finds them by what they are rather than by asking.
+_strip = sc.FaderOutUnit(SR)
+check('a strip that ends at the device is a terminus to the compiler',
+      isinstance(_strip, sc.AudioOutUnit),
+      'the compiler collects sinks by isinstance, so a subclass of the '
+      'socket is one without the compiler being told anything')
+_sm, _su = _fader_run(mute_at=15, blocks=30, unit=_strip)
+_mix = np.zeros((BLOCK, 2), dtype=np.float32)
+_strip.mix_into(_mix, BLOCK)
+check('and it carries the fader whole rather than a copy of it',
+      _strip.levels is _strip.fader.levels
+      and _strip.current_db() == _strip.fader.current_db()
+      and float(np.abs(_mix).max()) == 0.0,
+      'meters, dB and mute all read through to the contained fader, so '
+      'the taper and the pan law cannot drift from fader~\'s; muted, '
+      'nothing reaches the device')
+
+
+# ------------------------------------------- modes from a shape
+# A table solved for, rather than looked up. What has to be right is the
+# SHAPE: modal~'s table is ratios and its 'frequency' sets the pitch, so
+# an error in the overall scale costs nothing, and the elastic constants
+# only matter in their proportions.
+from dpg_system import modal_shape as msh
+
+BAR_BOOK = (1.0, 2.7565, 5.4039, 8.9330)
+
+
+def _bar_ratios(sweep_mode, detail=24, length=1.0, half=0.025):
+    stations = detail if sweep_mode != 'mirror' else detail // 2
+    profile = [half] * (stations + 1)
+    section = (msh.disc_section(2, 2) if sweep_mode == 'revolve'
+               else msh.rect_section(3, 3))
+    nodes, hexes = msh.sweep(profile, length, sweep_mode, 2.0 * half,
+                             section)
+    freq, shape = msh.solve_modes(nodes, hexes, 'steel', want=18)
+    table = msh.table_from(nodes, freq, shape, length, strike=1.0,
+                           damping=0.0)
+    return [row[0] for row in table], len(nodes)
+
+
+_bx, _bn = _bar_ratios('extrude')
+check('a bar solved from its shape rings where a bar rings',
+      all(abs(g - b) < 0.06 * b for g, b in zip(_bx[:2], BAR_BOOK[:2])),
+      'ratios ' + '  '.join(f'{x:.3f}' for x in _bx[:4])
+      + ' from ' + str(_bn) + ' nodes, against the free-free bar\'s '
+      + '  '.join(f'{x:.3f}' for x in BAR_BOOK))
+
+# The same bar built three different ways -- extruded on a square grid,
+# mirrored, and revolved on rings round a square core. The BENDING
+# ratios must not care, since the shape of the section cancels out of
+# them: a round rod bends in the same proportions as a square one. What
+# does differ further up is TORSION, and it has to: twisting stiffness
+# depends very much on the section, so a square bar and a round one are
+# not the same thing to twist.
+_bm, _ = _bar_ratios('mirror')
+_br, _ = _bar_ratios('revolve')
+check('and it does not matter which way the mesh was swept',
+      all(abs(a - b) < 0.03 * a for a, b in zip(_bx[:2], _bm[:2]))
+      and all(abs(a - b) < 0.03 * a for a, b in zip(_bx[:2], _br[:2])),
+      'bending ' + ' '.join(f'{x:.3f}' for x in _bx[:2])
+      + ' extruded, ' + ' '.join(f'{x:.3f}' for x in _bm[:2])
+      + ' mirrored, ' + ' '.join(f'{x:.3f}' for x in _br[:2])
+      + ' revolved -- three meshes, one shape')
+
+# Refining must settle, or the answer is the mesh talking rather than
+# the shape.
+_bc = [_bar_ratios('extrude', detail=d)[0][1] for d in (12, 24, 36)]
+check('and refining the mesh settles instead of wandering',
+      abs(_bc[2] - _bc[1]) < 0.5 * abs(_bc[1] - _bc[0]) + 0.01,
+      'second ratio ' + ' -> '.join(f'{x:.3f}' for x in _bc)
+      + ' as the mesh is refined')
+
+# Where it is struck decides what is heard. A free-free bar has a node
+# at its middle in the second mode, so a strike there cannot wake it --
+# and the mode should be ABSENT, not quiet.
+_st_nodes, _st_hexes = msh.sweep([0.025] * 25, 1.0, 'extrude', 0.05,
+                                 msh.rect_section(3, 3))
+_st_f, _st_s = msh.solve_modes(_st_nodes, _st_hexes, 'steel', want=18)
+_st_end = [r[0] for r in msh.table_from(_st_nodes, _st_f, _st_s, 1.0,
+                                        strike=1.0, damping=0.0)]
+_st_mid = [r[0] for r in msh.table_from(_st_nodes, _st_f, _st_s, 1.0,
+                                        strike=0.5, damping=0.0)]
+check('a strike at a mode\'s node does not wake that mode',
+      any(abs(x - BAR_BOOK[1]) < 0.06 * BAR_BOOK[1] for x in _st_end)
+      and not any(abs(x - BAR_BOOK[1]) < 0.06 * BAR_BOOK[1]
+                  for x in _st_mid),
+      'struck at the end ' + ' '.join(f'{x:.3f}' for x in _st_end[:3])
+      + ', struck dead centre ' + ' '.join(f'{x:.3f}' for x in _st_mid[:3])
+      + ' -- the 2.76 mode has a node at the middle and is simply gone')
+
+# And which WAY it is struck. A bar hit on its face wakes the modes that
+# bend it that way, not the ones that bend it sideways or twist it, so a
+# weight taken from how far a mode moves without asking which way fills
+# the table with modes the mallet never reached.
+_dir_face = msh.table_from(_st_nodes, _st_f, _st_s, 1.0, strike=1.0,
+                           direction=(0.0, 0.0, 1.0))
+_dir_all = msh.table_from(_st_nodes, _st_f, _st_s, 1.0, strike=1.0,
+                          direction=(1.0, 1.0, 1.0))
+check('and which way it is struck thins the table to what it can reach',
+      len(_dir_face) < len(_dir_all),
+      f'{len(_dir_face)} modes reachable striking the face, '
+      f'{len(_dir_all)} striking every way at once')
+
+# The point of the whole thing: the shape decides the tuning. A marimba
+# bar is undercut until its second mode lands two octaves up, and the
+# cut is what puts it there.
+def _undercut(cut, detail=24):
+    x = np.linspace(-1.0, 1.0, detail + 1)
+    profile = [0.03 * (1.0 - cut * math.cos(v * math.pi / 2.0) ** 2)
+               for v in x]
+    nodes, hexes = msh.sweep(profile, 1.0, 'extrude', 0.05,
+                             msh.rect_section(3, 3))
+    freq, shape = msh.solve_modes(nodes, hexes, 'wood', want=18)
+    table = msh.table_from(nodes, freq, shape, 1.0, strike=1.0,
+                           damping=0.0)
+    return [row[0] for row in table]
+
+
+_uc = [_undercut(c)[1] for c in (0.0, 0.15, 0.3, 0.45)]
+check('cutting the middle away tunes the second mode up, as it should',
+      all(b > a for a, b in zip(_uc, _uc[1:])) and _uc[-1] > 1.2 * _uc[0],
+      'second ratio ' + ' -> '.join(f'{x:.3f}' for x in _uc)
+      + ' as the middle is cut away -- a marimba bar is cut until this '
+      + 'reaches 4.000')
+
+# Three columns, in the shape modal~ eats.
+_tb = msh.mode_table([0.03, 0.028, 0.028, 0.03], length=0.4,
+                     sweep_mode='extrude', depth=0.02, material='wood',
+                     count=12)
+check('what comes out is a table modal~ can eat',
+      len(_tb) >= 3 and all(len(r) == 3 for r in _tb)
+      and abs(_tb[0][0] - 1.0) < 1e-9
+      and all(0.0 < r[1] <= 1.0 for r in _tb)
+      and all(r[0] > 0.0 for r in _tb),
+      f'{len(_tb)} rows of [ratio, weight, decay], first ratio '
+      f'{_tb[0][0]:.3f}, weights {_tb[0][1]:.2f} down to '
+      f'{min(r[1] for r in _tb):.2f}')
+
+# A mesh turned inside out would hand back negative stiffness and a
+# spectrum of nonsense, so it says so instead.
+try:
+    msh.sweep([0.03, -0.01, 0.03], 0.4, 'extrude')
+    _guard = False
+except ValueError:
+    _guard = True
+check('and a profile that cannot be swept is refused, not solved',
+      _guard,
+      'a negative half-width raises rather than returning a spectrum '
+      'of nonsense')
 
 
 # ------------------------------------------------- every unit renders
