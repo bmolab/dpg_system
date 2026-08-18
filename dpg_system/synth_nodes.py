@@ -4694,12 +4694,40 @@ class ShapeModesNode(Node):
         self._shape = modal_shape
         self._solved = None
         self._key = None
+        self._cavity = False
+        self._openness = 'one end'
         # Flat, so what comes up first is a plain bar with straight
         # edges. A waist by default looked like the drawing was wrong.
         self._profile = [1.0, 1.0, 1.0, 1.0]
 
         self.profile_input = self.add_input('profile',
                                             callback=self.profile_received)
+        self.solve_input = self.add_input(
+            'solve', widget_type='combo', default_value='body',
+            callback=self.solve_and_send)
+        self.solve_input.widget.combo_items = ['body', 'cavity']
+        if self.solve_input.widget is not None:
+            self.solve_input.widget.set_tooltip(
+                'which resonator: the THING, or the AIR inside it. They '
+                'are two, and they are not alike -- a 40 cm brass tube '
+                'rings at 1112 Hz as metal and 429 Hz as an air column, '
+                'and nothing about one is in the other. A cavity needs '
+                '"wall" below 1, since a solid has no inside. Use two of '
+                'these nodes into two resonators if you want both, which '
+                'is what a real vessel is')
+        self.openness_input = self.add_input(
+            'open', widget_type='combo', default_value='one end',
+            callback=self.solve_and_send)
+        self.openness_input.widget.combo_items = ['both ends', 'one end',
+                                                 'sealed']
+        if self.openness_input.widget is not None:
+            self.openness_input.widget.set_tooltip(
+                'which ends of the cavity are open, and it is worth an '
+                'octave: a pipe stopped at one end sounds an octave BELOW '
+                'the same pipe open at both, and gives only the odd '
+                'harmonics -- 1, 3, 5, 7 -- where the open one gives them '
+                'all. Sealed rings longest and radiates least. Nothing to '
+                'the body')
         self.sweep_input = self.add_input(
             'sweep', widget_type='combo', default_value='extrude',
             callback=self.solve_and_send)
@@ -5016,6 +5044,11 @@ class ShapeModesNode(Node):
         detail = max(6, any_to_int(self.detail_input()))
         carve = self._chosen(self.carve_input, ('depth', 'width'), 'depth')
         wall = min(1.0, max(0.15, any_to_float(self.wall_input())))
+        want_cavity = self._chosen(self.solve_input, ('body', 'cavity'),
+                                   'body') == 'cavity'
+        openness = self._chosen(self.openness_input,
+                                ('both ends', 'one end', 'sealed'),
+                                'one end')
         peak = max(self._profile)
         profile = [width * 0.5 * v / peak for v in self._profile]
         # Resampled to the asked-for detail, so how finely it is chopped
@@ -5028,21 +5061,36 @@ class ShapeModesNode(Node):
             profile = list(np.interp(np.linspace(0.0, 1.0, want + 1),
                                      src, profile))
         key = (tuple(profile), sweep_mode, material, length, depth, detail,
-               carve, mirror, wall)
+               carve, mirror, wall, want_cavity, openness)
+        if want_cavity and wall >= 0.999:
+            self.report_output.send(['error', 'a solid has no cavity -- '
+                                     'bring "wall" below 1'])
+            return
         if key != self._key:
             try:
                 # No section handed over: sweep picks a solid one or a
                 # hollow one from 'wall', and its defaults are the ones
                 # this used to name.
-                nodes, hexes = self._shape.sweep(
-                    profile, length, sweep_mode, depth, None, carve,
-                    mirror, wall)
-                freq, shape = self._shape.solve_modes(
-                    nodes, hexes, material, want=32)
+                if want_cavity:
+                    nodes, hexes = self._shape.cavity_mesh(
+                        profile, length, sweep_mode, depth, carve,
+                        mirror, wall)
+                    freq, shape = self._shape.cavity_modes(
+                        nodes, hexes,
+                        open_start=openness == 'both ends',
+                        open_end=openness != 'sealed', want=32)
+                else:
+                    nodes, hexes = self._shape.sweep(
+                        profile, length, sweep_mode, depth, None, carve,
+                        mirror, wall)
+                    freq, shape = self._shape.solve_modes(
+                        nodes, hexes, material, want=32)
             except (ValueError, RuntimeError) as err:
                 self.report_output.send(['error', str(err)])
                 return
             self._solved = (nodes, freq, shape, length, hexes)
+            self._cavity = want_cavity
+            self._openness = openness
             self._key = key
         self.send_table()
         self.send_mesh()
@@ -5072,6 +5120,25 @@ class ShapeModesNode(Node):
         if self._solved is None or getattr(self, 'in_loading_process', False):
             return
         nodes, freq, shape, length = self._solved[:4]
+        if self._cavity:
+            table = self._shape.cavity_table(
+                nodes, freq, shape, length,
+                strike=min(1.0, max(0.0,
+                                    any_to_float(self.strike_input()))),
+                damping=any_to_float(self.damping_input()))
+            table = table[:max(2, any_to_int(self.count_input()))]
+            if not table or freq.size == 0:
+                self.report_output.send(['error', 'nothing that drive '
+                                         'could reach'])
+                return
+            opens = {'both ends': 2, 'one end': 1, 'sealed': 0}
+            self.report_output.send(['cavity', len(table), 'lowest',
+                                     round(float(freq[0]), 2), 'Hz'])
+            self.frequency_output.send(float(freq[0]))
+            self.decay_output.send(self._shape.cavity_ring(
+                opens.get(self._openness, 1), float(freq[0])))
+            self.modes_output.send(table)
+            return
         table = self._shape.table_from(
             nodes, freq, shape, length,
             strike=min(1.0, max(0.0, any_to_float(self.strike_input()))),

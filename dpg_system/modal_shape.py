@@ -433,7 +433,26 @@ def _elastic(young, poisson):
     return d
 
 
-def assemble(nodes, hexes, young, poisson, density):
+def _strain_rows(grad):
+    """The six strain rows a displacement gradient contributes.
+
+    The same pattern the ordinary B matrix uses, written once so the
+    incompatible modes below cannot drift from it.
+    """
+    block = np.zeros((6, 3))
+    block[0, 0] = grad[0]
+    block[1, 1] = grad[1]
+    block[2, 2] = grad[2]
+    block[3, 0] = grad[1]
+    block[3, 1] = grad[0]
+    block[4, 1] = grad[2]
+    block[4, 2] = grad[1]
+    block[5, 0] = grad[2]
+    block[5, 2] = grad[0]
+    return block
+
+
+def assemble(nodes, hexes, young, poisson, density, incompatible=True):
     """Stiffness and mass of the mesh, free of any support.
 
     Free-free is right for something struck: a bell held by its crown
@@ -448,7 +467,13 @@ def assemble(nodes, hexes, young, poisson, density):
     for elem in hexes:
         xyz = nodes[elem]
         k_e = np.zeros((24, 24))
+        k_ua = np.zeros((24, 9))
+        k_aa = np.zeros((9, 9))
         volume = 0.0
+        if incompatible:
+            centre = np.linalg.inv(
+                (0.125 * np.column_stack([_CORNER[:, 0], _CORNER[:, 1],
+                                          _CORNER[:, 2]])).T @ xyz)
         for xi in _GAUSS:
             d_nat = 0.125 * np.column_stack([
                 _CORNER[:, 0] * (1.0 + xi[1] * _CORNER[:, 1])
@@ -477,6 +502,33 @@ def assemble(nodes, hexes, young, poisson, density):
             b_mat[5, 0::3] = d_xyz[:, 2]
             b_mat[5, 2::3] = d_xyz[:, 0]
             k_e += b_mat.T @ d_mat @ b_mat * det
+            if incompatible:
+                # Three bubbles, one per natural direction, each
+                # vanishing on the faces it is normal to.
+                slopes = centre.T @ np.diag([-2.0 * xi[0], -2.0 * xi[1],
+                                             -2.0 * xi[2]])
+                g_mat = np.hstack([_strain_rows(slopes[:, m])
+                                   for m in range(3)])
+                k_ua += b_mat.T @ d_mat @ g_mat * det
+                k_aa += g_mat.T @ d_mat @ g_mat * det
+        if incompatible:
+            # A brick cannot curve. Its faces stay flat however it is
+            # loaded, so asked to BEND it resists by shearing instead --
+            # which it should not have to -- and comes out far too
+            # stiff. That is locking, and it is why a thin wall was out
+            # of reach: the thinner the element, the worse the lie.
+            #
+            # The cure is three extra displacement shapes inside the
+            # element, bubbles that vanish at every face, which let it
+            # curve. They belong to no neighbour, so they are condensed
+            # away here and the assembled problem never sees them: same
+            # size, same solver, same mesh.
+            #
+            # Their gradients are taken at the element's CENTRE, not at
+            # each Gauss point. That is not a shortcut -- it is what
+            # makes the element still get a constant strain exactly
+            # right, which is the one thing it must never lose.
+            k_e -= k_ua @ np.linalg.solve(k_aa, k_ua.T)
         dofs = np.array([3 * v + c for v in elem for c in range(3)])
         rows.append(np.repeat(dofs, 24))
         cols.append(np.tile(dofs, 24))
@@ -486,6 +538,186 @@ def assemble(nodes, hexes, young, poisson, density):
         (np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))),
         shape=(3 * n_node, 3 * n_node)).tocsc()
     return stiff, sp.diags(np.repeat(lumped, 3)).tocsc()
+
+
+def cavity_mesh(profile, length, sweep_mode='revolve', depth=None,
+                carve='depth', mirror=False, wall=0.4):
+    """The AIR inside a hollow shape, as a solid mesh of its own.
+
+    Which needs no new machinery at all: the bore of a hollow form is
+    the same form scaled down by the wall, so the cavity is that shape
+    swept SOLID at the inner size. What is meshed is the space, not the
+    thing around it.
+    """
+    inner = max(1.0e-4, 1.0 - wall)
+    prof = [value * inner for value in np.asarray(profile,
+                                                  dtype=float).ravel()]
+    inner_depth = None if depth is None else depth * inner
+    return sweep(prof, length, sweep_mode, inner_depth, None, carve,
+                 mirror, 1.0)
+
+
+def assemble_acoustic(nodes, hexes):
+    """The two matrices an air cavity's modes come out of.
+
+    Sound in a cavity obeys the Helmholtz equation, and as an
+    eigenproblem that is far lighter than elasticity: ONE unknown at
+    each corner, the pressure, where a solid has three. The matrices are
+    the plain Laplacian and the plain mass, with no elastic constants in
+    them anywhere -- air's stiffness and density enter only through the
+    speed of sound, and that is one multiplication at the end.
+    """
+    n_node = len(nodes)
+    rows, cols, kvals, mvals = [], [], [], []
+    for elem in hexes:
+        xyz = nodes[elem]
+        k_e = np.zeros((8, 8))
+        m_e = np.zeros((8, 8))
+        for xi in _GAUSS:
+            shape = 0.125 * ((1.0 + xi[0] * _CORNER[:, 0])
+                             * (1.0 + xi[1] * _CORNER[:, 1])
+                             * (1.0 + xi[2] * _CORNER[:, 2]))
+            d_nat = 0.125 * np.column_stack([
+                _CORNER[:, 0] * (1.0 + xi[1] * _CORNER[:, 1])
+                * (1.0 + xi[2] * _CORNER[:, 2]),
+                _CORNER[:, 1] * (1.0 + xi[0] * _CORNER[:, 0])
+                * (1.0 + xi[2] * _CORNER[:, 2]),
+                _CORNER[:, 2] * (1.0 + xi[0] * _CORNER[:, 0])
+                * (1.0 + xi[1] * _CORNER[:, 1])])
+            jac = d_nat.T @ xyz
+            det = float(np.linalg.det(jac))
+            if det <= 0.0:
+                raise ValueError('the cavity mesh has an inverted element')
+            d_xyz = d_nat @ np.linalg.inv(jac).T
+            k_e += d_xyz @ d_xyz.T * det
+            # Consistent rather than lumped: the mass matrix is only
+            # eight by eight here, and for a wave problem it is worth
+            # far more than it costs.
+            m_e += np.outer(shape, shape) * det
+        idx = np.asarray(elem)
+        rows.append(np.repeat(idx, 8))
+        cols.append(np.tile(idx, 8))
+        kvals.append(k_e.ravel())
+        mvals.append(m_e.ravel())
+    shape_ = (n_node, n_node)
+    stiff = sp.coo_matrix((np.concatenate(kvals),
+                           (np.concatenate(rows), np.concatenate(cols))),
+                          shape=shape_).tocsc()
+    mass = sp.coo_matrix((np.concatenate(mvals),
+                          (np.concatenate(rows), np.concatenate(cols))),
+                         shape=shape_).tocsc()
+    return stiff, mass
+
+
+def cavity_modes(nodes, hexes, speed=343.0, open_start=False,
+                 open_end=False, want=16):
+    """What the air inside would sing, in hertz.
+
+    An end left CLOSED is a rigid wall, which is what the equation does
+    if nothing is said -- the natural condition. An end OPENED is a
+    pressure release, which has to be said: those corners are struck out
+    of the problem so the pressure there is held at nothing. That is the
+    whole difference between a stopped pipe and an open one, and it is
+    worth a factor of two in the note.
+    """
+    stiff, mass = assemble_acoustic(nodes, hexes)
+    along = nodes[:, 0]
+    loose = np.zeros(len(nodes), dtype=bool)
+    if open_start:
+        loose |= np.abs(along - along.min()) < 1e-9
+    if open_end:
+        loose |= np.abs(along - along.max()) < 1e-9
+    keep = np.flatnonzero(~loose)
+    if keep.size < 8:
+        return np.zeros(0)
+    stiff = stiff[keep][:, keep]
+    mass = mass[keep][:, keep]
+    count = min(want + 4, keep.size - 2)
+    if count < 1:
+        return np.zeros(0), np.zeros((len(nodes), 0))
+    lam, vec = spl.eigsh(stiff, k=count, M=mass, sigma=-1.0, which='LM')
+    order = np.argsort(np.real(lam))
+    lam = np.maximum(np.real(lam)[order], 0.0)
+    vec = np.real(vec)[:, order]
+    freq = speed * np.sqrt(lam) / (2.0 * math.pi)
+    # Back out to every corner, with nothing at the ones held open.
+    full = np.zeros((len(nodes), vec.shape[1]))
+    full[keep] = vec
+    if not (open_start or open_end):
+        # Sealed all round, a constant pressure everywhere costs nothing
+        # and comes out at zero -- the air sitting still. Not a note.
+        live = freq > 1e-6 * max(freq.max(), 1.0)
+        freq, full = freq[live], full[:, live]
+    return freq[:want], full[:, :want]
+
+
+def cavity_table(nodes, freq, press, length=1.0, strike=1.0, damping=1.0,
+                 floor=0.02):
+    """The cavity's modes as a table, weighted where it is driven.
+
+    By how fast the air MOVES there, not by how hard it pushes. An air
+    column is played at an opening -- across a bottle's mouth, at a
+    flute's embouchure, at the end of a pipe -- and an opening is exactly
+    where the pressure is nothing and the movement is everything. Weighted
+    by pressure instead, driving at the open end of an open pipe woke no
+    mode at all, since the pressure is held at zero there by definition:
+    a table of nothing, from the one place anybody actually blows.
+
+    Movement goes as the pressure's slope along the pipe, so that is what
+    is measured -- and it puts the antinode where a player's mouth goes.
+    """
+    if freq.size == 0:
+        return []
+    along = nodes[:, 0]
+    stations = np.unique(np.round(along, 9))
+    if stations.size < 2:
+        return []
+    target = stations[0] + strike * (stations[-1] - stations[0])
+    here = int(np.argmin(np.abs(stations - target)))
+    # The station next door, on whichever side there is one.
+    other = here + 1 if here + 1 < stations.size else here - 1
+    span = abs(stations[other] - stations[here])
+    if span <= 0.0:
+        return []
+    # The movement at every station, so each mode can be judged against
+    # the BEST place it could have been driven rather than against the
+    # other modes. Without that, driving somewhere nothing moves -- a
+    # sealed cavity at its own rigid end, where the air cannot go
+    # anywhere at all -- still produced a table, built out of whatever
+    # numerical noise happened to survive being divided by itself.
+    means = np.array([press[np.abs(along - x) < 1e-7].mean(axis=0)
+                      for x in stations])
+    flow = np.abs(np.diff(means, axis=0)) / np.abs(
+        np.diff(stations))[:, None]
+    reach = flow.max(axis=0)
+    at = min(here, other)
+    weight = np.where(reach > 0.0, flow[at] / np.where(reach > 0.0, reach,
+                                                       1.0), 0.0)
+    if float(weight.max() if weight.size else 0.0) <= 0.0:
+        return []
+    keep = weight >= floor
+    if not keep.any():
+        return []
+    freq, weight = freq[keep], weight[keep]
+    ratio = freq / freq[0]
+    decay = ratio ** (-damping)
+    return [[float(r), float(w), float(d)]
+            for r, w, d in zip(ratio, weight, decay)]
+
+
+# How long a cavity rings, as a Q. Not solved: it comes from what
+# radiates out of the open ends and what rubs against the walls, and
+# neither is here. An open pipe throws its energy away and a sealed one
+# keeps it, which is most of the difference.
+CAVITY_Q = {2: 30.0, 1: 60.0, 0: 220.0}
+
+
+def cavity_ring(open_count, fundamental):
+    """Sixty decibels of fall for the air, in seconds."""
+    q = CAVITY_Q.get(int(open_count), 60.0)
+    if fundamental <= 0.0:
+        return 60.0
+    return min(60.0, max(0.01, 2.2 * q / fundamental))
 
 
 def solve_modes(nodes, hexes, material='aluminium', want=24):
