@@ -31,7 +31,7 @@ from dpg_system.synth_core import (
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit, VuUnit,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
-    StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
+    StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, BlowUnit, FaderUnit,
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
@@ -122,6 +122,8 @@ def register_synth_nodes():
     Node.app.register_node('swish~', WhooshNode.factory)
     Node.app.register_node('rub~', RubNode.factory)
     Node.app.register_node('glass~', RubNode.factory)
+    Node.app.register_node('blow~', BlowNode.factory)
+    Node.app.register_node('pipe~', BlowNode.factory)
     Node.app.register_node('fader~', FaderNode.factory)
     Node.app.register_node('stroke~', StrokeNode.factory)
     Node.app.register_node('bowing~', StrokeNode.factory)
@@ -5848,6 +5850,104 @@ class RubNode(ModeTableNode):
         self._add_mode_table_ports(material)
         self._add_mode_table_options()
 
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.modes_output = self.add_output('modes out')
+        self.add_switch()
+        self.finish_synth_node()
+
+
+class BlowNode(ModeTableNode):
+    """A blown mode table: the third hand, after the mallet and the bow.
+
+    modal~ strikes a table, rub~ bows it, this blows it -- and it is the
+    driver shape_modes' cavity tables had been waiting for, an air column
+    having had nothing to sound it but a mallet. Patch a shape_modes
+    'modes' outlet in with the cavity solved and it plays that air.
+
+    The reed is fused with the bank inside the unit, which is what makes
+    this blowing an object rather than filtering a breath sound. Nothing
+    is triggered: raise 'pressure' and above a threshold the loop finds
+    its own oscillation, which is what starting a note is.
+
+    'pressure' is the breath, measured against what it takes to shut the
+    reed, so a third of the way up is a floor no reed gets under and real
+    losses put the note nearer 0.6. Push past about 0.95 and the breath
+    holds the reed shut and the sound stops, as over-blowing one does.
+    Breath buys brightness more than level, which is how a wind
+    instrument actually gets louder, and pulls the pitch sharp as it goes.
+
+    'stiffness' is what it takes to shut the reed, so it divides the
+    breath: a harder reed wants more air and gives more back. 'breath' is
+    turbulence, and it is not decoration -- it is the disturbance the loop
+    grows into speech, and with none at all the note starts too cleanly
+    to believe. 'position' is where on the bore the mouthpiece sits, with
+    0 the closed end where a reed belongs; away from it the upper modes
+    are nulled one by one, which is a colour rather than a pitch.
+
+    'register' is the register key: it spoils the lowest resonance until
+    the reed gives up on it and takes the next one it can hold. That is
+    how a wind player reaches the upper register, and blowing harder is
+    not -- past the top of the breath range the air simply holds the reed
+    shut, here as on the instrument.
+
+    A bore with only odd modes -- the 'tube' table, a stopped pipe, which
+    is to say a clarinet -- speaks on odd partials, and opening the
+    register takes it up a TWELFTH rather than an octave, since an octave
+    would need an even mode to jump to and there is none. Neither is
+    arranged anywhere; both fall out of the table. Strike the same table
+    with a modal~ if it also needs a tap.
+
+    blow~ <frequency> <material>, e.g. blow~ 220 tube.
+    """
+
+    SAVE_KEY = 'blow_modes'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return BlowNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = BlowUnit(synth_graph.sample_rate)
+
+        frequency = 220.0
+        material = 'tube'
+        if args is not None:
+            for arg in args:
+                if arg in MODAL_MATERIALS:
+                    material = arg
+                else:
+                    try:
+                        frequency = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+        self.unit.frequency_in.base = frequency
+        self.unit.set_modes(MODAL_MATERIALS[material])
+        self._init_mode_editor(label, material)
+
+        self.add_modulation_input('pressure', self.unit.pressure_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        self.add_modulation_input('stiffness', self.unit.stiffness_in,
+                                  minimum=0.1, maximum=3.0, speed=0.01)
+        self.add_modulation_input('breath', self.unit.breath_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('position', self.unit.position_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('register', self.unit.register_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency,
+                                  minimum=BlowUnit.MIN_FREQUENCY, speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.make_drag_proportional(
+            self.add_modulation_input('decay', self.unit.decay_in,
+                                      minimum=0.01, maximum=60.0, speed=0.05,
+                                      slider=False))
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self._add_mode_table_ports(material)
+        self._add_mode_table_options()
         self.signal_output = self.add_signal_output('out', self.unit.out)
         self.modes_output = self.add_output('modes out')
         self.add_switch()

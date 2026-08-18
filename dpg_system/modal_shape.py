@@ -609,6 +609,25 @@ def assemble_acoustic(nodes, hexes):
     return stiff, mass
 
 
+def _start(size):
+    """A fixed starting vector for the eigensolver.
+
+    Left to itself ARPACK begins from a random vector, and on these
+    shapes -- where bending modes come in degenerate pairs and the
+    thin-walled ones sit in tight clusters -- that is enough to change
+    the answer. The same call, three times in one process, put the
+    seventh mode of a thin tube at 302, 297 and 305 hertz, and running
+    any other eigensolve first moved it again, since ARPACK carries its
+    own seed forward between calls. Nothing about the shape had changed.
+
+    So the vector is pinned. It makes solves reproducible and, more to
+    the point, makes them independent of whatever was solved earlier in
+    the session -- which is what a regression suite has to be able to
+    assume.
+    """
+    return np.random.default_rng(20260818).standard_normal(size)
+
+
 def cavity_modes(nodes, hexes, speed=343.0, open_start=False,
                  open_end=False, want=16):
     """What the air inside would sing, in hertz.
@@ -635,7 +654,8 @@ def cavity_modes(nodes, hexes, speed=343.0, open_start=False,
     count = min(want + 4, keep.size - 2)
     if count < 1:
         return np.zeros(0), np.zeros((len(nodes), 0))
-    lam, vec = spl.eigsh(stiff, k=count, M=mass, sigma=-1.0, which='LM')
+    lam, vec = spl.eigsh(stiff, k=count, M=mass, sigma=-1.0, which='LM',
+                         v0=_start(stiff.shape[0]))
     order = np.argsort(np.real(lam))
     lam = np.maximum(np.real(lam)[order], 0.0)
     vec = np.real(vec)[:, order]
@@ -651,23 +671,37 @@ def cavity_modes(nodes, hexes, speed=343.0, open_start=False,
     return freq[:want], full[:, :want]
 
 
+DRIVES = ('mouth', 'reed')
+
+
 def cavity_table(nodes, freq, press, length=1.0, strike=1.0, damping=1.0,
-                 floor=0.02):
+                 floor=0.02, drive='mouth'):
     """The cavity's modes as a table, weighted where it is driven.
 
-    By how fast the air MOVES there, not by how hard it pushes. An air
-    column is played at an opening -- across a bottle's mouth, at a
-    flute's embouchure, at the end of a pipe -- and an opening is exactly
-    where the pressure is nothing and the movement is everything. Weighted
-    by pressure instead, driving at the open end of an open pipe woke no
-    mode at all, since the pressure is held at zero there by definition:
-    a table of nothing, from the one place anybody actually blows.
+    Which weighting is right depends on what is doing the driving, and
+    the two answers are opposites -- so this takes 'drive'.
 
-    Movement goes as the pressure's slope along the pipe, so that is what
-    is measured -- and it puts the antinode where a player's mouth goes.
+    'mouth' weights by how fast the air MOVES. An air column played at an
+    opening -- across a bottle's mouth, at a flute's embouchure, at the
+    end of a pipe -- is played exactly where the pressure is nothing and
+    the movement is everything. Weighted by pressure instead, driving at
+    the open end of an open pipe woke no mode at all, since the pressure
+    is held at zero there by definition: a table of nothing, from the one
+    place anybody actually blows. Movement goes as the pressure's slope
+    along the pipe, so that is what is measured.
+
+    'reed' weights by PRESSURE, because a reed is the other case. It sits
+    against a nearly closed end and works by being pushed on: the air
+    there is still and the pressure is at its greatest -- measured, on a
+    stopped pipe, at the full peak for every mode while the movement is
+    flatly zero. A reed handed a movement-weighted table would couple to
+    literally nothing, and the silence would look like a broken valve
+    rather than the wrong question.
     """
     if freq.size == 0:
         return []
+    if drive not in DRIVES:
+        drive = 'mouth'
     along = nodes[:, 0]
     stations = np.unique(np.round(along, 9))
     if stations.size < 2:
@@ -679,19 +713,23 @@ def cavity_table(nodes, freq, press, length=1.0, strike=1.0, damping=1.0,
     span = abs(stations[other] - stations[here])
     if span <= 0.0:
         return []
-    # The movement at every station, so each mode can be judged against
+    # The reading at every station, so each mode can be judged against
     # the BEST place it could have been driven rather than against the
-    # other modes. Without that, driving somewhere nothing moves -- a
+    # other modes. Without that, driving somewhere nothing happens -- a
     # sealed cavity at its own rigid end, where the air cannot go
     # anywhere at all -- still produced a table, built out of whatever
     # numerical noise happened to survive being divided by itself.
     means = np.array([press[np.abs(along - x) < 1e-7].mean(axis=0)
                       for x in stations])
-    flow = np.abs(np.diff(means, axis=0)) / np.abs(
-        np.diff(stations))[:, None]
-    reach = flow.max(axis=0)
-    at = min(here, other)
-    weight = np.where(reach > 0.0, flow[at] / np.where(reach > 0.0, reach,
+    if drive == 'reed':
+        felt = np.abs(means)
+        at = here
+    else:
+        felt = np.abs(np.diff(means, axis=0)) / np.abs(
+            np.diff(stations))[:, None]
+        at = min(here, other)
+    reach = felt.max(axis=0)
+    weight = np.where(reach > 0.0, felt[at] / np.where(reach > 0.0, reach,
                                                        1.0), 0.0)
     if float(weight.max() if weight.size else 0.0) <= 0.0:
         return []
@@ -730,7 +768,8 @@ def solve_modes(nodes, hexes, material='aluminium', want=24):
     # Shifted below zero because free-free leaves the stiffness
     # singular: six ways to move the thing without straining it.
     lam, vec = spl.eigsh(stiff, k=min(want + 8, 3 * len(nodes) - 2),
-                         M=mass, sigma=-1.0, which='LM')
+                         M=mass, sigma=-1.0, which='LM',
+                         v0=_start(stiff.shape[0]))
     order = np.argsort(lam)
     lam, vec = np.maximum(lam[order], 0.0), vec[:, order]
     freq = np.sqrt(lam) / (2.0 * math.pi)

@@ -6843,6 +6843,135 @@ else:
     _rub_kernel = _rub_kernel_source
 
 
+def _blow_kernel_source(pressure, stiff, noise_amt, noise, noise_at,
+                        b1, b2, inject, pickup, s1, s2, free,
+                        out, flow, sens, eps, last_u):
+    """A reed closed around the modal bank: a bore blown, sample by sample.
+
+    The third way into a mode table, after modal~'s mallet and rub~'s
+    friction, and it is rub~'s architecture with the friction swapped out.
+    Per sample every mode rings on from its own history, their pressures
+    sum into what is felt at the mouthpiece, and the flow through the reed
+    is poured back into every mode. Nothing is triggered: the tone is a
+    limit cycle that the loop grows for itself.
+
+    The valve is the classic pressure-controlled one. The reed is pushed
+    shut by the pressure difference across it -- fully shut at the
+    'stiffness', which is what that control is -- and the air through the
+    remaining gap follows Bernoulli, going as the root of that same
+    difference. Flow is therefore opening times root, and it is the
+    PRODUCT that matters: opening falls linearly while the root rises, so
+    the flow peaks at exactly a third of the closing pressure and falls
+    after it. Past a third the valve passes LESS air the harder it is
+    pushed, which is a negative resistance, and a negative resistance
+    across a resonator is an oscillator. That third is not tuned or
+    imposed; it drops out of the derivative, and it is why blowing softer
+    than a third of the way is silent no matter what is being blown.
+
+    How far past the third it must go before it actually speaks depends on
+    how much gain the bank has, so the flow is scaled by the inverse of
+    that gain before it gets here. The two cancel and the threshold lands
+    in the same place on every object -- otherwise the same breath that
+    plays a short bright pipe leaves a long ringing one mute, and the
+    control means something different on every shape.
+
+    The reed and the bank each decide the other: flow depends on the
+    pressure at the mouthpiece, and that pressure depends on the flow.
+    Rather than use last sample's answer -- a delay inside the
+    nonlinearity, which blunts exactly the sharp closure the tone is made
+    of -- the crossing is solved where it is. The bank's sensitivity fixes
+    a straight load line, so what is left is one scalar equation, and a
+    few Newton passes from last sample's flow land on it. The root's slope
+    is infinite where it crosses zero, so the root is smoothed there: it
+    is the signed root everywhere that matters and merely steep at the
+    origin, which keeps the passes from being thrown off the moment the
+    reed shuts.
+
+    What the reed is handed is the DIFFERENCE of the bank's motion, not
+    the motion -- and that is not a detail of taste. A bank of resonators
+    read directly is very nearly ninety degrees out of phase at its own
+    peak, and a reed is a real resistance with no phase to offer against
+    it, so the loop cannot close where the resonance is: built that way
+    it scraped into oscillation well off the peak, at half again the
+    breath it should have needed. Differencing turns the compliance into
+    an impedance -- which is what an air column presents to a mouthpiece,
+    frequency in the numerator and real at every resonance -- and the
+    peak comes back to within a degree of zero. It is the same difference
+    rub~ takes for its surface velocity, and for the same reason.
+
+    It also earns the DC blocker this used to carry. A difference has no
+    gain at all at zero hertz, so the standing pressure a held breath
+    would otherwise pile into the bore -- enough to shut the reed on its
+    own, the bank being no flatter than about three down there -- simply
+    never reaches the valve.
+    """
+    modes = b1.shape[0]
+    nsize = noise.shape[0]
+    u = last_u
+    for i in range(pressure.shape[0]):
+        felt_free = 0.0
+        for m in range(modes):
+            ring = b1[m] * s1[m] + b2[m] * s2[m]
+            free[m] = ring
+            # What the reed would feel if no air went through this sample.
+            felt_free += pickup[m] * (ring - s1[m])
+        pc = stiff[i]
+        if pc < 1.0e-6:
+            pc = 1.0e-6
+        # Turbulence rides ON the breath, so a reed at rest stays silent
+        # and the hiss arrives with the air rather than under it.
+        blow = pressure[i]
+        blow += blow * noise_amt[i] * noise[noise_at]
+        noise_at += 1
+        if noise_at >= nsize:
+            noise_at = 0
+        rest = blow - felt_free
+        for _ in range(3):
+            dp = rest - sens * u
+            base = dp * dp + eps * eps
+            root = base ** 0.25
+            # Signed root of the pressure difference, and its slope.
+            rt = dp / root
+            drt = (0.5 * dp * dp + eps * eps) / (base * root)
+            gap = 1.0 - dp / pc
+            if gap > 1.0:
+                gap = 1.0
+                slope = 0.0
+            elif gap < 0.0:
+                gap = 0.0
+                slope = 0.0
+            else:
+                slope = -1.0 / pc
+            through = flow * gap * rt
+            grad = flow * (slope * rt + gap * drt)
+            step = 1.0 + sens * grad
+            # The valve's negative slope can very nearly cancel the bank's
+            # load line, which is the interesting case and also the one
+            # that would divide by nothing.
+            if step < 0.05:
+                step = 0.05
+            u -= (u - through) / step
+        felt = 0.0
+        for m in range(modes):
+            y = free[m] + inject[m] * u
+            if y > 4.0:
+                y = 4.0 + np.tanh(y - 4.0)
+            elif y < -4.0:
+                y = -4.0 - np.tanh(-y - 4.0)
+            was = s1[m]
+            s2[m] = s1[m]
+            s1[m] = y
+            felt += pickup[m] * (y - was)
+        out[i] = felt
+    return noise_at, u
+
+
+if _HAVE_NUMBA:
+    _blow_kernel = njit(cache=True, fastmath=True)(_blow_kernel_source)
+else:
+    _blow_kernel = _blow_kernel_source
+
+
 class VesselUnit(ModalUnit):
     """A vessel with water in it: a glass, a bowl, a can, tipped.
 
@@ -7348,6 +7477,360 @@ class RubUnit(Unit):
             RubUnit.STICK_FORCE, RubUnit.STRIBECK, RubUnit.MU_FLOOR,
             float(np.dot(pickup_live, inject_live)))
 
+        self._apply_level(result, out_level, frames)
+        np.copyto(out.data[:frames], result, casting='unsafe')
+        out.constant = False
+        scratch = self._scratch[:frames]
+        np.abs(result, out=scratch)
+        self._quiet = bool(scratch.max() < 1.0e-5)
+
+
+class BlowUnit(Unit):
+    """Blown modal object: a bore, a shell, a cavity, under a reed.
+
+    The third hand on the mode table. modal~ strikes it, rub~ bows it,
+    this blows it -- and it is the partner the shape_modes cavity tables
+    were missing, since a solved air column had nothing to sound it but a
+    mallet. Give it the air inside a shape and it plays that air; give it
+    a solid's modes instead and it will try to blow those too, which is
+    not an instrument anybody builds but is exactly what the model says.
+
+    The reed is a pressure-controlled valve fused with the bank in the
+    kernel, which is what makes this blowing an object rather than
+    filtering a breath sound. There is no trigger: press air on it and
+    above a threshold the loop finds its own oscillation, which is what
+    starting a note on a wind instrument is.
+
+    'pressure' is how hard it is blown, as a fraction of what it takes to
+    push the reed shut, and a third of the way up is a floor nothing can
+    get under: below it the valve is a positive resistance and the thing
+    cannot sound however long it is held. That third is the frictionless
+    limit rather than the operating point, though -- a bore with real
+    losses in it has to be blown past its own damping as well, which puts
+    the note somewhere around 0.6 and full voice by 0.9. Past that the
+    breath simply holds the reed shut and the sound stops, which is what
+    over-blowing a reed does to it. Wherever the threshold falls, it
+    falls in the same place on every object, which took arranging -- see
+    the kernel.
+
+    Breath buys brightness rather than level, and that is not a
+    shortcoming: the level is nearly flat across the playable range while
+    the centroid climbs half again and the partials roughly triple. It is
+    how a reed instrument actually gets louder. The pitch is pulled sharp
+    as it is pushed -- some three parts in a thousand at the bottom of
+    the range, nine percent by the top -- which is the massless valve
+    here having no reed compliance to pull the other way.
+
+    'stiffness' is what it takes to shut the reed, so a harder reed wants
+    more breath and gives more back for it. 'breath' is turbulence, which
+    is not decoration: it is the disturbance the loop grows into speech,
+    and with none at all the note starts too cleanly to believe.
+
+    A bore whose modes are odd -- a stopped pipe, a cylinder closed at
+    the reed, which is to say a clarinet -- should overblow to the twelfth
+    rather than the octave. That is not arranged anywhere; it is what
+    having only odd modes to jump to means.
+
+    Mode tables arrive through set_modes() as everywhere.
+    """
+
+    MAX_MODES = 24
+    MIN_FREQUENCY = 20.0
+    # Flow-to-bank coupling, before the gain normalisation below.
+    COUPLING = 0.5
+    # How hard the reed is driven at full closing pressure, as a loop
+    # gain. The flow scale is this DIVIDED by the bank's own peak gain,
+    # so the object cancels: the speaking threshold lands in the same
+    # place on every table, and this constant alone says where.
+    #
+    # It is the whole tuning of the thing, and it trades range against
+    # tone. Raising it lowers the threshold and widens the playable span
+    # -- but a loop gain of ten is not a reed any more, it is a
+    # relaxation oscillator, and a stopped pipe blown that hard came out
+    # well BELOW its own bore on a subharmonic, at 0.38 of the pitch it
+    # should have held. At 2 the tone locks within three parts in a
+    # thousand of the bore, on odd partials alone to a thousandth, and
+    # the pipe speaks from about 0.59 of what shuts the reed up to 0.95.
+    REED_DRIVE = 2.0
+    # The root of the pressure difference has an infinite slope where the
+    # reed shuts. Smoothed over this much pressure, which is far below
+    # anything the valve does elsewhere.
+    ROOT_FLOOR = 1.0e-3
+    # Bore pressure to output. The limit cycle is bounded by the reed
+    # shutting rather than by anything here, so this is a units change:
+    # it puts the loudest a blown pipe gets near four fifths of full
+    # scale, which leaves headroom for stiffer reeds on brighter tables.
+    BLOW_LEVEL = 6.0
+    # Below this the reed is nowhere near the third and cannot start.
+    IDLE_PRESSURE = 0.02
+    NOISE_SAMPLES = 1 << 16
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.pressure_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.5)
+        self.stiffness_in = self.new_inlet(base=1.0, minimum=0.1, maximum=3.0)
+        self.breath_in = self.new_inlet(base=0.03, minimum=0.0, maximum=1.0)
+        self.position_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.register_in = self.new_inlet(base=0.0, minimum=0.0, maximum=1.0)
+        self.frequency_in = self.new_inlet(base=220.0,
+                                           minimum=BlowUnit.MIN_FREQUENCY)
+        self.pitch_in = self.new_inlet()
+        self.decay_in = self.new_inlet(base=0.6, minimum=0.01, maximum=60.0)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+
+        self._modes = np.array([[1.0, 1.0, 1.0]], dtype=np.float64)
+        self._weight_norm = 1.0
+
+        self._s1 = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._s2 = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._b1 = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._b2 = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._inject = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._pickup = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._inject_live = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._pickup_live = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._live_count = 0
+        self._coef_key = None
+        self._flow = 1.0
+        self._free = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._fm = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._theta = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._radius = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+        self._mode_scratch = np.zeros(BlowUnit.MAX_MODES, dtype=np.float64)
+
+        self._u = 0.0
+        self._quiet = True
+
+        generator = np.random.default_rng(20260817)
+        self._noise = generator.uniform(-1.0, 1.0, BlowUnit.NOISE_SAMPLES)
+        self._noise_at = 0
+
+        self.out = self.new_outlet()
+        self._press = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._stiff = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._namt = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._freq = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._y = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._scratch = np.zeros(MAX_BLOCK, dtype=np.float64)
+
+    def set_modes(self, table):
+        """Main thread: adopt a mode table, rows of (ratio, weight, decay).
+
+        Same live-edit contract as modal~: value edits retune the ring,
+        only a change of mode count clears it.
+        """
+        rows = [row for row in table[:BlowUnit.MAX_MODES]]
+        if not rows:
+            rows = [(1.0, 1.0, 1.0)]
+        fresh = np.array(rows, dtype=np.float64)
+        resized = fresh.shape[0] != self._modes.shape[0]
+        self._modes = fresh
+        self._weight_norm = max(1.0, float(np.sum(np.abs(fresh[:, 1]))))
+        if resized:
+            self._s1[:] = 0.0
+            self._s2[:] = 0.0
+
+    def reset(self):
+        self._s1[:] = 0.0
+        self._s2[:] = 0.0
+        self._u = 0.0
+        self._quiet = True
+
+    def deactivate(self):
+        self.reset()
+
+    def render(self, frames):
+        pressure = self.pressure_in.eval(frames)
+        stiffness = self.stiffness_in.eval(frames)
+        breath = self.breath_in.eval(frames)
+        position = self.position_in.eval(frames)
+        register = self.register_in.eval(frames)
+        frequency = self.frequency_in.eval(frames)
+        pitch = self.pitch_in.eval(frames)
+        decay = self.decay_in.eval(frames)
+        out_level = self.level_in.eval(frames)
+
+        out = self.out
+        if not _svf_ready.is_set():
+            out.set_constant(0.0)
+            return
+
+        press = self._press[:frames]
+        if pressure.constant:
+            press[:] = pressure.value
+            idle = pressure.value < BlowUnit.IDLE_PRESSURE
+        else:
+            np.copyto(press, pressure.data[:frames], casting='unsafe')
+            idle = False
+        np.clip(press, 0.0, 2.0, out=press)
+
+        if self._quiet and idle:
+            out.set_constant(0.0)
+            return
+
+        stiff = self._stiff[:frames]
+        if stiffness.constant:
+            stiff[:] = stiffness.value
+        else:
+            np.copyto(stiff, stiffness.data[:frames], casting='unsafe')
+        np.clip(stiff, 0.1, 3.0, out=stiff)
+
+        namt = self._namt[:frames]
+        if breath.constant:
+            namt[:] = breath.value
+        else:
+            np.copyto(namt, breath.data[:frames], casting='unsafe')
+        np.clip(namt, 0.0, 1.0, out=namt)
+
+        freq = self._freq[:frames]
+        self._build_hertz(freq, frequency, pitch, frames,
+                          BlowUnit.MIN_FREQUENCY)
+        f0 = float(freq[0])
+
+        modes = self._modes
+        count = modes.shape[0]
+        ratios = modes[:, 0]
+        weights = modes[:, 1]
+        decay_scale = modes[:, 2]
+
+        seconds = decay.value if decay.constant else float(decay.data[0])
+        seconds = min(60.0, max(0.01, seconds))
+
+        blown_at = position.value if position.constant else float(
+            position.data[0])
+        blown_at = min(1.0, max(0.0, blown_at))
+        vent = register.value if register.constant else float(
+            register.data[0])
+        vent = min(1.0, max(0.0, vent))
+        coef_key = (count, f0, seconds, blown_at, vent, id(modes))
+        theta = self._theta[:count]
+        radius = self._radius[:count]
+        b1 = self._b1[:count]
+        b2 = self._b2[:count]
+        inject = self._inject[:count]
+        pickup = self._pickup[:count]
+        if coef_key != self._coef_key:
+            self._coef_key = coef_key
+            fm = self._fm[:count]
+            np.multiply(ratios, f0, out=fm)
+            limit = self.sample_rate * 0.45
+
+            np.clip(fm, 1.0, limit, out=theta)
+            theta *= 2.0 * math.pi / self.sample_rate
+
+            np.multiply(decay_scale, seconds * self.sample_rate,
+                        out=radius)
+            np.clip(radius, 1.0, None, out=radius)
+            np.divide(-6.907755, radius, out=radius)
+            np.exp(radius, out=radius)
+
+            np.cos(theta, out=b1)
+            b1 *= radius
+            b1 *= 2.0
+            np.multiply(radius, radius, out=b2)
+            np.negative(b2, out=b2)
+
+            np.sin(theta, out=inject)
+            inject *= weights
+            inject /= self._weight_norm
+            inject *= BlowUnit.COUPLING
+            # One factor of frequency comes back out, and this is the
+            # only place blowing differs from striking or bowing in how
+            # it reaches the modes. A force driving a mechanical mode
+            # wants the sine that modal~ and rub~ put here. A FLOW
+            # driving an air column does not: an air column's impedance
+            # carries frequency in its numerator, which cancels against
+            # the resonance and leaves each peak going as its own decay
+            # alone -- the measured fact that a bore's impedance peaks
+            # fall away with pitch.
+            #
+            # Left in, the two frequency factors cancelled the damping
+            # law exactly and every mode of a pipe came out with the
+            # same gain to a fifth of a percent. With nothing to choose
+            # between them the reed simply took whichever the noise
+            # favoured, and a clarinet spoke on its seventh partial.
+            np.divide(inject, np.maximum(ratios, 1.0e-6), out=inject)
+            alive = self._mode_scratch[:count]
+            np.less_equal(fm, limit, out=alive, casting='unsafe')
+            inject *= alive
+
+            pickup[:] = 1.0
+            pickup *= alive
+            if blown_at > 0.0:
+                pattern = self._mode_scratch[:count]
+                np.multiply(_INDEX_RAMP[:count], math.pi * blown_at,
+                            out=pattern)
+                np.sin(pattern, out=pattern)
+                np.abs(pattern, out=pattern)
+                blend = min(1.0, blown_at / 0.05)
+                if blend < 1.0:
+                    pattern *= blend
+                    pattern += 1.0 - blend
+                # Blowing at a mode's node neither hears nor moves it,
+                # which is reciprocity, same as under a bow.
+                inject *= pattern
+                pickup *= pattern
+
+            # The register hole. A wind player reaches the upper register
+            # by opening a hole that spoils the lowest resonance, not by
+            # blowing harder -- blowing harder past the top of the range
+            # just shuts the reed, here as on the instrument. So this
+            # weakens the lowest mode until the reed gives up on it and
+            # takes the next one it can hold.
+            #
+            # On a bore of odd modes the next one it can hold is three
+            # times the first, so what comes out is the TWELFTH, and that
+            # is not arranged here: it is what having no even mode to
+            # jump to means. Measured at 3.04 times the bore, once this
+            # is about seven tenths of the way open.
+            if vent > 0.0 and count > 0:
+                inject[0] *= 1.0 - vent
+
+            # What the bank offers the reed at the peak of each mode, in
+            # closed form -- measured against a swept response it is
+            # exact to a twentieth of a percent. This is the DIFFERENCED
+            # response, since that is what the kernel feeds back.
+            #
+            # The flow is scaled by the inverse of the largest, which is
+            # what puts the speaking threshold in the same place on every
+            # object instead of letting a long decay do the blowing. With
+            # that division the bank cancels out of the threshold
+            # entirely and REED_DRIVE alone fixes it.
+            gain = self._mode_scratch[:count]
+            np.multiply(theta, 0.5, out=gain)
+            np.cos(gain, out=gain)
+            gain *= 2.0
+            gain *= 1.0 - radius
+            np.divide(inject * pickup, np.where(gain > 1.0e-12, gain, 1.0),
+                      out=gain)
+            top = float(gain.max()) if count else 0.0
+            self._flow = BlowUnit.REED_DRIVE / max(top, 1.0e-9)
+
+        inject_live = self._inject_live[:count]
+        pickup_live = self._pickup_live[:count]
+        if count != self._live_count:
+            np.copyto(inject_live, inject)
+            np.copyto(pickup_live, pickup)
+            self._live_count = count
+        else:
+            step = self._mode_scratch[:count]
+            np.subtract(inject, inject_live, out=step)
+            step *= 0.35
+            inject_live += step
+            np.subtract(pickup, pickup_live, out=step)
+            step *= 0.35
+            pickup_live += step
+
+        result = self._y[:frames]
+        (self._noise_at, self._u) = _blow_kernel(
+            press, stiff, namt, self._noise, self._noise_at,
+            b1, b2, inject_live, pickup_live,
+            self._s1[:count], self._s2[:count], self._free[:count],
+            result, self._flow,
+            float(np.dot(pickup_live, inject_live)),
+            BlowUnit.ROOT_FLOOR, self._u)
+
+        result *= BlowUnit.BLOW_LEVEL
         self._apply_level(result, out_level, frames)
         np.copyto(out.data[:frames], result, casting='unsafe')
         out.constant = False

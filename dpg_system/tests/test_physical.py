@@ -3,12 +3,12 @@ audio device.
 
 Run with the project environment:
     python dpg_system/tests/test_physical.py
-94 checks of validated behavior -- pitch laws, decay laws, normalization
+325 checks of validated behavior -- pitch laws, decay laws, normalization
 balances, the emergent physics (bow locking, brass staircases, strain's
-regenerative squeal, bounce cadence) -- grown check by check alongside
-the instruments themselves. Every 'ok' line was once a measurement that
-steered a design decision; a FAIL means a law this rack relies on has
-shifted."""
+regenerative squeal, bounce cadence, the reed's twelfth) -- grown check
+by check alongside the instruments themselves. Every 'ok' line was once
+a measurement that steered a design decision; a FAIL means a law this
+rack relies on has shifted."""
 import os
 import sys
 import math
@@ -2868,6 +2868,39 @@ check('and blowing at a node of a mode does not wake that mode',
       + ' -- the odd modes have a still point at the middle and are '
       + 'passed over, the even ones are driven hardest there')
 
+
+# A REED is the opposite case and needs the opposite weighting. It sits
+# against a nearly closed end and works by being pushed on, where the air
+# is still and the pressure greatest -- so the movement weighting that is
+# right for a mouth at an opening nearly ignores it there, and blow~
+# would sit near silent for a reason nobody could see from the outside.
+def _cav_drive(strike, drive):
+    freq, press = msh.cavity_modes(_cv_n, _cv_h, SPEED, False, True, want=10)
+    table = msh.cavity_table(_cv_n, freq, press, _cv_L, strike=strike,
+                             damping=1.0, drive=drive)
+    return [row[1] for row in table[:4]]
+
+
+_reed_shut = _cav_drive(0.0, 'reed')
+_mouth_shut = _cav_drive(0.0, 'mouth')
+_reed_open = _cav_drive(1.0, 'reed')
+check('a reed at the closed end of a stopped pipe wakes every mode',
+      len(_reed_shut) == 4 and all(w > 0.95 for w in _reed_shut),
+      'weighted by pressure: ' + '  '.join(f'{w:.2f}' for w in _reed_shut))
+check('and the movement weighting is all but deaf in that same place',
+      len(_mouth_shut) == 4 and _mouth_shut[0] < 0.05 * _reed_shut[0],
+      'weighted by movement instead: '
+      + '  '.join(f'{w:.3f}' for w in _mouth_shut)
+      + ' -- thirty times less on the fundamental, because the air at a '
+      + 'rigid end cannot go anywhere')
+# And the mirror of it, which is what makes the pair a real distinction
+# rather than a preference: pressure is held at nothing at an opening.
+check('while a reed at an OPEN end finds nothing to push against at all',
+      len(_reed_open) == 0,
+      'the same table the other way round is empty, exactly as the '
+      'movement weighting is empty at a sealed one')
+
+
 # And it is nothing whatever like the body around it.
 _cv_body_n, _cv_body_h = msh.sweep([0.025] * 25, _cv_L, 'revolve', None,
                                    None, wall=0.3)
@@ -2931,7 +2964,8 @@ def _thin_wall(wall, incompatible):
                              wall=wall)
     stiff, mass = msh.assemble(nodes, hexes, _lk_E, _lk_nu, _lk_rho,
                                incompatible=incompatible)
-    lam, vec = sig_eigsh(stiff, k=24, M=mass, sigma=-1.0, which='LM')
+    lam, vec = sig_eigsh(stiff, k=24, M=mass, sigma=-1.0, which='LM',
+                         v0=msh._start(stiff.shape[0]))
     order = np.argsort(lam)
     freq = np.sqrt(np.maximum(np.real(lam)[order], 0.0)) / (2.0 * math.pi)
     vec = np.real(vec)[:, order]
@@ -4998,6 +5032,155 @@ check('sensitivity reaches past the old ceiling of 2.0',
       min(sc.ModalUnit(SR).sensitivity_in.max,
           sc.DrumUnit(SR).sensitivity_in.max,
           sc.StringUnit(SR).sensitivity_in.max) >= 8.0)
+
+# ---------------------------------------------------------------- blow~
+# A reed fused with a mode table. The laws below are the ones that
+# decide whether it is a wind instrument or merely a loop that howls.
+
+_TUBE = [(1.0, 1.0, 1.0), (3.0, 0.5, 0.6), (5.0, 0.3, 0.35),
+         (7.0, 0.2, 0.22), (9.0, 0.12, 0.14), (11.0, 0.08, 0.1)]
+
+
+def _blow(pressure, seconds=2.5, table=None, f0=220.0, decay=0.6,
+          vent=0.0, stiff=1.0, position=0.0):
+    u = sc.BlowUnit(SR)
+    u.set_modes(_TUBE if table is None else table)
+    u.frequency_in.base = f0
+    u.decay_in.base = decay
+    u.pressure_in.base = pressure
+    u.stiffness_in.base = stiff
+    u.register_in.base = vent
+    u.position_in.base = position
+    # A limit cycle has to grow from the breath noise, so the settling
+    # is measured away rather than assumed; the tail is what is judged.
+    return run(u, seconds)[int(0.56 * seconds * SR):]
+
+
+def _blow_rms(*args, **kw):
+    y = _blow(*args, **kw)
+    return float(np.sqrt(np.mean(y * y)))
+
+
+# Below the threshold the reed still passes air, and that air is noisy,
+# so what comes out under it is filtered breath rather than silence --
+# around a thousandth, against half of full scale once it speaks. The
+# line goes in the two orders of magnitude between, well clear of both.
+def _blow_speaks(*args, **kw):
+    return _blow_rms(*args, **kw) > 0.05
+
+
+def _blow_pitch(pressure, **kw):
+    y = _blow(pressure, **kw)
+    if float(np.sqrt(np.mean(y * y))) < 3.0e-4:
+        return None
+    return peak_frequency(y[:1 << 15])
+
+
+def _blow_threshold(drive):
+    """Where the closed form says the reed starts, for a given drive.
+
+    Oscillation needs the valve's negative slope to cancel the bank, and
+    the flow is scaled by the inverse of the bank's gain, so the object
+    drops out and only the drive is left: drive*(3p-1)/(2*sqrt(p)) = 1.
+    """
+    root = (2.0 + math.sqrt(4.0 + 12.0 * drive * drive)) / (6.0 * drive)
+    return root * root
+
+
+# The reed cannot sound below a third of what shuts it, whatever it is
+# blowing: that is where the flow through the valve stops rising with
+# pressure and starts falling, and it is a property of the valve alone.
+check('blow~ cannot sound below a third of the closing pressure',
+      not _blow_speaks(0.20) and not _blow_speaks(0.30),
+      'the frictionless floor -- no bore beats it')
+_pred = _blow_threshold(sc.BlowUnit.REED_DRIVE)
+check('blow~ starts within a tenth of the predicted threshold',
+      not _blow_speaks(_pred - 0.08) and _blow_speaks(_pred + 0.08),
+      f'{_pred:.3f} from the closed form')
+
+# The point of dividing the flow by the bank's gain: the same breath has
+# to start every object, or the control means something different on
+# each one. A long low bore against a short high one.
+check('blow~ threshold does not move with the object',
+      (not _blow_speaks(_pred - 0.08, f0=110.0, decay=1.0, seconds=5.0)
+       and _blow_speaks(_pred + 0.08, f0=110.0, decay=1.0, seconds=5.0)
+       and not _blow_speaks(_pred - 0.08, f0=440.0, decay=0.2)
+       and _blow_speaks(_pred + 0.08, f0=440.0, decay=0.2)),
+      'two octaves and five times the ring time apart, same threshold')
+
+# Locking. A reed that has found the bore sits on it; one running as a
+# relaxation oscillator does not, and blown hard enough this dropped
+# onto a subharmonic at 0.38 of its own fundamental.
+_lock = _blow_pitch(0.62)
+check('blow~ locks to the bore it is given',
+      _lock is not None and abs(_lock / 220.0 - 1.0) < 0.02,
+      f'{_lock:.1f} Hz against a 220 Hz bore')
+
+# A stopped bore has no even modes, so it can make no even partials.
+_odd = _blow(0.62)
+_w = 1 << 15
+_mag = np.abs(np.fft.rfft(_odd[:_w] * np.hanning(_w)))
+
+
+def _blow_at(hz):
+    k = int(round(hz * _w / SR))
+    return float(_mag[max(0, k - 2):k + 3].max())
+
+
+_odd_sum = sum(_blow_at(_lock * k) for k in (1, 3, 5))
+_even_sum = sum(_blow_at(_lock * k) for k in (2, 4, 6))
+check('blow~ on a stopped bore makes odd partials only',
+      _even_sum < 0.05 * _odd_sum,
+      f'even/odd {_even_sum / _odd_sum:.4f}')
+
+# The register key, and the one interval that proves the mechanism is
+# the mode table rather than an arrangement: a bore of odd modes has no
+# even mode to jump to, so it goes up a twelfth and not an octave.
+_open = _blow_pitch(0.75, vent=0.85)
+check('blow~ overblows to the twelfth, not the octave',
+      _open is not None and abs(_open / 220.0 - 3.0) < 0.15,
+      f'{_open / 220.0:.2f} x the bore')
+check('blow~ stays in the low register until the key is opened',
+      abs(_blow_pitch(0.75, vent=0.0) / 220.0 - 1.0) < 0.12)
+
+
+# Breath buys brightness, not level -- which is how a reed instrument
+# actually gets louder, and worth pinning so a change that flattens the
+# timbre gets caught.
+def _blow_centroid(pressure):
+    y = _blow(pressure)
+    w = 1 << 15
+    mag = np.abs(np.fft.rfft(y[:w] * np.hanning(w)))
+    freqs = np.fft.rfftfreq(w, 1.0 / SR)
+    return float((freqs * mag).sum() / mag.sum())
+
+
+check('blow~ brightens as it is blown harder',
+      _blow_centroid(0.85) > 1.25 * _blow_centroid(0.65),
+      f'{_blow_centroid(0.65):.0f} Hz -> {_blow_centroid(0.85):.0f} Hz')
+
+# Stiffness is what shuts the reed, so it is the pressure the valve is
+# measured against -- and it does NOT simply divide the breath, because
+# the flow through the gap carries a root of that same pressure. Working
+# it through, a stiffer reed acts as a weaker drive by the root of its
+# stiffness, and the threshold follows from there. Half again the
+# stiffness puts the start at full pressure rather than at 0.59.
+_stiff = 1.5
+_eff = sc.BlowUnit.REED_DRIVE / math.sqrt(_stiff)
+_stiff_pred = _blow_threshold(_eff) * _stiff
+check('blow~ stiffness moves the threshold by the root of itself',
+      (not _blow_speaks(_stiff_pred - 0.10, stiff=_stiff)
+       and _blow_speaks(_stiff_pred + 0.10, stiff=_stiff)),
+      f'predicted {_stiff_pred:.2f} at stiffness {_stiff}')
+check('blow~ blown past the closing pressure is held shut',
+      not _blow_speaks(1.30),
+      'over-blowing a reed stops it, here as on the instrument')
+
+check('blow~ is silent unblown', _blow_rms(0.0) < 1e-9)
+_hot = _blow(0.85)
+check('blow~ stays finite and unclipped at full voice',
+      bool(np.isfinite(_hot).all()) and float(np.abs(_hot).max()) < 1.0,
+      f'peak {np.abs(_hot).max():.3f}')
 
 print()
 if failures:
