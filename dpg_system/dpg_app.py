@@ -83,6 +83,7 @@ optional_import = [
     'mgl_shaders_nodes',
     'noise_review_node',
     'gemma_4_node',
+    'nvx_nodes',
 ]
 
 imported = []
