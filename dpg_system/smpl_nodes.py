@@ -53,6 +53,12 @@ def register_smpl_nodes():
     Node.app.register_node("shadow_to_smpl", ShadowToSMPLNode.factory)
     Node.app.register_node("floor_zero", FloorZeroNode.factory)
 
+    # Imported here rather than at module scope: smpl_ragdoll imports
+    # smpl_processor, and a deferred import keeps the node file free of
+    # any dependency on this module.
+    from dpg_system.smpl_ragdoll import SMPLRagdollNode
+    Node.app.register_node("smpl_ragdoll", SMPLRagdollNode.factory)
+
 
 class SMPLNode(Node):
     joint_names = [
