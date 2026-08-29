@@ -22,6 +22,7 @@ conda env create --file environment.yml
 ```
 This will not install spacy en_core_web_lg, so you would need to do:
 ```
+conda install -c conda-forge spacy
 python -m spacy download en_core_web_lg
 ```
 
