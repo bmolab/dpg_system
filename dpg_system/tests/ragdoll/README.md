@@ -1,6 +1,6 @@
 # smpl_ragdoll tests
 
-Scripts that exercise `dpg_system/smpl_ragdoll.py` and `dpg_system/smpl_bullet.py`
+Scripts that exercise `dpg_system/smpl_ragdoll.py` and its pybullet core `dpg_system/smpl_bullet.py`
 without the GUI: `repro_trans.py` holds a stub of the node with every property
 as a plain value, and everything else builds on it.  Run any script directly
 with the project's python from any directory; the walk and cartwheel scripts
@@ -17,11 +17,10 @@ read `assets/motion_capture_files/`.
 | test_node | pose/trans plumbing, format detection, outputs |
 | test_active | the 20-joint Shadow quaternion layout in and out |
 | test_support | the support measure and auto-release on a handstand |
-| test_bullet_frames | Bullet joint/velocity frame conventions (probes that fixed the URDF) |
+| test_bullet_frames | joint/velocity frame conventions (the probes that fixed the URDF) |
 | test_bullet_release | momentum carried through a release: velocity, spin, parabola, flight turn |
 | test_bullet_drop | a whole body dropped settles on the floor |
 | test_bullet_arm | a limp arm hangs and swings like one |
-| test_ragdoll, test_ramp, test_root, test_conserve, test_seed, test_robust, test_limb, test_self, test_limits, test_land, test_cycle_native | the native (non-Bullet) core |
 
 ## Characterisation sweeps (print numbers, no assertions)
 

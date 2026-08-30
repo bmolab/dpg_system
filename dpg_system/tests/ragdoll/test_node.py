@@ -33,7 +33,7 @@ class StubNode(SMPLRagdollNode):
         self.damping_prop = P(1.5); self.limit_stiffness_prop = P(1.0); self.stop_softness_prop=P(0.087)
         self.drag_prop = P(0.15); self.contact_damp_boost_prop=P(0.0)
         self.floor_enable_prop = P(True); self.self_collision_prop = P(True)
-        self.self_depth_prop = P(0.04); self.self_max_g_prop = P(2.0); self.floor_height_prop = P(0.0); self.floor_auto_prop=P(True)
+        self.self_depth_prop = P(0.04); self.self_max_g_prop = P(2.0); self.floor_height_prop = P(0.0); self.floor_auto_prop=P(True); self.floor_tau_prop=P(2.0); self.floor_rate_prop=P(0.05)
         self.friction_prop = P(0.8); self.contact_depth_prop = P(0.01)
         self.contact_damping_prop=P(4.0); self.partial_damping_prop=P(0.5); self.spring_rate_prop=P(60.0); self.gravity_comp_prop=P(1.0); self.blend_soft_prop=P(180.0); self.blend_firm_prop=P(1.0); self.slip_velocity_prop = P(0.02)
         self.max_penetration_prop = P(0.05); self.max_contact_g_prop = P(50.0)

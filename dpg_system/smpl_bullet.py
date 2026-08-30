@@ -1,16 +1,15 @@
-"""
-SMPL body as a pybullet multibody: the physics core behind smpl_ragdoll.
+"""SMPL body as a pybullet multibody: the physics core behind smpl_ragdoll.
 
-A body is generated as a URDF from SMPLProcessor's skeleton -- bone offsets,
-segment masses and lengths from the betas -- one link per SMPL joint, joined
-by spherical joints.  Each link's frame sits at its joint with no rotation
-offset, so a joint's quaternion *is* the SMPL local rotation and reads straight
-back into a pose; the segment is a capsule tilted along the bone in the
-collision origin, with the inertial origin at mid-segment so gravity torques
-are right (a hanging arm whose mass sat at the shoulder would not hang).
-
-The body lives in the processor's internal frame, +Y up, with gravity set
-accordingly; pybullet has no opinion about which way is up.
+A URDF is generated per body from the SMPLProcessor skeleton (segment
+masses, lengths and inertia; capsule collision; the virtual toe, finger and
+heel tips), loaded as a multibody with spherical joints, and driven as
+smpl_ragdoll.py describes: driven joints are position motors with the
+captured rate fed forward, the driven root a fixed constraint retargeted
+along the captured path each substep, partial joints spring-dampers whose
+stiffness follows the weight, free joints limits and viscous damping.  A
+release is a single velocity seed from the smoothed capture; a catch reels
+root and joints in at a bounded rate.  Everything a release inherits --
+momentum, spin, the flight -- is the engine's own.
 """
 
 import math
@@ -23,7 +22,7 @@ from scipy.spatial.transform import Rotation as R
 try:
     import pybullet as p
     PYBULLET_AVAILABLE = True
-except ImportError:      # the native core stays available without it
+except ImportError:      # reported by the node when the core is built
     p = None
     PYBULLET_AVAILABLE = False
 
@@ -399,9 +398,68 @@ def _log_map(mat):
                      (mat[1, 0] - mat[0, 1]) * f))
 
 
+# -- batched quaternion algebra (x, y, z, w), for the per-substep controller
+# over every soft joint at once: scipy's Rotation objects cost more per joint
+# than Bullet's step does for the whole body.
+
+def _qmul(a, b):
+    x1, y1, z1, w1 = a[:, 0], a[:, 1], a[:, 2], a[:, 3]
+    x2, y2, z2, w2 = b[:, 0], b[:, 1], b[:, 2], b[:, 3]
+    return np.stack([w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
+                     w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
+                     w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2,
+                     w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2], axis=1)
+
+
+def _qconj(q):
+    return q * np.array([-1.0, -1.0, -1.0, 1.0])
+
+
+def _qrot(q, v):
+    """v rotated by q (q.apply(v))."""
+    qv = q[:, :3]
+    t = 2.0 * np.cross(qv, v)
+    return v + q[:, 3:4] * t + np.cross(qv, t)
+
+
+def _qlog(q):
+    """Rotation vector of q (shortest)."""
+    q = np.where(q[:, 3:4] < 0.0, -q, q)
+    v = q[:, :3]
+    s = np.linalg.norm(v, axis=1)
+    ang = 2.0 * np.arctan2(s, q[:, 3])
+    scale = np.where(s > 1e-12, ang / np.maximum(s, 1e-12), 2.0)
+    return v * scale[:, None]
+
+
+def _qexp(rv):
+    """Quaternion of a rotation vector."""
+    a = np.linalg.norm(rv, axis=1)
+    half = 0.5 * a
+    k = np.where(a > 1e-12, np.sin(half) / np.maximum(a, 1e-12), 0.5)
+    return np.concatenate([rv * k[:, None], np.cos(half)[:, None]], axis=1)
+
+
+def _swing_twist_batch(Q, k):
+    """Swing-twist angles of quaternions Q (n, 4) about per-row twist axes k
+    (n,) -- the batched form of BulletRagdollSim._swing_twist: the twist on
+    axis k, the swing's rotation-vector components on the other two."""
+    m = Q.shape[0]; ii = np.arange(m)
+    vk = Q[ii, k]; w = Q[:, 3]; nn = np.sqrt(vk * vk + w * w)
+    qt = np.zeros((m, 4)); qt[:, 3] = 1.0
+    good = nn > 1e-12
+    qt[ii[good], k[good]] = vk[good] / nn[good]; qt[good, 3] = w[good] / nn[good]
+    twist = 2.0 * np.arctan2(qt[ii, k], qt[:, 3])
+    twist = np.where(twist > math.pi, twist - 2 * math.pi,
+                     np.where(twist < -math.pi, twist + 2 * math.pi, twist))
+    ang = _qlog(_qmul(Q, _qconj(qt)))
+    ang[ii, k] = twist
+    return ang
+
+
 class _Seed:
     """Smoothed velocity estimate with the averaging lag cancelled, for the
-    momentum a release inherits.  Same design as the native core's."""
+    momentum a release inherits."""
 
     def __init__(self, alpha=0.3):
         self.alpha = alpha
@@ -424,8 +482,7 @@ class _Seed:
 
 
 class BulletRagdollSim:
-    """Interface-compatible with the native SMPLRagdollSim: the node does not
-    know which core it is driving.
+    """The physics core the node drives.
 
     While a joint is driven (weight 1) it is placed every frame at the captured
     rotation *with its captured angular velocity*, so the engine's state is
@@ -470,9 +527,11 @@ class BulletRagdollSim:
         self.load_ref = np.zeros(24)
         self.inertia_ref = np.zeros(24)
         self.subtree = {}
+        self._subtree_mask = np.zeros((24, 24))
         for j in range(24):
             sub = [k for k in range(n_all) if _under(j, k)]
             self.subtree[j] = [k for k in sub if k < 24]
+            self._subtree_mask[j, self.subtree[j]] = 1.0
             m_sub = float(sum(self.link_masses[k] for k in sub if k < 24))
             reach = max(max(float(np.linalg.norm(rest[k] - rest[j])) for k in sub), 0.1)   # a leaf (head) has no tip
             self.load_ref[j] = max(m_sub * 9.81 * 0.5 * reach, 0.5)
@@ -542,9 +601,12 @@ class BulletRagdollSim:
         self.prev_cap = None
         self.joint_reel = {}          # j -> [target orientation on its way to the capture, rad/s]
         self.prev_prescribed = np.ones(24, dtype=bool)
+        self._soft = []
+        self._bG = None
         self._contact_q = [-1] * 24
         self.prev_w = np.zeros(24)
         self.floor_est = None
+        self.floor_hist = []
         self.floor_level = 0.0
         self.lim_margin = [None] * 24
         self.lim_margin0 = [None] * 24
@@ -826,15 +888,36 @@ class BulletRagdollSim:
         # feet sat four centimetres under y=0 released a foot from inside the
         # floor, and it was kicked out at thirty radians a second.  Instant to
         # drop, slow to rise, so a jump does not pull the floor up after it.
+        # A real floor does not move.  The estimate is a low-pass of the
+        # captured body's lowest point (captured, so it works at any root
+        # weight), moving at most floor_rate metres a second: a foot that
+        # an IMU rig places three centimetres under the ground for a few
+        # frames barely nudges it, and the compliant contact absorbs the
+        # dip -- it used to drop the plane instantly and creep it back up,
+        # and the body standing on it went down and up with it.  A jump
+        # nudges it the other way, just as little.  floor_height is an
+        # offset on the estimate, not replaced by it.
         if body.plane is not None:
-            if p_.floor_auto and prescribed[0]:
-                low = body.lowest_point()
-                if self.floor_est is None or low < self.floor_est:
-                    self.floor_est = low
+            if p_.floor_auto:
+                self._frame_lows = self._capture_lows(mocap_aa, mocap_trans)
+                self._frame_lows_id = id(mocap_aa)
+                low = min(self._frame_lows.values())
+                # the lower envelope, not the mean: a tenth percentile over
+                # floor_tau seconds sits at the ground while the captured
+                # feet wander centimetres above it, and a dip or a jump is a
+                # small fraction of the window
+                n_win = max(int(round(p_.floor_tau / max(dt, 1e-4))), 4)
+                self.floor_hist.append(low)
+                if len(self.floor_hist) > n_win:
+                    del self.floor_hist[:len(self.floor_hist) - n_win]
+                target = float(np.percentile(self.floor_hist, 10.0))
+                if self.floor_est is None:
+                    self.floor_est = target
                 else:
-                    self.floor_est += p_.floor_rise * dt * (low - self.floor_est)
-                body.set_floor(self.floor_est)
-            elif not p_.floor_auto:
+                    self.floor_est += float(np.clip(target - self.floor_est,
+                                                    -p_.floor_rate * dt, p_.floor_rate * dt))
+                body.set_floor(self.floor_est + p_.floor_height)
+            else:
                 body.set_floor(p_.floor_height)
         self.floor_level = body.floor_y
 
@@ -895,9 +978,18 @@ class BulletRagdollSim:
         # the two every substep at the edge (a walking knee lives there), and
         # a joint at 0.001 and one at 0 were two different machines.
         self._spring = {}
+        # the capture's joint quaternions and their limit excursions, batched
+        QCAP = _qexp(mocap_aa[1:22])
+        lim_j = [j for j in range(1, 22) if self._lim_active[j]]
+        cap_margin = {}
+        if lim_j:
+            ang_c = _swing_twist_batch(QCAP[[j - 1 for j in lim_j]], np.array([int(self._twist_axis[j]) for j in lim_j]))
+            for r, j in enumerate(lim_j):
+                cap_margin[j] = (np.maximum(self._lim_min[j] - ang_c[r], 0.0)
+                                 + np.maximum(ang_c[r] - self._lim_max[j], 0.0)) + 0.02
         for j in range(1, 22):
             li = j - 1
-            q_cap = R.from_rotvec(mocap_aa[j])
+            q_cap = R.from_quat(QCAP[li])
             ff = joint_w[j]
             if w[j] <= 1e-6:
                 self.joint_reel.pop(j, None)
@@ -955,9 +1047,7 @@ class BulletRagdollSim:
             margin = None
             if self._lim_active[j]:
                 k_lim = float(self._lim_k[j] * p_.limit_stiffness)
-                ang, _t, _s = self._swing_twist(j, q_cap.as_quat())
-                margin = (np.maximum(self._lim_min[j] - ang, 0.0)
-                          + np.maximum(ang - self._lim_max[j], 0.0)) + 0.02
+                margin = cap_margin[j]
                 if self.prev_prescribed[j]:
                     st = p.getJointStateMultiDof(body.body, li, physicsClientId=cid)
                     ang_now, _t, _s = self._swing_twist(j, np.asarray(st[0]))
@@ -977,6 +1067,18 @@ class BulletRagdollSim:
             self._spring[j] = (k, c, list(q_cap.as_quat()), np.asarray(ff, dtype=float) * float(w[j]),
                                k_lim, margin)
         self.prev_prescribed = prescribed.copy()
+        # the controller's arrays, one row per soft joint
+        soft = sorted(self._spring)
+        self._soft = soft
+        if soft:
+            rows = [self._spring[j] for j in soft]
+            self._bK = np.array([r[0] for r in rows]); self._bC = np.array([r[1] for r in rows])
+            self._bQT = np.array([r[2] for r in rows]); self._bFF = np.array([r[3] for r in rows])
+            self._bKL = np.array([r[4] for r in rows])
+            self._bLO = np.array([self._lim_min[j] - (r[5] if r[5] is not None else 0.0) for j, r in zip(soft, rows)])
+            self._bHI = np.array([self._lim_max[j] + (r[5] if r[5] is not None else 0.0) for j, r in zip(soft, rows)])
+            self._bTA = np.array([int(self._twist_axis[j]) for j in soft])
+            self._bLI = [j - 1 for j in soft]
         self.prev_w = w.copy()
         for j in range(22, 24):        # hands: always driven (massless)
             p.setJointMotorControlMultiDof(
@@ -988,7 +1090,7 @@ class BulletRagdollSim:
         # -- step, with the limit motors on the free joints -------------------
         p.setTimeStep(h, physicsClientId=cid)
         self.last_torque[:] = 0.0
-        soft_joints = sorted(self._spring)
+        soft_joints = self._soft
         # Gravity compensation.  The torque the weight below each joint
         # exerts about it, from the simulated centres of mass, fed forward in
         # proportion to the weight: at 0.5 the "muscle" carries half the
@@ -997,27 +1099,26 @@ class BulletRagdollSim:
         # stable only while the give is under a radian, and the spine is
         # three springs in series plus the neck, so it toppled at a weight
         # where a hip still stood.
-        self._grav = {}
+        self._bG = None
         if soft_joints and p_.gravity_comp > 0.0:
             ls = p.getLinkStates(body.body, list(range(23)), physicsClientId=cid)
             bpos, born = p.getBasePositionAndOrientation(body.body, physicsClientId=cid)
             com = np.zeros((24, 3)); com[0] = bpos
-            jpos = np.zeros((24, 3)); orn = [None] * 24
+            jpos = np.zeros((24, 3)); orn = np.zeros((24, 4)); orn[0] = born
             for k in range(1, 24):
                 com[k] = ls[k - 1][0]; jpos[k] = ls[k - 1][4]; orn[k] = ls[k - 1][5]
             g = 9.81 * p_.gravity
-            for j in soft_joints:
-                members = self.subtree[j]
-                m = self.link_masses[members]
-                M = float(m.sum())
-                if M <= 0.0:
-                    continue
-                r = (m[:, None] * com[members]).sum(0) / M - jpos[j]
-                tau_world = np.cross(r, np.array([0.0, M * g, 0.0]))      # holds the weight up
-                tau_child = R.from_quat(orn[j]).inv().apply(tau_world)
-                # in full above a quarter weight, fading to nothing below it:
-                # a body at 0.5 is not one that has lost half its posture
-                self._grav[j] = tau_child * min(1.0, float(w[j]) / 0.25) * p_.gravity_comp
+            S = self._subtree_mask[soft_joints]                       # (n, 24)
+            m = self.link_masses
+            M = S @ m
+            C = (S @ (m[:, None] * com)) / np.maximum(M, 1e-9)[:, None]
+            r = C - jpos[soft_joints]
+            tau_world = np.cross(r, np.stack([np.zeros_like(M), M * g, np.zeros_like(M)], axis=1))
+            tau_child = _qrot(_qconj(orn[soft_joints]), tau_world)
+            # in full above a quarter weight, fading to nothing below it: a
+            # body at 0.5 is not one that has lost half its posture
+            fade = np.minimum(1.0, w[soft_joints] / 0.25) * p_.gravity_comp
+            self._bG = tau_child * fade[:, None]
         for k_sub in range(n_sub):
             if root_targets is not None:
                 pos_k, rot_k, force = root_targets[k_sub]
@@ -1032,14 +1133,14 @@ class BulletRagdollSim:
                                    jointChildFrameOrientation=list(rot_k.as_quat()),
                                    maxForce=force, physicsClientId=cid)
             if soft_joints:
-                states = p.getJointStatesMultiDof(body.body, [j - 1 for j in soft_joints],
-                                                  physicsClientId=cid)
-                for j, st in zip(soft_joints, states):
-                    target, cap = self._spring_motor(j, st, h)
-                    p.setJointMotorControlMultiDof(
-                        body.body, j - 1, p.POSITION_CONTROL, targetPosition=target,
-                        targetVelocity=[0, 0, 0], positionGain=1.0, velocityGain=0.0,
-                        force=[cap] * 3, physicsClientId=cid)
+                states = p.getJointStatesMultiDof(body.body, self._bLI, physicsClientId=cid)
+                Q = np.array([st[0] for st in states]); V = np.array([st[1] for st in states])
+                targets, caps = self._spring_motors(Q, V, h)
+                p.setJointMotorControlMultiDofArray(
+                    body.body, self._bLI, p.POSITION_CONTROL, targetPositions=targets.tolist(),
+                    targetVelocities=[[0.0, 0.0, 0.0]] * len(soft_joints),
+                    positionGains=[1.0] * len(soft_joints), velocityGains=[0.0] * len(soft_joints),
+                    forces=np.repeat(caps[:, None], 3, axis=1).tolist(), physicsClientId=cid)
             p.stepSimulation(physicsClientId=cid)
 
         # -- read back ---------------------------------------------------------
@@ -1126,7 +1227,7 @@ class BulletRagdollSim:
                 self.last_torque[j] = 1.0
         if JOINT_VEL_IN_CHILD_FRAME:
             push = q_now.inv().apply(push)                                # -> child frame, like the velocity
-        grav = self._grav.get(j)
+        grav = self._bG[self._soft.index(j)] if self._bG is not None else None
         if grav is not None:
             push = push + grav
         dv = np.asarray(st[1], dtype=float) - ff
@@ -1148,6 +1249,48 @@ class BulletRagdollSim:
         step = q_now.apply(v_star * h) if JOINT_VEL_IN_CHILD_FRAME else v_star * h
         target = (R.from_rotvec(step) * q_now).as_quat()
         return list(target), float(min(np.linalg.norm(tau), self._drive_force))
+
+    def _spring_motors(self, Q, V, h):
+        """_spring_motor for every soft joint at once (see it for the
+        reasoning); Q, V are the joints' quaternions and child-frame rates.
+        Returns (target quaternions, torque limits)."""
+        n = Q.shape[0]; idx = np.arange(n)
+        K, C, KL, TA = self._bK, self._bC, self._bKL, self._bTA
+        Qc = _qconj(Q)
+        err = _qlog(_qmul(self._bQT, Qc))                      # parent frame
+        push = K[:, None] * err
+        active = np.zeros(n, dtype=bool)
+        lim_rows = np.nonzero(KL > 0.0)[0]
+        if lim_rows.size:
+            Ql = Q[lim_rows]; k = TA[lim_rows]; ii = np.arange(lim_rows.size)
+            ang = _swing_twist_batch(Ql, k)
+            clamped = np.clip(ang, self._bLO[lim_rows], self._bHI[lim_rows])
+            out = np.any(clamped != ang, axis=1)
+            if np.any(out):
+                o = lim_rows[out]; oi = ii[out]; ko = k[out]
+                tw = np.zeros((oi.size, 3)); tw[np.arange(oi.size), ko] = clamped[oi, ko]
+                sw = clamped[oi].copy(); sw[np.arange(oi.size), ko] = 0.0
+                lim_q = _qmul(_qexp(sw), _qexp(tw))
+                push[o] += KL[o, None] * _qlog(_qmul(lim_q, Qc[o]))
+                active[o] = True
+        for r, j in enumerate(self._soft):
+            self.last_torque[j] = 1.0 if active[r] else 0.0
+        if JOINT_VEL_IN_CHILD_FRAME:
+            push = _qrot(Qc, push)                            # -> child frame, like the velocity
+        if self._bG is not None:
+            push = push + self._bG
+        dv = V - self._bFF
+        tau = push - C[:, None] * dv
+        corr = push / C[:, None]
+        e_mag = np.linalg.norm(push, axis=1) / np.maximum(np.maximum(K, KL), 1e-6)
+        n_ = np.linalg.norm(corr, axis=1)
+        n_max = e_mag * min(self._spring_rate, 1.0 / h)
+        scale = np.where(n_ > n_max, n_max / np.maximum(n_, 1e-9), 1.0)
+        v_star = self._bFF + corr * scale[:, None]
+        step = _qrot(Q, v_star * h) if JOINT_VEL_IN_CHILD_FRAME else v_star * h
+        targets = _qmul(_qexp(step), Q)
+        caps = np.minimum(np.linalg.norm(tau, axis=1), self._drive_force)
+        return targets, caps
 
     def _capture_lows(self, mocap_aa, mocap_trans):
         """Forward kinematics of the captured pose: the lowest point of every
@@ -1191,7 +1334,9 @@ class BulletRagdollSim:
         within centimetres of each other for most of the cycle -- and no floor
         plane is involved: capture foot heights wander, and a floor estimate
         that keeps the deepest heel strike sits below where the foot is now."""
-        lows = self._capture_lows(mocap_aa, mocap_trans)
+        lows = getattr(self, '_frame_lows', None)
+        if lows is None or getattr(self, '_frame_lows_id', None) != id(mocap_aa):
+            lows = self._capture_lows(mocap_aa, mocap_trans)
         floor = min(lows.values())
         cands = [j for j, v in lows.items() if v <= floor + p_.support_tolerance]
         hip = self._last_fk[0, [0, 2]]
