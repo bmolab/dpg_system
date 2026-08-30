@@ -56,8 +56,9 @@ def register_smpl_nodes():
     # Imported here rather than at module scope: smpl_ragdoll imports
     # smpl_processor, and a deferred import keeps the node file free of
     # any dependency on this module.
-    from dpg_system.smpl_ragdoll import SMPLRagdollNode
+    from dpg_system.smpl_ragdoll import SMPLRagdollNode, RagdollBlendUINode
     Node.app.register_node("smpl_ragdoll", SMPLRagdollNode.factory)
+    Node.app.register_node("ragdoll_blend_ui", RagdollBlendUINode.factory)
 
 
 class SMPLNode(Node):

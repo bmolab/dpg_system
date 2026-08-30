@@ -451,6 +451,36 @@ class BulletRagdollSim:
         self.max_torque = np.asarray(processor.max_torque_array)[:24]
         self.link_masses = np.maximum(np.asarray(processor._seg_mass, dtype=float)[:24], 0.05)
         self.mass = float(self.link_masses.sum())
+        # The typical load at each joint: everything below it, held out
+        # horizontally -- subtree mass times half its reach.  The scale for
+        # the blended regime's springs.  (The motor torque a driven joint
+        # applied was tried first and is dominated by the drive chasing
+        # capture noise, so every spring came out several times too stiff.)
+        offsets = np.asarray(processor.skeleton_offsets)
+        n_all = min(len(self.parents), offsets.shape[0])
+        rest = np.zeros((n_all, 3))
+        for k in range(1, n_all):
+            rest[k] = rest[self.parents[k]] + offsets[k]
+        def _under(j, k):
+            while k > 0:
+                if k == j:
+                    return True
+                k = self.parents[k]
+            return j == 0
+        self.load_ref = np.zeros(24)
+        self.inertia_ref = np.zeros(24)
+        self.subtree = {}
+        for j in range(24):
+            sub = [k for k in range(n_all) if _under(j, k)]
+            self.subtree[j] = [k for k in sub if k < 24]
+            m_sub = float(sum(self.link_masses[k] for k in sub if k < 24))
+            reach = max(max(float(np.linalg.norm(rest[k] - rest[j])) for k in sub), 0.1)   # a leaf (head) has no tip
+            self.load_ref[j] = max(m_sub * 9.81 * 0.5 * reach, 0.5)
+            # a leg joint's load is the body standing on it, not the foot
+            # hanging from it: body weight at a ten centimetre lever
+            if j in (1, 2, 4, 5, 7, 8, 10, 11):
+                self.load_ref[j] = max(self.load_ref[j], self.mass * 9.81 * 0.1)
+            self.inertia_ref[j] = max(m_sub * (0.5 * reach) ** 2, 1e-3)   # subtree about the joint, for damping
         self._body_weight = self.mass * 9.81
 
         # Per-axis limit boxes, Euler order per joint (tightest axis in the middle).
@@ -511,8 +541,9 @@ class BulletRagdollSim:
         self.reel_d0 = 1.0
         self.prev_cap = None
         self.joint_reel = {}          # j -> [target orientation on its way to the capture, rad/s]
+        self.prev_prescribed = np.ones(24, dtype=bool)
+        self._contact_q = [-1] * 24
         self.prev_w = np.zeros(24)
-        self.was_free = np.zeros(24, dtype=bool)
         self.floor_est = None
         self.floor_level = 0.0
         self.lim_margin = [None] * 24
@@ -646,6 +677,8 @@ class BulletRagdollSim:
         mocap_aa = np.asarray(mocap_aa, dtype=float).reshape(-1, 3)[:24].copy()
         mocap_trans = np.asarray(mocap_trans, dtype=float).reshape(3)
         w = np.ones(24); w[:22] = np.clip(weights[:22], 0.0, 1.0)
+        self._drive_force = float(p_.drive_force)
+        self._spring_rate = max(float(getattr(p_, 'spring_rate', 60.0)), 1.0)
         if not self.root_free:
             w[0] = 1.0
         for j in range(1, 22):
@@ -735,8 +768,15 @@ class BulletRagdollSim:
                 a = float((cap_rot * self.reel[1].inv()).magnitude())
                 if d < 0.02 and a < 0.05:
                     self.reel = None
-            force = (p_.root_hold_force if prescribed[0]
-                     else max(float(w[0]) * p_.root_tether, 0.002) * p_.root_hold_force)
+            # A partial root hangs on a spring: stiffness = body weight over
+            # the sag the weight allows (the joint deflection law, in metres
+            # at half a metre per radian), critically damped, applied each
+            # substep as the constraint's force limit.
+            force = p_.root_hold_force
+            if not prescribed[0]:
+                sag = self._deflection(w[0], p_) * 0.5 * p_.root_tether
+                self._root_spring = (self._body_weight / sag,
+                                     2.0 * math.sqrt(self._body_weight / sag * self.mass))
             root_targets = []
             for k in range(1, n_sub + 1):
                 if self.reel is None:
@@ -802,68 +842,141 @@ class BulletRagdollSim:
         # against the floor by the root constraint); on a free root they
         # collide with the floor and the free links, or the pelvis is the only
         # thing that meets the ground and the rest of the body goes through it.
+        # "Driven" here is by weight, not by the prescribed flag: a joint at
+        # 0.999 is driven for every purpose that matters, and treating it as
+        # free let its link fight the floor.
+        # -- and a partial root is "held" once its tether can carry the
+        # body (share >= 1), or the body sinks through a floor it does not
+        # collide with; the same line for a joint and its load.
+        # held while the spring still carries: under a fifth of a radian of
+        # give -- ten centimetres of sag for the root -- or the switch trips
+        # while the pelvis is still held and the walking feet fight the floor.
+        held = prescribed
         collide = np.ones(24, dtype=int)
-        collide[0] = 0 if prescribed[0] else 1
+        collide[0] = 0 if held[0] else 1
         for j in range(1, 22):
-            collide[j] = 1 if not prescribed[j] else (0 if prescribed[0] else 2)
+            collide[j] = 1 if not held[j] else (0 if held[0] else 2)
         collide[22] = collide[20]
         collide[23] = collide[21]
         body.set_link_collisions(collide)
+        # A soft valve in place of the switch that used to turn a guided
+        # link's contacts off: its contact stiffness follows the weight --
+        # firm when free (a ragdoll on the floor), compliant when strongly
+        # guided, so a captured foot a few centimetres into the floor is
+        # pushed with a fraction of the body's weight, not kilonewtons, and
+        # nothing flips as a slider moves.  Penetration per body weight:
+        # 2 cm at weight 0, 32 cm at weight 1.
+        for j in range(0, 22):
+            if held[j] and held[0]:
+                continue
+            q = int(round(float(w[j]) * 20.0))       # set only when the weight moves a step
+            if self._contact_q[j] != q:
+                self._contact_q[j] = q
+                pen = 0.02 + 0.3 * (q / 20.0) ** 2
+                k_c = self._body_weight / pen
+                # damped against the body that lands on it, not the link:
+                # for the link alone it was under-damped ninefold and bounced
+                d_c = 2.0 * math.sqrt(k_c * self.mass)
+                # a guided foot sunk into the compliant floor gripped it with
+                # full friction while the capture dragged it, and hauled the
+                # body sideways; grip fades with the weight
+                mu = p_.friction * (1.0 - q / 20.0) ** 2
+                p.changeDynamics(body.body, j - 1, contactStiffness=k_c, contactDamping=d_c,
+                                 lateralFriction=mu, physicsClientId=cid)
 
         # -- motors: strong for the driven, scaled for the partially driven,
         #    none for the free --------------------------------------------------
+        # One controller for every joint that is not prescribed, at any
+        # weight from 0 up: a spring-damper toward the capture whose
+        # stiffness follows the weight (fading to nothing below 0.1), plus a
+        # limit spring that is zero inside the box and grows outside it, plus
+        # viscous damping.  No branches -- a joint that was a spring inside
+        # its box and a different, strong motor outside it flipped between
+        # the two every substep at the edge (a walking knee lives there), and
+        # a joint at 0.001 and one at 0 were two different machines.
+        self._spring = {}
         for j in range(1, 22):
             li = j - 1
+            q_cap = R.from_rotvec(mocap_aa[j])
+            ff = joint_w[j]
             if w[j] <= 1e-6:
                 self.joint_reel.pop(j, None)
-                p.setJointMotorControlMultiDof(body.body, li, p.POSITION_CONTROL,
-                                               targetPosition=[0, 0, 0, 1], force=[0, 0, 0],
-                                               physicsClientId=cid)
-                continue
-            # A joint taking hold is reeled like the root: its target travels
-            # from where the joint is to the capture at a bounded rate, so the
-            # motor error stays small.  Aimed straight at the capture with only
-            # its force scaled, a caught joint sat 2.8 radians off when the
-            # weight reached one and the full-strength motor slammed it at a
-            # hundred and fifty radians a second, ringing for most of a second
-            # -- and a release in that window inherited the ringing as a flick.
-            q_cap = R.from_rotvec(mocap_aa[j])
-            if self.prev_w[j] <= 1e-6:
-                q_now = R.from_quat(p.getJointStateMultiDof(body.body, li, physicsClientId=cid)[0])
-                a0 = float((q_cap * q_now.inv()).magnitude())
-                self.joint_reel[j] = [q_now, min(max(a0 / max(p_.ramp_s, 1e-3), p_.root_catch_rate), 30.0)]
-            ff = joint_w[j]
-            if j in self.joint_reel:
-                q_r, rate = self.joint_reel[j]
-                rv = (q_cap * q_r.inv()).as_rotvec()
-                an = float(np.linalg.norm(rv))
-                if an <= rate * dt + 0.05:
-                    self.joint_reel.pop(j)
-                else:
-                    q_r = R.from_rotvec(rv * (rate * dt / an)) * q_r
-                    self.joint_reel[j][0] = q_r
-                    q_cap = q_r
-                    ff = np.zeros(3)
-            # Full strength from the start of a catch: the root is reeled in at
-            # metres a second, and joints weakened for the reel could not
-            # follow the pelvis -- the limbs whipped at a hundred and forty
-            # radians a second.  The rate-bounded target above is what keeps
-            # the joint from snapping, not a weak motor.
+            else:
+                # A joint taking hold is reeled like the root: its target
+                # travels from where the joint is to the capture at a bounded
+                # rate, so the motor error stays small.  Aimed straight at
+                # the capture, a caught joint sat 2.8 radians off when the
+                # weight reached one and the full-strength motor slammed it
+                # at a hundred and fifty radians a second.
+                if self.prev_w[j] <= 1e-6:
+                    q_now = R.from_quat(p.getJointStateMultiDof(body.body, li, physicsClientId=cid)[0])
+                    a0 = float((q_cap * q_now.inv()).magnitude())
+                    self.joint_reel[j] = [q_now, min(max(a0 / max(p_.ramp_s, 1e-3), p_.root_catch_rate), 30.0)]
+                if j in self.joint_reel:
+                    q_r, rate = self.joint_reel[j]
+                    rv = (q_cap * q_r.inv()).as_rotvec()
+                    an = float(np.linalg.norm(rv))
+                    if an <= rate * dt + 0.05:
+                        self.joint_reel.pop(j)
+                    else:
+                        q_r = R.from_rotvec(rv * (rate * dt / an)) * q_r
+                        self.joint_reel[j][0] = q_r
+                        q_cap = q_r
+                        ff = np.zeros(3)
             if prescribed[j]:
+                # Full strength from the start of a catch: the rate-bounded
+                # target is what keeps the joint from snapping, not a weak
+                # motor -- joints weakened for the root's reel could not
+                # follow the pelvis, and the limbs whipped.
                 p.setJointMotorControlMultiDof(
                     body.body, li, p.POSITION_CONTROL,
                     targetPosition=list(q_cap.as_quat()),
                     targetVelocity=list(ff),
                     positionGain=p_.drive_kp, velocityGain=p_.drive_kd,
                     force=[p_.drive_force] * 3, physicsClientId=cid)
-            else:
-                f = float(w[j]) * self.max_torque[j] * p_.motor_strength
-                p.setJointMotorControlMultiDof(
-                    body.body, li, p.POSITION_CONTROL,
-                    targetPosition=list(q_cap.as_quat()),
-                    targetVelocity=list(ff),
-                    positionGain=p_.motor_kp, velocityGain=p_.motor_kd,
-                    force=[float(v) for v in f], physicsClientId=cid)
+                continue
+            # -- spring toward the capture: the joint's physical load (mass
+            #    below it, half its reach) over the give the weight allows;
+            #    damping at a fixed ratio from stiffness and subtree inertia,
+            #    never below the viscous damping a free joint has
+            need = float(self.load_ref[j])
+            fade = min(1.0, float(w[j]) / 0.1)
+            k = need / self._deflection(w[j], p_) * p_.motor_strength * fade
+            c_spring = 2.0 * p_.partial_damping * math.sqrt(k * float(self.inertia_ref[j]))
+            # viscous, reaching the fraction of the joint's torque scale at three
+            # radians a second (at ten, a released foot whipped again)
+            c_free = p_.joint_damping_fraction * float(np.mean(self.max_torque[j])) / 3.0
+            c = max(c_spring, c_free, 0.02)
+            # -- the limit box, widened by however far the capture target is
+            #    outside it (a limit must never fight the capture) and, for a
+            #    joint just let go outside its box, by its own excursion,
+            #    shrinking over limit_entry_s: soft entry, never a snap
+            k_lim = 0.0
+            margin = None
+            if self._lim_active[j]:
+                k_lim = float(self._lim_k[j] * p_.limit_stiffness)
+                ang, _t, _s = self._swing_twist(j, q_cap.as_quat())
+                margin = (np.maximum(self._lim_min[j] - ang, 0.0)
+                          + np.maximum(ang - self._lim_max[j], 0.0)) + 0.02
+                if self.prev_prescribed[j]:
+                    st = p.getJointStateMultiDof(body.body, li, physicsClientId=cid)
+                    ang_now, _t, _s = self._swing_twist(j, np.asarray(st[0]))
+                    self.lim_margin[j] = (np.maximum(self._lim_min[j] - ang_now, 0.0)
+                                          + np.maximum(ang_now - self._lim_max[j], 0.0))
+                    self.lim_margin0[j] = self.lim_margin[j].copy()
+                elif self.lim_margin[j] is not None:
+                    self.lim_margin[j] = np.maximum(
+                        self.lim_margin[j] - dt / max(p_.limit_entry_s, 1e-3) * self.lim_margin0[j], 0.0)
+                    if not np.any(self.lim_margin[j] > 0.0):
+                        self.lim_margin[j] = None
+                if self.lim_margin[j] is not None:
+                    margin = np.maximum(margin, self.lim_margin[j])
+            # the capture's rate is fed forward in proportion to the weight:
+            # at full rate a soft joint tracked velocity for free and the
+            # spring never had to show its lag
+            self._spring[j] = (k, c, list(q_cap.as_quat()), np.asarray(ff, dtype=float) * float(w[j]),
+                               k_lim, margin)
+        self.prev_prescribed = prescribed.copy()
         self.prev_w = w.copy()
         for j in range(22, 24):        # hands: always driven (massless)
             p.setJointMotorControlMultiDof(
@@ -875,59 +988,58 @@ class BulletRagdollSim:
         # -- step, with the limit motors on the free joints -------------------
         p.setTimeStep(h, physicsClientId=cid)
         self.last_torque[:] = 0.0
-        free_joints = [j for j in range(1, 22) if not prescribed[j] and self._lim_active[j]
-                       and w[j] <= 1e-6]
-        # Soft entry.  A capture is feasible for the performer by definition;
-        # a limit tighter than what they did is my error, not theirs, and a
-        # joint that goes free while outside its box must be eased in, never
-        # snapped -- released outside its box, a spine was slammed back at 66
-        # radians a second by a stop at full stiffness.  The box is widened by
-        # however far outside the joint is when it goes free, and that margin
-        # shrinks to nothing over `limit_entry_s`.
-        for j in free_joints:
-            if not self.was_free[j]:
-                st = p.getJointStateMultiDof(body.body, j - 1, physicsClientId=cid)
-                ang, _t, _s = self._swing_twist(j, np.asarray(st[0]))
-                self.lim_margin[j] = (np.maximum(self._lim_min[j] - ang, 0.0)
-                                      + np.maximum(ang - self._lim_max[j], 0.0)) + 0.02
-            elif self.lim_margin[j] is not None:
-                self.lim_margin[j] = np.maximum(
-                    self.lim_margin[j] - dt / max(p_.limit_entry_s, 1e-3) * self.lim_margin0[j], 0.0)
-                if not np.any(self.lim_margin[j] > 0.0):
-                    self.lim_margin[j] = None
-            if not self.was_free[j]:
-                self.lim_margin0[j] = self.lim_margin[j].copy()
-        self.was_free[:] = False
-        for j in free_joints:
-            self.was_free[j] = True
+        soft_joints = sorted(self._spring)
+        # Gravity compensation.  The torque the weight below each joint
+        # exerts about it, from the simulated centres of mass, fed forward in
+        # proportion to the weight: at 0.5 the "muscle" carries half the
+        # torso and the spring handles only deviation from the capture.
+        # Without it an upright torso on a spring is an inverted pendulum --
+        # stable only while the give is under a radian, and the spine is
+        # three springs in series plus the neck, so it toppled at a weight
+        # where a hip still stood.
+        self._grav = {}
+        if soft_joints and p_.gravity_comp > 0.0:
+            ls = p.getLinkStates(body.body, list(range(23)), physicsClientId=cid)
+            bpos, born = p.getBasePositionAndOrientation(body.body, physicsClientId=cid)
+            com = np.zeros((24, 3)); com[0] = bpos
+            jpos = np.zeros((24, 3)); orn = [None] * 24
+            for k in range(1, 24):
+                com[k] = ls[k - 1][0]; jpos[k] = ls[k - 1][4]; orn[k] = ls[k - 1][5]
+            g = 9.81 * p_.gravity
+            for j in soft_joints:
+                members = self.subtree[j]
+                m = self.link_masses[members]
+                M = float(m.sum())
+                if M <= 0.0:
+                    continue
+                r = (m[:, None] * com[members]).sum(0) / M - jpos[j]
+                tau_world = np.cross(r, np.array([0.0, M * g, 0.0]))      # holds the weight up
+                tau_child = R.from_quat(orn[j]).inv().apply(tau_world)
+                # in full above a quarter weight, fading to nothing below it:
+                # a body at 0.5 is not one that has lost half its posture
+                self._grav[j] = tau_child * min(1.0, float(w[j]) / 0.25) * p_.gravity_comp
         for k_sub in range(n_sub):
             if root_targets is not None:
                 pos_k, rot_k, force = root_targets[k_sub]
+                if not prescribed[0]:
+                    k_r, c_r = self._root_spring
+                    bp, _bo = p.getBasePositionAndOrientation(body.body, physicsClientId=cid)
+                    bv, _bw = p.getBaseVelocity(body.body, physicsClientId=cid)
+                    err = float(np.linalg.norm(np.asarray(pos_k) - np.asarray(bp)))
+                    verr = float(np.linalg.norm((cap_pos - prev_cap_pos) / dt - np.asarray(bv)))
+                    force = float(np.clip(k_r * err + c_r * verr, 0.002 * p_.root_hold_force, p_.root_hold_force))
                 p.changeConstraint(self.root_constraint, jointChildPivot=list(pos_k),
                                    jointChildFrameOrientation=list(rot_k.as_quat()),
                                    maxForce=force, physicsClientId=cid)
-            if free_joints:
-                states = p.getJointStatesMultiDof(body.body, [j - 1 for j in free_joints],
+            if soft_joints:
+                states = p.getJointStatesMultiDof(body.body, [j - 1 for j in soft_joints],
                                                   physicsClientId=cid)
-                for j, st in zip(free_joints, states):
-                    mat = R.from_quat(st[0]).as_matrix()
-                    target = self._limit_target(j, mat, self.lim_margin[j])
-                    k_ = self._lim_k[j] * p_.limit_stiffness
-                    if target is None:
-                        p.setJointMotorControlMultiDof(
-                            body.body, j - 1, p.POSITION_CONTROL, targetPosition=list(st[0]),
-                            targetVelocity=[0, 0, 0], positionGain=0.0,
-                            velocityGain=p_.joint_damping_gain,
-                            force=[p_.joint_damping_fraction * float(np.mean(self.max_torque[j]))] * 3,
-                            physicsClientId=cid)
-                        self.last_torque[j] = 0.0
-                    else:
-                        p.setJointMotorControlMultiDof(
-                            body.body, j - 1, p.POSITION_CONTROL, targetPosition=list(target),
-                            targetVelocity=[0, 0, 0], positionGain=p_.limit_gain,
-                            velocityGain=p_.limit_damping_gain,
-                            force=[float(k_)] * 3, physicsClientId=cid)
-                        self.last_torque[j] = 1.0
+                for j, st in zip(soft_joints, states):
+                    target, cap = self._spring_motor(j, st, h)
+                    p.setJointMotorControlMultiDof(
+                        body.body, j - 1, p.POSITION_CONTROL, targetPosition=target,
+                        targetVelocity=[0, 0, 0], positionGain=1.0, velocityGain=0.0,
+                        force=[cap] * 3, physicsClientId=cid)
             p.stepSimulation(physicsClientId=cid)
 
         # -- read back ---------------------------------------------------------
@@ -972,7 +1084,7 @@ class BulletRagdollSim:
         if needed > 0.05 * self._body_weight:
             held = float(np.clip(supplied / needed, 0.0, 1.0))
             if body.plane is not None:
-                held = max(held, self._capture_support(prescribed, mocap_aa, mocap_trans, p_))
+                held = max(held, self._capture_support(w, mocap_aa, mocap_trans, p_))
             self.last_support = held
         else:
             self.last_support = 1.0
@@ -981,6 +1093,61 @@ class BulletRagdollSim:
         if prescribed[0]:
             return result, root_rot, mocap_trans
         return result, self.root_rot, self.trans
+
+    def _deflection(self, w, p_):
+        """A partial weight maps to how far the joint gives under its typical
+        load: blend_soft degrees at 0, blend_firm at 1, log-spaced between.
+        The blended regime is a spring, not a force cap -- a cap holds until
+        the load exceeds it and then drops the limb, which made every weight
+        above the cliff track and every weight below it collapse."""
+        soft = math.radians(max(float(p_.blend_soft), 0.1))
+        firm = math.radians(max(float(p_.blend_firm), 0.01))
+        return soft * (firm / soft) ** float(np.clip(w, 0.0, 1.0))
+
+    def _spring_motor(self, j, st, h):
+        """The joint's spring-damper (toward the capture, plus the limit
+        spring, minus viscous damping) through Bullet's position motor.  The
+        motor's velocity gain does nothing here (measured), and a target
+        shifted against the velocity chattered explicitly on light links; so
+        the motor is used as a velocity motor -- target one substep ahead
+        along  capture rate + (k x error) / c,  position gain 1, which the
+        implicit constraint reaches in that substep -- with the force limit
+        set to the spring-damper's torque, so under load the joint yields
+        exactly as the spring would.  Returns (target quaternion, limit)."""
+        k, c, q_t, ff, k_lim, margin = self._spring[j]
+        q_now = R.from_quat(st[0])
+        err = (R.from_quat(q_t) * q_now.inv()).as_rotvec()               # parent frame
+        push = k * err
+        self.last_torque[j] = 0.0
+        if k_lim > 0.0:
+            lim = self._limit_target(j, q_now.as_matrix(), margin)
+            if lim is not None:
+                push = push + k_lim * (R.from_quat(lim) * q_now.inv()).as_rotvec()
+                self.last_torque[j] = 1.0
+        if JOINT_VEL_IN_CHILD_FRAME:
+            push = q_now.inv().apply(push)                                # -> child frame, like the velocity
+        grav = self._grav.get(j)
+        if grav is not None:
+            push = push + grav
+        dv = np.asarray(st[1], dtype=float) - ff
+        tau = push - c * dv
+        # The correction may not carry the joint past its target within the
+        # substep: a stiff spring on a light link (a toe: kilohertz natural
+        # frequency) asks for hundreds of radians a second, and a flat clamp
+        # on that left the feet slamming to and fro at the clamp for ever.
+        # -- and no faster than spring_rate of the remaining error per
+        # second: within that a stiff limit spring on a foot was a dead-beat
+        # snap to the box edge in one substep, at nine radians a second.
+        corr = push / c
+        e_mag = float(np.linalg.norm(push)) / max(k, k_lim, 1e-6)
+        n_ = float(np.linalg.norm(corr))
+        n_max = e_mag * min(self._spring_rate, 1.0 / h)
+        if n_ > n_max:
+            corr = corr * (n_max / max(n_, 1e-9))
+        v_star = ff + corr
+        step = q_now.apply(v_star * h) if JOINT_VEL_IN_CHILD_FRAME else v_star * h
+        target = (R.from_rotvec(step) * q_now).as_quat()
+        return list(target), float(min(np.linalg.norm(tau), self._drive_force))
 
     def _capture_lows(self, mocap_aa, mocap_trans):
         """Forward kinematics of the captured pose: the lowest point of every
@@ -1015,7 +1182,7 @@ class BulletRagdollSim:
         self._low_xz = low_xz
         return lows
 
-    def _capture_support(self, prescribed, mocap_aa, mocap_trans, p_):
+    def _capture_support(self, w, mocap_aa, mocap_trans, p_):
         """How much of the captured pose's weight the driven links can be
         carrying, 0..1.  The capture's ground-level points are those within
         support_tolerance of its lowest point; the share falls to the driven
@@ -1027,16 +1194,18 @@ class BulletRagdollSim:
         lows = self._capture_lows(mocap_aa, mocap_trans)
         floor = min(lows.values())
         cands = [j for j, v in lows.items() if v <= floor + p_.support_tolerance]
-        driven = [j for j in cands if prescribed[j]]
-        free = [j for j in cands if not prescribed[j]]
-        if not driven:
-            return 0.0
-        if not free:
-            return 1.0
         hip = self._last_fk[0, [0, 2]]
-        d_d = min(np.linalg.norm(self._low_xz[j] - hip) for j in driven)
-        d_f = min(np.linalg.norm(self._low_xz[j] - hip) for j in free)
-        return float(d_f ** 2 / (d_d ** 2 + d_f ** 2 + 1e-9))
+        # Each ground point counts by nearness to the pelvis, split between
+        # driven and released by its weight -- a joint at 0.999 is driven.
+        driven = 0.0; free = 0.0
+        for j in cands:
+            k = 1.0 / (float(np.sum((self._low_xz[j] - hip) ** 2)) + 1e-4)
+            u = float(np.clip(w[j], 0.0, 1.0))
+            driven = max(driven, u * k)
+            free = max(free, (1.0 - u) * k)
+        if driven + free <= 0.0:
+            return 0.0
+        return float(driven / (driven + free))
 
     def close(self):
         if self.body is not None:

@@ -554,9 +554,14 @@ class RagdollParams:
         self.motor_strength = 1.0     # multiplier on a partially driven joint's force limit
         self.motor_kp = 0.6           # pybullet POSITION_CONTROL gains for those motors
         self.motor_kd = 0.3
+        self.blend_soft = 180.0       # degrees a partial joint gives under its typical load at weight 0
+        self.blend_firm = 1.0         # ... and at weight 1; log-spaced between (root: half a metre per radian)
+        self.partial_damping = 0.5    # damping ratio of a partially driven joint's spring (1 = critical)
+        self.spring_rate = 60.0       # 1/s: a spring closes at most this fraction of its error per second
+        self.gravity_comp = 1.0       # share of the weight below a partial joint its 'muscle' carries, times the weight
         self.root_spring = 40.0       # (native core) 1/s^2, the pull on a partially driven root
         self.root_hold_force = 1.0e5  # N: the constraint holding a driven root
-        self.root_tether = 0.02       # share of that force at full partial weight (bullet)
+        self.root_tether = 1.0        # multiplier on the sag a partial root is allowed (bullet)
         self.root_erp = 1.0           # how much of the root's tracking error the constraint closes per step
         self.ramp_s = 0.12            # the node's ramp, for a catch that completes over it
         self.root_catch_speed = 2.5   # m/s floor on the speed a catch reels the root in at
@@ -2417,6 +2422,7 @@ class SMPLRagdollSim:
 
 import os
 from dpg_system.node import Node
+from dpg_system.interface_nodes import SliderBankNode
 from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions
 from dpg_system.body_defs import JointTranslator
 
@@ -2582,6 +2588,11 @@ class SMPLRagdollNode(Node):
             'motor_strength', widget_type='drag_float', default_value=1.0)
         self.motor_kp_prop = self.add_option('motor_kp', widget_type='drag_float', default_value=0.6)
         self.motor_kd_prop = self.add_option('motor_kd', widget_type='drag_float', default_value=0.3)
+        self.partial_damping_prop = self.add_option('partial_damping', widget_type='drag_float', default_value=0.5)
+        self.spring_rate_prop = self.add_option('spring_rate', widget_type='drag_float', default_value=60.0)
+        self.gravity_comp_prop = self.add_option('gravity_comp', widget_type='drag_float', default_value=1.0)
+        self.blend_soft_prop = self.add_option('blend_soft', widget_type='drag_float', default_value=180.0)
+        self.blend_firm_prop = self.add_option('blend_firm', widget_type='drag_float', default_value=1.0)
         self.root_spring_prop = self.add_option(
             'root_spring', widget_type='drag_float', default_value=40.0)
         self.substeps_prop = self.add_option(
@@ -2838,7 +2849,9 @@ class SMPLRagdollNode(Node):
         if not bool(self.auto_release_prop()):
             self._unsupported_time = 0.0
         else:
-            released = bool(np.any(self.weights[1:] < 1.0 - 1e-6))
+            # released means meaningfully so: a joint at 0.999 is driven, and
+            # counting it let a body at 0.999 be dropped for lack of support
+            released = bool(np.any(self.weights[1:] < 0.5))
             # only a rising weight (a catch) blocks it: a release in progress
             # is exactly when the loss it is measuring begins
             ramping = bool(np.any(self.weight_targets - self.weights > 1e-6))
@@ -3052,6 +3065,11 @@ class SMPLRagdollNode(Node):
         p.motor_strength = float(self.motor_strength_prop())
         p.motor_kp = float(self.motor_kp_prop())
         p.motor_kd = float(self.motor_kd_prop())
+        p.partial_damping = float(self.partial_damping_prop())
+        p.spring_rate = float(self.spring_rate_prop())
+        p.gravity_comp = float(self.gravity_comp_prop())
+        p.blend_soft = float(self.blend_soft_prop())
+        p.blend_firm = float(self.blend_firm_prop())
         p.root_spring = float(self.root_spring_prop())
         p.substeps = max(1, int(self.substeps_prop()))
         p.substep_rate = float(self.substep_rate_prop())
@@ -3192,3 +3210,20 @@ class SMPLRagdollNode(Node):
             t = t @ basis
             rot = R.from_matrix(proc.perm_basis_rot).inv() * rot
         return rot, t
+
+
+class RagdollBlendUINode(SliderBankNode):
+    """ragdoll_blend_ui: one slider per body region, each sending
+    'weight <region> <value>' -- connect its output to any input of an
+    smpl_ragdoll.  Names and the message template are the slider_bank
+    options, so a slider can be renamed to a single joint ('left_elbow') or
+    the template changed to drive something else."""
+    default_names = ['root', 'spine', 'head', 'left_arm', 'right_arm', 'left_leg', 'right_leg']
+    default_template = 'weight {name} {value}'
+    default_min = 0.0
+    default_max = 1.0
+    default_value = 1.0
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RagdollBlendUINode(name, data, args)

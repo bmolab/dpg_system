@@ -55,6 +55,7 @@ def register_interface_nodes():
     Node.app.register_node('color_cmy', CMYColorNode.factory)
     Node.app.register_node('vector', Vector2DNode.factory)
 
+    Node.app.register_node('slider_bank', SliderBankNode.factory)
     Node.app.register_node('radio', RadioButtonsNode.factory)
     Node.app.register_node('radio_h', RadioButtonsNode.factory)
     Node.app.register_node('radio_v', RadioButtonsNode.factory)
@@ -5533,3 +5534,164 @@ class ShapeSequencerNode(Node):
         self._rebuild_series()
         self._update_step_display()
 
+
+
+class SliderBankNode(Node):
+    """A named bank of sliders, each of which sends a message when moved.
+
+    slider_bank 6                      six sliders, named 1..6
+    slider_bank root spine left_arm    one per name
+
+    Every slider has a name (editable in the options, shown as its label) and
+    the bank has one message template, e.g. 'weight {name} {value}'.  Moving a
+    slider sends the template filled in for that slider, as a list, so a node
+    downstream receives it exactly as if the message had been typed.  With
+    the default template '{name} {value}' each slider is its own message.
+
+    Subclasses fix the names and template for a particular use -- see
+    ragdoll_blend_ui -- and keep this node's options for everything else.
+
+    Messages accepted at the 'in' input:
+        set <name|index> <value>   move a slider (and send its message)
+        send                       send every slider's message, in order
+    A plain list of numbers sets the sliders in order.
+    """
+    default_names = None
+    default_template = '{name} {value}'
+    default_min = 0.0
+    default_max = 1.0
+    default_value = 0.0
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return SliderBankNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        names = []
+        count = None
+        for i in range(len(self.ordered_args)):
+            val, t = decode_arg(self.ordered_args, i)
+            if t == int and count is None and not names:
+                count = int(val)
+            elif t == str:
+                names.append(str(val))
+        if not names:
+            if count is not None:
+                names = [str(i + 1) for i in range(max(count, 1))]
+            elif self.default_names:
+                names = list(self.default_names)
+            else:
+                names = [str(i + 1) for i in range(4)]
+        self.names = names
+        self.count = len(names)
+
+        self.control_input = self.add_input('in', triggers_execution=True)
+        self.sliders = []
+        for i, name in enumerate(names):
+            slider = self.add_input(name, widget_type='slider_float', widget_width=140,
+                                    default_value=float(self.default_value),
+                                    min=float(self.default_min), max=float(self.default_max),
+                                    callback=(lambda i=i: self.slider_changed(i)))
+            self.sliders.append(slider)
+        self.output = self.add_output('messages')
+
+        self.template_option = self.add_option('message', widget_type='text_input', width=200,
+                                               default_value=self.default_template)
+        self.min_option = self.add_option('min', widget_type='drag_float',
+                                          default_value=float(self.default_min),
+                                          callback=self.limits_changed)
+        self.max_option = self.add_option('max', widget_type='drag_float',
+                                          default_value=float(self.default_max),
+                                          callback=self.limits_changed)
+        self.name_options = []
+        for i, name in enumerate(names):
+            self.name_options.append(self.add_option('name %d' % (i + 1), widget_type='text_input',
+                                                     width=140, default_value=name,
+                                                     callback=self.names_changed))
+        self.message_handlers['set'] = self._set_message
+        self.message_handlers['send'] = self._send_message
+
+    # -- options --------------------------------------------------------------
+
+    def names_changed(self):
+        for i, opt in enumerate(self.name_options):
+            name = str(opt()).strip()
+            if name and name != self.names[i]:
+                self.names[i] = name
+                self.sliders[i].widget.set_label(name)
+
+    def limits_changed(self):
+        lo = float(self.min_option()); hi = float(self.max_option())
+        if hi <= lo:
+            hi = lo + 1e-6
+        for slider in self.sliders:
+            slider.widget.set_limits(lo, hi)
+
+    # -- messages out ---------------------------------------------------------
+
+    def message_for(self, i):
+        value = float(self.sliders[i]())
+        out = []
+        for token in str(self.template_option()).split():
+            tok = token.replace('{name}', self.names[i]).replace('{index}', str(i))
+            if '{value}' in tok:
+                if tok == '{value}':
+                    out.append(value)
+                    continue
+                tok = tok.replace('{value}', repr(value))
+            try:
+                out.append(int(tok) if tok.lstrip('-').isdigit() else float(tok))
+            except ValueError:
+                out.append(tok)
+        return out
+
+    def slider_changed(self, i):
+        # restored values fire this during patch load; nothing downstream is
+        # ready to hear from us yet
+        if getattr(self, 'in_loading_process', False):
+            return
+        self.output.send(self.message_for(i))
+
+    def send_all(self):
+        for i in range(self.count):
+            self.output.send(self.message_for(i))
+
+    # -- messages in ----------------------------------------------------------
+
+    def _index_of(self, token):
+        tok = str(token).strip()
+        if tok in self.names:
+            return self.names.index(tok)
+        if tok.lstrip('-').isdigit():
+            i = int(tok)
+            if 0 <= i < self.count:
+                return i
+        return None
+
+    def _set_message(self, message='', args=None):
+        args = list(args or [])
+        if len(args) < 2:
+            return
+        i = self._index_of(args[0])
+        if i is None:
+            print(f'{self.label}: no slider named {args[0]!r}; names are {self.names}')
+            return
+        self.sliders[i].set(any_to_float(args[1]))
+        self.output.send(self.message_for(i))
+
+    def _send_message(self, message='', args=None):
+        self.send_all()
+
+    def execute(self):
+        if self.control_input.fresh_input:
+            data = self.control_input()
+            if isinstance(data, str) and data == 'bang':
+                self.send_all()
+                return
+            values = any_to_array(data) if not isinstance(data, str) else None
+            if values is not None:
+                values = np.asarray(values, dtype=float).reshape(-1)
+                for i in range(min(self.count, values.size)):
+                    self.sliders[i].set(float(values[i]))
+                    self.output.send(self.message_for(i))
