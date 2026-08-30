@@ -189,6 +189,9 @@ class RagdollParams:
         self.floor_rate = 0.05        # m/s, the most the floor estimate may move
         self.support_tolerance = 0.05 # m: captured points this close to the lowest one are ground points
         self.friction = 0.8
+        # -- capture discontinuities (a looping file, a seeking stream)
+        self.jump_trans = 0.25        # m in one frame that reads as a teleport, not motion
+        self.jump_rot = 1.2           # rad in one frame, root or a major joint
 
 
 import os

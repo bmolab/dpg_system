@@ -750,9 +750,41 @@ class BulletRagdollSim:
         n_sub = max(1, min(int(p_.substeps), int(round(p_.substep_rate * dt)) or 1))
         h = dt / n_sub
 
-        # -- velocity estimates from the capture, for every joint and the base
+        # -- a capture discontinuity (a file looping, a stream seeking) is a
+        # teleport: the differenced velocities are enormous and every motor
+        # would slam across the gap at full force -- measured at 170 radians
+        # a second on the joints for half a second.  Detect it and treat it
+        # as a catch: no fabricated momentum, and the body reels to the new
+        # phase at a bounded rate instead of being hauled through space.
         root_rot = R.from_rotvec(mocap_aa[0])
         prev_root, prev_trans = self.prev_root, getattr(self, 'prev_trans', None)
+        self._jump = False
+        if prev_root is not None and prev_trans is not None:
+            # thresholds ride on the capture's own recent velocity: a fast
+            # capture (a dive at sixty frames a second) moves a lot per frame
+            # and is not a cut; a cut is a delta far beyond that velocity
+            d_t = float(np.linalg.norm(mocap_trans - prev_trans))
+            d_r = float((root_rot * prev_root.inv()).magnitude())
+            d_p = 0.0
+            for j in (1, 2, 3, 16, 17):
+                q_prev = self.prev_joint.get(j)
+                if q_prev is not None:
+                    d_p = max(d_p, float((q_prev.inv() * R.from_rotvec(mocap_aa[j])).magnitude())
+                              - 3.0 * float(self.joint_speed_ema[j]) * dt)
+            t_thr = p_.jump_trans + 3.0 * float(np.linalg.norm(self.base_seed.vel)) * dt
+            r_thr = p_.jump_rot + 3.0 * float(np.linalg.norm(self.base_ang_seed.vel)) * dt
+            if d_t > t_thr or d_r > r_thr or d_p > p_.jump_rot:
+                self._jump = True
+                self.base_seed.reset(); self.base_ang_seed.reset()
+                for seed in self.joint_seed.values():
+                    seed.reset()
+                self.joint_speed_ema[:] = 0.0
+                self.prev_root = root_rot; self.prev_trans = mocap_trans.copy()
+                for j in range(1, 24):
+                    self.prev_joint[j] = R.from_rotvec(mocap_aa[j])
+                prev_root, prev_trans = self.prev_root, self.prev_trans
+
+        # -- velocity estimates from the capture, for every joint and the base
         if prev_root is None:
             base_v = np.zeros(3); base_w = np.zeros(3)
         else:
@@ -804,6 +836,19 @@ class BulletRagdollSim:
             body.set_pose(mocap_aa, mocap_trans, base_v, base_w, joint_w)
             self.seeded = True
             self.prev_cap = (cap_pos.copy(), cap_rot)
+            self.reel = None
+        if self._jump and w[0] > 1e-6:
+            # The capture cut instantaneously; the body cuts with it.
+            # (A free root is not touched: the capture's cut is not the body's.)  The
+            # base is transported rigidly -- joint angles and their
+            # velocities carry over unchanged, so a free limb keeps its own
+            # state across the cut -- and the joints reel their small local
+            # differences.  Reeling the base instead hauled it two metres at
+            # the reel's speed cap and whipped every limb on the way.
+            self.prev_cap = (cap_pos.copy(), cap_rot)
+            p.resetBasePositionAndOrientation(body.body, list(cap_pos), list(cap_rot.as_quat()),
+                                              physicsClientId=cid)
+            p.resetBaseVelocity(body.body, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], physicsClientId=cid)
             self.reel = None
         prev_cap_pos, prev_cap_rot = self.prev_cap
         root_targets = None
@@ -1000,7 +1045,7 @@ class BulletRagdollSim:
                 # the capture, a caught joint sat 2.8 radians off when the
                 # weight reached one and the full-strength motor slammed it
                 # at a hundred and fifty radians a second.
-                if self.prev_w[j] <= 1e-6:
+                if self.prev_w[j] <= 1e-6 or self._jump:
                     q_now = R.from_quat(p.getJointStateMultiDof(body.body, li, physicsClientId=cid)[0])
                     a0 = float((q_cap * q_now.inv()).magnitude())
                     self.joint_reel[j] = [q_now, min(max(a0 / max(p_.ramp_s, 1e-3), p_.root_catch_rate), 30.0)]
