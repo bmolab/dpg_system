@@ -35,6 +35,9 @@ def register_numpy_nodes():
     Node.app.register_node('np.amin', NumpyUnaryNode.factory)
     Node.app.register_node('np.argmax', NumpyUnaryNode.factory)
     Node.app.register_node('np.argmin', NumpyUnaryNode.factory)
+    Node.app.register_node('np.nansum', NumpyUnaryNode.factory)
+    Node.app.register_node('np.nanmean', NumpyUnaryNode.factory)
+    Node.app.register_node('np.nanmedian', NumpyUnaryNode.factory)
     Node.app.register_node('np.linalg.det', NumpyUnaryNode.factory)
     Node.app.register_node('np.shape', NumpyShapeNode.factory)
     Node.app.register_node('np.matmul', NumpyMatMulNode.factory)
@@ -339,7 +342,7 @@ class NumpyNodeWithAxisNode(Node):
 
 
 class NumpyUnaryNode(NumpyNodeWithAxisNode):
-    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin}
+    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin, 'np.nansum': np.nansum, 'np.nanmean': np.nanmean, 'np.nanmedian': np.nanmedian}
 
     @staticmethod
     def factory(name, data, args=None):
