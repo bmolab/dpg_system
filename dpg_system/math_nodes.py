@@ -34,6 +34,14 @@ def register_math_nodes():
     Node.app.register_node("abs", OpSingleNode.factory)
     Node.app.register_node("sqrt", OpSingleNode.factory)
     Node.app.register_node("norm", OpSingleNode.factory)
+    Node.app.register_node("round", OpSingleNode.factory)
+    Node.app.register_node("floor", OpSingleNode.factory)
+    Node.app.register_node("ceil", OpSingleNode.factory)
+    Node.app.register_node("trunc", OpSingleNode.factory)
+    Node.app.register_node("np.round", OpSingleNode.factory)
+    Node.app.register_node("np.floor", OpSingleNode.factory)
+    Node.app.register_node("np.ceil", OpSingleNode.factory)
+    Node.app.register_node("np.trunc", OpSingleNode.factory)
     Node.app.register_node(">", ComparisonNode.factory)
     Node.app.register_node(">=", ComparisonNode.factory)
     Node.app.register_node("==", ComparisonNode.factory)
@@ -471,14 +479,22 @@ class OpSingleNode(Node):
             'inverse': self.inverse,
             'abs': self.abs,
             'sqrt': self.square_root,
-            'norm': self.normalize
+            'norm': self.normalize,
+            'round': self.round,
+            'floor': self.floor,
+            'ceil': self.ceil,
+            'trunc': self.trunc
         }
-        if label in self.operations:
-            self.op = self.operations[label]
+        op_label = label[3:] if label.startswith('np.') else label
+        if op_label in self.operations:
+            self.op = self.operations[op_label]
         else:
             self.op = self.operations['log10']
 
         self.input = self.add_input('in', triggers_execution=True)
+        self.decimals = None
+        if op_label == 'round':
+            self.decimals = self.add_option('decimals', widget_type='input_int', default_value=0)
         self.output = self.add_output('result')
 
     def execute(self):
@@ -569,6 +585,35 @@ class OpSingleNode(Node):
         if a > 0:
             return math.sqrt(a)
         return - math.sqrt(-a)
+
+    def round(self, a):
+        decimals = self.decimals() if self.decimals is not None else 0
+        if type(a) == np.ndarray:
+            return np.round(a, decimals=decimals)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.round(a, decimals=decimals)
+        return round(a, decimals) if decimals != 0 else round(a)
+
+    def floor(self, a):
+        if type(a) == np.ndarray:
+            return np.floor(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.floor(a)
+        return math.floor(a)
+
+    def ceil(self, a):
+        if type(a) == np.ndarray:
+            return np.ceil(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.ceil(a)
+        return math.ceil(a)
+
+    def trunc(self, a):
+        if type(a) == np.ndarray:
+            return np.trunc(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.trunc(a)
+        return math.trunc(a)
 
 
 class OpSingleTrigNode(Node):

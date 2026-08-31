@@ -69,6 +69,14 @@ def register_numpy_nodes():
     Node.app.register_node('np.all', NumpyAllNode.factory)
     Node.app.register_node('rotate_position', RotatePositionNode.factory)
     Node.app.register_node('np.robust_mean', NumpyRobustMeanNode.factory)
+    Node.app.register_node('np.where', NumpyWhereNode.factory)
+    Node.app.register_node('np.argwhere', NumpyWhereNode.factory)
+    Node.app.register_node('np.sort', NumpySortNode.factory)
+    Node.app.register_node('np.argsort', NumpySortNode.factory)
+    Node.app.register_node('np.diff', NumpyDiffNode.factory)
+    Node.app.register_node('np.cumsum', NumpyCumulativeNode.factory)
+    Node.app.register_node('np.cumprod', NumpyCumulativeNode.factory)
+    Node.app.register_node('np.split', NumpySplitNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -2029,6 +2037,191 @@ class NumpyAllNode(Node):
             a_arr = a_arr.astype(bool)
         result = bool(np.all(a_arr))
         self.result_out.send(result)
+
+
+class NumpyWhereNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyWhereNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.if_true_value = None
+        self.if_false_value = None
+        self.input = self.add_input('condition', triggers_execution=True)
+        if label == 'np.where':
+            self.if_true_input = self.add_input('if true')
+            self.if_false_input = self.add_input('if false')
+            self.output = self.add_output('selected')
+        else:
+            self.output = self.add_output('indices')
+
+    def execute(self):
+        condition = any_to_array(self.input())
+        if self.label == 'np.argwhere':
+            self.output.send(np.argwhere(condition))
+            return
+        if self.if_true_input.fresh_input:
+            self.if_true_value = any_to_array(self.if_true_input())
+        if self.if_false_input.fresh_input:
+            self.if_false_value = any_to_array(self.if_false_input())
+        if self.if_true_value is None or self.if_false_value is None:
+            return
+        try:
+            self.output.send(np.where(condition, self.if_true_value, self.if_false_value))
+        except ValueError:
+            if self.app.verbose:
+                print(self.label, 'shapes do not broadcast:', condition.shape,
+                      self.if_true_value.shape, self.if_false_value.shape)
+
+
+class NumpySortNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySortNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = -1
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                axis = int(v)
+        self.op = np.argsort if label == 'np.argsort' else np.sort
+        self.input = self.add_input('in', triggers_execution=True)
+        self.axis = self.add_input('axis', widget_type='input_int', default_value=axis)
+        self.descending = self.add_option('descending', widget_type='checkbox', default_value=False)
+        output_name = 'indices' if label == 'np.argsort' else 'sorted'
+        self.output = self.add_output(output_name)
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis()
+        if not -len(data.shape) <= axis < len(data.shape):
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        result = self.op(data, axis=axis)
+        if self.descending():
+            result = np.flip(result, axis=axis)
+        self.output.send(result)
+
+
+class NumpyDiffNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyDiffNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        order = 1
+        axis = -1
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                order = int(v)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.order = self.add_input('order', widget_type='input_int', default_value=order)
+        self.axis = self.add_input('axis', widget_type='input_int', default_value=axis)
+        self.output = self.add_output('differences')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis()
+        order = self.order()
+        if order < 1:
+            order = 1
+        if not -len(data.shape) <= axis < len(data.shape):
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        if data.shape[axis] <= order:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'has size', data.shape[axis],
+                      '- too short for order', order)
+            return
+        self.output.send(np.diff(data, n=order, axis=axis))
+
+
+class NumpyCumulativeNode(Node):
+    operations = {'np.cumsum': np.cumsum, 'np.cumprod': np.cumprod}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyCumulativeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = -1
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                axis = int(v)
+        self.op = np.cumsum
+        if label in self.operations:
+            self.op = self.operations[label]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.axis = self.add_input('axis', widget_type='input_int', default_value=axis)
+        output_name = label.split('.')[-1]
+        self.output = self.add_output(output_name)
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis()
+        if not -len(data.shape) <= axis < len(data.shape):
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        self.output.send(self.op(data, axis=axis))
+
+
+class NumpySplitNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySplitNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.splits = 2
+        axis = 0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                self.splits = max(int(v), 2)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.axis = self.add_input('axis', widget_type='input_int', default_value=axis)
+        self.array_outputs = []
+        for i in range(self.splits):
+            self.array_outputs.append(self.add_output('array ' + str(i)))
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis()
+        if not -len(data.shape) <= axis < len(data.shape):
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        if data.shape[axis] < self.splits:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'has size', data.shape[axis],
+                      '- fewer elements than', self.splits, 'splits')
+            return
+        pieces = np.array_split(data, self.splits, axis=axis)
+        for idx, piece in enumerate(pieces):
+            self.array_outputs[idx].send(piece)
 
 
 class RotatePositionNode(Node):
