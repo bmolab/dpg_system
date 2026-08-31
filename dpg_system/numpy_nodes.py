@@ -358,10 +358,12 @@ class NumpyUnaryNode(NumpyNodeWithAxisNode):
             d, t = decode_arg(args, 0)
             if t == int:
                 self.axis = d
-        output_name = label.split('.')[0]
+        output_name = label.split('.')[-1]
         self.input = self.add_input('in', triggers_execution=True)
         self.add_dim_option(none_allowed=False)
         self.output = self.add_output(output_name)
+        # patches saved before the fix carry the old mistaken outlet name
+        self.output.name_archive.append('np')
 
     def execute(self):
         input_value = any_to_array(self.input())
@@ -395,11 +397,13 @@ class NumpyBinaryNode(NumpyNodeWithAxisNode):
         self.axis = self.arg_as_int(default_value=0)
         if label in self.operations:
             self.op = self.operations[label]
-        output_name = label.split('.')[0]
+        output_name = label.split('.')[-1]
         self.input = self.add_input('in', triggers_execution=True)
         self.input_2 = self.add_input('in 2')
         self.add_dim_option()
         self.output = self.add_output(output_name)
+        # patches saved before the fix carry the old mistaken outlet name
+        self.output.name_archive.append('np')
 
     def execute(self):
         if self.input_2.fresh_input:
