@@ -189,6 +189,7 @@ class RagdollParams:
         self.floor_rate = 0.05        # m/s, the most the floor estimate may move
         self.support_tolerance = 0.05 # m: captured points this close to the lowest one are ground points
         self.friction = 0.8
+        self.contact_sense = True     # log-odds contact estimation on the captured pose
         # -- capture discontinuities (a looping file, a seeking stream)
         self.jump_trans = 0.25        # m in one frame that reads as a teleport, not motion
         self.jump_rot = 1.2           # rad in one frame, root or a major joint
@@ -282,6 +283,7 @@ class SMPLRagdollNode(Node):
         self.energy_output = self.add_output('energy_removed')
         self.support_output = self.add_output('support')
         self.torque_output = self.add_output('free_torque_vectors')
+        self.contact_output = self.add_output('contact')
 
         # Everything free by default: weights decide what physics gets, and
         # changing the free set resets the simulation, so it should not need
@@ -325,6 +327,8 @@ class SMPLRagdollNode(Node):
             'floor_auto', widget_type='checkbox', default_value=True)
         self.floor_tau_prop = self.add_option('floor_tau', widget_type='drag_float', default_value=2.0)
         self.floor_rate_prop = self.add_option('floor_rate', widget_type='drag_float', default_value=0.05)
+        self.contact_sense_prop = self.add_property(
+            'contact_sense', widget_type='checkbox', default_value=True)
         self.friction_prop = self.add_property(
             'friction', widget_type='drag_float', default_value=0.8)
 
@@ -775,6 +779,7 @@ class SMPLRagdollNode(Node):
         p.floor_rate = float(self.floor_rate_prop())
         p.floor_auto = bool(self.floor_auto_prop())
         p.friction = float(self.friction_prop())
+        p.contact_sense = bool(self.contact_sense_prop())
 
         proc = self.processor
         out_trans = root_trans
@@ -817,6 +822,9 @@ class SMPLRagdollNode(Node):
         self.contact_force_output.send(self.sim.last_contact_force.copy())
         self.energy_output.send(self.sim.last_energy_injected)
         self.support_output.send(self.sim.last_support)
+        ci = getattr(self.sim, 'contact_intensity', None)
+        if ci is not None:
+            self.contact_output.send([ci['LF'], ci['RF'], ci['LH'], ci['RH']])
 
     def _as_smpl_axis_angle(self, work, F, C):
         """The pose as SMPL axis-angle, whatever came in.

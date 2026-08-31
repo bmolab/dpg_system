@@ -607,6 +607,11 @@ class BulletRagdollSim:
         self.prev_w = np.zeros(24)
         self.floor_est = None
         self.floor_hist = []
+        self._lo_est = None               # log-odds contact estimator (lazy)
+        self._lo_prev_com = None
+        self._lo_prev_vel = np.zeros(3)
+        self._lo_acc = np.zeros(3)
+        self.contact_intensity = None     # {'LF','RF','LH','RH'} -> 0..1, or None
         self.floor_level = 0.0
         self.lim_margin = [None] * 24
         self.lim_margin0 = [None] * 24
@@ -933,6 +938,48 @@ class BulletRagdollSim:
         # feet sat four centimetres under y=0 released a foot from inside the
         # floor, and it was kicked out at thirty radians a second.  Instant to
         # drop, slow to rise, so a jump does not pull the floor up after it.
+        # -- log-odds contact sense on the captured pose: with IMU-inferred
+        # positions the feet hover and dip, and geometry alone cannot say
+        # which foot carries the body.  The estimator fuses height, kinematic,
+        # structural and divergence evidence over time; its per-group
+        # intensity (LF RF LH RH, 0..1) drives the contact firmness, the
+        # support measure and the floor estimate below.  If it fails it is
+        # switched off, never fatal.
+        self.contact_intensity = None
+        if p_.contact_sense and body.plane is not None and self._lo_est is not False:
+            try:
+                if self._lo_est is None:
+                    from dpg_system.contact_logodds import (LogOddsContactEstimator,
+                                                            LogOddsContactOptions)
+                    from dpg_system.dynamic_frame_evaluator import DynamicFrameEvaluator
+                    fe = DynamicFrameEvaluator(total_mass=self.mass,
+                                               segment_masses=np.asarray(self.link_masses[:24]),
+                                               num_joints=30)
+                    self._lo_est = LogOddsContactEstimator(
+                        framerate=1.0 / max(dt, 1e-4), total_mass_kg=self.mass,
+                        segment_masses=np.asarray(self.link_masses[:24]), frame_evaluator=fe)
+                    self._lo_opts = LogOddsContactOptions(up_axis=1)
+                if getattr(self, '_frame_lows_id', None) != id(mocap_aa):
+                    self._frame_lows = self._capture_lows(mocap_aa, mocap_trans)
+                    self._frame_lows_id = id(mocap_aa)
+                fk = self._last_fk
+                com = (self.link_masses[:24, None] * fk[:24]).sum(0) / self.mass
+                if self._jump or self._lo_prev_com is None:
+                    vel = np.zeros(3); self._lo_acc[:] = 0.0; raw_acc = np.zeros(3)
+                else:
+                    vel = (com - self._lo_prev_com) / dt
+                    raw_acc = (vel - self._lo_prev_vel) / dt
+                    self._lo_acc += 0.3 * (raw_acc - self._lo_acc)
+                self._lo_prev_com = com.copy(); self._lo_prev_vel = vel.copy()
+                res = self._lo_est.process_frame(fk, com, vel, self._lo_acc.copy(),
+                                                 self.floor_level, dt, self._lo_opts,
+                                                 raw_com_acc=raw_acc)
+                self.contact_intensity = {g: float(res.intensity.get(g, 0.0))
+                                          for g in ('LF', 'RF', 'LH', 'RH')}
+            except Exception as e:
+                print(f'smpl_ragdoll: contact sense unavailable ({e}); geometric contact only')
+                self._lo_est = False
+
         # A real floor does not move.  The estimate is a low-pass of the
         # captured body's lowest point (captured, so it works at any root
         # weight), moving at most floor_rate metres a second: a foot that
@@ -952,7 +999,10 @@ class BulletRagdollSim:
                 # feet wander centimetres above it, and a dip or a jump is a
                 # small fraction of the window
                 n_win = max(int(round(p_.floor_tau / max(dt, 1e-4))), 4)
-                self.floor_hist.append(low)
+                planted = (self.contact_intensity is None
+                           or max(self.contact_intensity.values()) > 0.3)
+                if planted or not self.floor_hist:
+                    self.floor_hist.append(low)
                 if len(self.floor_hist) > n_win:
                     del self.floor_hist[:len(self.floor_hist) - n_win]
                 target = float(np.percentile(self.floor_hist, 10.0))
@@ -994,10 +1044,18 @@ class BulletRagdollSim:
         # pushed with a fraction of the body's weight, not kilonewtons, and
         # nothing flips as a slider moves.  Penetration per body weight:
         # 2 cm at weight 0, 32 cm at weight 1.
+        lo_links = {7: 'LF', 10: 'LF', 8: 'RF', 11: 'RF', 20: 'LH', 21: 'RH'}
         for j in range(0, 22):
             if held[j] and held[0]:
                 continue
-            q = int(round(float(w[j]) * 20.0))       # set only when the weight moves a step
+            # a guided link's contact is compliant and slippery -- unless the
+            # estimator says it is planted, in which case it bears real load
+            # with real grip however inexact the captured height is
+            soft = float(w[j])
+            g = lo_links.get(j)
+            if g is not None and self.contact_intensity is not None:
+                soft *= 1.0 - self.contact_intensity[g]
+            q = int(round(soft * 20.0))              # set only when it moves a step
             if self._contact_q[j] != q:
                 self._contact_q[j] = q
                 pen = 0.02 + 0.3 * (q / 20.0) ** 2
@@ -1384,6 +1442,16 @@ class BulletRagdollSim:
             lows = self._capture_lows(mocap_aa, mocap_trans)
         floor = min(lows.values())
         cands = [j for j, v in lows.items() if v <= floor + p_.support_tolerance]
+        conf = {}
+        if self.contact_intensity is not None:
+            # the estimator's word overrides geometry both ways: a foot it
+            # calls planted supports even if the capture hovers it high, and
+            # one it calls airborne does not support however low it dips
+            lo_links = {7: 'LF', 10: 'LF', 8: 'RF', 11: 'RF', 20: 'LH', 21: 'RH'}
+            for j, g in lo_links.items():
+                conf[j] = self.contact_intensity[g]
+                if conf[j] > 0.5 and j not in cands and j in lows:
+                    cands.append(j)
         hip = self._last_fk[0, [0, 2]]
         # Each ground point counts by nearness to the pelvis, split between
         # driven and released by its weight -- a joint at 0.999 is driven.
@@ -1391,7 +1459,11 @@ class BulletRagdollSim:
         for j in cands:
             k = 1.0 / (float(np.sum((self._low_xz[j] - hip) ** 2)) + 1e-4)
             u = float(np.clip(w[j], 0.0, 1.0))
-            driven = max(driven, u * k)
+            # contact confidence scales only the driven share: it says whether
+            # a driven foot actually delivers support, while the free share is
+            # about the capture's stance, not contact.  Scaling both cancelled
+            # in the ratio, and flight read as fully supported.
+            driven = max(driven, u * k * (conf.get(j, 1.0) if conf else 1.0))
             free = max(free, (1.0 - u) * k)
         if driven + free <= 0.0:
             return 0.0

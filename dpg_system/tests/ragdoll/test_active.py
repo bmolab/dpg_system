@@ -29,7 +29,7 @@ class Stub(SMPLRagdollNode):
         self.pose_output=Out(); self.smpl_pose_output=Out(); self.trans_output=Out()
         self.weights_output=Out(); self.torque_output=Out()
         self.contact_force_output=Out(); self.energy_output=Out()
-        self.support_output = Out()
+        self.support_output = Out(); self.contact_output=Out()
         self.free_joints_prop=P(free); self.weight_prop=P(weight); self.ramp_prop=P(120.0)
         self.gravity_prop=P(1.0); self.transport_prop=P(1.0)
         self.damping_prop=P(1.5); self.limit_stiffness_prop=P(1.0); self.stop_softness_prop=P(0.087)
@@ -40,7 +40,7 @@ class Stub(SMPLRagdollNode):
         self._unsupported_time=0.0
         self.floor_enable_prop=P(True); self.self_collision_prop = P(True)
         self.self_depth_prop = P(0.04); self.self_max_g_prop = P(2.0); self.floor_height_prop=P(0.0); self.floor_auto_prop=P(True); self.floor_tau_prop=P(2.0); self.floor_rate_prop=P(0.05)
-        self.friction_prop=P(0.8); self.contact_depth_prop=P(0.01)
+        self.friction_prop=P(0.8); self.contact_sense_prop=P(True); self.contact_depth_prop=P(0.01)
         self.contact_damping_prop=P(4.0); self.partial_damping_prop=P(0.5); self.spring_rate_prop=P(60.0); self.gravity_comp_prop=P(1.0); self.blend_soft_prop=P(180.0); self.blend_firm_prop=P(1.0); self.slip_velocity_prop=P(0.02)
         self.max_penetration_prop=P(0.05); self.max_contact_g_prop=P(50.0)
         self.max_point_g_prop=P(10.0); self.max_point_accel_prop=P(300.0); self.recovery_speed_prop=P(0.1)
