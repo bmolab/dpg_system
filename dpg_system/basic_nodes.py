@@ -1245,9 +1245,13 @@ class UnpackNode(Node):
         self.types = {'s': str, 'i': int, 'f': float, 'l': list, 'b': bool, 'a': np.ndarray}
         self.kinds = [str, int, float, list, bool, np.ndarray]
         # True for a naked 'unpack': the visible output count tracks the
-        # first dimension of whatever it receives.
+        # first dimension of whatever it receives. Dicts are split too, with
+        # outputs labelled by key.
         self.auto_configure = False
         self.max_auto_outs = 32
+        # Key list currently shown as output labels (None = positional labels).
+        self.dict_keys = None
+        self.truncation_warned = False
 
         if torch_available:
             self.types['t'] = torch.Tensor
@@ -1320,6 +1324,9 @@ class UnpackNode(Node):
         # Show exactly 'count' outputs. Called on every message in auto mode,
         # so it only touches the UI when the count actually changes. The node
         # stays naked on save, so it keeps adapting after a reload.
+        if count > self.max_auto_outs and not self.truncation_warned:
+            print('unpack: input has ' + str(count) + ' elements; only the first ' + str(self.max_auto_outs) + ' are output')
+            self.truncation_warned = True
         count = max(1, min(count, self.max_auto_outs))
         if count == self.num_outs:
             return
@@ -1331,10 +1338,38 @@ class UnpackNode(Node):
                 dpg.hide_item(self.outputs[i].uuid)
         self.num_outs = count
 
+    def configure_dict_outputs(self, keys):
+        # Show one output per key, labelled by the key. Relabels only when
+        # the key set actually changes.
+        self.configure_outputs(len(keys))
+        keys = keys[:self.num_outs]
+        if keys != self.dict_keys:
+            for i, key in enumerate(keys):
+                self.outputs[i].set_label(str(key))
+            self.dict_keys = keys
+
+    def restore_positional_labels(self):
+        # Coming back from dict input: put the 'out n' labels back everywhere
+        # (hidden outputs included, so they are right if revealed later).
+        for i in range(self.max_auto_outs):
+            self.outputs[i].set_label('out ' + str(i + 1))
+        self.dict_keys = None
+
     def execute(self):
         if self.input.fresh_input:
             value = self.input()
             t = type(value)
+            if t is dict:
+                if not self.auto_configure:
+                    return
+                keys = list(value.keys())
+                self.configure_dict_outputs(keys)
+                out_count = min(len(keys), self.num_outs)
+                for j in reversed(range(out_count)):
+                    self.outputs[j].send(value[keys[j]])
+                return
+            if self.auto_configure and self.dict_keys is not None:
+                self.restore_positional_labels()
             if t in [float, int, bool, np.float32, np.int64]:
                 if self.auto_configure:
                     self.configure_outputs(1)
