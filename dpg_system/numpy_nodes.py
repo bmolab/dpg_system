@@ -18,6 +18,8 @@ def register_numpy_nodes():
 
     Node.app.register_node('np.linalg.det', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('np.linalg.matrix_rank', NumpyUnaryLinearAlgebraNode.factory)
+    Node.app.register_node('np.linalg.inv', NumpyUnaryLinearAlgebraNode.factory)
+    Node.app.register_node('np.linalg.solve', NumpyLinalgSolveNode.factory)
     Node.app.register_node('flatten', FlattenMatrixNode.factory)
     Node.app.register_node('np.ravel', FlattenMatrixNode.factory)
     Node.app.register_node('np.dot', NumpyDotProductNode.factory)
@@ -1057,8 +1059,10 @@ class NumpyReshapeNode(Node):
 class NumpyUnaryLinearAlgebraNode(Node):
     operations = {
         'np.linalg.det': np.linalg.det,
-        'np.linalg.matrix_rank': np.linalg.matrix_rank
+        'np.linalg.matrix_rank': np.linalg.matrix_rank,
+        'np.linalg.inv': np.linalg.inv
     }
+    needs_square = ['np.linalg.det', 'np.linalg.inv']
 
     @staticmethod
     def factory(name, data, args=None):
@@ -1077,12 +1081,56 @@ class NumpyUnaryLinearAlgebraNode(Node):
             out_name = 'determiner'
         elif self.label == 'np.linalg.matrix_rank':
             out_name = 'matrix rank'
+        elif self.label == 'np.linalg.inv':
+            out_name = 'inverse matrix'
         self.output = self.add_output(out_name)
 
     def execute(self):
         if self.input.fresh_input:
             data = any_to_array(self.input())
-            self.output.send(self.op(data))
+            if self.label in self.needs_square:
+                if len(data.shape) < 2 or data.shape[-1] != data.shape[-2]:
+                    if self.app.verbose:
+                        print(self.label, 'needs a square matrix, got shape', data.shape)
+                    return
+            try:
+                self.output.send(self.op(data))
+            except np.linalg.LinAlgError as e:
+                if self.app.verbose:
+                    print(self.label, e)
+
+
+class NumpyLinalgSolveNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLinalgSolveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.b_value = None
+        self.input = self.add_input('A matrix', triggers_execution=True)
+        self.b_input = self.add_input('b')
+        self.output = self.add_output('x')
+
+    def execute(self):
+        if self.b_input.fresh_input:
+            self.b_value = any_to_array(self.b_input())
+        a = any_to_array(self.input())
+        if self.b_value is None:
+            return
+        if len(a.shape) < 2 or a.shape[-1] != a.shape[-2]:
+            if self.app.verbose:
+                print(self.label, 'A must be a square matrix, got shape', a.shape)
+            return
+        try:
+            self.output.send(np.linalg.solve(a, self.b_value))
+        except np.linalg.LinAlgError as e:
+            if self.app.verbose:
+                print(self.label, e)
+        except ValueError:
+            if self.app.verbose:
+                print(self.label, 'shapes incompatible:', a.shape, 'vs', self.b_value.shape)
 
 
 class NumpyDistanceFromTargetNode(NumpyNodeWithAxisNode):
