@@ -1244,6 +1244,10 @@ class UnpackNode(Node):
         out_names = []
         self.types = {'s': str, 'i': int, 'f': float, 'l': list, 'b': bool, 'a': np.ndarray}
         self.kinds = [str, int, float, list, bool, np.ndarray]
+        # True for a naked 'unpack': the visible output count tracks the
+        # first dimension of whatever it receives.
+        self.auto_configure = False
+        self.max_auto_outs = 32
 
         if torch_available:
             self.types['t'] = torch.Tensor
@@ -1279,11 +1283,16 @@ class UnpackNode(Node):
                             self.out_types.append(any_to_string(arg))
                             out_names.append(any_to_string(arg))
         else:
-            self.out_types = [None, None]
+            # Naked 'unpack': create a bank of hidden outputs and reveal as
+            # many as the received message has elements (see
+            # configure_outputs), the way dict_extract discovers its keys.
+            self.auto_configure = True
+            self.out_types = [None] * self.max_auto_outs
+            out_names = ['out ' + str(i + 1) for i in range(self.max_auto_outs)]
 
         self.input = self.add_input("", triggers_execution=True)
 
-        for i in range(self.num_outs):
+        for i in range(len(self.out_types)):
             if self.out_types[i] in self.kinds:
                 if self.out_types[i] == str:
                     self.add_string_output(out_names[i])
@@ -1302,43 +1311,57 @@ class UnpackNode(Node):
             else:
                 self.add_output(out_names[i])
 
+    def custom_create(self, from_file):
+        if self.auto_configure:
+            for i in range(self.num_outs, self.max_auto_outs):
+                dpg.hide_item(self.outputs[i].uuid)
+
+    def configure_outputs(self, count):
+        # Show exactly 'count' outputs. Called on every message in auto mode,
+        # so it only touches the UI when the count actually changes. The node
+        # stays naked on save, so it keeps adapting after a reload.
+        count = max(1, min(count, self.max_auto_outs))
+        if count == self.num_outs:
+            return
+        if count > self.num_outs:
+            for i in range(self.num_outs, count):
+                dpg.show_item(self.outputs[i].uuid)
+        else:
+            for i in range(count, self.num_outs):
+                dpg.hide_item(self.outputs[i].uuid)
+        self.num_outs = count
+
     def execute(self):
         if self.input.fresh_input:
             value = self.input()
             t = type(value)
             if t in [float, int, bool, np.float32, np.int64]:
+                if self.auto_configure:
+                    self.configure_outputs(1)
                 self.outputs[0].send(value)
-            elif t == 'str':
+                return
+            listing = None
+            if t == str:
                 listing, _, _ = string_to_hybrid_list(value)
-                out_count = len(listing)
-                if out_count > self.num_outs:
-                    out_count = self.num_outs
-                for j in reversed(range(out_count)):
-                    self.outputs[j].send(listing[j])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
-                out_count = len(listing)
-                if out_count > self.num_outs:
-                    out_count = self.num_outs
-                for j in reversed(range(out_count)):
-                    self.outputs[j].send(listing[j])
             elif t == np.ndarray:
                 if value.ndim == 0:
                     return
-                out_count = value.shape[0]
-                if out_count > self.num_outs:
-                    out_count = self.num_outs
-                for j in reversed(range(out_count)):
-                    self.outputs[j].send(value[j])
-            elif torch_available:
-                if t == torch.Tensor:
-                    if value.dim() == 0:
-                        return
-                    out_count = value.shape[0]
-                    if out_count > self.num_outs:
-                        out_count = self.num_outs
-                    for j in reversed(range(out_count)):
-                        self.outputs[j].send(value[j])
+                listing = value
+            elif torch_available and t == torch.Tensor:
+                if value.dim() == 0:
+                    return
+                listing = value
+            if listing is None:
+                return
+            out_count = len(listing)
+            if self.auto_configure:
+                self.configure_outputs(out_count)
+            if out_count > self.num_outs:
+                out_count = self.num_outs
+            for j in reversed(range(out_count)):
+                self.outputs[j].send(listing[j])
 
 
 class PackNode(Node):
