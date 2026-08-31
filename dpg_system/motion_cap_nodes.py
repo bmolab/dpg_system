@@ -436,6 +436,9 @@ class OpenTakeNode(MoCapNode):
 
         self.add_spacer()
         self.dump_button = self.add_input('dump', widget_type='button', widget_width=50, callback=self.dump_take)
+        # Re-emits the current globals / config dict on demand, without
+        # having to reload the file to trigger the load-time send.
+        self.send_globals_button = self.add_input('send globals', widget_type='button', widget_width=90, callback=self.send_globals)
         self.dump_out = self.add_output('dump')
         self.global_params_out = self.add_output('globals')
         self.take_data_out = self.add_output('take data out')
@@ -453,6 +456,7 @@ class OpenTakeNode(MoCapNode):
         self.recording = False
         self.force_frame = False
         self.message_handlers['load'] = self.load_take_message
+        self.message_handlers['globals'] = self.send_globals_message
         self.new_positions = False
         self.load_take_task = -1
         # File framerate (parsed from the npz at load time). 60 is the
@@ -698,6 +702,13 @@ class OpenTakeNode(MoCapNode):
 
     def dump_take(self):
         self.dump_out.send(self.take_dict)
+
+    def send_globals(self):
+        if len(self.global_dict) > 0:
+            self.global_params_out.send(self.global_dict)
+
+    def send_globals_message(self, message='', args=None):
+        self.send_globals()
 
     def start_playing(self):
         if self.use_file_framerate_input():
