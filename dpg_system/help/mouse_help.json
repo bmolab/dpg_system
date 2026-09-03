@@ -1,0 +1,363 @@
+{
+    "height": 741,
+    "width": 1435,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "mouse_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mouse_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mouse and keys - play the patch directly",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mouse and keys - play the patch directly",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mouse and keys - play the patch directly"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 597,
+            "position_y": 45,
+            "width": 798,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These two nodes let the patch respond to the mouse and the keyboard directly.\n\nmouse reports where the pointer is, continuously. \nkeys reports which keys are down, and what was typed.\n\nThey are how a patch becomes playable without building an interface for it - \nuseful for performance, for testing something quickly, and for anything where \na widget would be in the way of what you are doing with your hands.\n\nSYNTAX:\nmouse\nkeys <key name> <key name> ...\n\nEXAMPLE:\nkeys space a s d f\n\nINPUTS and PARAMETERS:\n\nin (mouse):\nAnything here asks for the current position.\n\nlist keys (keys):\nA button that prints every key name the node recognises, to the console. \nClick it when you are not sure what a key is called - the names are what you \ngive as arguments.\n\nArguments to keys name the keys you want their own outlets for. \nWithout arguments you still get the modifier outlets and the general \ncharacter and code outlets.\n\nOUTPUTS - mouse:\n\nx / y:\nThe pointer position, on separate outlets.\n\nOUTPUTS - keys:\n\nshift / control / command / alt:\nThe modifier keys, each reporting 1 while held and 0 when released. \nHaving them separately is what lets you use a modifier to change what an \nordinary key does.\n\ncharacter out:\nThe character typed.\n\nkey code out:\nIts numeric code, for keys that produce no character.\n\n<one outlet per named key>:\n1 while that key is held, 0 when released.\n\nA NOTE ON FOCUS:\nThese read the keyboard and mouse for the application, so they pick up \neverything - including keys you press while editing a patch. Bear that in mind \nwhen a key is wired to something destructive, and consider gating it behind a \ntoggle you can switch off while working.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These two nodes let the patch respond to the mouse and the keyboard directly.\n\nmouse reports where the pointer is, continuously. \nkeys reports which keys are down, and what was typed.\n\nThey are how a patch becomes playable without building an interface for it - \nuseful for performance, for testing something quickly, and for anything where \na widget would be in the way of what you are doing with your hands.\n\nSYNTAX:\nmouse\nkeys <key name> <key name> ...\n\nEXAMPLE:\nkeys space a s d f\n\nINPUTS and PARAMETERS:\n\nin (mouse):\nAnything here asks for the current position.\n\nlist keys (keys):\nA button that prints every key name the node recognises, to the console. \nClick it when you are not sure what a key is called - the names are what you \ngive as arguments.\n\nArguments to keys name the keys you want their own outlets for. \nWithout arguments you still get the modifier outlets and the general \ncharacter and code outlets.\n\nOUTPUTS - mouse:\n\nx / y:\nThe pointer position, on separate outlets.\n\nOUTPUTS - keys:\n\nshift / control / command / alt:\nThe modifier keys, each reporting 1 while held and 0 when released. \nHaving them separately is what lets you use a modifier to change what an \nordinary key does.\n\ncharacter out:\nThe character typed.\n\nkey code out:\nIts numeric code, for keys that produce no character.\n\n<one outlet per named key>:\n1 while that key is held, 0 when released.\n\nA NOTE ON FOCUS:\nThese read the keyboard and mouse for the application, so they pick up \neverything - including keys you press while editing a patch. Bear that in mind \nwhen a key is wired to something destructive, and consider gating it behind a \ntoggle you can switch off while working."
+        },
+        "3": {
+            "name": "mouse",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 130,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "float",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "float",
+            "id": 422,
+            "position_x": 190,
+            "position_y": 150,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment move the mouse over the patch",
+            "name": "comment",
+            "id": 459,
+            "position_x": 343,
+            "position_y": 200,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "move the mouse over the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "move the mouse over the patch"
+        },
+        "7": {
+            "name": "keys",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 245,
+            "width": 200,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "keys space"
+        },
+        "8": {
+            "init": "comment hold shift, or press space",
+            "name": "comment",
+            "id": 533,
+            "position_x": 343,
+            "position_y": 460,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hold shift, or press space",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hold shift, or press space"
+        },
+        "9": {
+            "name": "int",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "string",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 555,
+            "width": 180,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment click \"list keys\" for every name",
+            "name": "comment",
+            "id": 644,
+            "position_x": 343,
+            "position_y": 605,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click \"list keys\" for every name",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click \"list keys\" for every name"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 627,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "x",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "y",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shift",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "character out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

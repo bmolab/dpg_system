@@ -1,0 +1,316 @@
+{
+    "height": 1109,
+    "width": 1747,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "fold~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/fold~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment fold~ and friends - harmonics that were not there",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fold~ and friends - harmonics that were not there",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fold~ and friends - harmonics that were not there"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 889,
+            "position_y": 45,
+            "width": 818,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These add harmonics that were not there, by breaking the signal in various ways.\n\nTHE NODES:\n\nfold~      saturation and wavefolding, with the aliasing dealt with\ndistort~   the same node\ncrush~     bit depth and sample rate reduction\ndecimate~  the same node\nmult~      multiply two signals together\n*~         the same node\nring~      the same node\n\nALIASING, AND WHY fold~ IS ITS OWN NODE:\nAny nonlinearity produces harmonics above the ones it was handed, and the ones \nthat land past half the sample rate fold back down as tones unrelated to the \npitch - and, unlike real harmonics, they do not move when the pitch moves. \nThat is the fizz around bright distorted sound. fold~ deals with it. \nshaper~ will apply any curve you can draw, but cannot.\n\ncrush~ IS SEPARATE BECAUSE IT IS NOT A CURVE:\nBit reduction is a staircase whose steps are fixed in AMPLITUDE; sample rate \nreduction is a staircase in TIME. Neither is a transfer function, and they \nsound nothing like each other - one grits, the other aliases.\n\nmult~ IS MULTIPLICATION, NOT AMPLIFICATION:\nUse it rather than vca~ whenever either signal is bipolar. Two oscillators into \nmult~ is ring modulation: sum and difference frequencies, no original pitches, \nthe classic metallic clang. An LFO into mult~ is tremolo that goes through zero \nand out the other side. vca~ would clamp that negative half away.\n\nSYNTAX:\nfold~\ncrush~\nmult~\n\nEXAMPLE:\nmult~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\ndrive / bias / shape (fold~):\nHow hard into the nonlinearity, how far off-centre, and which curve. \nBias matters more than it looks: an asymmetric curve makes even harmonics, \nwhich is a warmer and more valve-like sound than the odd ones symmetry gives.\n\nbits / rate (crush~):\nHow many bits to keep, and how far to drop the sample rate.\n\nin 1 / in 2 (mult~):\nThe two signals to multiply.\n\nOUTPUTS: \n\nleft out / right out / signal:\nThe result.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These add harmonics that were not there, by breaking the signal in various ways.\n\nTHE NODES:\n\nfold~      saturation and wavefolding, with the aliasing dealt with\ndistort~   the same node\ncrush~     bit depth and sample rate reduction\ndecimate~  the same node\nmult~      multiply two signals together\n*~         the same node\nring~      the same node\n\nALIASING, AND WHY fold~ IS ITS OWN NODE:\nAny nonlinearity produces harmonics above the ones it was handed, and the ones \nthat land past half the sample rate fold back down as tones unrelated to the \npitch - and, unlike real harmonics, they do not move when the pitch moves. \nThat is the fizz around bright distorted sound. fold~ deals with it. \nshaper~ will apply any curve you can draw, but cannot.\n\ncrush~ IS SEPARATE BECAUSE IT IS NOT A CURVE:\nBit reduction is a staircase whose steps are fixed in AMPLITUDE; sample rate \nreduction is a staircase in TIME. Neither is a transfer function, and they \nsound nothing like each other - one grits, the other aliases.\n\nmult~ IS MULTIPLICATION, NOT AMPLIFICATION:\nUse it rather than vca~ whenever either signal is bipolar. Two oscillators into \nmult~ is ring modulation: sum and difference frequencies, no original pitches, \nthe classic metallic clang. An LFO into mult~ is tremolo that goes through zero \nand out the other side. vca~ would clamp that negative half away.\n\nSYNTAX:\nfold~\ncrush~\nmult~\n\nEXAMPLE:\nmult~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\ndrive / bias / shape (fold~):\nHow hard into the nonlinearity, how far off-centre, and which curve. \nBias matters more than it looks: an asymmetric curve makes even harmonics, \nwhich is a warmer and more valve-like sound than the odd ones symmetry gives.\n\nbits / rate (crush~):\nHow many bits to keep, and how far to drop the sample rate.\n\nin 1 / in 2 (mult~):\nThe two signals to multiply.\n\nOUTPUTS: \n\nleft out / right out / signal:\nThe result."
+        },
+        "3": {
+            "name": "vco~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "4": {
+            "name": "vco~",
+            "id": 385,
+            "position_x": 300,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 317"
+        },
+        "5": {
+            "init": "comment two unrelated pitches",
+            "name": "comment",
+            "id": 422,
+            "position_x": 586,
+            "position_y": 272,
+            "width": 147,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two unrelated pitches",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two unrelated pitches"
+        },
+        "6": {
+            "name": "mult~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 200,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment ring modulation: neither pitch survives",
+            "name": "comment",
+            "id": 496,
+            "position_x": 586,
+            "position_y": 465,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ring modulation: neither pitch survives",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ring modulation: neither pitch survives"
+        },
+        "8": {
+            "name": "fold~",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 505,
+            "width": 240,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment drive it hard; try bias off centre",
+            "name": "comment",
+            "id": 570,
+            "position_x": 586,
+            "position_y": 715,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drive it hard; try bias off centre",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drive it hard; try bias off centre"
+        },
+        "10": {
+            "name": "scope~",
+            "id": 607,
+            "position_x": 300,
+            "position_y": 505,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "fader_out~",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 755,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1005,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

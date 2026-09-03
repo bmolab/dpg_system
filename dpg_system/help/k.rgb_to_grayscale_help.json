@@ -1,0 +1,639 @@
+{
+    "height": 872,
+    "width": 1910,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "k.rgb_to_grayscale_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/k.rgb_to_grayscale_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment k colour - grayscale, HLS, false colour",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 468,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "k colour - grayscale, HLS, false colour",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "k colour - grayscale, HLS, false colour"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1062,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These convert an image from one colour representation to another.\n\nTHE NODES:\n\nk.rgb_to_grayscale   colour to a single brightness channel\nk.rgb_to_hls         red/green/blue to hue, lightness, saturation\nk.apply_colormap     a single channel back to false colour\n\nTHE SHAPE THEY EXPECT - CHANNELS FIRST:\nkornia works in CHANNELS-FIRST order: (channels, height, width). A 3-channel\ncolour image is (3, H, W), a grayscale one is (1, H, W).\n\nImages from cameras and image files usually arrive the other way round,\n(H, W, 3) - height, width, channels - so these nodes guess. If the last\ndimension is small (3 or 4, the size of a pixel) and the third-from-last is\nlarge, they take it as height-width-channels and transpose it for you.\n\nThat guess is right nearly always and wrong in one case: a very small image,\nwhere 'small last dimension' and 'large third-from-last' stop being different.\nPut a t.permute in front if you are working at those sizes and the result looks\ntransposed.\n\nFLOATS, IN THE RANGE 0 TO 1:\nGive these nodes float images scaled 0 to 1, not 0 to 255 integers. They convert\nintegers for you rather than failing, but the range is yours to get right - an\nimage still scaled 0..255 will come out saturated, because every filter and\nevery colour formula here assumes 1.0 means full brightness.\n\nWATCH THE CHANNEL COUNT, IT IS THE WHOLE STORY:\nEach of these changes how many channels the image has, and that is the clearest\nway to see what they do:\n\nk.rgb_to_grayscale   3 channels in, 1 out    - colour discarded\nk.rgb_to_hls         3 channels in, 3 out    - same information, different axes\nk.apply_colormap     1 channel in,  3 out    - colour invented for display\n\nFeeding an image that is ALREADY grayscale to k.rgb_to_grayscale is an error,\nnot a no-op: it wants three channels and says so. If a chain might be handed\neither, convert once at the top and keep track.\n\nWHY HLS RATHER THAN RGB:\nIn red/green/blue, \"how bright\" and \"what colour\" are mixed through all three\nnumbers - you cannot change one without disturbing the other. HLS separates\nthem: hue is which colour, lightness is how bright, saturation is how strong.\n\nSo \"find everything reddish regardless of lighting\" is awkward in RGB and easy\nin HLS - it is a range on one channel. Hue is an ANGLE, though, and wraps: red\nsits at both ends of the scale, so a plain range test cuts red in half.\n\nk.apply_colormap IS FOR LOOKING, NOT FOR MEASURING:\nIt takes a one-channel image and paints it in false colour so your eye can read\nit - the same idea as the heat_map node. Handed a 3-channel image it converts to\ngrayscale first, so it always has one channel to work from.\n\nThe palette is fixed, and it is a display step: the numbers it produces are\ncolours, not measurements, and nothing downstream should treat them as data.\n\nSYNTAX:\nk.rgb_to_grayscale\nk.rgb_to_hls\nk.apply_colormap\n\nEXAMPLE:\nk.rgb_to_grayscale\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the conversion.\n\nOUTPUTS: \n\noutput:\nThe converted image, channels first.\n\nRELATED:\ncolor_convert does the same conversions one colour at a time rather than over a\nwhole image.\nk.sobel and the other filters expect the kind of single-channel image\nk.rgb_to_grayscale produces.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These convert an image from one colour representation to another.\n\nTHE NODES:\n\nk.rgb_to_grayscale   colour to a single brightness channel\nk.rgb_to_hls         red/green/blue to hue, lightness, saturation\nk.apply_colormap     a single channel back to false colour\n\nTHE SHAPE THEY EXPECT - CHANNELS FIRST:\nkornia works in CHANNELS-FIRST order: (channels, height, width). A 3-channel\ncolour image is (3, H, W), a grayscale one is (1, H, W).\n\nImages from cameras and image files usually arrive the other way round,\n(H, W, 3) - height, width, channels - so these nodes guess. If the last\ndimension is small (3 or 4, the size of a pixel) and the third-from-last is\nlarge, they take it as height-width-channels and transpose it for you.\n\nThat guess is right nearly always and wrong in one case: a very small image,\nwhere 'small last dimension' and 'large third-from-last' stop being different.\nPut a t.permute in front if you are working at those sizes and the result looks\ntransposed.\n\nFLOATS, IN THE RANGE 0 TO 1:\nGive these nodes float images scaled 0 to 1, not 0 to 255 integers. They convert\nintegers for you rather than failing, but the range is yours to get right - an\nimage still scaled 0..255 will come out saturated, because every filter and\nevery colour formula here assumes 1.0 means full brightness.\n\nWATCH THE CHANNEL COUNT, IT IS THE WHOLE STORY:\nEach of these changes how many channels the image has, and that is the clearest\nway to see what they do:\n\nk.rgb_to_grayscale   3 channels in, 1 out    - colour discarded\nk.rgb_to_hls         3 channels in, 3 out    - same information, different axes\nk.apply_colormap     1 channel in,  3 out    - colour invented for display\n\nFeeding an image that is ALREADY grayscale to k.rgb_to_grayscale is an error,\nnot a no-op: it wants three channels and says so. If a chain might be handed\neither, convert once at the top and keep track.\n\nWHY HLS RATHER THAN RGB:\nIn red/green/blue, \"how bright\" and \"what colour\" are mixed through all three\nnumbers - you cannot change one without disturbing the other. HLS separates\nthem: hue is which colour, lightness is how bright, saturation is how strong.\n\nSo \"find everything reddish regardless of lighting\" is awkward in RGB and easy\nin HLS - it is a range on one channel. Hue is an ANGLE, though, and wraps: red\nsits at both ends of the scale, so a plain range test cuts red in half.\n\nk.apply_colormap IS FOR LOOKING, NOT FOR MEASURING:\nIt takes a one-channel image and paints it in false colour so your eye can read\nit - the same idea as the heat_map node. Handed a 3-channel image it converts to\ngrayscale first, so it always has one channel to work from.\n\nThe palette is fixed, and it is a display step: the numbers it produces are\ncolours, not measurements, and nothing downstream should treat them as data.\n\nSYNTAX:\nk.rgb_to_grayscale\nk.rgb_to_hls\nk.apply_colormap\n\nEXAMPLE:\nk.rgb_to_grayscale\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the conversion.\n\nOUTPUTS: \n\noutput:\nThe converted image, channels first.\n\nRELATED:\ncolor_convert does the same conversions one colour at a time rather than over a\nwhole image.\nk.sobel and the other filters expect the kind of single-channel image\nk.rgb_to_grayscale produces."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 190,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 3 32 32"
+        },
+        "5": {
+            "init": "comment a 3 channel image, 32 by 32",
+            "name": "comment",
+            "id": 422,
+            "position_x": 766,
+            "position_y": 310,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 3 channel image, 32 by 32",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 3 channel image, 32 by 32"
+        },
+        "6": {
+            "name": "t.info",
+            "id": 459,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 200,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 250,
+            "position_y": 285,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "k.rgb_to_grayscale",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 355,
+            "width": 230,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "t.info",
+            "id": 570,
+            "position_x": 290,
+            "position_y": 355,
+            "width": 200,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 290,
+            "position_y": 520,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment 3 channels in, 1 out - colour gone",
+            "name": "comment",
+            "id": 644,
+            "position_x": 766,
+            "position_y": 450,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "3 channels in, 1 out - colour gone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "3 channels in, 1 out - colour gone"
+        },
+        "12": {
+            "name": "t.squeeze",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 495,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "heat_map",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 590,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment squeeze the 1 away to look at it",
+            "name": "comment",
+            "id": 755,
+            "position_x": 766,
+            "position_y": 750,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "squeeze the 1 away to look at it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "squeeze the 1 away to look at it"
+        },
+        "15": {
+            "name": "k.apply_colormap",
+            "id": 792,
+            "position_x": 520,
+            "position_y": 400,
+            "width": 220,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "name": "t.info",
+            "id": 829,
+            "position_x": 520,
+            "position_y": 505,
+            "width": 200,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 520,
+            "position_y": 670,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment 1 channel back out to 3 - false colour",
+            "name": "comment",
+            "id": 903,
+            "position_x": 766,
+            "position_y": 720,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "1 channel back out to 3 - false colour",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "1 channel back out to 3 - false colour"
+        },
+        "19": {
+            "name": "k.rgb_to_hls",
+            "id": 940,
+            "position_x": 520,
+            "position_y": 120,
+            "width": 200,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "20": {
+            "name": "t.info",
+            "id": 977,
+            "position_x": 520,
+            "position_y": 215,
+            "width": 200,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "21": {
+            "init": "comment 3 in, 3 out - same information,",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 766,
+            "position_y": 215,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "3 in, 3 out - same information,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "3 in, 3 out - same information,"
+        },
+        "22": {
+            "init": "comment laid out on different axes",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 766,
+            "position_y": 245,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "laid out on different axes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "laid out on different axes"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 768,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "9": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "12": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

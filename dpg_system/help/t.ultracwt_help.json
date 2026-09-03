@@ -1,0 +1,657 @@
+{
+    "height": 881,
+    "width": 1785,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "t.ultracwt_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.ultracwt_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment ultracwt - wavelets that keep up",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 384,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ultracwt - wavelets that keep up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ultracwt - wavelets that keep up"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 937,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A wavelet transform that keeps up with a live signal.\n\nTHE NODES:\n\nt.ultracwt   the torch one - runs on the GPU, and reports phase as well\nultracwt     the numpy one\n\nHOW THESE DIFFER FROM cwt:\nThe cwt node takes a whole window and transforms all of it. These take ONE\nSAMPLE at a time and produce the newest column of the picture, keeping what came\nbefore.\n\nThe saving is the point. A full transform of a window recomputes everything on\nevery frame, most of which has not changed; this computes only the new edge -\n\"only the boundary of the triangle\", as the source puts it. That is what makes a\nwavelet transform affordable at frame rate on a live signal.\n\nSo: cwt for a recorded window you want to look at, ultracwt for something\nhappening now.\n\n'scales' IS THE FREQUENCY AXIS:\nA list of wavelet widths. Narrow wavelets answer to fast changes, wide ones to\nslow, so the list you give is the set of time-scales the transform will report -\none row of output per entry.\n\nPowers of two, or steps between them, are the usual choice, because the interest\nin a signal tends to be spread evenly across octaves rather than evenly across\nfrequencies. You can send the list from another node as well as typing it.\n\n'scale based attenuation' SHOULD USUALLY STAY ON:\nA wide wavelet integrates over more samples, so without correction the slow\nscales simply produce bigger numbers than the fast ones and the picture is a\ngradient rather than a reading. Attenuation divides each scale by its width, so\nthe rows become comparable to one another.\n\nTurn it off only if you want the raw energy, and expect the low rows to dominate\neverything you do with it.\n\n'unskew' - EVERY SCALE HAS A DIFFERENT LATENCY:\nThis is the subtle one, and it matters for anything that has to line up in time.\n\nA wide wavelet needs a long stretch of signal, so the answer it gives now\nactually describes a moment further in the past than the answer from a narrow\none. Left alone, an event appears in the fast rows immediately and in the slow\nrows some time later - the picture is smeared diagonally.\n\nWith unskew on, each scale's value is written back into the position it really\nbelongs to, so a single event lines up vertically across all the rows.\n'unskew_scale' sets how far back each scale is assumed to refer, as a multiple\nof its width.\n\nThere is a cost: with unskew on the node sends the whole two-dimensional frame\nrather than just the newest column, because it is now revising the recent past\nas well as adding to it.\n\n'frame size' is how much history the node holds to work in.\n\nA NOTE ON 'phase out':\nOn t.ultracwt this outlet carries the IMAGINARY component of the convolution,\nnot the phase angle in radians. It moves with the phase and is bounded by the\nmagnitude rather than by pi, so it is usable as an oscillating signal but is not\nan angle and should not be treated as one.\n\nThe numpy node has no phase outlet, and a 'mode' option instead - normal, half,\nor unskewed.\n\nSYNTAX:\nt.ultracwt\nultracwt\n\nEXAMPLE:\nt.ultracwt\n\nINPUTS and PARAMETERS:\n\nin 1:\nOne sample, or a frame. Receiving it advances the transform.\n\nscales:\nThe wavelet widths - the frequency axis. A list, typed or sent.\n\nframe size:\nHow much history to hold.\n\nunskew / unskew_scale:\nLine the scales up in time, and how far back each is taken to refer.\n\nscale based attenuation:\nDivide each scale by its width so the rows are comparable. Leave on.\n\ndevice / dtype (t.ultracwt):\nWhere it runs.\n\nOUTPUTS: \n\ncwt out:\nThe magnitudes - one value per scale, or the whole frame when unskewing.\n\nphase out (t.ultracwt):\nThe imaginary component. See the note above.\n\nRELATED:\ncwt for a whole window at once, when the signal is already recorded.\nheat_scroll is the natural destination - each frame is a column, and the history\nscrolls.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A wavelet transform that keeps up with a live signal.\n\nTHE NODES:\n\nt.ultracwt   the torch one - runs on the GPU, and reports phase as well\nultracwt     the numpy one\n\nHOW THESE DIFFER FROM cwt:\nThe cwt node takes a whole window and transforms all of it. These take ONE\nSAMPLE at a time and produce the newest column of the picture, keeping what came\nbefore.\n\nThe saving is the point. A full transform of a window recomputes everything on\nevery frame, most of which has not changed; this computes only the new edge -\n\"only the boundary of the triangle\", as the source puts it. That is what makes a\nwavelet transform affordable at frame rate on a live signal.\n\nSo: cwt for a recorded window you want to look at, ultracwt for something\nhappening now.\n\n'scales' IS THE FREQUENCY AXIS:\nA list of wavelet widths. Narrow wavelets answer to fast changes, wide ones to\nslow, so the list you give is the set of time-scales the transform will report -\none row of output per entry.\n\nPowers of two, or steps between them, are the usual choice, because the interest\nin a signal tends to be spread evenly across octaves rather than evenly across\nfrequencies. You can send the list from another node as well as typing it.\n\n'scale based attenuation' SHOULD USUALLY STAY ON:\nA wide wavelet integrates over more samples, so without correction the slow\nscales simply produce bigger numbers than the fast ones and the picture is a\ngradient rather than a reading. Attenuation divides each scale by its width, so\nthe rows become comparable to one another.\n\nTurn it off only if you want the raw energy, and expect the low rows to dominate\neverything you do with it.\n\n'unskew' - EVERY SCALE HAS A DIFFERENT LATENCY:\nThis is the subtle one, and it matters for anything that has to line up in time.\n\nA wide wavelet needs a long stretch of signal, so the answer it gives now\nactually describes a moment further in the past than the answer from a narrow\none. Left alone, an event appears in the fast rows immediately and in the slow\nrows some time later - the picture is smeared diagonally.\n\nWith unskew on, each scale's value is written back into the position it really\nbelongs to, so a single event lines up vertically across all the rows.\n'unskew_scale' sets how far back each scale is assumed to refer, as a multiple\nof its width.\n\nThere is a cost: with unskew on the node sends the whole two-dimensional frame\nrather than just the newest column, because it is now revising the recent past\nas well as adding to it.\n\n'frame size' is how much history the node holds to work in.\n\nA NOTE ON 'phase out':\nOn t.ultracwt this outlet carries the IMAGINARY component of the convolution,\nnot the phase angle in radians. It moves with the phase and is bounded by the\nmagnitude rather than by pi, so it is usable as an oscillating signal but is not\nan angle and should not be treated as one.\n\nThe numpy node has no phase outlet, and a 'mode' option instead - normal, half,\nor unskewed.\n\nSYNTAX:\nt.ultracwt\nultracwt\n\nEXAMPLE:\nt.ultracwt\n\nINPUTS and PARAMETERS:\n\nin 1:\nOne sample, or a frame. Receiving it advances the transform.\n\nscales:\nThe wavelet widths - the frequency axis. A list, typed or sent.\n\nframe size:\nHow much history to hold.\n\nunskew / unskew_scale:\nLine the scales up in time, and how far back each is taken to refer.\n\nscale based attenuation:\nDivide each scale by its width so the rows are comparable. Leave on.\n\ndevice / dtype (t.ultracwt):\nWhere it runs.\n\nOUTPUTS: \n\ncwt out:\nThe magnitudes - one value per scale, or the whole frame when unskewing.\n\nphase out (t.ultracwt):\nThe imaginary component. See the note above.\n\nRELATED:\ncwt for a whole window at once, when the signal is already recorded.\nheat_scroll is the natural destination - each frame is a column, and the history\nscrolls."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment one sample at a time, live",
+            "name": "comment",
+            "id": 385,
+            "position_x": 634,
+            "position_y": 182,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one sample at a time, live",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one sample at a time, live"
+        },
+        "5": {
+            "name": "string",
+            "id": 422,
+            "position_x": 200,
+            "position_y": 62,
+            "width": 380,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2 4 8 16 32 64",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "comment the scales - one output row each.",
+            "name": "comment",
+            "id": 459,
+            "position_x": 634,
+            "position_y": 112,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the scales - one output row each.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the scales - one output row each."
+        },
+        "7": {
+            "init": "comment Powers of two, because interest in a",
+            "name": "comment",
+            "id": 496,
+            "position_x": 634,
+            "position_y": 142,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Powers of two, because interest in a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Powers of two, because interest in a"
+        },
+        "8": {
+            "init": "comment signal spreads evenly across octaves",
+            "name": "comment",
+            "id": 533,
+            "position_x": 634,
+            "position_y": 222,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "signal spreads evenly across octaves",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "signal spreads evenly across octaves"
+        },
+        "9": {
+            "name": "t.ultracwt",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 220,
+            "width": 320,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment attenuation ON, or the slow rows just",
+            "name": "comment",
+            "id": 607,
+            "position_x": 634,
+            "position_y": 555,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "attenuation ON, or the slow rows just",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "attenuation ON, or the slow rows just"
+        },
+        "11": {
+            "init": "comment produce bigger numbers than the fast",
+            "name": "comment",
+            "id": 644,
+            "position_x": 634,
+            "position_y": 585,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "produce bigger numbers than the fast",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "produce bigger numbers than the fast"
+        },
+        "12": {
+            "init": "comment ones and the picture is a gradient",
+            "name": "comment",
+            "id": 681,
+            "position_x": 634,
+            "position_y": 615,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ones and the picture is a gradient",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ones and the picture is a gradient"
+        },
+        "13": {
+            "name": "heat_scroll",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 220,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.15,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_scroll",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment heat_scroll is the natural destination:",
+            "name": "comment",
+            "id": 755,
+            "position_x": 634,
+            "position_y": 380,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "heat_scroll is the natural destination:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "heat_scroll is the natural destination:"
+        },
+        "15": {
+            "init": "comment each frame is a column, history scrolls",
+            "name": "comment",
+            "id": 792,
+            "position_x": 634,
+            "position_y": 410,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each frame is a column, history scrolls",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each frame is a column, history scrolls"
+        },
+        "16": {
+            "init": "comment set max y to the range you actually see",
+            "name": "comment",
+            "id": 829,
+            "position_x": 634,
+            "position_y": 450,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set max y to the range you actually see",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set max y to the range you actually see"
+        },
+        "17": {
+            "init": "comment or it reads as blank - about 0.1 here",
+            "name": "comment",
+            "id": 866,
+            "position_x": 634,
+            "position_y": 480,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "or it reads as blank - about 0.1 here",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "or it reads as blank - about 0.1 here"
+        },
+        "18": {
+            "init": "comment 'unskew' lines the scales up in time.",
+            "name": "comment",
+            "id": 903,
+            "position_x": 634,
+            "position_y": 665,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'unskew' lines the scales up in time.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'unskew' lines the scales up in time."
+        },
+        "19": {
+            "init": "comment A wide wavelet answers about a moment",
+            "name": "comment",
+            "id": 940,
+            "position_x": 634,
+            "position_y": 695,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "A wide wavelet answers about a moment",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "A wide wavelet answers about a moment"
+        },
+        "20": {
+            "init": "comment further back, so without it an event",
+            "name": "comment",
+            "id": 977,
+            "position_x": 634,
+            "position_y": 725,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "further back, so without it an event",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "further back, so without it an event"
+        },
+        "21": {
+            "init": "comment smears diagonally down the picture",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 634,
+            "position_y": 755,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smears diagonally down the picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smears diagonally down the picture"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 570,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "scales"
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "cwt out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

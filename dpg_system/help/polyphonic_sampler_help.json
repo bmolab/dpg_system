@@ -1,0 +1,337 @@
+{
+    "height": 900,
+    "width": 1822,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "polyphonic_sampler_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/polyphonic_sampler_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment polyphonic_sampler - voices allocated for you",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "polyphonic_sampler - voices allocated for you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "polyphonic_sampler - voices allocated for you"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 974,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These play sounds without you deciding which voice each one goes into.\n\nTHE NODES:\n\npolyphonic_sampler  allocate a voice per triggered sound\ngranular_sampler    play a sound as a cloud of short grains\nscratch_sampler     play with the position under direct control\n\nVOICE ALLOCATION IS THE POINT:\nTrigger a sound and one of these finds a free voice for it. Trigger another\nbefore the first finishes and it uses a different one. You never name a voice,\nand 'active_voices' tells you how many are sounding.\n\n'start_voice' and 'voice_count' set which slice of the engine's voices this node\nmay use, which is how two of these coexist without fighting over the same ones.\n\nGRANULAR IS A DIFFERENT INSTRUMENT:\nRather than playing a sound from start to end, it plays many very short pieces\nof it, overlapping. Slow the rate at which the read position advances and the\nsound stretches without changing pitch; move the position by hand and you get a\nsustained tone from one instant of the recording.\n\nThat makes a short sample into a continuous, playable texture - the useful thing\nwhen a sound has to last as long as a movement does rather than as long as the\nrecording.\n\nSCRATCH PUTS POSITION UNDER YOUR HAND:\nThe read position follows what you send it, forwards or backwards, fast or\nslow. Patch a limb's position or a fader in and the recording becomes something\nyou move through rather than something that plays.\n\nBecause the pitch follows the speed, the character comes from the gesture -\nwhich is exactly how a hand on a record behaves.\n\nTHE fade LIST:\nThe dynamic players take a 'fade' input, and its shape is the thing that makes\nthis system work: a list of [sound_id, level] pairs. Send\n\n    [[0, 0.8], [3, 0.2], [7, 0.0]]\n\nand sound 0 plays at 0.8, sound 3 at 0.2, sound 7 is silent. Ids not mentioned\nkeep whatever level they had.\n\nThat means a whole polyphonic texture is ONE message, and anything that can\nproduce such a list can drive it. The fader nodes exist to produce them from\nbody data.\n\nSYNTAX:\npolyphonic_sampler\ngranular_sampler\nscratch_sampler\n\nEXAMPLE:\npolyphonic_sampler\n\nINPUTS and PARAMETERS:\n\ntrigger / stop:\nStart and stop a sound.\n\nload / load_set:\nOne file, or a set of them at once.\n\nsound_id:\nWhich loaded sound.\n\nfade:\nThe [sound_id, level] list. See above.\n\nsample_start / sample_end / volume:\nThe part to play and how loud.\n\nstart_voice / voice_count:\nWhich of the engine's voices this node may use.\n\nOUTPUTS: \n\nactive_voices:\nHow many are sounding. Worth watching - if it sits at the voice count, you have\nrun out and new triggers are stealing from old ones.\n\nRELATED:\nThe fader nodes produce fade lists from body data - see the effort_fader help\npatch. sampler_engine owns the voices these allocate from.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These play sounds without you deciding which voice each one goes into.\n\nTHE NODES:\n\npolyphonic_sampler  allocate a voice per triggered sound\ngranular_sampler    play a sound as a cloud of short grains\nscratch_sampler     play with the position under direct control\n\nVOICE ALLOCATION IS THE POINT:\nTrigger a sound and one of these finds a free voice for it. Trigger another\nbefore the first finishes and it uses a different one. You never name a voice,\nand 'active_voices' tells you how many are sounding.\n\n'start_voice' and 'voice_count' set which slice of the engine's voices this node\nmay use, which is how two of these coexist without fighting over the same ones.\n\nGRANULAR IS A DIFFERENT INSTRUMENT:\nRather than playing a sound from start to end, it plays many very short pieces\nof it, overlapping. Slow the rate at which the read position advances and the\nsound stretches without changing pitch; move the position by hand and you get a\nsustained tone from one instant of the recording.\n\nThat makes a short sample into a continuous, playable texture - the useful thing\nwhen a sound has to last as long as a movement does rather than as long as the\nrecording.\n\nSCRATCH PUTS POSITION UNDER YOUR HAND:\nThe read position follows what you send it, forwards or backwards, fast or\nslow. Patch a limb's position or a fader in and the recording becomes something\nyou move through rather than something that plays.\n\nBecause the pitch follows the speed, the character comes from the gesture -\nwhich is exactly how a hand on a record behaves.\n\nTHE fade LIST:\nThe dynamic players take a 'fade' input, and its shape is the thing that makes\nthis system work: a list of [sound_id, level] pairs. Send\n\n    [[0, 0.8], [3, 0.2], [7, 0.0]]\n\nand sound 0 plays at 0.8, sound 3 at 0.2, sound 7 is silent. Ids not mentioned\nkeep whatever level they had.\n\nThat means a whole polyphonic texture is ONE message, and anything that can\nproduce such a list can drive it. The fader nodes exist to produce them from\nbody data.\n\nSYNTAX:\npolyphonic_sampler\ngranular_sampler\nscratch_sampler\n\nEXAMPLE:\npolyphonic_sampler\n\nINPUTS and PARAMETERS:\n\ntrigger / stop:\nStart and stop a sound.\n\nload / load_set:\nOne file, or a set of them at once.\n\nsound_id:\nWhich loaded sound.\n\nfade:\nThe [sound_id, level] list. See above.\n\nsample_start / sample_end / volume:\nThe part to play and how loud.\n\nstart_voice / voice_count:\nWhich of the engine's voices this node may use.\n\nOUTPUTS: \n\nactive_voices:\nHow many are sounding. Worth watching - if it sits at the voice count, you have\nrun out and new triggers are stealing from old ones.\n\nRELATED:\nThe fader nodes produce fade lists from body data - see the effort_fader help\npatch. sampler_engine owns the voices these allocate from."
+        },
+        "3": {
+            "name": "sampler_engine",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "button",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "polyphonic_sampler",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 325,
+            "width": 300,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "int",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment load a set, then trigger sound ids",
+            "name": "comment",
+            "id": 496,
+            "position_x": 706,
+            "position_y": 730,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "load a set, then trigger sound ids",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "load a set, then trigger sound ids"
+        },
+        "8": {
+            "init": "comment active_voices at the limit means",
+            "name": "comment",
+            "id": 533,
+            "position_x": 706,
+            "position_y": 770,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "active_voices at the limit means",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "active_voices at the limit means"
+        },
+        "9": {
+            "init": "comment new triggers are stealing old ones",
+            "name": "comment",
+            "id": 570,
+            "position_x": 706,
+            "position_y": 810,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "new triggers are stealing old ones",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "new triggers are stealing old ones"
+        },
+        "10": {
+            "name": "granular_sampler",
+            "id": 607,
+            "position_x": 380,
+            "position_y": 325,
+            "width": 300,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment a short sample becomes a texture",
+            "name": "comment",
+            "id": 644,
+            "position_x": 706,
+            "position_y": 660,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a short sample becomes a texture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a short sample becomes a texture"
+        },
+        "12": {
+            "init": "comment that lasts as long as the movement",
+            "name": "comment",
+            "id": 681,
+            "position_x": 706,
+            "position_y": 690,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "that lasts as long as the movement",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "that lasts as long as the movement"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 732,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active_voices",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

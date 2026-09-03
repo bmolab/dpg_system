@@ -1,0 +1,567 @@
+{
+    "height": 1095,
+    "width": 1586,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "t.smart_clamp_kf_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.smart_clamp_kf_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t Kalman filters - glitch or fast movement?",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t Kalman filters - glitch or fast movement?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t Kalman filters - glitch or fast movement?"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 718,
+            "position_y": 45,
+            "width": 828,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are Kalman filters that try to tell a glitch from a fast movement.\n\nAn ordinary smoothing filter cannot. Both look like a large sudden change, and\nany setting that removes the glitch also removes the movement. These four\nattack that problem from different directions, and which is right depends on\nwhat your bad frames actually look like.\n\nTHE NODES:\n\nt.smart_clamp_kf        limits how far one frame may correct the estimate\nt.smart_clamp_quat_kf   the same, for quaternions\nt.persistence_quat_kf   holds its estimate through brief disagreement\nt.hybrid_quat_kf        blends between a damping and a responsive mode\nt.jerk_aware_quat_kf    classifies motion by the coherence of its jerk\n\nSMART CLAMPING LIMITS THE CORRECTION, NOT THE SIGNAL:\nA Kalman filter works by correcting its prediction toward the measurement. \nSmart clamping caps the MAGNITUDE of that correction per frame - so a \none-frame glitch cannot teleport the filter's state however wrong the reading \nis, while a genuinely fast movement, which arrives as many consecutive large \ncorrections, still tracks because each one is individually plausible.\n\nThat is the useful asymmetry: a glitch is one big step, real motion is a run of \nthem.\n\nJERK-AWARE USES COHERENCE, WHICH IS THE SHARPEST TEST:\nIt looks at angular jerk over time and asks whether the change is COHERENT. \nA real movement accelerates, sustains and decelerates - its jerk has structure. \nA sensor spike does not; it is one frame unrelated to its neighbours.\n\nWhen it decides a frame is a spike, it does not simply hold - it extrapolates \nfrom the last good pose using SMOOTHED velocity. Using the single-frame velocity \nwould carry the noise into the extrapolation, which is the mistake this avoids.\n\nHYBRID BLENDS RATHER THAN SWITCHES:\nIt runs a damping mode and a responsive mode and blends between them \ncontinuously. Its 'alphas' outlet reports the blend, which is worth watching: \nit tells you what the filter thinks is happening, and a blend that is pinned at \none end means the transition ranges are set wrong.\n\nBlending rather than switching matters. A filter that flips between two modes \nproduces a discontinuity at every flip, which is a new artefact in place of the \nold one.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.smart_clamp_kf\nt.jerk_aware_quat_kf\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\nThe stream. A tensor of parallel streams, or a pose.\n\ndt:\nThe time between frames, in seconds. Get this right - every rate the filter\nreasons about is derived from it.\n\nresponsiveness / smoothness:\nThe basic trade. As always, more of one is less of the other.\n\njerk_threshold / accel_limit (t.jerk_aware_quat_kf):\nWhat counts as an implausible change.\n\nDamp Smoothness / Damp Responsiveness / Resp Smoothness (t.hybrid_quat_kf):\nThe two modes it blends between.\n\nreset:\nClear the filter's state and start again.\n\nOUTPUTS: \n\nfiltered:\nThe result, in the same shape as the input.\n\nalphas:\nWhat the filter is doing - the blend between modes. Watch this while tuning.\n\nTUNE AGAINST REAL BAD FRAMES:\nNone of these can be set sensibly against clean data, because their whole\npurpose only engages when something goes wrong. Record a take containing the\nfailure you are trying to remove, and tune against that - with the alphas\noutlet plotted, so you can see the filter engaging rather than guessing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are Kalman filters that try to tell a glitch from a fast movement.\n\nAn ordinary smoothing filter cannot. Both look like a large sudden change, and\nany setting that removes the glitch also removes the movement. These four\nattack that problem from different directions, and which is right depends on\nwhat your bad frames actually look like.\n\nTHE NODES:\n\nt.smart_clamp_kf        limits how far one frame may correct the estimate\nt.smart_clamp_quat_kf   the same, for quaternions\nt.persistence_quat_kf   holds its estimate through brief disagreement\nt.hybrid_quat_kf        blends between a damping and a responsive mode\nt.jerk_aware_quat_kf    classifies motion by the coherence of its jerk\n\nSMART CLAMPING LIMITS THE CORRECTION, NOT THE SIGNAL:\nA Kalman filter works by correcting its prediction toward the measurement. \nSmart clamping caps the MAGNITUDE of that correction per frame - so a \none-frame glitch cannot teleport the filter's state however wrong the reading \nis, while a genuinely fast movement, which arrives as many consecutive large \ncorrections, still tracks because each one is individually plausible.\n\nThat is the useful asymmetry: a glitch is one big step, real motion is a run of \nthem.\n\nJERK-AWARE USES COHERENCE, WHICH IS THE SHARPEST TEST:\nIt looks at angular jerk over time and asks whether the change is COHERENT. \nA real movement accelerates, sustains and decelerates - its jerk has structure. \nA sensor spike does not; it is one frame unrelated to its neighbours.\n\nWhen it decides a frame is a spike, it does not simply hold - it extrapolates \nfrom the last good pose using SMOOTHED velocity. Using the single-frame velocity \nwould carry the noise into the extrapolation, which is the mistake this avoids.\n\nHYBRID BLENDS RATHER THAN SWITCHES:\nIt runs a damping mode and a responsive mode and blends between them \ncontinuously. Its 'alphas' outlet reports the blend, which is worth watching: \nit tells you what the filter thinks is happening, and a blend that is pinned at \none end means the transition ranges are set wrong.\n\nBlending rather than switching matters. A filter that flips between two modes \nproduces a discontinuity at every flip, which is a new artefact in place of the \nold one.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.smart_clamp_kf\nt.jerk_aware_quat_kf\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\nThe stream. A tensor of parallel streams, or a pose.\n\ndt:\nThe time between frames, in seconds. Get this right - every rate the filter\nreasons about is derived from it.\n\nresponsiveness / smoothness:\nThe basic trade. As always, more of one is less of the other.\n\njerk_threshold / accel_limit (t.jerk_aware_quat_kf):\nWhat counts as an implausible change.\n\nDamp Smoothness / Damp Responsiveness / Resp Smoothness (t.hybrid_quat_kf):\nThe two modes it blends between.\n\nreset:\nClear the filter's state and start again.\n\nOUTPUTS: \n\nfiltered:\nThe result, in the same shape as the input.\n\nalphas:\nWhat the filter is doing - the blend between modes. Watch this while tuning.\n\nTUNE AGAINST REAL BAD FRAMES:\nNone of these can be set sensibly against clean data, because their whole\npurpose only engages when something goes wrong. Record a take containing the\nfailure you are trying to remove, and tune against that - with the alphas\noutlet plotted, so you can see the filter engaging rather than guessing."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 3.0 sin"
+        },
+        "6": {
+            "name": "toggle",
+            "id": 459,
+            "position_x": 200,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "metro",
+            "id": 496,
+            "position_x": 200,
+            "position_y": 110,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 16.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 16"
+        },
+        "8": {
+            "name": "random.gauss",
+            "id": 533,
+            "position_x": 200,
+            "position_y": 190,
+            "width": 175,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "random.gauss 0.0 0.3"
+        },
+        "9": {
+            "name": "+",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 120,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0"
+        },
+        "10": {
+            "init": "comment a clean wave with occasional spikes",
+            "name": "comment",
+            "id": 607,
+            "position_x": 401,
+            "position_y": 310,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a clean wave with occasional spikes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a clean wave with occasional spikes"
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "name": "t.smart_clamp_kf",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 545,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 785,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment the spike cannot move it far in one frame",
+            "name": "comment",
+            "id": 755,
+            "position_x": 401,
+            "position_y": 970,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the spike cannot move it far in one frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the spike cannot move it far in one frame"
+        },
+        "15": {
+            "init": "comment but a run of large steps still tracks",
+            "name": "comment",
+            "id": 792,
+            "position_x": 401,
+            "position_y": 1000,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "but a run of large steps still tracks",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "but a run of large steps still tracks"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 991,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "filtered",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

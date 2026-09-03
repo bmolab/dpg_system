@@ -1,0 +1,320 @@
+{
+    "height": 770,
+    "width": 1523,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "text_file_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/text_file_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment text_editor - a body of text in the patch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "text_editor - a body of text in the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "text_editor - a body of text in the patch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 685,
+            "position_y": 45,
+            "width": 798,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These hold a body of text you can edit, load and save.\n\nTHE NODES:\n\ntext_editor  an editable text area in the patch\ntext_file    the same node\n\nWHAT IT IS FOR:\nAnything the patch needs that is longer than a message and more editable than a \nfile on disk. A prompt, a script, a list of names, a set of instructions, notes \nthat belong with the patch.\n\nBecause the contents are stored WITH the patch, text kept here travels with it - \nyou do not end up with a patch that depends on a file somebody has to remember \nto copy. For text that genuinely belongs in its own file, 'load' and 'save' \nhandle that.\n\nTHE TWO OUTLETS:\n'out' sends the whole contents. 'messages' sends it line by line, each line as \na separate message - which is how you use the editor as a script: write the \nlines, click send, and each one goes out in order.\n\nThat second one is worth knowing, because it turns a text area into a small \nsequencer of commands without any other machinery.\n\nSYNTAX:\ntext_editor\ntext_file <name>\n\nEXAMPLE:\ntext_editor\n\nINPUTS and PARAMETERS:\n\ntext in:\nReplace the contents.\n\nappend text in:\nAdd to the end rather than replacing - so the editor can accumulate a log.\n\nsend:\nEmit the contents.\n\nclear:\nEmpty it.\n\nload / save:\nRead from or write to a file. These open a file dialog.\n\nname:\nWhat this block of text is called.\n\neditor width / editor height:\nThe size of the area.\n\nOUTPUTS: \n\nout:\nThe whole contents.\n\nmessages:\nThe contents line by line, in order.\n\nRELATED:\ntext_block is the node these help patches use for their own prose - a locked \nblock for reading rather than editing. \ntext_display is for output that scrolls.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These hold a body of text you can edit, load and save.\n\nTHE NODES:\n\ntext_editor  an editable text area in the patch\ntext_file    the same node\n\nWHAT IT IS FOR:\nAnything the patch needs that is longer than a message and more editable than a \nfile on disk. A prompt, a script, a list of names, a set of instructions, notes \nthat belong with the patch.\n\nBecause the contents are stored WITH the patch, text kept here travels with it - \nyou do not end up with a patch that depends on a file somebody has to remember \nto copy. For text that genuinely belongs in its own file, 'load' and 'save' \nhandle that.\n\nTHE TWO OUTLETS:\n'out' sends the whole contents. 'messages' sends it line by line, each line as \na separate message - which is how you use the editor as a script: write the \nlines, click send, and each one goes out in order.\n\nThat second one is worth knowing, because it turns a text area into a small \nsequencer of commands without any other machinery.\n\nSYNTAX:\ntext_editor\ntext_file <name>\n\nEXAMPLE:\ntext_editor\n\nINPUTS and PARAMETERS:\n\ntext in:\nReplace the contents.\n\nappend text in:\nAdd to the end rather than replacing - so the editor can accumulate a log.\n\nsend:\nEmit the contents.\n\nclear:\nEmpty it.\n\nload / save:\nRead from or write to a file. These open a file dialog.\n\nname:\nWhat this block of text is called.\n\neditor width / editor height:\nThe size of the area.\n\nOUTPUTS: \n\nout:\nThe whole contents.\n\nmessages:\nThe contents line by line, in order.\n\nRELATED:\ntext_block is the node these help patches use for their own prose - a locked \nblock for reading rather than editing. \ntext_display is for output that scrolls."
+        },
+        "3": {
+            "name": "text_editor",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 340,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment type into it; the text is saved with",
+            "name": "comment",
+            "id": 385,
+            "position_x": 396,
+            "position_y": 355,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "type into it; the text is saved with",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "type into it; the text is saved with"
+        },
+        "5": {
+            "init": "comment the patch, so it travels with it",
+            "name": "comment",
+            "id": 422,
+            "position_x": 396,
+            "position_y": 385,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the patch, so it travels with it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the patch, so it travels with it"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 425,
+            "width": 340,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment click send: out gives the whole thing",
+            "name": "comment",
+            "id": 496,
+            "position_x": 396,
+            "position_y": 475,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click send: out gives the whole thing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click send: out gives the whole thing"
+        },
+        "8": {
+            "name": "print",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 515,
+            "width": 200,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            },
+            "init": "print line"
+        },
+        "9": {
+            "init": "comment messages gives it a line at a time -",
+            "name": "comment",
+            "id": 570,
+            "position_x": 396,
+            "position_y": 650,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "messages gives it a line at a time -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "messages gives it a line at a time -"
+        },
+        "10": {
+            "init": "comment the editor as a little script",
+            "name": "comment",
+            "id": 607,
+            "position_x": 396,
+            "position_y": 680,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the editor as a little script",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the editor as a little script"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 665,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "messages",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

@@ -1,0 +1,664 @@
+{
+    "height": 1077,
+    "width": 1803,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "cv_camera_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/cv_camera_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment cv_camera and cv_image - pictures in",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 432,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cv_camera and cv_image - pictures in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cv_camera and cv_image - pictures in"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 955,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are where pictures come into a patch.\n\nTHE NODES:\n\ncv_camera    a live camera. 'cv_capture' is the same node\ncv_capture   the other spelling\ncv_image     a still image from a file\n\ncv_camera IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per rendered frame, as RGB arrays.\nUntick it and the camera is released - which matters, because a camera held open\nby one patch is not available to anything else.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, up to ten. There\nis no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button, so this is\nnot happening continuously.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - which is a long-standing quirk of the\nlibrary and a reliable source of pictures that look wrong in an unmistakable\nway, with skin tones gone blue. These nodes convert to RGB before sending, so\nwhat leaves them is the ordinary order and everything downstream is right.\n\nWorth knowing anyway, because if you ever hand an array to an OpenCV function\nyourself, it will expect BGR and you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) - rows first. Most of the image nodes here\nexpect channels FIRST, and guess when they are handed the other order; the guess\nis right for anything camera-sized. See the k. and tv. pages for when it is not.\n\ncv_image IS A FILE, LOADED ON DEMAND:\nPut a path in 'path in' and send anything to 'show image' to load and send it.\nIt is not watching the file - it reads when triggered, so the same node can walk\nthrough a directory if something else is supplying the paths.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\ncv_image <path>\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether the camera is running. Off releases it.\n\nsource:\nWhich camera, by index.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nshow image (cv_image):\nAnything at all - it triggers the load.\n\npath in (cv_image):\nWhere the file is.\n\nOUTPUTS: \n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are where pictures come into a patch.\n\nTHE NODES:\n\ncv_camera    a live camera. 'cv_capture' is the same node\ncv_capture   the other spelling\ncv_image     a still image from a file\n\ncv_camera IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per rendered frame, as RGB arrays.\nUntick it and the camera is released - which matters, because a camera held open\nby one patch is not available to anything else.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, up to ten. There\nis no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button, so this is\nnot happening continuously.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - which is a long-standing quirk of the\nlibrary and a reliable source of pictures that look wrong in an unmistakable\nway, with skin tones gone blue. These nodes convert to RGB before sending, so\nwhat leaves them is the ordinary order and everything downstream is right.\n\nWorth knowing anyway, because if you ever hand an array to an OpenCV function\nyourself, it will expect BGR and you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) - rows first. Most of the image nodes here\nexpect channels FIRST, and guess when they are handed the other order; the guess\nis right for anything camera-sized. See the k. and tv. pages for when it is not.\n\ncv_image IS A FILE, LOADED ON DEMAND:\nPut a path in 'path in' and send anything to 'show image' to load and send it.\nIt is not watching the file - it reads when triggered, so the same node can walk\nthrough a directory if something else is supplying the paths.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\ncv_image <path>\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether the camera is running. Off releases it.\n\nsource:\nWhich camera, by index.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nshow image (cv_image):\nAnything at all - it triggers the load.\n\npath in (cv_image):\nWhere the file is.\n\nOUTPUTS: \n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "cv_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 240,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment tick to start. Untick to release the",
+            "name": "comment",
+            "id": 422,
+            "position_x": 666,
+            "position_y": 290,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick to start. Untick to release the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick to start. Untick to release the"
+        },
+        "6": {
+            "init": "comment camera for something else to use",
+            "name": "comment",
+            "id": 459,
+            "position_x": 666,
+            "position_y": 320,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "camera for something else to use",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "camera for something else to use"
+        },
+        "7": {
+            "init": "comment 'refresh' opens every camera index in",
+            "name": "comment",
+            "id": 496,
+            "position_x": 666,
+            "position_y": 360,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'refresh' opens every camera index in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'refresh' opens every camera index in"
+        },
+        "8": {
+            "init": "comment turn to find them - it is not instant",
+            "name": "comment",
+            "id": 533,
+            "position_x": 666,
+            "position_y": 390,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "turn to find them - it is not instant",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "turn to find them - it is not instant"
+        },
+        "9": {
+            "name": "info",
+            "id": 570,
+            "position_x": 320,
+            "position_y": 115,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment height, width, 3 - rows first, and",
+            "name": "comment",
+            "id": 607,
+            "position_x": 666,
+            "position_y": 210,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "height, width, 3 - rows first, and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "height, width, 3 - rows first, and"
+        },
+        "11": {
+            "init": "comment already RGB, not OpenCV BGR",
+            "name": "comment",
+            "id": 644,
+            "position_x": 666,
+            "position_y": 240,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "already RGB, not OpenCV BGR",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "already RGB, not OpenCV BGR"
+        },
+        "12": {
+            "name": "subsample",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 170,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "rate",
+                    "value": 10,
+                    "value_type": "int"
+                }
+            },
+            "init": "subsample 10"
+        },
+        "13": {
+            "init": "comment thin the stream before anything",
+            "name": "comment",
+            "id": 718,
+            "position_x": 666,
+            "position_y": 530,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "thin the stream before anything",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "thin the stream before anything"
+        },
+        "14": {
+            "init": "comment expensive downstream",
+            "name": "comment",
+            "id": 755,
+            "position_x": 666,
+            "position_y": 560,
+            "width": 140,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "expensive downstream",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "expensive downstream"
+        },
+        "15": {
+            "name": "tv.Grayscale",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 605,
+            "width": 200,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "name": "t.squeeze",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 700,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 795,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 255.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment the camera, as one brightness channel",
+            "name": "comment",
+            "id": 903,
+            "position_x": 666,
+            "position_y": 955,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the camera, as one brightness channel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the camera, as one brightness channel"
+        },
+        "19": {
+            "name": "cv_image",
+            "id": 940,
+            "position_x": 320,
+            "position_y": 440,
+            "width": 320,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "20": {
+            "name": "button",
+            "id": 977,
+            "position_x": 320,
+            "position_y": 380,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "21": {
+            "name": "info",
+            "id": 1014,
+            "position_x": 320,
+            "position_y": 580,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "22": {
+            "init": "comment a still, loaded when triggered - so",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 666,
+            "position_y": 675,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a still, loaded when triggered - so",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a still, loaded when triggered - so"
+        },
+        "23": {
+            "init": "comment it can walk a directory if something",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 666,
+            "position_y": 705,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it can walk a directory if something",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it can walk a directory if something"
+        },
+        "24": {
+            "init": "comment else supplies the paths",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 666,
+            "position_y": 735,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "else supplies the paths",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "else supplies the paths"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 973,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on/off"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "show image"
+        },
+        "7": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

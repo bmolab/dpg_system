@@ -1,0 +1,500 @@
+{
+    "height": 861,
+    "width": 1635,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "np_rearrange_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np_rearrange_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np rearranging - reorder, join, split",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 444,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np rearranging - reorder, join, split",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np rearranging - reorder, join, split"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 767,
+            "position_y": 45,
+            "width": 828,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes move the contents of an array around, or join arrays together.\n\nThe numbers are the same ones; what changes is their order or their company. \nReordering matters more than it sounds - a great deal of array work is getting \ndata into the arrangement some other node insists on.\n\nREORDERING:\n\nnp.sort       put the values in order\nnp.argsort    give the INDICES that would sort it, rather than the sorted \n              values. Use this when you want to reorder something ELSE by \n              the same ranking - sort joints by speed, then apply that order \n              to their names\nnp.flip       reverse along an axis\nnp.roll       shift everything along, with what falls off one end reappearing \n              at the other. This is how you make a circular buffer, or a delay\nnp.rot90      rotate a 2D array by quarter turns\nnp.rotate     the same node\nnp.repeat     repeat each element a number of times\n\nJOINING AND SPLITTING:\n\nnp.concatenate   join arrays end to end along an existing axis\nnp.stack         join them along a NEW axis\nnp.split         cut one array into several\n\nThe difference between concatenate and stack catches everyone once. \nJoining two arrays of 3 numbers with concatenate gives you 6 numbers in a row. \nWith stack it gives you a 2 by 3 array - the originals kept separate, \nside by side. Concatenate extends, stack layers.\n\nSYNTAX:\nnp.sort\nnp.roll <shift: int>\nnp.concatenate\n\nEXAMPLE:\nnp.roll 1\n\nINPUTS and PARAMETERS:\n\nin / input:\nThe array. Receiving it triggers the node.\n\nin 2 (concatenate, stack):\nThe second array. It must match the first in every dimension except the one \nbeing joined along.\n\naxis:\nWhich direction to work along. As elsewhere, leaving it alone works on the \nflattened array; setting it works row-wise or column-wise.\n\nshifts (np.roll):\nHow far to shift, and which way - negative goes the other way.\n\nk / axis 1 / axis 2 (np.rot90):\nHow many quarter turns, and which plane to rotate in.\n\nrepeats (np.repeat):\nHow many copies of each element.\n\ndescending (np.sort, np.argsort):\nLargest first rather than smallest.\n\nOUTPUTS: \n\nThe rearranged array, or - for np.split - one outlet per piece.\n\nA NOTE ON np.roll:\nNothing is lost. Everything that falls off the end comes back at the start, \nwhich is what makes it a rotation rather than a shift. If you want values to \nfall off and zeros to arrive instead, that is not this node.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes move the contents of an array around, or join arrays together.\n\nThe numbers are the same ones; what changes is their order or their company. \nReordering matters more than it sounds - a great deal of array work is getting \ndata into the arrangement some other node insists on.\n\nREORDERING:\n\nnp.sort       put the values in order\nnp.argsort    give the INDICES that would sort it, rather than the sorted \n              values. Use this when you want to reorder something ELSE by \n              the same ranking - sort joints by speed, then apply that order \n              to their names\nnp.flip       reverse along an axis\nnp.roll       shift everything along, with what falls off one end reappearing \n              at the other. This is how you make a circular buffer, or a delay\nnp.rot90      rotate a 2D array by quarter turns\nnp.rotate     the same node\nnp.repeat     repeat each element a number of times\n\nJOINING AND SPLITTING:\n\nnp.concatenate   join arrays end to end along an existing axis\nnp.stack         join them along a NEW axis\nnp.split         cut one array into several\n\nThe difference between concatenate and stack catches everyone once. \nJoining two arrays of 3 numbers with concatenate gives you 6 numbers in a row. \nWith stack it gives you a 2 by 3 array - the originals kept separate, \nside by side. Concatenate extends, stack layers.\n\nSYNTAX:\nnp.sort\nnp.roll <shift: int>\nnp.concatenate\n\nEXAMPLE:\nnp.roll 1\n\nINPUTS and PARAMETERS:\n\nin / input:\nThe array. Receiving it triggers the node.\n\nin 2 (concatenate, stack):\nThe second array. It must match the first in every dimension except the one \nbeing joined along.\n\naxis:\nWhich direction to work along. As elsewhere, leaving it alone works on the \nflattened array; setting it works row-wise or column-wise.\n\nshifts (np.roll):\nHow far to shift, and which way - negative goes the other way.\n\nk / axis 1 / axis 2 (np.rot90):\nHow many quarter turns, and which plane to rotate in.\n\nrepeats (np.repeat):\nHow many copies of each element.\n\ndescending (np.sort, np.argsort):\nLargest first rather than smallest.\n\nOUTPUTS: \n\nThe rearranged array, or - for np.split - one outlet per piece.\n\nA NOTE ON np.roll:\nNothing is lost. Everything that falls off the end comes back at the start, \nwhich is what makes it a rotation rather than a shift. If you want values to \nfall off and zeros to arrive instead, that is not this node."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 250,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "5 3 9 1 7",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "np.sort",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 180,
+            "width": 150,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "descending",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "list",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 265,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment sorted: the values in order",
+            "name": "comment",
+            "id": 496,
+            "position_x": 506,
+            "position_y": 315,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sorted: the values in order",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sorted: the values in order"
+        },
+        "8": {
+            "name": "np.argsort",
+            "id": 533,
+            "position_x": 280,
+            "position_y": 180,
+            "width": 150,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "descending",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 280,
+            "position_y": 265,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment argsort: where each one came from",
+            "name": "comment",
+            "id": 607,
+            "position_x": 506,
+            "position_y": 355,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "argsort: where each one came from",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "argsort: where each one came from"
+        },
+        "11": {
+            "name": "np.roll",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 360,
+            "width": 150,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "shifts",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "np.roll 1"
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 465,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment rolled: nothing is lost, it wraps",
+            "name": "comment",
+            "id": 718,
+            "position_x": 506,
+            "position_y": 515,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rolled: nothing is lost, it wraps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rolled: nothing is lost, it wraps"
+        },
+        "14": {
+            "name": "np.flip",
+            "id": 755,
+            "position_x": 280,
+            "position_y": 360,
+            "width": 150,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "list",
+            "id": 792,
+            "position_x": 280,
+            "position_y": 465,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment flipped: reversed",
+            "name": "comment",
+            "id": 829,
+            "position_x": 506,
+            "position_y": 555,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flipped: reversed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flipped: reversed"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 537,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rolled array",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flipped array",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

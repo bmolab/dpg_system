@@ -1,0 +1,320 @@
+{
+    "height": 974,
+    "width": 1759,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "sensor_to_root_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/sensor_to_root_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment sensor_to_root - where the body actually is",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sensor_to_root - where the body actually is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sensor_to_root - where the body actually is"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 901,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These work out where the body actually is, from sensors that are not where \nthe body's origin is.\n\nTHE NODES:\n\nsensor_to_root            turn a lower-back sensor position into the pelvis\ntracker_root_inference    correct the root using a model of the thigh tracker\nquaternion_diff_and_axis  how much each joint turned, and about which axis\n\nTHE PROBLEM BOTH ROOT NODES SOLVE:\nA skeleton's root is the pelvis, and the pelvis is inside the body. No sensor is \nthere. What you have is a sensor on the lower back at about belt height, or a \ntracker on the left thigh - and the difference between where the sensor is and \nwhere the root is has to be modelled, not measured.\n\nsensor_to_root applies a fixed offset in pelvis-local coordinates, rotated by \nthe pelvis orientation. Because the offset is expressed in the body's frame \nrather than the world's, it stays correct as the performer turns and bends, \nwhich a world-space offset would not.\n\ntracker_root_inference addresses a different failure. The Shadow system infers \nroot position from the thigh tracker but does not know exactly where on the \nthigh it is mounted, and the error shows up as VERTICAL DRIFT when the left leg \nis raised - lift the knee and the whole body appears to rise. This node models \nthe mounting position, predicts where the tracker should be, compares that with \nwhere it says it is, and corrects the difference.\n\nIf a performer seems to grow taller when they lift a leg, that is this.\n\nquaternion_diff_and_axis:\nReports how much each joint rotated between frames, and about which axis. \nThe magnitude is a per-joint speed - the natural measure of how much a joint is \ndoing - and the axis says which way, which distinguishes a twist from a bend \nwithout any anatomical assumptions.\n\nIts two smoothing inlets let you take the difference at two timescales at once, \nso a fast wobble and a slow turn can be told apart.\n\nSYNTAX:\nsensor_to_root\ntracker_root_inference\n\nEXAMPLE:\nquaternion_diff_and_axis\n\nINPUTS and PARAMETERS:\n\nsensor pos / pelvis quat (sensor_to_root):\nWhere the sensor is, and which way the pelvis faces.\n\npositions / pose / limb_lengths (tracker_root_inference):\nThe inferred positions, the orientations, and the proportions the model needs.\n\nquaternions in:\nThe pose, for the difference node.\n\nsmoothing A / smoothing B:\nTwo independent smoothings, for looking at two timescales.\n\nrestart calculation:\nClear the history and begin again.\n\nOUTPUTS: \n\nroot pos / corrected root:\nThe corrected root position.\n\ncorrected positions:\nEvery joint, shifted by the correction.\n\ncorrection / tracker model pos:\nWhat was applied, and where the model thinks the tracker is - worth watching \nwhile tuning, since it shows whether the model is plausible before you trust \nwhat it produces.\n\nmagnitudes / axes:\nPer-joint rotation speed, and the axis of each.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These work out where the body actually is, from sensors that are not where \nthe body's origin is.\n\nTHE NODES:\n\nsensor_to_root            turn a lower-back sensor position into the pelvis\ntracker_root_inference    correct the root using a model of the thigh tracker\nquaternion_diff_and_axis  how much each joint turned, and about which axis\n\nTHE PROBLEM BOTH ROOT NODES SOLVE:\nA skeleton's root is the pelvis, and the pelvis is inside the body. No sensor is \nthere. What you have is a sensor on the lower back at about belt height, or a \ntracker on the left thigh - and the difference between where the sensor is and \nwhere the root is has to be modelled, not measured.\n\nsensor_to_root applies a fixed offset in pelvis-local coordinates, rotated by \nthe pelvis orientation. Because the offset is expressed in the body's frame \nrather than the world's, it stays correct as the performer turns and bends, \nwhich a world-space offset would not.\n\ntracker_root_inference addresses a different failure. The Shadow system infers \nroot position from the thigh tracker but does not know exactly where on the \nthigh it is mounted, and the error shows up as VERTICAL DRIFT when the left leg \nis raised - lift the knee and the whole body appears to rise. This node models \nthe mounting position, predicts where the tracker should be, compares that with \nwhere it says it is, and corrects the difference.\n\nIf a performer seems to grow taller when they lift a leg, that is this.\n\nquaternion_diff_and_axis:\nReports how much each joint rotated between frames, and about which axis. \nThe magnitude is a per-joint speed - the natural measure of how much a joint is \ndoing - and the axis says which way, which distinguishes a twist from a bend \nwithout any anatomical assumptions.\n\nIts two smoothing inlets let you take the difference at two timescales at once, \nso a fast wobble and a slow turn can be told apart.\n\nSYNTAX:\nsensor_to_root\ntracker_root_inference\n\nEXAMPLE:\nquaternion_diff_and_axis\n\nINPUTS and PARAMETERS:\n\nsensor pos / pelvis quat (sensor_to_root):\nWhere the sensor is, and which way the pelvis faces.\n\npositions / pose / limb_lengths (tracker_root_inference):\nThe inferred positions, the orientations, and the proportions the model needs.\n\nquaternions in:\nThe pose, for the difference node.\n\nsmoothing A / smoothing B:\nTwo independent smoothings, for looking at two timescales.\n\nrestart calculation:\nClear the history and begin again.\n\nOUTPUTS: \n\nroot pos / corrected root:\nThe corrected root position.\n\ncorrected positions:\nEvery joint, shifted by the correction.\n\ncorrection / tracker model pos:\nWhat was applied, and where the model thinks the tracker is - worth watching \nwhile tuning, since it shows whether the model is plausible before you trust \nwhat it produces.\n\nmagnitudes / axes:\nPer-joint rotation speed, and the axis of each."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "tracker_root_inference",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 280,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment fixes the body rising when a leg lifts",
+            "name": "comment",
+            "id": 422,
+            "position_x": 584,
+            "position_y": 615,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fixes the body rising when a leg lifts",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fixes the body rising when a leg lifts"
+        },
+        "6": {
+            "name": "quaternion_diff_and_axis",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 280,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 496,
+            "position_x": 350,
+            "position_y": 660,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 20,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment per-joint rotation speed, all at once",
+            "name": "comment",
+            "id": 533,
+            "position_x": 584,
+            "position_y": 820,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "per-joint rotation speed, all at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "per-joint rotation speed, all at once"
+        },
+        "9": {
+            "init": "comment which joints are actually doing something",
+            "name": "comment",
+            "id": 570,
+            "position_x": 584,
+            "position_y": 850,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which joints are actually doing something",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which joints are actually doing something"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 870,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternions in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "magnitudes",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

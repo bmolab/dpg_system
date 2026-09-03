@@ -1,0 +1,571 @@
+{
+    "height": 1135,
+    "width": 1914,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "eos_console_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/eos_console_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment eos - driving a lighting desk",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 348,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eos - driving a lighting desk",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eos - driving a lighting desk"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1056,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These drive an ETC Eos lighting console from a patch, over OSC.\n\nTHE NODES:\n\neos_console    the connection to the desk - one of these per console\ncolor_source   intensity and colour for one channel, as sliders\neos_send       one named parameter of one channel\n\neos_console FIRST, AND ONLY ONE:\nIt is the connection, not a command. Everything else finds the desk by NAME, so\nthis node has to exist before the senders do anything - and there should be one\nof it, however many senders you have.\n\nIts defaults are the usual Eos arrangement: name 'eos', the desk at 10.1.3.11,\nsending to port 1101 and listening on 1102. Change the address to your desk;\nchange the name only if you have more than one console and need to tell them\napart, in which case the senders' 'target name' has to match.\n\nThe listening port matters as much as the sending one. Eos replies - to say what\nit did, and to report state - and those replies arrive on the source port and\ncome out of 'osc received'. A patch that sends fine but hears nothing has the\nwrong source port.\n\nWHAT AN EOS OSC ADDRESS LOOKS LIKE:\nCommands are paths, and the shape of a channel parameter is:\n\n    /eos/user/<user>/chan/<channel>/param/<name>\n\nwhich is what color_source composes for you. The 'user' is the desk's user\nnumber - 99 is the conventional choice for an external controller, because it\nkeeps what you send out of the way of whoever is sitting at the desk.\n\ncolor_source IS THE CONVENIENT ONE:\nFive sliders - intensity, red, green, blue, lime - all aimed at one channel,\neach sending only when it moves. Set 'target channel' and it composes the rest.\n\nIt sends only the parameters that have actually changed, which matters on a\nbusy network: a patch nudging one colour should not be re-sending everything at\nframe rate.\n\n'lime' is there because many LED fixtures have a lime or lime-green emitter as\nwell as red, green and blue, and the extra emitter is what gives them a decent\nwhite. A fixture without one simply ignores it.\n\neos_send IS THE GENERAL ONE:\nOne value, one named parameter, on one channel. 'parameter' is the parameter\nname as Eos spells it - intens, red, pan, tilt, zoom, and so on - and 'min' and\n'max' set the range of the input slider, so you can drive a 0-to-100 intensity\nor a -270-to-270 pan with the same node.\n\nUse it for anything color_source does not cover: position, beam, gobo, or a\nparameter peculiar to one fixture.\n\nCHANNEL NUMBERS ARE THE DESK'S, NOT THE FIXTURE'S:\nBoth senders address a CHANNEL as the console understands it - the number you\nwould type on the desk - not a DMX address and not a universe. If the desk has\nbeen patched, those are different numbers, and the channel is the one that\nmatters here.\n\nSYNTAX:\neos_console <name> <ip> <target port> <source port>\ncolor_source <channel>\neos_send <parameter> <channel>\n\nEXAMPLE:\ncolor_source 7\n\nINPUTS and PARAMETERS:\n\nname / ip / target port / source port (eos_console):\nWhich desk, where, and the two ports. Defaults are name 'eos', 10.1.3.11,\n1101 out and 1102 back.\n\nintensity / red / green / blue / lime (color_source):\nThe parameters, 0 to 100. Each sends when it moves.\n\ntarget channel:\nWhich channel on the desk.\n\naddress (color_source):\nThe command path before the channel. The default is the user-99 channel path.\n\nosc to send (eos_send):\nThe value.\n\nparameter (eos_send):\nThe Eos parameter name.\n\nmin / max (eos_send):\nThe range of the input.\n\ntarget name:\nWhich eos_console to send through. Must match its name.\n\nOUTPUTS: \n\nosc received (eos_console):\nWhatever the desk sends back.\n\nThe senders have no outlets - they are ends of the chain.\n\nRELATED:\nosc_send and the osc nodes, if you want to talk to the desk in paths you compose\nyourself rather than through these.\nThe eos_console node is an OSC device like any other, so anything that can\naddress an OSC target by name can use it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These drive an ETC Eos lighting console from a patch, over OSC.\n\nTHE NODES:\n\neos_console    the connection to the desk - one of these per console\ncolor_source   intensity and colour for one channel, as sliders\neos_send       one named parameter of one channel\n\neos_console FIRST, AND ONLY ONE:\nIt is the connection, not a command. Everything else finds the desk by NAME, so\nthis node has to exist before the senders do anything - and there should be one\nof it, however many senders you have.\n\nIts defaults are the usual Eos arrangement: name 'eos', the desk at 10.1.3.11,\nsending to port 1101 and listening on 1102. Change the address to your desk;\nchange the name only if you have more than one console and need to tell them\napart, in which case the senders' 'target name' has to match.\n\nThe listening port matters as much as the sending one. Eos replies - to say what\nit did, and to report state - and those replies arrive on the source port and\ncome out of 'osc received'. A patch that sends fine but hears nothing has the\nwrong source port.\n\nWHAT AN EOS OSC ADDRESS LOOKS LIKE:\nCommands are paths, and the shape of a channel parameter is:\n\n    /eos/user/<user>/chan/<channel>/param/<name>\n\nwhich is what color_source composes for you. The 'user' is the desk's user\nnumber - 99 is the conventional choice for an external controller, because it\nkeeps what you send out of the way of whoever is sitting at the desk.\n\ncolor_source IS THE CONVENIENT ONE:\nFive sliders - intensity, red, green, blue, lime - all aimed at one channel,\neach sending only when it moves. Set 'target channel' and it composes the rest.\n\nIt sends only the parameters that have actually changed, which matters on a\nbusy network: a patch nudging one colour should not be re-sending everything at\nframe rate.\n\n'lime' is there because many LED fixtures have a lime or lime-green emitter as\nwell as red, green and blue, and the extra emitter is what gives them a decent\nwhite. A fixture without one simply ignores it.\n\neos_send IS THE GENERAL ONE:\nOne value, one named parameter, on one channel. 'parameter' is the parameter\nname as Eos spells it - intens, red, pan, tilt, zoom, and so on - and 'min' and\n'max' set the range of the input slider, so you can drive a 0-to-100 intensity\nor a -270-to-270 pan with the same node.\n\nUse it for anything color_source does not cover: position, beam, gobo, or a\nparameter peculiar to one fixture.\n\nCHANNEL NUMBERS ARE THE DESK'S, NOT THE FIXTURE'S:\nBoth senders address a CHANNEL as the console understands it - the number you\nwould type on the desk - not a DMX address and not a universe. If the desk has\nbeen patched, those are different numbers, and the channel is the one that\nmatters here.\n\nSYNTAX:\neos_console <name> <ip> <target port> <source port>\ncolor_source <channel>\neos_send <parameter> <channel>\n\nEXAMPLE:\ncolor_source 7\n\nINPUTS and PARAMETERS:\n\nname / ip / target port / source port (eos_console):\nWhich desk, where, and the two ports. Defaults are name 'eos', 10.1.3.11,\n1101 out and 1102 back.\n\nintensity / red / green / blue / lime (color_source):\nThe parameters, 0 to 100. Each sends when it moves.\n\ntarget channel:\nWhich channel on the desk.\n\naddress (color_source):\nThe command path before the channel. The default is the user-99 channel path.\n\nosc to send (eos_send):\nThe value.\n\nparameter (eos_send):\nThe Eos parameter name.\n\nmin / max (eos_send):\nThe range of the input.\n\ntarget name:\nWhich eos_console to send through. Must match its name.\n\nOUTPUTS: \n\nosc received (eos_console):\nWhatever the desk sends back.\n\nThe senders have no outlets - they are ends of the chain.\n\nRELATED:\nosc_send and the osc nodes, if you want to talk to the desk in paths you compose\nyourself rather than through these.\nThe eos_console node is an OSC device like any other, so anything that can\naddress an OSC target by name can use it."
+        },
+        "3": {
+            "name": "eos_console",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 300,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment one of these, before anything else -",
+            "name": "comment",
+            "id": 385,
+            "position_x": 746,
+            "position_y": 315,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one of these, before anything else -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one of these, before anything else -"
+        },
+        "5": {
+            "init": "comment the senders find it by name",
+            "name": "comment",
+            "id": 422,
+            "position_x": 746,
+            "position_y": 345,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the senders find it by name",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the senders find it by name"
+        },
+        "6": {
+            "init": "comment set the ip to your desk. 1102 is where",
+            "name": "comment",
+            "id": 459,
+            "position_x": 746,
+            "position_y": 385,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set the ip to your desk. 1102 is where",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set the ip to your desk. 1102 is where"
+        },
+        "7": {
+            "init": "comment its replies come back",
+            "name": "comment",
+            "id": 496,
+            "position_x": 746,
+            "position_y": 415,
+            "width": 147,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its replies come back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its replies come back"
+        },
+        "8": {
+            "name": "text_display",
+            "id": 533,
+            "position_x": 380,
+            "position_y": 62,
+            "width": 320,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment what the desk says back",
+            "name": "comment",
+            "id": 570,
+            "position_x": 746,
+            "position_y": 275,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what the desk says back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what the desk says back"
+        },
+        "10": {
+            "name": "color_source",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 320,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "color_source 7"
+        },
+        "11": {
+            "init": "comment five sliders at channel 7 - each sends",
+            "name": "comment",
+            "id": 644,
+            "position_x": 746,
+            "position_y": 805,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five sliders at channel 7 - each sends",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five sliders at channel 7 - each sends"
+        },
+        "12": {
+            "init": "comment only when it moves",
+            "name": "comment",
+            "id": 681,
+            "position_x": 746,
+            "position_y": 885,
+            "width": 126,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only when it moves",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only when it moves"
+        },
+        "13": {
+            "init": "comment lime is the fourth emitter on many LED",
+            "name": "comment",
+            "id": 718,
+            "position_x": 746,
+            "position_y": 965,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lime is the fourth emitter on many LED",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lime is the fourth emitter on many LED"
+        },
+        "14": {
+            "init": "comment fixtures - it is what makes a good white",
+            "name": "comment",
+            "id": 755,
+            "position_x": 746,
+            "position_y": 1045,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fixtures - it is what makes a good white",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fixtures - it is what makes a good white"
+        },
+        "15": {
+            "name": "signal",
+            "id": 792,
+            "position_x": 420,
+            "position_y": 470,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 6.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 135.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "16": {
+            "name": "eos_send",
+            "id": 829,
+            "position_x": 420,
+            "position_y": 570,
+            "width": 300,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -270,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "init": "eos_send pan 7"
+        },
+        "17": {
+            "init": "comment anything color_source does not cover:",
+            "name": "comment",
+            "id": 866,
+            "position_x": 746,
+            "position_y": 845,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "anything color_source does not cover:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "anything color_source does not cover:"
+        },
+        "18": {
+            "init": "comment pan, tilt, zoom, gobo - named as Eos",
+            "name": "comment",
+            "id": 903,
+            "position_x": 746,
+            "position_y": 925,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pan, tilt, zoom, gobo - named as Eos",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pan, tilt, zoom, gobo - named as Eos"
+        },
+        "19": {
+            "init": "comment spells it, with min/max to suit",
+            "name": "comment",
+            "id": 940,
+            "position_x": 746,
+            "position_y": 1005,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "spells it, with min/max to suit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "spells it, with min/max to suit"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 840,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "osc received",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "osc to send"
+        }
+    }
+}

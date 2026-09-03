@@ -355,7 +355,15 @@ class SmolVLMDescribeNode(VisionDescribeBase):
         with cls._model_lock:
             if cls._model_loaded and cls._current_size == size:
                 return
-            from transformers import AutoProcessor, AutoModelForVision2Seq
+            from transformers import AutoProcessor
+            try:
+                # transformers 5 renamed this; the Gemma node here already uses
+                # the new name. Without the fallback SmolVLM could not load at
+                # all on transformers 5 -- ImportError on every inference.
+                from transformers import AutoModelForImageTextToText \
+                    as AutoModelForVision2Seq
+            except ImportError:
+                from transformers import AutoModelForVision2Seq
 
             model_id = cls.MODELS.get(size, cls.MODELS['500M'])
             print(f'[SmolVLM] Loading {model_id} ({size}) …')

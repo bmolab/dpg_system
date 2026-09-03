@@ -1,0 +1,486 @@
+{
+    "height": 881,
+    "width": 1678,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "t.distance_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.distance_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t distance and similarity - how big, how alike",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t distance and similarity - how big, how alike",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t distance and similarity - how big, how alike"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 820,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These measure how big something is, or how alike two things are.\n\nTHE NODES:\n\nt.length             the length of a tensor, taken as one long vector - \n                     its distance from the origin\nt.cdist              the same measurement, by another route\nt.normalize          divide by that length, giving a unit vector\nt.cosine_similarity  how much two tensors point the same way, regardless of \n                     how big either is\nt.corrcoef           the correlation between rows - how much they move together\nt.energy             the total absolute CHANGE across a tensor\n\nSIZE AND DIRECTION ARE SEPARATE QUESTIONS:\nt.length answers the first, t.normalize removes it so only direction is left, \nand t.cosine_similarity compares two directions with size taken out of both. \nThat separation is usually what you want: two poses can be the same shape at \ndifferent scales, and two movements the same gesture at different intensities.\n\ncosine similarity runs from 1 for pointing the same way, through 0 for at right \nangles, to -1 for opposite. It is the right comparison for anything where \nmagnitude is a confound.\n\nt.corrcoef IS DIFFERENT:\nIt asks whether things move TOGETHER over the samples you give it - correlation, \nnot alignment. Feed it a tensor whose rows are channels and whose columns are \ntime and you get back a matrix of how much each pair of channels co-varies. \nThat is the measured prior for which things habitually happen at once.\n\nt.energy IS MOTION, NOT SIZE:\nIt differences along an axis, takes the absolute value, and sums - so it is the \ntotal distance travelled rather than how far from the origin the tensor ended \nup. A signal that wanders a long way and comes back has high energy and low \nlength. For asking how much a body moved, this is the measure, not t.length.\n\nSYNTAX:\nt.length\nt.cosine_similarity\nt.energy <n>\n\nEXAMPLE:\nt.cosine_similarity\n\nINPUTS and PARAMETERS:\n\ntensor in / input 1 / input 2:\nThe tensors. Receiving the first triggers the node.\n\ndim:\nWhich axis to measure along, where that makes sense. Without one, the whole \ntensor is treated as a single vector.\n\nn (t.energy):\nHow many times to difference before summing. 1 is total movement; \n2 is total change in movement.\n\nOUTPUTS: \n\nout / output:\nThe measurement - a single number for the length and energy nodes, \na tensor for normalize and corrcoef.\n\nA NOTE ON NORMALIZING NEAR ZERO:\nA tensor whose length is nearly zero has no meaningful direction, and dividing \nby that length produces a large and arbitrary unit vector. When normalized data \nstarts jumping about during the still moments, that is why - clamp the length \naway from zero, or gate on it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These measure how big something is, or how alike two things are.\n\nTHE NODES:\n\nt.length             the length of a tensor, taken as one long vector - \n                     its distance from the origin\nt.cdist              the same measurement, by another route\nt.normalize          divide by that length, giving a unit vector\nt.cosine_similarity  how much two tensors point the same way, regardless of \n                     how big either is\nt.corrcoef           the correlation between rows - how much they move together\nt.energy             the total absolute CHANGE across a tensor\n\nSIZE AND DIRECTION ARE SEPARATE QUESTIONS:\nt.length answers the first, t.normalize removes it so only direction is left, \nand t.cosine_similarity compares two directions with size taken out of both. \nThat separation is usually what you want: two poses can be the same shape at \ndifferent scales, and two movements the same gesture at different intensities.\n\ncosine similarity runs from 1 for pointing the same way, through 0 for at right \nangles, to -1 for opposite. It is the right comparison for anything where \nmagnitude is a confound.\n\nt.corrcoef IS DIFFERENT:\nIt asks whether things move TOGETHER over the samples you give it - correlation, \nnot alignment. Feed it a tensor whose rows are channels and whose columns are \ntime and you get back a matrix of how much each pair of channels co-varies. \nThat is the measured prior for which things habitually happen at once.\n\nt.energy IS MOTION, NOT SIZE:\nIt differences along an axis, takes the absolute value, and sums - so it is the \ntotal distance travelled rather than how far from the origin the tensor ended \nup. A signal that wanders a long way and comes back has high energy and low \nlength. For asking how much a body moved, this is the measure, not t.length.\n\nSYNTAX:\nt.length\nt.cosine_similarity\nt.energy <n>\n\nEXAMPLE:\nt.cosine_similarity\n\nINPUTS and PARAMETERS:\n\ntensor in / input 1 / input 2:\nThe tensors. Receiving the first triggers the node.\n\ndim:\nWhich axis to measure along, where that makes sense. Without one, the whole \ntensor is treated as a single vector.\n\nn (t.energy):\nHow many times to difference before summing. 1 is total movement; \n2 is total change in movement.\n\nOUTPUTS: \n\nout / output:\nThe measurement - a single number for the length and energy nodes, \na tensor for normalize and corrcoef.\n\nA NOTE ON NORMALIZING NEAR ZERO:\nA tensor whose length is nearly zero has no meaningful direction, and dividing \nby that length produces a large and arbitrary unit vector. When normalized data \nstarts jumping about during the still moments, that is why - clamp the length \naway from zero, or gate on it."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "t.rand",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "6": {
+            "init": "comment two random directions",
+            "name": "comment",
+            "id": 459,
+            "position_x": 496,
+            "position_y": 310,
+            "width": 147,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two random directions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two random directions"
+        },
+        "7": {
+            "name": "t.length",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 445,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment how far from the origin",
+            "name": "comment",
+            "id": 570,
+            "position_x": 496,
+            "position_y": 495,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how far from the origin",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how far from the origin"
+        },
+        "10": {
+            "name": "t.cosine_similarity",
+            "id": 607,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 455,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment 1 same way, 0 at right angles, -1 opposite",
+            "name": "comment",
+            "id": 681,
+            "position_x": 496,
+            "position_y": 535,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "1 same way, 0 at right angles, -1 opposite",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "1 same way, 0 at right angles, -1 opposite"
+        },
+        "13": {
+            "name": "t.energy",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 180,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "float",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 665,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment total movement, not total size",
+            "name": "comment",
+            "id": 792,
+            "position_x": 496,
+            "position_y": 715,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "total movement, not total size",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "total movement, not total size"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 737,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input 1"
+        },
+        "5": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input 2"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "8": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

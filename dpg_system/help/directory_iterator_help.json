@@ -1,0 +1,286 @@
+{
+    "height": 681,
+    "width": 1508,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "directory_iterator_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/directory_iterator_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment directory_iterator - walk a folder, file by file",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "directory_iterator - walk a folder, file by file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "directory_iterator - walk a folder, file by file"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 680,
+            "position_y": 45,
+            "width": 788,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The directory_iterator node walks through the files in a folder, one at a time.\n\nPoint it at a directory and each bang on \"next file\" sends the next path out. \nWhen it runs out, it says so on a separate outlet rather than going quiet, \nso a batch process can tell the difference between \"still working\" and \"done\".\n\nUse it to run the same treatment over a whole dataset - load each file, process, \nsave, ask for the next - without listing the files by hand.\n\nSYNTAX:\ndirectory_iterator\n\nEXAMPLE:\ndirectory_iterator\n\nINPUTS and PARAMETERS:\n\nnext file:\nSends the next path. Bang it once per file; this is what drives the loop.\n\ndirectory in:\nThe folder to walk. Send a path here to point the node somewhere new, \nwhich also starts it again from the beginning.\n\nsaving path:\nWhere results are being written. The node uses it to work out what has already \nbeen done, which is what makes resuming possible.\n\nreset:\nGo back to the first file.\n\nresume from last run:\nWhen checked, the node skips files that already have a result in the saving \npath, and carries on from where a previous run stopped. \nThis is what makes a long batch survive being interrupted - the thing you want \non a run of thousands of files that fails on file 800.\n\nOUTPUTS: \n\nnext path out:\nThe path of the next file, as a string.\n\ndone:\nFires when there are no files left. Wire this up - it is the only way the patch \nlearns that the batch has finished, and without it a loop driven by \"next file\" \nwill simply stop with no indication of why.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The directory_iterator node walks through the files in a folder, one at a time.\n\nPoint it at a directory and each bang on \"next file\" sends the next path out. \nWhen it runs out, it says so on a separate outlet rather than going quiet, \nso a batch process can tell the difference between \"still working\" and \"done\".\n\nUse it to run the same treatment over a whole dataset - load each file, process, \nsave, ask for the next - without listing the files by hand.\n\nSYNTAX:\ndirectory_iterator\n\nEXAMPLE:\ndirectory_iterator\n\nINPUTS and PARAMETERS:\n\nnext file:\nSends the next path. Bang it once per file; this is what drives the loop.\n\ndirectory in:\nThe folder to walk. Send a path here to point the node somewhere new, \nwhich also starts it again from the beginning.\n\nsaving path:\nWhere results are being written. The node uses it to work out what has already \nbeen done, which is what makes resuming possible.\n\nreset:\nGo back to the first file.\n\nresume from last run:\nWhen checked, the node skips files that already have a result in the saving \npath, and carries on from where a previous run stopped. \nThis is what makes a long batch survive being interrupted - the thing you want \non a run of thousands of files that fails on file 800.\n\nOUTPUTS: \n\nnext path out:\nThe path of the next file, as a string.\n\ndone:\nFires when there are no files left. Wire this up - it is the only way the patch \nlearns that the batch has finished, and without it a loop driven by \"next file\" \nwill simply stop with no indication of why."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click for the next file",
+            "name": "comment",
+            "id": 385,
+            "position_x": 356,
+            "position_y": 115,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click for the next file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click for the next file"
+        },
+        "5": {
+            "name": "directory_iterator",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 210,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 335,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment send a folder path to \"directory in\" first",
+            "name": "comment",
+            "id": 496,
+            "position_x": 356,
+            "position_y": 385,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "send a folder path to \"directory in\" first",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "send a folder path to \"directory in\" first"
+        },
+        "8": {
+            "name": "button",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 425,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "message",
+                    "value": "done",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment this flashes when the folder runs out",
+            "name": "comment",
+            "id": 570,
+            "position_x": 356,
+            "position_y": 480,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this flashes when the folder runs out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this flashes when the folder runs out"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 501,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "next file"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "next path out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "done",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

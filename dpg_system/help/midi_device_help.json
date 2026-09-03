@@ -1,0 +1,261 @@
+{
+    "height": 801,
+    "width": 1740,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "midi_device_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/midi_device_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment midi_device - connections and raw messages",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "midi_device - connections and raw messages",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "midi_device - connections and raw messages"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 798,
+            "height": 696,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are the MIDI connections and the raw message streams.\n\nTHE NODES:\n\nmidi_device  a device you both send to and receive from\nmidi_in      everything arriving on a port\nmidi_out     send raw MIDI to a port\n\nWHAT MIDI IS:\nShort messages, each a few bytes: this note started, this controller moved, \nthis wheel bent. It is old, small and universal - almost any musical hardware \nspeaks it, which is why it remains the easiest way to get physical controls \ninto a patch.\n\nUSE THE TYPED NODES INSTEAD, MOSTLY:\nmidi_in gives you every message on the port, raw. That is useful for finding \nout what a device actually sends - patch it into a print and press things - but \nit is a poor way to build with, because you then have to decode the messages \nyourself.\n\nThe typed nodes - midi_note_in, midi_control_in and the rest - do the decoding \nand hand you the numbers directly. Start with midi_in to discover the device, \nthen wire the typed nodes for the messages you found.\n\nmidi_device IS FOR TWO-WAY HARDWARE:\nControllers with lights, motorised faders or displays need to be sent to as \nwell as heard from, and this holds both directions in one node - so the port \nsetting is in one place rather than two that can disagree.\n\nport AND channel:\nEvery one of these has a 'port' inlet, which selects the physical device, and \nmost have a 'channel' option. MIDI carries sixteen channels on one cable, so \nthe port says which piece of hardware and the channel says which voice within \nit. A node listening on the wrong channel hears nothing at all and looks \nbroken, so channel is the first thing to check when a device is plainly sending \nand nothing arrives.\n\nSYNTAX:\nmidi_device\nmidi_in\nmidi_out\n\nEXAMPLE:\nmidi_in\n\nINPUTS and PARAMETERS:\n\nport / in port / out port:\nWhich device.\n\nmidi to send:\nRaw messages out.\n\nchannel:\nWhich MIDI channel.\n\nOUTPUTS: \n\nmidi out / midi received:\nEvery message arriving, undecoded.\n\nFINDING OUT WHAT A DEVICE SENDS:\nPatch midi_in into a print node and operate the device. Every knob and button \nreports its own controller or note number, and writing those down is the whole \nof getting a new controller working. It is the same technique as watching \nosc_route's unmatched outlet, and for the same reason: what a device actually \nsends and what its manual says are often different.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 680,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are the MIDI connections and the raw message streams.\n\nTHE NODES:\n\nmidi_device  a device you both send to and receive from\nmidi_in      everything arriving on a port\nmidi_out     send raw MIDI to a port\n\nWHAT MIDI IS:\nShort messages, each a few bytes: this note started, this controller moved, \nthis wheel bent. It is old, small and universal - almost any musical hardware \nspeaks it, which is why it remains the easiest way to get physical controls \ninto a patch.\n\nUSE THE TYPED NODES INSTEAD, MOSTLY:\nmidi_in gives you every message on the port, raw. That is useful for finding \nout what a device actually sends - patch it into a print and press things - but \nit is a poor way to build with, because you then have to decode the messages \nyourself.\n\nThe typed nodes - midi_note_in, midi_control_in and the rest - do the decoding \nand hand you the numbers directly. Start with midi_in to discover the device, \nthen wire the typed nodes for the messages you found.\n\nmidi_device IS FOR TWO-WAY HARDWARE:\nControllers with lights, motorised faders or displays need to be sent to as \nwell as heard from, and this holds both directions in one node - so the port \nsetting is in one place rather than two that can disagree.\n\nport AND channel:\nEvery one of these has a 'port' inlet, which selects the physical device, and \nmost have a 'channel' option. MIDI carries sixteen channels on one cable, so \nthe port says which piece of hardware and the channel says which voice within \nit. A node listening on the wrong channel hears nothing at all and looks \nbroken, so channel is the first thing to check when a device is plainly sending \nand nothing arrives.\n\nSYNTAX:\nmidi_device\nmidi_in\nmidi_out\n\nEXAMPLE:\nmidi_in\n\nINPUTS and PARAMETERS:\n\nport / in port / out port:\nWhich device.\n\nmidi to send:\nRaw messages out.\n\nchannel:\nWhich MIDI channel.\n\nOUTPUTS: \n\nmidi out / midi received:\nEvery message arriving, undecoded.\n\nFINDING OUT WHAT A DEVICE SENDS:\nPatch midi_in into a print node and operate the device. Every knob and button \nreports its own controller or note number, and writing those down is the whole \nof getting a new controller working. It is the same technique as watching \nosc_route's unmatched outlet, and for the same reason: what a device actually \nsends and what its manual says are often different."
+        },
+        "3": {
+            "name": "midi_in",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 240,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "print",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 205,
+            "width": 200,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "midi",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            },
+            "init": "print midi"
+        },
+        "5": {
+            "init": "comment press things on the device and watch",
+            "name": "comment",
+            "id": 422,
+            "position_x": 606,
+            "position_y": 340,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "press things on the device and watch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "press things on the device and watch"
+        },
+        "6": {
+            "init": "comment the console - that is how you learn it",
+            "name": "comment",
+            "id": 459,
+            "position_x": 606,
+            "position_y": 370,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the console - that is how you learn it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the console - that is how you learn it"
+        },
+        "7": {
+            "name": "midi_device",
+            "id": 496,
+            "position_x": 320,
+            "position_y": 62,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment for hardware with lights or motors",
+            "name": "comment",
+            "id": 533,
+            "position_x": 606,
+            "position_y": 255,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "for hardware with lights or motors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "for hardware with lights or motors"
+        },
+        "9": {
+            "name": "midi_out",
+            "id": 570,
+            "position_x": 320,
+            "position_y": 300,
+            "width": 240,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 450,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "midi out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

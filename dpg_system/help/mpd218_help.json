@@ -1,0 +1,363 @@
+{
+    "height": 781,
+    "width": 1783,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "mpd218_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mpd218_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mpd218 and blue_board - hardware that knows itself",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 600,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mpd218 and blue_board - hardware that knows itself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mpd218 and blue_board - hardware that knows itself"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 945,
+            "position_y": 45,
+            "width": 798,
+            "height": 676,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Two nodes that know a particular piece of hardware.\n\nTHE NODES:\n\nmpd218      an Akai MPD218 pad controller\nblue_board  an iRig BlueBoard foot controller\n\nWHY A NODE PER DEVICE:\nEverything these do could be done with midi_control_in and midi_note_in and a \nlist of numbers written down somewhere. What they save is the list - the pad \nand controller numbering is built in, so 'pad' and 'controller' come out \nalready meaning what they say.\n\nThey are also the place the device's oddities live. The MPD218 has banks, so \nthe same pad sends different notes depending on which bank is selected, and \n'select' handles that. The BlueBoard's buttons can be momentary or latching and \nits LEDs are addressable, so the node has a mode per button and an LED inlet \nper light.\n\nblue_board IS FOR HANDS-FREE:\nA foot controller matters when your hands are doing something else - which, for \na performer wearing a suit, is most of the time. Four buttons and four lights, \nover Bluetooth, with the lights telling you the state you cannot see because \nyou are not looking at the patch.\n\nSetting each button's mode is the thing to get right: momentary for something \nthat should last only while your foot is down, latching for something you turn \non and walk away from.\n\nSYNTAX:\nmpd218\nblue_board\n\nEXAMPLE:\nblue_board\n\nINPUTS and PARAMETERS:\n\nin port / out port:\nThe device, both directions - both of these are two-way.\n\nchannel:\nThe MIDI channel.\n\nselect (mpd218):\nWhich bank of pads.\n\nA_mode / B_mode / C_mode / D_mode (blue_board):\nMomentary or latching, per button.\n\nLED (blue_board):\nOne inlet per light.\n\nOUTPUTS: \n\npad / controller (mpd218):\nWhich pad was struck, and the knob values.\n\nA / B / C / D (blue_board):\nThe four buttons.\n\nmidi received:\nEverything else the device sent, undecoded - useful when the device does \nsomething these nodes do not cover.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 660,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Two nodes that know a particular piece of hardware.\n\nTHE NODES:\n\nmpd218      an Akai MPD218 pad controller\nblue_board  an iRig BlueBoard foot controller\n\nWHY A NODE PER DEVICE:\nEverything these do could be done with midi_control_in and midi_note_in and a \nlist of numbers written down somewhere. What they save is the list - the pad \nand controller numbering is built in, so 'pad' and 'controller' come out \nalready meaning what they say.\n\nThey are also the place the device's oddities live. The MPD218 has banks, so \nthe same pad sends different notes depending on which bank is selected, and \n'select' handles that. The BlueBoard's buttons can be momentary or latching and \nits LEDs are addressable, so the node has a mode per button and an LED inlet \nper light.\n\nblue_board IS FOR HANDS-FREE:\nA foot controller matters when your hands are doing something else - which, for \na performer wearing a suit, is most of the time. Four buttons and four lights, \nover Bluetooth, with the lights telling you the state you cannot see because \nyou are not looking at the patch.\n\nSetting each button's mode is the thing to get right: momentary for something \nthat should last only while your foot is down, latching for something you turn \non and walk away from.\n\nSYNTAX:\nmpd218\nblue_board\n\nEXAMPLE:\nblue_board\n\nINPUTS and PARAMETERS:\n\nin port / out port:\nThe device, both directions - both of these are two-way.\n\nchannel:\nThe MIDI channel.\n\nselect (mpd218):\nWhich bank of pads.\n\nA_mode / B_mode / C_mode / D_mode (blue_board):\nMomentary or latching, per button.\n\nLED (blue_board):\nOne inlet per light.\n\nOUTPUTS: \n\npad / controller (mpd218):\nWhich pad was struck, and the knob values.\n\nA / B / C / D (blue_board):\nThe four buttons.\n\nmidi received:\nEverything else the device sent, undecoded - useful when the device does \nsomething these nodes do not cover."
+        },
+        "3": {
+            "name": "blue_board",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment set each button momentary or latching",
+            "name": "comment",
+            "id": 385,
+            "position_x": 656,
+            "position_y": 375,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set each button momentary or latching",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set each button momentary or latching"
+        },
+        "5": {
+            "name": "int",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 415,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "toggle",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 415,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment the LED tells you a state you cannot",
+            "name": "comment",
+            "id": 496,
+            "position_x": 656,
+            "position_y": 495,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the LED tells you a state you cannot",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the LED tells you a state you cannot"
+        },
+        "8": {
+            "init": "comment see, because you are not looking",
+            "name": "comment",
+            "id": 533,
+            "position_x": 656,
+            "position_y": 535,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "see, because you are not looking",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "see, because you are not looking"
+        },
+        "9": {
+            "name": "mpd218",
+            "id": 570,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 280,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 350,
+            "position_y": 320,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment pad numbering built in, so you do not",
+            "name": "comment",
+            "id": 644,
+            "position_x": 656,
+            "position_y": 415,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pad numbering built in, so you do not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pad numbering built in, so you do not"
+        },
+        "12": {
+            "init": "comment keep a list of note numbers anywhere",
+            "name": "comment",
+            "id": 681,
+            "position_x": 656,
+            "position_y": 455,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "keep a list of note numbers anywhere",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "keep a list of note numbers anywhere"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 487,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "A",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 348,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "LED"
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pad",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

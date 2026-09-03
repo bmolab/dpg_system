@@ -1,0 +1,319 @@
+{
+    "height": 994,
+    "width": 1868,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "shaper~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shaper~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shaper~ - a drawn curve, applied every sample",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shaper~ - a drawn curve, applied every sample",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shaper~ - a drawn curve, applied every sample"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1010,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These map a signal through a curve - one number in, a different number out.\n\nTHE NODES:\n\nshaper~     a drawn breakpoint curve, applied to every sample\nlookup~     the same node\nenvelope~   the same node\nscaler~     map a range into another range, with a response curve\nscale~      the same node\n\nshaper~ IS THE ENVELOPE NODE AT AUDIO RATE:\nThe ordinary envelope node maps one x to one y per message. shaper~ maps every \nsample of every block through the same kind of drawn curve. Drag a point to \nmove it, right-click to add or remove one, shift and left-drag a segment to \nbend it - the same gestures - and the table behind it is rebuilt.\n\nWhat that means depends on what you feed it. Given an audio signal it is a \nwaveshaper, and the curve is a distortion characteristic. Given a slow control \nsignal it is a response curve - the way to say \"this control should be gentle \nat the bottom and steep at the top\" by drawing it rather than calculating it.\n\nNote that shaper~ will apply any curve you draw but does nothing about the \naliasing that a steep one produces. When you want distortion rather than \nmapping, fold~ is the node that deals with it.\n\nscaler~ IS THE ARITHMETIC CASE:\nTake a signal in a known range - an envelope at 0 to 1, an LFO at -1 to 1 - and \nput it into the range something else wants, with a curve on the way. \n\nWorth knowing before you reach for it: a plain linear range change is already \navailable without this node. Every modulation inlet in the system computes \nbase plus depth times the incoming signal, so the knob is the low end and the \ninlet's own depth is the span. scaler~ is for when you want a CURVE, or when \nthe range has to be set from the patch.\n\nSYNTAX:\nshaper~\nscaler~\n\nEXAMPLE:\nshaper~\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal to map.\n\nin low / in high:\nThe range the input is expected to arrive in.\n\nout low / out high (scaler~):\nThe range to produce.\n\ncurve / mode (scaler~):\nThe response between the two ends.\n\npoints / range (shaper~):\nThe curve's control points, so a shape can be stored or sent, and the vertical \nspan it covers.\n\nOUTPUTS: \n\nsignal:\nThe mapped signal.\n\npoints out (shaper~):\nThe curve's points, for saving or copying to another shaper~.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These map a signal through a curve - one number in, a different number out.\n\nTHE NODES:\n\nshaper~     a drawn breakpoint curve, applied to every sample\nlookup~     the same node\nenvelope~   the same node\nscaler~     map a range into another range, with a response curve\nscale~      the same node\n\nshaper~ IS THE ENVELOPE NODE AT AUDIO RATE:\nThe ordinary envelope node maps one x to one y per message. shaper~ maps every \nsample of every block through the same kind of drawn curve. Drag a point to \nmove it, right-click to add or remove one, shift and left-drag a segment to \nbend it - the same gestures - and the table behind it is rebuilt.\n\nWhat that means depends on what you feed it. Given an audio signal it is a \nwaveshaper, and the curve is a distortion characteristic. Given a slow control \nsignal it is a response curve - the way to say \"this control should be gentle \nat the bottom and steep at the top\" by drawing it rather than calculating it.\n\nNote that shaper~ will apply any curve you draw but does nothing about the \naliasing that a steep one produces. When you want distortion rather than \nmapping, fold~ is the node that deals with it.\n\nscaler~ IS THE ARITHMETIC CASE:\nTake a signal in a known range - an envelope at 0 to 1, an LFO at -1 to 1 - and \nput it into the range something else wants, with a curve on the way. \n\nWorth knowing before you reach for it: a plain linear range change is already \navailable without this node. Every modulation inlet in the system computes \nbase plus depth times the incoming signal, so the knob is the low end and the \ninlet's own depth is the span. scaler~ is for when you want a CURVE, or when \nthe range has to be set from the patch.\n\nSYNTAX:\nshaper~\nscaler~\n\nEXAMPLE:\nshaper~\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal to map.\n\nin low / in high:\nThe range the input is expected to arrive in.\n\nout low / out high (scaler~):\nThe range to produce.\n\ncurve / mode (scaler~):\nThe response between the two ends.\n\npoints / range (shaper~):\nThe curve's control points, so a shape can be stored or sent, and the vertical \nspan it covers.\n\nOUTPUTS: \n\nsignal:\nThe mapped signal.\n\npoints out (shaper~):\nThe curve's points, for saving or copying to another shaper~."
+        },
+        "3": {
+            "name": "lfo~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 200,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "lfo~ 0.5"
+        },
+        "4": {
+            "init": "comment a slow triangle, -1 to 1",
+            "name": "comment",
+            "id": 385,
+            "position_x": 686,
+            "position_y": 232,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slow triangle, -1 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slow triangle, -1 to 1"
+        },
+        "5": {
+            "name": "shaper~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 275,
+            "width": 320,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment drag the points to change the response",
+            "name": "comment",
+            "id": 459,
+            "position_x": 686,
+            "position_y": 565,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag the points to change the response",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag the points to change the response"
+        },
+        "7": {
+            "init": "comment right-click to add one, shift-drag to bend",
+            "name": "comment",
+            "id": 496,
+            "position_x": 686,
+            "position_y": 595,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right-click to add one, shift-drag to bend",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "right-click to add one, shift-drag to bend"
+        },
+        "8": {
+            "name": "vco~",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 275,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "9": {
+            "name": "scope~",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 500,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "fader_out~",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "11": {
+            "init": "comment the curve now drives the pitch",
+            "name": "comment",
+            "id": 644,
+            "position_x": 686,
+            "position_y": 875,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the curve now drives the pitch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the curve now drives the pitch"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 890,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pitch"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

@@ -1,0 +1,423 @@
+{
+    "height": 821,
+    "width": 1568,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "button_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/button_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment button and toggle - a moment, or a state",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "button and toggle - a moment, or a state",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "button and toggle - a moment, or a state"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 730,
+            "position_y": 45,
+            "width": 798,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are the two ways of clicking something: one that fires, and one that stays.\n\nA button is a moment. Click it and it sends, then it is done - nothing is \nremembered. Use it to start something.\n\nA toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nThe distinction is the same one togedge draws between an event and a state, \nand choosing the wrong one is a common source of patches that almost work: \na button cannot tell you whether something is currently running, and a toggle \ncannot tell you that it just started.\n\nTHE NODES:\n\nbutton      click to send; b is a shorter name for it\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nSYNTAX:\nbutton\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (button, toggle):\nAnything arriving here acts as a click.\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nmessage (button):\nWhat the button actually sends. The default is the word \"bang\". \nChange it and the button sends that instead - which turns a button into a \none-click way of firing any fixed value or command.\n\nflash_duration / color (button):\nHow long the button lights up when clicked, and what colour it is. \nWorth setting when several buttons sit together and you want them told apart.\n\nwidth / height (button):\nIts size.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nOUTPUTS: \n\nout:\nbutton sends its message, once per click. \ntoggle and set_reset send 1 when they turn on and 0 when they turn off.\n\nA NOTE ON WHAT A BUTTON SENDS:\nBy default it is the WORD \"bang\", not a number. Anything expecting a number \nwill read it as 0 - so a button wired into accumulate adds nothing at all. \nSend a bang to a counter to count clicks, or set the message option to a \nnumber if you want arithmetic.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are the two ways of clicking something: one that fires, and one that stays.\n\nA button is a moment. Click it and it sends, then it is done - nothing is \nremembered. Use it to start something.\n\nA toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nThe distinction is the same one togedge draws between an event and a state, \nand choosing the wrong one is a common source of patches that almost work: \na button cannot tell you whether something is currently running, and a toggle \ncannot tell you that it just started.\n\nTHE NODES:\n\nbutton      click to send; b is a shorter name for it\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nSYNTAX:\nbutton\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (button, toggle):\nAnything arriving here acts as a click.\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nmessage (button):\nWhat the button actually sends. The default is the word \"bang\". \nChange it and the button sends that instead - which turns a button into a \none-click way of firing any fixed value or command.\n\nflash_duration / color (button):\nHow long the button lights up when clicked, and what colour it is. \nWorth setting when several buttons sit together and you want them told apart.\n\nwidth / height (button):\nIts size.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nOUTPUTS: \n\nout:\nbutton sends its message, once per click. \ntoggle and set_reset send 1 when they turn on and 0 when they turn off.\n\nA NOTE ON WHAT A BUTTON SENDS:\nBy default it is the WORD \"bang\", not a number. Anything expecting a number \nwill read it as 0 - so a button wired into accumulate adds nothing at all. \nSend a bang to a counter to count clicks, or set the message option to a \nnumber if you want arithmetic."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment a moment: click and it is over",
+            "name": "comment",
+            "id": 385,
+            "position_x": 406,
+            "position_y": 115,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a moment: click and it is over",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a moment: click and it is over"
+        },
+        "5": {
+            "name": "counter",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "int",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment counter counts bangs; accumulate would not",
+            "name": "comment",
+            "id": 496,
+            "position_x": 406,
+            "position_y": 300,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counter counts bangs; accumulate would not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counter counts bangs; accumulate would not"
+        },
+        "8": {
+            "name": "toggle",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 345,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment a state: it stays where you put it",
+            "name": "comment",
+            "id": 570,
+            "position_x": 406,
+            "position_y": 395,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a state: it stays where you put it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a state: it stays where you put it"
+        },
+        "10": {
+            "name": "metro",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 435,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "11": {
+            "name": "counter",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "name": "int",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 615,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "set_reset",
+            "id": 718,
+            "position_x": 250,
+            "position_y": 345,
+            "width": 130,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment the same state, decided by the patch",
+            "name": "comment",
+            "id": 755,
+            "position_x": 406,
+            "position_y": 445,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same state, decided by the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same state, decided by the patch"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 687,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,290 @@
+{
+    "height": 829,
+    "width": 1756,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "gl_body_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_body_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gl_body - drawing a skeleton, the older way",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gl_body - drawing a skeleton, the older way",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gl_body - drawing a skeleton, the older way"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 918,
+            "position_y": 45,
+            "width": 798,
+            "height": 696,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These draw a skeleton using the older GL system.\n\nTHE NODES:\n\ngl_body         the full skeleton, with joint selection and per-joint data\ngl_simple_body  a lighter version\ngl_alt_body     an alternative drawing style\n\nWHICH BODY NODE:\nThese predate the mgl system. mgl_body draws the same thing in the newer scene \ngraph, with materials, lighting and the rest of the mgl chain available to it. \nFor anything new, that is the one to use.\n\nThese remain because they carry the joint-selection and per-joint-data \nmachinery that patches have been built around, and because gl_body's \n'limb_sizes' outlet pairs with the limb_size node for adjusting proportions \ninteractively.\n\nSEEING A NUMBER ON THE BODY:\n'joint data' takes a value per joint and colours the skeleton by it. That is \nthe point of these nodes rather than a decoration: a per-joint measurement - \nspeed, torque, error, contact - is far easier to read drawn on the body than \nplotted in twenty stacked graphs. Which joint is doing something is immediately \nobvious, and the ones that are not doing anything take up no attention.\n\n'current_joint_name' and 'current_joint_data' report what you clicked on, so \nthe drawing can also be the selector.\n\nSYNTAX:\ngl_body\n\nEXAMPLE:\ngl_body\n\nINPUTS and PARAMETERS:\n\npose in:\nThe joint orientations.\n\ngl chain:\nThe GL chain, as with the other gl nodes.\n\njoint data:\nA value per joint, used to colour them.\n\nclear joint data:\nRemove the colouring.\n\ncapture pose:\nStore the current pose.\n\nOUTPUTS: \n\ngl_chain:\nThe chain, continuing.\n\ncurrent_joint_name / current_joint_data:\nWhat was clicked.\n\nlimb_sizes:\nThe current proportions - patch this to a limb_size node to adjust them.\n\nRELATED:\nmgl_body is the current way to draw a body. \nlimb_size adjusts the proportions this node draws with.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 680,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These draw a skeleton using the older GL system.\n\nTHE NODES:\n\ngl_body         the full skeleton, with joint selection and per-joint data\ngl_simple_body  a lighter version\ngl_alt_body     an alternative drawing style\n\nWHICH BODY NODE:\nThese predate the mgl system. mgl_body draws the same thing in the newer scene \ngraph, with materials, lighting and the rest of the mgl chain available to it. \nFor anything new, that is the one to use.\n\nThese remain because they carry the joint-selection and per-joint-data \nmachinery that patches have been built around, and because gl_body's \n'limb_sizes' outlet pairs with the limb_size node for adjusting proportions \ninteractively.\n\nSEEING A NUMBER ON THE BODY:\n'joint data' takes a value per joint and colours the skeleton by it. That is \nthe point of these nodes rather than a decoration: a per-joint measurement - \nspeed, torque, error, contact - is far easier to read drawn on the body than \nplotted in twenty stacked graphs. Which joint is doing something is immediately \nobvious, and the ones that are not doing anything take up no attention.\n\n'current_joint_name' and 'current_joint_data' report what you clicked on, so \nthe drawing can also be the selector.\n\nSYNTAX:\ngl_body\n\nEXAMPLE:\ngl_body\n\nINPUTS and PARAMETERS:\n\npose in:\nThe joint orientations.\n\ngl chain:\nThe GL chain, as with the other gl nodes.\n\njoint data:\nA value per joint, used to colour them.\n\nclear joint data:\nRemove the colouring.\n\ncapture pose:\nStore the current pose.\n\nOUTPUTS: \n\ngl_chain:\nThe chain, continuing.\n\ncurrent_joint_name / current_joint_data:\nWhat was clicked.\n\nlimb_sizes:\nThe current proportions - patch this to a limb_size node to adjust them.\n\nRELATED:\nmgl_body is the current way to draw a body. \nlimb_size adjusts the proportions this node draws with."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "gl_body",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 280,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment click a joint to select it",
+            "name": "comment",
+            "id": 422,
+            "position_x": 636,
+            "position_y": 675,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click a joint to select it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click a joint to select it"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 350,
+            "position_y": 400,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment which joint was clicked",
+            "name": "comment",
+            "id": 496,
+            "position_x": 636,
+            "position_y": 450,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which joint was clicked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which joint was clicked"
+        },
+        "8": {
+            "name": "limb_size",
+            "id": 533,
+            "position_x": 350,
+            "position_y": 495,
+            "width": 260,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment adjust the proportions it draws with",
+            "name": "comment",
+            "id": 570,
+            "position_x": 636,
+            "position_y": 710,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "adjust the proportions it draws with",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "adjust the proportions it draws with"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 725,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "current_joint_name",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "limb_sizes",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "limb_sizes_dict"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out to gl_body",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "joint data"
+        }
+    }
+}

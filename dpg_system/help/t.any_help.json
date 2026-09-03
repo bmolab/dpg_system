@@ -1,0 +1,458 @@
+{
+    "height": 841,
+    "width": 1661,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "t.any_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.any_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.any, t.count_nonzero, t.argwhere - what is true, and where",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 720,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.any, t.count_nonzero, t.argwhere - what is true, and where",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.any, t.count_nonzero, t.argwhere - what is true, and where"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 813,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These test a tensor and report what is true, or where.\n\nTHE NODES:\n\nt.any            true if ANY value is non-zero\nt.all            true only if EVERY value is non-zero\nt.count_nonzero  how many are non-zero\nt.argwhere       the positions of the non-zero ones\nt.non_zero       the same node\n\nTHESE ARE WHAT YOU DO WITH A MASK:\nA comparison node gives you a tensor of true and false. On its own that is not \nan answer - these four turn it into one, and which you use is which question \nyou were asking.\n\n  t.any            is anything above the threshold?\n  t.all            is everything?\n  t.count_nonzero  how many?\n  t.argwhere       which ones?\n\n\"Is any joint moving faster than this\" is t.any. \"How many are\" is \ncount_nonzero. \"Which\" is argwhere - and that last one is usually the answer \nyou actually wanted, because a count tells you a body is busy while the indices \ntell you what it is doing.\n\nargwhere RETURNS COORDINATES, NOT VALUES:\nFor a 1D tensor you get a list of positions. For a 2D one you get a pair per \nhit - row and column - so the result is shaped (number of hits, number of \ndimensions). That surprises people expecting a flat list; it is what lets a hit \nin a multi-dimensional tensor be located at all.\n\nThe number of hits is not known in advance, which is why this cannot preserve \nthe input's shape and why nothing downstream can assume a fixed size.\n\nt.count_nonzero TAKES A dim:\nWithout one you get a single total. With one you get a count per row or column - \nso for a (frames, joints) mask, a count along frames tells you how long each \njoint spent over the threshold, and along joints how many joints were over it \nat each instant. Two quite different summaries from the same mask.\n\nSYNTAX:\nt.any\nt.count_nonzero\nt.argwhere\n\nEXAMPLE:\nt.count_nonzero\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor, usually a mask from a comparison. Receiving it triggers the node.\n\ndim (t.count_nonzero):\nWhich axis to count along.\n\nOUTPUTS: \n\nout:\nTrue or false, the count, or the positions.\n\nA NOTE ON WHAT COUNTS AS TRUE:\nThese test for NON-ZERO, not for a boolean. A tensor of measurements passed \nstraight in will report almost everything as true, because almost nothing is \nexactly zero. Compare first, then test the result.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These test a tensor and report what is true, or where.\n\nTHE NODES:\n\nt.any            true if ANY value is non-zero\nt.all            true only if EVERY value is non-zero\nt.count_nonzero  how many are non-zero\nt.argwhere       the positions of the non-zero ones\nt.non_zero       the same node\n\nTHESE ARE WHAT YOU DO WITH A MASK:\nA comparison node gives you a tensor of true and false. On its own that is not \nan answer - these four turn it into one, and which you use is which question \nyou were asking.\n\n  t.any            is anything above the threshold?\n  t.all            is everything?\n  t.count_nonzero  how many?\n  t.argwhere       which ones?\n\n\"Is any joint moving faster than this\" is t.any. \"How many are\" is \ncount_nonzero. \"Which\" is argwhere - and that last one is usually the answer \nyou actually wanted, because a count tells you a body is busy while the indices \ntell you what it is doing.\n\nargwhere RETURNS COORDINATES, NOT VALUES:\nFor a 1D tensor you get a list of positions. For a 2D one you get a pair per \nhit - row and column - so the result is shaped (number of hits, number of \ndimensions). That surprises people expecting a flat list; it is what lets a hit \nin a multi-dimensional tensor be located at all.\n\nThe number of hits is not known in advance, which is why this cannot preserve \nthe input's shape and why nothing downstream can assume a fixed size.\n\nt.count_nonzero TAKES A dim:\nWithout one you get a single total. With one you get a count per row or column - \nso for a (frames, joints) mask, a count along frames tells you how long each \njoint spent over the threshold, and along joints how many joints were over it \nat each instant. Two quite different summaries from the same mask.\n\nSYNTAX:\nt.any\nt.count_nonzero\nt.argwhere\n\nEXAMPLE:\nt.count_nonzero\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor, usually a mask from a comparison. Receiving it triggers the node.\n\ndim (t.count_nonzero):\nWhich axis to count along.\n\nOUTPUTS: \n\nout:\nTrue or false, the count, or the positions.\n\nA NOTE ON WHAT COUNTS AS TRUE:\nThese test for NON-ZERO, not for a boolean. A tensor of measurements passed \nstraight in will report almost everything as true, because almost nothing is \nexactly zero. Compare first, then test the result."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 12"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": ">",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 130,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "bool",
+                    "value_type": "str"
+                }
+            },
+            "init": "> 0.7"
+        },
+        "7": {
+            "init": "comment a mask: above 0.7",
+            "name": "comment",
+            "id": 496,
+            "position_x": 566,
+            "position_y": 400,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a mask: above 0.7",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a mask: above 0.7"
+        },
+        "8": {
+            "name": "t.count_nonzero",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 220,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "int",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 565,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment how many passed",
+            "name": "comment",
+            "id": 607,
+            "position_x": 566,
+            "position_y": 635,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many passed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how many passed"
+        },
+        "11": {
+            "name": "t.argwhere",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 440,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 280,
+            "position_y": 545,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment WHICH ones - usually the answer",
+            "name": "comment",
+            "id": 718,
+            "position_x": 566,
+            "position_y": 595,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "WHICH ones - usually the answer",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "WHICH ones - usually the answer"
+        },
+        "14": {
+            "init": "comment you actually wanted",
+            "name": "comment",
+            "id": 755,
+            "position_x": 566,
+            "position_y": 675,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "you actually wanted",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "you actually wanted"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 637,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "index tensor where non-zero",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

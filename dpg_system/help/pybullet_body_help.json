@@ -1,0 +1,555 @@
+{
+    "height": 884,
+    "width": 1877,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "pybullet_body_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pybullet_body_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pybullet_body - a body that falls over",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 456,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pybullet_body - a body that falls over",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pybullet_body - a body that falls over"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1029,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A physically simulated body, standing in for a real one.\n\nTHE NODE:\n\npybullet_body   a humanoid in a physics simulation\n\nIt loads a humanoid model into a Bullet physics world with gravity, and steps it\nforward when you tell it to. Each step, the body falls, collides with the ground\nand responds to whatever forces are on it.\n\nWHAT IT IS FOR HERE:\nNot games. It is a way to ask what a body would do - to check whether a pose is\nphysically possible, to see what forces a movement implies, or to let something\nrespond to a push rather than to a recording.\n\nBecause it is a real simulation, the answers include the parts you did not\nauthor: a body that overbalances, a limb that swings past where it was aimed, the\nfloor pushing back.\n\n'step' ADVANCES IT, AND YOU DECIDE WHEN:\nNothing moves until you step it. That is deliberate - it lets the simulation run\nin lockstep with the patch rather than on its own clock, so the physics and\nwhatever is driving it stay in agreement.\n\nStep it once per frame for real-time behaviour. Step it several times per frame\nand it runs fast; step it rarely and it runs slow, in its own time rather than\nbecoming jerky.\n\n'pelvis_position' and 'pelvis_orientation' PLACE THE BODY:\nThe root of the figure is driven rather than simulated - you say where the pelvis\nis and which way it faces, and the rest hangs off it and responds. That is what\nlets a captured performance drive a simulated body: the pelvis follows the\nrecording, and the limbs do what physics says.\n\nThe joints have force-torque sensors enabled where the model allows it, so what\ncomes back includes what the joints were having to do.\n\n'pose_out' and 'position_out' report the result - where everything ended up after\nthe step, which is not necessarily where you asked it to be.\n\nSYNTAX:\npybullet_body\n\nEXAMPLE:\npybullet_body\n\nINPUTS and PARAMETERS:\n\nstep:\nAdvance the simulation. Nothing happens until you do.\n\npelvis_position / pelvis_orientation:\nWhere the root of the body is, and which way it faces.\n\nOUTPUTS: \n\npose_out:\nThe joint angles after the step.\n\nposition_out:\nWhere the body ended up.\n\nRELATED:\nsmpl_torque, which computes what a movement implies without simulating it.\nsmpl_body and gl_body to draw the result.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A physically simulated body, standing in for a real one.\n\nTHE NODE:\n\npybullet_body   a humanoid in a physics simulation\n\nIt loads a humanoid model into a Bullet physics world with gravity, and steps it\nforward when you tell it to. Each step, the body falls, collides with the ground\nand responds to whatever forces are on it.\n\nWHAT IT IS FOR HERE:\nNot games. It is a way to ask what a body would do - to check whether a pose is\nphysically possible, to see what forces a movement implies, or to let something\nrespond to a push rather than to a recording.\n\nBecause it is a real simulation, the answers include the parts you did not\nauthor: a body that overbalances, a limb that swings past where it was aimed, the\nfloor pushing back.\n\n'step' ADVANCES IT, AND YOU DECIDE WHEN:\nNothing moves until you step it. That is deliberate - it lets the simulation run\nin lockstep with the patch rather than on its own clock, so the physics and\nwhatever is driving it stay in agreement.\n\nStep it once per frame for real-time behaviour. Step it several times per frame\nand it runs fast; step it rarely and it runs slow, in its own time rather than\nbecoming jerky.\n\n'pelvis_position' and 'pelvis_orientation' PLACE THE BODY:\nThe root of the figure is driven rather than simulated - you say where the pelvis\nis and which way it faces, and the rest hangs off it and responds. That is what\nlets a captured performance drive a simulated body: the pelvis follows the\nrecording, and the limbs do what physics says.\n\nThe joints have force-torque sensors enabled where the model allows it, so what\ncomes back includes what the joints were having to do.\n\n'pose_out' and 'position_out' report the result - where everything ended up after\nthe step, which is not necessarily where you asked it to be.\n\nSYNTAX:\npybullet_body\n\nEXAMPLE:\npybullet_body\n\nINPUTS and PARAMETERS:\n\nstep:\nAdvance the simulation. Nothing happens until you do.\n\npelvis_position / pelvis_orientation:\nWhere the root of the body is, and which way it faces.\n\nOUTPUTS: \n\npose_out:\nThe joint angles after the step.\n\nposition_out:\nWhere the body ended up.\n\nRELATED:\nsmpl_torque, which computes what a movement implies without simulating it.\nsmpl_body and gl_body to draw the result."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 16.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 16"
+        },
+        "4": {
+            "name": "toggle",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 140,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment step it once a frame for real time.",
+            "name": "comment",
+            "id": 422,
+            "position_x": 726,
+            "position_y": 140,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "step it once a frame for real time.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "step it once a frame for real time."
+        },
+        "6": {
+            "init": "comment Nothing moves until you step it",
+            "name": "comment",
+            "id": 459,
+            "position_x": 726,
+            "position_y": 170,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Nothing moves until you step it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Nothing moves until you step it"
+        },
+        "7": {
+            "name": "pybullet_body",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 210,
+            "width": 320,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment the pelvis is DRIVEN, the rest is",
+            "name": "comment",
+            "id": 533,
+            "position_x": 726,
+            "position_y": 540,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the pelvis is DRIVEN, the rest is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the pelvis is DRIVEN, the rest is"
+        },
+        "9": {
+            "init": "comment simulated - so a recorded performance",
+            "name": "comment",
+            "id": 570,
+            "position_x": 726,
+            "position_y": 580,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "simulated - so a recorded performance",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "simulated - so a recorded performance"
+        },
+        "10": {
+            "init": "comment can move the root while the limbs do",
+            "name": "comment",
+            "id": 607,
+            "position_x": 726,
+            "position_y": 620,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "can move the root while the limbs do",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "can move the root while the limbs do"
+        },
+        "11": {
+            "init": "comment what physics says",
+            "name": "comment",
+            "id": 644,
+            "position_x": 726,
+            "position_y": 660,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what physics says",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what physics says"
+        },
+        "12": {
+            "name": "smpl_take",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "info",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 285,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment the pose AFTER the step - which is not",
+            "name": "comment",
+            "id": 755,
+            "position_x": 726,
+            "position_y": 380,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the pose AFTER the step - which is not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the pose AFTER the step - which is not"
+        },
+        "15": {
+            "init": "comment necessarily where you asked it to be.",
+            "name": "comment",
+            "id": 792,
+            "position_x": 726,
+            "position_y": 410,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "necessarily where you asked it to be.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "necessarily where you asked it to be."
+        },
+        "16": {
+            "init": "comment That difference is the useful part:",
+            "name": "comment",
+            "id": 829,
+            "position_x": 726,
+            "position_y": 440,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "That difference is the useful part:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "That difference is the useful part:"
+        },
+        "17": {
+            "init": "comment overbalancing, swinging past, the floor",
+            "name": "comment",
+            "id": 866,
+            "position_x": 726,
+            "position_y": 470,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "overbalancing, swinging past, the floor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "overbalancing, swinging past, the floor"
+        },
+        "18": {
+            "init": "comment pushing back",
+            "name": "comment",
+            "id": 903,
+            "position_x": 726,
+            "position_y": 500,
+            "width": 84,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pushing back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pushing back"
+        },
+        "19": {
+            "name": "gl_body",
+            "id": 940,
+            "position_x": 400,
+            "position_y": 550,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "20": {
+            "init": "comment draw what the simulation decided",
+            "name": "comment",
+            "id": 977,
+            "position_x": 726,
+            "position_y": 765,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "draw what the simulation decided",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "draw what the simulation decided"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 780,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 348,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "step"
+        },
+        "2": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "root_position",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pelvis_position"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose_out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose_out",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        }
+    }
+}

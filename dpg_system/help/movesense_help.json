@@ -1,0 +1,597 @@
+{
+    "height": 939,
+    "width": 1803,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "movesense_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/movesense_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment movesense - a wireless IMU",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 312,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "movesense - a wireless IMU",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "movesense - a wireless IMU"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 955,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A small wireless IMU, over Bluetooth.\n\nTHE NODE:\n\nmovesense   accelerometer, gyroscope and magnetometer from one sensor\n\nA Movesense is a coin-sized sensor you strap to something - a limb, an\ninstrument, a door - and it sends its motion over Bluetooth Low Energy. There is\nno cable and no base station.\n\nTHREE STREAMS, AND THEY MEASURE DIFFERENT THINGS:\n\naccelerometer   acceleration, INCLUDING gravity. At rest it reads about 9.8 in\n                whichever direction is down, which is what makes it useful for\n                knowing orientation while still - and what makes it a poor\n                measure of movement on its own.\ngyroscope       rate of turn. Zero when still however the sensor is oriented,\n                so it responds to rotation and nothing else.\nmagnetometer    the magnetic field, which gives an absolute heading - and which\n                any nearby steel or motor will bend.\n\nFor \"is it moving\", the gyroscope is usually the cleaner answer, because the\naccelerometer's gravity component swamps gentle movement.\n\nIT CONNECTS BY BLUETOOTH, WHICH HAS CONSEQUENCES:\nBluetooth Low Energy is not a wire. Expect the connection to take a moment, to\noccasionally drop, and to have a range measured in a room rather than a building.\nMetal between the sensor and the machine is the usual reason for a poor link.\n\nThe sample rate is what the sensor sends, not what the patch asks for.\n\nRELATED TO THE OTHER SENSORS HERE:\nA Shadow suit gives you a whole body already solved into joint angles. This\ngives you raw inertial data from one point, which is a different job: it is for\nputting a sensor on something that is not a person.\n\nThe magnetometer nodes under motion_cap are worth reading if you intend to use\nthe magnetic heading, because the ways a magnetometer goes wrong are the same\nhere.\n\nSYNTAX:\nmovesense\n\nEXAMPLE:\nmovesense\n\nINPUTS and PARAMETERS:\n\nNone - it connects and streams.\n\nOUTPUTS: \n\naccelerometer:\nAcceleration including gravity.\n\ngyroscope:\nRate of turn.\n\nmagnetometer:\nMagnetic field.\n\nRELATED:\nshadow for a whole body.\nmag_offset and the motion_cap nodes for what goes wrong with magnetometers.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A small wireless IMU, over Bluetooth.\n\nTHE NODE:\n\nmovesense   accelerometer, gyroscope and magnetometer from one sensor\n\nA Movesense is a coin-sized sensor you strap to something - a limb, an\ninstrument, a door - and it sends its motion over Bluetooth Low Energy. There is\nno cable and no base station.\n\nTHREE STREAMS, AND THEY MEASURE DIFFERENT THINGS:\n\naccelerometer   acceleration, INCLUDING gravity. At rest it reads about 9.8 in\n                whichever direction is down, which is what makes it useful for\n                knowing orientation while still - and what makes it a poor\n                measure of movement on its own.\ngyroscope       rate of turn. Zero when still however the sensor is oriented,\n                so it responds to rotation and nothing else.\nmagnetometer    the magnetic field, which gives an absolute heading - and which\n                any nearby steel or motor will bend.\n\nFor \"is it moving\", the gyroscope is usually the cleaner answer, because the\naccelerometer's gravity component swamps gentle movement.\n\nIT CONNECTS BY BLUETOOTH, WHICH HAS CONSEQUENCES:\nBluetooth Low Energy is not a wire. Expect the connection to take a moment, to\noccasionally drop, and to have a range measured in a room rather than a building.\nMetal between the sensor and the machine is the usual reason for a poor link.\n\nThe sample rate is what the sensor sends, not what the patch asks for.\n\nRELATED TO THE OTHER SENSORS HERE:\nA Shadow suit gives you a whole body already solved into joint angles. This\ngives you raw inertial data from one point, which is a different job: it is for\nputting a sensor on something that is not a person.\n\nThe magnetometer nodes under motion_cap are worth reading if you intend to use\nthe magnetic heading, because the ways a magnetometer goes wrong are the same\nhere.\n\nSYNTAX:\nmovesense\n\nEXAMPLE:\nmovesense\n\nINPUTS and PARAMETERS:\n\nNone - it connects and streams.\n\nOUTPUTS: \n\naccelerometer:\nAcceleration including gravity.\n\ngyroscope:\nRate of turn.\n\nmagnetometer:\nMagnetic field.\n\nRELATED:\nshadow for a whole body.\nmag_offset and the motion_cap nodes for what goes wrong with magnetometers."
+        },
+        "3": {
+            "name": "movesense",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 260,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment connects over Bluetooth - expect a",
+            "name": "comment",
+            "id": 385,
+            "position_x": 666,
+            "position_y": 235,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "connects over Bluetooth - expect a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "connects over Bluetooth - expect a"
+        },
+        "5": {
+            "init": "comment moment to connect, and a range",
+            "name": "comment",
+            "id": 422,
+            "position_x": 666,
+            "position_y": 315,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "moment to connect, and a range",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "moment to connect, and a range"
+        },
+        "6": {
+            "init": "comment measured in a room",
+            "name": "comment",
+            "id": 459,
+            "position_x": 666,
+            "position_y": 395,
+            "width": 126,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "measured in a room",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "measured in a room"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 340,
+            "position_y": 62,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -20.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 20.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment accelerometer - about 9.8 downward at",
+            "name": "comment",
+            "id": 533,
+            "position_x": 666,
+            "position_y": 275,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "accelerometer - about 9.8 downward at",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "accelerometer - about 9.8 downward at"
+        },
+        "9": {
+            "init": "comment rest, because gravity is in it",
+            "name": "comment",
+            "id": 570,
+            "position_x": 666,
+            "position_y": 355,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rest, because gravity is in it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rest, because gravity is in it"
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 340,
+            "position_y": 330,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -10.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment gyroscope - zero when still, whatever",
+            "name": "comment",
+            "id": 644,
+            "position_x": 666,
+            "position_y": 520,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gyroscope - zero when still, whatever",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gyroscope - zero when still, whatever"
+        },
+        "12": {
+            "init": "comment way up it is. Usually the cleaner",
+            "name": "comment",
+            "id": 681,
+            "position_x": 666,
+            "position_y": 550,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "way up it is. Usually the cleaner",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "way up it is. Usually the cleaner"
+        },
+        "13": {
+            "init": "comment answer to 'is it moving'",
+            "name": "comment",
+            "id": 718,
+            "position_x": 666,
+            "position_y": 580,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "answer to 'is it moving'",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "answer to 'is it moving'"
+        },
+        "14": {
+            "name": "plot",
+            "id": 755,
+            "position_x": 340,
+            "position_y": 625,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -100.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 100.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "15": {
+            "init": "comment magnetometer - an absolute heading,",
+            "name": "comment",
+            "id": 792,
+            "position_x": 666,
+            "position_y": 815,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "magnetometer - an absolute heading,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "magnetometer - an absolute heading,"
+        },
+        "16": {
+            "init": "comment bent by any nearby steel or motor",
+            "name": "comment",
+            "id": 829,
+            "position_x": 666,
+            "position_y": 845,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "bent by any nearby steel or motor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "bent by any nearby steel or motor"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 835,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "accelerometer",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gyroscope",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "magnetometer",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

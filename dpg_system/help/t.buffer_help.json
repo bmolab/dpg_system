@@ -1,0 +1,472 @@
+{
+    "height": 896,
+    "width": 1708,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "t.buffer_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.buffer_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.rolling_buffer - the recent past, as a tensor",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.rolling_buffer - the recent past, as a tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.rolling_buffer - the recent past, as a tensor"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 860,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These collect a stream of tensors over time into one tensor.\n\nA stream gives you one value per frame, and most of what you want to ask needs\nseveral - an average, a spectrum, a trend, a picture of the recent past.\nThese hold that history.\n\nTHE NODES:\n\nt.buffer          collect samples in one of several ways\nt.rolling_buffer  keep the last N, always\n\nt.rolling_buffer IS THE ONE YOU USUALLY WANT:\nFeed it a value or a small tensor each frame and it hands back the last N of\nthem stacked together. That is what turns a stream into something the\nstatistics, filter and analysis nodes can work on - almost anything you want to\nknow about \"the recent past\" starts here.\n\nIt only reports what it has actually collected, so a freshly reset buffer is\nshort until it fills. That is deliberate: it avoids handing you a stretch of\nzeros that never happened. It does mean the buffer's length changes for the\nfirst N frames, and anything assuming a fixed size will complain during that\nwindow.\n\nt.buffer HAS SEVERAL FILL MODES:\n'update style' decides how incoming data lands - replacing the buffer wholesale,\nor filling it circularly one sample at a time. The circular mode is the rolling\nbehaviour; the replace mode is for when each message is already a complete\nbuffer and you just want to hold it.\n\n'sample to output' lets you read one position rather than the whole thing.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 frames a second, a count of 60 is one second of history, 600 is ten. Think\nin seconds rather than samples and the setting stops being arbitrary - it is\n\"how much of the past should this measurement be about\".\n\nLonger is steadier and slower to react. That is the same trade every filter\nmakes, in a different form.\n\nSYNTAX:\nt.rolling_buffer <count>\nt.buffer <count>\n\nEXAMPLE:\nt.rolling_buffer 60\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value or tensor arriving each frame.\n\nsample count:\nHow many to keep. See above - this is a time window.\n\nupdate style:\nHow incoming data fills the buffer.\n\nsample to output (t.buffer):\nRead one position instead of the whole buffer.\n\nreset:\nEmpty it and start collecting again.\n\nOUTPUTS: \n\noutput:\nThe collected tensor.\n\nRELATED:\nnp.rolling_buffer does the same for NumPy arrays.\ncapture~ fills a buffer from the audio graph at audio rate, which is the right\nnode when the stream is a signal rather than control data.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These collect a stream of tensors over time into one tensor.\n\nA stream gives you one value per frame, and most of what you want to ask needs\nseveral - an average, a spectrum, a trend, a picture of the recent past.\nThese hold that history.\n\nTHE NODES:\n\nt.buffer          collect samples in one of several ways\nt.rolling_buffer  keep the last N, always\n\nt.rolling_buffer IS THE ONE YOU USUALLY WANT:\nFeed it a value or a small tensor each frame and it hands back the last N of\nthem stacked together. That is what turns a stream into something the\nstatistics, filter and analysis nodes can work on - almost anything you want to\nknow about \"the recent past\" starts here.\n\nIt only reports what it has actually collected, so a freshly reset buffer is\nshort until it fills. That is deliberate: it avoids handing you a stretch of\nzeros that never happened. It does mean the buffer's length changes for the\nfirst N frames, and anything assuming a fixed size will complain during that\nwindow.\n\nt.buffer HAS SEVERAL FILL MODES:\n'update style' decides how incoming data lands - replacing the buffer wholesale,\nor filling it circularly one sample at a time. The circular mode is the rolling\nbehaviour; the replace mode is for when each message is already a complete\nbuffer and you just want to hold it.\n\n'sample to output' lets you read one position rather than the whole thing.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 frames a second, a count of 60 is one second of history, 600 is ten. Think\nin seconds rather than samples and the setting stops being arbitrary - it is\n\"how much of the past should this measurement be about\".\n\nLonger is steadier and slower to react. That is the same trade every filter\nmakes, in a different form.\n\nSYNTAX:\nt.rolling_buffer <count>\nt.buffer <count>\n\nEXAMPLE:\nt.rolling_buffer 60\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value or tensor arriving each frame.\n\nsample count:\nHow many to keep. See above - this is a time window.\n\nupdate style:\nHow incoming data fills the buffer.\n\nsample to output (t.buffer):\nRead one position instead of the whole buffer.\n\nreset:\nEmpty it and start collecting again.\n\nOUTPUTS: \n\noutput:\nThe collected tensor.\n\nRELATED:\nnp.rolling_buffer does the same for NumPy arrays.\ncapture~ fills a buffer from the audio graph at audio rate, which is the right\nnode when the stream is a signal rather than control data."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 112,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 30.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 30"
+        },
+        "5": {
+            "name": "random",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 192,
+            "width": 140,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "random 1.0"
+        },
+        "6": {
+            "init": "comment one value per frame",
+            "name": "comment",
+            "id": 459,
+            "position_x": 564,
+            "position_y": 280,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one value per frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one value per frame"
+        },
+        "7": {
+            "name": "t.rolling_buffer",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 260,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rolling_buffer 64"
+        },
+        "8": {
+            "init": "comment at 30ms a frame, 64 is about 2 seconds",
+            "name": "comment",
+            "id": 533,
+            "position_x": 564,
+            "position_y": 535,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "at 30ms a frame, 64 is about 2 seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "at 30ms a frame, 64 is about 2 seconds"
+        },
+        "9": {
+            "init": "comment think in seconds, not samples",
+            "name": "comment",
+            "id": 570,
+            "position_x": 564,
+            "position_y": 565,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "think in seconds, not samples",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "think in seconds, not samples"
+        },
+        "10": {
+            "name": "t.mean",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 605,
+            "width": 180,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment now the stream can be averaged",
+            "name": "comment",
+            "id": 681,
+            "position_x": 564,
+            "position_y": 805,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "now the stream can be averaged",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "now the stream can be averaged"
+        },
+        "13": {
+            "name": "heat_map",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 605,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment the recent past, as one tensor",
+            "name": "comment",
+            "id": 755,
+            "position_x": 564,
+            "position_y": 765,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the recent past, as one tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the recent past, as one tensor"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 792,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

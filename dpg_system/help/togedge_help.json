@@ -1,0 +1,428 @@
+{
+    "height": 721,
+    "width": 1650,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "togedge_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/togedge_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment togedge - report the moment a signal crosses zero",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "togedge - report the moment a signal crosses zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "togedge - report the moment a signal crosses zero"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 842,
+            "position_y": 45,
+            "width": 768,
+            "height": 616,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The togedge node watches a stream of numbers and reports the moment it crosses zero.\n\nIt thinks of its input as being either off (zero or below) or on (above zero). \nMost of the time nothing happens. Only when the input changes from off to on, \nor from on to off, does the node send anything - a single bang out of the matching outlet.\n\nThis is the difference between a state and an event. \nA stream of numbers tells you what things are like right now; \ntogedge tells you the instant they changed.\n\nYou use this node to start something when a sensor first goes over a threshold, \nto fire a one-off action when a button is pressed rather than repeatedly while it is held, \nor to count how many times a signal has crossed a line.\n\nNote that it looks only at whether the value is greater than zero. \nTo detect a crossing at some other level, subtract that level first, \nor feed the node the output of a comparison.\n\nSYNTAX:\ntogedge\n\nEXAMPLE:\ntogedge\n\nINPUTS and PARAMETERS:\n\nin:\nThe number to watch. \nReceiving data here triggers the node. \nValues greater than zero count as on, anything else counts as off.\n\nOUTPUTS: \n\non:\nSends a bang at the instant the input goes from off to on - the rising edge.\n\noff:\nSends a bang at the instant the input goes from on to off - the falling edge. \n\nNothing is sent on the frames in between, however long the input stays put.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 600,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The togedge node watches a stream of numbers and reports the moment it crosses zero.\n\nIt thinks of its input as being either off (zero or below) or on (above zero). \nMost of the time nothing happens. Only when the input changes from off to on, \nor from on to off, does the node send anything - a single bang out of the matching outlet.\n\nThis is the difference between a state and an event. \nA stream of numbers tells you what things are like right now; \ntogedge tells you the instant they changed.\n\nYou use this node to start something when a sensor first goes over a threshold, \nto fire a one-off action when a button is pressed rather than repeatedly while it is held, \nor to count how many times a signal has crossed a line.\n\nNote that it looks only at whether the value is greater than zero. \nTo detect a crossing at some other level, subtract that level first, \nor feed the node the output of a comparison.\n\nSYNTAX:\ntogedge\n\nEXAMPLE:\ntogedge\n\nINPUTS and PARAMETERS:\n\nin:\nThe number to watch. \nReceiving data here triggers the node. \nValues greater than zero count as on, anything else counts as off.\n\nOUTPUTS: \n\non:\nSends a bang at the instant the input goes from off to on - the rising edge.\n\noff:\nSends a bang at the instant the input goes from on to off - the falling edge. \n\nNothing is sent on the frames in between, however long the input stays put."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "init": "comment a sine wave, so it crosses zero twice per cycle",
+            "name": "comment",
+            "id": 459,
+            "position_x": 483,
+            "position_y": 215,
+            "width": 329,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a sine wave, so it crosses zero twice per cycle",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a sine wave, so it crosses zero twice per cycle"
+        },
+        "7": {
+            "name": "togedge",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 258,
+            "width": 110,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment rising",
+            "name": "comment",
+            "id": 533,
+            "position_x": 483,
+            "position_y": 330,
+            "width": 42,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rising",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rising"
+        },
+        "9": {
+            "init": "comment falling",
+            "name": "comment",
+            "id": 570,
+            "position_x": 483,
+            "position_y": 370,
+            "width": 49,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "falling",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "falling"
+        },
+        "10": {
+            "name": "counter",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 368,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "name": "counter",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 368,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "name": "int",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 462,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "int",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 462,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 534,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "on",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "off",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

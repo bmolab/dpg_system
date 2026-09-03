@@ -1,0 +1,379 @@
+{
+    "height": 721,
+    "width": 1535,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "load_bang_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/load_bang_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment load_bang - set the patch up as it opens",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "load_bang - set the patch up as it opens",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "load_bang - set the patch up as it opens"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 707,
+            "position_y": 45,
+            "width": 788,
+            "height": 616,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These fire when the patch finishes opening, so it can set itself up.\n\nA patch that needs a metro running, a mode chosen, or a file loaded should not \nneed you to click anything to get there. load_bang sends a bang once, as soon \nas the patch is ready, and whatever you hang off it happens automatically.\n\nload_action does the same but sends a message of your choosing rather than a \nbang - so one node can put a value in place rather than merely triggering \nsomething that knows the value already.\n\nTHE NODES:\n\nload_bang     send a bang when the patch opens\nload_action   send a message of your choosing when the patch opens\n\nSYNTAX:\nload_bang\nload_action <message>\n\nEXAMPLE:\nload_action open recordings/take_3.wav\n\nINPUTS and PARAMETERS:\n\ntrigger:\nA button, so you can fire it again by hand without reopening the patch. \nThis is worth using while building: it lets you test the startup path \nimmediately rather than saving and reopening each time.\n\nloadActionString (load_action):\nThe message to send. Editable after the fact.\n\nOUTPUTS: \n\nout:\nThe bang, or the message.\n\nORDER MATTERS AT STARTUP:\nSeveral load_bangs in one patch fire in no order you can rely on. When one \nthing must happen before another - a file loaded before it is read, a mode set \nbefore something acts on it - use ONE load_bang into a repeat_in_order or a t \nnode, and take the ordering from that instead.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 600,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These fire when the patch finishes opening, so it can set itself up.\n\nA patch that needs a metro running, a mode chosen, or a file loaded should not \nneed you to click anything to get there. load_bang sends a bang once, as soon \nas the patch is ready, and whatever you hang off it happens automatically.\n\nload_action does the same but sends a message of your choosing rather than a \nbang - so one node can put a value in place rather than merely triggering \nsomething that knows the value already.\n\nTHE NODES:\n\nload_bang     send a bang when the patch opens\nload_action   send a message of your choosing when the patch opens\n\nSYNTAX:\nload_bang\nload_action <message>\n\nEXAMPLE:\nload_action open recordings/take_3.wav\n\nINPUTS and PARAMETERS:\n\ntrigger:\nA button, so you can fire it again by hand without reopening the patch. \nThis is worth using while building: it lets you test the startup path \nimmediately rather than saving and reopening each time.\n\nloadActionString (load_action):\nThe message to send. Editable after the fact.\n\nOUTPUTS: \n\nout:\nThe bang, or the message.\n\nORDER MATTERS AT STARTUP:\nSeveral load_bangs in one patch fire in no order you can rely on. When one \nthing must happen before another - a file loaded before it is read, a mode set \nbefore something acts on it - use ONE load_bang into a repeat_in_order or a t \nnode, and take the ordering from that instead."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment this fired when the patch opened",
+            "name": "comment",
+            "id": 385,
+            "position_x": 453,
+            "position_y": 115,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this fired when the patch opened",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this fired when the patch opened"
+        },
+        "5": {
+            "name": "repeat_in_order",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 190,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 2"
+        },
+        "6": {
+            "init": "comment one load_bang, ordered by repeat",
+            "name": "comment",
+            "id": 459,
+            "position_x": 453,
+            "position_y": 235,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one load_bang, ordered by repeat",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one load_bang, ordered by repeat"
+        },
+        "7": {
+            "name": "load_action",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 280,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "loadActionString",
+                    "value": "hello there",
+                    "value_type": "str"
+                }
+            },
+            "init": "load_action hello there"
+        },
+        "8": {
+            "name": "string",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 220,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment a message, not just a trigger",
+            "name": "comment",
+            "id": 570,
+            "position_x": 453,
+            "position_y": 465,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a message, not just a trigger",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a message, not just a trigger"
+        },
+        "10": {
+            "name": "counter",
+            "id": 607,
+            "position_x": 300,
+            "position_y": 280,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "name": "int",
+            "id": 644,
+            "position_x": 300,
+            "position_y": 375,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment click trigger to fire it again",
+            "name": "comment",
+            "id": 681,
+            "position_x": 453,
+            "position_y": 425,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click trigger to fire it again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click trigger to fire it again"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 462,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "first",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "second",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

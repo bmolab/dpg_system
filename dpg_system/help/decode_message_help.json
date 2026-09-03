@@ -1,6 +1,6 @@
 {
-    "height": 690,
-    "width": 1109,
+    "height": 699,
+    "width": 1516,
     "position": [
         100,
         100
@@ -56,8 +56,8 @@
         "2": {
             "name": "close",
             "id": 7149,
-            "position_x": 26,
-            "position_y": 516,
+            "position_x": 24,
+            "position_y": 440,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -74,7 +74,7 @@
         "3": {
             "name": "text_block",
             "id": 7172,
-            "position_x": 381,
+            "position_x": 618,
             "position_y": 49,
             "width": 858,
             "height": 590,
@@ -396,7 +396,7 @@
             "init": "comment decode_message harry sally mary dave",
             "name": "comment",
             "id": 8696,
-            "position_x": 44,
+            "position_x": 358,
             "position_y": 66,
             "width": 230,
             "height": 30,

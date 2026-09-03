@@ -1,0 +1,588 @@
+{
+    "height": 1015,
+    "width": 1874,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "t.point_cloud_voxels_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.point_cloud_voxels_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t point cloud - crop, and a solid volume",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t point cloud - crop, and a solid volume",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t point cloud - crop, and a solid volume"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1016,
+            "position_y": 45,
+            "width": 818,
+            "height": 786,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Cropping and voxelising a point cloud, in torch.\n\nTHE NODES:\n\nt.point_cloud_crop     keep the points inside a box\nt.point_cloud_voxels   put them on a grid - as points, or as a solid volume\n\nTHESE ARE THE TORCH TWINS OF pc_crop AND pc_voxel:\nThe pc_ nodes do the same jobs in numpy, and for a live depth camera they are\nusually faster - at thirty frames a second with a few hundred thousand points,\nmoving data in and out of torch costs more than the arithmetic saves.\n\nSo reach for these when the cloud is ALREADY a tensor - when it came out of a\nmodel, or is on its way into one - and you would otherwise be paying to convert\nit twice. And reach for them when you want the thing the pc_ nodes cannot give\nyou at all, which is the next section.\n\n'voxels out' IS A SOLID VOLUME, AND IT IS THE REASON THESE EXIST:\nMost point-cloud work gives you back fewer points. This gives you back a\nthree-dimensional ARRAY - a grid of cells covering the box, each holding how\nmany points fell in it. Not a cloud that happens to be tidy: an actual volume,\nshaped depth by height by width.\n\nThat is what a three-dimensional convolution wants, and what a learned model\nwants, and what you can slice, threshold or filter like an image with an extra\naxis. A list of points cannot be any of those things without being turned into\nthis first.\n\nMeasured on a 5000-point scene, cropped to a 2 metre box at 0.2 metre voxels:\n\n    point cloud out    (2996, 3)      the surviving points\n    voxels out         (10, 10, 10)   the volume - 2 m / 0.2 m = 10 a side\n    voxels cloud out   (300, 3)       the 300 occupied cells, as points\n\nThe grid's contents sum to 2996 - every surviving point counted once - and 300\nof its 1000 cells are occupied. The three outputs are three views of the same\nresult, and they agree.\n\nTURN ON ONLY WHAT YOU NEED:\nEach output has its own switch, and only 'output voxels cloud' starts on. That\nis deliberate: building the dense grid and building the reduced cloud are\nseparate pieces of work, and there is no reason to pay for a volume you are not\ngoing to look at.\n\nTHE BOUNDS ARE NAMED, NOT PAIRED:\nWhere pc_crop takes a minimum and maximum triple, these take six separate\nnumbers - left, right, top, bottom, front, back - which is easier to adjust one\nat a time while watching the result.\n\nNote that 'top' is the SMALLER number and 'bottom' the larger, following the\nscreen convention where down is positive rather than the room convention where\nup is. If a crop box seems inverted vertically, that is why.\n\n'front' and 'back' are distance from the camera, so the front plane is the near\none - and its default is 0.1 m rather than zero, because a depth sensor returns\nnoise at very short range that you almost never want.\n\nTHEY DO NOT CARRY A CLOUD FRAME:\nThe pc_ nodes pass a small dictionary between them, so a crop set at the top of\na chain tells every grid node downstream what volume to work in. These send\nplain tensors, with nothing attached.\n\nSo the bounds have to be set on each node that needs them. If you are mixing the\ntwo families, that is the thing to watch: a pc_ node fed from one of these has\nno volume to inherit and falls back to its own widgets.\n\nSYNTAX:\nt.point_cloud_crop\nt.point_cloud_voxels\n\nEXAMPLE:\nt.point_cloud_voxels\n\nINPUTS and PARAMETERS:\n\npoint cloud in:\nAn (N, 3) tensor. Receiving it does the work.\n\nleft / right / top / bottom / front / back (m):\nThe box. Top is the smaller of the vertical pair.\n\nvoxel size (m):\nThe size of a cell. The box divided by this is the shape of the volume, so\nhalving it makes the grid eight times bigger.\n\noutput point cloud / output voxels / output voxels cloud:\nWhich of the three to produce.\n\nOUTPUTS: \n\npoint cloud out:\nThe surviving points.\n\nvoxels out:\nThe dense volume, depth by height by width.\n\nvoxels cloud out:\nOne point per occupied cell.\n\nRELATED:\npc_crop and pc_voxel for the numpy versions, which are the better choice\nstraight off a camera.\nfemto, which is where the cloud comes from.\nt.conv3d and the torch nodes, for what the dense volume is actually for.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 770,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Cropping and voxelising a point cloud, in torch.\n\nTHE NODES:\n\nt.point_cloud_crop     keep the points inside a box\nt.point_cloud_voxels   put them on a grid - as points, or as a solid volume\n\nTHESE ARE THE TORCH TWINS OF pc_crop AND pc_voxel:\nThe pc_ nodes do the same jobs in numpy, and for a live depth camera they are\nusually faster - at thirty frames a second with a few hundred thousand points,\nmoving data in and out of torch costs more than the arithmetic saves.\n\nSo reach for these when the cloud is ALREADY a tensor - when it came out of a\nmodel, or is on its way into one - and you would otherwise be paying to convert\nit twice. And reach for them when you want the thing the pc_ nodes cannot give\nyou at all, which is the next section.\n\n'voxels out' IS A SOLID VOLUME, AND IT IS THE REASON THESE EXIST:\nMost point-cloud work gives you back fewer points. This gives you back a\nthree-dimensional ARRAY - a grid of cells covering the box, each holding how\nmany points fell in it. Not a cloud that happens to be tidy: an actual volume,\nshaped depth by height by width.\n\nThat is what a three-dimensional convolution wants, and what a learned model\nwants, and what you can slice, threshold or filter like an image with an extra\naxis. A list of points cannot be any of those things without being turned into\nthis first.\n\nMeasured on a 5000-point scene, cropped to a 2 metre box at 0.2 metre voxels:\n\n    point cloud out    (2996, 3)      the surviving points\n    voxels out         (10, 10, 10)   the volume - 2 m / 0.2 m = 10 a side\n    voxels cloud out   (300, 3)       the 300 occupied cells, as points\n\nThe grid's contents sum to 2996 - every surviving point counted once - and 300\nof its 1000 cells are occupied. The three outputs are three views of the same\nresult, and they agree.\n\nTURN ON ONLY WHAT YOU NEED:\nEach output has its own switch, and only 'output voxels cloud' starts on. That\nis deliberate: building the dense grid and building the reduced cloud are\nseparate pieces of work, and there is no reason to pay for a volume you are not\ngoing to look at.\n\nTHE BOUNDS ARE NAMED, NOT PAIRED:\nWhere pc_crop takes a minimum and maximum triple, these take six separate\nnumbers - left, right, top, bottom, front, back - which is easier to adjust one\nat a time while watching the result.\n\nNote that 'top' is the SMALLER number and 'bottom' the larger, following the\nscreen convention where down is positive rather than the room convention where\nup is. If a crop box seems inverted vertically, that is why.\n\n'front' and 'back' are distance from the camera, so the front plane is the near\none - and its default is 0.1 m rather than zero, because a depth sensor returns\nnoise at very short range that you almost never want.\n\nTHEY DO NOT CARRY A CLOUD FRAME:\nThe pc_ nodes pass a small dictionary between them, so a crop set at the top of\na chain tells every grid node downstream what volume to work in. These send\nplain tensors, with nothing attached.\n\nSo the bounds have to be set on each node that needs them. If you are mixing the\ntwo families, that is the thing to watch: a pc_ node fed from one of these has\nno volume to inherit and falls back to its own widgets.\n\nSYNTAX:\nt.point_cloud_crop\nt.point_cloud_voxels\n\nEXAMPLE:\nt.point_cloud_voxels\n\nINPUTS and PARAMETERS:\n\npoint cloud in:\nAn (N, 3) tensor. Receiving it does the work.\n\nleft / right / top / bottom / front / back (m):\nThe box. Top is the smaller of the vertical pair.\n\nvoxel size (m):\nThe size of a cell. The box divided by this is the shape of the volume, so\nhalving it makes the grid eight times bigger.\n\noutput point cloud / output voxels / output voxels cloud:\nWhich of the three to produce.\n\nOUTPUTS: \n\npoint cloud out:\nThe surviving points.\n\nvoxels out:\nThe dense volume, depth by height by width.\n\nvoxels cloud out:\nOne point per occupied cell.\n\nRELATED:\npc_crop and pc_voxel for the numpy versions, which are the better choice\nstraight off a camera.\nfemto, which is where the cloud comes from.\nt.conv3d and the torch nodes, for what the dense volume is actually for."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 200,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 3000 3"
+        },
+        "5": {
+            "init": "comment a cloud of 3000 points, 0 to 1 in each",
+            "name": "comment",
+            "id": 422,
+            "position_x": 706,
+            "position_y": 310,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a cloud of 3000 points, 0 to 1 in each",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a cloud of 3000 points, 0 to 1 in each"
+        },
+        "6": {
+            "init": "comment axis - a cube to carve up",
+            "name": "comment",
+            "id": 459,
+            "position_x": 706,
+            "position_y": 340,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis - a cube to carve up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axis - a cube to carve up"
+        },
+        "7": {
+            "name": "t.point_cloud_voxels",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 340,
+            "height": 460,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "left (m)",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "right (m)",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "top (m)",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "bottom (m)",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "front (m)",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "back (m)",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "voxel size (m)",
+                    "value": 0.2,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "output voxels",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "8": {
+                    "name": "output voxels cloud",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "init": "comment a 1 m box at 0.2 m voxels is 5 cells a",
+            "name": "comment",
+            "id": 533,
+            "position_x": 706,
+            "position_y": 865,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 1 m box at 0.2 m voxels is 5 cells a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 1 m box at 0.2 m voxels is 5 cells a"
+        },
+        "9": {
+            "init": "comment side. Halve the voxel size and the grid",
+            "name": "comment",
+            "id": 570,
+            "position_x": 706,
+            "position_y": 895,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "side. Halve the voxel size and the grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "side. Halve the voxel size and the grid"
+        },
+        "10": {
+            "init": "comment gets EIGHT times bigger",
+            "name": "comment",
+            "id": 607,
+            "position_x": 706,
+            "position_y": 925,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gets EIGHT times bigger",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gets EIGHT times bigger"
+        },
+        "11": {
+            "name": "info",
+            "id": 644,
+            "position_x": 420,
+            "position_y": 390,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment the dense volume: depth by height by",
+            "name": "comment",
+            "id": 681,
+            "position_x": 706,
+            "position_y": 485,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the dense volume: depth by height by",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the dense volume: depth by height by"
+        },
+        "13": {
+            "init": "comment width. Not points - an actual array,",
+            "name": "comment",
+            "id": 718,
+            "position_x": 706,
+            "position_y": 515,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "width. Not points - an actual array,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "width. Not points - an actual array,"
+        },
+        "14": {
+            "init": "comment which is what a 3D convolution wants",
+            "name": "comment",
+            "id": 755,
+            "position_x": 706,
+            "position_y": 545,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which is what a 3D convolution wants",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which is what a 3D convolution wants"
+        },
+        "15": {
+            "name": "info",
+            "id": 792,
+            "position_x": 420,
+            "position_y": 600,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "init": "comment and the same result as points - one per",
+            "name": "comment",
+            "id": 829,
+            "position_x": 706,
+            "position_y": 695,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and the same result as points - one per",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and the same result as points - one per"
+        },
+        "17": {
+            "init": "comment occupied cell. Three views of one thing",
+            "name": "comment",
+            "id": 866,
+            "position_x": 706,
+            "position_y": 725,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "occupied cell. Three views of one thing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "occupied cell. Three views of one thing"
+        },
+        "18": {
+            "init": "comment only the cloud output starts on. Each is",
+            "name": "comment",
+            "id": 903,
+            "position_x": 706,
+            "position_y": 775,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only the cloud output starts on. Each is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only the cloud output starts on. Each is"
+        },
+        "19": {
+            "init": "comment separate work - do not pay for a volume",
+            "name": "comment",
+            "id": 940,
+            "position_x": 706,
+            "position_y": 805,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "separate work - do not pay for a volume",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "separate work - do not pay for a volume"
+        },
+        "20": {
+            "init": "comment you are not going to look at",
+            "name": "comment",
+            "id": 977,
+            "position_x": 706,
+            "position_y": 835,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "you are not going to look at",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "you are not going to look at"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 880,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "voxels out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "voxels cloud out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

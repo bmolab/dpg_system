@@ -1,0 +1,635 @@
+{
+    "height": 1455,
+    "width": 1944,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "context_tracker_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/context_tracker_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment context_tracker - the world the words build",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "context_tracker - the world the words build",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "context_tracker - the world the words build"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1096,
+            "position_y": 45,
+            "width": 808,
+            "height": 786,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Keeps track of where, when and who, from a stream of text.\n\nTHE NODE:\n\ncontext_tracker   pulls enduring context out of passing words\n\nWHAT IT IS DOING:\nSpeech arrives a phrase at a time and most of it is transient. But some of it\nestablishes something that stays true: a place, a time of day, a season, who is\npresent, what they are carrying. This node watches the stream and keeps those.\n\nThe result is a CONTEXT - a small set of registers describing the world the words\nhave built - which is what you feed an image generator so that successive images\nbelong to the same scene rather than each starting fresh.\n\nTHE REGISTERS:\nPlace, time of day, time of year, era, weather, style, medium, actors and the\nprops they carry. Each has its own vocabulary inlet, so you can replace what\ncounts as a place-word or a style-word without touching the node.\n\nPLACE AND TIME ARE LADDERS, NOT SINGLE VALUES:\nA room is inside a building is inside a city. An hour is inside a part of the day\nis inside a season is inside an era. The tracker holds these at several scales at\nonce, so saying \"the kitchen\" does not throw away \"in winter\" - it only replaces\nthe level it actually names.\n\nThat is why moving place ejects props: a thing being carried belongs to a scene,\nand when the scene changes the tracker stops asserting that the cup is still\nthere. Actors persist across a move; what they were holding does not.\n\nACTORS CARRY ATTRIBUTES:\nAn actor is not just a name - the tracker sorts what is said about them into\nslots, so \"the woman in the red coat\" attaches the coat to the woman rather than\nadding it as a loose fact. Later mentions update the same actor.\n\nTHE WEIGHTS ARE FOR WHAT COMES NEXT:\nEvery register has a weight. They do not change what is tracked - they change how\nstrongly each part is asserted when the context is handed on, which is what\nprompt_composer uses to balance the prompt.\n\nTurn 'place weight' up and the images stay in the room; turn it down and the room\nbecomes a suggestion. That is a compositional control, not a detection one.\n\nIT WANTS THE BIG SPACY MODEL:\nIt works better with en_core_web_lg than the small one, because deciding that a\nword is a place rather than a name is exactly the kind of judgement the larger\nmodel is better at.\n\n'set context' seeds it directly, for starting somewhere rather than waiting for\nthe text to establish it. 'clear' empties everything.\n\nSYNTAX:\ncontext_tracker\n\nEXAMPLE:\ncontext_tracker\n\nINPUTS and PARAMETERS:\n\ntext in:\nPhrases, as they arrive.\n\nset context / clear:\nSeed it, or empty it.\n\ntime vocab / place vocab / style vocab / medium vocab / weather vocab:\nReplace what counts as each kind of word.\n\nera events / artist in:\nHistorical anchors, and an artist reference.\n\nthe weights:\nHow strongly each register is asserted downstream.\n\nOUTPUTS: \n\ncontext out:\nThe context, weighted, ready for prompt_composer.\n\ncontext dict:\nThe same thing structured, for anything that wants to read one register.\n\ndetected:\nWhat it just recognised, which is how you see it working.\n\nRELATED:\nprompt_composer, which is what 'context out' is shaped for.\nwhisper to supply the text.\nspacy_vector and the spacy nodes for the model underneath.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 770,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Keeps track of where, when and who, from a stream of text.\n\nTHE NODE:\n\ncontext_tracker   pulls enduring context out of passing words\n\nWHAT IT IS DOING:\nSpeech arrives a phrase at a time and most of it is transient. But some of it\nestablishes something that stays true: a place, a time of day, a season, who is\npresent, what they are carrying. This node watches the stream and keeps those.\n\nThe result is a CONTEXT - a small set of registers describing the world the words\nhave built - which is what you feed an image generator so that successive images\nbelong to the same scene rather than each starting fresh.\n\nTHE REGISTERS:\nPlace, time of day, time of year, era, weather, style, medium, actors and the\nprops they carry. Each has its own vocabulary inlet, so you can replace what\ncounts as a place-word or a style-word without touching the node.\n\nPLACE AND TIME ARE LADDERS, NOT SINGLE VALUES:\nA room is inside a building is inside a city. An hour is inside a part of the day\nis inside a season is inside an era. The tracker holds these at several scales at\nonce, so saying \"the kitchen\" does not throw away \"in winter\" - it only replaces\nthe level it actually names.\n\nThat is why moving place ejects props: a thing being carried belongs to a scene,\nand when the scene changes the tracker stops asserting that the cup is still\nthere. Actors persist across a move; what they were holding does not.\n\nACTORS CARRY ATTRIBUTES:\nAn actor is not just a name - the tracker sorts what is said about them into\nslots, so \"the woman in the red coat\" attaches the coat to the woman rather than\nadding it as a loose fact. Later mentions update the same actor.\n\nTHE WEIGHTS ARE FOR WHAT COMES NEXT:\nEvery register has a weight. They do not change what is tracked - they change how\nstrongly each part is asserted when the context is handed on, which is what\nprompt_composer uses to balance the prompt.\n\nTurn 'place weight' up and the images stay in the room; turn it down and the room\nbecomes a suggestion. That is a compositional control, not a detection one.\n\nIT WANTS THE BIG SPACY MODEL:\nIt works better with en_core_web_lg than the small one, because deciding that a\nword is a place rather than a name is exactly the kind of judgement the larger\nmodel is better at.\n\n'set context' seeds it directly, for starting somewhere rather than waiting for\nthe text to establish it. 'clear' empties everything.\n\nSYNTAX:\ncontext_tracker\n\nEXAMPLE:\ncontext_tracker\n\nINPUTS and PARAMETERS:\n\ntext in:\nPhrases, as they arrive.\n\nset context / clear:\nSeed it, or empty it.\n\ntime vocab / place vocab / style vocab / medium vocab / weather vocab:\nReplace what counts as each kind of word.\n\nera events / artist in:\nHistorical anchors, and an artist reference.\n\nthe weights:\nHow strongly each register is asserted downstream.\n\nOUTPUTS: \n\ncontext out:\nThe context, weighted, ready for prompt_composer.\n\ncontext dict:\nThe same thing structured, for anything that wants to read one register.\n\ndetected:\nWhat it just recognised, which is how you see it working.\n\nRELATED:\nprompt_composer, which is what 'context out' is shaped for.\nwhisper to supply the text.\nspacy_vector and the spacy nodes for the model underneath."
+        },
+        "3": {
+            "name": "whisper",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 300,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment phrases, as they settle",
+            "name": "comment",
+            "id": 385,
+            "position_x": 786,
+            "position_y": 340,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "phrases, as they settle",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "phrases, as they settle"
+        },
+        "5": {
+            "name": "context_tracker",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 340,
+            "height": 520,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment place and time are LADDERS - a room is",
+            "name": "comment",
+            "id": 459,
+            "position_x": 786,
+            "position_y": 925,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "place and time are LADDERS - a room is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "place and time are LADDERS - a room is"
+        },
+        "7": {
+            "init": "comment in a building is in a city. Saying",
+            "name": "comment",
+            "id": 496,
+            "position_x": 786,
+            "position_y": 955,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in a building is in a city. Saying",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in a building is in a city. Saying"
+        },
+        "8": {
+            "init": "comment \"the kitchen\" does not throw away",
+            "name": "comment",
+            "id": 533,
+            "position_x": 786,
+            "position_y": 985,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "\"the kitchen\" does not throw away",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "\"the kitchen\" does not throw away"
+        },
+        "9": {
+            "init": "comment \"in winter\"",
+            "name": "comment",
+            "id": 570,
+            "position_x": 786,
+            "position_y": 1015,
+            "width": 77,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "\"in winter\"",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "\"in winter\""
+        },
+        "10": {
+            "init": "comment moving place EJECTS PROPS: what someone",
+            "name": "comment",
+            "id": 607,
+            "position_x": 786,
+            "position_y": 1085,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "moving place EJECTS PROPS: what someone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "moving place EJECTS PROPS: what someone"
+        },
+        "11": {
+            "init": "comment was carrying belongs to the scene, and",
+            "name": "comment",
+            "id": 644,
+            "position_x": 786,
+            "position_y": 1165,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "was carrying belongs to the scene, and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "was carrying belongs to the scene, and"
+        },
+        "12": {
+            "init": "comment the actors persist but the cup does not",
+            "name": "comment",
+            "id": 681,
+            "position_x": 786,
+            "position_y": 1245,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the actors persist but the cup does not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the actors persist but the cup does not"
+        },
+        "13": {
+            "name": "text_display",
+            "id": 718,
+            "position_x": 420,
+            "position_y": 390,
+            "width": 340,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment 'detected' - watch this to see it",
+            "name": "comment",
+            "id": 755,
+            "position_x": 786,
+            "position_y": 605,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'detected' - watch this to see it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'detected' - watch this to see it"
+        },
+        "15": {
+            "init": "comment working, and to find out why it is not",
+            "name": "comment",
+            "id": 792,
+            "position_x": 786,
+            "position_y": 635,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "working, and to find out why it is not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "working, and to find out why it is not"
+        },
+        "16": {
+            "name": "prompt_composer",
+            "id": 829,
+            "position_x": 420,
+            "position_y": 690,
+            "width": 320,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "init": "comment 'context out' is shaped for this - the",
+            "name": "comment",
+            "id": 866,
+            "position_x": 786,
+            "position_y": 1045,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'context out' is shaped for this - the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'context out' is shaped for this - the"
+        },
+        "18": {
+            "init": "comment enduring half of the prompt, against the",
+            "name": "comment",
+            "id": 903,
+            "position_x": 786,
+            "position_y": 1125,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "enduring half of the prompt, against the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "enduring half of the prompt, against the"
+        },
+        "19": {
+            "init": "comment live phrases as the other half",
+            "name": "comment",
+            "id": 940,
+            "position_x": 786,
+            "position_y": 1205,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "live phrases as the other half",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "live phrases as the other half"
+        },
+        "20": {
+            "init": "comment the weights do not change what is",
+            "name": "comment",
+            "id": 977,
+            "position_x": 786,
+            "position_y": 1285,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the weights do not change what is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the weights do not change what is"
+        },
+        "21": {
+            "init": "comment tracked - they change how strongly each",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 786,
+            "position_y": 1325,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tracked - they change how strongly each",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tracked - they change how strongly each"
+        },
+        "22": {
+            "init": "comment part is asserted downstream",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 786,
+            "position_y": 1365,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "part is asserted downstream",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "part is asserted downstream"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 1060,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phrases",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phrases",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "phrases"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "detected",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "context out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "context"
+        }
+    }
+}

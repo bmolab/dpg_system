@@ -1,10 +1,19 @@
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
+import os
 import time
 import numpy as np
 import threading
 try:
+    # ssqueezepy's parallel path DEADLOCKS here: cwt() never returns, hanging
+    # whatever thread called it, and with it the patch. It happens on the first
+    # call, right after OpenMP announces itself -- this environment loads more
+    # than one OpenMP runtime (numpy/torch plus ssqueezepy's), which is the
+    # usual cause on macOS. Serial is also no slower on frame-sized signals
+    # here: 512 samples took 0.8s parallel and under 0.05s serial.
+    # setdefault, so anyone who wants the parallel path can still ask for it.
+    os.environ.setdefault('SSQ_PARALLEL', '0')
     import ssqueezepy
     ssqueezepy_available = True
 except ImportError:
@@ -75,7 +84,15 @@ class BufferNode(Node):
                 self.buffer = data.copy()
             elif self.update_style == t_BufferCircularHorizontal:
                 if self.sample_count != self.buffer.shape[0] or len(self.buffer.shape) > 1:
-                    self.buffer.resize((self.sample_count))
+                    # Allocate rather than ndarray.resize(). In-place resize
+                    # raises outright once anything downstream holds a
+                    # reference to the buffer -- which, since the node sends
+                    # the buffer itself, is as soon as it is wired to anything.
+                    # refcheck=False silences that by leaving the other holder
+                    # pointing at freed memory, so allocate instead. Both
+                    # branches reset write_pos, so starting from zeros is what
+                    # was meant anyway.
+                    self.buffer = np.zeros((self.sample_count))
                     self.write_pos = 0
                 if self.write_pos > self.sample_count:
                     self.write_pos = 0
@@ -98,7 +115,7 @@ class BufferNode(Node):
                     self.write_pos = 0
             elif self.update_style == t_BufferCircularVertical:
                 if len(self.buffer.shape) == 1 or self.buffer.shape[1] != data.shape[0]:
-                    self.buffer.resize((self.sample_count, data.shape[0]), refcheck=False)
+                    self.buffer = np.zeros((self.sample_count, data.shape[0]))
                     self.write_pos = 0
                 self.buffer[self.write_pos, :] = data
                 self.write_pos += 1

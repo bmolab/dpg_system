@@ -1,6 +1,6 @@
 {
-    "height": 628,
-    "width": 1218,
+    "height": 624,
+    "width": 1595,
     "position": [
         455,
         231
@@ -179,7 +179,7 @@
             "init": "comment send options 1 to reveal additional options",
             "name": "comment",
             "id": 2456,
-            "position_x": 42,
+            "position_x": 556,
             "position_y": 243,
             "width": 273,
             "height": 30,
@@ -203,7 +203,7 @@
         "7": {
             "name": "comment",
             "id": 2475,
-            "position_x": 17,
+            "position_x": 556,
             "position_y": 71,
             "width": 168,
             "height": 30,
@@ -228,8 +228,8 @@
             "init": "comment buffers input and sends on main thread",
             "name": "comment",
             "id": 2494,
-            "position_x": 209,
-            "position_y": 75,
+            "position_x": 556,
+            "position_y": 111,
             "width": 242,
             "height": 30,
             "visibility": "show_all",
@@ -253,7 +253,7 @@
             "init": "comment output only last buffers only the last received",
             "name": "comment",
             "id": 2513,
-            "position_x": 91,
+            "position_x": 556,
             "position_y": 189,
             "width": 297,
             "height": 30,
@@ -377,7 +377,7 @@
         "13": {
             "name": "text_block",
             "id": 2745,
-            "position_x": 546,
+            "position_x": 883,
             "position_y": 70,
             "width": 672,
             "height": 494,
@@ -416,8 +416,8 @@
         "14": {
             "name": "close",
             "id": 2770,
-            "position_x": 41,
-            "position_y": 497,
+            "position_x": 24,
+            "position_y": 431,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

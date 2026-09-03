@@ -1,0 +1,606 @@
+{
+    "height": 1165,
+    "width": 1887,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "vposer_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vposer_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment VPoser - a body pose as 32 numbers",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 408,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "VPoser - a body pose as 32 numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "VPoser - a body pose as 32 numbers"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1029,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These compress something into a few numbers, and turn a few numbers back.\n\nTHE NODES:\n\nvposer     a whole body pose as 32 numbers, and back again\nvposer6D   the same, built on a rotation representation that behaves better\nvae        the general case, for a model you trained yourself\n\nWHAT A VARIATIONAL AUTOENCODER GIVES YOU:\nAn encoder squeezes the input down to a handful of numbers - the LATENT - and a\ndecoder builds it back. That alone would just be compression. What makes it\nworth having is how it was trained: the latent space is made smooth and\ncontinuous, so that every point in it decodes to something PLAUSIBLE, not only\nthe points that came from real examples.\n\nFor VPoser, trained on a very large amount of motion capture, that means any 32\nnumbers you can think of decode to a pose a human body could actually be in.\n\n63 NUMBERS IN, 32 OUT, 66 BACK:\nThe input is 21 body joints as three numbers each. The latent is 32. What comes\nback is 22 joints - the 21, plus the root - so the decoded output is (22, 3).\n\nThe root is the direction the whole body faces, which is not part of the pose in\nany useful sense: the same crouch facing north and facing south is the same\ncrouch. So it is kept out of the encoding, and 'pass root orientation' decides\nwhether the incoming root is carried through to the output rather than being\nwhatever the decoder produced.\n\nTHE ROUND TRIP IS NOT LOSSLESS, AND THAT IS THE POINT:\nSend a pose in and take the decoded pose out and it will NOT be the same pose.\nIt will be the nearest pose the model considers plausible.\n\nMeasured here, putting an arbitrary made-up pose through repeatedly and asking\nhow far each pass moved it:\n\n    pass 1   0.4540 rad\n    pass 2   0.1008\n    pass 3   0.0649\n    pass 4   0.0372\n\nThe first pass does nearly all the work, and after that it barely moves,\nbecause one pass was enough to land it somewhere the model is happy with.\n\nThat is what makes this a POSE PRIOR rather than a compressor. A pose from a\nnoisy sensor, or one with an impossible joint angle, comes back cleaned up -\nnot smoothed in time, but corrected towards anatomical sense.\n\nTHE THINGS TO DO WITH IT:\n\nClean up a pose. One pass through removes the impossible parts.\n\nInterpolate between poses. Encode two, cross-fade the 32 numbers, decode - and\neverything in between is a real pose. Cross-fading the joint angles directly\ndoes not give you that; it passes through positions no body could take.\n\nMake poses from very little. 32 numbers is few enough to drive from anything -\na sensor, a signal, a hand on a fader - and whatever you send decodes to a body.\n\nNote that 32 zeros is NOT a neutral standing pose. It is the middle of the\nlearned space, which is a particular pose the model settled on; here it decodes\nto joint values spanning about -0.9 to +1.0. There is no \"empty\" latent.\n\n'mean of dist' - WHETHER IT ANSWERS THE SAME WAY TWICE:\nThe encoder does not produce a point, it produces a small cloud - a mean and a\nspread. Ticked, you get the mean, and the same pose always gives the same 32\nnumbers. Unticked, you get a sample from the cloud, so the same pose gives\nslightly different numbers each time and the decoded pose wobbles.\n\nLeave it ticked unless you want that variation deliberately.\n\nvposer6D AND WHY A ROTATION REPRESENTATION MATTERS:\nAxis-angle, the three-numbers-per-joint form, has discontinuities - two nearly\nidentical rotations can have very different numbers - and networks learn badly\nacross those seams. vposer6D uses six numbers per joint instead, a form with no\nsuch jumps, and converts back at the end.\n\nSame idea, same latent size, generally better behaved. Use it if you have a\nmodel in that form; the interface is identical.\n\nvae IS THE PLAIN ONE:\nGive it input size, hidden size and latent size and it is a VAE over whatever\nyou like. It has an extra 'distribution out' carrying the mean and spread the\nencoder produced, rather than just a point drawn from them.\n\nYOU MUST GIVE IT A MODEL PATH:\nNothing works until 'model path' points at a trained model directory - none of\nthese carry weights of their own. Send the path and the model loads; until then\nthe node sits there doing nothing, which is the usual reason one appears dead.\n\nSYNTAX:\nvposer\nvposer6D\nvae <input dim> <hidden> <latent dim>\n\nEXAMPLE:\nvposer\n\nINPUTS and PARAMETERS:\n\ninput in:\nA pose to encode. 63 numbers for the vposer nodes.\n\nlatent in:\n32 numbers to decode into a pose. This is the generative direction.\n\nmean of dist:\nThe mean, or a sample from the distribution.\n\npass root orientation:\nCarry the incoming facing direction through to the output.\n\nmodel path:\nWhere the trained model is. Required.\n\nOUTPUTS: \n\nlatents out:\nThe encoding, 32 numbers.\n\ndecoded out:\nThe pose, (22, 3).\n\ndistribution out (vae):\nThe mean and spread, rather than a point.\n\nRELATED:\nsmpl_body will draw what comes out.\nsmpl_take supplies recorded poses to encode.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These compress something into a few numbers, and turn a few numbers back.\n\nTHE NODES:\n\nvposer     a whole body pose as 32 numbers, and back again\nvposer6D   the same, built on a rotation representation that behaves better\nvae        the general case, for a model you trained yourself\n\nWHAT A VARIATIONAL AUTOENCODER GIVES YOU:\nAn encoder squeezes the input down to a handful of numbers - the LATENT - and a\ndecoder builds it back. That alone would just be compression. What makes it\nworth having is how it was trained: the latent space is made smooth and\ncontinuous, so that every point in it decodes to something PLAUSIBLE, not only\nthe points that came from real examples.\n\nFor VPoser, trained on a very large amount of motion capture, that means any 32\nnumbers you can think of decode to a pose a human body could actually be in.\n\n63 NUMBERS IN, 32 OUT, 66 BACK:\nThe input is 21 body joints as three numbers each. The latent is 32. What comes\nback is 22 joints - the 21, plus the root - so the decoded output is (22, 3).\n\nThe root is the direction the whole body faces, which is not part of the pose in\nany useful sense: the same crouch facing north and facing south is the same\ncrouch. So it is kept out of the encoding, and 'pass root orientation' decides\nwhether the incoming root is carried through to the output rather than being\nwhatever the decoder produced.\n\nTHE ROUND TRIP IS NOT LOSSLESS, AND THAT IS THE POINT:\nSend a pose in and take the decoded pose out and it will NOT be the same pose.\nIt will be the nearest pose the model considers plausible.\n\nMeasured here, putting an arbitrary made-up pose through repeatedly and asking\nhow far each pass moved it:\n\n    pass 1   0.4540 rad\n    pass 2   0.1008\n    pass 3   0.0649\n    pass 4   0.0372\n\nThe first pass does nearly all the work, and after that it barely moves,\nbecause one pass was enough to land it somewhere the model is happy with.\n\nThat is what makes this a POSE PRIOR rather than a compressor. A pose from a\nnoisy sensor, or one with an impossible joint angle, comes back cleaned up -\nnot smoothed in time, but corrected towards anatomical sense.\n\nTHE THINGS TO DO WITH IT:\n\nClean up a pose. One pass through removes the impossible parts.\n\nInterpolate between poses. Encode two, cross-fade the 32 numbers, decode - and\neverything in between is a real pose. Cross-fading the joint angles directly\ndoes not give you that; it passes through positions no body could take.\n\nMake poses from very little. 32 numbers is few enough to drive from anything -\na sensor, a signal, a hand on a fader - and whatever you send decodes to a body.\n\nNote that 32 zeros is NOT a neutral standing pose. It is the middle of the\nlearned space, which is a particular pose the model settled on; here it decodes\nto joint values spanning about -0.9 to +1.0. There is no \"empty\" latent.\n\n'mean of dist' - WHETHER IT ANSWERS THE SAME WAY TWICE:\nThe encoder does not produce a point, it produces a small cloud - a mean and a\nspread. Ticked, you get the mean, and the same pose always gives the same 32\nnumbers. Unticked, you get a sample from the cloud, so the same pose gives\nslightly different numbers each time and the decoded pose wobbles.\n\nLeave it ticked unless you want that variation deliberately.\n\nvposer6D AND WHY A ROTATION REPRESENTATION MATTERS:\nAxis-angle, the three-numbers-per-joint form, has discontinuities - two nearly\nidentical rotations can have very different numbers - and networks learn badly\nacross those seams. vposer6D uses six numbers per joint instead, a form with no\nsuch jumps, and converts back at the end.\n\nSame idea, same latent size, generally better behaved. Use it if you have a\nmodel in that form; the interface is identical.\n\nvae IS THE PLAIN ONE:\nGive it input size, hidden size and latent size and it is a VAE over whatever\nyou like. It has an extra 'distribution out' carrying the mean and spread the\nencoder produced, rather than just a point drawn from them.\n\nYOU MUST GIVE IT A MODEL PATH:\nNothing works until 'model path' points at a trained model directory - none of\nthese carry weights of their own. Send the path and the model loads; until then\nthe node sits there doing nothing, which is the usual reason one appears dead.\n\nSYNTAX:\nvposer\nvposer6D\nvae <input dim> <hidden> <latent dim>\n\nEXAMPLE:\nvposer\n\nINPUTS and PARAMETERS:\n\ninput in:\nA pose to encode. 63 numbers for the vposer nodes.\n\nlatent in:\n32 numbers to decode into a pose. This is the generative direction.\n\nmean of dist:\nThe mean, or a sample from the distribution.\n\npass root orientation:\nCarry the incoming facing direction through to the output.\n\nmodel path:\nWhere the trained model is. Required.\n\nOUTPUTS: \n\nlatents out:\nThe encoding, 32 numbers.\n\ndecoded out:\nThe pose, (22, 3).\n\ndistribution out (vae):\nThe mean and spread, rather than a point.\n\nRELATED:\nsmpl_body will draw what comes out.\nsmpl_take supplies recorded poses to encode."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 560,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "/path/to/vposer/V02_05",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment point this at your model directory and",
+            "name": "comment",
+            "id": 385,
+            "position_x": 726,
+            "position_y": 112,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "point this at your model directory and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "point this at your model directory and"
+        },
+        "5": {
+            "init": "comment click it - nothing works until you do",
+            "name": "comment",
+            "id": 422,
+            "position_x": 726,
+            "position_y": 142,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click it - nothing works until you do",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click it - nothing works until you do"
+        },
+        "6": {
+            "name": "smpl_take",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 190,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "vposer",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 410,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment a recorded pose in, 32 numbers out",
+            "name": "comment",
+            "id": 533,
+            "position_x": 726,
+            "position_y": 700,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a recorded pose in, 32 numbers out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a recorded pose in, 32 numbers out"
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 410,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "stem",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 32.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -3.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment the 32 latents. This is the whole pose,",
+            "name": "comment",
+            "id": 607,
+            "position_x": 726,
+            "position_y": 600,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the 32 latents. This is the whole pose,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the 32 latents. This is the whole pose,"
+        },
+        "11": {
+            "init": "comment and cross-fading these gives poses all",
+            "name": "comment",
+            "id": 644,
+            "position_x": 726,
+            "position_y": 630,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and cross-fading these gives poses all",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and cross-fading these gives poses all"
+        },
+        "12": {
+            "init": "comment the way along - which cross-fading the",
+            "name": "comment",
+            "id": 681,
+            "position_x": 726,
+            "position_y": 660,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the way along - which cross-fading the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the way along - which cross-fading the"
+        },
+        "13": {
+            "init": "comment joint angles does not",
+            "name": "comment",
+            "id": 718,
+            "position_x": 726,
+            "position_y": 740,
+            "width": 147,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "joint angles does not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "joint angles does not"
+        },
+        "14": {
+            "name": "gl_body",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 730,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "init": "comment the decoded pose - the nearest one the",
+            "name": "comment",
+            "id": 792,
+            "position_x": 726,
+            "position_y": 995,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the decoded pose - the nearest one the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the decoded pose - the nearest one the"
+        },
+        "16": {
+            "init": "comment model thinks a body could hold",
+            "name": "comment",
+            "id": 829,
+            "position_x": 726,
+            "position_y": 1075,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "model thinks a body could hold",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "model thinks a body could hold"
+        },
+        "17": {
+            "name": "vector",
+            "id": 866,
+            "position_x": 400,
+            "position_y": 730,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vector 32"
+        },
+        "18": {
+            "init": "comment or go the other way: 32 numbers you",
+            "name": "comment",
+            "id": 903,
+            "position_x": 726,
+            "position_y": 925,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "or go the other way: 32 numbers you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "or go the other way: 32 numbers you"
+        },
+        "19": {
+            "init": "comment choose, decoded into a body. Anything",
+            "name": "comment",
+            "id": 940,
+            "position_x": 726,
+            "position_y": 955,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "choose, decoded into a body. Anything",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "choose, decoded into a body. Anything"
+        },
+        "20": {
+            "init": "comment you send lands on a possible pose",
+            "name": "comment",
+            "id": 977,
+            "position_x": 726,
+            "position_y": 1035,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "you send lands on a possible pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "you send lands on a possible pose"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 980,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "model path"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "latents out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "decoded out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "4": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "latent in"
+        }
+    }
+}

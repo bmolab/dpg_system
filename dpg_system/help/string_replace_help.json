@@ -1,0 +1,370 @@
+{
+    "height": 761,
+    "width": 1788,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "string_replace_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/string_replace_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment string_replace - substituting and cleaning up",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "string_replace - substituting and cleaning up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "string_replace - substituting and cleaning up"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 950,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These substitute or clean up parts of a string.\n\nTHE NODES:\n\nstring_replace  find a piece of text anywhere and put another in its place\nword_replace    the same, but only where the match is a WHOLE word\nunescape_text   turn HTML escapes back into the characters they stand for\nprintable       drop anything that is not a printable character\n\nword_replace VERSUS string_replace:\nstring_replace matches anywhere, so replacing \"cat\" also hits \"concatenate\". \nword_replace matches only whole words, so it does not. Which you want depends on \nwhether you are editing text or editing markup - for anything language-shaped, \nwhole words is almost always right, and the substring version's surprises are \nthe classic source of mangled output.\n\nunescape_text AND printable ARE FOR TEXT THAT ARRIVED FROM SOMEWHERE ELSE:\nText off a network, out of a web page, or from a speech service arrives with \nthings in it that are not really part of the text - HTML escapes like &amp;, \ncontrol characters, byte-order marks, invisible formatting. \n\nunescape_text handles the escapes; printable removes what cannot be shown. \nRunning both on anything incoming costs nothing and saves the class of problem \nwhere a string looks correct and behaves oddly - a comparison that fails, a \nwidth that is wrong, a word that will not match.\n\nSYNTAX:\nstring_replace <find> <replace>\nword_replace <find> <replace>\n\nEXAMPLE:\nword_replace colour color\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text. Receiving it triggers the node.\n\nfind / replace:\nWhat to look for and what to put in its place.\n\nOUTPUTS: \n\nstring out / printable characters out / unescaped string out:\nThe result.\n\nRELATED:\nreplace and int_replace do the same job on lists and numbers rather than \nwithin a string - see the replace help patch. \ndict_replace holds many substitutions at once.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These substitute or clean up parts of a string.\n\nTHE NODES:\n\nstring_replace  find a piece of text anywhere and put another in its place\nword_replace    the same, but only where the match is a WHOLE word\nunescape_text   turn HTML escapes back into the characters they stand for\nprintable       drop anything that is not a printable character\n\nword_replace VERSUS string_replace:\nstring_replace matches anywhere, so replacing \"cat\" also hits \"concatenate\". \nword_replace matches only whole words, so it does not. Which you want depends on \nwhether you are editing text or editing markup - for anything language-shaped, \nwhole words is almost always right, and the substring version's surprises are \nthe classic source of mangled output.\n\nunescape_text AND printable ARE FOR TEXT THAT ARRIVED FROM SOMEWHERE ELSE:\nText off a network, out of a web page, or from a speech service arrives with \nthings in it that are not really part of the text - HTML escapes like &amp;, \ncontrol characters, byte-order marks, invisible formatting. \n\nunescape_text handles the escapes; printable removes what cannot be shown. \nRunning both on anything incoming costs nothing and saves the class of problem \nwhere a string looks correct and behaves oddly - a comparison that fails, a \nwidth that is wrong, a word that will not match.\n\nSYNTAX:\nstring_replace <find> <replace>\nword_replace <find> <replace>\n\nEXAMPLE:\nword_replace colour color\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text. Receiving it triggers the node.\n\nfind / replace:\nWhat to look for and what to put in its place.\n\nOUTPUTS: \n\nstring out / printable characters out / unescaped string out:\nThe result.\n\nRELATED:\nreplace and int_replace do the same job on lists and numbers rather than \nwithin a string - see the replace help patch. \ndict_replace holds many substitutions at once."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "the cat concatenated",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "string_replace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 180,
+            "width": 220,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "string_replace cat dog"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment matches anywhere: concatenated changes too",
+            "name": "comment",
+            "id": 496,
+            "position_x": 626,
+            "position_y": 355,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "matches anywhere: concatenated changes too",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "matches anywhere: concatenated changes too"
+        },
+        "8": {
+            "name": "word_replace",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 395,
+            "width": 220,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "word_replace cat dog"
+        },
+        "9": {
+            "name": "string",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment whole words only: it does not",
+            "name": "comment",
+            "id": 607,
+            "position_x": 626,
+            "position_y": 570,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "whole words only: it does not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "whole words only: it does not"
+        },
+        "11": {
+            "name": "printable",
+            "id": 644,
+            "position_x": 400,
+            "position_y": 395,
+            "width": 200,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment run this on anything incoming",
+            "name": "comment",
+            "id": 681,
+            "position_x": 626,
+            "position_y": 495,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "run this on anything incoming",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "run this on anything incoming"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 592,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "characters in"
+        }
+    }
+}

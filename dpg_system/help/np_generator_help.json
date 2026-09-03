@@ -1,0 +1,434 @@
+{
+    "height": 846,
+    "width": 1573,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "np_generator_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np_generator_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np generators - arrays out of nothing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 444,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np generators - arrays out of nothing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np generators - arrays out of nothing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 725,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes make arrays out of nothing - the starting material for array work.\n\nYou need an array before you can do anything to one, and often the array you \nneed is regular rather than measured: a block of zeros to accumulate into, \na ramp to use as an x axis, a grid of positions to draw at, noise to test with.\n\nTHE NODES:\n\nnp.zeros      an array of zeros\nnp.ones       an array of ones\nnp.rand       an array of random numbers between limits you set\nnp.linspace   evenly spaced values from one number to another\nnp.grid       a 2D grid of coordinates\nnp.sequence   record a stream of arrays over time and play it back\n\nnp.linspace is the one to remember. Give it a start, a stop and a count and it \ndivides the interval evenly - which is how you make an x axis to evaluate \nsomething across, a set of evenly spaced positions, or a smooth interpolation \nbetween two states.\n\nnp.grid gives you every (x, y) position in a rectangle at a spacing you choose, \nwhich is what you want for laying things out, sampling a field, or generating \npositions to draw.\n\nnp.sequence is different in kind: it records what passes through it, frame by \nframe, and can save that to disk and play it back. A way of capturing a \nperformance of data and re-running it.\n\nSYNTAX:\nnp.zeros <dim> <dim> ...\nnp.rand <dim> <dim> ...\nnp.linspace <start> <stop> <steps>\nnp.grid <min x> <max x> <min y> <max y> <divisions x> <divisions y>\n\nEXAMPLE:\nnp.rand 4 4\n\nINPUTS and PARAMETERS:\n\nin:\nA button on most of these - click it, or send anything, to produce a new array. \nnp.rand gives you fresh numbers each time; the others give the same thing again.\n\ndim 0, dim 1, ...:\nThe shape to produce.\n\nmin / max (np.rand):\nThe range the random numbers fall in.\n\ndtype:\nThe number type - float32 is the usual choice, float64 for precision, \nint for whole numbers.\n\nstart / stop / steps (np.linspace):\nThe two ends and how many values between them. Both ends are included.\n\nmin x / max x / min y / max y / divisions x / divisions y (np.grid):\nThe rectangle and how finely to divide it.\n\ndata to record / current frame / save / load / path (np.sequence):\nThe stream to capture, where to play from, and where to keep it.\n\nOUTPUTS: \n\nThe generated array.\n\nRELATED:\nt.rand and the t.dist nodes do the same for PyTorch tensors, and the \ndistribution nodes let you choose the SHAPE of the randomness rather than \ntaking it flat.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes make arrays out of nothing - the starting material for array work.\n\nYou need an array before you can do anything to one, and often the array you \nneed is regular rather than measured: a block of zeros to accumulate into, \na ramp to use as an x axis, a grid of positions to draw at, noise to test with.\n\nTHE NODES:\n\nnp.zeros      an array of zeros\nnp.ones       an array of ones\nnp.rand       an array of random numbers between limits you set\nnp.linspace   evenly spaced values from one number to another\nnp.grid       a 2D grid of coordinates\nnp.sequence   record a stream of arrays over time and play it back\n\nnp.linspace is the one to remember. Give it a start, a stop and a count and it \ndivides the interval evenly - which is how you make an x axis to evaluate \nsomething across, a set of evenly spaced positions, or a smooth interpolation \nbetween two states.\n\nnp.grid gives you every (x, y) position in a rectangle at a spacing you choose, \nwhich is what you want for laying things out, sampling a field, or generating \npositions to draw.\n\nnp.sequence is different in kind: it records what passes through it, frame by \nframe, and can save that to disk and play it back. A way of capturing a \nperformance of data and re-running it.\n\nSYNTAX:\nnp.zeros <dim> <dim> ...\nnp.rand <dim> <dim> ...\nnp.linspace <start> <stop> <steps>\nnp.grid <min x> <max x> <min y> <max y> <divisions x> <divisions y>\n\nEXAMPLE:\nnp.rand 4 4\n\nINPUTS and PARAMETERS:\n\nin:\nA button on most of these - click it, or send anything, to produce a new array. \nnp.rand gives you fresh numbers each time; the others give the same thing again.\n\ndim 0, dim 1, ...:\nThe shape to produce.\n\nmin / max (np.rand):\nThe range the random numbers fall in.\n\ndtype:\nThe number type - float32 is the usual choice, float64 for precision, \nint for whole numbers.\n\nstart / stop / steps (np.linspace):\nThe two ends and how many values between them. Both ends are included.\n\nmin x / max x / min y / max y / divisions x / divisions y (np.grid):\nThe rectangle and how finely to divide it.\n\ndata to record / current frame / save / load / path (np.sequence):\nThe stream to capture, where to play from, and where to keep it.\n\nOUTPUTS: \n\nThe generated array.\n\nRELATED:\nt.rand and the t.dist nodes do the same for PyTorch tensors, and the \ndistribution nodes let you choose the SHAPE of the randomness rather than \ntaking it flat."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 140,
+            "height": 130,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 4 4"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 230,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment click for fresh random numbers",
+            "name": "comment",
+            "id": 459,
+            "position_x": 464,
+            "position_y": 262,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click for fresh random numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click for fresh random numbers"
+        },
+        "7": {
+            "name": "np.linspace",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 190,
+            "height": 130,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.linspace 0.0 1.0 8"
+        },
+        "8": {
+            "name": "list",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment evenly spaced, both ends included",
+            "name": "comment",
+            "id": 570,
+            "position_x": 464,
+            "position_y": 500,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "evenly spaced, both ends included",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "evenly spaced, both ends included"
+        },
+        "10": {
+            "name": "np.zeros",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 545,
+            "width": 140,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim 0",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.zeros 8"
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 670,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 742,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

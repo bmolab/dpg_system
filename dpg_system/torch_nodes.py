@@ -128,7 +128,11 @@ class TorchContiguousNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.output = self.add_output('max index')
+        # was 'max index', copy-pasted from an argmax-style node -- this
+        # sends a contiguous tensor. Archived so a patch saved under the
+        # old name still resolves (a single-outlet node would anyway).
+        self.output = self.add_output('tensor out')
+        self.output.name_archive.append('max index')
 
     def execute(self):
         input_tensor = self.input_to_tensor()

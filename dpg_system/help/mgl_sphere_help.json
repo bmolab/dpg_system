@@ -1,0 +1,327 @@
+{
+    "height": 1424,
+    "width": 1730,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "mgl_sphere_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_sphere_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl shapes - the built-in geometry",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 408,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl shapes - the built-in geometry",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl shapes - the built-in geometry"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 872,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The built-in shapes: things you can draw without supplying any geometry.\n\nTHE NODES:\n\nmgl_box           a cube or a rectangular block\nmgl_sphere        a sphere, divided into latitude and longitude\nmgl_geo_sphere    a geodesic sphere - triangles of nearly equal size, with no \n                  crowding at the poles\nmgl_cylinder      a cylinder\nmgl_plane         a flat rectangle, optionally subdivided\nmgl_disk          a filled circle, or a ring if you give it a hole\nmgl_partial_disk  a wedge - a disk with a start angle and a sweep\nmgl_line          a line along a vector\n\nWHY TWO SPHERES:\nThe ordinary sphere is built like a globe, so its triangles bunch together at \nthe poles and stretch at the equator. That is fine for a plain surface and \nvisible the moment you texture it, or use it to show a distribution over \ndirections. The geodesic one has near-uniform triangles everywhere, which is \nwhat you want when the sphere is standing for a set of directions rather than \nbeing an object.\n\nmgl_partial_disk IS THE ONE TO REMEMBER:\nA wedge with a start angle and a sweep is how you draw a value as an arc - a \ndial, a proportion, a range of orientations. Patch a stream into 'sweep angle' \nand it becomes a readout that lives in the scene rather than in the patch.\n\nCOMMON PARAMETERS:\nEvery shape has the same first few inlets: 'mode' for whether it is drawn as \nfilled triangles, lines or points; 'cull' for whether back faces are skipped; \n'point_size' for point mode; and 'texture' for an image to map onto it.\n\n'mode' set to lines is the quickest way to see what a shape is actually made \nof, and to see whether a subdivision setting is doing what you expect.\n\nSYNTAX:\nmgl_sphere\nmgl_partial_disk\n\nEXAMPLE:\nmgl_cylinder\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the node.\n\nradius / height / size / width / depth:\nThe dimensions, depending on the shape.\n\nslices / segments / rings / subdivisions:\nHow finely the shape is divided. More is smoother and slower.\n\nhole_ratio (mgl_disk):\nTurns a disk into a ring.\n\nstart angle / sweep angle (mgl_partial_disk):\nWhere the wedge begins and how far it goes round.\n\nvector (mgl_line):\nThe direction and length of the line.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing - shapes do not change state for what follows.\n\nWHERE A SHAPE APPEARS:\nAt the origin, until a transform moves it. Two shapes with no transform between \nthem are in the same place, one inside the other. That is the usual reason a \nscene seems to be missing something.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The built-in shapes: things you can draw without supplying any geometry.\n\nTHE NODES:\n\nmgl_box           a cube or a rectangular block\nmgl_sphere        a sphere, divided into latitude and longitude\nmgl_geo_sphere    a geodesic sphere - triangles of nearly equal size, with no \n                  crowding at the poles\nmgl_cylinder      a cylinder\nmgl_plane         a flat rectangle, optionally subdivided\nmgl_disk          a filled circle, or a ring if you give it a hole\nmgl_partial_disk  a wedge - a disk with a start angle and a sweep\nmgl_line          a line along a vector\n\nWHY TWO SPHERES:\nThe ordinary sphere is built like a globe, so its triangles bunch together at \nthe poles and stretch at the equator. That is fine for a plain surface and \nvisible the moment you texture it, or use it to show a distribution over \ndirections. The geodesic one has near-uniform triangles everywhere, which is \nwhat you want when the sphere is standing for a set of directions rather than \nbeing an object.\n\nmgl_partial_disk IS THE ONE TO REMEMBER:\nA wedge with a start angle and a sweep is how you draw a value as an arc - a \ndial, a proportion, a range of orientations. Patch a stream into 'sweep angle' \nand it becomes a readout that lives in the scene rather than in the patch.\n\nCOMMON PARAMETERS:\nEvery shape has the same first few inlets: 'mode' for whether it is drawn as \nfilled triangles, lines or points; 'cull' for whether back faces are skipped; \n'point_size' for point mode; and 'texture' for an image to map onto it.\n\n'mode' set to lines is the quickest way to see what a shape is actually made \nof, and to see whether a subdivision setting is doing what you expect.\n\nSYNTAX:\nmgl_sphere\nmgl_partial_disk\n\nEXAMPLE:\nmgl_cylinder\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the node.\n\nradius / height / size / width / depth:\nThe dimensions, depending on the shape.\n\nslices / segments / rings / subdivisions:\nHow finely the shape is divided. More is smoother and slower.\n\nhole_ratio (mgl_disk):\nTurns a disk into a ring.\n\nstart angle / sweep angle (mgl_partial_disk):\nWhere the wedge begins and how far it goes round.\n\nvector (mgl_line):\nThe direction and length of the line.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing - shapes do not change state for what follows.\n\nWHERE A SHAPE APPEARS:\nAt the origin, until a transform moves it. Two shapes with no transform between \nthem are in the same place, one inside the other. That is the usual reason a \nscene seems to be missing something."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_orbit_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "mgl_light",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 435,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "mgl_display",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 200,
+            "width": 220,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "mgl_geo_sphere",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 240,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment set mode to lines to see the triangles",
+            "name": "comment",
+            "id": 533,
+            "position_x": 576,
+            "position_y": 875,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set mode to lines to see the triangles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set mode to lines to see the triangles"
+        },
+        "9": {
+            "name": "mgl_translate",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 915,
+            "width": 220,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "mgl_translate 2 0 0"
+        },
+        "10": {
+            "name": "mgl_partial_disk",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 1050,
+            "width": 240,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment drag sweep angle: a value as an arc",
+            "name": "comment",
+            "id": 644,
+            "position_x": 576,
+            "position_y": 1305,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag sweep angle: a value as an arc",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag sweep angle: a value as an arc"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1320,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "texture_tag",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture_tag"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

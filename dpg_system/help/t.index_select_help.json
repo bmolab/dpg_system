@@ -1,0 +1,519 @@
+{
+    "height": 921,
+    "width": 1659,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "t.index_select_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.index_select_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t selecting - which part, and what shape survives",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t selecting - which part, and what shape survives",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t selecting - which part, and what shape survives"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 801,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These take part of a tensor out - by position, or by a condition.\n\nThere are more of them than seems necessary, and the reason is that \"which \npart\" can mean several genuinely different things.\n\nTHE NODES:\n\nt[]               slice, the way you would write it in code\nt.narrow          a contiguous run along one axis: start here, take this many\nt.select          one index along one axis, and that axis DISAPPEARS\nt.index_select    several indices along one axis, and the axis stays\nt.take            treat the tensor as flat and take these positions\nt.take_along_dim  take a different index in each row\nt.masked_select   take everything a condition is true for\n\nselect VERSUS index_select, WHICH IS THE SUBTLE ONE:\nTaking row 2 of a (5, 8) tensor with select gives you shape (8,) - the row axis \nis gone, because you asked for one specific row and a single row has no row \naxis left. Taking rows [2] with index_select gives you shape (1, 8) - still a \nmatrix, with one row in it.\n\nWhich you want depends on what happens next. If something downstream expects a \nmatrix, index_select keeps you in the right shape. If you want the vector \nitself, select gets it without a squeeze.\n\ntake_along_dim IS THE ONE WORTH KNOWING ABOUT:\nThe others take the SAME indices from every row. take_along_dim takes a \ndifferent index from each. That is exactly what you need after an argmax: \nargmax tells you where the largest value is in each row, and take_along_dim \nturns those positions back into the values - or pulls the corresponding entries \nout of a DIFFERENT tensor, which is how you answer \"at the moment each joint \nwas fastest, what was its angle\".\n\nmasked_select RETURNS A FLAT TENSOR:\nHowever shaped the input, what comes back is one dimension long - because the \nnumber of elements that passed is not known in advance and cannot be arranged \ninto a rectangle. If you want to keep the shape, multiply by the mask instead \nof selecting with it.\n\nSYNTAX:\nt[] <indices>\nt.narrow <dim> <start> <length>\nt.select <dim> <index>\n\nEXAMPLE:\nt.select 0 2\n\nINPUTS and PARAMETERS:\n\ntensor in / source tensor:\nThe tensor. Receiving it triggers the node.\n\nindices:\nWhich positions to take.\n\ndim:\nWhich axis to work along.\n\nstart / length (t.narrow):\nWhere the run begins and how long it is.\n\nmask (t.masked_select):\nA tensor of true and false the same shape as the source - normally the output \nof a comparison node.\n\nOUTPUTS: \n\noutput / selection tensor:\nThe selected part.\n\nRELATED:\nThe comparison nodes make the masks. t.scatter writes values back INTO a \ntensor at given positions, which is the reverse of these.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These take part of a tensor out - by position, or by a condition.\n\nThere are more of them than seems necessary, and the reason is that \"which \npart\" can mean several genuinely different things.\n\nTHE NODES:\n\nt[]               slice, the way you would write it in code\nt.narrow          a contiguous run along one axis: start here, take this many\nt.select          one index along one axis, and that axis DISAPPEARS\nt.index_select    several indices along one axis, and the axis stays\nt.take            treat the tensor as flat and take these positions\nt.take_along_dim  take a different index in each row\nt.masked_select   take everything a condition is true for\n\nselect VERSUS index_select, WHICH IS THE SUBTLE ONE:\nTaking row 2 of a (5, 8) tensor with select gives you shape (8,) - the row axis \nis gone, because you asked for one specific row and a single row has no row \naxis left. Taking rows [2] with index_select gives you shape (1, 8) - still a \nmatrix, with one row in it.\n\nWhich you want depends on what happens next. If something downstream expects a \nmatrix, index_select keeps you in the right shape. If you want the vector \nitself, select gets it without a squeeze.\n\ntake_along_dim IS THE ONE WORTH KNOWING ABOUT:\nThe others take the SAME indices from every row. take_along_dim takes a \ndifferent index from each. That is exactly what you need after an argmax: \nargmax tells you where the largest value is in each row, and take_along_dim \nturns those positions back into the values - or pulls the corresponding entries \nout of a DIFFERENT tensor, which is how you answer \"at the moment each joint \nwas fastest, what was its angle\".\n\nmasked_select RETURNS A FLAT TENSOR:\nHowever shaped the input, what comes back is one dimension long - because the \nnumber of elements that passed is not known in advance and cannot be arranged \ninto a rectangle. If you want to keep the shape, multiply by the mask instead \nof selecting with it.\n\nSYNTAX:\nt[] <indices>\nt.narrow <dim> <start> <length>\nt.select <dim> <index>\n\nEXAMPLE:\nt.select 0 2\n\nINPUTS and PARAMETERS:\n\ntensor in / source tensor:\nThe tensor. Receiving it triggers the node.\n\nindices:\nWhich positions to take.\n\ndim:\nWhich axis to work along.\n\nstart / length (t.narrow):\nWhere the run begins and how long it is.\n\nmask (t.masked_select):\nA tensor of true and false the same shape as the source - normally the output \nof a comparison node.\n\nOUTPUTS: \n\noutput / selection tensor:\nThe selected part.\n\nRELATED:\nThe comparison nodes make the masks. t.scatter writes values back INTO a \ntensor at given positions, which is the reverse of these."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 4 4"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment a 4 by 4 tensor",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 4 by 4 tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 4 by 4 tensor"
+        },
+        "7": {
+            "name": "t.select",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 180,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.select 0 1"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment one row: the row axis is gone",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 475,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one row: the row axis is gone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one row: the row axis is gone"
+        },
+        "10": {
+            "name": ">",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 130,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "bool",
+                    "value_type": "str"
+                }
+            },
+            "init": "> 0.5"
+        },
+        "11": {
+            "name": "t.masked_select",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 605,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 715,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment everything above 0.5, as a flat tensor",
+            "name": "comment",
+            "id": 718,
+            "position_x": 484,
+            "position_y": 765,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "everything above 0.5, as a flat tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "everything above 0.5, as a flat tensor"
+        },
+        "14": {
+            "init": "comment the shape cannot survive: how many passed",
+            "name": "comment",
+            "id": 755,
+            "position_x": 484,
+            "position_y": 795,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the shape cannot survive: how many passed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the shape cannot survive: how many passed"
+        },
+        "15": {
+            "init": "comment is not known in advance",
+            "name": "comment",
+            "id": 792,
+            "position_x": 484,
+            "position_y": 825,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "is not known in advance",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "is not known in advance"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 787,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mask"
+        },
+        "6": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "source tensor"
+        },
+        "7": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "selection tensor",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

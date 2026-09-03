@@ -1,0 +1,1056 @@
+{
+    "height": 1157,
+    "width": 2390,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1569,
+    "name": "tv.adjust_brightness_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/tv.adjust_brightness_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment tv adjustments - the image editor sliders",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tv adjustments - the image editor sliders",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tv adjustments - the image editor sliders"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1542,
+            "position_y": 45,
+            "width": 808,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are the photographic adjustments - the sliders of an image editor.\n\nTHE NODES:\n\ntv.adjust_brightness   how light the image is\ntv.adjust_contrast     how far apart light and dark are\ntv.adjust_saturation   how strong the colour is\ntv.adjust_sharpness    how crisp the detail is\ntv.adjust_hue          which colours they are\n\nONE NUMBER, AND 1.0 MEANS LEAVE IT ALONE:\nFour of the five take a FACTOR, and at 1.0 the image comes back untouched - not\napproximately, exactly. Below 1.0 the quality is reduced, above 1.0 it is\nexaggerated past where it started. There is no upper limit that means \"maximum\";\n2.0 is twice as much as the image already had.\n\nWHAT FACTOR 0 GIVES YOU IS THE REAL DEFINITION:\nEach of these scales the image towards something, and setting the factor to 0\nshows you what that something is. It is the clearest way to understand what you\nare actually adjusting:\n\nbrightness 0   pure black\ncontrast 0     one flat grey - the image's own average, all detail gone\nsaturation 0   grey, but the detail intact - this is a grayscale conversion\nsharpness 0    a slightly softened image\n\nSo contrast scales away from the average, saturation scales away from grey, and\nbrightness scales away from black. A factor above 1.0 simply keeps going in the\nopposite direction, which is why it can push values off the end of the scale.\n\nHUE IS THE ODD ONE - AN ANGLE, NOT A FACTOR:\ntv.adjust_hue takes an OFFSET, and 0.0 is the one that changes nothing. It\nrotates every colour around the colour wheel, so it runs -0.5 to +0.5, where a\nwhole turn is 1.0 and lands you back where you started.\n\nThat means -0.5 and +0.5 give exactly the same image: half a turn is half a turn\nwhichever way you go round. Hue does not make anything brighter or duller, it\nonly swaps which colour is which.\n\nTHE TRAP: THEY CLIP, AND EVEN A NO-OP CLIPS:\nThese assume a float image runs 0 to 1, and they enforce it. Send one that runs\n0 to 3 and it comes back 0 to 1 - clipped, permanently.\n\nThis bites hardest because it happens even at factor 1.0. An adjustment set to\nchange nothing will still flatten everything above 1.0 in an image that was not\nscaled properly, and there is no warning. If a chain mysteriously loses its\nhighlights, look for an adjustment node sitting at its default.\n\ntv.adjust_hue is the exception: being a rotation, it leaves the range alone.\n\nSYNTAX:\ntv.adjust_brightness\ntv.adjust_contrast\ntv.adjust_saturation\ntv.adjust_sharpness\ntv.adjust_hue\n\nEXAMPLE:\ntv.adjust_saturation\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it applies the adjustment.\n\nbrightness / contrast / saturation / sharpness:\nThe factor. 1.0 changes nothing, 0.0 removes the quality entirely, above 1.0\nexaggerates it.\n\nhue offset:\nThe rotation, -0.5 to +0.5. 0.0 changes nothing.\n\nOUTPUTS: \n\noutput:\nThe adjusted image, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W)\nfor grayscale. Images from cameras and files usually arrive the other way round,\n(H, W, 3), so the nodes guess: a small last dimension and a large third-from-last\nmeans height-width-channels, and they transpose it for you. The guess is right\nexcept on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255\nintegers and you get 0..255 integers back, correctly scaled. Floats are taken to\nrun 0 to 1.\n\nRELATED:\ntv.Grayscale is what tv.adjust_saturation at 0 amounts to, said directly.\nk.rgb_to_hls gives you hue as a channel you can measure, rather than an\nadjustment you apply.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are the photographic adjustments - the sliders of an image editor.\n\nTHE NODES:\n\ntv.adjust_brightness   how light the image is\ntv.adjust_contrast     how far apart light and dark are\ntv.adjust_saturation   how strong the colour is\ntv.adjust_sharpness    how crisp the detail is\ntv.adjust_hue          which colours they are\n\nONE NUMBER, AND 1.0 MEANS LEAVE IT ALONE:\nFour of the five take a FACTOR, and at 1.0 the image comes back untouched - not\napproximately, exactly. Below 1.0 the quality is reduced, above 1.0 it is\nexaggerated past where it started. There is no upper limit that means \"maximum\";\n2.0 is twice as much as the image already had.\n\nWHAT FACTOR 0 GIVES YOU IS THE REAL DEFINITION:\nEach of these scales the image towards something, and setting the factor to 0\nshows you what that something is. It is the clearest way to understand what you\nare actually adjusting:\n\nbrightness 0   pure black\ncontrast 0     one flat grey - the image's own average, all detail gone\nsaturation 0   grey, but the detail intact - this is a grayscale conversion\nsharpness 0    a slightly softened image\n\nSo contrast scales away from the average, saturation scales away from grey, and\nbrightness scales away from black. A factor above 1.0 simply keeps going in the\nopposite direction, which is why it can push values off the end of the scale.\n\nHUE IS THE ODD ONE - AN ANGLE, NOT A FACTOR:\ntv.adjust_hue takes an OFFSET, and 0.0 is the one that changes nothing. It\nrotates every colour around the colour wheel, so it runs -0.5 to +0.5, where a\nwhole turn is 1.0 and lands you back where you started.\n\nThat means -0.5 and +0.5 give exactly the same image: half a turn is half a turn\nwhichever way you go round. Hue does not make anything brighter or duller, it\nonly swaps which colour is which.\n\nTHE TRAP: THEY CLIP, AND EVEN A NO-OP CLIPS:\nThese assume a float image runs 0 to 1, and they enforce it. Send one that runs\n0 to 3 and it comes back 0 to 1 - clipped, permanently.\n\nThis bites hardest because it happens even at factor 1.0. An adjustment set to\nchange nothing will still flatten everything above 1.0 in an image that was not\nscaled properly, and there is no warning. If a chain mysteriously loses its\nhighlights, look for an adjustment node sitting at its default.\n\ntv.adjust_hue is the exception: being a rotation, it leaves the range alone.\n\nSYNTAX:\ntv.adjust_brightness\ntv.adjust_contrast\ntv.adjust_saturation\ntv.adjust_sharpness\ntv.adjust_hue\n\nEXAMPLE:\ntv.adjust_saturation\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it applies the adjustment.\n\nbrightness / contrast / saturation / sharpness:\nThe factor. 1.0 changes nothing, 0.0 removes the quality entirely, above 1.0\nexaggerates it.\n\nhue offset:\nThe rotation, -0.5 to +0.5. 0.0 changes nothing.\n\nOUTPUTS: \n\noutput:\nThe adjusted image, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W)\nfor grayscale. Images from cameras and files usually arrive the other way round,\n(H, W, 3), so the nodes guess: a small last dimension and a large third-from-last\nmeans height-width-channels, and they transpose it for you. The guess is right\nexcept on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255\nintegers and you get 0..255 integers back, correctly scaled. Floats are taken to\nrun 0 to 1.\n\nRELATED:\ntv.Grayscale is what tv.adjust_saturation at 0 amounts to, said directly.\nk.rgb_to_hls gives you hue as a channel you can measure, rather than an\nadjustment you apply."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 190,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 3 32 32"
+        },
+        "5": {
+            "name": "t.select",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 170,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 250,
+            "position_y": 255,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the original, channel 0",
+            "name": "comment",
+            "id": 496,
+            "position_x": 1246,
+            "position_y": 415,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the original, channel 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the original, channel 0"
+        },
+        "8": {
+            "name": "tv.adjust_brightness",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 460,
+            "width": 240,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "t.max",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 585,
+            "width": 160,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 710,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment drag brightness to 0: the brightest",
+            "name": "comment",
+            "id": 644,
+            "position_x": 1246,
+            "position_y": 760,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag brightness to 0: the brightest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag brightness to 0: the brightest"
+        },
+        "12": {
+            "init": "comment pixel becomes 0 - pure black",
+            "name": "comment",
+            "id": 681,
+            "position_x": 1246,
+            "position_y": 840,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pixel becomes 0 - pure black",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pixel becomes 0 - pure black"
+        },
+        "13": {
+            "name": "tv.adjust_contrast",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 460,
+            "width": 230,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "t.min",
+            "id": 755,
+            "position_x": 330,
+            "position_y": 585,
+            "width": 160,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "float",
+            "id": 792,
+            "position_x": 330,
+            "position_y": 710,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "name": "t.max",
+            "id": 829,
+            "position_x": 500,
+            "position_y": 585,
+            "width": 160,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "float",
+            "id": 866,
+            "position_x": 500,
+            "position_y": 710,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment drag contrast to 0 and these two meet:",
+            "name": "comment",
+            "id": 903,
+            "position_x": 1246,
+            "position_y": 800,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag contrast to 0 and these two meet:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag contrast to 0 and these two meet:"
+        },
+        "19": {
+            "init": "comment one flat grey, the image average",
+            "name": "comment",
+            "id": 940,
+            "position_x": 1246,
+            "position_y": 880,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one flat grey, the image average",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one flat grey, the image average"
+        },
+        "20": {
+            "name": "tv.adjust_saturation",
+            "id": 977,
+            "position_x": 700,
+            "position_y": 120,
+            "width": 240,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "21": {
+            "name": "t.select",
+            "id": 1014,
+            "position_x": 700,
+            "position_y": 245,
+            "width": 170,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "22": {
+            "name": "heat_map",
+            "id": 1051,
+            "position_x": 700,
+            "position_y": 380,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "23": {
+            "init": "comment saturation 0: still all the detail,",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 1246,
+            "position_y": 540,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "saturation 0: still all the detail,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "saturation 0: still all the detail,"
+        },
+        "24": {
+            "init": "comment but every channel identical - grey",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 1246,
+            "position_y": 620,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "but every channel identical - grey",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "but every channel identical - grey"
+        },
+        "25": {
+            "name": "tv.adjust_hue",
+            "id": 1162,
+            "position_x": 700,
+            "position_y": 615,
+            "width": 230,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "26": {
+            "name": "t.select",
+            "id": 1199,
+            "position_x": 700,
+            "position_y": 740,
+            "width": 170,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "27": {
+            "name": "heat_map",
+            "id": 1236,
+            "position_x": 700,
+            "position_y": 875,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "28": {
+            "init": "comment hue: 0 changes nothing, and -0.5 and",
+            "name": "comment",
+            "id": 1273,
+            "position_x": 1246,
+            "position_y": 1035,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hue: 0 changes nothing, and -0.5 and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hue: 0 changes nothing, and -0.5 and"
+        },
+        "29": {
+            "init": "comment +0.5 are the same half turn",
+            "name": "comment",
+            "id": 1310,
+            "position_x": 1246,
+            "position_y": 1065,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "+0.5 are the same half turn",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "+0.5 are the same half turn"
+        },
+        "30": {
+            "name": "tv.adjust_sharpness",
+            "id": 1347,
+            "position_x": 980,
+            "position_y": 120,
+            "width": 240,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "31": {
+            "name": "t.select",
+            "id": 1384,
+            "position_x": 980,
+            "position_y": 245,
+            "width": 170,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "32": {
+            "name": "heat_map",
+            "id": 1421,
+            "position_x": 980,
+            "position_y": 380,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "33": {
+            "init": "comment sharpness 0 softens; above 1 it",
+            "name": "comment",
+            "id": 1458,
+            "position_x": 1246,
+            "position_y": 580,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sharpness 0 softens; above 1 it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sharpness 0 softens; above 1 it"
+        },
+        "34": {
+            "init": "comment exaggerates past the original",
+            "name": "comment",
+            "id": 1495,
+            "position_x": 1246,
+            "position_y": 660,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "exaggerates past the original",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "exaggerates past the original"
+        },
+        "35": {
+            "name": "close",
+            "id": 1532,
+            "position_x": 24,
+            "position_y": 1053,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "10": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "12": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "13": {
+            "source_node": 1014,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1051,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "14": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 1162,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "15": {
+            "source_node": 1162,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1199,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "16": {
+            "source_node": 1199,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1236,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "17": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 1347,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "18": {
+            "source_node": 1347,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1384,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "19": {
+            "source_node": 1384,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1421,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

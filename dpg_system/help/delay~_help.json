@@ -1,0 +1,315 @@
+{
+    "height": 1354,
+    "width": 1676,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "delay~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/delay~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment delay~ - repeats, and the short ones you cannot patch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 636,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "delay~ - repeats, and the short ones you cannot patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "delay~ - repeats, and the short ones you cannot patch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 828,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "delay~ is a delay line with damped feedback and an audio-rate delay time.\n\nThe feedback belongs to the node rather than to the patch, and it has to. \nA cord from the outlet back to the inlet is a cycle, and the compiler runs a \ncycle one block late - so the shortest delay a patched feedback loop can make \nis around twelve milliseconds. Everything shorter than that is only reachable \nfrom inside the node, and everything shorter than that is where the interesting \nsounds are: flanging, comb filtering, the resonance of a short tube.\n\nBecause the delay time is an audio-rate inlet rather than a setting, you can \nmodulate it with an LFO for chorus and flanging, or with an envelope for a \npitch-bending sweep as the line lengthens.\n\n'damping' rolls the high end off each time round the loop, which is what makes \nrepeats decay the way a real space does rather than ringing forever with the \nsame brightness.\n\nSYNTAX:\ndelay~ <time>\necho~ <time>\n\nEXAMPLE:\ndelay~ 0.25\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\ntime:\nThe delay, at audio rate. Modulate it.\n\nfeedback:\nHow much of the output goes round again. High values ring for a long time; \nat 1 it never dies.\n\ndamping:\nHow much high end is lost each time round.\n\nfreeze:\nHolds what is in the line and stops taking new input, so the current contents \nloop indefinitely.\n\nmode:\nHow the line behaves - the character of the repeats.\n\nOUTPUTS: \n\nleft out / right out:\nThe delayed signal.\n\nA NOTE ON MODULATING TIME:\nChanging the delay time changes the pitch of what is already in the line, \nbecause the material is being read faster or slower. That is not a defect - \nit is what a flanger is, and what a tape delay does when you push it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "delay~ is a delay line with damped feedback and an audio-rate delay time.\n\nThe feedback belongs to the node rather than to the patch, and it has to. \nA cord from the outlet back to the inlet is a cycle, and the compiler runs a \ncycle one block late - so the shortest delay a patched feedback loop can make \nis around twelve milliseconds. Everything shorter than that is only reachable \nfrom inside the node, and everything shorter than that is where the interesting \nsounds are: flanging, comb filtering, the resonance of a short tube.\n\nBecause the delay time is an audio-rate inlet rather than a setting, you can \nmodulate it with an LFO for chorus and flanging, or with an envelope for a \npitch-bending sweep as the line lengthens.\n\n'damping' rolls the high end off each time round the loop, which is what makes \nrepeats decay the way a real space does rather than ringing forever with the \nsame brightness.\n\nSYNTAX:\ndelay~ <time>\necho~ <time>\n\nEXAMPLE:\ndelay~ 0.25\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\ntime:\nThe delay, at audio rate. Modulate it.\n\nfeedback:\nHow much of the output goes round again. High values ring for a long time; \nat 1 it never dies.\n\ndamping:\nHow much high end is lost each time round.\n\nfreeze:\nHolds what is in the line and stops taking new input, so the current contents \nloop indefinitely.\n\nmode:\nHow the line behaves - the character of the repeats.\n\nOUTPUTS: \n\nleft out / right out:\nThe delayed signal.\n\nA NOTE ON MODULATING TIME:\nChanging the delay time changes the pitch of what is already in the line, \nbecause the material is being read faster or slower. That is not a defect - \nit is what a flanger is, and what a tape delay does when you push it."
+        },
+        "3": {
+            "name": "clock~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "clock~ 1"
+        },
+        "4": {
+            "name": "adsr~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 280,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "vco~",
+            "id": 422,
+            "position_x": 300,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 330"
+        },
+        "6": {
+            "name": "vca~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 220,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "lfo~",
+            "id": 496,
+            "position_x": 300,
+            "position_y": 280,
+            "width": 200,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "lfo~ 0.2"
+        },
+        "8": {
+            "name": "delay~",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 700,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "delay~ 0.25"
+        },
+        "9": {
+            "init": "comment the lfo modulates the delay time",
+            "name": "comment",
+            "id": 570,
+            "position_x": 546,
+            "position_y": 930,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the lfo modulates the delay time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the lfo modulates the delay time"
+        },
+        "10": {
+            "init": "comment which bends the pitch of the repeats",
+            "name": "comment",
+            "id": 607,
+            "position_x": 546,
+            "position_y": 960,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which bends the pitch of the repeats",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which bends the pitch of the repeats"
+        },
+        "11": {
+            "name": "fader_out~",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 1000,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1250,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trigger",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gain"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "time"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

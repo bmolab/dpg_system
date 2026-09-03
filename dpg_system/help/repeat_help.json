@@ -1,0 +1,312 @@
+{
+    "height": 681,
+    "width": 1342,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "repeat_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/repeat_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment repeat - the same value, in a known order",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "repeat - the same value, in a known order",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "repeat - the same value, in a known order"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 514,
+            "position_y": 45,
+            "width": 788,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The repeat node sends one incoming value out of several outlets, in a defined order.\n\nEvery outlet gets the same value. What the node gives you is the ORDER: \nthe rightmost outlet fires first, then the next, and so on leftward. \n\nThat matters more than it sounds. In a patch, order of execution decides \ncorrectness whenever one branch depends on another having already run - \nset a parameter before triggering the thing that uses it, store a value before \nsending the bang that reads it. Fanning a cord out to several places gives you \nno control over which happens first. This node does.\n\nTHE NODES:\n\nrepeat            outlets labelled \"out 0\", \"out 1\", ...\nrepeat_in_order   outlets labelled \"first\", \"second\", \"third\", ... \n                  naming the order they actually fire in\n\nThey behave identically; repeat_in_order simply labels the outlets so the \nsequence is visible on the node rather than something you have to remember.\n\nSYNTAX:\nrepeat <count: int>\nrepeat_in_order <count: int>\n\nEXAMPLE:\nrepeat_in_order 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to send on. Receiving data here triggers the node.\n\nThe count is given as an argument when you create the node and decides how many \noutlets there are. The default is 2.\n\nOUTPUTS: \n\nOne outlet per repeat, all carrying the same value. \nThey fire RIGHT TO LEFT - the rightmost first, the leftmost last. \nOn repeat_in_order the labels tell you this directly: \"first\" is the rightmost \noutlet, and it goes first.\n\nRELATED:\nThe t node does the same job when you want to send different CONSTANTS in a \ndefined order, rather than the same value several times.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The repeat node sends one incoming value out of several outlets, in a defined order.\n\nEvery outlet gets the same value. What the node gives you is the ORDER: \nthe rightmost outlet fires first, then the next, and so on leftward. \n\nThat matters more than it sounds. In a patch, order of execution decides \ncorrectness whenever one branch depends on another having already run - \nset a parameter before triggering the thing that uses it, store a value before \nsending the bang that reads it. Fanning a cord out to several places gives you \nno control over which happens first. This node does.\n\nTHE NODES:\n\nrepeat            outlets labelled \"out 0\", \"out 1\", ...\nrepeat_in_order   outlets labelled \"first\", \"second\", \"third\", ... \n                  naming the order they actually fire in\n\nThey behave identically; repeat_in_order simply labels the outlets so the \nsequence is visible on the node rather than something you have to remember.\n\nSYNTAX:\nrepeat <count: int>\nrepeat_in_order <count: int>\n\nEXAMPLE:\nrepeat_in_order 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to send on. Receiving data here triggers the node.\n\nThe count is given as an argument when you create the node and decides how many \noutlets there are. The default is 2.\n\nOUTPUTS: \n\nOne outlet per repeat, all carrying the same value. \nThey fire RIGHT TO LEFT - the rightmost first, the leftmost last. \nOn repeat_in_order the labels tell you this directly: \"first\" is the rightmost \noutlet, and it goes first.\n\nRELATED:\nThe t node does the same job when you want to send different CONSTANTS in a \ndefined order, rather than the same value several times."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click once",
+            "name": "comment",
+            "id": 385,
+            "position_x": 246,
+            "position_y": 115,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click once"
+        },
+        "5": {
+            "name": "repeat_in_order",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 190,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 3"
+        },
+        "6": {
+            "init": "comment the rightmost outlet fires first",
+            "name": "comment",
+            "id": 459,
+            "position_x": 246,
+            "position_y": 235,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the rightmost outlet fires first",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the rightmost outlet fires first"
+        },
+        "7": {
+            "name": "counter",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 280,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "name": "int",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the count rises by three per click",
+            "name": "comment",
+            "id": 570,
+            "position_x": 246,
+            "position_y": 430,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the count rises by three per click",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the count rises by three per click"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 452,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 2,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

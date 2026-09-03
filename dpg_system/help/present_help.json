@@ -1,0 +1,251 @@
+{
+    "height": 641,
+    "width": 1376,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "present_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/present_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment present - arrange the patch for someone else",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 528,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "present - arrange the patch for someone else",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "present - arrange the patch for someone else"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 548,
+            "position_y": 45,
+            "width": 788,
+            "height": 536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These three nodes let a patch arrange its own window and interface.\n\nThey are for finishing a patch - turning something you built into something \nsomeone can use, without them seeing the wiring.\n\nTHE NODES:\n\npresent                  switch the patch into presentation mode\nactive_widget            report which widget the mouse is over\npatch_window_position    set the window's position and size\n\nPresentation mode is the important one. Every node has a presentation state, \nand nodes set to hidden disappear when the patch is presented - so you can lay \nout a clean panel of just the controls, on top of the working patch, and switch \nbetween the two. The \"open as presentation\" option makes a patch open that way \nfrom the start, which is how you hand it to someone who should not be looking \nat the machinery.\n\nSYNTAX:\npresent\nactive_widget\npatch_window_position\n\nINPUTS and PARAMETERS:\n\nopen as presentation (present):\nWhen checked, this patch opens directly into presentation mode rather than \nshowing the patch as built.\n\nactive_widget:\nReports the widget currently under the mouse. Use it when a patch needs to know \nwhat the person is pointing at - context help, or a control that shows what it \ndoes when you approach it.\n\ntop / left / width / height (patch_window_position):\nThe window's position and size, in pixels. Send values here to move or resize \nthe patch window while it runs - to bring it up at a known size on a particular \nscreen, or to fit a projector.\n\nOUTPUTS: \n\nNone of these three have outlets - they act on the patch itself rather than \npassing data on.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These three nodes let a patch arrange its own window and interface.\n\nThey are for finishing a patch - turning something you built into something \nsomeone can use, without them seeing the wiring.\n\nTHE NODES:\n\npresent                  switch the patch into presentation mode\nactive_widget            report which widget the mouse is over\npatch_window_position    set the window's position and size\n\nPresentation mode is the important one. Every node has a presentation state, \nand nodes set to hidden disappear when the patch is presented - so you can lay \nout a clean panel of just the controls, on top of the working patch, and switch \nbetween the two. The \"open as presentation\" option makes a patch open that way \nfrom the start, which is how you hand it to someone who should not be looking \nat the machinery.\n\nSYNTAX:\npresent\nactive_widget\npatch_window_position\n\nINPUTS and PARAMETERS:\n\nopen as presentation (present):\nWhen checked, this patch opens directly into presentation mode rather than \nshowing the patch as built.\n\nactive_widget:\nReports the widget currently under the mouse. Use it when a patch needs to know \nwhat the person is pointing at - context help, or a control that shows what it \ndoes when you approach it.\n\ntop / left / width / height (patch_window_position):\nThe window's position and size, in pixels. Send values here to move or resize \nthe patch window while it runs - to bring it up at a known size on a particular \nscreen, or to fit a projector.\n\nOUTPUTS: \n\nNone of these three have outlets - they act on the patch itself rather than \npassing data on."
+        },
+        "3": {
+            "name": "present",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 190,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment tick to open this patch presented",
+            "name": "comment",
+            "id": 385,
+            "position_x": 266,
+            "position_y": 130,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick to open this patch presented",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick to open this patch presented"
+        },
+        "5": {
+            "name": "active_widget",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 175,
+            "width": 190,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment shows what the mouse is over",
+            "name": "comment",
+            "id": 459,
+            "position_x": 266,
+            "position_y": 245,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shows what the mouse is over",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shows what the mouse is over"
+        },
+        "7": {
+            "name": "patch_window_position",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 210,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment send numbers here to move the window",
+            "name": "comment",
+            "id": 533,
+            "position_x": 266,
+            "position_y": 440,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "send numbers here to move the window",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "send numbers here to move the window"
+        },
+        "9": {
+            "init": "comment set a node to hidden to leave it out",
+            "name": "comment",
+            "id": 570,
+            "position_x": 266,
+            "position_y": 470,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set a node to hidden to leave it out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set a node to hidden to leave it out"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 460,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

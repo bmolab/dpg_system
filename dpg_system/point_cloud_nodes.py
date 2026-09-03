@@ -374,6 +374,13 @@ class PointCloudBackgroundNode(PointCloudNode):
             return False
         if changed:
             # Geometry moved: any learned model no longer maps to these cells.
+            # Say so when a learning run is abandoned -- pressing 'learn' before
+            # the first cloud arrives builds the grid from the fallback bounds,
+            # and the first frame's crop then rebuilds it, which used to cancel
+            # the run in silence right after announcing it had started.
+            if self.learn_remaining > 0:
+                print(f'{self.label}: volume changed mid-learn -- learning '
+                      f'abandoned. Press learn again with the cloud running.')
             self.hits = None
             self.bg_mask = None
             self.learn_remaining = 0

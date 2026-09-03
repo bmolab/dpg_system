@@ -118,7 +118,16 @@ class ArithmeticNode(Node):
             self.operand = any_to_numerical(self.operand_input())
         input_value = any_to_numerical(self.input())
         if type(input_value) != type(self.operand):
-            self.operand = any_to_match(self.operand, input_value)
+            # Conform the operand to the input so arrays and tensors line up --
+            # but never NARROW it. An integer arriving at 'in' would otherwise
+            # run a float operand through any_to_int, turning '* 0.5' into
+            # '* 0' permanently, and the node would multiply by zero from then
+            # on. Python mixes int and float perfectly well on its own, so
+            # there is nothing that needs doing in that direction.
+            narrowing = (isinstance(self.operand, float) and
+                         isinstance(input_value, (bool, int, np.integer)))
+            if not narrowing:
+                self.operand = any_to_match(self.operand, input_value)
 
         output_value = self.op(input_value, self.operand)
         self.output.send(output_value)

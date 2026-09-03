@@ -1,0 +1,497 @@
+{
+    "height": 761,
+    "width": 1578,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "math_single_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/math_single_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment math_single - one function, no operand",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 456,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "math_single - one function, no operand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "math_single - one function, no operand"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 730,
+            "position_y": 45,
+            "width": 808,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes each apply one mathematical function to whatever arrives at their inlet.\n\nThey take no operand - the function is the whole node. \nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors, \nand an array goes through element by element, keeping its shape.\n\nTHE NODES:\n\nabs       distance from zero, discarding the sign\nsqrt      square root\nexp       e raised to the power of the input\nlog2      logarithm base 2\nlog10     logarithm base 10\ninverse   one divided by the input\nnorm      divide a vector by its own length, giving a unit vector\nround     round to the nearest whole number\nfloor     round down, towards negative\nceil      round up, towards positive\ntrunc     drop the fractional part, rounding towards zero\n\nThe four rounding nodes also exist under NumPy names - np.round, np.floor, \nnp.ceil and np.trunc - which behave identically.\n\nNote that floor, ceil and trunc differ only for negative numbers. \nGiven -2.5: floor gives -3, ceil gives -2, and trunc gives -2.\n\nSYNTAX:\n<function>\n\nEXAMPLE:\nsqrt\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\ndecimals:\nAn option that appears on the round node only. \nIt sets how many decimal places to keep. The default, 0, rounds to whole numbers.\n\nOUTPUTS: \n\nresult:\nThe result, in the same shape as the input.\n\nSTAYING ALIVE ON BAD INPUT:\nThese nodes are built not to interrupt a running patch. \nlog2 and log10 of zero or a negative number return negative infinity for single \nnumbers, and for arrays they take the logarithm of the absolute value. \ninverse of zero returns infinity. \nnorm of a single number returns 1.0, since one number has no direction.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes each apply one mathematical function to whatever arrives at their inlet.\n\nThey take no operand - the function is the whole node. \nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors, \nand an array goes through element by element, keeping its shape.\n\nTHE NODES:\n\nabs       distance from zero, discarding the sign\nsqrt      square root\nexp       e raised to the power of the input\nlog2      logarithm base 2\nlog10     logarithm base 10\ninverse   one divided by the input\nnorm      divide a vector by its own length, giving a unit vector\nround     round to the nearest whole number\nfloor     round down, towards negative\nceil      round up, towards positive\ntrunc     drop the fractional part, rounding towards zero\n\nThe four rounding nodes also exist under NumPy names - np.round, np.floor, \nnp.ceil and np.trunc - which behave identically.\n\nNote that floor, ceil and trunc differ only for negative numbers. \nGiven -2.5: floor gives -3, ceil gives -2, and trunc gives -2.\n\nSYNTAX:\n<function>\n\nEXAMPLE:\nsqrt\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\ndecimals:\nAn option that appears on the round node only. \nIt sets how many decimal places to keep. The default, 0, rounds to whole numbers.\n\nOUTPUTS: \n\nresult:\nThe result, in the same shape as the input.\n\nSTAYING ALIVE ON BAD INPUT:\nThese nodes are built not to interrupt a running patch. \nlog2 and log10 of zero or a negative number return negative infinity for single \nnumbers, and for arrays they take the logarithm of the absolute value. \ninverse of zero returns infinity. \nnorm of a single number returns 1.0, since one number has no direction."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "abs",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 100,
+            "height": 50,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 200,
+            "position_y": 200,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment the sine folded onto the positive side",
+            "name": "comment",
+            "id": 533,
+            "position_x": 434,
+            "position_y": 292,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the sine folded onto the positive side",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the sine folded onto the positive side"
+        },
+        "9": {
+            "name": "signal",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 345,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "name": "floor",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 445,
+            "width": 100,
+            "height": 50,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 200,
+            "position_y": 413,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 4.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment a ramp turned into a staircase",
+            "name": "comment",
+            "id": 681,
+            "position_x": 434,
+            "position_y": 505,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a ramp turned into a staircase",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a ramp turned into a staircase"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 619,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

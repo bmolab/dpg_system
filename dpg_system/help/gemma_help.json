@@ -1,0 +1,664 @@
+{
+    "height": 1095,
+    "width": 2084,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "gemma_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gemma_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gemma - steering a model from inside",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 432,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gemma - steering a model from inside",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gemma - steering a model from inside"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1236,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A language model you can reach inside and push.\n\nTHE NODES:\n\ngemma                Gemma 2, with feature steering\nneuronpedia_search   find the feature to steer, by describing it\n\nTHIS IS NOT THE SAME NODE AS gemma_4:\ngemma_4 is a chat model you prompt. This is Gemma 2 with a sparse autoencoder\nattached, which lets you reach into the middle of the network and turn\nindividual CONCEPTS up or down while it writes.\n\nPrompting asks the model to write about something. Steering changes what it is\nthinking about, which is a different kind of control and produces a different\nkind of text - the subject can stay put while the disposition underneath it\nshifts.\n\nHOW STEERING WORKS, IN PRACTICE:\nThe sparse autoencoder decomposes what is happening inside a layer into many\nthousands of features, most of which turn out to correspond to something a\nperson can name - \"strong emotions\", \"dogs\", a place, a register. Each has a\nNUMBER.\n\n'interventions' takes those numbers. 'intervention_strength' says how hard to\npush, and 'intervention_active' switches the whole thing on and off so you can\nhear the difference against the same prompt and seed.\n\nPush gently. A small strength colours the writing; a large one makes the model\nobsessive and eventually incoherent, in a way that is interesting once and\ntiresome after that.\n\nneuronpedia_search IS HOW YOU FIND THE NUMBER:\nYou do not want to read sixteen thousand features. Type a description - what you\nwant more or less of - and it asks Neuronpedia, which holds explanations of\nthese features contributed by other people, and returns the best three as\n\n    [index, description, votes]\n\nThe index is what gemma wants. The votes are how much agreement there is that\nthe explanation is right, which is worth reading: a feature with a confident\nexplanation behaves more like its label than one with a tentative one.\n\n'model' and 'layer' must MATCH what gemma is running. A feature index only means\nanything for the model and layer it was found in - the same number in a\ndifferent layer is a different concept entirely, and nothing will warn you.\n\nTHE MODEL AND ITS SAE ARE A SET:\nEach entry pairs a model with the Gemma Scope autoencoder trained on it, and a\nlayer. The larger models are quantised to four bits to fit. Changing the model\nmeans changing the autoencoder and re-finding your features.\n\n'start', 'pause' and 'reset' control the generation; 'delay' paces it.\n'temperature', 'top_k' and 'top_p' are the ordinary sampling controls.\n\nSYNTAX:\ngemma\nneuronpedia_search\n\nEXAMPLE:\nneuronpedia_search\n\nINPUTS and PARAMETERS:\n\nprompt:\nWhat to write about.\n\ninterventions / intervention_strength / intervention_active:\nWhich features to push, how hard, and whether to push at all.\n\ntemperature / top_k / top_p / delay:\nSampling, and pacing.\n\nstart / pause / reset:\nRun, hold, begin again.\n\nsearch text / model / layer / search:\nWhat to look for, where, and go.\n\nOUTPUTS: \n\ngenerated_text:\nWhat it wrote.\n\nresults:\nUp to three [index, description, votes] triples.\n\nRELATED:\ngemma_4 for ordinary chat, which is faster and better at answering.\nThe steering here is the interesting one; gemma_4 is the useful one.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A language model you can reach inside and push.\n\nTHE NODES:\n\ngemma                Gemma 2, with feature steering\nneuronpedia_search   find the feature to steer, by describing it\n\nTHIS IS NOT THE SAME NODE AS gemma_4:\ngemma_4 is a chat model you prompt. This is Gemma 2 with a sparse autoencoder\nattached, which lets you reach into the middle of the network and turn\nindividual CONCEPTS up or down while it writes.\n\nPrompting asks the model to write about something. Steering changes what it is\nthinking about, which is a different kind of control and produces a different\nkind of text - the subject can stay put while the disposition underneath it\nshifts.\n\nHOW STEERING WORKS, IN PRACTICE:\nThe sparse autoencoder decomposes what is happening inside a layer into many\nthousands of features, most of which turn out to correspond to something a\nperson can name - \"strong emotions\", \"dogs\", a place, a register. Each has a\nNUMBER.\n\n'interventions' takes those numbers. 'intervention_strength' says how hard to\npush, and 'intervention_active' switches the whole thing on and off so you can\nhear the difference against the same prompt and seed.\n\nPush gently. A small strength colours the writing; a large one makes the model\nobsessive and eventually incoherent, in a way that is interesting once and\ntiresome after that.\n\nneuronpedia_search IS HOW YOU FIND THE NUMBER:\nYou do not want to read sixteen thousand features. Type a description - what you\nwant more or less of - and it asks Neuronpedia, which holds explanations of\nthese features contributed by other people, and returns the best three as\n\n    [index, description, votes]\n\nThe index is what gemma wants. The votes are how much agreement there is that\nthe explanation is right, which is worth reading: a feature with a confident\nexplanation behaves more like its label than one with a tentative one.\n\n'model' and 'layer' must MATCH what gemma is running. A feature index only means\nanything for the model and layer it was found in - the same number in a\ndifferent layer is a different concept entirely, and nothing will warn you.\n\nTHE MODEL AND ITS SAE ARE A SET:\nEach entry pairs a model with the Gemma Scope autoencoder trained on it, and a\nlayer. The larger models are quantised to four bits to fit. Changing the model\nmeans changing the autoencoder and re-finding your features.\n\n'start', 'pause' and 'reset' control the generation; 'delay' paces it.\n'temperature', 'top_k' and 'top_p' are the ordinary sampling controls.\n\nSYNTAX:\ngemma\nneuronpedia_search\n\nEXAMPLE:\nneuronpedia_search\n\nINPUTS and PARAMETERS:\n\nprompt:\nWhat to write about.\n\ninterventions / intervention_strength / intervention_active:\nWhich features to push, how hard, and whether to push at all.\n\ntemperature / top_k / top_p / delay:\nSampling, and pacing.\n\nstart / pause / reset:\nRun, hold, begin again.\n\nsearch text / model / layer / search:\nWhat to look for, where, and go.\n\nOUTPUTS: \n\ngenerated_text:\nWhat it wrote.\n\nresults:\nUp to three [index, description, votes] triples.\n\nRELATED:\ngemma_4 for ordinary chat, which is faster and better at answering.\nThe steering here is the interesting one; gemma_4 is the useful one."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 380,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "strong emotions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "neuronpedia_search",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 320,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "list",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 335,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment describe what you want more of, and it",
+            "name": "comment",
+            "id": 459,
+            "position_x": 926,
+            "position_y": 385,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "describe what you want more of, and it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "describe what you want more of, and it"
+        },
+        "7": {
+            "init": "comment returns [index, description, votes].",
+            "name": "comment",
+            "id": 496,
+            "position_x": 926,
+            "position_y": 415,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "returns [index, description, votes].",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "returns [index, description, votes]."
+        },
+        "8": {
+            "init": "comment The index is what gemma wants",
+            "name": "comment",
+            "id": 533,
+            "position_x": 926,
+            "position_y": 445,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "The index is what gemma wants",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "The index is what gemma wants"
+        },
+        "9": {
+            "init": "comment model and layer MUST match gemma - the",
+            "name": "comment",
+            "id": 570,
+            "position_x": 926,
+            "position_y": 485,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "model and layer MUST match gemma - the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "model and layer MUST match gemma - the"
+        },
+        "10": {
+            "init": "comment same number in another layer is a",
+            "name": "comment",
+            "id": 607,
+            "position_x": 926,
+            "position_y": 515,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "same number in another layer is a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "same number in another layer is a"
+        },
+        "11": {
+            "init": "comment different concept, and nothing warns you",
+            "name": "comment",
+            "id": 644,
+            "position_x": 926,
+            "position_y": 545,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "different concept, and nothing warns you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "different concept, and nothing warns you"
+        },
+        "12": {
+            "name": "gemma",
+            "id": 681,
+            "position_x": 560,
+            "position_y": 62,
+            "width": 340,
+            "height": 520,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "text_display",
+            "id": 718,
+            "position_x": 560,
+            "position_y": 610,
+            "width": 340,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment switch intervention_active on and off",
+            "name": "comment",
+            "id": 755,
+            "position_x": 926,
+            "position_y": 845,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "switch intervention_active on and off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "switch intervention_active on and off"
+        },
+        "15": {
+            "init": "comment against the same prompt to hear what",
+            "name": "comment",
+            "id": 792,
+            "position_x": 926,
+            "position_y": 875,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "against the same prompt to hear what",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "against the same prompt to hear what"
+        },
+        "16": {
+            "init": "comment the feature is actually doing",
+            "name": "comment",
+            "id": 829,
+            "position_x": 926,
+            "position_y": 905,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the feature is actually doing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the feature is actually doing"
+        },
+        "17": {
+            "init": "comment push GENTLY - a small strength colours",
+            "name": "comment",
+            "id": 866,
+            "position_x": 926,
+            "position_y": 945,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "push GENTLY - a small strength colours",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "push GENTLY - a small strength colours"
+        },
+        "18": {
+            "init": "comment the writing, a large one makes it",
+            "name": "comment",
+            "id": 903,
+            "position_x": 926,
+            "position_y": 975,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the writing, a large one makes it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the writing, a large one makes it"
+        },
+        "19": {
+            "init": "comment obsessive and then incoherent",
+            "name": "comment",
+            "id": 940,
+            "position_x": 926,
+            "position_y": 1005,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "obsessive and then incoherent",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "obsessive and then incoherent"
+        },
+        "20": {
+            "init": "comment prompting asks it to write ABOUT",
+            "name": "comment",
+            "id": 977,
+            "position_x": 926,
+            "position_y": 600,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "prompting asks it to write ABOUT",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "prompting asks it to write ABOUT"
+        },
+        "21": {
+            "init": "comment something. Steering changes what it is",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 926,
+            "position_y": 630,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "something. Steering changes what it is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "something. Steering changes what it is"
+        },
+        "22": {
+            "init": "comment thinking about - the subject can stay",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 926,
+            "position_y": 660,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "thinking about - the subject can stay",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "thinking about - the subject can stay"
+        },
+        "23": {
+            "init": "comment put while the disposition shifts",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 926,
+            "position_y": 690,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "put while the disposition shifts",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "put while the disposition shifts"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 860,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "search text"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "results",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "generated_text",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

@@ -1,0 +1,460 @@
+{
+    "height": 812,
+    "width": 1621,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.roll_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.roll_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.roll and t.flip - moving contents about",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.roll and t.flip - moving contents about",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.roll and t.flip - moving contents about"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 773,
+            "position_y": 45,
+            "width": 808,
+            "height": 696,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These move a tensor's contents around, or make more of them.\n\nTHE NODES:\n\nt.roll    shift along an axis, with what falls off one end reappearing at the other\nt.flip    reverse along an axis\nt.repeat  repeat the whole tensor a number of times in each direction\nt.tile    the same thing\n\nt.roll LOSES NOTHING:\nEverything that falls off the end comes back at the start, which makes it a \nrotation rather than a shift. That is what you want for a circular buffer, \nfor a delay of a fixed number of samples, or for comparing a signal against \nitself offset in time. If you want values to fall off and zeros to arrive \ninstead, this is not the node.\n\nrepeat VERSUS tile:\nBoth tile the WHOLE tensor rather than repeating individual elements, which \nsurprises people coming from NumPy, where repeat does the opposite. \nGiven [1, 2, 3] and a count of 2, both give [1, 2, 3, 1, 2, 3] - not \n[1, 1, 2, 2, 3, 3].\n\nThe difference between the two is only in how they handle being given fewer \ncounts than the tensor has dimensions: tile assumes 1 for the missing leading \nones, repeat wants at least as many as there are dimensions. tile is the more \nforgiving.\n\nSYNTAX:\nt.roll <shift> <dim>\nt.flip <dim>\nt.tile <count> <count> ...\n\nEXAMPLE:\nt.roll 1 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nshifts / dims (t.roll):\nHow far to move and along which axis. Negative shifts go the other way.\n\nflip dims (t.flip):\nWhich axes to reverse.\n\nrepeats / tiling:\nHow many copies in each direction.\n\nOUTPUTS: \n\nrolled tensor / output / repeated tensor out / tiled tensor out:\nThe result.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 680,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These move a tensor's contents around, or make more of them.\n\nTHE NODES:\n\nt.roll    shift along an axis, with what falls off one end reappearing at the other\nt.flip    reverse along an axis\nt.repeat  repeat the whole tensor a number of times in each direction\nt.tile    the same thing\n\nt.roll LOSES NOTHING:\nEverything that falls off the end comes back at the start, which makes it a \nrotation rather than a shift. That is what you want for a circular buffer, \nfor a delay of a fixed number of samples, or for comparing a signal against \nitself offset in time. If you want values to fall off and zeros to arrive \ninstead, this is not the node.\n\nrepeat VERSUS tile:\nBoth tile the WHOLE tensor rather than repeating individual elements, which \nsurprises people coming from NumPy, where repeat does the opposite. \nGiven [1, 2, 3] and a count of 2, both give [1, 2, 3, 1, 2, 3] - not \n[1, 1, 2, 2, 3, 3].\n\nThe difference between the two is only in how they handle being given fewer \ncounts than the tensor has dimensions: tile assumes 1 for the missing leading \nones, repeat wants at least as many as there are dimensions. tile is the more \nforgiving.\n\nSYNTAX:\nt.roll <shift> <dim>\nt.flip <dim>\nt.tile <count> <count> ...\n\nEXAMPLE:\nt.roll 1 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nshifts / dims (t.roll):\nHow far to move and along which axis. Negative shifts go the other way.\n\nflip dims (t.flip):\nWhich axes to reverse.\n\nrepeats / tiling:\nHow many copies in each direction.\n\nOUTPUTS: \n\nrolled tensor / output / repeated tensor out / tiled tensor out:\nThe result."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment eight values",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 84,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eight values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eight values"
+        },
+        "7": {
+            "name": "t.roll",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 180,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.roll 2"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment rolled by two: nothing lost, it wraps",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 475,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rolled by two: nothing lost, it wraps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rolled by two: nothing lost, it wraps"
+        },
+        "10": {
+            "name": "t.flip",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 160,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 530,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment flipped: reversed",
+            "name": "comment",
+            "id": 681,
+            "position_x": 484,
+            "position_y": 625,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flipped: reversed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flipped: reversed"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 708,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rolled tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

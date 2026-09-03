@@ -1,0 +1,423 @@
+{
+    "height": 1186,
+    "width": 1613,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "tensor_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/tensor_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment tensor and t.to - getting data into torch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tensor and t.to - getting data into torch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tensor and t.to - getting data into torch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 765,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These get data into torch, and move it between types and devices.\n\nTHE NODES:\n\ntensor     turn anything into a torch tensor\nt.to       change a tensor's dtype, device or gradient tracking\nt.detach   cut a tensor loose from its gradient history\n\nTHE THREE THINGS A TENSOR CARRIES BESIDES ITS NUMBERS:\n\ndtype - what kind of number. float32 is what most torch operations expect;\nfloat64 for precision; the integer types for indices and labels.\n\ndevice - where it lives. cpu, or a GPU. **Two tensors on different devices\ncannot be combined**, and that is the commonest error in torch work by a wide\nmargin. Everything meeting in one operation must be on one device.\n\nrequires_grad - whether operations on it are recorded for automatic\ndifferentiation. Off unless you are training something; it costs memory and time\nto keep a history nobody will use.\n\nt.to CHANGES ANY OF THE THREE:\nIt is the general converter. Moving a tensor to a GPU, casting to float32 for an\noperation that demands it, or turning gradient tracking on - all the same node.\n\nt.detach CUTS THE HISTORY:\nA tensor produced inside a gradient-tracked computation drags its whole history\nalong with it. Take such a tensor into the rest of a patch - to plot it, to send\nit over OSC, to store it - and you keep that history alive, holding memory and\nsometimes producing errors about tensors that need grad.\n\ndetach gives you the same numbers with the history removed. Anything leaving a\ntraining computation for the ordinary patch world should go through it.\n\nMOST NODES CONVERT FOR YOU:\nThe torch nodes in this system generally accept lists and NumPy arrays and\nconvert on the way in, so an explicit tensor node is often unnecessary. Use it\nwhen you want the conversion to happen once rather than at every node, or when\nyou need to set the dtype or device deliberately.\n\nSYNTAX:\ntensor\nt.to\nt.detach\n\nEXAMPLE:\nt.to\n\nINPUTS and PARAMETERS:\n\nin / tensor in:\nThe data. Receiving it triggers the node.\n\ndtype / device / requires_grad:\nThe three properties. See above.\n\nOUTPUTS: \n\ntensor out:\nThe converted tensor.\n\nRELATED:\nt.info reports what a tensor actually is, which is how you find out that a\ndevice mismatch is what you are looking at.\nnp.astype does the dtype half of this for NumPy arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These get data into torch, and move it between types and devices.\n\nTHE NODES:\n\ntensor     turn anything into a torch tensor\nt.to       change a tensor's dtype, device or gradient tracking\nt.detach   cut a tensor loose from its gradient history\n\nTHE THREE THINGS A TENSOR CARRIES BESIDES ITS NUMBERS:\n\ndtype - what kind of number. float32 is what most torch operations expect;\nfloat64 for precision; the integer types for indices and labels.\n\ndevice - where it lives. cpu, or a GPU. **Two tensors on different devices\ncannot be combined**, and that is the commonest error in torch work by a wide\nmargin. Everything meeting in one operation must be on one device.\n\nrequires_grad - whether operations on it are recorded for automatic\ndifferentiation. Off unless you are training something; it costs memory and time\nto keep a history nobody will use.\n\nt.to CHANGES ANY OF THE THREE:\nIt is the general converter. Moving a tensor to a GPU, casting to float32 for an\noperation that demands it, or turning gradient tracking on - all the same node.\n\nt.detach CUTS THE HISTORY:\nA tensor produced inside a gradient-tracked computation drags its whole history\nalong with it. Take such a tensor into the rest of a patch - to plot it, to send\nit over OSC, to store it - and you keep that history alive, holding memory and\nsometimes producing errors about tensors that need grad.\n\ndetach gives you the same numbers with the history removed. Anything leaving a\ntraining computation for the ordinary patch world should go through it.\n\nMOST NODES CONVERT FOR YOU:\nThe torch nodes in this system generally accept lists and NumPy arrays and\nconvert on the way in, so an explicit tensor node is often unnecessary. Use it\nwhen you want the conversion to happen once rather than at every node, or when\nyou need to set the dtype or device deliberately.\n\nSYNTAX:\ntensor\nt.to\nt.detach\n\nEXAMPLE:\nt.to\n\nINPUTS and PARAMETERS:\n\nin / tensor in:\nThe data. Receiving it triggers the node.\n\ndtype / device / requires_grad:\nThe three properties. See above.\n\nOUTPUTS: \n\ntensor out:\nThe converted tensor.\n\nRELATED:\nt.info reports what a tensor actually is, which is how you find out that a\ndevice mismatch is what you are looking at.\nnp.astype does the dtype half of this for NumPy arrays."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 240,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment an ordinary list",
+            "name": "comment",
+            "id": 422,
+            "position_x": 476,
+            "position_y": 168,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "an ordinary list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "an ordinary list"
+        },
+        "6": {
+            "name": "tensor",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 205,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "t.info",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 405,
+            "width": 240,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "string",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "string",
+            "id": 570,
+            "position_x": 250,
+            "position_y": 560,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment shape and dtype",
+            "name": "comment",
+            "id": 607,
+            "position_x": 476,
+            "position_y": 615,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape and dtype",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shape and dtype"
+        },
+        "11": {
+            "name": "t.to",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 655,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "t.info",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 855,
+            "width": 240,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "string",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 1010,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment set dtype on t.to and watch it change",
+            "name": "comment",
+            "id": 755,
+            "position_x": 476,
+            "position_y": 1060,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set dtype on t.to and watch it change",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set dtype on t.to and watch it change"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1082,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dtype",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dtype",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,413 @@
+{
+    "height": 811,
+    "width": 1561,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "change_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/change_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment change - pass a value on only when it has moved",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "change - pass a value on only when it has moved",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "change - pass a value on only when it has moved"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 713,
+            "position_y": 45,
+            "width": 808,
+            "height": 706,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes act as gates that let a value through only when it passes a test. \nUnlike the comparison nodes, what comes out is the value itself, not true or false.\n\nchange, increasing and decreasing all compare the incoming value against the \nPREVIOUS one. They are filters on a stream: they suppress the frames where \nnothing interesting happened, and pass the ones where something did.\n\npass is the same machinery with the test switched off, so everything goes through. \nOn its own it is a patch-cord tidy; given arguments it becomes a gate with \nwhatever comparison you choose.\n\nTHE NODES:\n\nchange       passes a value only when it differs from the one before it\nincreasing   passes a value only when it is larger than the one before it\ndecreasing   passes a value only when it is smaller than the one before it\npass         passes everything, unless you give it a comparison to apply\n\nYou use change to stop a slow part of the patch being retriggered by a stream \nthat is repeating the same number, and increasing or decreasing to catch the \nmoment a reading starts to move one way.\n\nSYNTAX:\nchange\npass <comparison> <operand: int or float>\n\nEXAMPLE:\nchange\npass >= 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be tested and possibly passed on. Receiving data here triggers the node.\n\ncomparison_property:\nThe test to apply, chosen from a menu: !=, ==, >, >=, <, <= or always. \nchange, increasing and decreasing set this for you; you can still change it by hand.\n\noperand_property:\nThe value being compared against. \nWhile self_compare is checked this is filled in automatically after each value \narrives, and shows you what the node will compare against next.\n\nself_compare:\nWhen checked, the node compares each value against the previous one - this is \nwhat makes change, increasing and decreasing behave the way their names suggest. \nWhen unchecked, it compares against a fixed operand you set yourself, \nturning the node into a threshold gate.\n\nforce_int:\nWhen checked, values are rounded to whole numbers before being compared. \nUseful when a noisy float stream would otherwise register as \"changed\" on every frame. \nIt affects only the comparison - what comes out is the unrounded value.\n\nOUTPUTS: \n\nresult:\nThe input value, unchanged, on the occasions when the test succeeds. \nWhen the test fails, nothing at all is sent. \n\nFor arrays and tensors the test passes if ANY element satisfies it, \nand the whole array is then sent.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 690,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes act as gates that let a value through only when it passes a test. \nUnlike the comparison nodes, what comes out is the value itself, not true or false.\n\nchange, increasing and decreasing all compare the incoming value against the \nPREVIOUS one. They are filters on a stream: they suppress the frames where \nnothing interesting happened, and pass the ones where something did.\n\npass is the same machinery with the test switched off, so everything goes through. \nOn its own it is a patch-cord tidy; given arguments it becomes a gate with \nwhatever comparison you choose.\n\nTHE NODES:\n\nchange       passes a value only when it differs from the one before it\nincreasing   passes a value only when it is larger than the one before it\ndecreasing   passes a value only when it is smaller than the one before it\npass         passes everything, unless you give it a comparison to apply\n\nYou use change to stop a slow part of the patch being retriggered by a stream \nthat is repeating the same number, and increasing or decreasing to catch the \nmoment a reading starts to move one way.\n\nSYNTAX:\nchange\npass <comparison> <operand: int or float>\n\nEXAMPLE:\nchange\npass >= 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be tested and possibly passed on. Receiving data here triggers the node.\n\ncomparison_property:\nThe test to apply, chosen from a menu: !=, ==, >, >=, <, <= or always. \nchange, increasing and decreasing set this for you; you can still change it by hand.\n\noperand_property:\nThe value being compared against. \nWhile self_compare is checked this is filled in automatically after each value \narrives, and shows you what the node will compare against next.\n\nself_compare:\nWhen checked, the node compares each value against the previous one - this is \nwhat makes change, increasing and decreasing behave the way their names suggest. \nWhen unchecked, it compares against a fixed operand you set yourself, \nturning the node into a threshold gate.\n\nforce_int:\nWhen checked, values are rounded to whole numbers before being compared. \nUseful when a noisy float stream would otherwise register as \"changed\" on every frame. \nIt affects only the comparison - what comes out is the unrounded value.\n\nOUTPUTS: \n\nresult:\nThe input value, unchanged, on the occasions when the test succeeds. \nWhen the test fails, nothing at all is sent. \n\nFor arrays and tensors the test passes if ANY element satisfies it, \nand the whole array is then sent."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "floor",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 100,
+            "height": 50,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment a staircase - the same number for many frames",
+            "name": "comment",
+            "id": 496,
+            "position_x": 368,
+            "position_y": 290,
+            "width": 315,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a staircase - the same number for many frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a staircase - the same number for many frames"
+        },
+        "8": {
+            "name": "int",
+            "id": 533,
+            "position_x": 215,
+            "position_y": 235,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "change",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 120,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "self_compare",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "force_int",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "name": "counter",
+            "id": 607,
+            "position_x": 215,
+            "position_y": 335,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "name": "int",
+            "id": 644,
+            "position_x": 215,
+            "position_y": 430,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment counts steps, not frames",
+            "name": "comment",
+            "id": 681,
+            "position_x": 368,
+            "position_y": 442,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counts steps, not frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counts steps, not frames"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 502,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

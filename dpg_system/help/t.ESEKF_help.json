@@ -1,0 +1,455 @@
+{
+    "height": 1325,
+    "width": 1734,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "t.ESEKF_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.ESEKF_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.ESEKF - error-state, rotationally invariant",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.ESEKF - error-state, rotationally invariant",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.ESEKF - error-state, rotationally invariant"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 876,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The error-state extended Kalman filters: the most careful option here.\n\nTHE NODES:\n\nt.ESEKF       for ordinary numeric streams\nt.quat_ESEKF  for quaternions\n\nWHAT 'ERROR-STATE' MEANS AND WHY IT HELPS:\nAn ordinary Kalman filter tracks the quantity itself. An error-state filter\ntracks the SMALL DIFFERENCE between its prediction and reality, and applies that\ncorrection to the prediction afterwards.\n\nFor rotations this is the difference between working and not. A rotation lives\non a curved space where addition is meaningless, but a small error near the\ncurrent orientation behaves almost like an ordinary vector - so the filter's\narithmetic is valid, and it stays valid at any orientation. The result is\nrotationally invariant: the filter behaves the same whichever way the body\nhappens to be facing.\n\nThat last property is what you want when a filter's behaviour must not depend\non which direction the performer is standing.\n\nTHE TRISTATE BLEND:\nBoth of these run damping and responsive modes and blend continuously between\nthem, with a third path for rejecting acceleration that is not physically\nplausible. The 'alphas' outlet reports all three, so you can see which regime\nthe filter is in at any moment.\n\nContinuous blending rather than switching is deliberate and matters: a filter\nthat flips modes introduces a step at every flip, replacing the artefact you\nwere removing with one of its own.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.ESEKF\nt.quat_ESEKF\n\nEXAMPLE:\nt.quat_ESEKF\n\nINPUTS and PARAMETERS:\n\ninput / quaternions:\nThe streams.\n\ndt (sec):\nTime between frames. Everything the filter reasons about scales with this.\n\nBlending Speed:\nHow quickly it moves between damping and responsive behaviour.\n\nAcceleration Rejection:\nThe threshold beyond which a change is treated as implausible rather than fast.\n\nDamping Mode / Responsive Mode:\nThe two regimes' settings.\n\nreset:\nClear the state.\n\nOUTPUTS: \n\nfiltered:\nThe result.\n\nalphas (damp, resp, err):\nThe blend between the three regimes. This is the diagnostic outlet - plot it\nwhile tuning, because the numbers on the node tell you what you asked for and\nthis tells you what the filter is actually doing.\n\nCHOOSING BETWEEN THESE AND THE SIMPLER ONES:\nThese are the most principled and the most to set up. When a smart-clamped\nfilter removes your glitches without hurting the movement, use that. Reach for\nthese when the simpler filters are forcing a choice you do not want to make, or\nwhen rotational invariance genuinely matters - which it does as soon as a\nfilter's behaviour differs depending on which way the performer is facing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The error-state extended Kalman filters: the most careful option here.\n\nTHE NODES:\n\nt.ESEKF       for ordinary numeric streams\nt.quat_ESEKF  for quaternions\n\nWHAT 'ERROR-STATE' MEANS AND WHY IT HELPS:\nAn ordinary Kalman filter tracks the quantity itself. An error-state filter\ntracks the SMALL DIFFERENCE between its prediction and reality, and applies that\ncorrection to the prediction afterwards.\n\nFor rotations this is the difference between working and not. A rotation lives\non a curved space where addition is meaningless, but a small error near the\ncurrent orientation behaves almost like an ordinary vector - so the filter's\narithmetic is valid, and it stays valid at any orientation. The result is\nrotationally invariant: the filter behaves the same whichever way the body\nhappens to be facing.\n\nThat last property is what you want when a filter's behaviour must not depend\non which direction the performer is standing.\n\nTHE TRISTATE BLEND:\nBoth of these run damping and responsive modes and blend continuously between\nthem, with a third path for rejecting acceleration that is not physically\nplausible. The 'alphas' outlet reports all three, so you can see which regime\nthe filter is in at any moment.\n\nContinuous blending rather than switching is deliberate and matters: a filter\nthat flips modes introduces a step at every flip, replacing the artefact you\nwere removing with one of its own.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.ESEKF\nt.quat_ESEKF\n\nEXAMPLE:\nt.quat_ESEKF\n\nINPUTS and PARAMETERS:\n\ninput / quaternions:\nThe streams.\n\ndt (sec):\nTime between frames. Everything the filter reasons about scales with this.\n\nBlending Speed:\nHow quickly it moves between damping and responsive behaviour.\n\nAcceleration Rejection:\nThe threshold beyond which a change is treated as implausible rather than fast.\n\nDamping Mode / Responsive Mode:\nThe two regimes' settings.\n\nreset:\nClear the state.\n\nOUTPUTS: \n\nfiltered:\nThe result.\n\nalphas (damp, resp, err):\nThe blend between the three regimes. This is the diagnostic outlet - plot it\nwhile tuning, because the numbers on the node tell you what you asked for and\nthis tells you what the filter is actually doing.\n\nCHOOSING BETWEEN THESE AND THE SIMPLER ONES:\nThese are the most principled and the most to set up. When a smart-clamped\nfilter removes your glitches without hurting the movement, use that. Reach for\nthese when the simpler filters are forcing a choice you do not want to make, or\nwhen rotational invariance genuinely matters - which it does as soon as a\nfilter's behaviour differs depending on which way the performer is facing."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "active_joints",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "t.quat_ESEKF",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 505,
+            "width": 300,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment a whole pose in, a whole pose out",
+            "name": "comment",
+            "id": 459,
+            "position_x": 594,
+            "position_y": 780,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a whole pose in, a whole pose out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a whole pose in, a whole pose out"
+        },
+        "7": {
+            "name": "quaternion_diff_and_axis",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 820,
+            "width": 280,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "plot",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 1015,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment per-joint speed, before and after",
+            "name": "comment",
+            "id": 570,
+            "position_x": 594,
+            "position_y": 1200,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "per-joint speed, before and after",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "per-joint speed, before and after"
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 360,
+            "position_y": 505,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the alphas: damp, responsive, error",
+            "name": "comment",
+            "id": 644,
+            "position_x": 594,
+            "position_y": 665,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the alphas: damp, responsive, error",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the alphas: damp, responsive, error"
+        },
+        "12": {
+            "init": "comment this says what the filter is doing -",
+            "name": "comment",
+            "id": 681,
+            "position_x": 594,
+            "position_y": 695,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this says what the filter is doing -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this says what the filter is doing -"
+        },
+        "13": {
+            "init": "comment the settings only say what you asked",
+            "name": "comment",
+            "id": 718,
+            "position_x": 594,
+            "position_y": 725,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the settings only say what you asked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the settings only say what you asked"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 1221,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "full pose quats in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active joint quats out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternions"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "filtered",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternions in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "magnitudes",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "alphas (damp, resp, err)",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

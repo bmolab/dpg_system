@@ -1,0 +1,901 @@
+{
+    "height": 1077,
+    "width": 2207,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1310,
+    "name": "k.sobel_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/k.sobel_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment k filters - blur, edges, blobs",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 360,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "k filters - blur, edges, blobs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "k filters - blur, edges, blobs"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1359,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are the image filters: smoothing, and finding where things change.\n\nTHE NODES:\n\nk.gaussian_blur         smooth the image\nk.sobel                 how fast brightness changes, and which way\nk.canny                 thinned, thresholded edges\nk.dog_response_single   blob response at one scale\n\nTHE SHAPE THEY EXPECT - CHANNELS FIRST:\nkornia works in CHANNELS-FIRST order: (channels, height, width). A 3-channel\ncolour image is (3, H, W), a grayscale one is (1, H, W).\n\nImages from cameras and image files usually arrive the other way round,\n(H, W, 3) - height, width, channels - so these nodes guess. If the last\ndimension is small (3 or 4, the size of a pixel) and the third-from-last is\nlarge, they take it as height-width-channels and transpose it for you.\n\nThat guess is right nearly always and wrong in one case: a very small image,\nwhere 'small last dimension' and 'large third-from-last' stop being different.\nPut a t.permute in front if you are working at those sizes and the result looks\ntransposed.\n\nFLOATS, IN THE RANGE 0 TO 1:\nGive these nodes float images scaled 0 to 1, not 0 to 255 integers. They convert\nintegers for you rather than failing, but the range is yours to get right - an\nimage still scaled 0..255 will come out saturated, because every filter and\nevery colour formula here assumes 1.0 means full brightness.\n\nBLUR FIRST, THEN LOOK FOR EDGES:\nThis is the order that matters. Every edge filter is asking \"how different is\nthis pixel from its neighbours\", and noise is exactly that - a pixel different\nfrom its neighbours. Run an edge filter on a noisy image and you get an answer\ndominated by the noise.\n\nk.gaussian_blur first, then k.sobel, is the standard arrangement, and the amount\nof blur is really a choice about SCALE: it sets how big a thing has to be before\nit counts as an edge rather than as texture.\n\n'sigma' is that choice - how far the smoothing reaches. 'kernel size' is only\nthe window the maths is done in, and it has to be comfortably wider than sigma\nor the blur is cut off at the edges of its own window. Sigma is the dial you\nwant; leave kernel size alone until sigma gets large.\n\nSOBEL AND CANNY ANSWER DIFFERENT QUESTIONS:\nk.sobel gives a CONTINUOUS answer: at every pixel, how steeply brightness is\nchanging. Strong edges give big numbers, gentle shading gives small ones, and\nnothing is thrown away. Multi-channel images are filtered channel by channel.\n\nk.canny gives a DECISION: it takes the same gradients, thins them to lines a\nsingle pixel wide, and applies a threshold, so what comes out is essentially a\nmap of edge or not-edge. That is what you want to count or trace shapes; it is\nthe wrong thing to feed anything that wants a magnitude, because the strength\nhas been thresholded away.\n\nReach for sobel when the answer is a quantity, canny when the answer is a set of\nlines.\n\nA threshold cuts both ways, though. Because canny decides, it can decide there\nis nothing there: blur an image hard enough and the gradients all fall under the\nthreshold, and canny returns an empty map while sobel still reports small\nnon-zero numbers everywhere. An empty canny result usually means too much blur\nupstream, not an image without edges.\n\nk.dog_response_single IS A BLOB DETECTOR:\nIt subtracts one blurred copy of the image from another blurred slightly more.\nWhat survives is detail at the scale BETWEEN the two blurs - finer detail is in\nboth copies and cancels, coarser detail is in both copies and cancels.\n\nSo the two sigmas are a band: they pick a size of thing to respond to. The\ndefaults are close together (1.0 and 1.6), which is the classic ratio and a\nnarrow band. Push them apart and it answers to a wider range of sizes.\n\nSYNTAX:\nk.gaussian_blur\nk.sobel\nk.canny\nk.dog_response_single <sigma_1> <sigma_2>\n\nEXAMPLE:\nk.dog_response_single 1.0 1.6\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it runs the filter.\n\nkernel size / sigma (k.gaussian_blur):\nHow far the smoothing reaches, and the window it is computed in. Sigma is\nclamped above zero - a blur of nothing is not a blur.\n\nsigma_1 / sigma_2 (k.dog_response_single):\nThe two scales whose difference is the answer.\n\nOUTPUTS: \n\noutput:\nThe filtered image, channels first, as floats.\n\nRELATED:\nk.rgb_to_grayscale first if you want one answer per pixel rather than one per\ncolour channel.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are the image filters: smoothing, and finding where things change.\n\nTHE NODES:\n\nk.gaussian_blur         smooth the image\nk.sobel                 how fast brightness changes, and which way\nk.canny                 thinned, thresholded edges\nk.dog_response_single   blob response at one scale\n\nTHE SHAPE THEY EXPECT - CHANNELS FIRST:\nkornia works in CHANNELS-FIRST order: (channels, height, width). A 3-channel\ncolour image is (3, H, W), a grayscale one is (1, H, W).\n\nImages from cameras and image files usually arrive the other way round,\n(H, W, 3) - height, width, channels - so these nodes guess. If the last\ndimension is small (3 or 4, the size of a pixel) and the third-from-last is\nlarge, they take it as height-width-channels and transpose it for you.\n\nThat guess is right nearly always and wrong in one case: a very small image,\nwhere 'small last dimension' and 'large third-from-last' stop being different.\nPut a t.permute in front if you are working at those sizes and the result looks\ntransposed.\n\nFLOATS, IN THE RANGE 0 TO 1:\nGive these nodes float images scaled 0 to 1, not 0 to 255 integers. They convert\nintegers for you rather than failing, but the range is yours to get right - an\nimage still scaled 0..255 will come out saturated, because every filter and\nevery colour formula here assumes 1.0 means full brightness.\n\nBLUR FIRST, THEN LOOK FOR EDGES:\nThis is the order that matters. Every edge filter is asking \"how different is\nthis pixel from its neighbours\", and noise is exactly that - a pixel different\nfrom its neighbours. Run an edge filter on a noisy image and you get an answer\ndominated by the noise.\n\nk.gaussian_blur first, then k.sobel, is the standard arrangement, and the amount\nof blur is really a choice about SCALE: it sets how big a thing has to be before\nit counts as an edge rather than as texture.\n\n'sigma' is that choice - how far the smoothing reaches. 'kernel size' is only\nthe window the maths is done in, and it has to be comfortably wider than sigma\nor the blur is cut off at the edges of its own window. Sigma is the dial you\nwant; leave kernel size alone until sigma gets large.\n\nSOBEL AND CANNY ANSWER DIFFERENT QUESTIONS:\nk.sobel gives a CONTINUOUS answer: at every pixel, how steeply brightness is\nchanging. Strong edges give big numbers, gentle shading gives small ones, and\nnothing is thrown away. Multi-channel images are filtered channel by channel.\n\nk.canny gives a DECISION: it takes the same gradients, thins them to lines a\nsingle pixel wide, and applies a threshold, so what comes out is essentially a\nmap of edge or not-edge. That is what you want to count or trace shapes; it is\nthe wrong thing to feed anything that wants a magnitude, because the strength\nhas been thresholded away.\n\nReach for sobel when the answer is a quantity, canny when the answer is a set of\nlines.\n\nA threshold cuts both ways, though. Because canny decides, it can decide there\nis nothing there: blur an image hard enough and the gradients all fall under the\nthreshold, and canny returns an empty map while sobel still reports small\nnon-zero numbers everywhere. An empty canny result usually means too much blur\nupstream, not an image without edges.\n\nk.dog_response_single IS A BLOB DETECTOR:\nIt subtracts one blurred copy of the image from another blurred slightly more.\nWhat survives is detail at the scale BETWEEN the two blurs - finer detail is in\nboth copies and cancels, coarser detail is in both copies and cancels.\n\nSo the two sigmas are a band: they pick a size of thing to respond to. The\ndefaults are close together (1.0 and 1.6), which is the classic ratio and a\nnarrow band. Push them apart and it answers to a wider range of sizes.\n\nSYNTAX:\nk.gaussian_blur\nk.sobel\nk.canny\nk.dog_response_single <sigma_1> <sigma_2>\n\nEXAMPLE:\nk.dog_response_single 1.0 1.6\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it runs the filter.\n\nkernel size / sigma (k.gaussian_blur):\nHow far the smoothing reaches, and the window it is computed in. Sigma is\nclamped above zero - a blur of nothing is not a blur.\n\nsigma_1 / sigma_2 (k.dog_response_single):\nThe two scales whose difference is the answer.\n\nOUTPUTS: \n\noutput:\nThe filtered image, channels first, as floats.\n\nRELATED:\nk.rgb_to_grayscale first if you want one answer per pixel rather than one per\ncolour channel."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 190,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 1 32 32"
+        },
+        "5": {
+            "name": "t.squeeze",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 250,
+            "position_y": 215,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment pure noise: every pixel unlike its",
+            "name": "comment",
+            "id": 496,
+            "position_x": 1056,
+            "position_y": 310,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pure noise: every pixel unlike its",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pure noise: every pixel unlike its"
+        },
+        "8": {
+            "init": "comment neighbours - the worst case for an",
+            "name": "comment",
+            "id": 533,
+            "position_x": 1056,
+            "position_y": 340,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "neighbours - the worst case for an",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "neighbours - the worst case for an"
+        },
+        "9": {
+            "init": "comment edge filter",
+            "name": "comment",
+            "id": 570,
+            "position_x": 1056,
+            "position_y": 370,
+            "width": 77,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "edge filter",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "edge filter"
+        },
+        "10": {
+            "name": "k.gaussian_blur",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 415,
+            "width": 220,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sigma",
+                    "value": 1.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "kernel size",
+                    "value": "15",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "t.squeeze",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 415,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 280,
+            "position_y": 510,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.2,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.8,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment blur first - now there are blobs",
+            "name": "comment",
+            "id": 718,
+            "position_x": 1056,
+            "position_y": 610,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "blur first - now there are blobs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "blur first - now there are blobs"
+        },
+        "14": {
+            "init": "comment big enough to have edges",
+            "name": "comment",
+            "id": 755,
+            "position_x": 1056,
+            "position_y": 650,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "big enough to have edges",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "big enough to have edges"
+        },
+        "15": {
+            "name": "k.sobel",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 655,
+            "width": 190,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "name": "t.squeeze",
+            "id": 829,
+            "position_x": 250,
+            "position_y": 700,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 250,
+            "position_y": 795,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.1,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment sobel: a continuous steepness",
+            "name": "comment",
+            "id": 903,
+            "position_x": 1056,
+            "position_y": 750,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sobel: a continuous steepness",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sobel: a continuous steepness"
+        },
+        "19": {
+            "name": "k.canny",
+            "id": 940,
+            "position_x": 520,
+            "position_y": 415,
+            "width": 190,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "20": {
+            "name": "t.squeeze",
+            "id": 977,
+            "position_x": 520,
+            "position_y": 510,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "21": {
+            "name": "heat_map",
+            "id": 1014,
+            "position_x": 520,
+            "position_y": 605,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "22": {
+            "init": "comment canny: a decision - edge or not",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 1056,
+            "position_y": 790,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "canny: a decision - edge or not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "canny: a decision - edge or not"
+        },
+        "23": {
+            "name": "k.dog_response_single",
+            "id": 1088,
+            "position_x": 770,
+            "position_y": 120,
+            "width": 260,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "k.dog_response_single 1.0 1.6"
+        },
+        "24": {
+            "name": "t.squeeze",
+            "id": 1125,
+            "position_x": 770,
+            "position_y": 285,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "25": {
+            "name": "heat_map",
+            "id": 1162,
+            "position_x": 770,
+            "position_y": 380,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -0.05,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.05,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "26": {
+            "init": "comment the two sigmas are a band: detail",
+            "name": "comment",
+            "id": 1199,
+            "position_x": 1056,
+            "position_y": 540,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the two sigmas are a band: detail",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the two sigmas are a band: detail"
+        },
+        "27": {
+            "init": "comment between them survives, the rest cancels",
+            "name": "comment",
+            "id": 1236,
+            "position_x": 1056,
+            "position_y": 570,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "between them survives, the rest cancels",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "between them survives, the rest cancels"
+        },
+        "28": {
+            "name": "close",
+            "id": 1273,
+            "position_x": 24,
+            "position_y": 973,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "8": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "10": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "11": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "12": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "13": {
+            "source_node": 1088,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1125,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "14": {
+            "source_node": 1125,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1162,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

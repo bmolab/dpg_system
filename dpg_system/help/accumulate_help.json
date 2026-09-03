@@ -1,0 +1,331 @@
+{
+    "height": 641,
+    "width": 1292,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "accumulate_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/accumulate_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment accumulate - a running total",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 336,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "accumulate - a running total",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "accumulate - a running total"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 464,
+            "position_y": 45,
+            "width": 788,
+            "height": 536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The accumulate node adds up everything it is given and reports the running total.\n\nEach value that arrives is added to the total so far, and the new total is sent out. \nIt is a running sum, kept between frames - the node remembers.\n\nYou use it to integrate a stream: turning a rate into a distance, a speed into a \nposition, or a series of increments into a count. \nFeeding it a stream of 1s makes it a simple counter.\n\nSYNTAX:\naccumulate\n\nEXAMPLE:\naccumulate\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to add to the running total. \nReceiving data here triggers the node - it adds, then sends the new total. \nNegative values subtract, so a stream that goes both ways will wander up and down.\n\nset:\nSets the running total directly, discarding what was there. \nThe new total is sent out immediately. \nUse this to jump the accumulator to a known starting point.\n\nreset:\nA button that returns the total to zero and sends that zero out. \nClick it, or send it anything from elsewhere in the patch.\n\nOUTPUTS: \n\nsum:\nThe running total after the latest value has been added.\n\nA NOTE ON TYPE:\nIncoming values are converted to a single number - an integer if they look like \none, otherwise a float. This node keeps a scalar total; \nit does not accumulate arrays element by element.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The accumulate node adds up everything it is given and reports the running total.\n\nEach value that arrives is added to the total so far, and the new total is sent out. \nIt is a running sum, kept between frames - the node remembers.\n\nYou use it to integrate a stream: turning a rate into a distance, a speed into a \nposition, or a series of increments into a count. \nFeeding it a stream of 1s makes it a simple counter.\n\nSYNTAX:\naccumulate\n\nEXAMPLE:\naccumulate\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to add to the running total. \nReceiving data here triggers the node - it adds, then sends the new total. \nNegative values subtract, so a stream that goes both ways will wander up and down.\n\nset:\nSets the running total directly, discarding what was there. \nThe new total is sent out immediately. \nUse this to jump the accumulator to a known starting point.\n\nreset:\nA button that returns the total to zero and sends that zero out. \nClick it, or send it anything from elsewhere in the patch.\n\nOUTPUTS: \n\nsum:\nThe running total after the latest value has been added.\n\nA NOTE ON TYPE:\nIncoming values are converted to a single number - an integer if they look like \none, otherwise a float. This node keeps a scalar total; \nit does not accumulate arrays element by element."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "toggle",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 50,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "init": "comment ten values a second",
+            "name": "comment",
+            "id": 422,
+            "position_x": 196,
+            "position_y": 110,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ten values a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ten values a second"
+        },
+        "6": {
+            "name": "t",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 178,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "7": {
+            "init": "comment each tick becomes the number 1",
+            "name": "comment",
+            "id": 496,
+            "position_x": 196,
+            "position_y": 182,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each tick becomes the number 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each tick becomes the number 1"
+        },
+        "8": {
+            "name": "accumulate",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 245,
+            "width": 140,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "int",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment click reset on the node to zero it",
+            "name": "comment",
+            "id": 607,
+            "position_x": 196,
+            "position_y": 280,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click reset on the node to zero it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click reset on the node to zero it"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 442,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 348,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,482 @@
+{
+    "height": 901,
+    "width": 1648,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.nn.elu_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nn.elu_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.nn adjustable activations - curves with a knob",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.nn adjustable activations - curves with a knob",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.nn adjustable activations - curves with a knob"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 780,
+            "position_y": 45,
+            "width": 828,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are activation curves whose shape you can adjust.\n\nThe plain activations have one shape each. These take a parameter or two, \nwhich usually controls where the curve bends or how steeply - so the same node \ncovers a family of shapes rather than one.\n\nTHE NODES:\n\nt.nn.leaky_relu  relu, but with a gentle slope below zero instead of flat. \n                 'negative slope' sets how gentle - 0 is exactly relu\nt.nn.elu         relu above zero, an exponential curve below it that levels \n                 off at minus 'alpha' rather than at zero\nt.nn.celu        elu with the curve scaled so it stays continuous everywhere\nt.nn.hardshrink  zero within plus or minus 'lambda', unchanged outside it\nt.nn.softshrink  the same dead zone, but the surviving values are pulled \n                 towards zero by lambda rather than passed at full size\nt.nn.hardtanh    flat below 'minimum' and above 'maximum', straight between\nt.nn.rrelu       leaky_relu with a slope picked at random per element, between \n                 'lower' and 'upper'\nt.nn.softplus    a smooth approximation of relu, with no corner at all. \n                 'beta' sets how sharp the bend is\nt.nn.Threshold   below 'threshold', substitute 'replacement'; above, pass through\n\nWHY A LEAKY relu EXISTS:\nrelu's output is exactly zero for every negative input, and so is its gradient - \nso an element that has gone negative stops learning entirely, and stays \nnegative. A small slope below zero keeps a little signal alive. \nWhether it helps is arguable; that it is a response to a real failure is not.\n\nhardshrink VERSUS softshrink:\nBoth silence a band around zero. hardshrink passes what survives untouched, \nso the output JUMPS from zero to lambda the moment a value crosses. softshrink \nsubtracts lambda from what survives, so it starts from zero and grows smoothly. \nThat is the same trade the noise_gate node's \"squeeze\" option offers, and for \nthe same reason - the smooth one costs a little amplitude and removes the step.\n\nSYNTAX:\nt.nn.leaky_relu <slope>\nt.nn.hardtanh <minimum> <maximum>\n\nEXAMPLE:\nt.nn.hardtanh -1.0 1.0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nnegative slope / alpha / lambda:\nThe single parameter, named for what it means in that node.\n\nminimum / maximum (t.nn.hardtanh):\nThe two limits.\n\nlower / upper (t.nn.rrelu):\nThe range the random slope is drawn from.\n\nbeta / threshold (t.nn.softplus):\nHow sharp the bend is, and above what value the node stops bothering with the \nexponential and passes through linearly.\n\nthreshold / replacement (t.nn.Threshold):\nThe level to test against, and what to substitute below it. \nNote that this substitutes rather than clamping - the replacement need not be \nrelated to the threshold at all.\n\nOUTPUTS: \n\noutput:\nThe bent tensor, in the same shape.\n\nA NOTE ON rrelu:\nIts slope is random per element and redrawn each time, so the same input does \nnot give the same output twice. That is intended - it is a regularizer - but it \nmakes the node unsuitable as a plain shaping curve.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are activation curves whose shape you can adjust.\n\nThe plain activations have one shape each. These take a parameter or two, \nwhich usually controls where the curve bends or how steeply - so the same node \ncovers a family of shapes rather than one.\n\nTHE NODES:\n\nt.nn.leaky_relu  relu, but with a gentle slope below zero instead of flat. \n                 'negative slope' sets how gentle - 0 is exactly relu\nt.nn.elu         relu above zero, an exponential curve below it that levels \n                 off at minus 'alpha' rather than at zero\nt.nn.celu        elu with the curve scaled so it stays continuous everywhere\nt.nn.hardshrink  zero within plus or minus 'lambda', unchanged outside it\nt.nn.softshrink  the same dead zone, but the surviving values are pulled \n                 towards zero by lambda rather than passed at full size\nt.nn.hardtanh    flat below 'minimum' and above 'maximum', straight between\nt.nn.rrelu       leaky_relu with a slope picked at random per element, between \n                 'lower' and 'upper'\nt.nn.softplus    a smooth approximation of relu, with no corner at all. \n                 'beta' sets how sharp the bend is\nt.nn.Threshold   below 'threshold', substitute 'replacement'; above, pass through\n\nWHY A LEAKY relu EXISTS:\nrelu's output is exactly zero for every negative input, and so is its gradient - \nso an element that has gone negative stops learning entirely, and stays \nnegative. A small slope below zero keeps a little signal alive. \nWhether it helps is arguable; that it is a response to a real failure is not.\n\nhardshrink VERSUS softshrink:\nBoth silence a band around zero. hardshrink passes what survives untouched, \nso the output JUMPS from zero to lambda the moment a value crosses. softshrink \nsubtracts lambda from what survives, so it starts from zero and grows smoothly. \nThat is the same trade the noise_gate node's \"squeeze\" option offers, and for \nthe same reason - the smooth one costs a little amplitude and removes the step.\n\nSYNTAX:\nt.nn.leaky_relu <slope>\nt.nn.hardtanh <minimum> <maximum>\n\nEXAMPLE:\nt.nn.hardtanh -1.0 1.0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nnegative slope / alpha / lambda:\nThe single parameter, named for what it means in that node.\n\nminimum / maximum (t.nn.hardtanh):\nThe two limits.\n\nlower / upper (t.nn.rrelu):\nThe range the random slope is drawn from.\n\nbeta / threshold (t.nn.softplus):\nHow sharp the bend is, and above what value the node stops bothering with the \nexponential and passes through linearly.\n\nthreshold / replacement (t.nn.Threshold):\nThe level to test against, and what to substitute below it. \nNote that this substitutes rather than clamping - the replacement need not be \nrelated to the threshold at all.\n\nOUTPUTS: \n\noutput:\nThe bent tensor, in the same shape.\n\nA NOTE ON rrelu:\nIts slope is random per element and redrawn each time, so the same input does \nnot give the same output twice. That is intended - it is a regularizer - but it \nmakes the node unsuitable as a plain shaping curve."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 saw"
+        },
+        "6": {
+            "name": "t.nn.leaky_relu",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 200,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 360,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -3.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment drag negative slope up from zero",
+            "name": "comment",
+            "id": 533,
+            "position_x": 526,
+            "position_y": 545,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag negative slope up from zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag negative slope up from zero"
+        },
+        "9": {
+            "init": "comment at 0 it is exactly relu",
+            "name": "comment",
+            "id": 570,
+            "position_x": 526,
+            "position_y": 575,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "at 0 it is exactly relu",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "at 0 it is exactly relu"
+        },
+        "10": {
+            "name": "t.nn.hardtanh",
+            "id": 607,
+            "position_x": 280,
+            "position_y": 232,
+            "width": 220,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "minimum",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "maximum",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.nn.hardtanh -1.0 1.0"
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 390,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -3.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment flat outside the two limits",
+            "name": "comment",
+            "id": 681,
+            "position_x": 526,
+            "position_y": 615,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flat outside the two limits",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flat outside the two limits"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 596,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

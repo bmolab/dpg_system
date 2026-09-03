@@ -1,0 +1,464 @@
+{
+    "height": 901,
+    "width": 1505,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "np_linalg_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np_linalg_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np linear algebra - vectors and matrices",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np linear algebra - vectors and matrices",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np linear algebra - vectors and matrices"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 627,
+            "position_y": 45,
+            "width": 838,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes do linear algebra: the arithmetic of vectors and matrices.\n\nA vector is a direction and a length. A matrix is a transformation - a rotation, \na scaling, a projection. Most of what these nodes do is either measuring \nvectors or applying and undoing transformations, and the reason they matter in \na patch is that positions, orientations and motions are all naturally these \nthings rather than lists of separate numbers.\n\nMEASURING:\n\nnp.linalg.norm       the length of a vector\neuclidean_distance   the same node, named for the commoner use - \n                     feed it the difference between two positions and you get \n                     the distance between them\nnp.dot               the dot product: how much two vectors point the same way. \n                     Zero means at right angles; for unit vectors it is the \n                     cosine of the angle between them\nnp.cross             the cross product: a vector at right angles to both \n                     inputs, whose length reflects how much they differ in \n                     direction. This is how you get a surface normal, or an \n                     axis of rotation\n\nMULTIPLYING:\n\nnp.matmul   matrix multiplication - apply a transformation, or compose two \n            into one\nnp.inner    the inner product\nnp.outer    the outer product: every element of one against every element of \n            the other, giving a matrix from two vectors\n\nSOLVING AND INVERTING:\n\nnp.linalg.solve         solve A x = b for x - the right way to answer \n                        \"what input produces this output\"\nnp.linalg.inv           the inverse of a matrix: the transformation that undoes it\nnp.linalg.det           the determinant. Zero means the matrix flattens space \n                        and cannot be inverted\nnp.linalg.matrix_rank   how many independent directions the matrix actually \n                        spans - a check on whether your data is as \n                        multi-dimensional as you think\n\nSYNTAX:\nnp.linalg.norm\nnp.matmul\n\nEXAMPLE:\neuclidean_distance\n\nINPUTS and PARAMETERS:\n\ninput / in 1 / in 2:\nThe vectors or matrices. The last one to arrive triggers the calculation.\n\naxis:\nFor norm and distance: which direction to measure along. \nWithout it, the whole array is treated as one long vector; with axis set you \nget one length per row or column - which is how you measure a whole set of \nvectors in one go.\n\nA matrix / b (np.linalg.solve):\nThe transformation and the result you want, giving you the input that produces it.\n\nOUTPUTS: \n\nnorm / dot product / cross product / mat mul result / x:\nThe result, named for the operation.\n\nSOLVE, DO NOT INVERT:\nWhen you want to undo a transformation, np.linalg.solve is both faster and \nnumerically better behaved than inverting with np.linalg.inv and then \nmultiplying. Reach for inv only when you genuinely need the inverse matrix \nitself, rather than an answer that happens to involve it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 830,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes do linear algebra: the arithmetic of vectors and matrices.\n\nA vector is a direction and a length. A matrix is a transformation - a rotation, \na scaling, a projection. Most of what these nodes do is either measuring \nvectors or applying and undoing transformations, and the reason they matter in \na patch is that positions, orientations and motions are all naturally these \nthings rather than lists of separate numbers.\n\nMEASURING:\n\nnp.linalg.norm       the length of a vector\neuclidean_distance   the same node, named for the commoner use - \n                     feed it the difference between two positions and you get \n                     the distance between them\nnp.dot               the dot product: how much two vectors point the same way. \n                     Zero means at right angles; for unit vectors it is the \n                     cosine of the angle between them\nnp.cross             the cross product: a vector at right angles to both \n                     inputs, whose length reflects how much they differ in \n                     direction. This is how you get a surface normal, or an \n                     axis of rotation\n\nMULTIPLYING:\n\nnp.matmul   matrix multiplication - apply a transformation, or compose two \n            into one\nnp.inner    the inner product\nnp.outer    the outer product: every element of one against every element of \n            the other, giving a matrix from two vectors\n\nSOLVING AND INVERTING:\n\nnp.linalg.solve         solve A x = b for x - the right way to answer \n                        \"what input produces this output\"\nnp.linalg.inv           the inverse of a matrix: the transformation that undoes it\nnp.linalg.det           the determinant. Zero means the matrix flattens space \n                        and cannot be inverted\nnp.linalg.matrix_rank   how many independent directions the matrix actually \n                        spans - a check on whether your data is as \n                        multi-dimensional as you think\n\nSYNTAX:\nnp.linalg.norm\nnp.matmul\n\nEXAMPLE:\neuclidean_distance\n\nINPUTS and PARAMETERS:\n\ninput / in 1 / in 2:\nThe vectors or matrices. The last one to arrive triggers the calculation.\n\naxis:\nFor norm and distance: which direction to measure along. \nWithout it, the whole array is treated as one long vector; with axis set you \nget one length per row or column - which is how you measure a whole set of \nvectors in one go.\n\nA matrix / b (np.linalg.solve):\nThe transformation and the result you want, giving you the input that produces it.\n\nOUTPUTS: \n\nnorm / dot product / cross product / mat mul result / x:\nThe result, named for the operation.\n\nSOLVE, DO NOT INVERT:\nWhen you want to undo a transformation, np.linalg.solve is both faster and \nnumerically better behaved than inverting with np.linalg.inv and then \nmultiplying. Reach for inv only when you genuinely need the inverse matrix \nitself, rather than an answer that happens to involve it."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 160,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3.0 4.0 0.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 210,
+            "position_y": 118,
+            "width": 160,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.0 1.0 0.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment two vectors",
+            "name": "comment",
+            "id": 459,
+            "position_x": 436,
+            "position_y": 168,
+            "width": 77,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two vectors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two vectors"
+        },
+        "7": {
+            "name": "np.linalg.norm",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 205,
+            "width": 170,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment length of the first: 5",
+            "name": "comment",
+            "id": 570,
+            "position_x": 436,
+            "position_y": 340,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "length of the first: 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "length of the first: 5"
+        },
+        "10": {
+            "name": "np.dot",
+            "id": 607,
+            "position_x": 230,
+            "position_y": 205,
+            "width": 150,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 230,
+            "position_y": 290,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "np.cross",
+            "id": 681,
+            "position_x": 230,
+            "position_y": 380,
+            "width": 150,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 230,
+            "position_y": 465,
+            "width": 180,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment at right angles to both",
+            "name": "comment",
+            "id": 755,
+            "position_x": 436,
+            "position_y": 515,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "at right angles to both",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "at right angles to both"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 537,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "norm",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dot product",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "8": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "9": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "cross product",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

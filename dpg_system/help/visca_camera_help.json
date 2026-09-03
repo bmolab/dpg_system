@@ -1,0 +1,661 @@
+{
+    "height": 1025,
+    "width": 1780,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "visca_camera_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/visca_camera_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment visca_camera - driving a PTZ head",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 396,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "visca_camera - driving a PTZ head",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "visca_camera - driving a PTZ head"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 922,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This drives a pan-tilt-zoom camera over the network, using VISCA.\n\nTHE NODE:\n\nvisca_camera   one camera. 'ptz_camera' is the same node\nptz_camera     the other spelling\n\nVISCA is Sony's camera protocol and is spoken by most PTZ cameras made for\nbroadcast and installation, whatever the badge. Over IP it goes to UDP port\n52381.\n\nTHE SLIDERS ARE SPEED, NOT POSITION - THIS IS THE THING TO UNDERSTAND:\n'pan' and 'tilt' run -20 to +20, 'zoom' -7 to +7, and none of them are places.\nThey are RATES. Set pan to 5 and the camera starts panning and KEEPS PANNING\nuntil you set it back to zero or press stop.\n\nThat is how a camera operator's controller works - you push a stick and the head\nmoves while you hold it - and it is why the numbers are small and centred on\nzero. It also means a patch that sends a value and forgets about it has left the\ncamera turning, so anything driving these should return to zero deliberately\nrather than by ceasing to send.\n\n'stop' halts everything at once, and is the thing to wire to a panic button.\n\nThere is no connect step on this node: it sends as soon as a value arrives. That\nis why the demo on this page is deliberately left UNCONNECTED - opening a help\nfile should not start moving a camera. Set the address first, then wire it up.\n\nFOR PLACES, USE PRESETS:\n'preset to store' and 'store preset' remember where the camera is under a\nnumber; 'preset_recall' sends it back there. The camera does the move itself, at\nits own sensible speed, and gets to exactly the same place every time.\n\nThis is how to work in practice. Frame the shots by hand once, store them, and\nthen the patch only ever recalls numbers - which is both more reliable and far\neasier to cue than driving the head with rates and hoping.\n\n'pan_abs' / 'tilt_abs' / 'abs_speed' with 'drive_absolute' will go to a raw\nposition at a chosen speed, for when you need somewhere no preset covers.\n\nFOCUS:\n'focus' is also a rate - -1, 0 or +1, near or far - and it only does anything\nwith 'auto_focus' off. Leave auto focus on unless it is hunting, which it will\ndo on a dark or low-contrast stage; that is when to turn it off and set focus by\nhand once.\n\n'reset_sequence' IS THE RECOVERY BUTTON:\nVISCA over IP numbers every packet, and the camera expects them in order. If the\ncount gets out of step - the camera was power-cycled, packets were lost, another\ncontroller spoke to it - the camera silently ignores everything you send.\n\nThe symptom is distinctive: the node looks fine, no errors appear, and the\ncamera simply does nothing. Press 'reset_sequence'. It restarts the count and\nsends a clear to the camera, and that fixes it far more often than anything\nelse. 'reconnect' rebuilds the socket, for when that is not enough.\n\nIf a camera has stopped responding, try those two before suspecting the network.\n\n'custom_cmd_hex' FOR THE REST OF THE PROTOCOL:\nVISCA has a great many commands and this node exposes the common ones. Type raw\nbytes as hex - '81 01 06 04 FF' is the home command - and they are sent as\ngiven. Manufacturers add their own commands to the same scheme, so this is how\nyou reach anything specific to your camera.\n\n'print debug' puts the traffic in the console, which is the first thing to turn\non when something is not working.\n\nSYNTAX:\nvisca_camera <ip>\nptz_camera <ip>\n\nEXAMPLE:\nvisca_camera 10.1.1.160\n\nINPUTS and PARAMETERS:\n\npan / tilt:\nSpeed and direction, -20 to +20. Zero is stationary.\n\nzoom:\nSpeed, -7 to +7. Negative is wider.\n\nfocus / auto_focus:\nFocus rate, and whether the camera does it itself.\n\nstop:\nHalt all movement.\n\nhome:\nReturn to the camera's own home position.\n\npreset_recall / preset to store / store preset:\nRemember and return to framings by number.\n\npan_abs / tilt_abs / abs_speed / drive_absolute:\nGo to a raw position at a set speed.\n\nreset_sequence / reconnect:\nRestart the packet count; rebuild the socket.\n\npower:\nOn or off.\n\nip / port:\nWhere the camera is. 52381 unless something unusual is going on.\n\ncustom_cmd_hex / send_custom:\nRaw VISCA bytes.\n\nOUTPUTS: \n\nNone - this node only sends.\n\nRELATED:\npjlink_projector for projectors, which is the same kind of job.\ncv_camera if you want the PICTURE rather than control of the head - these are\nseparate things, and a PTZ camera usually delivers video by another route\nentirely.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "This drives a pan-tilt-zoom camera over the network, using VISCA.\n\nTHE NODE:\n\nvisca_camera   one camera. 'ptz_camera' is the same node\nptz_camera     the other spelling\n\nVISCA is Sony's camera protocol and is spoken by most PTZ cameras made for\nbroadcast and installation, whatever the badge. Over IP it goes to UDP port\n52381.\n\nTHE SLIDERS ARE SPEED, NOT POSITION - THIS IS THE THING TO UNDERSTAND:\n'pan' and 'tilt' run -20 to +20, 'zoom' -7 to +7, and none of them are places.\nThey are RATES. Set pan to 5 and the camera starts panning and KEEPS PANNING\nuntil you set it back to zero or press stop.\n\nThat is how a camera operator's controller works - you push a stick and the head\nmoves while you hold it - and it is why the numbers are small and centred on\nzero. It also means a patch that sends a value and forgets about it has left the\ncamera turning, so anything driving these should return to zero deliberately\nrather than by ceasing to send.\n\n'stop' halts everything at once, and is the thing to wire to a panic button.\n\nThere is no connect step on this node: it sends as soon as a value arrives. That\nis why the demo on this page is deliberately left UNCONNECTED - opening a help\nfile should not start moving a camera. Set the address first, then wire it up.\n\nFOR PLACES, USE PRESETS:\n'preset to store' and 'store preset' remember where the camera is under a\nnumber; 'preset_recall' sends it back there. The camera does the move itself, at\nits own sensible speed, and gets to exactly the same place every time.\n\nThis is how to work in practice. Frame the shots by hand once, store them, and\nthen the patch only ever recalls numbers - which is both more reliable and far\neasier to cue than driving the head with rates and hoping.\n\n'pan_abs' / 'tilt_abs' / 'abs_speed' with 'drive_absolute' will go to a raw\nposition at a chosen speed, for when you need somewhere no preset covers.\n\nFOCUS:\n'focus' is also a rate - -1, 0 or +1, near or far - and it only does anything\nwith 'auto_focus' off. Leave auto focus on unless it is hunting, which it will\ndo on a dark or low-contrast stage; that is when to turn it off and set focus by\nhand once.\n\n'reset_sequence' IS THE RECOVERY BUTTON:\nVISCA over IP numbers every packet, and the camera expects them in order. If the\ncount gets out of step - the camera was power-cycled, packets were lost, another\ncontroller spoke to it - the camera silently ignores everything you send.\n\nThe symptom is distinctive: the node looks fine, no errors appear, and the\ncamera simply does nothing. Press 'reset_sequence'. It restarts the count and\nsends a clear to the camera, and that fixes it far more often than anything\nelse. 'reconnect' rebuilds the socket, for when that is not enough.\n\nIf a camera has stopped responding, try those two before suspecting the network.\n\n'custom_cmd_hex' FOR THE REST OF THE PROTOCOL:\nVISCA has a great many commands and this node exposes the common ones. Type raw\nbytes as hex - '81 01 06 04 FF' is the home command - and they are sent as\ngiven. Manufacturers add their own commands to the same scheme, so this is how\nyou reach anything specific to your camera.\n\n'print debug' puts the traffic in the console, which is the first thing to turn\non when something is not working.\n\nSYNTAX:\nvisca_camera <ip>\nptz_camera <ip>\n\nEXAMPLE:\nvisca_camera 10.1.1.160\n\nINPUTS and PARAMETERS:\n\npan / tilt:\nSpeed and direction, -20 to +20. Zero is stationary.\n\nzoom:\nSpeed, -7 to +7. Negative is wider.\n\nfocus / auto_focus:\nFocus rate, and whether the camera does it itself.\n\nstop:\nHalt all movement.\n\nhome:\nReturn to the camera's own home position.\n\npreset_recall / preset to store / store preset:\nRemember and return to framings by number.\n\npan_abs / tilt_abs / abs_speed / drive_absolute:\nGo to a raw position at a set speed.\n\nreset_sequence / reconnect:\nRestart the packet count; rebuild the socket.\n\npower:\nOn or off.\n\nip / port:\nWhere the camera is. 52381 unless something unusual is going on.\n\ncustom_cmd_hex / send_custom:\nRaw VISCA bytes.\n\nOUTPUTS: \n\nNone - this node only sends.\n\nRELATED:\npjlink_projector for projectors, which is the same kind of job.\ncv_camera if you want the PICTURE rather than control of the head - these are\nseparate things, and a PTZ camera usually delivers video by another route\nentirely."
+        },
+        "3": {
+            "name": "visca_camera",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 360,
+            "height": 480,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "visca_camera 10.1.1.160"
+        },
+        "4": {
+            "init": "comment pan and tilt are SPEEDS. Set one and the",
+            "name": "comment",
+            "id": 385,
+            "position_x": 605,
+            "position_y": 560,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pan and tilt are SPEEDS. Set one and the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pan and tilt are SPEEDS. Set one and the"
+        },
+        "5": {
+            "init": "comment camera keeps moving until you set it",
+            "name": "comment",
+            "id": 422,
+            "position_x": 605,
+            "position_y": 590,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "camera keeps moving until you set it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "camera keeps moving until you set it"
+        },
+        "6": {
+            "init": "comment back to zero or press stop",
+            "name": "comment",
+            "id": 459,
+            "position_x": 605,
+            "position_y": 620,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "back to zero or press stop",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "back to zero or press stop"
+        },
+        "7": {
+            "name": "signal",
+            "id": 496,
+            "position_x": 450,
+            "position_y": 62,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 12.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "init": "comment NOTHING HERE IS CONNECTED, on purpose:",
+            "name": "comment",
+            "id": 533,
+            "position_x": 605,
+            "position_y": 155,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "NOTHING HERE IS CONNECTED, on purpose:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "NOTHING HERE IS CONNECTED, on purpose:"
+        },
+        "9": {
+            "init": "comment this node sends as soon as a value",
+            "name": "comment",
+            "id": 570,
+            "position_x": 605,
+            "position_y": 185,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this node sends as soon as a value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this node sends as soon as a value"
+        },
+        "10": {
+            "init": "comment arrives, and a help file should not",
+            "name": "comment",
+            "id": 607,
+            "position_x": 605,
+            "position_y": 215,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arrives, and a help file should not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "arrives, and a help file should not"
+        },
+        "11": {
+            "init": "comment start moving your camera. Set the ip,",
+            "name": "comment",
+            "id": 644,
+            "position_x": 605,
+            "position_y": 245,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "start moving your camera. Set the ip,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "start moving your camera. Set the ip,"
+        },
+        "12": {
+            "init": "comment then connect these yourself",
+            "name": "comment",
+            "id": 681,
+            "position_x": 605,
+            "position_y": 275,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then connect these yourself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then connect these yourself"
+        },
+        "13": {
+            "init": "comment sine -> pan sweeps back and forth, and",
+            "name": "comment",
+            "id": 718,
+            "position_x": 605,
+            "position_y": 315,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sine -> pan sweeps back and forth, and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sine -> pan sweeps back and forth, and"
+        },
+        "14": {
+            "init": "comment works because it returns to zero",
+            "name": "comment",
+            "id": 755,
+            "position_x": 605,
+            "position_y": 345,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "works because it returns to zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "works because it returns to zero"
+        },
+        "15": {
+            "name": "button",
+            "id": 792,
+            "position_x": 450,
+            "position_y": 385,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "init": "comment wire this to stop - something you can hit",
+            "name": "comment",
+            "id": 829,
+            "position_x": 605,
+            "position_y": 655,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "wire this to stop - something you can hit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "wire this to stop - something you can hit"
+        },
+        "17": {
+            "name": "int",
+            "id": 866,
+            "position_x": 450,
+            "position_y": 490,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment presets are how to work: frame the shots",
+            "name": "comment",
+            "id": 903,
+            "position_x": 605,
+            "position_y": 695,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "presets are how to work: frame the shots",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "presets are how to work: frame the shots"
+        },
+        "19": {
+            "init": "comment by hand once, store them, then the patch",
+            "name": "comment",
+            "id": 940,
+            "position_x": 605,
+            "position_y": 775,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "by hand once, store them, then the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "by hand once, store them, then the patch"
+        },
+        "20": {
+            "init": "comment only ever recalls numbers",
+            "name": "comment",
+            "id": 977,
+            "position_x": 605,
+            "position_y": 855,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only ever recalls numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only ever recalls numbers"
+        },
+        "21": {
+            "init": "comment IF THE CAMERA STOPS RESPONDING with no",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 605,
+            "position_y": 735,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "IF THE CAMERA STOPS RESPONDING with no",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "IF THE CAMERA STOPS RESPONDING with no"
+        },
+        "22": {
+            "init": "comment error at all, press reset_sequence -",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 605,
+            "position_y": 815,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "error at all, press reset_sequence -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "error at all, press reset_sequence -"
+        },
+        "23": {
+            "init": "comment the packet count has got out of step,",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 605,
+            "position_y": 895,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the packet count has got out of step,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the packet count has got out of step,"
+        },
+        "24": {
+            "init": "comment and it ignores you silently until reset",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 605,
+            "position_y": 935,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and it ignores you silently until reset",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and it ignores you silently until reset"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 572,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

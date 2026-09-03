@@ -1,0 +1,242 @@
+{
+    "height": 641,
+    "width": 1417,
+    "position": [
+        100,
+        100
+    ],
+    "id": 533,
+    "name": "table_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/table_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment table - numbers you can see and edit",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 432,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "table - numbers you can see and edit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "table - numbers you can see and edit"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 589,
+            "position_y": 45,
+            "width": 788,
+            "height": 536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The table node is a grid of numbers you can see and edit.\n\nWhere an array is a block of data you have to display with something else, \na table shows the numbers themselves, laid out in rows and columns, and lets \nyou change any of them by hand. It is both a readout and an input.\n\nUse it for anything small and structured enough to want to look at directly - \na matrix, a set of weights, a short lookup, calibration figures.\n\nSYNTAX:\ntable <rows: int> <columns: int>\n\nEXAMPLE:\ntable 4 4\n\nINPUTS and PARAMETERS:\n\narray in:\nAn array or list to load into the grid. Receiving one triggers the node and \nredraws the table.\n\nset:\nChange one cell without replacing everything. Send the position and the value.\n\nget:\nAsk for a cell's value.\n\nOUTPUTS: \n\nout:\nThe table's contents.\n\nRELATED:\narray holds the same kind of data without showing it. \nheat_map displays a grid as colour rather than as numbers, which is the better \nchoice once the grid is too large to read.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The table node is a grid of numbers you can see and edit.\n\nWhere an array is a block of data you have to display with something else, \na table shows the numbers themselves, laid out in rows and columns, and lets \nyou change any of them by hand. It is both a readout and an input.\n\nUse it for anything small and structured enough to want to look at directly - \na matrix, a set of weights, a short lookup, calibration figures.\n\nSYNTAX:\ntable <rows: int> <columns: int>\n\nEXAMPLE:\ntable 4 4\n\nINPUTS and PARAMETERS:\n\narray in:\nAn array or list to load into the grid. Receiving one triggers the node and \nredraws the table.\n\nset:\nChange one cell without replacing everything. Send the position and the value.\n\nget:\nAsk for a cell's value.\n\nOUTPUTS: \n\nout:\nThe table's contents.\n\nRELATED:\narray holds the same kind of data without showing it. \nheat_map displays a grid as colour rather than as numbers, which is the better \nchoice once the grid is too large to read."
+        },
+        "3": {
+            "name": "table",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "table 4 4"
+        },
+        "4": {
+            "init": "comment click a cell and type into it",
+            "name": "comment",
+            "id": 385,
+            "position_x": 356,
+            "position_y": 275,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click a cell and type into it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click a cell and type into it"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 16.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment the same numbers as colour",
+            "name": "comment",
+            "id": 459,
+            "position_x": 356,
+            "position_y": 480,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same numbers as colour",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same numbers as colour"
+        },
+        "7": {
+            "name": "close",
+            "id": 496,
+            "position_x": 24,
+            "position_y": 498,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

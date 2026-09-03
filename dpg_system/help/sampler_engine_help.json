@@ -1,0 +1,362 @@
+{
+    "height": 980,
+    "width": 1816,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "sampler_engine_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/sampler_engine_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment sampler_engine - the engine and its voices",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sampler_engine - the engine and its voices",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sampler_engine - the engine and its voices"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 968,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are the sample playback engine and the direct control of its voices.\n\nTHE NODES:\n\nsampler_engine       the engine itself: one per patch\nsampler_voice        control one voice directly\nmulti_voice_sampler  control all voices from one node\n\nsampler_engine IS GLOBAL:\nIt owns the voices and the audio output. There should be one in a patch, and\neverything else refers to it rather than creating its own. 'master volume' is\nthe overall level and 'output level' reports what is actually coming out, which\nis the quickest check that the engine is running at all.\n\n'restart engine' rebuilds it - useful after changing the audio device, and the\nfirst thing to try when the sampler has gone silent for no visible reason.\n\nVOICE-AT-A-TIME VERSUS ALL-AT-ONCE:\nsampler_voice addresses one voice by index and gives you everything about it -\nthe file, the play range, pitch, looping, volume. That is the node for a sound\nyou are treating individually, where you want its loop points and pitch under\ndirect control.\n\nmulti_voice_sampler addresses every voice from one node, choosing which with a\n'voice index' inlet. Fewer nodes and one place to look, at the cost of only\nbeing able to talk about one voice at a time.\n\nWHEN TO USE THESE RATHER THAN THE DYNAMIC PLAYERS:\nThese require you to decide which voice plays what. The polyphonic, granular and\nscratch samplers allocate voices for you - see their help patch - and that is\nusually what you want when sounds are triggered by events rather than assigned\nby hand.\n\nUse these when a particular sound needs to stay in a particular voice, so its\nstate persists and you can keep changing it.\n\nSYNTAX:\nsampler_engine\nsampler_voice\nmulti_voice_sampler\n\nEXAMPLE:\nsampler_voice\n\nINPUTS and PARAMETERS:\n\nload / path:\nThe file for this voice.\n\nplay:\nStart it.\n\nsample start / sample end:\nWhich part of the file to play.\n\npitch / volume:\nTransposition and level.\n\nloop / loop start:\nWhether it repeats, and from where.\n\nvoice index (multi_voice_sampler):\nWhich voice the other inlets refer to.\n\nmaster volume / stop engine / restart engine (sampler_engine):\nThe engine.\n\nOUTPUTS: \n\noutput level:\nWhat the engine is producing - the fastest way to tell whether anything is\nhappening.\n\nposition / active_voices:\nWhere playback has reached, and how many voices are sounding.\n\nRELATED:\nsampler_osc~ in the synth system treats recorded material as a modular\noscillator instead, with filters, envelopes and spatialisation available to it.\nUse that when the sound needs processing; use these when it needs playing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are the sample playback engine and the direct control of its voices.\n\nTHE NODES:\n\nsampler_engine       the engine itself: one per patch\nsampler_voice        control one voice directly\nmulti_voice_sampler  control all voices from one node\n\nsampler_engine IS GLOBAL:\nIt owns the voices and the audio output. There should be one in a patch, and\neverything else refers to it rather than creating its own. 'master volume' is\nthe overall level and 'output level' reports what is actually coming out, which\nis the quickest check that the engine is running at all.\n\n'restart engine' rebuilds it - useful after changing the audio device, and the\nfirst thing to try when the sampler has gone silent for no visible reason.\n\nVOICE-AT-A-TIME VERSUS ALL-AT-ONCE:\nsampler_voice addresses one voice by index and gives you everything about it -\nthe file, the play range, pitch, looping, volume. That is the node for a sound\nyou are treating individually, where you want its loop points and pitch under\ndirect control.\n\nmulti_voice_sampler addresses every voice from one node, choosing which with a\n'voice index' inlet. Fewer nodes and one place to look, at the cost of only\nbeing able to talk about one voice at a time.\n\nWHEN TO USE THESE RATHER THAN THE DYNAMIC PLAYERS:\nThese require you to decide which voice plays what. The polyphonic, granular and\nscratch samplers allocate voices for you - see their help patch - and that is\nusually what you want when sounds are triggered by events rather than assigned\nby hand.\n\nUse these when a particular sound needs to stay in a particular voice, so its\nstate persists and you can keep changing it.\n\nSYNTAX:\nsampler_engine\nsampler_voice\nmulti_voice_sampler\n\nEXAMPLE:\nsampler_voice\n\nINPUTS and PARAMETERS:\n\nload / path:\nThe file for this voice.\n\nplay:\nStart it.\n\nsample start / sample end:\nWhich part of the file to play.\n\npitch / volume:\nTransposition and level.\n\nloop / loop start:\nWhether it repeats, and from where.\n\nvoice index (multi_voice_sampler):\nWhich voice the other inlets refer to.\n\nmaster volume / stop engine / restart engine (sampler_engine):\nThe engine.\n\nOUTPUTS: \n\noutput level:\nWhat the engine is producing - the fastest way to tell whether anything is\nhappening.\n\nposition / active_voices:\nWhere playback has reached, and how many voices are sounding.\n\nRELATED:\nsampler_osc~ in the synth system treats recorded material as a modular\noscillator instead, with filters, envelopes and spatialisation available to it.\nUse that when the sound needs processing; use these when it needs playing."
+        },
+        "3": {
+            "name": "sampler_engine",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "float",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment one engine per patch",
+            "name": "comment",
+            "id": 422,
+            "position_x": 686,
+            "position_y": 315,
+            "width": 140,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one engine per patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one engine per patch"
+        },
+        "6": {
+            "init": "comment output level: is anything happening?",
+            "name": "comment",
+            "id": 459,
+            "position_x": 686,
+            "position_y": 345,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output level: is anything happening?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "output level: is anything happening?"
+        },
+        "7": {
+            "name": "button",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "sampler_voice",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 455,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment load a file, then click play",
+            "name": "comment",
+            "id": 570,
+            "position_x": 686,
+            "position_y": 770,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "load a file, then click play",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "load a file, then click play"
+        },
+        "10": {
+            "init": "comment one voice, held, with loop points",
+            "name": "comment",
+            "id": 607,
+            "position_x": 686,
+            "position_y": 850,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one voice, held, with loop points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one voice, held, with loop points"
+        },
+        "11": {
+            "name": "multi_voice_sampler",
+            "id": 644,
+            "position_x": 360,
+            "position_y": 455,
+            "width": 300,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment or every voice from one node,",
+            "name": "comment",
+            "id": 681,
+            "position_x": 686,
+            "position_y": 810,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "or every voice from one node,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "or every voice from one node,"
+        },
+        "13": {
+            "init": "comment one at a time via voice index",
+            "name": "comment",
+            "id": 718,
+            "position_x": 686,
+            "position_y": 890,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one at a time via voice index",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one at a time via voice index"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 785,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output level",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "play"
+        }
+    }
+}

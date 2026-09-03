@@ -1,0 +1,631 @@
+{
+    "height": 1320,
+    "width": 1875,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "speech_spectral_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/speech_spectral_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment speech_spectral and voice quality - timbre",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "speech_spectral and voice quality - timbre",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "speech_spectral and voice quality - timbre"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1017,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Where the energy sits in the sound, and how clear the voice producing it is.\n\nTHE NODES:\n\nspeech_spectral       bright or dark, tonal or noisy\nspeech_voice_quality  breathy, rough, or clean\n\nTHE FAMILY, AND WHAT EACH ONE HEARS:\nspeech_pitch          the note being spoken - f0, and whether there is a voice\nspeech_prosody        the shape of that pitch over a window - the melody\nspeech_envelope       loudness, on two time scales, and onsets\nspeech_spectral       where the energy sits - bright or dark, tonal or noisy\nspeech_voice_quality  how clear the voice is - breathy, rough, or clean\n\nNone of these know what is being said. They measure HOW, which is the part that\ncarries urgency, hesitation and effort - and the part a patch can respond to\nwithout any of the machinery of understanding language.\n\nTHEY ANALYSE ON A CLOCK, NOT ON DATA:\nEach of these keeps an internal ring buffer, and runs its analysis at\n'analysis_fps' - measured against the wall clock. Audio arriving faster than\nthat is buffered, not analysed.\n\nThis is worth knowing because it means the outputs are NOT one-per-chunk. Push a\nfile through as fast as it will go and you get far fewer analysis frames than\nchunks - the node is pacing itself in real time. It is built for a live stream,\nwhere that is exactly right.\n\nTHE SPECTRAL MEASURES, IN PLAIN TERMS:\n\ncentroid    the balance point of the spectrum, in Hz. This is BRIGHTNESS - an\n            's' is bright, a vowel is dark, and the number moves a long way\n            between them.\nbandwidth   how spread out the energy is around that point. Narrow means the\n            sound is concentrated, wide means it is not.\nrolloff     the frequency below which most of the energy sits ('most' being\n            rolloff_pct). A more robust brightness measure than centroid when\n            there is hiss about.\nflatness    tonal against noisy. 0 is a pure tone, 1 would be perfectly flat\n            white noise.\ncontrast    peak-to-valley across sub-bands, as an array - how much structure\n            there is at each region of the spectrum.\nmfcc        the standard compact description of spectral shape, as an array.\n            This is what you feed a classifier.\n\nREAD flatness RELATIVELY, NOT AGAINST 1:\nThe scale says 0 to 1, but the top is theoretical. Measured on this node,\nactual white noise reads about 0.56, not 1.0 - so treat 0.5 as \"as noisy as\nthings get\" rather than waiting for a number that will never arrive.\n\nSome measured points to calibrate against:\n\n                        flatness   centroid\nvoice-like harmonics      0.00       367 Hz\nthose harmonics + noise   0.03      2803 Hz\nwhite noise               0.56      3992 Hz\n\nNotice how much further the CENTROID moves than the flatness. For telling\nbreathy from clear, brightness is often the more sensitive instrument.\n\nVOICE QUALITY IS ABOUT THE SOURCE, NOT THE SHAPE:\nHNR is harmonics against noise, in dB - how much of the sound is a clean\nperiodic voice and how much is breath and turbulence. High is clear, low is\nbreathy or rough. Real speech generally falls somewhere around 10 to 25 dB.\n\njitter is cycle-to-cycle wobble in the PERIOD, shimmer the same in AMPLITUDE.\nBoth rise with roughness and strain. hnr_smooth is HNR with the jitter of the\nmeasurement itself taken off, for when you want a slow-moving quantity to drive\nsomething.\n\nTHE TRAP: ZERO JITTER CAN MEAN NO VOICE AT ALL:\nThese measures only mean anything while there IS a voice. Fed white noise, this\nnode reports jitter of exactly 0.0 - not because the voice is perfect, but\nbecause there is no periodicity to measure the variation of. HNR gives the game\naway in that case, at about -6 dB.\n\nSo gate on speech_pitch's 'voiced' before believing jitter or shimmer. A zero\nduring silence is not a clean voice.\n\nSYNTAX:\nspeech_spectral\nspeech_voice_quality\n\nEXAMPLE:\nspeech_spectral\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe live audio.\n\nn_fft:\nThe analysis window. Bigger means finer frequency detail and coarser timing.\n\nrolloff_pct / n_mfcc:\nWhere to put the rolloff point, and how many coefficients to report.\n\nmin_freq / max_freq (speech_voice_quality):\nThe speaker's range again - the same reasoning as speech_pitch.\n\nsmoothing_sec:\nHow much history hnr_smooth averages over.\n\nOUTPUTS: \n\ncentroid / bandwidth / rolloff / flatness:\nSingle numbers describing the spectrum.\n\ncontrast / mfcc:\nArrays.\n\nhnr / hnr_smooth / jitter / shimmer:\nVoice quality. Meaningless unless voiced.\n\nFEEDING THEM:\nt.audio_source is the usual source - a live input, giving audio tensors. The\ndemo here is wired that way, so it needs an actual input to show anything; with\nnothing arriving the outputs simply stay quiet.\n\nRELATED:\nspeech_pitch, whose 'voiced' outlet is what should be gating this one.\nt.mfcc and the torchaudio nodes if you want the spectral machinery directly.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Where the energy sits in the sound, and how clear the voice producing it is.\n\nTHE NODES:\n\nspeech_spectral       bright or dark, tonal or noisy\nspeech_voice_quality  breathy, rough, or clean\n\nTHE FAMILY, AND WHAT EACH ONE HEARS:\nspeech_pitch          the note being spoken - f0, and whether there is a voice\nspeech_prosody        the shape of that pitch over a window - the melody\nspeech_envelope       loudness, on two time scales, and onsets\nspeech_spectral       where the energy sits - bright or dark, tonal or noisy\nspeech_voice_quality  how clear the voice is - breathy, rough, or clean\n\nNone of these know what is being said. They measure HOW, which is the part that\ncarries urgency, hesitation and effort - and the part a patch can respond to\nwithout any of the machinery of understanding language.\n\nTHEY ANALYSE ON A CLOCK, NOT ON DATA:\nEach of these keeps an internal ring buffer, and runs its analysis at\n'analysis_fps' - measured against the wall clock. Audio arriving faster than\nthat is buffered, not analysed.\n\nThis is worth knowing because it means the outputs are NOT one-per-chunk. Push a\nfile through as fast as it will go and you get far fewer analysis frames than\nchunks - the node is pacing itself in real time. It is built for a live stream,\nwhere that is exactly right.\n\nTHE SPECTRAL MEASURES, IN PLAIN TERMS:\n\ncentroid    the balance point of the spectrum, in Hz. This is BRIGHTNESS - an\n            's' is bright, a vowel is dark, and the number moves a long way\n            between them.\nbandwidth   how spread out the energy is around that point. Narrow means the\n            sound is concentrated, wide means it is not.\nrolloff     the frequency below which most of the energy sits ('most' being\n            rolloff_pct). A more robust brightness measure than centroid when\n            there is hiss about.\nflatness    tonal against noisy. 0 is a pure tone, 1 would be perfectly flat\n            white noise.\ncontrast    peak-to-valley across sub-bands, as an array - how much structure\n            there is at each region of the spectrum.\nmfcc        the standard compact description of spectral shape, as an array.\n            This is what you feed a classifier.\n\nREAD flatness RELATIVELY, NOT AGAINST 1:\nThe scale says 0 to 1, but the top is theoretical. Measured on this node,\nactual white noise reads about 0.56, not 1.0 - so treat 0.5 as \"as noisy as\nthings get\" rather than waiting for a number that will never arrive.\n\nSome measured points to calibrate against:\n\n                        flatness   centroid\nvoice-like harmonics      0.00       367 Hz\nthose harmonics + noise   0.03      2803 Hz\nwhite noise               0.56      3992 Hz\n\nNotice how much further the CENTROID moves than the flatness. For telling\nbreathy from clear, brightness is often the more sensitive instrument.\n\nVOICE QUALITY IS ABOUT THE SOURCE, NOT THE SHAPE:\nHNR is harmonics against noise, in dB - how much of the sound is a clean\nperiodic voice and how much is breath and turbulence. High is clear, low is\nbreathy or rough. Real speech generally falls somewhere around 10 to 25 dB.\n\njitter is cycle-to-cycle wobble in the PERIOD, shimmer the same in AMPLITUDE.\nBoth rise with roughness and strain. hnr_smooth is HNR with the jitter of the\nmeasurement itself taken off, for when you want a slow-moving quantity to drive\nsomething.\n\nTHE TRAP: ZERO JITTER CAN MEAN NO VOICE AT ALL:\nThese measures only mean anything while there IS a voice. Fed white noise, this\nnode reports jitter of exactly 0.0 - not because the voice is perfect, but\nbecause there is no periodicity to measure the variation of. HNR gives the game\naway in that case, at about -6 dB.\n\nSo gate on speech_pitch's 'voiced' before believing jitter or shimmer. A zero\nduring silence is not a clean voice.\n\nSYNTAX:\nspeech_spectral\nspeech_voice_quality\n\nEXAMPLE:\nspeech_spectral\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe live audio.\n\nn_fft:\nThe analysis window. Bigger means finer frequency detail and coarser timing.\n\nrolloff_pct / n_mfcc:\nWhere to put the rolloff point, and how many coefficients to report.\n\nmin_freq / max_freq (speech_voice_quality):\nThe speaker's range again - the same reasoning as speech_pitch.\n\nsmoothing_sec:\nHow much history hnr_smooth averages over.\n\nOUTPUTS: \n\ncentroid / bandwidth / rolloff / flatness:\nSingle numbers describing the spectrum.\n\ncontrast / mfcc:\nArrays.\n\nhnr / hnr_smooth / jitter / shimmer:\nVoice quality. Meaningless unless voiced.\n\nFEEDING THEM:\nt.audio_source is the usual source - a live input, giving audio tensors. The\ndemo here is wired that way, so it needs an actual input to show anything; with\nnothing arriving the outputs simply stay quiet.\n\nRELATED:\nspeech_pitch, whose 'voiced' outlet is what should be gating this one.\nt.mfcc and the torchaudio nodes if you want the spectral machinery directly."
+        },
+        "3": {
+            "name": "t.audio_source",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "speech_spectral",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 290,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "plot",
+            "id": 422,
+            "position_x": 360,
+            "position_y": 270,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 5000.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "init": "comment centroid: brightness. An s is bright,",
+            "name": "comment",
+            "id": 459,
+            "position_x": 686,
+            "position_y": 460,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "centroid: brightness. An s is bright,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "centroid: brightness. An s is bright,"
+        },
+        "7": {
+            "init": "comment a vowel is dark",
+            "name": "comment",
+            "id": 496,
+            "position_x": 686,
+            "position_y": 490,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a vowel is dark",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a vowel is dark"
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 360,
+            "position_y": 535,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment flatness: 0 tonal. White noise reads",
+            "name": "comment",
+            "id": 570,
+            "position_x": 686,
+            "position_y": 585,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flatness: 0 tonal. White noise reads",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flatness: 0 tonal. White noise reads"
+        },
+        "10": {
+            "init": "comment only about 0.56, so read it relatively",
+            "name": "comment",
+            "id": 607,
+            "position_x": 686,
+            "position_y": 615,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only about 0.56, so read it relatively",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only about 0.56, so read it relatively"
+        },
+        "11": {
+            "name": "speech_voice_quality",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 590,
+            "width": 290,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "float",
+            "id": 681,
+            "position_x": 360,
+            "position_y": 680,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment HNR in dB: real speech is about 10-25.",
+            "name": "comment",
+            "id": 718,
+            "position_x": 686,
+            "position_y": 730,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "HNR in dB: real speech is about 10-25.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "HNR in dB: real speech is about 10-25."
+        },
+        "14": {
+            "init": "comment White noise reads about -6",
+            "name": "comment",
+            "id": 755,
+            "position_x": 686,
+            "position_y": 760,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "White noise reads about -6",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "White noise reads about -6"
+        },
+        "15": {
+            "name": "float",
+            "id": 792,
+            "position_x": 360,
+            "position_y": 805,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment jitter - but a 0 here can mean NO VOICE,",
+            "name": "comment",
+            "id": 829,
+            "position_x": 686,
+            "position_y": 855,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "jitter - but a 0 here can mean NO VOICE,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "jitter - but a 0 here can mean NO VOICE,"
+        },
+        "17": {
+            "init": "comment not a perfect one. Gate on voiced.",
+            "name": "comment",
+            "id": 866,
+            "position_x": 686,
+            "position_y": 885,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "not a perfect one. Gate on voiced.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "not a perfect one. Gate on voiced."
+        },
+        "18": {
+            "name": "speech_pitch",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 870,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "19": {
+            "init": "comment this is here for its 'voiced' outlet -",
+            "name": "comment",
+            "id": 940,
+            "position_x": 686,
+            "position_y": 1200,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this is here for its 'voiced' outlet -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this is here for its 'voiced' outlet -"
+        },
+        "20": {
+            "init": "comment nothing above should be believed without it",
+            "name": "comment",
+            "id": 977,
+            "position_x": 686,
+            "position_y": 1230,
+            "width": 301,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nothing above should be believed without it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nothing above should be believed without it"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 1200,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "audio tensors",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "audio tensor in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "centroid",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flatness",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "audio tensors",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "audio tensor in"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "hnr",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "jitter",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "audio tensors",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "audio tensor in"
+        }
+    }
+}

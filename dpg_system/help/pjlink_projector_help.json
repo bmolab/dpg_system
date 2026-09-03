@@ -1,0 +1,571 @@
+{
+    "height": 975,
+    "width": 1947,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "pjlink_projector_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pjlink_projector_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pjlink_projector - a projector on the network",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pjlink_projector - a projector on the network",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pjlink_projector - a projector on the network"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1089,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This controls a projector over the network, using PJLink.\n\nTHE NODE:\n\npjlink_projector    one projector. 'projector_control' is the same node\nprojector_control   the other spelling\n\nPJLINK IS A STANDARD, WHICH IS THE WHOLE POINT:\nNearly every projector made for installation speaks it, whatever the badge on\nthe front - Panasonic, Epson, Christie, Barco. So a patch written against this\nnode keeps working when the venue changes the projector, which is not something\nyou can say about a manufacturer's own protocol.\n\nIt always uses port 4352.\n\nCONNECT FIRST, AND WATCH 'status':\n'connect' is a switch rather than a button: ticking it opens the socket and\nexchanges the handshake, and unticking it closes the connection again. It starts\noff, so nothing reaches the network until you ask.\n\nWhat happened is reported in 'status', and that is the thing to look at when a\ncommand does nothing - a projector that is not connected simply ignores you\nrather than complaining.\n\nTHE PASSWORD IS PART OF THE HANDSHAKE, NOT SENT SEPARATELY:\nOn connecting, the projector says whether it wants authentication. If it does,\nit sends a one-time seed, and the node answers with a hash of that seed and the\npassword combined. The password itself never crosses the network.\n\nPractically: get the password right in the options before connecting, and if the\nhandshake reports something unexpected the node refuses to mark itself connected\nrather than letting every later command fail quietly.\n\nTHE COMMANDS:\n\npower_on        on or off. This is the slow one - see below\nshutter_mute    black the picture without turning anything off\nfreeze          hold the current frame\nvolume          if the projector has sound\ninput_code      which input to show\n\nPOWER IS SLOW, AND SHUTTER IS NOT:\nA projector takes tens of seconds to warm up, and often will not turn off again\nuntil it has cooled - during which it ignores commands, including being turned\nback on. So power is not something to put under live control.\n\n'shutter_mute' is what you want for anything performed. It blacks the output\ninstantly and reversibly, the lamp stays where it is, and there is no penalty\nfor doing it repeatedly. Black the shutter between cues; leave the power alone.\n\n'freeze' holds the last frame rather than blacking it, which is the other useful\none - it lets you change what the computer is doing without the audience seeing\nthe change happen.\n\nTHE INPUT CODES ARE THE STANDARD'S, NOT THE PROJECTOR'S LABELS:\n\nRGB 1  11     Video 1  21     HDMI 1  31     Storage  41\nRGB 2  12     Video 2  22     HDMI 2  32     Network  51\n                             HDMI 3  33\n\nA projector will only have some of these, and its front-panel labels may not\nmatch - what a menu calls \"Computer 1\" is RGB 1 here. If an input change appears\nto do nothing, the projector most likely does not have that input rather than\nthe command having failed.\n\n'custom_cmd' FOR ANYTHING NOT COVERED:\nPJLink has more commands than this node exposes, and manufacturers add their\nown. Type a raw command and it is sent as typed - the class prefix is part of\nit, so a query looks like '%1POWR ?' and a set like '%1AVMT 31'.\n\n'response' carries whatever comes back, so a query is how you ask the projector\nabout itself - lamp hours, error status, what model it is.\n\n'print_debug' puts the handshake and the traffic in the console, which is the\nfirst thing to turn on when a projector will not answer.\n\nSYNTAX:\npjlink_projector <ip> <password>\nprojector_control <ip> <password>\n\nEXAMPLE:\npjlink_projector 10.1.1.141\n\nINPUTS and PARAMETERS:\n\nconnect:\nA switch. On opens the connection, off closes it. Nothing works until it\nsucceeds.\n\npower_on:\nOn or off. Slow, and ignores you while cooling.\n\nshutter_mute:\nBlack the picture. Instant, and the one to use in performance.\n\nfreeze:\nHold the current frame.\n\nvolume / input_code:\nSound level, and which input.\n\nip / port / password:\nWhere the projector is, and how to authenticate. Port 4352 unless something\nunusual is going on.\n\ncustom_cmd:\nA raw PJLink command, sent as typed.\n\nprint_debug:\nPut the traffic in the console.\n\nOUTPUTS: \n\nresponse:\nWhat the projector said back.\n\nRELATED:\nvisca_camera for cameras, which is the same kind of job over a different\nprotocol.\neos_console if the thing to control is lighting.\nnvx nodes for routing what the projector is showing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "This controls a projector over the network, using PJLink.\n\nTHE NODE:\n\npjlink_projector    one projector. 'projector_control' is the same node\nprojector_control   the other spelling\n\nPJLINK IS A STANDARD, WHICH IS THE WHOLE POINT:\nNearly every projector made for installation speaks it, whatever the badge on\nthe front - Panasonic, Epson, Christie, Barco. So a patch written against this\nnode keeps working when the venue changes the projector, which is not something\nyou can say about a manufacturer's own protocol.\n\nIt always uses port 4352.\n\nCONNECT FIRST, AND WATCH 'status':\n'connect' is a switch rather than a button: ticking it opens the socket and\nexchanges the handshake, and unticking it closes the connection again. It starts\noff, so nothing reaches the network until you ask.\n\nWhat happened is reported in 'status', and that is the thing to look at when a\ncommand does nothing - a projector that is not connected simply ignores you\nrather than complaining.\n\nTHE PASSWORD IS PART OF THE HANDSHAKE, NOT SENT SEPARATELY:\nOn connecting, the projector says whether it wants authentication. If it does,\nit sends a one-time seed, and the node answers with a hash of that seed and the\npassword combined. The password itself never crosses the network.\n\nPractically: get the password right in the options before connecting, and if the\nhandshake reports something unexpected the node refuses to mark itself connected\nrather than letting every later command fail quietly.\n\nTHE COMMANDS:\n\npower_on        on or off. This is the slow one - see below\nshutter_mute    black the picture without turning anything off\nfreeze          hold the current frame\nvolume          if the projector has sound\ninput_code      which input to show\n\nPOWER IS SLOW, AND SHUTTER IS NOT:\nA projector takes tens of seconds to warm up, and often will not turn off again\nuntil it has cooled - during which it ignores commands, including being turned\nback on. So power is not something to put under live control.\n\n'shutter_mute' is what you want for anything performed. It blacks the output\ninstantly and reversibly, the lamp stays where it is, and there is no penalty\nfor doing it repeatedly. Black the shutter between cues; leave the power alone.\n\n'freeze' holds the last frame rather than blacking it, which is the other useful\none - it lets you change what the computer is doing without the audience seeing\nthe change happen.\n\nTHE INPUT CODES ARE THE STANDARD'S, NOT THE PROJECTOR'S LABELS:\n\nRGB 1  11     Video 1  21     HDMI 1  31     Storage  41\nRGB 2  12     Video 2  22     HDMI 2  32     Network  51\n                             HDMI 3  33\n\nA projector will only have some of these, and its front-panel labels may not\nmatch - what a menu calls \"Computer 1\" is RGB 1 here. If an input change appears\nto do nothing, the projector most likely does not have that input rather than\nthe command having failed.\n\n'custom_cmd' FOR ANYTHING NOT COVERED:\nPJLink has more commands than this node exposes, and manufacturers add their\nown. Type a raw command and it is sent as typed - the class prefix is part of\nit, so a query looks like '%1POWR ?' and a set like '%1AVMT 31'.\n\n'response' carries whatever comes back, so a query is how you ask the projector\nabout itself - lamp hours, error status, what model it is.\n\n'print_debug' puts the handshake and the traffic in the console, which is the\nfirst thing to turn on when a projector will not answer.\n\nSYNTAX:\npjlink_projector <ip> <password>\nprojector_control <ip> <password>\n\nEXAMPLE:\npjlink_projector 10.1.1.141\n\nINPUTS and PARAMETERS:\n\nconnect:\nA switch. On opens the connection, off closes it. Nothing works until it\nsucceeds.\n\npower_on:\nOn or off. Slow, and ignores you while cooling.\n\nshutter_mute:\nBlack the picture. Instant, and the one to use in performance.\n\nfreeze:\nHold the current frame.\n\nvolume / input_code:\nSound level, and which input.\n\nip / port / password:\nWhere the projector is, and how to authenticate. Port 4352 unless something\nunusual is going on.\n\ncustom_cmd:\nA raw PJLink command, sent as typed.\n\nprint_debug:\nPut the traffic in the console.\n\nOUTPUTS: \n\nresponse:\nWhat the projector said back.\n\nRELATED:\nvisca_camera for cameras, which is the same kind of job over a different\nprotocol.\neos_console if the thing to control is lighting.\nnvx nodes for routing what the projector is showing."
+        },
+        "3": {
+            "name": "pjlink_projector",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 340,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pjlink_projector 10.1.1.141"
+        },
+        "4": {
+            "init": "comment set ip and password in the options,",
+            "name": "comment",
+            "id": 385,
+            "position_x": 786,
+            "position_y": 400,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set ip and password in the options,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set ip and password in the options,"
+        },
+        "5": {
+            "init": "comment THEN connect. Watch status - an",
+            "name": "comment",
+            "id": 422,
+            "position_x": 786,
+            "position_y": 430,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "THEN connect. Watch status - an",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "THEN connect. Watch status - an"
+        },
+        "6": {
+            "init": "comment unconnected projector just ignores you",
+            "name": "comment",
+            "id": 459,
+            "position_x": 786,
+            "position_y": 460,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unconnected projector just ignores you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "unconnected projector just ignores you"
+        },
+        "7": {
+            "name": "text_display",
+            "id": 496,
+            "position_x": 420,
+            "position_y": 62,
+            "width": 340,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment what it says back - queries answer here",
+            "name": "comment",
+            "id": 533,
+            "position_x": 786,
+            "position_y": 295,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what it says back - queries answer here",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what it says back - queries answer here"
+        },
+        "9": {
+            "name": "toggle",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment shutter: instant, reversible, free.",
+            "name": "comment",
+            "id": 607,
+            "position_x": 786,
+            "position_y": 510,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shutter: instant, reversible, free.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shutter: instant, reversible, free."
+        },
+        "11": {
+            "init": "comment This is the one to use in performance",
+            "name": "comment",
+            "id": 644,
+            "position_x": 786,
+            "position_y": 540,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "This is the one to use in performance",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "This is the one to use in performance"
+        },
+        "12": {
+            "name": "metro",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 590,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 2000"
+        },
+        "13": {
+            "name": "string",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 675,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "%1POWR ?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 220,
+                    "value_type": "int"
+                }
+            }
+        },
+        "14": {
+            "init": "comment a raw query, sent as typed - this is",
+            "name": "comment",
+            "id": 755,
+            "position_x": 786,
+            "position_y": 725,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a raw query, sent as typed - this is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a raw query, sent as typed - this is"
+        },
+        "15": {
+            "init": "comment how you ask about lamp hours, errors,",
+            "name": "comment",
+            "id": 792,
+            "position_x": 786,
+            "position_y": 755,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how you ask about lamp hours, errors,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how you ask about lamp hours, errors,"
+        },
+        "16": {
+            "init": "comment or which model it actually is",
+            "name": "comment",
+            "id": 829,
+            "position_x": 786,
+            "position_y": 785,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "or which model it actually is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "or which model it actually is"
+        },
+        "17": {
+            "init": "comment leave POWER alone in performance - it",
+            "name": "comment",
+            "id": 866,
+            "position_x": 786,
+            "position_y": 825,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "leave POWER alone in performance - it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "leave POWER alone in performance - it"
+        },
+        "18": {
+            "init": "comment takes tens of seconds and ignores you",
+            "name": "comment",
+            "id": 903,
+            "position_x": 786,
+            "position_y": 855,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "takes tens of seconds and ignores you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "takes tens of seconds and ignores you"
+        },
+        "19": {
+            "init": "comment entirely while it cools",
+            "name": "comment",
+            "id": 940,
+            "position_x": 786,
+            "position_y": 885,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "entirely while it cools",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "entirely while it cools"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 747,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "response",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 348,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shutter_mute"
+        },
+        "2": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

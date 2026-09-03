@@ -1,0 +1,394 @@
+{
+    "height": 1030,
+    "width": 1761,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "snapshot~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/snapshot~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment snapshot~ - carrying audio back to the patch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 528,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "snapshot~ - carrying audio back to the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "snapshot~ - carrying audio back to the patch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 903,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These carry audio back into the ordinary node world, at three different rates.\n\nThe audio graph runs every sample; the patch runs once a frame. Anything that \nhas to cross between them loses something, and which of these you want depends \non what you can afford to lose.\n\nTHE NODES:\n\nsnapshot~  one value per frame, as an ordinary float\ncapture~   every sample, as a numpy array\narray~     the same node\nscope~     every sample, drawn\nplace~     not a bridge - a spatializer, included here because it is the last \n           stage before the output\n\nsnapshot~ IS FOR CONTROL SIGNALS:\nPatch any ~ signal in and the current value appears on the node face and goes \nout at frame rate, ready for number boxes, math nodes, OSC, anything. \nAn adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control \nsignal that is exactly right.\n\nFor an audio signal it is not. Sixty samples a second of something oscillating \nat 440 Hz is noise - the waveform is gone, aliased beyond recognition. \nThis is the commonest mistake with these nodes: a plot fed through snapshot~ \nshowing something that looks like a signal and is not.\n\ncapture~ AND scope~ KEEP EVERYTHING:\nBoth use a ring buffer holding every sample. capture~ hands you the array, so \nplot, spectrum, numpy and torch nodes can work on the actual waveform. \nscope~ draws it directly, with a trigger, which is what you want when the \nquestion is \"what does this look like\" rather than \"what is this value\".\n\nplace~ PUTS IT SOMEWHERE:\nOne outlet per speaker, patched onward to audio_out~'s inputs. Several place~ \ninto one output sum at its inlets, which is how each source gets its own \nposition in the room. Stereo is a fact rather than a switch: patch 'right in' \nand the pair is held apart by 'width'.\n\nSYNTAX:\nsnapshot~\ncapture~\nscope~\n\nEXAMPLE:\nscope~\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal.\n\nbang (snapshot~, capture~):\nAsk for a value or an array now.\n\nsync / level / time (scope~):\nThe trigger, where it triggers, and how much of the buffer to show.\n\nleft in / right in / pan / width / front-rear / top-bottom (place~):\nThe source and where to put it.\n\nOUTPUTS: \n\nvalue / peak / rms (snapshot~):\nThe current value, and its peak and average over the frame - the last two \nbeing the honest way to follow an audio signal's LEVEL at frame rate, \nwhere following its value is meaningless.\n\narray (capture~, scope~):\nThe samples.\n\ndropped (capture~):\nHow many blocks were missed, so you know whether the patch is keeping up.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These carry audio back into the ordinary node world, at three different rates.\n\nThe audio graph runs every sample; the patch runs once a frame. Anything that \nhas to cross between them loses something, and which of these you want depends \non what you can afford to lose.\n\nTHE NODES:\n\nsnapshot~  one value per frame, as an ordinary float\ncapture~   every sample, as a numpy array\narray~     the same node\nscope~     every sample, drawn\nplace~     not a bridge - a spatializer, included here because it is the last \n           stage before the output\n\nsnapshot~ IS FOR CONTROL SIGNALS:\nPatch any ~ signal in and the current value appears on the node face and goes \nout at frame rate, ready for number boxes, math nodes, OSC, anything. \nAn adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control \nsignal that is exactly right.\n\nFor an audio signal it is not. Sixty samples a second of something oscillating \nat 440 Hz is noise - the waveform is gone, aliased beyond recognition. \nThis is the commonest mistake with these nodes: a plot fed through snapshot~ \nshowing something that looks like a signal and is not.\n\ncapture~ AND scope~ KEEP EVERYTHING:\nBoth use a ring buffer holding every sample. capture~ hands you the array, so \nplot, spectrum, numpy and torch nodes can work on the actual waveform. \nscope~ draws it directly, with a trigger, which is what you want when the \nquestion is \"what does this look like\" rather than \"what is this value\".\n\nplace~ PUTS IT SOMEWHERE:\nOne outlet per speaker, patched onward to audio_out~'s inputs. Several place~ \ninto one output sum at its inlets, which is how each source gets its own \nposition in the room. Stereo is a fact rather than a switch: patch 'right in' \nand the pair is held apart by 'width'.\n\nSYNTAX:\nsnapshot~\ncapture~\nscope~\n\nEXAMPLE:\nscope~\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal.\n\nbang (snapshot~, capture~):\nAsk for a value or an array now.\n\nsync / level / time (scope~):\nThe trigger, where it triggers, and how much of the buffer to show.\n\nleft in / right in / pan / width / front-rear / top-bottom (place~):\nThe source and where to put it.\n\nOUTPUTS: \n\nvalue / peak / rms (snapshot~):\nThe current value, and its peak and average over the frame - the last two \nbeing the honest way to follow an audio signal's LEVEL at frame rate, \nwhere following its value is meaningless.\n\narray (capture~, scope~):\nThe samples.\n\ndropped (capture~):\nHow many blocks were missed, so you know whether the patch is keeping up."
+        },
+        "3": {
+            "name": "lfo~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 200,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "lfo~ 0.5"
+        },
+        "4": {
+            "name": "snapshot~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 220,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "float",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 435,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment right for a slow control signal",
+            "name": "comment",
+            "id": 459,
+            "position_x": 586,
+            "position_y": 485,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right for a slow control signal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "right for a slow control signal"
+        },
+        "7": {
+            "name": "vco~",
+            "id": 496,
+            "position_x": 300,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "8": {
+            "name": "scope~",
+            "id": 533,
+            "position_x": 300,
+            "position_y": 280,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment audio needs every sample, not one a frame",
+            "name": "comment",
+            "id": 570,
+            "position_x": 586,
+            "position_y": 525,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "audio needs every sample, not one a frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "audio needs every sample, not one a frame"
+        },
+        "10": {
+            "name": "capture~",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 525,
+            "width": 220,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the real waveform, as an array",
+            "name": "comment",
+            "id": 681,
+            "position_x": 586,
+            "position_y": 905,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the real waveform, as an array",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the real waveform, as an array"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 926,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "value",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

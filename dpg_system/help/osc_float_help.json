@@ -1,0 +1,319 @@
+{
+    "height": 939,
+    "width": 1793,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "osc_float_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/osc_float_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment osc widgets - controls that are already on the network",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 648,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "osc widgets - controls that are already on the network",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "osc widgets - controls that are already on the network"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 945,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are ordinary widgets that send and receive OSC by themselves.\n\nA slider wired to an osc_send does the same job. What these save is the wiring, \nand what they add is the two-way behaviour: the widget both sends when you move \nit AND moves when a message arrives at its address. So the patch and the remote \nsurface stay in step without you arranging it.\n\nTHE NODES:\n\nosc_float    osc_int     osc_slider   osc_knob\nosc_string   osc_message osc_button   osc_toggle\nosc_menu     osc_radio   osc_vector\n\nEach behaves like the plain widget of the same name - see the float, slider, \nbutton and menu help patches for what they do as controls. What follows is \nonly what the osc_ prefix adds.\n\nTHE TWO SETTINGS THAT MATTER:\n'path' is the OSC address this widget lives at. 'target name' is which \nconnection it sends on - the name you gave an osc_target or osc_device.\n\nSet those two and the widget is on the network. Nothing else is needed.\n\nWHY TWO-WAY MATTERS:\nA control surface that shows the wrong value is worse than none, because \nsomeone will act on it. If the patch changes a level and the remote fader stays \nwhere it was, the next touch of that fader jumps the level back. These widgets \nsend and receive at the same address, so the surface follows whatever moved it - \nthe patch, a person, or another controller.\n\nosc_vector IS FOR THE MULTI-VALUE CASE:\nA position, a colour, a set of weights - several numbers under one address. \n'rows' and 'columns' shape it, so a grid of values is one node and one address \nrather than a node each.\n\n'mode' AND 'address':\nThe widgets with a 'mode' option can send their value in more than one form - \nas the address's argument, or with the selection encoded into the address \nitself, which is what some devices expect from a menu or a radio group. \nIf a remote device ignores a menu that looks correct, this is the setting.\n\nSYNTAX:\nosc_slider <path>\nosc_float <path>\n\nEXAMPLE:\nosc_slider /fader/1\n\nINPUTS and PARAMETERS:\n\npath:\nThe OSC address.\n\ntarget name:\nWhich connection to send on.\n\nmode / address:\nHow the value is encoded, on the widgets that offer a choice.\n\nrows / columns (osc_vector):\nThe shape of the value.\n\nEverything else - min, max, format, width, font size, bind to - works as it \ndoes on the plain widget.\n\nOUTPUTS: \n\nout:\nThe value, as an ordinary patch message, whether it came from the widget or \nfrom the network.\n\nRELATED:\nThe param_ widgets carry a name without the networking. \nosc_send and osc_receive do the same job explicitly when you want the messages \nvisible in the patch.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are ordinary widgets that send and receive OSC by themselves.\n\nA slider wired to an osc_send does the same job. What these save is the wiring, \nand what they add is the two-way behaviour: the widget both sends when you move \nit AND moves when a message arrives at its address. So the patch and the remote \nsurface stay in step without you arranging it.\n\nTHE NODES:\n\nosc_float    osc_int     osc_slider   osc_knob\nosc_string   osc_message osc_button   osc_toggle\nosc_menu     osc_radio   osc_vector\n\nEach behaves like the plain widget of the same name - see the float, slider, \nbutton and menu help patches for what they do as controls. What follows is \nonly what the osc_ prefix adds.\n\nTHE TWO SETTINGS THAT MATTER:\n'path' is the OSC address this widget lives at. 'target name' is which \nconnection it sends on - the name you gave an osc_target or osc_device.\n\nSet those two and the widget is on the network. Nothing else is needed.\n\nWHY TWO-WAY MATTERS:\nA control surface that shows the wrong value is worse than none, because \nsomeone will act on it. If the patch changes a level and the remote fader stays \nwhere it was, the next touch of that fader jumps the level back. These widgets \nsend and receive at the same address, so the surface follows whatever moved it - \nthe patch, a person, or another controller.\n\nosc_vector IS FOR THE MULTI-VALUE CASE:\nA position, a colour, a set of weights - several numbers under one address. \n'rows' and 'columns' shape it, so a grid of values is one node and one address \nrather than a node each.\n\n'mode' AND 'address':\nThe widgets with a 'mode' option can send their value in more than one form - \nas the address's argument, or with the selection encoded into the address \nitself, which is what some devices expect from a menu or a radio group. \nIf a remote device ignores a menu that looks correct, this is the setting.\n\nSYNTAX:\nosc_slider <path>\nosc_float <path>\n\nEXAMPLE:\nosc_slider /fader/1\n\nINPUTS and PARAMETERS:\n\npath:\nThe OSC address.\n\ntarget name:\nWhich connection to send on.\n\nmode / address:\nHow the value is encoded, on the widgets that offer a choice.\n\nrows / columns (osc_vector):\nThe shape of the value.\n\nEverything else - min, max, format, width, font size, bind to - works as it \ndoes on the plain widget.\n\nOUTPUTS: \n\nout:\nThe value, as an ordinary patch message, whether it came from the widget or \nfrom the network.\n\nRELATED:\nThe param_ widgets carry a name without the networking. \nosc_send and osc_receive do the same job explicitly when you want the messages \nvisible in the patch."
+        },
+        "3": {
+            "name": "osc_target",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_target console 127.0.0.1 8000"
+        },
+        "4": {
+            "name": "osc_slider",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 280,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_slider /fader/1"
+        },
+        "5": {
+            "init": "comment set path and target name; that is all",
+            "name": "comment",
+            "id": 422,
+            "position_x": 656,
+            "position_y": 520,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set path and target name; that is all",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set path and target name; that is all"
+        },
+        "6": {
+            "name": "float",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment it moves when a message arrives too",
+            "name": "comment",
+            "id": 496,
+            "position_x": 656,
+            "position_y": 610,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it moves when a message arrives too",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it moves when a message arrives too"
+        },
+        "8": {
+            "name": "osc_toggle",
+            "id": 533,
+            "position_x": 350,
+            "position_y": 305,
+            "width": 280,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_toggle /mute/1"
+        },
+        "9": {
+            "name": "int",
+            "id": 570,
+            "position_x": 350,
+            "position_y": 520,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "osc_vector",
+            "id": 607,
+            "position_x": 350,
+            "position_y": 585,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_vector /colour"
+        },
+        "11": {
+            "init": "comment several numbers, one address",
+            "name": "comment",
+            "id": 644,
+            "position_x": 656,
+            "position_y": 820,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "several numbers, one address",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "several numbers, one address"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 835,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

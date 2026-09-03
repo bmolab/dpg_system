@@ -1,0 +1,446 @@
+{
+    "height": 1041,
+    "width": 1496,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "quaternion_diff_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/quaternion_diff_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment comparing rotations - how much, and relative to what",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 624,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "comparing rotations - how much, and relative to what",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "comparing rotations - how much, and relative to what"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 638,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These ask how two rotations differ, or how fast one is changing.\n\n\"The difference between two rotations\" is itself a rotation - the one that \ntakes you from the first to the second. That is what these produce, and it is \nmore useful than subtracting the numbers, which is meaningless for quaternions.\n\nTHE NODES:\n\nquaternion_diff        how much a rotation changed since the last frame\nrotation_matrix_diff   the same, for matrices\nquaternion_relative    the rotation from one quaternion to another\nquaternion_distance    how far apart two rotations are, as a single number\n\ndiff VERSUS relative:\nquaternion_diff compares each incoming rotation against the PREVIOUS one, so it \nis a rate - how much this joint turned during this frame. \nquaternion_relative compares two rotations you give it, so it is a relationship - \nhow the forearm sits relative to the upper arm, how the head sits relative to \nthe chest.\n\nBoth matter, and mixing them up gives you something that looks plausible and \nmeans nothing.\n\nquaternion_distance GIVES A NUMBER:\nA single value for how far apart two orientations are - the angle of the \nrotation between them. That is the right measure for \"how close is this pose to \nthat one\", because it is invariant: it does not care which representation you \nused or which way round the quaternions happen to be signed.\n\nIts 'reference' inlet is the rotation to compare against, and 'freeze ref' \nholds the current one as the reference so you can capture a target and then \nwatch the distance from it.\n\n'distance squared' skips the square root - cheaper, and monotonic with the \ndistance, so it works identically for ranking or thresholding.\n\nWHY NOT JUST SUBTRACT:\nQuaternion components are not independent, and q and minus q are the same \nrotation. Subtracting two quaternions element by element gives a large answer \nfor two identical rotations that happen to be signed oppositely, and a small one \nfor genuinely different rotations that happen to be signed alike. These nodes \nhandle the sign; arithmetic on the raw components does not.\n\nSYNTAX:\nquaternion_diff\nquaternion_distance\n\nEXAMPLE:\nquaternion_relative\n\nINPUTS and PARAMETERS:\n\nquaternion:\nThe rotation, or the stream of them.\n\nq1 / q2 (quaternion_relative):\nThe two rotations - the result takes you from q1 to q2.\n\nreference / freeze ref (quaternion_distance):\nWhat to measure against, and a way to capture it.\n\ndistanceAxis:\nWhich axis to measure along, when you want the difference in one direction \nrather than overall.\n\ndistance squared:\nSkip the square root.\n\nOUTPUTS: \n\nquaternion difference / q_diff:\nThe rotation between the two.\n\ndistance:\nHow far apart, as a number.\n\nRELATED:\nquaternion_diff_and_axis in the motion capture nodes does the same per-frame \ndifference for a whole pose at once, and reports the axis as well as the size.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These ask how two rotations differ, or how fast one is changing.\n\n\"The difference between two rotations\" is itself a rotation - the one that \ntakes you from the first to the second. That is what these produce, and it is \nmore useful than subtracting the numbers, which is meaningless for quaternions.\n\nTHE NODES:\n\nquaternion_diff        how much a rotation changed since the last frame\nrotation_matrix_diff   the same, for matrices\nquaternion_relative    the rotation from one quaternion to another\nquaternion_distance    how far apart two rotations are, as a single number\n\ndiff VERSUS relative:\nquaternion_diff compares each incoming rotation against the PREVIOUS one, so it \nis a rate - how much this joint turned during this frame. \nquaternion_relative compares two rotations you give it, so it is a relationship - \nhow the forearm sits relative to the upper arm, how the head sits relative to \nthe chest.\n\nBoth matter, and mixing them up gives you something that looks plausible and \nmeans nothing.\n\nquaternion_distance GIVES A NUMBER:\nA single value for how far apart two orientations are - the angle of the \nrotation between them. That is the right measure for \"how close is this pose to \nthat one\", because it is invariant: it does not care which representation you \nused or which way round the quaternions happen to be signed.\n\nIts 'reference' inlet is the rotation to compare against, and 'freeze ref' \nholds the current one as the reference so you can capture a target and then \nwatch the distance from it.\n\n'distance squared' skips the square root - cheaper, and monotonic with the \ndistance, so it works identically for ranking or thresholding.\n\nWHY NOT JUST SUBTRACT:\nQuaternion components are not independent, and q and minus q are the same \nrotation. Subtracting two quaternions element by element gives a large answer \nfor two identical rotations that happen to be signed oppositely, and a small one \nfor genuinely different rotations that happen to be signed alike. These nodes \nhandle the sign; arithmetic on the raw components does not.\n\nSYNTAX:\nquaternion_diff\nquaternion_distance\n\nEXAMPLE:\nquaternion_relative\n\nINPUTS and PARAMETERS:\n\nquaternion:\nThe rotation, or the stream of them.\n\nq1 / q2 (quaternion_relative):\nThe two rotations - the result takes you from q1 to q2.\n\nreference / freeze ref (quaternion_distance):\nWhat to measure against, and a way to capture it.\n\ndistanceAxis:\nWhich axis to measure along, when you want the difference in one direction \nrather than overall.\n\ndistance squared:\nSkip the square root.\n\nOUTPUTS: \n\nquaternion difference / q_diff:\nThe rotation between the two.\n\ndistance:\nHow far apart, as a number.\n\nRELATED:\nquaternion_diff_and_axis in the motion capture nodes does the same per-frame \ndifference for a whole pose at once, and reports the axis as well as the size."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 90.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "6": {
+            "name": "pack",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 140,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "7": {
+            "name": "euler_to_quaternion",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 260,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "quaternion_diff",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 240,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 595,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment how much it turned this frame",
+            "name": "comment",
+            "id": 607,
+            "position_x": 356,
+            "position_y": 645,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how much it turned this frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how much it turned this frame"
+        },
+        "11": {
+            "name": "quaternion_distance",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 260,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "float",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 865,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment click freeze ref to capture a target",
+            "name": "comment",
+            "id": 718,
+            "position_x": 356,
+            "position_y": 915,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click freeze ref to capture a target",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click freeze ref to capture a target"
+        },
+        "14": {
+            "init": "comment then watch the distance from it",
+            "name": "comment",
+            "id": 755,
+            "position_x": 356,
+            "position_y": 945,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then watch the distance from it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then watch the distance from it"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 937,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xyz rotation"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion difference",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "7": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "distance",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

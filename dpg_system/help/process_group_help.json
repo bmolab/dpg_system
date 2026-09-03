@@ -1,0 +1,383 @@
+{
+    "height": 821,
+    "width": 1531,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "process_group_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/process_group_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment process_group and ip_address - across machines",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "process_group and ip_address - across machines",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "process_group and ip_address - across machines"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 693,
+            "position_y": 45,
+            "width": 798,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Two nodes for working across machines: distributed torch, and finding your address.\n\nTHE NODES:\n\nprocess_group  a torch distributed process group\nip_address     what addresses this machine has\n\nprocess_group IS NOT THE SAME AS SENDING AN ARRAY:\nThe socket nodes move data between two patches that each do their own work.\nThis joins several processes into ONE computation - torch's own distributed\nmachinery, with every participant given a RANK and the group knowing its\nWORLD SIZE.\n\nThat is what you want when a model is too large for one GPU, or when the same\ncomputation should run across several machines with tensors moving between them\nas part of the calculation rather than as messages.\n\n'backend' selects how they talk - the right choice depends on whether the\nparticipants are GPUs on one machine or separate machines on a network.\n\nEvery participant must agree on the ip, the port and the world size, and each\nmust have a different rank. Rank 0 is conventionally the coordinator.\n\n'expected_tensor_example' is how the receiving side knows what shape and dtype\nto expect, because a distributed receive has to allocate before it knows what is\ncoming.\n\nCREATING THE NODE STARTS THE RENDEZVOUS:\nA process group is not something you set up and then connect. The moment the\nnode exists it begins looking for the other participants, and it waits until all\nof them have arrived - which, if you are still building the other end, is a\nwhile, and if you mistyped the world size, is forever.\n\nThat is why there is no live process_group in this patch: opening a help file\nshould not go looking for machines. Build the other participants first, then\nmake this node last.\n\nip_address IS THE SMALL USEFUL ONE:\nIt reports the addresses this machine is reachable at. That is what you tell the\nother end to send to, and it saves going to look it up in a system panel - which\nmatters when the address changes, as it does on a network you do not control.\n\nA machine usually has several. The one to use is on the same network as the\nother machine; the loopback address 127.0.0.1 only ever reaches this machine\nitself, which is the right choice for testing two patches on one computer and\nuseless for anything else.\n\nSYNTAX:\nprocess_group\nip_address\n\nEXAMPLE:\nip_address\n\nINPUTS and PARAMETERS:\n\nip / port:\nWhere the group coordinates.\n\nrank / world_size:\nWhich participant this is, and how many there are altogether.\n\nbackend:\nHow the participants communicate.\n\ndata_to_send / destination_rank:\nThe tensor and who gets it.\n\nexpected_tensor_example:\nThe shape and dtype to expect on receive.\n\nget_ip:\nAsk for the addresses.\n\nOUTPUTS: \n\nsending_complete / received_data:\nThe distributed exchange.\n\nip_addresses_out:\nThis machine's addresses.\n\nWHEN NOT TO REACH FOR process_group:\nIf two patches are exchanging results, the socket nodes are simpler and more\nrobust - they tolerate one end restarting, which a process group does not.\nDistributed torch is for one computation spread across participants, and it\nexpects all of them to be present and healthy.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Two nodes for working across machines: distributed torch, and finding your address.\n\nTHE NODES:\n\nprocess_group  a torch distributed process group\nip_address     what addresses this machine has\n\nprocess_group IS NOT THE SAME AS SENDING AN ARRAY:\nThe socket nodes move data between two patches that each do their own work.\nThis joins several processes into ONE computation - torch's own distributed\nmachinery, with every participant given a RANK and the group knowing its\nWORLD SIZE.\n\nThat is what you want when a model is too large for one GPU, or when the same\ncomputation should run across several machines with tensors moving between them\nas part of the calculation rather than as messages.\n\n'backend' selects how they talk - the right choice depends on whether the\nparticipants are GPUs on one machine or separate machines on a network.\n\nEvery participant must agree on the ip, the port and the world size, and each\nmust have a different rank. Rank 0 is conventionally the coordinator.\n\n'expected_tensor_example' is how the receiving side knows what shape and dtype\nto expect, because a distributed receive has to allocate before it knows what is\ncoming.\n\nCREATING THE NODE STARTS THE RENDEZVOUS:\nA process group is not something you set up and then connect. The moment the\nnode exists it begins looking for the other participants, and it waits until all\nof them have arrived - which, if you are still building the other end, is a\nwhile, and if you mistyped the world size, is forever.\n\nThat is why there is no live process_group in this patch: opening a help file\nshould not go looking for machines. Build the other participants first, then\nmake this node last.\n\nip_address IS THE SMALL USEFUL ONE:\nIt reports the addresses this machine is reachable at. That is what you tell the\nother end to send to, and it saves going to look it up in a system panel - which\nmatters when the address changes, as it does on a network you do not control.\n\nA machine usually has several. The one to use is on the same network as the\nother machine; the loopback address 127.0.0.1 only ever reaches this machine\nitself, which is the right choice for testing two patches on one computer and\nuseless for anything else.\n\nSYNTAX:\nprocess_group\nip_address\n\nEXAMPLE:\nip_address\n\nINPUTS and PARAMETERS:\n\nip / port:\nWhere the group coordinates.\n\nrank / world_size:\nWhich participant this is, and how many there are altogether.\n\nbackend:\nHow the participants communicate.\n\ndata_to_send / destination_rank:\nThe tensor and who gets it.\n\nexpected_tensor_example:\nThe shape and dtype to expect on receive.\n\nget_ip:\nAsk for the addresses.\n\nOUTPUTS: \n\nsending_complete / received_data:\nThe distributed exchange.\n\nip_addresses_out:\nThis machine's addresses.\n\nWHEN NOT TO REACH FOR process_group:\nIf two patches are exchanging results, the socket nodes are simpler and more\nrobust - they tolerate one end restarting, which a process group does not.\nDistributed torch is for one computation spread across participants, and it\nexpects all of them to be present and healthy."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "ip_address",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 240,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "list",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 255,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment tell the other end this address",
+            "name": "comment",
+            "id": 459,
+            "position_x": 376,
+            "position_y": 305,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tell the other end this address",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tell the other end this address"
+        },
+        "7": {
+            "init": "comment 127.0.0.1 only reaches this machine -",
+            "name": "comment",
+            "id": 496,
+            "position_x": 376,
+            "position_y": 335,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "127.0.0.1 only reaches this machine -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "127.0.0.1 only reaches this machine -"
+        },
+        "8": {
+            "init": "comment right for testing, useless otherwise",
+            "name": "comment",
+            "id": 533,
+            "position_x": 376,
+            "position_y": 365,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right for testing, useless otherwise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "right for testing, useless otherwise"
+        },
+        "9": {
+            "init": "comment process_group is deliberately NOT in this",
+            "name": "comment",
+            "id": 570,
+            "position_x": 376,
+            "position_y": 410,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "process_group is deliberately NOT in this",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "process_group is deliberately NOT in this"
+        },
+        "10": {
+            "init": "comment patch: creating one starts a rendezvous",
+            "name": "comment",
+            "id": 607,
+            "position_x": 376,
+            "position_y": 440,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "patch: creating one starts a rendezvous",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "patch: creating one starts a rendezvous"
+        },
+        "11": {
+            "init": "comment that waits for its other participants",
+            "name": "comment",
+            "id": 644,
+            "position_x": 376,
+            "position_y": 470,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "that waits for its other participants",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "that waits for its other participants"
+        },
+        "12": {
+            "init": "comment every participant agrees on ip, port",
+            "name": "comment",
+            "id": 681,
+            "position_x": 376,
+            "position_y": 515,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every participant agrees on ip, port",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every participant agrees on ip, port"
+        },
+        "13": {
+            "init": "comment and world_size; each has its own rank",
+            "name": "comment",
+            "id": 718,
+            "position_x": 376,
+            "position_y": 545,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and world_size; each has its own rank",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and world_size; each has its own rank"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 327,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "get_ip"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ip_addresses_out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

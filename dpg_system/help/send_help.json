@@ -1,0 +1,376 @@
+{
+    "height": 741,
+    "width": 1548,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "send_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/send_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment send and receive - a cord without the cord",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "send and receive - a cord without the cord",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "send and receive - a cord without the cord"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 710,
+            "position_y": 45,
+            "width": 798,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "send and receive move data across a patch without a cord between them.\n\nGive a send node a name and a receive node the same name, and whatever goes into \nthe send comes out of the receive - however far apart they are, and however many \nreceives share the name. One send can feed any number of receives.\n\nThis is not a convenience for tidiness alone. A patch that has grown past one \nscreen becomes unreadable when long cords cross it, and a value that many places \nneed - a master level, a frame clock, a mode - is genuinely better named than \nwired. The name IS the documentation.\n\nThe cost is that the connection is invisible. A cord you can trace with your \neye; a conduit you have to search for. Use them for things that are genuinely \nglobal, and keep local plumbing on cords where you can see it.\n\nTHE NODES:\n\nsend      the sending end\ns         a shorter name for send\nreceive   the receiving end\nr         a shorter name for receive\n\nSYNTAX:\nsend <name>\nreceive <name>\n\nEXAMPLE:\nsend master_level\n\nINPUTS and PARAMETERS:\n\n<the conduit name> (send):\nThe inlet, labelled with the conduit's name so you can see where it goes \nwithout opening anything. Anything arriving here is passed to every receive \nsharing that name.\n\nname:\nThe conduit. Changing it detaches from the old one and attaches to the new, \nwhile the patch runs - so you can repoint a send or a receive without \nrebuilding anything. A name that does not exist yet is created on the spot.\n\nOUTPUTS: \n\n<the conduit name> (receive):\nWhatever was sent, emitted as it arrives.\n\nRELATED:\nvar is the other way to share a value by name. The difference is memory: \na conduit passes data through and keeps nothing, so a receive created later \nhears nothing until the next send. A variable HOLDS its value, and can be \nasked for it at any time. Use send and receive for events and streams, \nand var for state.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "send and receive move data across a patch without a cord between them.\n\nGive a send node a name and a receive node the same name, and whatever goes into \nthe send comes out of the receive - however far apart they are, and however many \nreceives share the name. One send can feed any number of receives.\n\nThis is not a convenience for tidiness alone. A patch that has grown past one \nscreen becomes unreadable when long cords cross it, and a value that many places \nneed - a master level, a frame clock, a mode - is genuinely better named than \nwired. The name IS the documentation.\n\nThe cost is that the connection is invisible. A cord you can trace with your \neye; a conduit you have to search for. Use them for things that are genuinely \nglobal, and keep local plumbing on cords where you can see it.\n\nTHE NODES:\n\nsend      the sending end\ns         a shorter name for send\nreceive   the receiving end\nr         a shorter name for receive\n\nSYNTAX:\nsend <name>\nreceive <name>\n\nEXAMPLE:\nsend master_level\n\nINPUTS and PARAMETERS:\n\n<the conduit name> (send):\nThe inlet, labelled with the conduit's name so you can see where it goes \nwithout opening anything. Anything arriving here is passed to every receive \nsharing that name.\n\nname:\nThe conduit. Changing it detaches from the old one and attaches to the new, \nwhile the patch runs - so you can repoint a send or a receive without \nrebuilding anything. A name that does not exist yet is created on the spot.\n\nOUTPUTS: \n\n<the conduit name> (receive):\nWhatever was sent, emitted as it arrives.\n\nRELATED:\nvar is the other way to share a value by name. The difference is memory: \na conduit passes data through and keeps nothing, so a receive created later \nhears nothing until the next send. A variable HOLDS its value, and can be \nasked for it at any time. Use send and receive for events and streams, \nand var for state."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 112,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "name": "counter",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 192,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "send",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 180,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "send demo_count"
+        },
+        "7": {
+            "init": "comment no cord from here down",
+            "name": "comment",
+            "id": 496,
+            "position_x": 456,
+            "position_y": 370,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "no cord from here down",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "no cord from here down"
+        },
+        "8": {
+            "name": "receive",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 420,
+            "width": 180,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "receive demo_count"
+        },
+        "9": {
+            "name": "int",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "receive",
+            "id": 607,
+            "position_x": 250,
+            "position_y": 420,
+            "width": 180,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "receive demo_count"
+        },
+        "11": {
+            "name": "int",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 500,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment both receives hear the same send",
+            "name": "comment",
+            "id": 681,
+            "position_x": 456,
+            "position_y": 555,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "both receives hear the same send",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "both receives hear the same send"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 572,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "demo_count"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "demo_count",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "demo_count",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

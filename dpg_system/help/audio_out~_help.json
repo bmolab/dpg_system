@@ -1,0 +1,308 @@
+{
+    "height": 950,
+    "width": 1740,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "audio_out~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/audio_out~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment audio_out~ - where sound leaves the patch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "audio_out~ - where sound leaves the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "audio_out~ - where sound leaves the patch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 872,
+            "position_y": 45,
+            "width": 828,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "audio_out~ is where sound leaves the patch. Nothing is heard without one.\n\nHOW THE ~ NODES WORK:\n\nEvery node whose name ends in ~ is part of the audio graph, and that graph is \nnot the same thing as the patch. Ordinary nodes pass messages when something \nhappens; ~ nodes run continuously in the audio callback, every sample, whether \nor not anything is arriving.\n\nThe cords between ~ nodes declare the TOPOLOGY - what feeds what - and from \nthat a DSP program is compiled and run in the audio thread. Repatching \nrecompiles it, but the units themselves are created once and live as long as \nthe node does, so reordering the graph does not reset an oscillator's phase, \na filter's state, or an envelope's stage. You can rewire while it plays.\n\nCROSSING BETWEEN THE TWO WORLDS:\n\nsig~        a control value INTO the audio graph, with glide so a 60 Hz \n            stream does not zipper\nsnapshot~   an audio signal OUT to the patch, at frame rate, as an ordinary float\ncapture~    audio out as a whole numpy array, keeping every sample\nscope~      the signal drawn, at audio rate\n\nsig~ is the way effort data drives sound. snapshot~ is the way sound drives \nanything else.\n\nTHE CHANNEL STRIP:\n\nThe intended order is source -> fader~ -> clean~ -> place~ -> audio_out~. \nLevel is fader~'s job, hygiene is clean~'s, position is place~'s, and this \nnode is only the socket. fader_out~ is a fader and a socket in one, which is \nhow most patches start.\n\nSYNTAX:\naudio_out~ <channel> <channel> ...\n\nEXAMPLE:\naudio_out~ 1 2\n\nINPUTS and PARAMETERS:\n\nleft in / right in / in 3 ...:\nOne inlet per channel you listed. Several place~ or fader~ can sum into the \nsame inlet - that is how a mix happens.\n\nmute:\nSilence everything without unpatching.\n\ndevice:\nWhich audio interface to use. This is engine-wide: changing it here changes it \nfor every audio node in the patch.\n\nOUTPUTS: \n\npeak:\nThe level reaching the output, for metering.\n\nstatus:\nWhether the device is running.\n\nWHEN THERE IS NO SOUND:\nCheck in this order. Is the device right? Is mute off? Does the channel exist \non that device - a channel number beyond what the interface has is silent \nrather than an error. Is anything actually patched to the inlet? \nAnd is there a fader~ or vca~ in the chain sitting at zero?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "audio_out~ is where sound leaves the patch. Nothing is heard without one.\n\nHOW THE ~ NODES WORK:\n\nEvery node whose name ends in ~ is part of the audio graph, and that graph is \nnot the same thing as the patch. Ordinary nodes pass messages when something \nhappens; ~ nodes run continuously in the audio callback, every sample, whether \nor not anything is arriving.\n\nThe cords between ~ nodes declare the TOPOLOGY - what feeds what - and from \nthat a DSP program is compiled and run in the audio thread. Repatching \nrecompiles it, but the units themselves are created once and live as long as \nthe node does, so reordering the graph does not reset an oscillator's phase, \na filter's state, or an envelope's stage. You can rewire while it plays.\n\nCROSSING BETWEEN THE TWO WORLDS:\n\nsig~        a control value INTO the audio graph, with glide so a 60 Hz \n            stream does not zipper\nsnapshot~   an audio signal OUT to the patch, at frame rate, as an ordinary float\ncapture~    audio out as a whole numpy array, keeping every sample\nscope~      the signal drawn, at audio rate\n\nsig~ is the way effort data drives sound. snapshot~ is the way sound drives \nanything else.\n\nTHE CHANNEL STRIP:\n\nThe intended order is source -> fader~ -> clean~ -> place~ -> audio_out~. \nLevel is fader~'s job, hygiene is clean~'s, position is place~'s, and this \nnode is only the socket. fader_out~ is a fader and a socket in one, which is \nhow most patches start.\n\nSYNTAX:\naudio_out~ <channel> <channel> ...\n\nEXAMPLE:\naudio_out~ 1 2\n\nINPUTS and PARAMETERS:\n\nleft in / right in / in 3 ...:\nOne inlet per channel you listed. Several place~ or fader~ can sum into the \nsame inlet - that is how a mix happens.\n\nmute:\nSilence everything without unpatching.\n\ndevice:\nWhich audio interface to use. This is engine-wide: changing it here changes it \nfor every audio node in the patch.\n\nOUTPUTS: \n\npeak:\nThe level reaching the output, for metering.\n\nstatus:\nWhether the device is running.\n\nWHEN THERE IS NO SOUND:\nCheck in this order. Is the device right? Is mute off? Does the channel exist \non that device - a channel number beyond what the interface has is silent \nrather than an error. Is anything actually patched to the inlet? \nAnd is there a fader~ or vca~ in the chain sitting at zero?"
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "lfo~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 200,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment a slow wobble to hear something moving",
+            "name": "comment",
+            "id": 422,
+            "position_x": 576,
+            "position_y": 290,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slow wobble to hear something moving",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slow wobble to hear something moving"
+        },
+        "6": {
+            "name": "vco~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "7": {
+            "name": "fader_out~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 545,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "8": {
+            "init": "comment fader_out~ is a fader and the socket",
+            "name": "comment",
+            "id": 533,
+            "position_x": 576,
+            "position_y": 780,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fader_out~ is a fader and the socket",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fader_out~ is a fader and the socket"
+        },
+        "9": {
+            "init": "comment raise its fader to hear it",
+            "name": "comment",
+            "id": 570,
+            "position_x": 576,
+            "position_y": 860,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise its fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise its fader to hear it"
+        },
+        "10": {
+            "name": "scope~",
+            "id": 607,
+            "position_x": 290,
+            "position_y": 545,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment the actual waveform, at audio rate",
+            "name": "comment",
+            "id": 644,
+            "position_x": 576,
+            "position_y": 820,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the actual waveform, at audio rate",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the actual waveform, at audio rate"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 795,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pitch"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

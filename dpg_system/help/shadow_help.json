@@ -1,0 +1,284 @@
+{
+    "height": 821,
+    "width": 1760,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "shadow_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shadow - live data from the suit",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 384,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shadow - live data from the suit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shadow - live data from the suit"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 912,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These read live data from a Shadow suit.\n\nTHE NODES:\n\nshadow         the suit: joint orientations and positions, for up to four bodies\nshadow_sensor  the raw sensor readings from one sensor - magnetometer, \n               accelerometer and gyroscope, before any fusion\nshadow_pose    a named pose from a Shadow stream\n\nWHAT THE SUIT GIVES YOU:\nEach body has a quaternions outlet and a positions outlet. The quaternions are \nthe joint ORIENTATIONS, which is the real measurement - the suit is a set of \ninertial sensors, and orientation is what they produce. The positions are \ninferred from those orientations plus assumed limb lengths, so they are a \nderived quantity and only as good as the assumptions behind them.\n\nThat distinction matters constantly. An orientation error is a sensor problem; \na position error may be an orientation error, or a limb length, or the root \ninference - see the sensor_to_root help patch.\n\nshadow_sensor IS FOR DIAGNOSING, NOT PERFORMING:\nIt gives you what one sensor actually reads before the fusion combines them. \nThe magnetometer outlet is the one that matters for troubleshooting: a sensor \nsitting in a distorted field produces a yaw error that no amount of filtering \ndownstream will fix, and the only way to see it is to look at the raw field. \nPatch it into mag_offset to measure that.\n\nSYNTAX:\nshadow\nshadow_sensor\n\nEXAMPLE:\nshadow\n\nINPUTS and PARAMETERS:\n\nflush (shadow):\nDiscard whatever is queued and start from the current frame. Use it when the \nstream has fallen behind and you would rather lose data than lag.\n\nreconnect:\nRe-establish the connection to the suit.\n\nOUTPUTS: \n\nbody N quaternions:\nThe joint orientations for that body - the measurement.\n\nbody N positions:\nJoint positions, inferred from the orientations and the limb lengths.\n\nmagnetometer / accelerometer / gyroscope (shadow_sensor):\nThe raw readings from one sensor.\n\nA NOTE ON MULTIPLE BODIES:\nThe four bodies are separate suits, and the outlets are static - body 3's \noutlets exist whether or not a third suit is connected, and simply stay quiet. \nSo a patch built for two performers works unchanged with one.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These read live data from a Shadow suit.\n\nTHE NODES:\n\nshadow         the suit: joint orientations and positions, for up to four bodies\nshadow_sensor  the raw sensor readings from one sensor - magnetometer, \n               accelerometer and gyroscope, before any fusion\nshadow_pose    a named pose from a Shadow stream\n\nWHAT THE SUIT GIVES YOU:\nEach body has a quaternions outlet and a positions outlet. The quaternions are \nthe joint ORIENTATIONS, which is the real measurement - the suit is a set of \ninertial sensors, and orientation is what they produce. The positions are \ninferred from those orientations plus assumed limb lengths, so they are a \nderived quantity and only as good as the assumptions behind them.\n\nThat distinction matters constantly. An orientation error is a sensor problem; \na position error may be an orientation error, or a limb length, or the root \ninference - see the sensor_to_root help patch.\n\nshadow_sensor IS FOR DIAGNOSING, NOT PERFORMING:\nIt gives you what one sensor actually reads before the fusion combines them. \nThe magnetometer outlet is the one that matters for troubleshooting: a sensor \nsitting in a distorted field produces a yaw error that no amount of filtering \ndownstream will fix, and the only way to see it is to look at the raw field. \nPatch it into mag_offset to measure that.\n\nSYNTAX:\nshadow\nshadow_sensor\n\nEXAMPLE:\nshadow\n\nINPUTS and PARAMETERS:\n\nflush (shadow):\nDiscard whatever is queued and start from the current frame. Use it when the \nstream has fallen behind and you would rather lose data than lag.\n\nreconnect:\nRe-establish the connection to the suit.\n\nOUTPUTS: \n\nbody N quaternions:\nThe joint orientations for that body - the measurement.\n\nbody N positions:\nJoint positions, inferred from the orientations and the limb lengths.\n\nmagnetometer / accelerometer / gyroscope (shadow_sensor):\nThe raw readings from one sensor.\n\nA NOTE ON MULTIPLE BODIES:\nThe four bodies are separate suits, and the outlets are static - body 3's \noutlets exist whether or not a third suit is connected, and simply stay quiet. \nSo a patch built for two performers works unchanged with one."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment quaternions are the measurement",
+            "name": "comment",
+            "id": 385,
+            "position_x": 616,
+            "position_y": 395,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "quaternions are the measurement",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "quaternions are the measurement"
+        },
+        "5": {
+            "init": "comment positions are inferred from them",
+            "name": "comment",
+            "id": 422,
+            "position_x": 616,
+            "position_y": 425,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "positions are inferred from them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "positions are inferred from them"
+        },
+        "6": {
+            "name": "active_joints",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment the 20 joints most patches want",
+            "name": "comment",
+            "id": 496,
+            "position_x": 616,
+            "position_y": 575,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the 20 joints most patches want",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the 20 joints most patches want"
+        },
+        "8": {
+            "name": "shadow_sensor",
+            "id": 533,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "mag_offset",
+            "id": 570,
+            "position_x": 350,
+            "position_y": 260,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment raw field, for diagnosing a bad sensor",
+            "name": "comment",
+            "id": 607,
+            "position_x": 616,
+            "position_y": 495,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raw field, for diagnosing a bad sensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raw field, for diagnosing a bad sensor"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 590,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "full pose quats in"
+        },
+        "1": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "magnetometer",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "magnetometer"
+        }
+    }
+}

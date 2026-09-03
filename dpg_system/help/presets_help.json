@@ -1,0 +1,347 @@
+{
+    "height": 761,
+    "width": 1579,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "presets_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/presets_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment presets - store a state, and get it back",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "presets - store a state, and get it back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "presets - store a state, and get it back"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 741,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes remember the state of a patch, so you can put it back later.\n\nClick a numbered button to recall a stored state; hold and click, or use the \nremember option, to store the current one into it. What gets remembered depends \non which of these you use, and that is the whole distinction between them.\n\nTHE NODES:\n\npresets      remember where the WIDGETS are - every slider, knob, toggle \n             and number box in the patch\nsnapshots    remember the state of the NODES themselves\nstates       the same as snapshots\nversions     the same as presets\narchive      the same as presets\n\nWidget presets are the everyday case: a set of positions you can flip between \nwhile working, and the thing you want when someone is performing with the patch. \nNode snapshots go deeper, capturing state that is not on the surface.\n\nSYNTAX:\npresets <count: int>\n\nEXAMPLE:\npresets 12\n\nThe argument sets how many slots there are. The default is 8.\n\nINPUTS and PARAMETERS:\n\nin:\nRecall a preset by number. Sending 3 here is the same as clicking the third \nbutton - which is how a patch recalls its own presets, from a sequencer, \na key, or an incoming message.\n\nremember:\nThe store mode. With this on, clicking a slot WRITES the current state into it \nrather than recalling it. Turn it off again once you have stored what you \nwanted, or you will overwrite a preset the next time you try to recall one.\n\nOUTPUTS: \n\nout:\nThe number of the preset that was just recalled, so the rest of the patch can \nfollow along - to change a label, or to trigger something that belongs with \nthat state.\n\nWHAT IS ACTUALLY SAVED:\nPresets are stored with the patch, so they survive being saved and reopened. \nStore deliberately: because \"remember\" is a mode rather than a separate \ngesture, the commonest way to lose a preset is to leave it switched on and then \nclick a slot expecting to recall.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes remember the state of a patch, so you can put it back later.\n\nClick a numbered button to recall a stored state; hold and click, or use the \nremember option, to store the current one into it. What gets remembered depends \non which of these you use, and that is the whole distinction between them.\n\nTHE NODES:\n\npresets      remember where the WIDGETS are - every slider, knob, toggle \n             and number box in the patch\nsnapshots    remember the state of the NODES themselves\nstates       the same as snapshots\nversions     the same as presets\narchive      the same as presets\n\nWidget presets are the everyday case: a set of positions you can flip between \nwhile working, and the thing you want when someone is performing with the patch. \nNode snapshots go deeper, capturing state that is not on the surface.\n\nSYNTAX:\npresets <count: int>\n\nEXAMPLE:\npresets 12\n\nThe argument sets how many slots there are. The default is 8.\n\nINPUTS and PARAMETERS:\n\nin:\nRecall a preset by number. Sending 3 here is the same as clicking the third \nbutton - which is how a patch recalls its own presets, from a sequencer, \na key, or an incoming message.\n\nremember:\nThe store mode. With this on, clicking a slot WRITES the current state into it \nrather than recalling it. Turn it off again once you have stored what you \nwanted, or you will overwrite a preset the next time you try to recall one.\n\nOUTPUTS: \n\nout:\nThe number of the preset that was just recalled, so the rest of the patch can \nfollow along - to change a label, or to trigger something that belongs with \nthat state.\n\nWHAT IS ACTUALLY SAVED:\nPresets are stored with the patch, so they survive being saved and reopened. \nStore deliberately: because \"remember\" is a mode rather than a separate \ngesture, the commonest way to lose a preset is to leave it switched on and then \nclick a slot expecting to recall."
+        },
+        "3": {
+            "name": "presets",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 130,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "presets 8"
+        },
+        "4": {
+            "init": "comment move the sliders, tick remember,",
+            "name": "comment",
+            "id": 385,
+            "position_x": 466,
+            "position_y": 315,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "move the sliders, tick remember,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "move the sliders, tick remember,"
+        },
+        "5": {
+            "init": "comment click a slot to store the positions",
+            "name": "comment",
+            "id": 422,
+            "position_x": 466,
+            "position_y": 345,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click a slot to store the positions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click a slot to store the positions"
+        },
+        "6": {
+            "init": "comment untick, then click slots to recall",
+            "name": "comment",
+            "id": 459,
+            "position_x": 466,
+            "position_y": 375,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "untick, then click slots to recall",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "untick, then click slots to recall"
+        },
+        "7": {
+            "name": "slider",
+            "id": 496,
+            "position_x": 220,
+            "position_y": 62,
+            "width": 220,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 0.5"
+        },
+        "8": {
+            "name": "slider",
+            "id": 533,
+            "position_x": 220,
+            "position_y": 135,
+            "width": 220,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 0.5"
+        },
+        "9": {
+            "name": "toggle",
+            "id": 570,
+            "position_x": 220,
+            "position_y": 210,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 420,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment which preset was recalled",
+            "name": "comment",
+            "id": 644,
+            "position_x": 466,
+            "position_y": 470,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which preset was recalled",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which preset was recalled"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 492,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

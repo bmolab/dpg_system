@@ -1,0 +1,417 @@
+{
+    "height": 1585,
+    "width": 1761,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "mgl_body_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_body_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_body - drawing a body, and what it is doing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_body - drawing a body, and what it is doing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_body - drawing a body, and what it is doing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 893,
+            "position_y": 45,
+            "width": 828,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These draw a moving body, and the things you want to see about how it moves.\n\nTHE NODES:\n\nmgl_body              a skeleton, driven by a pose\nmgl_body_orientation  the same, with per-joint orientation disks\nmgl_orientation_disks the disks on their own\nmgl_contact_disks     where the body is touching the ground, sized by area\nmgl_torque_arc        a torque drawn as an arc about its own axis\n\nmgl_body IS THE MAIN ONE:\nPatch a stream of quaternions into 'pose' and it draws the skeleton. It accepts \ndata as fast as it arrives and draws the latest on each render, so the frame \nrate of the source and of the display are independent.\n\n'skeleton_mode' and 'display_mode' change what it draws - spheres at the joints, \nlimbs between them, or both. 'limb_lengths' lets you set the proportions rather \nthan taking the defaults, which matters when the pose came from a body that is \nnot the default size.\n\nSEEING WHAT A NUMBER MEANS:\nThe other four nodes exist because a value about a body is much easier to \nunderstand drawn ON the body than plotted beside it.\n\nmgl_contact_disks puts a disk at each contact, scaled by the area - so the \nweight shifting between the feet is something you watch rather than read. \nmgl_torque_arc draws a torque as an arc around the axis it acts about, which is \nwhat a torque actually is and what a number cannot show. \nmgl_orientation_disks shows each joint's orientation as a ring, so a twist is \nvisible as a twist.\n\nTHE CALLBACK OUTLETS:\nmgl_body reports which joint was clicked on - 'joint_id' and 'joint_callback' - \nso the scene can be an interface. Tick 'enable_callbacks' and clicking a joint \ntells the patch which one, which is how you select a joint to inspect without \nbuilding a list of them somewhere else.\n\nSYNTAX:\nmgl_body\nmgl_contact_disks\n\nEXAMPLE:\nmgl_body\n\nINPUTS and PARAMETERS:\n\npose:\nThe joint rotations, as quaternions. This is the data inlet.\n\nskeleton_mode / display_mode / draw_spheres:\nWhat to draw.\n\nscale / joint_radius / limb_lengths:\nThe size of the body and its parts.\n\njoint_data / color:\nPer-joint values and colours - this is how you colour joints by a measurement.\n\ns_curve_spine:\nWhether the spine is drawn as a curve rather than straight segments.\n\ninstanced_mode:\nDraw the joints in one call rather than separately. Faster for a full skeleton.\n\ncontacts / area_scale / min_radius / max_radius (mgl_contact_disks):\nThe contact data and how its area maps to a disk size.\n\nshow_disks / disk_scale / disk_orientations (mgl_body_orientation):\nThe orientation rings.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing.\n\njoint_id / joint_callback / joint_data:\nWhich joint was clicked, and what it carries.\n\nRELATED:\nSee the smpl nodes for where pose data comes from, and the quaternion nodes for \nworking on it before it is drawn.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These draw a moving body, and the things you want to see about how it moves.\n\nTHE NODES:\n\nmgl_body              a skeleton, driven by a pose\nmgl_body_orientation  the same, with per-joint orientation disks\nmgl_orientation_disks the disks on their own\nmgl_contact_disks     where the body is touching the ground, sized by area\nmgl_torque_arc        a torque drawn as an arc about its own axis\n\nmgl_body IS THE MAIN ONE:\nPatch a stream of quaternions into 'pose' and it draws the skeleton. It accepts \ndata as fast as it arrives and draws the latest on each render, so the frame \nrate of the source and of the display are independent.\n\n'skeleton_mode' and 'display_mode' change what it draws - spheres at the joints, \nlimbs between them, or both. 'limb_lengths' lets you set the proportions rather \nthan taking the defaults, which matters when the pose came from a body that is \nnot the default size.\n\nSEEING WHAT A NUMBER MEANS:\nThe other four nodes exist because a value about a body is much easier to \nunderstand drawn ON the body than plotted beside it.\n\nmgl_contact_disks puts a disk at each contact, scaled by the area - so the \nweight shifting between the feet is something you watch rather than read. \nmgl_torque_arc draws a torque as an arc around the axis it acts about, which is \nwhat a torque actually is and what a number cannot show. \nmgl_orientation_disks shows each joint's orientation as a ring, so a twist is \nvisible as a twist.\n\nTHE CALLBACK OUTLETS:\nmgl_body reports which joint was clicked on - 'joint_id' and 'joint_callback' - \nso the scene can be an interface. Tick 'enable_callbacks' and clicking a joint \ntells the patch which one, which is how you select a joint to inspect without \nbuilding a list of them somewhere else.\n\nSYNTAX:\nmgl_body\nmgl_contact_disks\n\nEXAMPLE:\nmgl_body\n\nINPUTS and PARAMETERS:\n\npose:\nThe joint rotations, as quaternions. This is the data inlet.\n\nskeleton_mode / display_mode / draw_spheres:\nWhat to draw.\n\nscale / joint_radius / limb_lengths:\nThe size of the body and its parts.\n\njoint_data / color:\nPer-joint values and colours - this is how you colour joints by a measurement.\n\ns_curve_spine:\nWhether the spine is drawn as a curve rather than straight segments.\n\ninstanced_mode:\nDraw the joints in one call rather than separately. Faster for a full skeleton.\n\ncontacts / area_scale / min_radius / max_radius (mgl_contact_disks):\nThe contact data and how its area maps to a disk size.\n\nshow_disks / disk_scale / disk_orientations (mgl_body_orientation):\nThe orientation rings.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing.\n\njoint_id / joint_callback / joint_data:\nWhich joint was clicked, and what it carries.\n\nRELATED:\nSee the smpl nodes for where pose data comes from, and the quaternion nodes for \nworking on it before it is drawn."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_orbit_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "mgl_light",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 435,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "mgl_display",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 200,
+            "width": 220,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "mgl_body",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 260,
+            "height": 400,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment patch a stream of quaternions into pose",
+            "name": "comment",
+            "id": 533,
+            "position_x": 576,
+            "position_y": 1075,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "patch a stream of quaternions into pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "patch a stream of quaternions into pose"
+        },
+        "9": {
+            "init": "comment tick enable_callbacks, then click a joint",
+            "name": "comment",
+            "id": 570,
+            "position_x": 576,
+            "position_y": 1105,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick enable_callbacks, then click a joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick enable_callbacks, then click a joint"
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 340,
+            "position_y": 660,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment which joint was clicked",
+            "name": "comment",
+            "id": 644,
+            "position_x": 576,
+            "position_y": 710,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which joint was clicked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which joint was clicked"
+        },
+        "12": {
+            "name": "mgl_contact_disks",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 1150,
+            "width": 260,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment contacts drawn where they happen,",
+            "name": "comment",
+            "id": 718,
+            "position_x": 576,
+            "position_y": 1465,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "contacts drawn where they happen,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "contacts drawn where they happen,"
+        },
+        "14": {
+            "init": "comment each disk sized by its area",
+            "name": "comment",
+            "id": 755,
+            "position_x": 576,
+            "position_y": 1495,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each disk sized by its area",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each disk sized by its area"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1480,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "texture_tag",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture_tag"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_id",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

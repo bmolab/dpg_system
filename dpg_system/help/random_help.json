@@ -1,0 +1,476 @@
+{
+    "height": 861,
+    "width": 1641,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "random_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/random_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment random - one new number each time you ask",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "random - one new number each time you ask",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "random - one new number each time you ask"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 763,
+            "position_y": 45,
+            "width": 838,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The random nodes produce a fresh random number each time they are triggered.\n\nThey do not run on their own. Send anything into the trigger inlet - typically \nfrom a metro - and one number comes out. The remaining inlets shape the \ndistribution those numbers are drawn from, and hold their values between triggers.\n\nrandom is the plain one: every value in the range equally likely. \nThe random.* nodes each draw from a named statistical distribution, so that some \noutcomes are more likely than others. Which one you want depends on what the \nnumber is FOR - an even spread is rarely what natural variation looks like.\n\nTHE NODES:\n\nrandom                  even spread across the range - every value equally likely\nrandom.gauss            the bell curve: clustered around a mean, rare far away\nrandom.normalvariate    the same bell curve by its formal name\nrandom.lognormvariate   a bell curve in the logarithm - always positive, \n                        with a long tail to the right. Good for durations \n                        and sizes, which cannot go negative\nrandom.expovariate      waiting times between events that happen at a steady \n                        average rate - many short gaps, a few long ones\nrandom.paretovariate    the classic long tail: mostly small, occasionally huge\nrandom.gammavariate     positive, skewed, adjustable in both shape and spread\nrandom.betavariate      confined between 0 and 1, with the weight of the \n                        distribution wherever you put it - useful for a \n                        random proportion or probability\nrandom.weibullvariate   time until something fails; the shape decides whether \n                        failure gets more or less likely as time passes\nrandom.triangular       a spread between a low and a high limit, peaking at \n                        a value you choose - the simple way to say \n                        \"around here, never outside these bounds\"\nrandom.vonmisesvariate  the bell curve wrapped around a circle, for angles, \n                        where 359 degrees and 1 degree are neighbours\n\nSYNTAX:\nrandom <range: float>\nrandom.gauss <mean: float> <deviation: float>\nrandom.triangular <low: float> <high: float> <peak: float>\n\nEXAMPLE:\nrandom.gauss 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntrigger:\nReceiving anything here produces one new random number. \nThe value sent is ignored - only its arrival matters.\n\nrange (random only):\nThe upper limit. Values come out between 0 and range, \nor between minus range and plus range when the bipolar option is checked.\n\nbipolar (random only):\nWhen checked, the spread is centred on zero rather than starting there.\n\nmean / dev:\nOn the bell-curve nodes: the centre of the distribution, and how far values \ntypically stray from it. About two thirds of values land within one deviation \nof the mean. On random.vonmisesvariate these are named mu and kappa, \nand kappa works the other way round - larger kappa means MORE tightly clustered.\n\nalpha / beta / lambda:\nThe shape parameters of the gamma, beta, Weibull, Pareto and exponential \ndistributions. Drag them and watch the histogram; that is faster than \nreasoning about them.\n\nlow / high / mode:\nOn random.triangular: the two limits, and the most likely value in between.\n\nOUTPUTS: \n\nout:\nA single float. One value per trigger - these nodes do not fill arrays. \nTo build up a spread, trigger repeatedly and collect the results.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 830,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The random nodes produce a fresh random number each time they are triggered.\n\nThey do not run on their own. Send anything into the trigger inlet - typically \nfrom a metro - and one number comes out. The remaining inlets shape the \ndistribution those numbers are drawn from, and hold their values between triggers.\n\nrandom is the plain one: every value in the range equally likely. \nThe random.* nodes each draw from a named statistical distribution, so that some \noutcomes are more likely than others. Which one you want depends on what the \nnumber is FOR - an even spread is rarely what natural variation looks like.\n\nTHE NODES:\n\nrandom                  even spread across the range - every value equally likely\nrandom.gauss            the bell curve: clustered around a mean, rare far away\nrandom.normalvariate    the same bell curve by its formal name\nrandom.lognormvariate   a bell curve in the logarithm - always positive, \n                        with a long tail to the right. Good for durations \n                        and sizes, which cannot go negative\nrandom.expovariate      waiting times between events that happen at a steady \n                        average rate - many short gaps, a few long ones\nrandom.paretovariate    the classic long tail: mostly small, occasionally huge\nrandom.gammavariate     positive, skewed, adjustable in both shape and spread\nrandom.betavariate      confined between 0 and 1, with the weight of the \n                        distribution wherever you put it - useful for a \n                        random proportion or probability\nrandom.weibullvariate   time until something fails; the shape decides whether \n                        failure gets more or less likely as time passes\nrandom.triangular       a spread between a low and a high limit, peaking at \n                        a value you choose - the simple way to say \n                        \"around here, never outside these bounds\"\nrandom.vonmisesvariate  the bell curve wrapped around a circle, for angles, \n                        where 359 degrees and 1 degree are neighbours\n\nSYNTAX:\nrandom <range: float>\nrandom.gauss <mean: float> <deviation: float>\nrandom.triangular <low: float> <high: float> <peak: float>\n\nEXAMPLE:\nrandom.gauss 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntrigger:\nReceiving anything here produces one new random number. \nThe value sent is ignored - only its arrival matters.\n\nrange (random only):\nThe upper limit. Values come out between 0 and range, \nor between minus range and plus range when the bipolar option is checked.\n\nbipolar (random only):\nWhen checked, the spread is centred on zero rather than starting there.\n\nmean / dev:\nOn the bell-curve nodes: the centre of the distribution, and how far values \ntypically stray from it. About two thirds of values land within one deviation \nof the mean. On random.vonmisesvariate these are named mu and kappa, \nand kappa works the other way round - larger kappa means MORE tightly clustered.\n\nalpha / beta / lambda:\nThe shape parameters of the gamma, beta, Weibull, Pareto and exponential \ndistributions. Drag them and watch the histogram; that is faster than \nreasoning about them.\n\nlow / high / mode:\nOn random.triangular: the two limits, and the most likely value in between.\n\nOUTPUTS: \n\nout:\nA single float. One value per trigger - these nodes do not fill arrays. \nTo build up a spread, trigger repeatedly and collect the results."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 50,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 98,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 20.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 20"
+        },
+        "5": {
+            "init": "comment trigger it fast",
+            "name": "comment",
+            "id": 422,
+            "position_x": 474,
+            "position_y": 116,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "trigger it fast",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "trigger it fast"
+        },
+        "6": {
+            "name": "random.gauss",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 188,
+            "width": 175,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "random.gauss 0.0 1.0"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 240,
+            "position_y": 170,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -3.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment mostly near the mean, rarely far away",
+            "name": "comment",
+            "id": 533,
+            "position_x": 474,
+            "position_y": 298,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mostly near the mean, rarely far away",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mostly near the mean, rarely far away"
+        },
+        "9": {
+            "name": "random",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 345,
+            "width": 140,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "random 1.0"
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 240,
+            "position_y": 365,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment plain random: no value preferred",
+            "name": "comment",
+            "id": 644,
+            "position_x": 474,
+            "position_y": 435,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "plain random: no value preferred",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "plain random: no value preferred"
+        },
+        "12": {
+            "init": "comment drag mean and dev on the node above",
+            "name": "comment",
+            "id": 681,
+            "position_x": 474,
+            "position_y": 465,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag mean and dev on the node above",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag mean and dev on the node above"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 571,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

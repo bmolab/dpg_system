@@ -1,0 +1,370 @@
+{
+    "height": 801,
+    "width": 1427,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "slider_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/slider_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment slider and knob - set a number by dragging",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "slider and knob - set a number by dragging",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "slider and knob - set a number by dragging"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 579,
+            "position_y": 45,
+            "width": 808,
+            "height": 696,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "slider and knob set a number by dragging, within limits you decide.\n\nThey hold the same kind of value a number box does, and send it the same way. \nWhat they add is a sense of WHERE the value sits in its range - you can see at a \nglance that something is near the top of its travel, which a number alone does \nnot tell you.\n\nUse them wherever the range matters as much as the number: levels, mixes, \nthresholds, anything a person will adjust by feel rather than by typing.\n\nTO USE THEM:\nDrag to change. Double-click to type a value exactly.\n\nSYNTAX:\nslider <value>\nknob <value>\n\nEXAMPLE:\nslider 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number sets the slider; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\npower:\nBends the scale, so that the travel is not evenly distributed across the range. \nAt 1 the slider is linear. Above 1 the low end gets more of the travel, \nwhich is what you want for anything perceptual - loudness, brightness, \nfrequency - where the interesting detail is all down at the bottom and a linear \nslider spends most of its length on values you do not care about.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat and int are the same value without the travel. \ngain is a slider that multiplies a signal passing through it, rather than \nsending its own value. \nslider_bank is a row of named sliders that each send a message.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 680,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "slider and knob set a number by dragging, within limits you decide.\n\nThey hold the same kind of value a number box does, and send it the same way. \nWhat they add is a sense of WHERE the value sits in its range - you can see at a \nglance that something is near the top of its travel, which a number alone does \nnot tell you.\n\nUse them wherever the range matters as much as the number: levels, mixes, \nthresholds, anything a person will adjust by feel rather than by typing.\n\nTO USE THEM:\nDrag to change. Double-click to type a value exactly.\n\nSYNTAX:\nslider <value>\nknob <value>\n\nEXAMPLE:\nslider 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number sets the slider; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\npower:\nBends the scale, so that the travel is not evenly distributed across the range. \nAt 1 the slider is linear. Above 1 the low end gets more of the travel, \nwhich is what you want for anything perceptual - loudness, brightness, \nfrequency - where the interesting detail is all down at the bottom and a linear \nslider spends most of its length on values you do not care about.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat and int are the same value without the travel. \ngain is a slider that multiplies a signal passing through it, rather than \nsending its own value. \nslider_bank is a row of named sliders that each send a message."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "slider",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 220,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "power",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "slider 0.5"
+        },
+        "6": {
+            "init": "comment drag it; double-click to type",
+            "name": "comment",
+            "id": 459,
+            "position_x": 276,
+            "position_y": 200,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag it; double-click to type",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag it; double-click to type"
+        },
+        "7": {
+            "name": "float",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "knob",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 100,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                }
+            },
+            "init": "knob 0.5"
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 430,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment a knob is a slider that takes less room",
+            "name": "comment",
+            "id": 607,
+            "position_x": 276,
+            "position_y": 485,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a knob is a slider that takes less room",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a knob is a slider that takes less room"
+        },
+        "11": {
+            "init": "comment raise power to stretch the low end",
+            "name": "comment",
+            "id": 644,
+            "position_x": 276,
+            "position_y": 515,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise power to stretch the low end",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise power to stretch the low end"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 502,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

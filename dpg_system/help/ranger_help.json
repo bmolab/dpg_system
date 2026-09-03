@@ -1,0 +1,445 @@
+{
+    "height": 825,
+    "width": 1581,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "ranger_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/ranger_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment ranger - map a signal into the range you need",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ranger - map a signal into the range you need",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ranger - map a signal into the range you need"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 743,
+            "position_y": 45,
+            "width": 798,
+            "height": 706,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The ranger node rescales a signal from the range it arrives in to the range you need.\n\nYou tell it what the input's low and high look like, and what you want them to \nbecome, and it maps proportionally between the two. An input sitting halfway \nbetween its limits comes out halfway between yours.\n\nIt also inverts: set the output minimum above the output maximum and the signal \ncomes out backwards, so a rising input produces a falling result.\n\nThe useful part is the calibrate switch. Rather than working out a sensor's real \nrange by hand, tick calibrate, move through the full range of the thing you are \nmeasuring, and untick it. The node watches the highest and lowest values it saw \nwhile calibrating and writes them into the input limits for you.\n\nSYNTAX:\nranger <input_min> <input_max> <output_min> <output_max>\n\nEXAMPLE:\nranger 0.0 1.0 0.0 360.0\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to rescale. Receiving data here triggers the node.\n\ninput_min / input_max:\nThe range the signal actually arrives in. These are what calibrate fills in.\n\noutput_min / output_max:\nThe range you want it in. Setting output_min above output_max flips the signal.\n\nclamp:\nWhen checked, results are held inside the output range, so an input beyond its \nstated limits cannot push the output past yours. On by default. \nUncheck it when you want to allow overshoot.\n\ncalibrate:\nWhile checked, the node records the smallest and largest values it sees and \ndoes not change the input limits. When you uncheck it, the recorded low and \nhigh are written into input_min and input_max. \nMove through the full range you care about before switching it off - the node \ncan only learn from what it has seen.\n\nOUTPUTS: \n\nrescaled:\nThe mapped value.\n\nA NOTE ON CALIBRATION:\nCalibration restarts each time you switch the checkbox on, so a bad pass \ncosts nothing - just do it again. Because it records extremes, a single spurious \nspike will widen the range and flatten everything afterwards; if the result \nlooks compressed, that is usually why.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 690,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The ranger node rescales a signal from the range it arrives in to the range you need.\n\nYou tell it what the input's low and high look like, and what you want them to \nbecome, and it maps proportionally between the two. An input sitting halfway \nbetween its limits comes out halfway between yours.\n\nIt also inverts: set the output minimum above the output maximum and the signal \ncomes out backwards, so a rising input produces a falling result.\n\nThe useful part is the calibrate switch. Rather than working out a sensor's real \nrange by hand, tick calibrate, move through the full range of the thing you are \nmeasuring, and untick it. The node watches the highest and lowest values it saw \nwhile calibrating and writes them into the input limits for you.\n\nSYNTAX:\nranger <input_min> <input_max> <output_min> <output_max>\n\nEXAMPLE:\nranger 0.0 1.0 0.0 360.0\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to rescale. Receiving data here triggers the node.\n\ninput_min / input_max:\nThe range the signal actually arrives in. These are what calibrate fills in.\n\noutput_min / output_max:\nThe range you want it in. Setting output_min above output_max flips the signal.\n\nclamp:\nWhen checked, results are held inside the output range, so an input beyond its \nstated limits cannot push the output past yours. On by default. \nUncheck it when you want to allow overshoot.\n\ncalibrate:\nWhile checked, the node records the smallest and largest values it sees and \ndoes not change the input limits. When you uncheck it, the recorded low and \nhigh are written into input_min and input_max. \nMove through the full range you care about before switching it off - the node \ncan only learn from what it has seen.\n\nOUTPUTS: \n\nrescaled:\nThe mapped value.\n\nA NOTE ON CALIBRATION:\nCalibration restarts each time you switch the checkbox on, so a bad pass \ncosts nothing - just do it again. Because it records extremes, a single spurious \nspike will widen the range and flatten everything afterwards; if the result \nlooks compressed, that is usually why."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 3.0 sin"
+        },
+        "6": {
+            "init": "comment a wave that swings -1 to 1",
+            "name": "comment",
+            "id": 459,
+            "position_x": 433,
+            "position_y": 215,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a wave that swings -1 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a wave that swings -1 to 1"
+        },
+        "7": {
+            "name": "ranger",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 255,
+            "width": 175,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input_min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "input_max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "output_min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "output_max",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "clamp",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "calibrate",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "ranger -1.0 1.0 0.0 360.0"
+        },
+        "8": {
+            "init": "comment rescaled to degrees, 0 to 360",
+            "name": "comment",
+            "id": 533,
+            "position_x": 433,
+            "position_y": 445,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rescaled to degrees, 0 to 360",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rescaled to degrees, 0 to 360"
+        },
+        "9": {
+            "init": "comment swap output_min and output_max to invert",
+            "name": "comment",
+            "id": 570,
+            "position_x": 433,
+            "position_y": 475,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "swap output_min and output_max to invert",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "swap output_min and output_max to invert"
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 515,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 360.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 515,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 721,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rescaled",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rescaled",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

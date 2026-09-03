@@ -1,0 +1,549 @@
+{
+    "height": 940,
+    "width": 1558,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "filter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/filter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment filter - smooth a jittery stream",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 384,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "filter - smooth a jittery stream",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "filter - smooth a jittery stream"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 710,
+            "position_y": 45,
+            "width": 808,
+            "height": 696,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The filter node smooths a jittery stream by letting it change only gradually.\n\nEach time a value arrives, the node moves its own held value part of the way \ntowards it, rather than jumping straight there. The degree decides how far: \nat 0 it goes all the way, at 0.99 it barely budges. What comes out is a version \nof the input with the sudden movements worn off.\n\nsmooth is the same node under a friendlier name.\n\nThis is the cheapest useful filter there is - one multiply and one add per value - \nand it is usually the right first thing to reach for on a noisy sensor. \nIts cost is lag: the smoother you make it, the further behind the real signal \nit runs. That trade is the whole story of this node.\n\nIt works on single numbers, NumPy arrays and PyTorch tensors. \nArrays are smoothed element by element, each with its own history, \nand the node resizes itself if the array shape changes.\n\nSYNTAX:\nfilter <degree: float>\nsmooth <degree: float>\n\nEXAMPLE:\nfilter 0.9\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be smoothed. Receiving data here triggers the node.\n\ndegree:\nHow much of the old value to keep, from 0.0 to 1.0. The default is 0.9. \n\n  0.0    no smoothing at all - the input passes straight through\n  0.5    light smoothing, barely any lag\n  0.9    noticeable smoothing, noticeable lag\n  0.99   heavy smoothing; slow drifts survive, everything else is flattened\n\nValues outside 0 to 1 are clamped, so the filter cannot be made to run away.\n\nOUTPUTS: \n\nout:\nThe smoothed value.\n\nCHOOSING A DEGREE:\nThere is no correct value - it depends on how fast the thing you care about \nmoves, and how fast the noise moves. If the two are similar, no setting of this \nnode will separate them, and you need a filter that knows something more about \nthe signal. See one_euro_filter, which varies its own smoothing with speed, \nand band_pass, which selects by frequency.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 680,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The filter node smooths a jittery stream by letting it change only gradually.\n\nEach time a value arrives, the node moves its own held value part of the way \ntowards it, rather than jumping straight there. The degree decides how far: \nat 0 it goes all the way, at 0.99 it barely budges. What comes out is a version \nof the input with the sudden movements worn off.\n\nsmooth is the same node under a friendlier name.\n\nThis is the cheapest useful filter there is - one multiply and one add per value - \nand it is usually the right first thing to reach for on a noisy sensor. \nIts cost is lag: the smoother you make it, the further behind the real signal \nit runs. That trade is the whole story of this node.\n\nIt works on single numbers, NumPy arrays and PyTorch tensors. \nArrays are smoothed element by element, each with its own history, \nand the node resizes itself if the array shape changes.\n\nSYNTAX:\nfilter <degree: float>\nsmooth <degree: float>\n\nEXAMPLE:\nfilter 0.9\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be smoothed. Receiving data here triggers the node.\n\ndegree:\nHow much of the old value to keep, from 0.0 to 1.0. The default is 0.9. \n\n  0.0    no smoothing at all - the input passes straight through\n  0.5    light smoothing, barely any lag\n  0.9    noticeable smoothing, noticeable lag\n  0.99   heavy smoothing; slow drifts survive, everything else is flattened\n\nValues outside 0 to 1 are clamped, so the filter cannot be made to run away.\n\nOUTPUTS: \n\nout:\nThe smoothed value.\n\nCHOOSING A DEGREE:\nThere is no correct value - it depends on how fast the thing you care about \nmoves, and how fast the noise moves. If the two are similar, no setting of this \nnode will separate them, and you need a filter that knows something more about \nthe signal. See one_euro_filter, which varies its own smoothing with speed, \nand band_pass, which selects by frequency."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "6": {
+            "name": "toggle",
+            "id": 459,
+            "position_x": 185,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "metro",
+            "id": 496,
+            "position_x": 185,
+            "position_y": 110,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 16.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 16"
+        },
+        "8": {
+            "name": "random.gauss",
+            "id": 533,
+            "position_x": 185,
+            "position_y": 190,
+            "width": 175,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "random.gauss 0.0 0.25"
+        },
+        "9": {
+            "name": "+",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 120,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0"
+        },
+        "10": {
+            "init": "comment a clean wave plus noise",
+            "name": "comment",
+            "id": 607,
+            "position_x": 386,
+            "position_y": 310,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a clean wave plus noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a clean wave plus noise"
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 348,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "name": "filter",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 545,
+            "width": 130,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degree",
+                    "value": 0.9,
+                    "value_type": "float"
+                }
+            },
+            "init": "filter 0.9"
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment drag degree: watch noise fall and lag grow",
+            "name": "comment",
+            "id": 755,
+            "position_x": 386,
+            "position_y": 565,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag degree: watch noise fall and lag grow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag degree: watch noise fall and lag grow"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 836,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

@@ -985,6 +985,13 @@ class SMPLBodyNode(SMPLNode):
         return numpy_array
 
     def receive_betas(self):
+        # No model loaded yet. Betas can arrive from a beta editor before a
+        # model file has been chosen -- and do, on patch load, via
+        # post_load_callback -- so dereferencing None here failed the entire
+        # patch load with an AttributeError. load_smpl_model() already guards
+        # the same way.
+        if self.smpl_model is None:
+            return
         if self.model_type == 'npz':
             self.smpl_model['betas'] = self.betas()
         else:

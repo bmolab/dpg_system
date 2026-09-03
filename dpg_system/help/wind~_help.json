@@ -1,0 +1,362 @@
+{
+    "height": 1064,
+    "width": 1766,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "wind~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/wind~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment wind~ and the blown models - no trigger, only breath",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 624,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "wind~ and the blown models - no trigger, only breath",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "wind~ and the blown models - no trigger, only breath"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 898,
+            "position_y": 45,
+            "width": 828,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These models are sounded by BREATH: air moving through or past something.\n\nThere is no trigger on any of them, and that is the point. A blown instrument \nhas none - everything about playing it lives in the pressure. Lean on the \nslider, patch an adsr~ for tongued notes, an lfo~ for vibrato, or an effort \nstream so that moving hard is blowing hard.\n\nTHE NODES:\n\nwind~      a blown instrument. The reed speaks from about half pressure; the \n           flute wants nearly a full breath and cracks when overblown\nreed~      the same node\nflute~     the same node\nbrass~     one bore, the note chosen by the lip. 'frequency' is the \n           instrument's size - its pedal fundamental - and 'lip' is the \n           embouchure, mapped across the first sixteen harmonics\nhorn~      the same node\nblow~      a blown MODE TABLE - the third hand, after the mallet and the bow. \n           modal~ strikes a table, rub~ bows it, this blows it\npipe~      the same node\nbubbles~   liquid: each bubble a decaying sine at the pitch its size dictates, \n           rising as it dies\ngurgle~    the same node\nwhoosh~    motion through air - patch a speed, hear the swish\nswish~     the same node\nvessel~    a vessel with water in it - modal~ with the water added\n\nbrass~ CLIMBS THE SERIES:\nSweeping 'lip' does not slide the pitch. It steps up the harmonic series, \nlike a bugler, because the lip's own resonance locks to the nearest bore mode. \nThat is the model behaving as the instrument does, not a quantiser.\n\nwhoosh~ IS PHYSICS, NOT A MAPPING:\nIts pitch is speed over size - the physics of vortex shedding rather than a \nrelationship anyone chose - and loudness rises steeply the way aeolian sound \ndoes. Slow motion whispers, fast motion roars, stillness is silent. \nPatch a limb speed straight in.\n\nbubbles~ IS PLAYED BY FLOW:\n'flow' is the whole interface - the rate rides it and stillness is silent. \n'size' runs from fizz to glug. The rising pitch as each bubble dies is the \nMinnaert inflection, and it is what makes water sound like water.\n\nSYNTAX:\nwind~\nbrass~ <frequency>\nwhoosh~\n\nEXAMPLE:\nbrass~ 116\n\nINPUTS and PARAMETERS:\n\npressure / breath:\nHow hard it is being blown, and the noise in the breath. \nThis is the playing interface - there is nothing else to trigger.\n\nfrequency / pitch:\nThe instrument's size, and exponential transposition.\n\nlip (brass~):\nThe embouchure. Sweep it to climb the harmonic series.\n\nembouchure (wind~):\nWhere the air is directed - the difference between a note speaking and not.\n\nmute / stem / wah (brass~):\nWhat is in the bell.\n\nflow / size / spread / chirp / gulp (bubbles~):\nThe rate of bubbles, how big, how varied, and the character of each.\n\nspeed / size / edge / wake (whoosh~):\nHow fast the thing is moving, how big it is, how sharp its edge, and the \nturbulence behind it.\n\nfill / tip / turn / swirl (vessel~):\nHow much water, how far it is tipped, and how it moves.\n\nOUTPUTS: \n\nout:\nThe sound.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These models are sounded by BREATH: air moving through or past something.\n\nThere is no trigger on any of them, and that is the point. A blown instrument \nhas none - everything about playing it lives in the pressure. Lean on the \nslider, patch an adsr~ for tongued notes, an lfo~ for vibrato, or an effort \nstream so that moving hard is blowing hard.\n\nTHE NODES:\n\nwind~      a blown instrument. The reed speaks from about half pressure; the \n           flute wants nearly a full breath and cracks when overblown\nreed~      the same node\nflute~     the same node\nbrass~     one bore, the note chosen by the lip. 'frequency' is the \n           instrument's size - its pedal fundamental - and 'lip' is the \n           embouchure, mapped across the first sixteen harmonics\nhorn~      the same node\nblow~      a blown MODE TABLE - the third hand, after the mallet and the bow. \n           modal~ strikes a table, rub~ bows it, this blows it\npipe~      the same node\nbubbles~   liquid: each bubble a decaying sine at the pitch its size dictates, \n           rising as it dies\ngurgle~    the same node\nwhoosh~    motion through air - patch a speed, hear the swish\nswish~     the same node\nvessel~    a vessel with water in it - modal~ with the water added\n\nbrass~ CLIMBS THE SERIES:\nSweeping 'lip' does not slide the pitch. It steps up the harmonic series, \nlike a bugler, because the lip's own resonance locks to the nearest bore mode. \nThat is the model behaving as the instrument does, not a quantiser.\n\nwhoosh~ IS PHYSICS, NOT A MAPPING:\nIts pitch is speed over size - the physics of vortex shedding rather than a \nrelationship anyone chose - and loudness rises steeply the way aeolian sound \ndoes. Slow motion whispers, fast motion roars, stillness is silent. \nPatch a limb speed straight in.\n\nbubbles~ IS PLAYED BY FLOW:\n'flow' is the whole interface - the rate rides it and stillness is silent. \n'size' runs from fizz to glug. The rising pitch as each bubble dies is the \nMinnaert inflection, and it is what makes water sound like water.\n\nSYNTAX:\nwind~\nbrass~ <frequency>\nwhoosh~\n\nEXAMPLE:\nbrass~ 116\n\nINPUTS and PARAMETERS:\n\npressure / breath:\nHow hard it is being blown, and the noise in the breath. \nThis is the playing interface - there is nothing else to trigger.\n\nfrequency / pitch:\nThe instrument's size, and exponential transposition.\n\nlip (brass~):\nThe embouchure. Sweep it to climb the harmonic series.\n\nembouchure (wind~):\nWhere the air is directed - the difference between a note speaking and not.\n\nmute / stem / wah (brass~):\nWhat is in the bell.\n\nflow / size / spread / chirp / gulp (bubbles~):\nThe rate of bubbles, how big, how varied, and the character of each.\n\nspeed / size / edge / wake (whoosh~):\nHow fast the thing is moving, how big it is, how sharp its edge, and the \nturbulence behind it.\n\nfill / tip / turn / swirl (vessel~):\nHow much water, how far it is tipped, and how it moves.\n\nOUTPUTS: \n\nout:\nThe sound."
+        },
+        "3": {
+            "name": "slider",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 0.0"
+        },
+        "4": {
+            "init": "comment this is the whole playing interface",
+            "name": "comment",
+            "id": 385,
+            "position_x": 616,
+            "position_y": 130,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this is the whole playing interface",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this is the whole playing interface"
+        },
+        "5": {
+            "name": "sig~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 170,
+            "width": 200,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "brass~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 260,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "brass~ 116"
+        },
+        "7": {
+            "init": "comment lean on the slider to make it speak",
+            "name": "comment",
+            "id": 496,
+            "position_x": 616,
+            "position_y": 640,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lean on the slider to make it speak",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lean on the slider to make it speak"
+        },
+        "8": {
+            "init": "comment then sweep lip: it climbs the series",
+            "name": "comment",
+            "id": 533,
+            "position_x": 616,
+            "position_y": 670,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then sweep lip: it climbs the series",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then sweep lip: it climbs the series"
+        },
+        "9": {
+            "name": "whoosh~",
+            "id": 570,
+            "position_x": 330,
+            "position_y": 330,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment patch a limb speed into speed",
+            "name": "comment",
+            "id": 607,
+            "position_x": 616,
+            "position_y": 560,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "patch a limb speed into speed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "patch a limb speed into speed"
+        },
+        "11": {
+            "name": "scope~",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 600,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "fader_out~",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 710,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 960,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "value"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pressure"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "speed"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

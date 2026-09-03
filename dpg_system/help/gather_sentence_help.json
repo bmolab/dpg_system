@@ -1,0 +1,426 @@
+{
+    "height": 876,
+    "width": 1802,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "gather_sentence_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gather_sentence_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gather_sentence - assembling text over time",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gather_sentence - assembling text over time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gather_sentence - assembling text over time"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 954,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These accumulate text over time, rather than acting on one message.\n\nSpeech recognition and language models emit text a fragment at a time. \nNone of it is a sentence, and most of what you want to do needs one. \nThese four assemble the stream into something whole, in different ways.\n\nTHE NODES:\n\ngather_sentence  collect fragments until a sentence ends, then send it\nstring_builder   collect until you ask for it\nfifo_string      keep a window of recent text, with older parts fading\ntext_change      report only the words that are NEW\n\ngather_sentence DECIDES WHERE A SENTENCE ENDS:\n'auto sentence end' looks for the punctuation that ends one. 'end on return' \ntreats a line break as the end. 'force string end' lets the patch decide. \n'enforce spaces' fixes fragments that arrive without them, which recognition \noutput often does.\n\n'skip framed by' ignores anything between a pair of characters - so stage \ndirections, annotations or markup in the stream do not end up in the sentence.\n\nfifo_string IS THE ONE FOR A ROLLING CONTEXT:\nIt holds recent text as a window, and its 'weighted out' outlet carries the \ntext with a weight per piece that DECAYS with age. That is what you want when \nfeeding something that should be influenced more by what was just said than by \nwhat was said a minute ago - an image prompt, a mood, a running state.\n\n'decay_rate' sets how fast the past fades. 'length_threshold' caps how much is \nkept. 'progress' advances the ages without adding anything, so time can pass \nwithout new text.\n\ntext_change REPORTS ONLY WHAT IS NEW:\nGiven a stream that keeps restating the same thing, it sends only the words \nthat were not there before. 'persistence' is how many times a word must be \nabsent before it counts as new again, and 'reset_period' clears the memory \nperiodically so a word can recur.\n\nThat is how you drive something from speech without it re-firing on every \nrepetition of the same phrase.\n\nSYNTAX:\ngather_sentence\nfifo_string\ntext_change\n\nEXAMPLE:\ngather_sentence\n\nINPUTS and PARAMETERS:\n\nstring in / text input:\nThe fragments.\n\nforce string end / issue text:\nEmit what has been collected now.\n\nprogress (fifo_string):\nAge the window without adding to it.\n\nclear / dump_oldest:\nEmpty it, or drop the oldest piece.\n\norder / decay_rate / length_threshold (fifo_string):\nWhich end is newest, how fast the past fades, and how much is kept.\n\npersistence / reset_period (text_change):\nHow long a word is remembered, and how often the memory clears.\n\nOUTPUTS: \n\nsentences out / text out:\nThe assembled text.\n\nweighted out / string out (fifo_string):\nThe window with per-piece weights, and as plain text.\n\nnew words out:\nOnly the words not seen recently.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These accumulate text over time, rather than acting on one message.\n\nSpeech recognition and language models emit text a fragment at a time. \nNone of it is a sentence, and most of what you want to do needs one. \nThese four assemble the stream into something whole, in different ways.\n\nTHE NODES:\n\ngather_sentence  collect fragments until a sentence ends, then send it\nstring_builder   collect until you ask for it\nfifo_string      keep a window of recent text, with older parts fading\ntext_change      report only the words that are NEW\n\ngather_sentence DECIDES WHERE A SENTENCE ENDS:\n'auto sentence end' looks for the punctuation that ends one. 'end on return' \ntreats a line break as the end. 'force string end' lets the patch decide. \n'enforce spaces' fixes fragments that arrive without them, which recognition \noutput often does.\n\n'skip framed by' ignores anything between a pair of characters - so stage \ndirections, annotations or markup in the stream do not end up in the sentence.\n\nfifo_string IS THE ONE FOR A ROLLING CONTEXT:\nIt holds recent text as a window, and its 'weighted out' outlet carries the \ntext with a weight per piece that DECAYS with age. That is what you want when \nfeeding something that should be influenced more by what was just said than by \nwhat was said a minute ago - an image prompt, a mood, a running state.\n\n'decay_rate' sets how fast the past fades. 'length_threshold' caps how much is \nkept. 'progress' advances the ages without adding anything, so time can pass \nwithout new text.\n\ntext_change REPORTS ONLY WHAT IS NEW:\nGiven a stream that keeps restating the same thing, it sends only the words \nthat were not there before. 'persistence' is how many times a word must be \nabsent before it counts as new again, and 'reset_period' clears the memory \nperiodically so a word can recur.\n\nThat is how you drive something from speech without it re-firing on every \nrepetition of the same phrase.\n\nSYNTAX:\ngather_sentence\nfifo_string\ntext_change\n\nEXAMPLE:\ngather_sentence\n\nINPUTS and PARAMETERS:\n\nstring in / text input:\nThe fragments.\n\nforce string end / issue text:\nEmit what has been collected now.\n\nprogress (fifo_string):\nAge the window without adding to it.\n\nclear / dump_oldest:\nEmpty it, or drop the oldest piece.\n\norder / decay_rate / length_threshold (fifo_string):\nWhich end is newest, how fast the past fades, and how much is kept.\n\npersistence / reset_period (text_change):\nHow long a word is remembered, and how often the memory clears.\n\nOUTPUTS: \n\nsentences out / text out:\nThe assembled text.\n\nweighted out / string out (fifo_string):\nThe window with per-piece weights, and as plain text.\n\nnew words out:\nOnly the words not seen recently."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "the light is changing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "gather_sentence",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 180,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment fragments in, whole sentences out",
+            "name": "comment",
+            "id": 496,
+            "position_x": 686,
+            "position_y": 425,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fragments in, whole sentences out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fragments in, whole sentences out"
+        },
+        "8": {
+            "name": "fifo_string",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 465,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "string",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 700,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment a rolling window; older text fades",
+            "name": "comment",
+            "id": 607,
+            "position_x": 686,
+            "position_y": 780,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a rolling window; older text fades",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a rolling window; older text fades"
+        },
+        "11": {
+            "name": "text_change",
+            "id": 644,
+            "position_x": 400,
+            "position_y": 465,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "string",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 660,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment click twice: the second time",
+            "name": "comment",
+            "id": 718,
+            "position_x": 686,
+            "position_y": 710,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click twice: the second time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click twice: the second time"
+        },
+        "14": {
+            "init": "comment nothing is new",
+            "name": "comment",
+            "id": 755,
+            "position_x": 686,
+            "position_y": 740,
+            "width": 98,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nothing is new",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nothing is new"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 772,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sentences out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text input"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "new words out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

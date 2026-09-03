@@ -1,6 +1,6 @@
 {
-    "height": 705,
-    "width": 1226,
+    "height": 712,
+    "width": 1373,
     "position": [
         100,
         100
@@ -56,8 +56,8 @@
         "2": {
             "name": "close",
             "id": 343,
-            "position_x": 34,
-            "position_y": 525,
+            "position_x": 24,
+            "position_y": 387,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -74,7 +74,7 @@
         "3": {
             "name": "text_block",
             "id": 422,
-            "position_x": 452,
+            "position_x": 475,
             "position_y": 55,
             "width": 858,
             "height": 597,

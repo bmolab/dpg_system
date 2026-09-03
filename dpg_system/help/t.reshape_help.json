@@ -1,0 +1,484 @@
+{
+    "height": 901,
+    "width": 1582,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "t.reshape_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.reshape_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t shape - the same numbers, arranged differently",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t shape - the same numbers, arranged differently",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t shape - the same numbers, arranged differently"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 724,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These change a tensor's SHAPE without changing the numbers in it.\n\nTwelve numbers can be twelve in a row, three rows of four, four rows of three, \nor a 1 by 12 slab. The numbers are identical; only the arrangement differs, \nand everything downstream cares a great deal about the arrangement. \nMost \"this will not connect\" problems in tensor work are a shape mismatch.\n\nTHE NODES:\n\nt.reshape    rearrange into a shape you give\nt.view       the same, when the memory allows it\nt.flatten    collapse into one long row\nt.ravel      the same as flatten\nt.squeeze    remove axes of length 1\nt.unsqueeze  add an axis of length 1\nt.permute    reorder the axes, however many there are\nt.transpose  swap two named axes\nt.t          transpose a 2D tensor - the short form\nt.adjoint    transpose and conjugate, for complex tensors\n\nview VERSUS reshape:\nview demands that the tensor's memory is laid out in a way that allows the new \nshape to be READ from it without moving anything - so it is free, but it fails \non a tensor that has been transposed or otherwise strided. reshape falls back \nto making a copy when it has to, so it always works and is sometimes not free.\n\nUse view when you know the tensor is contiguous and want it to fail loudly if \nit is not. Use reshape when you just want the shape. If a view is raising \nerrors after a transpose, that is exactly this.\n\nWHY LENGTH-1 AXES MATTER:\nA tensor of shape (3,) and one of shape (1, 3) hold the same three numbers and \nare not interchangeable - one is a vector, the other a matrix with one row. \nunsqueeze and squeeze convert between them without touching the data. \nWhen a node insists on a 2D tensor and you have a 1D one, unsqueeze is the \nanswer; when a result carries a stray extra dimension, squeeze removes it.\n\npermute VERSUS transpose:\ntranspose swaps two axes. permute states the whole new order at once, which is \nwhat you need for anything beyond two dimensions - turning a \n(batch, time, joint) tensor into (batch, joint, time) is one permute and would \nbe several transposes.\n\nSYNTAX:\nt.reshape <dim> <dim> ...\nt.permute <axis> <axis> ...\n\nEXAMPLE:\nt.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nshape (t.reshape, t.view):\nThe new shape. The dimensions must multiply to the number of elements you have. \nA -1 means \"work this one out\", so \"6 -1\" gives six rows of whatever fits.\n\ndim (t.squeeze, t.unsqueeze):\nWhere to remove or add the length-1 axis.\n\npermute / dim 1 / dim 2:\nThe new axis order, or the two axes to swap.\n\nOUTPUTS: \n\noutput / tensor out:\nThe same numbers, differently arranged.\n\nTRANSPOSING DOES NOT MOVE ANYTHING:\ntranspose and permute change how the tensor is READ rather than reorganising \nmemory, so they are effectively free at any size. What they leave behind is a \nnon-contiguous tensor - which is why a view straight after one of them fails.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These change a tensor's SHAPE without changing the numbers in it.\n\nTwelve numbers can be twelve in a row, three rows of four, four rows of three, \nor a 1 by 12 slab. The numbers are identical; only the arrangement differs, \nand everything downstream cares a great deal about the arrangement. \nMost \"this will not connect\" problems in tensor work are a shape mismatch.\n\nTHE NODES:\n\nt.reshape    rearrange into a shape you give\nt.view       the same, when the memory allows it\nt.flatten    collapse into one long row\nt.ravel      the same as flatten\nt.squeeze    remove axes of length 1\nt.unsqueeze  add an axis of length 1\nt.permute    reorder the axes, however many there are\nt.transpose  swap two named axes\nt.t          transpose a 2D tensor - the short form\nt.adjoint    transpose and conjugate, for complex tensors\n\nview VERSUS reshape:\nview demands that the tensor's memory is laid out in a way that allows the new \nshape to be READ from it without moving anything - so it is free, but it fails \non a tensor that has been transposed or otherwise strided. reshape falls back \nto making a copy when it has to, so it always works and is sometimes not free.\n\nUse view when you know the tensor is contiguous and want it to fail loudly if \nit is not. Use reshape when you just want the shape. If a view is raising \nerrors after a transpose, that is exactly this.\n\nWHY LENGTH-1 AXES MATTER:\nA tensor of shape (3,) and one of shape (1, 3) hold the same three numbers and \nare not interchangeable - one is a vector, the other a matrix with one row. \nunsqueeze and squeeze convert between them without touching the data. \nWhen a node insists on a 2D tensor and you have a 1D one, unsqueeze is the \nanswer; when a result carries a stray extra dimension, squeeze removes it.\n\npermute VERSUS transpose:\ntranspose swaps two axes. permute states the whole new order at once, which is \nwhat you need for anything beyond two dimensions - turning a \n(batch, time, joint) tensor into (batch, joint, time) is one permute and would \nbe several transposes.\n\nSYNTAX:\nt.reshape <dim> <dim> ...\nt.permute <axis> <axis> ...\n\nEXAMPLE:\nt.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nshape (t.reshape, t.view):\nThe new shape. The dimensions must multiply to the number of elements you have. \nA -1 means \"work this one out\", so \"6 -1\" gives six rows of whatever fits.\n\ndim (t.squeeze, t.unsqueeze):\nWhere to remove or add the length-1 axis.\n\npermute / dim 1 / dim 2:\nThe new axis order, or the two axes to swap.\n\nOUTPUTS: \n\noutput / tensor out:\nThe same numbers, differently arranged.\n\nTRANSPOSING DOES NOT MOVE ANYTHING:\ntranspose and permute change how the tensor is READ rather than reorganising \nmemory, so they are effectively free at any size. What they leave behind is a \nnon-contiguous tensor - which is why a view straight after one of them fails."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 3 4"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment three rows of four",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 126,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three rows of four",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three rows of four"
+        },
+        "7": {
+            "name": "t.t",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 140,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment transposed: four rows of three",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 430,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "transposed: four rows of three",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "transposed: four rows of three"
+        },
+        "10": {
+            "name": "t.flatten",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 530,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment flattened: twelve in a row",
+            "name": "comment",
+            "id": 681,
+            "position_x": 484,
+            "position_y": 555,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flattened: twelve in a row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flattened: twelve in a row"
+        },
+        "13": {
+            "init": "comment the numbers never changed",
+            "name": "comment",
+            "id": 718,
+            "position_x": 484,
+            "position_y": 585,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the numbers never changed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the numbers never changed"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 708,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

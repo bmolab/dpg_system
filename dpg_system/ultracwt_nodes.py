@@ -12,6 +12,25 @@ from dpg_system.conversion_utils import *
 from dpg_system.torch_nodes import TorchRollingBuffer, TorchDeviceDtypeNode
 
 
+def _morlet2(M, s, w=5.0):
+    """scipy._morlet2_fn, which SciPy removed in 1.15.
+
+    Both nodes here build their wavelet bank from it, and every build was
+    failing with "module 'scipy.signal' has no attribute 'morlet2'" -- caught by
+    the guards around the constructor, so the nodes stayed silent instead of
+    raising, and produced nothing at all. This is SciPy's own formula, kept
+    locally so the nodes do not depend on a function that no longer exists.
+    """
+    x = (np.arange(0, M) - (M - 1.0) / 2) / s
+    wavelet = np.exp(1j * w * x) * np.exp(-0.5 * x ** 2) * np.pi ** (-0.25)
+    return np.sqrt(1.0 / s) * wavelet
+
+
+# Prefer SciPy's if a given install still has it, so nothing changes on an
+# older environment.
+_morlet2_fn = getattr(signal, 'morlet2', _morlet2)
+
+
 def _coerce_widths(raw, default=None):
     """Return a non-empty list of positive numeric widths, or default."""
     cleaned = []
@@ -56,7 +75,7 @@ class NumpyUltraCWTNode(Node):
         self.widths = _coerce_widths(self.widths, default=list(range(1, 100, 10)))
 
         try:
-            self.cwt = MyCWT(signal.morlet2, self.subframe_size, self.widths)
+            self.cwt = MyCWT(_morlet2_fn, self.subframe_size, self.widths)
         except Exception as e:
             print('ultracwt: failed to build MyCWT:', e)
             self.cwt = None
@@ -82,22 +101,27 @@ class NumpyUltraCWTNode(Node):
             new_size = 1
         self.subframe_size = new_size
         try:
-            self.cwt = MyCWT(signal.morlet2, self.subframe_size, self.widths)
+            self.cwt = MyCWT(_morlet2_fn, self.subframe_size, self.widths)
         except Exception as e:
             print('ultracwt: rebuild failed:', e)
 
     def widths_changed(self, val=0):
-        widths_text = self.widths_property()
-        widths_list = re.findall(r'[-+]?\d+', widths_text or '')
-        parsed = []
-        for dim_text in widths_list:
-            try:
-                parsed.append(any_to_int(dim_text))
-            except Exception:
-                continue
-        new_widths = _coerce_widths(parsed, default=self.widths)
+        raw = self.widths_property()
+        # Same as the torch node: accept a list of numbers, not only text.
+        if isinstance(raw, (list, tuple, np.ndarray)):
+            new_widths = _coerce_widths(list(raw), default=self.widths)
+        else:
+            widths_text = any_to_string(raw) if raw is not None else ''
+            widths_list = re.findall(r'[-+]?\d+', widths_text)
+            parsed = []
+            for dim_text in widths_list:
+                try:
+                    parsed.append(any_to_int(dim_text))
+                except Exception:
+                    continue
+            new_widths = _coerce_widths(parsed, default=self.widths)
         try:
-            new_cwt = MyCWT(signal.morlet2, self.subframe_size, new_widths)
+            new_cwt = MyCWT(_morlet2_fn, self.subframe_size, new_widths)
         except Exception as e:
             print('ultracwt: rebuild failed:', e)
             return
@@ -130,7 +154,7 @@ class MyCWT:
     def __init__(self, wavelet: Callable, subframe_size: int, widths: list, dtype=None):
         """
         :param data: The source data, like the quaternion array for one dimension
-        :param wavelet: The wavelet function for cwt, like signal.morlet2
+        :param wavelet: The wavelet function for cwt, like _morlet2_fn
         :param subframe_size: The length of data to calculate the cwt for each frame, for frame i, it's data[i: i + subframe_size]
         :param widths: An array of int, each element is the width for the wavelet used to calculate cwt, resulting in one row of the output
         :param dtype: Refer to scipy.signal.cwt, could just leave as None
@@ -256,7 +280,7 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
         # self.dtype_input.set('complex64')
 
         try:
-            self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
+            self.cwt = MyTorchCWT(_morlet2_fn, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
         except Exception as e:
             print('t.ultracwt: failed to build MyTorchCWT:', e)
             self.cwt = None
@@ -293,24 +317,31 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
             new_size = 1
         self.subframe_size = new_size
         try:
-            self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
+            self.cwt = MyTorchCWT(_morlet2_fn, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
         except Exception as e:
             print('t.ultracwt: rebuild failed:', e)
 
     def widths_changed(self, val=0):
         self.width_lock.acquire(blocking=True)
         try:
-            widths_text = self.widths_property()
-            widths_list = re.findall(r'[-+]?\d*\.\d+|\d+', widths_text or '')
-            parsed = []
-            for dim_text in widths_list:
-                try:
-                    parsed.append(any_to_float(dim_text))
-                except Exception:
-                    continue
-            new_widths = _coerce_widths(parsed, default=self.widths)
+            raw = self.widths_property()
+            # A list of numbers is the obvious way to drive scales from another
+            # node, and it used to go straight into re.findall and raise
+            # TypeError. _coerce_widths already understands a list, so use it.
+            if isinstance(raw, (list, tuple, np.ndarray)):
+                new_widths = _coerce_widths(list(raw), default=self.widths)
+            else:
+                widths_text = any_to_string(raw) if raw is not None else ''
+                widths_list = re.findall(r'[-+]?\d*\.\d+|\d+', widths_text)
+                parsed = []
+                for dim_text in widths_list:
+                    try:
+                        parsed.append(any_to_float(dim_text))
+                    except Exception:
+                        continue
+                new_widths = _coerce_widths(parsed, default=self.widths)
             try:
-                new_cwt = MyTorchCWT(signal.morlet2, self.subframe_size, new_widths, dtype=self.dtype, device=self.device)
+                new_cwt = MyTorchCWT(_morlet2_fn, self.subframe_size, new_widths, dtype=self.dtype, device=self.device)
             except Exception as e:
                 print('t.ultracwt: rebuild failed:', e)
                 return
@@ -358,7 +389,7 @@ class MyTorchCWT:
     def __init__(self, wavelet: Callable, subframe_size: int, widths: list, dtype, device):
         """
         :param data: The source data, like the quaternion array for one dimension
-        :param wavelet: The wavelet function for cwt, like signal.morlet2
+        :param wavelet: The wavelet function for cwt, like _morlet2_fn
         :param subframe_size: The length of data to calculate the cwt for each frame, for frame i, it's data[i: i + subframe_size]
         :param widths: An array of int, each element is the width for the wavelet used to calculate cwt, resulting in one row of the output
         :param dtype: Refer to scipy.signal.cwt, could just leave as None

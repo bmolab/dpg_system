@@ -1651,13 +1651,17 @@ class GLAlignNode(GLNode):
         return node
 
     def __init__(self, label: str, data, args):
+        # initialize() runs inside super().__init__() and reads self.axis, so
+        # these must exist BEFORE that call -- as self.ready already did.
+        # Set afterwards, they left initialize() raising AttributeError and the
+        # node could not be created at all.
         self.ready = False
-        super().__init__(label, data, args)
         self.x = None
         self.y = None
         self.z = None
         self.axis = np.array([0.0, 1.0, 0.0])
         self.up = np.array([0.0, 1.0, 0.0])
+        super().__init__(label, data, args)
 
     def initialize(self, args):
         super().initialize(args)

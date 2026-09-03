@@ -1,0 +1,479 @@
+{
+    "height": 845,
+    "width": 1644,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "np_cumulative_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np_cumulative_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np cumulative - the running story, not the total",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np cumulative - the running story, not the total",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np cumulative - the running story, not the total"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 796,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes look along an array and report how it develops, rather than \nsummarising it in one number.\n\nA sum tells you the total. A cumulative sum tells you the total SO FAR at every \npoint - the running story rather than the ending. That difference is what makes \nthese useful for anything with an order to it: a trajectory, a signal over time, \na profile across a body.\n\nTHE NODES:\n\nnp.cumsum          the running total at each position\nnp.cumprod         the running product\nnp.diff            the difference between neighbouring elements\nnp.rolling_buffer  keep the last N things that arrived, as one array\n\ncumsum and diff undo each other. diff turns positions into steps; cumsum turns \nsteps back into positions. Reach for diff when an array holds where something \nWAS and you want how far it MOVED between samples, and cumsum when you have \nthe movements and want the path.\n\nnp.rolling_buffer is the one that works across time rather than within an \narray. Feed it a value or a small array on every frame and it hands back the \nlast N of them stacked together - which is how a stream becomes something you \ncan take a mean of, plot as a history, or run a filter across. \nAlmost anything you want to know about \"the recent past\" starts here.\n\nSYNTAX:\nnp.cumsum\nnp.diff <order: int>\nnp.rolling_buffer <length> <width> ...\n\nEXAMPLE:\nnp.rolling_buffer 60\n\nINPUTS and PARAMETERS:\n\nin / input:\nThe array, or on rolling_buffer the latest sample. Receiving it triggers \nthe node.\n\naxis:\nWhich direction to accumulate or difference along.\n\norder (np.diff):\nHow many times to difference. 1 gives you the change, 2 the change in the \nchange - so from positions, order 1 is speed and order 2 is acceleration.\n\nreset (np.rolling_buffer):\nEmpties the buffer and starts collecting again.\n\nOUTPUTS: \n\nout:\nThe running result, or the buffer's contents.\n\nTWO THINGS TO WATCH:\nnp.diff returns an array one element SHORTER than its input - with five \npositions there are only four gaps between them. Anything expecting the \noriginal length will complain.\n\nA rolling buffer only reports what it has actually collected, so a freshly \nreset one is short until it fills. That is deliberate - it avoids feeding you \na stretch of zeros that never happened - but it does mean the buffer's length \nchanges for the first N frames.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes look along an array and report how it develops, rather than \nsummarising it in one number.\n\nA sum tells you the total. A cumulative sum tells you the total SO FAR at every \npoint - the running story rather than the ending. That difference is what makes \nthese useful for anything with an order to it: a trajectory, a signal over time, \na profile across a body.\n\nTHE NODES:\n\nnp.cumsum          the running total at each position\nnp.cumprod         the running product\nnp.diff            the difference between neighbouring elements\nnp.rolling_buffer  keep the last N things that arrived, as one array\n\ncumsum and diff undo each other. diff turns positions into steps; cumsum turns \nsteps back into positions. Reach for diff when an array holds where something \nWAS and you want how far it MOVED between samples, and cumsum when you have \nthe movements and want the path.\n\nnp.rolling_buffer is the one that works across time rather than within an \narray. Feed it a value or a small array on every frame and it hands back the \nlast N of them stacked together - which is how a stream becomes something you \ncan take a mean of, plot as a history, or run a filter across. \nAlmost anything you want to know about \"the recent past\" starts here.\n\nSYNTAX:\nnp.cumsum\nnp.diff <order: int>\nnp.rolling_buffer <length> <width> ...\n\nEXAMPLE:\nnp.rolling_buffer 60\n\nINPUTS and PARAMETERS:\n\nin / input:\nThe array, or on rolling_buffer the latest sample. Receiving it triggers \nthe node.\n\naxis:\nWhich direction to accumulate or difference along.\n\norder (np.diff):\nHow many times to difference. 1 gives you the change, 2 the change in the \nchange - so from positions, order 1 is speed and order 2 is acceleration.\n\nreset (np.rolling_buffer):\nEmpties the buffer and starts collecting again.\n\nOUTPUTS: \n\nout:\nThe running result, or the buffer's contents.\n\nTWO THINGS TO WATCH:\nnp.diff returns an array one element SHORTER than its input - with five \npositions there are only four gaps between them. Anything expecting the \noriginal length will complain.\n\nA rolling buffer only reports what it has actually collected, so a freshly \nreset one is short until it fills. That is deliberate - it avoids feeding you \na stretch of zeros that never happened - but it does mean the buffer's length \nchanges for the first N frames."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 112,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 30.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 30"
+        },
+        "5": {
+            "name": "random",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 192,
+            "width": 140,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "random 1.0"
+        },
+        "6": {
+            "init": "comment switch on: a stream of single values",
+            "name": "comment",
+            "id": 459,
+            "position_x": 514,
+            "position_y": 280,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "switch on: a stream of single values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "switch on: a stream of single values"
+        },
+        "7": {
+            "name": "np.rolling_buffer",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 200,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rolling_buffer 60"
+        },
+        "8": {
+            "init": "comment the last 60 of them, as one array",
+            "name": "comment",
+            "id": 533,
+            "position_x": 514,
+            "position_y": 410,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the last 60 of them, as one array",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the last 60 of them, as one array"
+        },
+        "9": {
+            "name": "np.mean",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 140,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 535,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment now the stream can be averaged",
+            "name": "comment",
+            "id": 644,
+            "position_x": 514,
+            "position_y": 585,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "now the stream can be averaged",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "now the stream can be averaged"
+        },
+        "12": {
+            "name": "np.cumsum",
+            "id": 681,
+            "position_x": 280,
+            "position_y": 450,
+            "width": 150,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 280,
+            "position_y": 535,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 60.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 40.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment the running total across the buffer",
+            "name": "comment",
+            "id": 755,
+            "position_x": 514,
+            "position_y": 720,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the running total across the buffer",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the running total across the buffer"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 741,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

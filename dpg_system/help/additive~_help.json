@@ -1,0 +1,306 @@
+{
+    "height": 1159,
+    "width": 1928,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "additive~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/additive~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment additive~, shape_modes, vst~ - built from a description",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 660,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "additive~, shape_modes, vst~ - built from a description",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "additive~, shape_modes, vst~ - built from a description"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1070,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Three nodes that each build something from a description rather than a preset.\n\nadditive~ - AN OSCILLATOR FROM A DRAWN SPECTRUM:\nDraw the amplitude of each partial against its index - partial 1 is the \nfundamental, 2 the octave above, 3 the twelfth - and the node sounds their sum. \nThe gestures are shaper~'s: drag a point, right-click to add or remove one, \nshift and left-drag to bend a segment.\n\n'stretch' pulls the partials away from whole-number ratios, which is the \ndifference between a harmonic tone and a bell. 'odd/even' fades between the two \nfamilies - all odd partials is a clarinet, both is a saw. spectrum~ is the same \nnode.\n\nshape_modes - A MODE TABLE FROM A SHAPE:\nPatch its 'modes' outlet into modal~, rub~ or blow~ and their table stops being \na preset and becomes whatever you described. Give it an outline - a list of \nhalf-widths along the length - say how that outline is swept into a volume, \nand say what it is made of, and it solves for the modes.\n\nThat is what makes an object you invented playable. A bar, a bowl, a bell, a \ntube of a shape nobody makes: describe the geometry and the material, and the \nthree model nodes will strike it, bow it and blow it.\n\nvst~ - SOMEBODY ELSE'S EFFECT:\nA VST3 or AudioUnit plugin, patched like any other unit. The argument is part \nof a plugin's filename - 'valhalla', 'waveshell'. A file holding several \nplugins offers them in the 'plugin' option; pick one and it reloads. \nplugin~ is the same node.\n\nSYNTAX:\nadditive~ <frequency>\nshape_modes\nvst~ <part of a filename>\n\nEXAMPLE:\nvst~ valhalla\n\nINPUTS and PARAMETERS:\n\nfrequency / pitch (additive~):\nWhere the fundamental sits, and exponential transposition.\n\npartials / tilt / odd-even / stretch / spread (additive~):\nHow many partials, how the level falls across them, which family, how far from \nharmonic, and how much they are detuned from each other.\n\nspectrum (additive~):\nThe drawn shape, as data - so a spectrum can be stored or sent.\n\nprofile / sweep / mirror / carve (shape_modes):\nThe outline, and how it becomes a volume.\n\nmaterial / length / width / depth / wall (shape_modes):\nWhat it is made of and how big it is.\n\nsolve / compute / count (shape_modes):\nWork the modes out, and how many to find.\n\nleft in / right in / mix (vst~):\nThe signal and the wet-dry balance.\n\nOUTPUTS: \n\nsignal / out:\nThe sound.\n\nmodes (shape_modes):\nThe mode table, for modal~, rub~ or blow~.\n\nreport / frequency / decay / mesh (shape_modes):\nWhat it found, and the geometry it solved.\n\nspectrum out (additive~):\nThe drawn spectrum.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Three nodes that each build something from a description rather than a preset.\n\nadditive~ - AN OSCILLATOR FROM A DRAWN SPECTRUM:\nDraw the amplitude of each partial against its index - partial 1 is the \nfundamental, 2 the octave above, 3 the twelfth - and the node sounds their sum. \nThe gestures are shaper~'s: drag a point, right-click to add or remove one, \nshift and left-drag to bend a segment.\n\n'stretch' pulls the partials away from whole-number ratios, which is the \ndifference between a harmonic tone and a bell. 'odd/even' fades between the two \nfamilies - all odd partials is a clarinet, both is a saw. spectrum~ is the same \nnode.\n\nshape_modes - A MODE TABLE FROM A SHAPE:\nPatch its 'modes' outlet into modal~, rub~ or blow~ and their table stops being \na preset and becomes whatever you described. Give it an outline - a list of \nhalf-widths along the length - say how that outline is swept into a volume, \nand say what it is made of, and it solves for the modes.\n\nThat is what makes an object you invented playable. A bar, a bowl, a bell, a \ntube of a shape nobody makes: describe the geometry and the material, and the \nthree model nodes will strike it, bow it and blow it.\n\nvst~ - SOMEBODY ELSE'S EFFECT:\nA VST3 or AudioUnit plugin, patched like any other unit. The argument is part \nof a plugin's filename - 'valhalla', 'waveshell'. A file holding several \nplugins offers them in the 'plugin' option; pick one and it reloads. \nplugin~ is the same node.\n\nSYNTAX:\nadditive~ <frequency>\nshape_modes\nvst~ <part of a filename>\n\nEXAMPLE:\nvst~ valhalla\n\nINPUTS and PARAMETERS:\n\nfrequency / pitch (additive~):\nWhere the fundamental sits, and exponential transposition.\n\npartials / tilt / odd-even / stretch / spread (additive~):\nHow many partials, how the level falls across them, which family, how far from \nharmonic, and how much they are detuned from each other.\n\nspectrum (additive~):\nThe drawn shape, as data - so a spectrum can be stored or sent.\n\nprofile / sweep / mirror / carve (shape_modes):\nThe outline, and how it becomes a volume.\n\nmaterial / length / width / depth / wall (shape_modes):\nWhat it is made of and how big it is.\n\nsolve / compute / count (shape_modes):\nWork the modes out, and how many to find.\n\nleft in / right in / mix (vst~):\nThe signal and the wet-dry balance.\n\nOUTPUTS: \n\nsignal / out:\nThe sound.\n\nmodes (shape_modes):\nThe mode table, for modal~, rub~ or blow~.\n\nreport / frequency / decay / mesh (shape_modes):\nWhat it found, and the geometry it solved.\n\nspectrum out (additive~):\nThe drawn spectrum."
+        },
+        "3": {
+            "name": "shape_modes",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 320,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment describe a shape, then click solve",
+            "name": "comment",
+            "id": 385,
+            "position_x": 746,
+            "position_y": 415,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "describe a shape, then click solve",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "describe a shape, then click solve"
+        },
+        "5": {
+            "name": "modal~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 455,
+            "width": 260,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment its table is now your shape, not a preset",
+            "name": "comment",
+            "id": 459,
+            "position_x": 746,
+            "position_y": 765,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its table is now your shape, not a preset",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its table is now your shape, not a preset"
+        },
+        "7": {
+            "name": "clock~",
+            "id": 496,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "clock~ 0.7"
+        },
+        "8": {
+            "name": "strike~",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 280,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "additive~",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 500,
+            "width": 320,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "additive~ 220"
+        },
+        "10": {
+            "init": "comment draw the partials; stretch makes it a bell",
+            "name": "comment",
+            "id": 607,
+            "position_x": 746,
+            "position_y": 810,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "draw the partials; stretch makes it a bell",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "draw the partials; stretch makes it a bell"
+        },
+        "11": {
+            "name": "fader_out~",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 805,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1055,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "modes",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "modes"
+        },
+        "1": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trigger",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "hit"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "excite in"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

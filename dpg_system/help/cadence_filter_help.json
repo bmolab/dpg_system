@@ -1,0 +1,345 @@
+{
+    "height": 1155,
+    "width": 1497,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "cadence_filter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/cadence_filter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment cadence_filter - artefacts, not movement",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cadence_filter - artefacts, not movement",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cadence_filter - artefacts, not movement"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 639,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These deal with artefacts in the data rather than with the movement in it.\n\nTHE NODES:\n\ncadence_filter  remove the stepping left by upsampling\ncheck_burst     find frames where the data jumps implausibly\n\ncadence_filter AND WHAT CADENCE IS:\nA sensor running at one rate and delivered at another leaves a pattern in the \ndata: some frames repeat, others do not, in a regular cycle. Shadow files show \na 2,2,1 pattern from a 100 Hz stream being delivered at 60 - two frames the \nsame, two the same, one different, over and over.\n\nThat pattern is not movement, but every derivative-based measure reads it as \nmovement, at a fixed frequency, all the time. It inflates jerk, it triggers \nglitch detectors, and it is the reason a still performer can look busy.\n\nA causal moving average removes it. A window of 3 removes the 33.3 Hz cadence \nthat comes from ~33 Hz sensors upsampled to 100. The filter is causal - it uses \nonly past frames - so it works on a live stream and adds a fixed small lag \nrather than needing the future.\n\ncheck_burst FINDS THE IMPLAUSIBLE:\nIt compares each frame against the previous ones and reports where the change \nis too large to be real movement. That is how you find dropped frames, tracking \nfailures and the teleports that show up in some recorded datasets.\n\nIts several thresholds exist because there is no single number that separates a \nglitch from fast motion. 'threshold 1' and 'threshold 2 previous' look at the \nchange and the change before it - a genuine movement builds, a glitch does not. \n'jerk threshold pct' works on the proportion rather than the absolute size, \nwhich is what makes it usable across joints that move at very different speeds.\n\nSYNTAX:\ncadence_filter\ncheck_burst\n\nEXAMPLE:\ncadence_filter\n\nINPUTS and PARAMETERS:\n\npose in / trans in (cadence_filter):\nThe pose and the translation. Both are filtered; the window applies to each.\n\ndiff array / previous frame array / previous diff array (check_burst):\nThe current change, the previous frame and the previous change.\n\nthreshold 1 / threshold 2 previous / threshold low:\nThe levels a change has to exceed to count.\n\njerk threshold pct:\nThe proportional threshold.\n\nOUTPUTS: \n\npose out / trans out:\nThe filtered data.\n\nfile_dict (check_burst):\nWhat was found, and where.\n\nA WORD ON FILTERING TRANSLATION SEPARATELY:\nThe translation channel comes from a body-mounted sensor that projects from the \nbody and has mass, so it flops in vigorous movement - especially vertical \nmovement - in ways the joint rotations do not. It wants its own, heavier \nfiltering, and it should never be gate-opened on the assumption that a large \nchange means real motion.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These deal with artefacts in the data rather than with the movement in it.\n\nTHE NODES:\n\ncadence_filter  remove the stepping left by upsampling\ncheck_burst     find frames where the data jumps implausibly\n\ncadence_filter AND WHAT CADENCE IS:\nA sensor running at one rate and delivered at another leaves a pattern in the \ndata: some frames repeat, others do not, in a regular cycle. Shadow files show \na 2,2,1 pattern from a 100 Hz stream being delivered at 60 - two frames the \nsame, two the same, one different, over and over.\n\nThat pattern is not movement, but every derivative-based measure reads it as \nmovement, at a fixed frequency, all the time. It inflates jerk, it triggers \nglitch detectors, and it is the reason a still performer can look busy.\n\nA causal moving average removes it. A window of 3 removes the 33.3 Hz cadence \nthat comes from ~33 Hz sensors upsampled to 100. The filter is causal - it uses \nonly past frames - so it works on a live stream and adds a fixed small lag \nrather than needing the future.\n\ncheck_burst FINDS THE IMPLAUSIBLE:\nIt compares each frame against the previous ones and reports where the change \nis too large to be real movement. That is how you find dropped frames, tracking \nfailures and the teleports that show up in some recorded datasets.\n\nIts several thresholds exist because there is no single number that separates a \nglitch from fast motion. 'threshold 1' and 'threshold 2 previous' look at the \nchange and the change before it - a genuine movement builds, a glitch does not. \n'jerk threshold pct' works on the proportion rather than the absolute size, \nwhich is what makes it usable across joints that move at very different speeds.\n\nSYNTAX:\ncadence_filter\ncheck_burst\n\nEXAMPLE:\ncadence_filter\n\nINPUTS and PARAMETERS:\n\npose in / trans in (cadence_filter):\nThe pose and the translation. Both are filtered; the window applies to each.\n\ndiff array / previous frame array / previous diff array (check_burst):\nThe current change, the previous frame and the previous change.\n\nthreshold 1 / threshold 2 previous / threshold low:\nThe levels a change has to exceed to count.\n\njerk threshold pct:\nThe proportional threshold.\n\nOUTPUTS: \n\npose out / trans out:\nThe filtered data.\n\nfile_dict (check_burst):\nWhat was found, and where.\n\nA WORD ON FILTERING TRANSLATION SEPARATELY:\nThe translation channel comes from a body-mounted sensor that projects from the \nbody and has mass, so it flops in vigorous movement - especially vertical \nmovement - in ways the joint rotations do not. It wants its own, heavier \nfiltering, and it should never be gate-opened on the assumption that a large \nchange means real motion."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "cadence_filter",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 260,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment a window of 3 removes the 33 Hz cadence",
+            "name": "comment",
+            "id": 422,
+            "position_x": 336,
+            "position_y": 575,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a window of 3 removes the 33 Hz cadence",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a window of 3 removes the 33 Hz cadence"
+        },
+        "6": {
+            "init": "comment causal, so it works on a live stream",
+            "name": "comment",
+            "id": 459,
+            "position_x": 336,
+            "position_y": 605,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "causal, so it works on a live stream",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "causal, so it works on a live stream"
+        },
+        "7": {
+            "name": "quaternion_diff_and_axis",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 280,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "plot",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 845,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment compare with and without the filter:",
+            "name": "comment",
+            "id": 570,
+            "position_x": 336,
+            "position_y": 1030,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "compare with and without the filter:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "compare with and without the filter:"
+        },
+        "10": {
+            "init": "comment the cadence shows up as constant motion",
+            "name": "comment",
+            "id": 607,
+            "position_x": 336,
+            "position_y": 1060,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the cadence shows up as constant motion",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the cadence shows up as constant motion"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 1051,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternions in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "magnitudes",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

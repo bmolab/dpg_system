@@ -16,29 +16,35 @@ class EOSConsoleNode(OSCDeviceNode):
         return node
 
     def __init__(self, label: str, data, args):
+        # Supply the console defaults as args rather than assigning them after
+        # OSCDeviceNode.__init__. OSCAsyncIOSource.__init__ calls start_serving()
+        # immediately, binding source_port at that moment — assigning 1102
+        # afterwards came too late, so the node listened on an auto-picked port
+        # and never heard the console. Feeding them through the normal arg
+        # parsing sets name/ip/ports before either base class needs them.
+        if args is None or len(args) == 0:
+            args = ['eos', '10.1.3.11', '1101', '1102']
         OSCDeviceNode.__init__(self, label, data, args)
-        self.ip = '10.1.3.11'
-        self.target_port = 1101
-        self.source_port = 1102
-        self.name = 'eos'
-        self.target_ip_property.set_default_value('10.1.3.11')
-        self.target_port_property.set_default_value('1101')
-        self.source_port_property.set_default_value('1102')
-        self.target_name_property.set_default_value('eos')
 
     def custom_create(self, from_file):
         OSCDeviceNode.custom_create(self, from_file)
 
 
-class ColorSourceNode(OSCSender, Node):
+class ColorSourceNode(Node, OSCBase, OSCSender):
     @staticmethod
     def factory(name, data, args=None):
         node = ColorSourceNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
-        OSCSender.__init__(self, label, data, args)
+        # OSCSender.__init__ reads self.osc_manager (when given a single
+        # argument, to auto-pick the only local target). That lives on OSCBase,
+        # which this class did not inherit -- its siblings all do. Without it
+        # 'color_source 7' died with AttributeError and the node could not be
+        # created at all, while a bare 'color_source' happened to work, because
+        # that branch is only taken when there is exactly one argument.
         Node.__init__(self, label, data, args)
+        OSCSender.__init__(self, label, data, args)
 
         self.changed = False
         self.channel = 1
@@ -48,10 +54,25 @@ class ColorSourceNode(OSCSender, Node):
         self.blue = 0
         self.lime = 0
         self.indigo = 0
+        # Separate names from the callbacks above. These used to be
+        # self.<param>_changed, the same name as the method, so before a
+        # slider had ever moved the flag WAS the bound method -- truthy.
+        # The first change to any one parameter therefore sent all five,
+        # including intensity 0, which blacks out the channel.
+        self.intensity_dirty = False
+        self.red_dirty = False
+        self.green_dirty = False
+        self.blue_dirty = False
+        self.lime_dirty = False
+        self.indigo_dirty = False
 
         if self.name == '':
             self.name = 'eos'
-        if self.address == '':
+        # A lone numeric argument means the CHANNEL here (see the loop below),
+        # but OSCSender has already taken any single argument as the address --
+        # so 'color_source 7' arrived with address '/7' and composed
+        # '/7/7/param/red'. Treat a purely numeric address as "not given".
+        if self.address == '' or self.address.lstrip('/').isdigit():
             self.address = '/eos/user/99/chan'
 
         if len(args) > 0:
@@ -86,32 +107,41 @@ class ColorSourceNode(OSCSender, Node):
     def intensity_changed(self):
         self.intensity = self.intensity_input()
         self.changed = True
-        self.intensity_changed = True
+        self.intensity_dirty = True
 
     def red_changed(self):
         self.red = self.red_input()
         self.changed = True
-        self.red_changed = True
+        self.red_dirty = True
 
     def green_changed(self):
         self.green = self.green_input()
         self.changed = True
-        self.green_changed = True
+        self.green_dirty = True
 
     def blue_changed(self):
         self.blue = self.blue_input()
         self.changed = True
-        self.blue_changed = True
+        self.blue_dirty = True
 
     def lime_changed(self):
         self.lime = self.lime_input()
         self.changed = True
-        self.lime_changed = True
+        self.lime_dirty = True
 
     # def indigo_changed(self):
     #     self.indigo = self.indigo_input()
     #     self.changed = True
     #     self.indigo_changed = True
+
+    def address_changed(self):
+        # OSCSender supplies name_changed but not this one, and the widget was
+        # wired to it regardless -- so the node raised AttributeError while
+        # being built. The address is only ever used to compose the outgoing
+        # path in frame_task, so keeping self.address in step is all it needs.
+        self.address = any_to_string(self.target_address_property())
+        if self.address != '' and not self.address.startswith('/'):
+            self.address = '/' + self.address
 
     def frame_task(self):
         if self.target and self.address != '':
@@ -119,28 +149,28 @@ class ColorSourceNode(OSCSender, Node):
                 address = self.address + '/' + str(self.target_channel_property()) + '/param/'
 
                 self.changed = False
-                if self.intensity_changed:
-                    self.intensity_changed = False
+                if self.intensity_dirty:
+                    self.intensity_dirty = False
                     self.target.send_message(address + 'intens', self.intensity)
 
-                if self.red_changed:
-                    self.red_changed = False
+                if self.red_dirty:
+                    self.red_dirty = False
                     self.target.send_message(address + 'red', self.red)
 
-                if self.green_changed:
-                    self.green_changed = False
+                if self.green_dirty:
+                    self.green_dirty = False
                     self.target.send_message(address + 'green', self.green)
 
-                if self.blue_changed:
-                    self.blue_changed = False
+                if self.blue_dirty:
+                    self.blue_dirty = False
                     self.target.send_message(address + 'blue', self.blue)
 
-                if self.lime_changed:
-                    self.lime_changed = False
+                if self.lime_dirty:
+                    self.lime_dirty = False
                     self.target.send_message(address + 'lime', self.lime)
 
-                # if self.indigo_changed:
-                #     self.indigo_changed = False
+                # if self.indigo_dirty:
+                #     self.indigo_dirty = False
                 #     self.target.send_message(address + 'indigo', self.indigo)
 
 

@@ -1,0 +1,313 @@
+{
+    "height": 939,
+    "width": 1773,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "osc_source_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/osc_source_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment osc_source and osc_target - the connections",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "osc_source and osc_target - the connections",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "osc_source and osc_target - the connections"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 925,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are the connections: the sockets OSC arrives on and leaves by.\n\nOSC is how this patch talks to other machines and other software - a lighting \ndesk, a sound console, a phone, another instance of this system. A message is \nan ADDRESS, which looks like a file path, and some values.\n\nTHE NODES:\n\nosc_source        listen on a port\nosc_source_async  the same, on its own thread\nosc_target        send to an address and port\nosc_device        a source and a target together, for something you both send \n                  to and hear from\nosc_manager       the registry: what sources and targets exist\n\nSOURCES AND TARGETS ARE NAMED:\nYou create a source or a target once, give it a name, and everything else in \nthe patch refers to it by that name rather than by address and port. \nosc_receive and osc_send take a 'source name' or 'target name' - so moving a \nconsole to a different IP means changing one node, not twenty.\n\nosc_device IS THE COMMON CASE:\nMost things you talk to also talk back. A device is one node holding both \ndirections, with the target port and the source port separate because they \nusually differ.\n\nCHOOSING A SOURCE TYPE:\nosc_source is the plain one. osc_source_async runs its own event loop, which \nmatters when messages arrive faster than the patch's frame rate - a motion \nsource at 200 Hz will otherwise be handled in bursts.\n\nBoth have a 'handle in main loop' or 'use_queue' option, and this is the \nsetting to know about. An OSC message arriving on a network thread can trigger \nnodes on that thread, which is unsafe for anything doing GL work or touching \nwidgets. Queueing hands them to the main loop instead. If a patch crashes or \nbehaves strangely only when OSC is flowing, turn this on.\n\nSYNTAX:\nosc_source <name> <port>\nosc_target <name> <ip> <port>\nosc_device <name> <ip> <target port> <source port>\n\nEXAMPLE:\nosc_target console 192.168.1.50 8000\n\nINPUTS and PARAMETERS:\n\nname:\nWhat this connection is called. Everything else refers to it by this.\n\nip / port / target port / source port:\nWhere to send, and what to listen on.\n\nosc to send:\nMessages out.\n\nuse_queue / handle in main loop:\nHand incoming messages to the main loop rather than acting on the network \nthread. See above.\n\nsources (osc_manager):\nThe registry of what exists.\n\nOUTPUTS: \n\nosc received:\nEverything arriving on this connection, address and all.\n\nRELATED:\nosc_receive filters that stream down to one address. \nosc_send is the tidier way to send to a named target.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are the connections: the sockets OSC arrives on and leaves by.\n\nOSC is how this patch talks to other machines and other software - a lighting \ndesk, a sound console, a phone, another instance of this system. A message is \nan ADDRESS, which looks like a file path, and some values.\n\nTHE NODES:\n\nosc_source        listen on a port\nosc_source_async  the same, on its own thread\nosc_target        send to an address and port\nosc_device        a source and a target together, for something you both send \n                  to and hear from\nosc_manager       the registry: what sources and targets exist\n\nSOURCES AND TARGETS ARE NAMED:\nYou create a source or a target once, give it a name, and everything else in \nthe patch refers to it by that name rather than by address and port. \nosc_receive and osc_send take a 'source name' or 'target name' - so moving a \nconsole to a different IP means changing one node, not twenty.\n\nosc_device IS THE COMMON CASE:\nMost things you talk to also talk back. A device is one node holding both \ndirections, with the target port and the source port separate because they \nusually differ.\n\nCHOOSING A SOURCE TYPE:\nosc_source is the plain one. osc_source_async runs its own event loop, which \nmatters when messages arrive faster than the patch's frame rate - a motion \nsource at 200 Hz will otherwise be handled in bursts.\n\nBoth have a 'handle in main loop' or 'use_queue' option, and this is the \nsetting to know about. An OSC message arriving on a network thread can trigger \nnodes on that thread, which is unsafe for anything doing GL work or touching \nwidgets. Queueing hands them to the main loop instead. If a patch crashes or \nbehaves strangely only when OSC is flowing, turn this on.\n\nSYNTAX:\nosc_source <name> <port>\nosc_target <name> <ip> <port>\nosc_device <name> <ip> <target port> <source port>\n\nEXAMPLE:\nosc_target console 192.168.1.50 8000\n\nINPUTS and PARAMETERS:\n\nname:\nWhat this connection is called. Everything else refers to it by this.\n\nip / port / target port / source port:\nWhere to send, and what to listen on.\n\nosc to send:\nMessages out.\n\nuse_queue / handle in main loop:\nHand incoming messages to the main loop rather than acting on the network \nthread. See above.\n\nsources (osc_manager):\nThe registry of what exists.\n\nOUTPUTS: \n\nosc received:\nEverything arriving on this connection, address and all.\n\nRELATED:\nosc_receive filters that stream down to one address. \nosc_send is the tidier way to send to a named target."
+        },
+        "3": {
+            "name": "osc_target",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_target console 127.0.0.1 8000"
+        },
+        "4": {
+            "init": "comment named once; everything else refers to",
+            "name": "comment",
+            "id": 385,
+            "position_x": 636,
+            "position_y": 300,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "named once; everything else refers to",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "named once; everything else refers to"
+        },
+        "5": {
+            "init": "comment it by name, not by address",
+            "name": "comment",
+            "id": 422,
+            "position_x": 636,
+            "position_y": 330,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it by name, not by address",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it by name, not by address"
+        },
+        "6": {
+            "name": "osc_source",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_source listener 8001"
+        },
+        "7": {
+            "init": "comment tick use_queue if OSC drives anything",
+            "name": "comment",
+            "id": 496,
+            "position_x": 636,
+            "position_y": 630,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick use_queue if OSC drives anything",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick use_queue if OSC drives anything"
+        },
+        "8": {
+            "init": "comment that draws or touches widgets",
+            "name": "comment",
+            "id": 533,
+            "position_x": 636,
+            "position_y": 670,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "that draws or touches widgets",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "that draws or touches widgets"
+        },
+        "9": {
+            "name": "print",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 685,
+            "width": 180,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "osc",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            },
+            "init": "print osc"
+        },
+        "10": {
+            "name": "osc_manager",
+            "id": 607,
+            "position_x": 350,
+            "position_y": 375,
+            "width": 260,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment what sources and targets exist",
+            "name": "comment",
+            "id": 644,
+            "position_x": 636,
+            "position_y": 590,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what sources and targets exist",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what sources and targets exist"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 835,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "osc received",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

@@ -280,11 +280,15 @@ class MidiMessageInNode(MidiIn, Node):
         self.channel = self.channel_property()
         new_codes = self.make_codes()
         if new_codes[0] != self.codes[0]:
-            for code in self.codes:
-                self.in_port.remove_client(self, code=code)
+            # Same guard: this runs on patch load whenever a saved channel
+            # differs from the default, with or without a port present.
+            if self.in_port is not None:
+                for code in self.codes:
+                    self.in_port.remove_client(self, code=code)
             self.codes = new_codes
-            for code in self.codes:
-                self.in_port.add_client(self, code=code)
+            if self.in_port is not None:
+                for code in self.codes:
+                    self.in_port.add_client(self, code=code)
 
     def receive_midi_bytes(self, midi_bytes):
         pass
@@ -980,7 +984,12 @@ class MidiDeviceNode(MidiIn, MidiOut, Node):
                     channel = 1
 
         self.create_properties_inputs_and_outputs()
-        self.in_port.add_client(self, code=None)
+        # in_port is None when no MIDI input exists -- which is the normal case
+        # away from the hardware. The lines just below already guard this way;
+        # unguarded here, midi_device, mpd218 and blue_board could not be
+        # created at all with nothing plugged in.
+        if self.in_port is not None:
+            self.in_port.add_client(self, code=None)
         self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
         port_name = ''
         if self.in_port:
@@ -1020,7 +1029,11 @@ class MidiDeviceNode(MidiIn, MidiOut, Node):
         self.out_port_name_property.set(self.out_port_name)
 
     def custom_cleanup(self):
-        self.in_port.remove_client(self)
+        # Guarded like the other two custom_cleanup methods in this file:
+        # in_port is None with no MIDI input present, and an exception here
+        # leaves the patch half-closed.
+        if self.in_port is not None:
+            self.in_port.remove_client(self)
 
 
 class BlueBoardNode(MidiDeviceNode):

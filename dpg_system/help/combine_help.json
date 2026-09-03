@@ -1,0 +1,478 @@
+{
+    "height": 761,
+    "width": 1623,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "combine_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/combine_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment combine, join, split - assembling and taking apart",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 600,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "combine, join, split - assembling and taking apart",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "combine, join, split - assembling and taking apart"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 785,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These put strings together and take them apart.\n\nTHE NODES:\n\ncombine   join several inlets into one string, with a separator\nkombine   the same node\njoin      join a list into one string\nsplit     cut a string into a list\n\ncombine VERSUS join:\ncombine takes several INLETS, one per thing you are assembling, and joins \nwhatever is sitting in each. join takes one LIST and joins its elements. \nUse combine when the parts arrive from different places in the patch, and join \nwhen they already travel together.\n\ncombine holds each inlet's value between messages, so the parts do not have to \narrive at the same moment - the leftmost inlet triggers the output and the rest \ncontribute whatever they last received. That is what makes it usable for \nassembling a line out of several slow sources.\n\nsplit IS THE INVERSE OF join:\nGive it a string and something to split at, and you get a list. The default is \na space, which turns a sentence into words - and once it is a list, the list \nnodes and the numpy nodes can work on it.\n\nSYNTAX:\ncombine <separator>\njoin\nsplit <split at>\n\nEXAMPLE:\ncombine \" \"\n\nINPUTS and PARAMETERS:\n\nseparator (combine):\nWhat goes between the parts. A space by default.\n\n<one inlet per part> (combine):\nThe pieces. The first triggers the output.\n\nin / join with (join):\nThe list, and what to put between its elements.\n\nin / split at (split):\nThe string, and what to cut on.\n\nOUTPUTS: \n\nout / string out / substrings out:\nThe assembled string, or the list of pieces.\n\nA NOTE ON SEPARATORS:\nSplitting on a separator and joining with the same one is not always a round \ntrip - consecutive separators produce empty pieces, and leading or trailing \nones produce empties at the ends. If a rejoined string has doubled spaces in \nit, that is why.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These put strings together and take them apart.\n\nTHE NODES:\n\ncombine   join several inlets into one string, with a separator\nkombine   the same node\njoin      join a list into one string\nsplit     cut a string into a list\n\ncombine VERSUS join:\ncombine takes several INLETS, one per thing you are assembling, and joins \nwhatever is sitting in each. join takes one LIST and joins its elements. \nUse combine when the parts arrive from different places in the patch, and join \nwhen they already travel together.\n\ncombine holds each inlet's value between messages, so the parts do not have to \narrive at the same moment - the leftmost inlet triggers the output and the rest \ncontribute whatever they last received. That is what makes it usable for \nassembling a line out of several slow sources.\n\nsplit IS THE INVERSE OF join:\nGive it a string and something to split at, and you get a list. The default is \na space, which turns a sentence into words - and once it is a list, the list \nnodes and the numpy nodes can work on it.\n\nSYNTAX:\ncombine <separator>\njoin\nsplit <split at>\n\nEXAMPLE:\ncombine \" \"\n\nINPUTS and PARAMETERS:\n\nseparator (combine):\nWhat goes between the parts. A space by default.\n\n<one inlet per part> (combine):\nThe pieces. The first triggers the output.\n\nin / join with (join):\nThe list, and what to put between its elements.\n\nin / split at (split):\nThe string, and what to cut on.\n\nOUTPUTS: \n\nout / string out / substrings out:\nThe assembled string, or the list of pieces.\n\nA NOTE ON SEPARATORS:\nSplitting on a separator and joining with the same one is not always a round \ntrip - consecutive separators produce empty pieces, and leading or trailing \nones produce empties at the ends. If a rejoined string has doubled spaces in \nit, that is why."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 180,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "the quick brown fox",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "split",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 180,
+            "width": 180,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "list",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 285,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment now a list of words",
+            "name": "comment",
+            "id": 496,
+            "position_x": 566,
+            "position_y": 335,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "now a list of words",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "now a list of words"
+        },
+        "8": {
+            "name": "join",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 180,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "string",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment and back to one string",
+            "name": "comment",
+            "id": 607,
+            "position_x": 566,
+            "position_y": 530,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and back to one string",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and back to one string"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 340,
+            "position_y": 118,
+            "width": 140,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "hello",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 681,
+            "position_x": 340,
+            "position_y": 175,
+            "width": 140,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "there",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "combine",
+            "id": 718,
+            "position_x": 340,
+            "position_y": 235,
+            "width": 200,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "combine 2"
+        },
+        "14": {
+            "name": "string",
+            "id": 755,
+            "position_x": 340,
+            "position_y": 375,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment parts from different places",
+            "name": "comment",
+            "id": 792,
+            "position_x": 566,
+            "position_y": 425,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "parts from different places",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "parts from different places"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 552,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "substrings out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "substrings out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "8": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "9": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

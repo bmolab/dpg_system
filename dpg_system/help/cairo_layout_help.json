@@ -1,0 +1,622 @@
+{
+    "height": 1295,
+    "width": 1931,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "cairo_layout_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/cairo_layout_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment cairo_layout - text as a picture",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 384,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cairo_layout - text as a picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cairo_layout - text as a picture"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1083,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These set text as an image, for putting on a screen rather than reading in the patch.\n\nTHE NODES:\n\ncairo_layout   general typesetting - font, size, leading, wrapping\nllm_layout     the same, purpose-built for a language model's output\n\nWHY NOT text_display:\ntext_display is for you, while you work. These are for an audience. They render\nthrough Cairo into an image, so the result goes to a projector, a texture, or\nanything else that takes a picture - with a font you chose, at a size you chose,\nlaid out how you want it.\n\nThe 'layout' outlet is that image: 1920 by 1080, three channels, as floats -\na full HD frame, laid out height-first like a camera frame rather than\nchannels-first. So it goes straight into the same places a camera picture does,\nand the k. and tv. filters will guess its orientation correctly.\n\ncairo_layout IS THE PLAIN ONE:\nSend it text and it sets it. 'font path' takes a font file; leave it empty and\nit falls back to a bundled monospace, and then to Cairo's own default, so a\nmissing font never stops the node working - it just looks wrong, which is easier\nto diagnose than a crash.\n\n'leading' is the distance between lines, in the typographer's sense - line\nspacing, not letter spacing. It is the setting that does most for how the text\nfeels, and the one worth adjusting first.\n\n'brightness' and 'alpha power' control how the text sits against what is behind\nit. Alpha power shapes the falloff of the transparency rather than scaling it,\nwhich is what you want when text is being composited over an image and a plain\nopacity setting makes it either invisible or a solid block.\n\n'wrap text' folds long lines to the width instead of letting them run off.\n\nllm_layout IS BUILT FOR TEXT ARRIVING A TOKEN AT A TIME:\nWire gemma_4's 'layout_out' to its 'input'. That outlet does not send text - it\nsends COMMANDS, and this node is what understands them:\n\nadd                    another token\nprompt / streaming_prompt   the prompt, shown differently from the answer\nchoose / choice_list   which alternative was picked, and what the others were\nstep_back              undo a token\ntemperature / show_probs    display settings changing\nsave                   write the text out\n\nSo the two nodes together give you a screen that shows the model writing,\nincluding the parts a plain text display cannot show: which alternatives it was\nconsidering, and which one was chosen.\n\n'active_line' IS WHY IT READS WELL:\nNew text always appears on the same line of the screen - line 17 by default -\nand everything above scrolls up as it fills. The writing happens at a fixed\nheight rather than creeping down the page, which is far easier to read and to\npoint a camera at.\n\nThe node moves it up to line 5 while a streaming prompt is being entered, so\nthere is room below for the answer, and back again afterwards. That is worth\nknowing so it does not look like a fault when the text jumps.\n\n'colour_mode' SHOWS THE MODEL'S UNCERTAINTY:\nEach token can be coloured by temperature, entropy or probability - so the text\ncarries how sure the model was as it wrote. Confident passages and uncertain\nones look different, which is a reading of the generation you cannot get from\nthe words alone.\n\n'include prompt' decides whether what you asked is shown along with the answer.\n\nSYNTAX:\ncairo_layout\nllm_layout\n\nEXAMPLE:\ncairo_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nText, for cairo_layout. Layout commands, for llm_layout.\n\nclear:\nEmpty it.\n\nfont path / font size:\nThe typeface and its size. Empty falls back to a bundled font.\n\nleading:\nLine spacing. The setting that matters most.\n\nbrightness / alpha power:\nHow the text sits over what is behind it.\n\nwrap text:\nFold long lines to the width.\n\nactive_line:\nWhich line of the screen new text appears on.\n\ncolour_mode (llm_layout):\nColour each token by temperature, entropy or probability.\n\ninclude prompt:\nShow the prompt as well as the answer.\n\nOUTPUTS: \n\nlayout:\nThe rendered image.\n\nRELATED:\ngemma_4, whose 'layout_out' this is built to receive.\ntext_display to read text inside the patch instead.\nmgl_texture or gl nodes to get the image onto a screen.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These set text as an image, for putting on a screen rather than reading in the patch.\n\nTHE NODES:\n\ncairo_layout   general typesetting - font, size, leading, wrapping\nllm_layout     the same, purpose-built for a language model's output\n\nWHY NOT text_display:\ntext_display is for you, while you work. These are for an audience. They render\nthrough Cairo into an image, so the result goes to a projector, a texture, or\nanything else that takes a picture - with a font you chose, at a size you chose,\nlaid out how you want it.\n\nThe 'layout' outlet is that image: 1920 by 1080, three channels, as floats -\na full HD frame, laid out height-first like a camera frame rather than\nchannels-first. So it goes straight into the same places a camera picture does,\nand the k. and tv. filters will guess its orientation correctly.\n\ncairo_layout IS THE PLAIN ONE:\nSend it text and it sets it. 'font path' takes a font file; leave it empty and\nit falls back to a bundled monospace, and then to Cairo's own default, so a\nmissing font never stops the node working - it just looks wrong, which is easier\nto diagnose than a crash.\n\n'leading' is the distance between lines, in the typographer's sense - line\nspacing, not letter spacing. It is the setting that does most for how the text\nfeels, and the one worth adjusting first.\n\n'brightness' and 'alpha power' control how the text sits against what is behind\nit. Alpha power shapes the falloff of the transparency rather than scaling it,\nwhich is what you want when text is being composited over an image and a plain\nopacity setting makes it either invisible or a solid block.\n\n'wrap text' folds long lines to the width instead of letting them run off.\n\nllm_layout IS BUILT FOR TEXT ARRIVING A TOKEN AT A TIME:\nWire gemma_4's 'layout_out' to its 'input'. That outlet does not send text - it\nsends COMMANDS, and this node is what understands them:\n\nadd                    another token\nprompt / streaming_prompt   the prompt, shown differently from the answer\nchoose / choice_list   which alternative was picked, and what the others were\nstep_back              undo a token\ntemperature / show_probs    display settings changing\nsave                   write the text out\n\nSo the two nodes together give you a screen that shows the model writing,\nincluding the parts a plain text display cannot show: which alternatives it was\nconsidering, and which one was chosen.\n\n'active_line' IS WHY IT READS WELL:\nNew text always appears on the same line of the screen - line 17 by default -\nand everything above scrolls up as it fills. The writing happens at a fixed\nheight rather than creeping down the page, which is far easier to read and to\npoint a camera at.\n\nThe node moves it up to line 5 while a streaming prompt is being entered, so\nthere is room below for the answer, and back again afterwards. That is worth\nknowing so it does not look like a fault when the text jumps.\n\n'colour_mode' SHOWS THE MODEL'S UNCERTAINTY:\nEach token can be coloured by temperature, entropy or probability - so the text\ncarries how sure the model was as it wrote. Confident passages and uncertain\nones look different, which is a reading of the generation you cannot get from\nthe words alone.\n\n'include prompt' decides whether what you asked is shown along with the answer.\n\nSYNTAX:\ncairo_layout\nllm_layout\n\nEXAMPLE:\ncairo_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nText, for cairo_layout. Layout commands, for llm_layout.\n\nclear:\nEmpty it.\n\nfont path / font size:\nThe typeface and its size. Empty falls back to a bundled font.\n\nleading:\nLine spacing. The setting that matters most.\n\nbrightness / alpha power:\nHow the text sits over what is behind it.\n\nwrap text:\nFold long lines to the width.\n\nactive_line:\nWhich line of the screen new text appears on.\n\ncolour_mode (llm_layout):\nColour each token by temperature, entropy or probability.\n\ninclude prompt:\nShow the prompt as well as the answer.\n\nOUTPUTS: \n\nlayout:\nThe rendered image.\n\nRELATED:\ngemma_4, whose 'layout_out' this is built to receive.\ntext_display to read text inside the patch instead.\nmgl_texture or gl nodes to get the image onto a screen."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 520,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "the room was colder than it had been",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 480,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "cairo_layout",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 320,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment leading is line spacing - the setting",
+            "name": "comment",
+            "id": 422,
+            "position_x": 766,
+            "position_y": 475,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "leading is line spacing - the setting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "leading is line spacing - the setting"
+        },
+        "6": {
+            "init": "comment that does most for how it feels",
+            "name": "comment",
+            "id": 459,
+            "position_x": 766,
+            "position_y": 505,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "that does most for how it feels",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "that does most for how it feels"
+        },
+        "7": {
+            "init": "comment empty font path falls back to a bundled",
+            "name": "comment",
+            "id": 496,
+            "position_x": 766,
+            "position_y": 545,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "empty font path falls back to a bundled",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "empty font path falls back to a bundled"
+        },
+        "8": {
+            "init": "comment one - a missing file never stops it",
+            "name": "comment",
+            "id": 533,
+            "position_x": 766,
+            "position_y": 575,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one - a missing file never stops it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one - a missing file never stops it"
+        },
+        "9": {
+            "name": "info",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 120,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment the layout is an IMAGE - send it to a",
+            "name": "comment",
+            "id": 607,
+            "position_x": 766,
+            "position_y": 215,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the layout is an IMAGE - send it to a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the layout is an IMAGE - send it to a"
+        },
+        "11": {
+            "init": "comment texture, a projector, anything that",
+            "name": "comment",
+            "id": 644,
+            "position_x": 766,
+            "position_y": 245,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "texture, a projector, anything that",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "texture, a projector, anything that"
+        },
+        "12": {
+            "init": "comment takes a picture",
+            "name": "comment",
+            "id": 681,
+            "position_x": 766,
+            "position_y": 275,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "takes a picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "takes a picture"
+        },
+        "13": {
+            "name": "gemma_4",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 340,
+            "height": 500,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "llm_layout",
+            "id": 755,
+            "position_x": 420,
+            "position_y": 630,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "init": "comment layout_out does not send TEXT - it sends",
+            "name": "comment",
+            "id": 792,
+            "position_x": 766,
+            "position_y": 905,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "layout_out does not send TEXT - it sends",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "layout_out does not send TEXT - it sends"
+        },
+        "16": {
+            "init": "comment commands, and this node understands them",
+            "name": "comment",
+            "id": 829,
+            "position_x": 766,
+            "position_y": 935,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "commands, and this node understands them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "commands, and this node understands them"
+        },
+        "17": {
+            "init": "comment so the screen can show which alternatives",
+            "name": "comment",
+            "id": 866,
+            "position_x": 766,
+            "position_y": 975,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "so the screen can show which alternatives",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "so the screen can show which alternatives"
+        },
+        "18": {
+            "init": "comment the model weighed, not just what it said",
+            "name": "comment",
+            "id": 903,
+            "position_x": 766,
+            "position_y": 1005,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the model weighed, not just what it said",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the model weighed, not just what it said"
+        },
+        "19": {
+            "init": "comment colour_mode paints each token by how",
+            "name": "comment",
+            "id": 940,
+            "position_x": 766,
+            "position_y": 1045,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "colour_mode paints each token by how",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "colour_mode paints each token by how"
+        },
+        "20": {
+            "init": "comment sure the model was as it wrote it",
+            "name": "comment",
+            "id": 977,
+            "position_x": 766,
+            "position_y": 1075,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sure the model was as it wrote it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sure the model was as it wrote it"
+        },
+        "21": {
+            "init": "comment new text stays on active_line, and the",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 766,
+            "position_y": 1145,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "new text stays on active_line, and the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "new text stays on active_line, and the"
+        },
+        "22": {
+            "init": "comment rest scrolls up past it - the writing",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 766,
+            "position_y": 1175,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rest scrolls up past it - the writing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rest scrolls up past it - the writing"
+        },
+        "23": {
+            "init": "comment happens at a fixed height on screen",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 766,
+            "position_y": 1205,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "happens at a fixed height on screen",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "happens at a fixed height on screen"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 1160,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "layout",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "layout_out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}

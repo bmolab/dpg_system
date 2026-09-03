@@ -1,0 +1,357 @@
+{
+    "height": 1529,
+    "width": 1751,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "mgl_mesh_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_mesh_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl geometry - drawing data you supply",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 456,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl geometry - drawing data you supply",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl geometry - drawing data you supply"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 893,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These draw geometry you supply, rather than a shape they already know.\n\nTHE NODES:\n\nmgl_mesh        vertices and faces you hand it\nmgl_model       geometry loaded from a file\nmgl_point_cloud a set of points\nmgl_surface     a height field drawn as a surface\nmgl_line_array  many lines at once, with per-line colour and width\nmgl_text        text in the scene\n\nmgl_line_array IS THE ONE BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale. \nThis takes the whole array at once and draws it in one go, and its options are \nabout making motion legible rather than about geometry: 'alpha_fade' and \n'fade_rate' let older parts of a trail die away; 'accent_motion' brightens and \nthickens the lines where they are moving fastest, so speed reads directly; \n'perspective_width' keeps distant lines from vanishing.\n\nThose accent controls are the difference between a plot of a movement and a \npicture of it. A trail drawn at constant width and brightness tells you where \nsomething went; one that thickens where it accelerated tells you how.\n\nmgl_surface FOR A FIELD:\nGive it a 2D array of heights and it draws the surface. That is the way to see \na spectrum over time, a distance field, a correlation matrix - anything where \nthe interesting thing is the shape of a 2D function rather than its numbers.\n\nmgl_text NEEDS A BILLBOARD:\nText drawn in 3D turns edge-on and disappears as the camera moves. \nPut mgl_billboard before it and it stays facing the viewer.\n\nSYNTAX:\nmgl_point_cloud\nmgl_line_array\nmgl_model <path>\n\nEXAMPLE:\nmgl_line_array\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nmesh / array / file_path:\nThe geometry. These inlets accept streaming data - a point cloud or a line \narray can be replaced every frame.\n\nscale / center / fit (mgl_mesh, mgl_model):\nHow to place the loaded geometry. 'fit' scales it to a sensible size, which \nsaves guessing at the units a model file was saved in.\n\nline_width / alpha_fade / fade_rate (mgl_line_array):\nThe basic appearance of the lines and how they die away.\n\naccent_motion / accent_brightness / accent_scale / accent_width:\nHow much the lines respond to speed, and in what way.\n\nuse_line_colors / color index / color_control:\nWhether each line carries its own colour, and where that comes from.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing.\n\nA NOTE ON DATA ARRIVING FAST:\nThese inlets take streaming data, and the data can arrive on another thread. \nThe nodes store what arrives and draw it on the next render from the main \nthread, so a fast source cannot outrun the renderer or corrupt a frame - it \nsimply means some frames are skipped, which is the right behaviour.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These draw geometry you supply, rather than a shape they already know.\n\nTHE NODES:\n\nmgl_mesh        vertices and faces you hand it\nmgl_model       geometry loaded from a file\nmgl_point_cloud a set of points\nmgl_surface     a height field drawn as a surface\nmgl_line_array  many lines at once, with per-line colour and width\nmgl_text        text in the scene\n\nmgl_line_array IS THE ONE BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale. \nThis takes the whole array at once and draws it in one go, and its options are \nabout making motion legible rather than about geometry: 'alpha_fade' and \n'fade_rate' let older parts of a trail die away; 'accent_motion' brightens and \nthickens the lines where they are moving fastest, so speed reads directly; \n'perspective_width' keeps distant lines from vanishing.\n\nThose accent controls are the difference between a plot of a movement and a \npicture of it. A trail drawn at constant width and brightness tells you where \nsomething went; one that thickens where it accelerated tells you how.\n\nmgl_surface FOR A FIELD:\nGive it a 2D array of heights and it draws the surface. That is the way to see \na spectrum over time, a distance field, a correlation matrix - anything where \nthe interesting thing is the shape of a 2D function rather than its numbers.\n\nmgl_text NEEDS A BILLBOARD:\nText drawn in 3D turns edge-on and disappears as the camera moves. \nPut mgl_billboard before it and it stays facing the viewer.\n\nSYNTAX:\nmgl_point_cloud\nmgl_line_array\nmgl_model <path>\n\nEXAMPLE:\nmgl_line_array\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nmesh / array / file_path:\nThe geometry. These inlets accept streaming data - a point cloud or a line \narray can be replaced every frame.\n\nscale / center / fit (mgl_mesh, mgl_model):\nHow to place the loaded geometry. 'fit' scales it to a sensible size, which \nsaves guessing at the units a model file was saved in.\n\nline_width / alpha_fade / fade_rate (mgl_line_array):\nThe basic appearance of the lines and how they die away.\n\naccent_motion / accent_brightness / accent_scale / accent_width:\nHow much the lines respond to speed, and in what way.\n\nuse_line_colors / color index / color_control:\nWhether each line carries its own colour, and where that comes from.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing.\n\nA NOTE ON DATA ARRIVING FAST:\nThese inlets take streaming data, and the data can arrive on another thread. \nThe nodes store what arrives and draw it on the next render from the main \nthread, so a fast source cannot outrun the renderer or corrupt a frame - it \nsimply means some frames are skipped, which is the right behaviour."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_orbit_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "mgl_light",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 435,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "mgl_display",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 200,
+            "width": 220,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "mgl_line_array",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 260,
+            "height": 380,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment patch an array of line points in",
+            "name": "comment",
+            "id": 533,
+            "position_x": 576,
+            "position_y": 1055,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "patch an array of line points in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "patch an array of line points in"
+        },
+        "9": {
+            "init": "comment raise accent_motion to make speed visible",
+            "name": "comment",
+            "id": 570,
+            "position_x": 576,
+            "position_y": 1085,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise accent_motion to make speed visible",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise accent_motion to make speed visible"
+        },
+        "10": {
+            "name": "mgl_billboard",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 1130,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "mgl_text",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 1235,
+            "width": 220,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "font",
+                    "value": "Inconsolata-g.otf",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the billboard keeps the text readable",
+            "name": "comment",
+            "id": 681,
+            "position_x": 576,
+            "position_y": 1410,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the billboard keeps the text readable",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the billboard keeps the text readable"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1425,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "texture_tag",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture_tag"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

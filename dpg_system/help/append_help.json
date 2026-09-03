@@ -1,6 +1,6 @@
 {
-    "height": 647,
-    "width": 1234,
+    "height": 731,
+    "width": 1712,
     "position": [
         100,
         100
@@ -31,8 +31,8 @@
         "1": {
             "name": "close",
             "id": 325,
-            "position_x": 21,
-            "position_y": 533,
+            "position_x": 24,
+            "position_y": 449,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -74,7 +74,7 @@
         "3": {
             "name": "text_block",
             "id": 861,
-            "position_x": 489,
+            "position_x": 935,
             "position_y": 42,
             "width": 737,
             "height": 629,
@@ -114,7 +114,7 @@
             "init": "comment click on the trigger buttons on these nodes to have the type displayed",
             "name": "comment",
             "id": 1617,
-            "position_x": 20,
+            "position_x": 491,
             "position_y": 44,
             "width": 414,
             "height": 30,

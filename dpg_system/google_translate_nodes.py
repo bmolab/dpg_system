@@ -12,20 +12,31 @@ import threading
 import traceback
 from queue import Queue, Empty, Full
 import time
-from google.cloud import translate_v2 as translate
-# from google.cloud import storage
 import os.path
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-import google.auth
-# from googleapiclient.discovery import build
-# from googleapiclient.errors import HttpError
+# Only 'translate_api' needs the Google Cloud SDK. 'translate' uses the
+# unofficial endpoint and needs nothing but requests -- but these imports were
+# at module level, so a machine without the SDK lost BOTH nodes, and the whole
+# module was reported as a missing dependency. Optional now, and translate_api
+# is registered only when they are actually available.
+try:
+    from google.cloud import translate_v2 as translate
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    import google.auth
+    google_cloud_available = True
+except ImportError as _e:
+    translate = None
+    google_cloud_available = False
+    print('google_translate_nodes: Google Cloud SDK not available '
+          f'({_e}); translate_api disabled, translate still works')
+
 
 def register_google_translate_nodes():
     Node.app.register_node('translate', GoogleTranslateNode.factory)
-    Node.app.register_node('translate_api', GoogleTranslateAPINode.factory)
+    if google_cloud_available:
+        Node.app.register_node('translate_api', GoogleTranslateAPINode.factory)
 
 
 

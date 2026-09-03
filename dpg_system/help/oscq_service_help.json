@@ -1,0 +1,654 @@
+{
+    "name": "oscq_service_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/oscq_service_help.json",
+    "patches": {
+        "0": {
+            "height": 480,
+            "width": 380,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1088,
+            "name": "my_controls",
+            "parent_node_uuid": 866,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1125,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "oscq_host",
+                    "init": "oscq_host",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 260,
+                    "height": 160,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "slider",
+                    "init": "slider",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 200,
+                    "height": 60,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "3": {
+                    "name": "out",
+                    "init": "out level",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 320,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "level"
+                }
+            }
+        },
+        "1": {
+            "height": 1040,
+            "width": 1941,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1051,
+            "name": "oscq_service_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/oscq_service_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment OSCQuery - OSC that describes itself",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 432,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "OSCQuery - OSC that describes itself",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "OSCQuery - OSC that describes itself"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1083,
+                    "position_y": 45,
+                    "width": 818,
+                    "height": 776,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "OSCQuery is OSC that can tell you what it accepts. These use that.\n\nTHE NODES:\n\noscq_service   connect to a named service, by name rather than by address\noscq_browse    look through what a service offers, and build controls from it\noscq_host      publish a subpatch as a service of your own\n\nWHAT OSCQUERY ADDS TO PLAIN OSC:\nWith ordinary OSC you have to know everything in advance - the address of the\nmachine, the port, and every path it will listen on. That knowledge lives in a\nmanual, or in someone's memory, and nothing checks it.\n\nAn OSCQuery device publishes two things instead. It ANNOUNCES itself on the\nnetwork, so it can be found by name rather than by address; and it describes its\nwhole namespace - every path, what type each one takes, and often its range.\n\nWhich means the patch can ask rather than be told. That is what these nodes are\nfor, and it is the difference between typing addresses and picking them from a\nlist that is guaranteed to be right.\n\noscq_service IS THE SHORTCUT:\nGive it a service name and it finds that service on the network and makes the\nosc_device node for it, with the address and ports already correct. It is what\nyou want when you know which device you are after and just want to be talking\nto it.\n\n'available services' lists what has been found. Press 'refresh' if something was\nturned on after the patch started.\n\noscq_browse IS THE ONE THAT SAVES REAL TIME:\nIt shows the namespace as a list you can drill into, and then BUILDS THE NODES\nfor whatever you have selected - a single parameter, a whole container, or an\nentire service.\n\nBecause the description carries types and ranges, what it builds is already\nright: a float from 0 to 1 gets a slider with those limits, a string gets a text\nfield. Nothing to look up and nothing to mistype.\n\n'create' makes what is selected. 'create all' makes everything at the current\nlevel. 'layout' arranges them horizontally, vertically, or as a tree.\n\n'create as' DECIDES WHICH DIRECTION IT GOES:\nwidget    a control you operate, which sends when you move it\nsend      a node that transmits a value you give it\nreceive   a node that listens and reports what the device says\n\nThe same parameter can be any of the three. A fader on a mixing desk is a widget\nif you want to drive it, a receive if you want to follow what someone else is\ndoing with it, and both if you want to do one and watch the other.\n\n'subset' FOR DEVICES WITH MANY CHANNELS:\nConsoles have namespaces like /ch/1/... through /ch/64/..., and you rarely want\nall of them. Put a range in 'subset' - '1-8', or '1,3,5', or '1-3,7,9-11' - and\nonly those are built.\n\nWithout it, 'create all' on a large desk will do exactly what you asked and fill\nthe patch with hundreds of nodes.\n\noscq_host PUBLISHES A SUBPATCH:\nPut one inside a subpatcher and that subpatch becomes an OSCQuery service on the\nnetwork, named after the patcher. Anything else that speaks OSCQuery - another\ncopy of dpg_system, or a phone - can then find it and build controls for it.\n\nThe name comes from the patcher, so name the patcher what you want the service\ncalled. An argument sets the port; without one it picks a free one.\n\nThis is the reason to reach for a subpatcher even when the tidiness is not\nneeded: it gives the group of parameters a name, and the name becomes the\nservice.\n\nSYNTAX:\noscq_service <service name>\noscq_browse\noscq_host <port>\n\nEXAMPLE:\noscq_service lights\n\nINPUTS and PARAMETERS:\n\nservice name / available services / refresh (oscq_service):\nWhich service to connect to, what was found, and look again.\n\nsearch / browser (oscq_browse):\nType to search across services; the list drills down as you select.\n\nadd url:\nReach a service that does not announce itself, by address.\n\nsubset:\nWhich numbered channels to build. '1-8', '1,3,5', '1-3,7,9-11'.\n\ncreate / create all / go to:\nBuild the selection, build everything here, or jump to what was made.\n\nlayout / create as:\nHow to arrange the new nodes, and whether they are widgets, senders or\nreceivers.\n\nOUTPUTS: \n\nselected path / service info / param info:\nWhat is selected, and what is known about it.\n\naddress space (oscq_service):\nThe whole namespace, as data.\n\nRELATED:\nosc_send and the osc nodes for talking to devices that do not describe\nthemselves.\np / patcher, since oscq_host takes its service name from the patcher it is in.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 810,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "OSCQuery is OSC that can tell you what it accepts. These use that.\n\nTHE NODES:\n\noscq_service   connect to a named service, by name rather than by address\noscq_browse    look through what a service offers, and build controls from it\noscq_host      publish a subpatch as a service of your own\n\nWHAT OSCQUERY ADDS TO PLAIN OSC:\nWith ordinary OSC you have to know everything in advance - the address of the\nmachine, the port, and every path it will listen on. That knowledge lives in a\nmanual, or in someone's memory, and nothing checks it.\n\nAn OSCQuery device publishes two things instead. It ANNOUNCES itself on the\nnetwork, so it can be found by name rather than by address; and it describes its\nwhole namespace - every path, what type each one takes, and often its range.\n\nWhich means the patch can ask rather than be told. That is what these nodes are\nfor, and it is the difference between typing addresses and picking them from a\nlist that is guaranteed to be right.\n\noscq_service IS THE SHORTCUT:\nGive it a service name and it finds that service on the network and makes the\nosc_device node for it, with the address and ports already correct. It is what\nyou want when you know which device you are after and just want to be talking\nto it.\n\n'available services' lists what has been found. Press 'refresh' if something was\nturned on after the patch started.\n\noscq_browse IS THE ONE THAT SAVES REAL TIME:\nIt shows the namespace as a list you can drill into, and then BUILDS THE NODES\nfor whatever you have selected - a single parameter, a whole container, or an\nentire service.\n\nBecause the description carries types and ranges, what it builds is already\nright: a float from 0 to 1 gets a slider with those limits, a string gets a text\nfield. Nothing to look up and nothing to mistype.\n\n'create' makes what is selected. 'create all' makes everything at the current\nlevel. 'layout' arranges them horizontally, vertically, or as a tree.\n\n'create as' DECIDES WHICH DIRECTION IT GOES:\nwidget    a control you operate, which sends when you move it\nsend      a node that transmits a value you give it\nreceive   a node that listens and reports what the device says\n\nThe same parameter can be any of the three. A fader on a mixing desk is a widget\nif you want to drive it, a receive if you want to follow what someone else is\ndoing with it, and both if you want to do one and watch the other.\n\n'subset' FOR DEVICES WITH MANY CHANNELS:\nConsoles have namespaces like /ch/1/... through /ch/64/..., and you rarely want\nall of them. Put a range in 'subset' - '1-8', or '1,3,5', or '1-3,7,9-11' - and\nonly those are built.\n\nWithout it, 'create all' on a large desk will do exactly what you asked and fill\nthe patch with hundreds of nodes.\n\noscq_host PUBLISHES A SUBPATCH:\nPut one inside a subpatcher and that subpatch becomes an OSCQuery service on the\nnetwork, named after the patcher. Anything else that speaks OSCQuery - another\ncopy of dpg_system, or a phone - can then find it and build controls for it.\n\nThe name comes from the patcher, so name the patcher what you want the service\ncalled. An argument sets the port; without one it picks a free one.\n\nThis is the reason to reach for a subpatcher even when the tidiness is not\nneeded: it gives the group of parameters a name, and the name becomes the\nservice.\n\nSYNTAX:\noscq_service <service name>\noscq_browse\noscq_host <port>\n\nEXAMPLE:\noscq_service lights\n\nINPUTS and PARAMETERS:\n\nservice name / available services / refresh (oscq_service):\nWhich service to connect to, what was found, and look again.\n\nsearch / browser (oscq_browse):\nType to search across services; the list drills down as you select.\n\nadd url:\nReach a service that does not announce itself, by address.\n\nsubset:\nWhich numbered channels to build. '1-8', '1,3,5', '1-3,7,9-11'.\n\ncreate / create all / go to:\nBuild the selection, build everything here, or jump to what was made.\n\nlayout / create as:\nHow to arrange the new nodes, and whether they are widgets, senders or\nreceivers.\n\nOUTPUTS: \n\nselected path / service info / param info:\nWhat is selected, and what is known about it.\n\naddress space (oscq_service):\nThe whole namespace, as data.\n\nRELATED:\nosc_send and the osc nodes for talking to devices that do not describe\nthemselves.\np / patcher, since oscq_host takes its service name from the patcher it is in."
+                },
+                "3": {
+                    "name": "oscq_service",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 300,
+                    "height": 200,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "init": "comment name a service and it finds it, and",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 766,
+                    "position_y": 275,
+                    "width": 245,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "name a service and it finds it, and",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "name a service and it finds it, and"
+                },
+                "5": {
+                    "init": "comment makes the osc_device for you",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 766,
+                    "position_y": 355,
+                    "width": 196,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "makes the osc_device for you",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "makes the osc_device for you"
+                },
+                "6": {
+                    "name": "text_display",
+                    "id": 459,
+                    "position_x": 380,
+                    "position_y": 62,
+                    "width": 340,
+                    "height": 200,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "height",
+                            "value": 160,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "wrap",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "3": {
+                            "name": "max_lines",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "autoscroll",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "7": {
+                    "init": "comment the whole namespace it published",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 766,
+                    "position_y": 315,
+                    "width": 224,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the whole namespace it published",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the whole namespace it published"
+                },
+                "8": {
+                    "name": "oscq_browse",
+                    "id": 533,
+                    "position_x": 30,
+                    "position_y": 355,
+                    "width": 360,
+                    "height": 420,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "init": "comment search, drill in, then CREATE - it builds",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 766,
+                    "position_y": 790,
+                    "width": 287,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "search, drill in, then CREATE - it builds",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "search, drill in, then CREATE - it builds"
+                },
+                "10": {
+                    "init": "comment the nodes, already the right type and",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 766,
+                    "position_y": 820,
+                    "width": 259,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the nodes, already the right type and",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the nodes, already the right type and"
+                },
+                "11": {
+                    "init": "comment range, because the device said so",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 766,
+                    "position_y": 850,
+                    "width": 231,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "range, because the device said so",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "range, because the device said so"
+                },
+                "12": {
+                    "init": "comment put '1-8' in subset before 'create all'",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 766,
+                    "position_y": 890,
+                    "width": 273,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "put '1-8' in subset before 'create all'",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "put '1-8' in subset before 'create all'"
+                },
+                "13": {
+                    "init": "comment on a desk with 64 channels, or you will",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 766,
+                    "position_y": 920,
+                    "width": 273,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "on a desk with 64 channels, or you will",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "on a desk with 64 channels, or you will"
+                },
+                "14": {
+                    "init": "comment get all 64",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 766,
+                    "position_y": 950,
+                    "width": 70,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "get all 64",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "get all 64"
+                },
+                "15": {
+                    "name": "list",
+                    "id": 792,
+                    "position_x": 440,
+                    "position_y": 355,
+                    "width": 300,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "16": {
+                    "init": "comment the path currently selected",
+                    "name": "comment",
+                    "id": 829,
+                    "position_x": 766,
+                    "position_y": 405,
+                    "width": 189,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the path currently selected",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the path currently selected"
+                },
+                "17": {
+                    "name": "p",
+                    "id": 866,
+                    "position_x": 440,
+                    "position_y": 470,
+                    "width": 220,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p my_controls",
+                    "patcher id": 1088
+                },
+                "18": {
+                    "init": "comment an oscq_host inside a subpatcher",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 766,
+                    "position_y": 555,
+                    "width": 224,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an oscq_host inside a subpatcher",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "an oscq_host inside a subpatcher"
+                },
+                "19": {
+                    "init": "comment publishes it as a service, named after",
+                    "name": "comment",
+                    "id": 940,
+                    "position_x": 766,
+                    "position_y": 585,
+                    "width": 266,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "publishes it as a service, named after",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "publishes it as a service, named after"
+                },
+                "20": {
+                    "init": "comment the patcher - so name it well",
+                    "name": "comment",
+                    "id": 977,
+                    "position_x": 766,
+                    "position_y": 615,
+                    "width": 203,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the patcher - so name it well",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the patcher - so name it well"
+                },
+                "21": {
+                    "name": "close",
+                    "id": 1014,
+                    "position_x": 24,
+                    "position_y": 805,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "address space",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###text in"
+                },
+                "1": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "selected path",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

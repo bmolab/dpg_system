@@ -1,6 +1,6 @@
 {
-    "height": 692,
-    "width": 1190,
+    "height": 709,
+    "width": 1626,
     "position": [
         455,
         231
@@ -95,8 +95,8 @@
         "3": {
             "name": "text_block",
             "id": 3158,
-            "position_x": 373,
-            "position_y": 23,
+            "position_x": 763,
+            "position_y": 53,
             "width": 823,
             "height": 596,
             "visibility": "show_all",
@@ -135,7 +135,7 @@
             "init": "comment select the blue top bar and press 'o'",
             "name": "comment",
             "id": 3183,
-            "position_x": 18,
+            "position_x": 393,
             "position_y": 53,
             "width": 340,
             "height": 30,
@@ -159,8 +159,8 @@
         "5": {
             "name": "close",
             "id": 3204,
-            "position_x": 32,
-            "position_y": 564,
+            "position_x": 24,
+            "position_y": 228,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

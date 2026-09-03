@@ -1,0 +1,333 @@
+{
+    "height": 1444,
+    "width": 1702,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "clean~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/clean~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment clean~ and one_euro~ - conditioning before it is heard",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 648,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "clean~ and one_euro~ - conditioning before it is heard",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "clean~ and one_euro~ - conditioning before it is heard"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 854,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These clean up a signal before it goes anywhere else.\n\nTHE NODES:\n\nclean~      subsonics off the bottom, fizz off the top\ncondition~  the same node\none_euro~   smoothing that gets out of the way when you move\nsmooth~     the same node\n\nclean~ IS THE CHANNEL STRIP'S HYGIENE STAGE:\nThe intended place is source -> fader~ -> clean~ -> place~ -> audio_out~. \nIt exists for when a bowed 5 Hz, or a low mode blooming out of a resonator, \nis eating headroom without being music. 24 dB per octave each way, flat and \nresonance-free between, and bypassed it passes the signal untouched.\n\nPhysical models are the reason. They produce energy well below what anything \ncan reproduce, and that energy is real - it moves the meters and steals the \nloudness - but nobody hears it.\n\none_euro~ CHOOSES PER SAMPLE:\nAny fixed smoothing has to choose between passing jitter and lagging behind a \ngesture, because those are the same setting. This one does not choose once. \nAt rest the cutoff drops to 'min cutoff' and the signal settles hard; as the \nsignal moves the cutoff opens in proportion to how fast it is moving, so a fast \ngesture arrives on time.\n\nThis is the audio-rate version of the one_euro_filter node, and it is what you \nput between effort data and anything that will be heard - because control data \nthat steps is audible as zippering, and control data that lags feels dead.\n\nSYNTAX:\nclean~\none_euro~\n\nEXAMPLE:\nclean~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\nlow cut / high cut (clean~):\nWhere the two filters act.\n\nmin cutoff (one_euro~):\nThe smoothing when nothing is moving. Lower is calmer. Set this first, with \nbeta at zero, until the resting signal is still.\n\nbeta (one_euro~):\nHow much movement opens the filter up. Raise it until fast gestures stop \nlagging.\n\nOUTPUTS: \n\nleft out / right out:\nThe conditioned signal.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These clean up a signal before it goes anywhere else.\n\nTHE NODES:\n\nclean~      subsonics off the bottom, fizz off the top\ncondition~  the same node\none_euro~   smoothing that gets out of the way when you move\nsmooth~     the same node\n\nclean~ IS THE CHANNEL STRIP'S HYGIENE STAGE:\nThe intended place is source -> fader~ -> clean~ -> place~ -> audio_out~. \nIt exists for when a bowed 5 Hz, or a low mode blooming out of a resonator, \nis eating headroom without being music. 24 dB per octave each way, flat and \nresonance-free between, and bypassed it passes the signal untouched.\n\nPhysical models are the reason. They produce energy well below what anything \ncan reproduce, and that energy is real - it moves the meters and steals the \nloudness - but nobody hears it.\n\none_euro~ CHOOSES PER SAMPLE:\nAny fixed smoothing has to choose between passing jitter and lagging behind a \ngesture, because those are the same setting. This one does not choose once. \nAt rest the cutoff drops to 'min cutoff' and the signal settles hard; as the \nsignal moves the cutoff opens in proportion to how fast it is moving, so a fast \ngesture arrives on time.\n\nThis is the audio-rate version of the one_euro_filter node, and it is what you \nput between effort data and anything that will be heard - because control data \nthat steps is audible as zippering, and control data that lags feels dead.\n\nSYNTAX:\nclean~\none_euro~\n\nEXAMPLE:\nclean~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\nlow cut / high cut (clean~):\nWhere the two filters act.\n\nmin cutoff (one_euro~):\nThe smoothing when nothing is moving. Lower is calmer. Set this first, with \nbeta at zero, until the resting signal is still.\n\nbeta (one_euro~):\nHow much movement opens the filter up. Raise it until fast gestures stop \nlagging.\n\nOUTPUTS: \n\nleft out / right out:\nThe conditioned signal."
+        },
+        "3": {
+            "name": "slider",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 0.0"
+        },
+        "4": {
+            "name": "sig~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 135,
+            "width": 200,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "one_euro~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment still at rest, quick when you move",
+            "name": "comment",
+            "id": 459,
+            "position_x": 586,
+            "position_y": 480,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "still at rest, quick when you move",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "still at rest, quick when you move"
+        },
+        "7": {
+            "name": "scope~",
+            "id": 496,
+            "position_x": 300,
+            "position_y": 290,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "modal~",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 260,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "clean~",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 840,
+            "width": 240,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment takes the inaudible rumble out",
+            "name": "comment",
+            "id": 607,
+            "position_x": 586,
+            "position_y": 1050,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "takes the inaudible rumble out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "takes the inaudible rumble out"
+        },
+        "11": {
+            "name": "fader_out~",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 1090,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1340,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "value"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "excite in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

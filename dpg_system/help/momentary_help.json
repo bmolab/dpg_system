@@ -1,0 +1,400 @@
+{
+    "height": 821,
+    "width": 1671,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "momentary_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/momentary_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment momentary - a control that springs back",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 468,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "momentary - a control that springs back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "momentary - a control that springs back"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 823,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These controls spring back to the middle the moment you let go.\n\nAn ordinary slider stays where you leave it. A momentary one does not - release \nit and it returns to zero on its own. That makes it a control for RATE rather \nthan position: while you hold it away from centre you are saying \"keep going, \nthis fast, this way\", and letting go means stop.\n\nIt is the difference between a throttle and a dial. For nudging a value, \nsteering a view, jogging through time, or anything where you want to push and \nthen have things settle, this is the shape of control you want - and it cannot \nbe left switched on by accident, which matters when the thing at the far end \nkeeps moving as long as the control is off centre.\n\nTHE NODES:\n\nmomentary               one float slider, -1 to 1\nmomentary_slider        the same thing\nmomentary_int           whole numbers instead, -20 to 20\nmomentary_slider_int    the same thing\nmomentary_xy            a two-dimensional pad, springing back to the centre\njoy_stick               the same pad, with the spring optional\n\nSYNTAX:\nmomentary                     one slider\nmomentary <count: int>        that many sliders, if between 1 and 10\nmomentary <range: int>        one slider with that range\nmomentary <name> <name> ...   one named slider per name\n\nEXAMPLE:\nmomentary pan tilt\n\nGiving names is worth doing whenever there is more than one - a row of unlabelled \nsliders is unreadable a week later.\n\nINPUTS and PARAMETERS:\n\n<one inlet per slider>:\nSets that slider from the patch. It still springs back when released.\n\nrange:\nHow far the slider travels either side of centre. \nDefaults to 1.0, or 20 for the int versions.\n\nwidth / height / marker size:\nThe size of the control, and of the dot on the xy pad.\n\nmomentary (joy_stick):\nWhether the pad springs back at all. Unchecked, joy_stick keeps its position \nlike an ordinary xy pad - which is the only thing separating it from \nmomentary_xy.\n\nOUTPUTS: \n\n<one outlet per slider>:\nThe current value, sent as you move it and again as it springs back - \nso the last thing you receive is always the zero.\n\nx out / y out (the pads):\nThe two axes, on separate outlets.\n\nA NOTE ON WHAT THE SPRING MEANS:\nBecause releasing sends a zero, whatever you drive with this must treat zero as \n\"stop\" rather than as a position. Send it to accumulate to turn the push into \nmovement; send it straight to a position and the thing will snap back to the \norigin every time you let go.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These controls spring back to the middle the moment you let go.\n\nAn ordinary slider stays where you leave it. A momentary one does not - release \nit and it returns to zero on its own. That makes it a control for RATE rather \nthan position: while you hold it away from centre you are saying \"keep going, \nthis fast, this way\", and letting go means stop.\n\nIt is the difference between a throttle and a dial. For nudging a value, \nsteering a view, jogging through time, or anything where you want to push and \nthen have things settle, this is the shape of control you want - and it cannot \nbe left switched on by accident, which matters when the thing at the far end \nkeeps moving as long as the control is off centre.\n\nTHE NODES:\n\nmomentary               one float slider, -1 to 1\nmomentary_slider        the same thing\nmomentary_int           whole numbers instead, -20 to 20\nmomentary_slider_int    the same thing\nmomentary_xy            a two-dimensional pad, springing back to the centre\njoy_stick               the same pad, with the spring optional\n\nSYNTAX:\nmomentary                     one slider\nmomentary <count: int>        that many sliders, if between 1 and 10\nmomentary <range: int>        one slider with that range\nmomentary <name> <name> ...   one named slider per name\n\nEXAMPLE:\nmomentary pan tilt\n\nGiving names is worth doing whenever there is more than one - a row of unlabelled \nsliders is unreadable a week later.\n\nINPUTS and PARAMETERS:\n\n<one inlet per slider>:\nSets that slider from the patch. It still springs back when released.\n\nrange:\nHow far the slider travels either side of centre. \nDefaults to 1.0, or 20 for the int versions.\n\nwidth / height / marker size:\nThe size of the control, and of the dot on the xy pad.\n\nmomentary (joy_stick):\nWhether the pad springs back at all. Unchecked, joy_stick keeps its position \nlike an ordinary xy pad - which is the only thing separating it from \nmomentary_xy.\n\nOUTPUTS: \n\n<one outlet per slider>:\nThe current value, sent as you move it and again as it springs back - \nso the last thing you receive is always the zero.\n\nx out / y out (the pads):\nThe two axes, on separate outlets.\n\nA NOTE ON WHAT THE SPRING MEANS:\nBecause releasing sends a zero, whatever you drive with this must treat zero as \n\"stop\" rather than as a position. Send it to accumulate to turn the push into \nmovement; send it straight to a position and the thing will snap back to the \norigin every time you let go."
+        },
+        "3": {
+            "name": "momentary",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 200,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 120,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag it, then let go",
+            "name": "comment",
+            "id": 385,
+            "position_x": 506,
+            "position_y": 145,
+            "width": 140,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag it, then let go",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag it, then let go"
+        },
+        "5": {
+            "name": "float",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 185,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment it comes back to zero by itself",
+            "name": "comment",
+            "id": 459,
+            "position_x": 506,
+            "position_y": 235,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it comes back to zero by itself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it comes back to zero by itself"
+        },
+        "7": {
+            "name": "accumulate",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 280,
+            "width": 140,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 395,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment through accumulate it becomes a throttle:",
+            "name": "comment",
+            "id": 570,
+            "position_x": 506,
+            "position_y": 445,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "through accumulate it becomes a throttle:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "through accumulate it becomes a throttle:"
+        },
+        "10": {
+            "init": "comment hold to travel, release to stop",
+            "name": "comment",
+            "id": 607,
+            "position_x": 506,
+            "position_y": 475,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hold to travel, release to stop",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hold to travel, release to stop"
+        },
+        "11": {
+            "name": "joy_stick",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 62,
+            "width": 200,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "momentary",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "marker size",
+                    "value": 6,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "init": "comment two axes at once",
+            "name": "comment",
+            "id": 681,
+            "position_x": 506,
+            "position_y": 295,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two axes at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two axes at once"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 467,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

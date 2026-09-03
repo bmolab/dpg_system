@@ -1151,6 +1151,12 @@ class ValueNode(Node):
             dpg.set_item_width(trigger, trigger_size)
 
     def options_changed(self):
+        # A knob has no width option -- DPG's knob_float is a fixed size, so
+        # ValueNode deliberately skips creating one. Without this guard the
+        # callback raises while a saved knob's options are being restored, and
+        # the node is dropped from the patch with only a console message.
+        if self.width_option is None:
+            return
         width = self.width_option()
         dpg.set_item_width(self.input.widget.uuid, width)
 

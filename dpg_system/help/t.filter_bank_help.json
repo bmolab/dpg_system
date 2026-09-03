@@ -1,0 +1,382 @@
+{
+    "height": 1245,
+    "width": 1479,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.filter_bank_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.filter_bank_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.filter_bank - movement split by timescale",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.filter_bank - movement split by timescale",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.filter_bank - movement split by timescale"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 631,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These split motion into frequency bands - what is happening slowly, and what quickly.\n\nTHE NODES:\n\nt.filter_bank         a bank of filters across a frequency range\nt.rotation_band_diff  the same idea applied to rotations, per joint\n\nWHY BANDS RATHER THAN ONE FILTER:\nA body does several things at once at different rates: a slow shift of weight, a\ngesture over a second, a tremor, and sensor noise on top. A single filter forces\nyou to choose one boundary and throw away everything on the wrong side of it.\n\nA bank keeps them all, separated. Then you can ask which band the movement is\nin, rather than only how much movement there is - and \"this person is trembling\"\nand \"this person is swaying\" become different numbers instead of the same one.\n\nt.rotation_band_diff IS THE ONE BUILT FOR BODIES:\nIt takes per-joint rotations and returns the rotation DIFFERENCE in each band,\nshaped [joints, bands, 3]. So for every joint you get its movement broken down\nby timescale, all in one tensor.\n\nThat shape is the point. A single node turns a pose stream into a\njoint-by-timescale picture that numpy and torch operations can then work on\ndirectly - sum over bands for total effort, take one band for a tremor measure,\ncompare bands to ask whether a joint is doing something slow or something fast.\n\nSAMPLE FREQUENCY MUST BE RIGHT:\nBoth take a sample frequency, and the band edges mean nothing without it. Data\narriving at 100 Hz through a node configured for 60 puts every band in the wrong\nplace while producing entirely plausible-looking numbers.\n\nIf your source has been upsampled or delivered at a different rate than it was\ncaptured, that is worth checking before anything else - see the cadence_filter\nhelp patch, which is about exactly that problem in Shadow data.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nSYNTAX:\nt.filter_bank\nt.rotation_band_diff\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nsignal / rotations:\nThe streams.\n\ninput format (t.rotation_band_diff):\nWhether the rotations arrive as axis-angle or quaternions.\n\nsample freq:\nHow many frames a second. Get this right first.\n\nnumber of bands:\nHow finely to divide the range.\n\nfilter type / filter design / order (t.filter_bank):\nBandpass, lowpass and so on; butter or chebyshev; and how steeply each band cuts.\n\nreset:\nClear the filter state.\n\nOUTPUTS: \n\nfiltered:\nOne filtered signal per band.\n\nbanded rotation diffs:\nShaped [joints, bands, 3] - every joint's movement, broken down by timescale.\n\nRELATED:\ndiff_filter does a cheaper version of this with one-pole filters at several\ndegrees, separating by timescale rather than by frequency proper.\nband_pass and spectrum do it for a single signal.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These split motion into frequency bands - what is happening slowly, and what quickly.\n\nTHE NODES:\n\nt.filter_bank         a bank of filters across a frequency range\nt.rotation_band_diff  the same idea applied to rotations, per joint\n\nWHY BANDS RATHER THAN ONE FILTER:\nA body does several things at once at different rates: a slow shift of weight, a\ngesture over a second, a tremor, and sensor noise on top. A single filter forces\nyou to choose one boundary and throw away everything on the wrong side of it.\n\nA bank keeps them all, separated. Then you can ask which band the movement is\nin, rather than only how much movement there is - and \"this person is trembling\"\nand \"this person is swaying\" become different numbers instead of the same one.\n\nt.rotation_band_diff IS THE ONE BUILT FOR BODIES:\nIt takes per-joint rotations and returns the rotation DIFFERENCE in each band,\nshaped [joints, bands, 3]. So for every joint you get its movement broken down\nby timescale, all in one tensor.\n\nThat shape is the point. A single node turns a pose stream into a\njoint-by-timescale picture that numpy and torch operations can then work on\ndirectly - sum over bands for total effort, take one band for a tremor measure,\ncompare bands to ask whether a joint is doing something slow or something fast.\n\nSAMPLE FREQUENCY MUST BE RIGHT:\nBoth take a sample frequency, and the band edges mean nothing without it. Data\narriving at 100 Hz through a node configured for 60 puts every band in the wrong\nplace while producing entirely plausible-looking numbers.\n\nIf your source has been upsampled or delivered at a different rate than it was\ncaptured, that is worth checking before anything else - see the cadence_filter\nhelp patch, which is about exactly that problem in Shadow data.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nSYNTAX:\nt.filter_bank\nt.rotation_band_diff\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nsignal / rotations:\nThe streams.\n\ninput format (t.rotation_band_diff):\nWhether the rotations arrive as axis-angle or quaternions.\n\nsample freq:\nHow many frames a second. Get this right first.\n\nnumber of bands:\nHow finely to divide the range.\n\nfilter type / filter design / order (t.filter_bank):\nBandpass, lowpass and so on; butter or chebyshev; and how steeply each band cuts.\n\nreset:\nClear the filter state.\n\nOUTPUTS: \n\nfiltered:\nOne filtered signal per band.\n\nbanded rotation diffs:\nShaped [joints, bands, 3] - every joint's movement, broken down by timescale.\n\nRELATED:\ndiff_filter does a cheaper version of this with one-pole filters at several\ndegrees, separating by timescale rather than by frequency proper.\nband_pass and spectrum do it for a single signal."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "active_joints",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "t.rotation_band_diff",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 505,
+            "width": 300,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment set sample freq to match the source",
+            "name": "comment",
+            "id": 459,
+            "position_x": 356,
+            "position_y": 760,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set sample freq to match the source",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set sample freq to match the source"
+        },
+        "7": {
+            "init": "comment out: [joints, bands, 3]",
+            "name": "comment",
+            "id": 496,
+            "position_x": 356,
+            "position_y": 790,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: [joints, bands, 3]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: [joints, bands, 3]"
+        },
+        "8": {
+            "name": "np.linalg.norm",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 830,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 935,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.2,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment how much movement in each band -",
+            "name": "comment",
+            "id": 607,
+            "position_x": 356,
+            "position_y": 1095,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how much movement in each band -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how much movement in each band -"
+        },
+        "11": {
+            "init": "comment swaying and trembling become",
+            "name": "comment",
+            "id": 644,
+            "position_x": 356,
+            "position_y": 1125,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "swaying and trembling become",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "swaying and trembling become"
+        },
+        "12": {
+            "init": "comment different numbers, not the same one",
+            "name": "comment",
+            "id": 681,
+            "position_x": 356,
+            "position_y": 1155,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "different numbers, not the same one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "different numbers, not the same one"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1113,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "full pose quats in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active joint quats out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "rotations"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "banded rotation diffs",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "norm",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

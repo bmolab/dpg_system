@@ -1,0 +1,459 @@
+{
+    "height": 841,
+    "width": 1602,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "t.max_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.max_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.max and t.argsort - extremes and order",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.max and t.argsort - extremes and order",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.max and t.argsort - extremes and order"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 754,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These find the extremes of a tensor, and the order its values are in.\n\nTHE NODES:\n\nt.max      the largest value - and where it is\nt.min      the smallest, likewise\nt.argmax   only where the largest is\nt.argsort  the order that would sort the tensor\n\nt.max GIVES YOU BOTH, WHICH IS THE POINT:\nWhen a dim is set it has two outlets: the largest VALUE along that axis, and \nthe INDEX it was found at. Those answer different questions - \"how big was the \npeak\" and \"which joint was it\" - and having both from one node means they \ncannot disagree, which they can if you compute the value one way and the \nposition another.\n\nt.argmax is the same index without the value, for when you only want to know \nwhich.\n\nWHY AN INDEX IS OFTEN THE BETTER ANSWER:\nFor a per-joint measurement, the largest value tells you the intensity and the \nindex tells you WHERE the body is working. The second is usually the more \ninformative: that something is straining hard matters less than which part of \nit is.\n\nt.argsort GIVES AN ORDER, NOT SORTED VALUES:\nIt returns the indices that WOULD sort the tensor. That is more useful than the \nsorted values, because you can apply the same order to something else - rank \njoints by speed, then reorder their names, or their colours, or a second \nmeasurement, by that ranking.\n\nTake the first few of what it returns and you have \"the three fastest joints\" \nas indices you can then look up anywhere.\n\n'stable' decides what happens to equal values: with it on, ties keep their \noriginal relative order, which matters when the ranking drives something that \nwould otherwise flicker between two joints that are momentarily equal.\n\nSYNTAX:\nt.max\nt.argsort\n\nEXAMPLE:\nt.argmax\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWhich axis to work along. Without it the whole tensor is reduced to one answer; \nwith it you get one per row or column.\n\ndescending (t.argsort):\nLargest first.\n\nstable (t.argsort):\nKeep equal values in their original order.\n\nOUTPUTS: \n\nvalues and indices (t.max, t.min):\nThe extreme value, and where it was.\n\nmax index (t.argmax):\nJust the position.\n\noutput (t.argsort):\nThe ordering, as indices.\n\nRELATED:\nt.take_along_dim turns those indices back into values - including values from a \nDIFFERENT tensor, which is how you answer \"at the moment each joint was \nfastest, what was its angle\".",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These find the extremes of a tensor, and the order its values are in.\n\nTHE NODES:\n\nt.max      the largest value - and where it is\nt.min      the smallest, likewise\nt.argmax   only where the largest is\nt.argsort  the order that would sort the tensor\n\nt.max GIVES YOU BOTH, WHICH IS THE POINT:\nWhen a dim is set it has two outlets: the largest VALUE along that axis, and \nthe INDEX it was found at. Those answer different questions - \"how big was the \npeak\" and \"which joint was it\" - and having both from one node means they \ncannot disagree, which they can if you compute the value one way and the \nposition another.\n\nt.argmax is the same index without the value, for when you only want to know \nwhich.\n\nWHY AN INDEX IS OFTEN THE BETTER ANSWER:\nFor a per-joint measurement, the largest value tells you the intensity and the \nindex tells you WHERE the body is working. The second is usually the more \ninformative: that something is straining hard matters less than which part of \nit is.\n\nt.argsort GIVES AN ORDER, NOT SORTED VALUES:\nIt returns the indices that WOULD sort the tensor. That is more useful than the \nsorted values, because you can apply the same order to something else - rank \njoints by speed, then reorder their names, or their colours, or a second \nmeasurement, by that ranking.\n\nTake the first few of what it returns and you have \"the three fastest joints\" \nas indices you can then look up anywhere.\n\n'stable' decides what happens to equal values: with it on, ties keep their \noriginal relative order, which matters when the ranking drives something that \nwould otherwise flicker between two joints that are momentarily equal.\n\nSYNTAX:\nt.max\nt.argsort\n\nEXAMPLE:\nt.argmax\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWhich axis to work along. Without it the whole tensor is reduced to one answer; \nwith it you get one per row or column.\n\ndescending (t.argsort):\nLargest first.\n\nstable (t.argsort):\nKeep equal values in their original order.\n\nOUTPUTS: \n\nvalues and indices (t.max, t.min):\nThe extreme value, and where it was.\n\nmax index (t.argmax):\nJust the position.\n\noutput (t.argsort):\nThe ordering, as indices.\n\nRELATED:\nt.take_along_dim turns those indices back into values - including values from a \nDIFFERENT tensor, which is how you answer \"at the moment each joint was \nfastest, what was its angle\"."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment eight values",
+            "name": "comment",
+            "id": 459,
+            "position_x": 514,
+            "position_y": 310,
+            "width": 84,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eight values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eight values"
+        },
+        "7": {
+            "name": "t.argmax",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 180,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "int",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 465,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment WHERE the largest is, not what",
+            "name": "comment",
+            "id": 570,
+            "position_x": 514,
+            "position_y": 515,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "WHERE the largest is, not what",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "WHERE the largest is, not what"
+        },
+        "10": {
+            "name": "t.argsort",
+            "id": 607,
+            "position_x": 280,
+            "position_y": 350,
+            "width": 200,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 505,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the order that would sort it -",
+            "name": "comment",
+            "id": 681,
+            "position_x": 514,
+            "position_y": 665,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the order that would sort it -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the order that would sort it -"
+        },
+        "13": {
+            "init": "comment apply it to something else",
+            "name": "comment",
+            "id": 718,
+            "position_x": 514,
+            "position_y": 695,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "apply it to something else",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "apply it to something else"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 683,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "max index",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

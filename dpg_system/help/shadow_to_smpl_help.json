@@ -1,0 +1,351 @@
+{
+    "height": 910,
+    "width": 1834,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "shadow_to_smpl_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_to_smpl_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shadow_to_smpl - joint order, format, up axis",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shadow_to_smpl - joint order, format, up axis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shadow_to_smpl - joint order, format, up axis"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 986,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These convert poses into and out of the SMPL convention.\n\nEvery system has its own joint order, its own quaternion order, and its own \nidea of which way is up. Most of the work of getting motion capture into SMPL \nis those three disagreements, and these nodes are them.\n\nTHE NODES:\n\nshadow_to_smpl      37-joint Shadow to 22-joint SMPL, plus the root translation\nactive_to_smpl      the 20 active joints to SMPL\nsmpl_to_active      back the other way\nsmpl_to_quats       SMPL axis-angle to quaternions\nquats_flip_y_z      swap the y and z axes of a pose\nsmpl_trans_to_y_up  SMPL's Z-up translation to a normal Y-up one\n\nTHE THREE DISAGREEMENTS:\n\nJOINT ORDER. Shadow has 37 joints, the active set has 20, SMPL has 22, and \nthey are not subsets of each other in any simple way. shadow_to_smpl and its \nrelatives hold the mapping so you do not.\n\nROTATION FORMAT. SMPL stores poses as AXIS-ANGLE - three numbers per joint - \nwhile the suit produces quaternions. smpl_to_quats converts. Both describe the \nsame rotation; axis-angle is more compact and quaternions are better behaved \nfor arithmetic, which is why both exist.\n\nUP AXIS. SMPL is Z-up. Most of the rest of this system, and most graphics, is \nY-up. smpl_trans_to_y_up converts a translation by [x, y, z] -> [x, z, -y], \nand quats_flip_y_z does the equivalent for rotations.\n\nDO NOT CONVERT WHAT ALREADY HANDLES IT:\nsmpl_torque and smpl_ragdoll take an 'axis_permutation' setting and do the \nconversion themselves. Converting before them AND leaving their setting at the \ndefault applies it twice, which produces a body that is subtly and confusingly \nwrong rather than obviously upside down. Feed those two the raw SMPL \nconvention and set their permutation; use these nodes for everything else.\n\nSYNTAX:\nshadow_to_smpl\nsmpl_to_quats\n\nEXAMPLE:\nshadow_to_smpl\n\nINPUTS and PARAMETERS:\n\npose / positions:\nThe source pose, and the positions the root translation is taken from - \nshadow_to_smpl reads the root from positions[4].\n\nconfig:\nThe body config, where the conversion needs to know the body's size.\n\noutput_format:\nQuaternions or axis-angle.\n\nOUTPUTS: \n\npose / trans:\nThe converted pose and root translation.\n\nRELATED:\nThe quaternion nodes convert rotation representations in general; these are the \nSMPL-specific joint-order and axis conventions on top of that.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These convert poses into and out of the SMPL convention.\n\nEvery system has its own joint order, its own quaternion order, and its own \nidea of which way is up. Most of the work of getting motion capture into SMPL \nis those three disagreements, and these nodes are them.\n\nTHE NODES:\n\nshadow_to_smpl      37-joint Shadow to 22-joint SMPL, plus the root translation\nactive_to_smpl      the 20 active joints to SMPL\nsmpl_to_active      back the other way\nsmpl_to_quats       SMPL axis-angle to quaternions\nquats_flip_y_z      swap the y and z axes of a pose\nsmpl_trans_to_y_up  SMPL's Z-up translation to a normal Y-up one\n\nTHE THREE DISAGREEMENTS:\n\nJOINT ORDER. Shadow has 37 joints, the active set has 20, SMPL has 22, and \nthey are not subsets of each other in any simple way. shadow_to_smpl and its \nrelatives hold the mapping so you do not.\n\nROTATION FORMAT. SMPL stores poses as AXIS-ANGLE - three numbers per joint - \nwhile the suit produces quaternions. smpl_to_quats converts. Both describe the \nsame rotation; axis-angle is more compact and quaternions are better behaved \nfor arithmetic, which is why both exist.\n\nUP AXIS. SMPL is Z-up. Most of the rest of this system, and most graphics, is \nY-up. smpl_trans_to_y_up converts a translation by [x, y, z] -> [x, z, -y], \nand quats_flip_y_z does the equivalent for rotations.\n\nDO NOT CONVERT WHAT ALREADY HANDLES IT:\nsmpl_torque and smpl_ragdoll take an 'axis_permutation' setting and do the \nconversion themselves. Converting before them AND leaving their setting at the \ndefault applies it twice, which produces a body that is subtly and confusingly \nwrong rather than obviously upside down. Feed those two the raw SMPL \nconvention and set their permutation; use these nodes for everything else.\n\nSYNTAX:\nshadow_to_smpl\nsmpl_to_quats\n\nEXAMPLE:\nshadow_to_smpl\n\nINPUTS and PARAMETERS:\n\npose / positions:\nThe source pose, and the positions the root translation is taken from - \nshadow_to_smpl reads the root from positions[4].\n\nconfig:\nThe body config, where the conversion needs to know the body's size.\n\noutput_format:\nQuaternions or axis-angle.\n\nOUTPUTS: \n\npose / trans:\nThe converted pose and root translation.\n\nRELATED:\nThe quaternion nodes convert rotation representations in general; these are the \nSMPL-specific joint-order and axis conventions on top of that."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_beta_editor",
+            "id": 385,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 300,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "shadow_to_smpl",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 260,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment 37 joints in, 22 out, plus the root",
+            "name": "comment",
+            "id": 459,
+            "position_x": 676,
+            "position_y": 555,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "37 joints in, 22 out, plus the root",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "37 joints in, 22 out, plus the root"
+        },
+        "7": {
+            "name": "smpl_to_quats",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 595,
+            "width": 240,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment SMPL stores axis-angle; this gives quats",
+            "name": "comment",
+            "id": 533,
+            "position_x": 676,
+            "position_y": 700,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SMPL stores axis-angle; this gives quats",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SMPL stores axis-angle; this gives quats"
+        },
+        "9": {
+            "name": "smpl_trans_to_y_up",
+            "id": 570,
+            "position_x": 350,
+            "position_y": 595,
+            "width": 260,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment SMPL is Z-up; most else is Y-up",
+            "name": "comment",
+            "id": 607,
+            "position_x": 676,
+            "position_y": 740,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SMPL is Z-up; most else is Y-up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SMPL is Z-up; most else is Y-up"
+        },
+        "11": {
+            "init": "comment but do NOT convert before smpl_torque -",
+            "name": "comment",
+            "id": 644,
+            "position_x": 676,
+            "position_y": 780,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "but do NOT convert before smpl_torque -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "but do NOT convert before smpl_torque -"
+        },
+        "12": {
+            "init": "comment it does this itself",
+            "name": "comment",
+            "id": 681,
+            "position_x": 676,
+            "position_y": 820,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it does this itself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it does this itself"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 715,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "smpl pose"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trans",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "z-up trans"
+        }
+    }
+}

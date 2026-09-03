@@ -1,0 +1,666 @@
+{
+    "height": 1285,
+    "width": 1944,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "movie_player_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/movie_player_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment movie_player - video, and named pieces of it",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 528,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "movie_player - video, and named pieces of it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "movie_player - video, and named pieces of it"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1096,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These play a video file and keep a set of named pieces of it.\n\nTHE NODES:\n\nmovie_player     plays a file and sends frames\nmovie_clip_dict  remembers in and out points by name, and plays them back\n\nTHEY ARE DESIGNED TO BE WIRED TOGETHER:\nThe player has 'clip_start' and 'clip_end', and a 'save clip' button that sends\nthose out as a CLIP SPEC - a list of [start, end, speed]. The dictionary takes\nthat, stores it under a name you type, and can later send a command back to the\nplayer to play it.\n\nSo the working loop is: scrub to a moment, set the in and out points, name it,\nstore it. Do that a few times and you have a set of cues, kept in the patch and\nsaveable to a file.\n\nWire 'clip_spec' on the player to 'clip_spec in' on the dictionary, and\n'command out' on the dictionary back to 'input' on the player. That second cord\nis what makes the names do anything.\n\nTHE COMMANDS ARE PLAIN TEXT:\nWhat the dictionary sends is a message like:\n\n    play 240 512 1.0\n    loop 240 512 0.5\n\nwhich the player also accepts from anywhere else. That is worth knowing, because\nit means you do not need the dictionary at all if the numbers are coming from\nsomewhere else - a sequencer, a score, another patch over OSC.\n\nThe player understands open, import, play, loop, stop, pause, resume and\nsave_clip. Numbers after play or loop are read as start and end if they are\nwhole, and as speed if they have a decimal point - so 'play 100 200' and\n'play 100 200 0.5' both work, and the decimal point is what distinguishes speed\nfrom a frame number.\n\n'speed' IS A RATE, AND PLAYBACK FOLLOWS THE CLOCK:\n1.0 is the file's own rate, 0.5 half, 2.0 twice.\n\nHow it gets there is worth knowing. It accumulates fractional frames from the\nREAL time elapsed, multiplied by the file's frame rate and the speed, and moves\non only by whole frames. Two consequences:\n\nPlayback keeps real time even when the patch is running slowly. A heavy patch\ndrops frames from the video rather than playing it in slow motion, which is\nalmost always what you want and is not what a naive player does.\n\nAt slow speeds it sends FEWER frames, not repeated ones. Nothing is emitted\nuntil enough time has accumulated for the next whole frame, and nothing is\ninterpolated between frames. So a downstream counter counts real new frames,\nand the picture simply holds between them.\n\nFRAMES COME OUT AS ARRAYS:\n'frame' sends the picture, ready for the image nodes - the same kind of array\ncv_camera produces. 'frame_num' says where you are, and 'done' fires at the end - and on every\nwrap when looping, so it doubles as a lap marker. Use it to trigger whatever\ncomes next rather than watching the frame number.\n\n'frame' AS AN INLET IS A SCRUB:\nSend it a number and the player jumps there. Drive it from a signal and you are\nscrubbing rather than playing - which is a quite different instrument, and the\nreason the inlet exists alongside the transport buttons.\n\nSAVING AND LOADING A SET OF CLIPS:\n'save' and 'load' on the dictionary write the whole collection to a file, so a\nset of cues outlives the patch and can be moved between pieces. The clips are\njust names and numbers, so the file is small and readable.\n\nThe clip spec carries no reference to the movie. A set of clips belongs to the\nfile it was made from, and pointing the player at a different video will play\nthe same frame numbers of something else entirely.\n\nSYNTAX:\nmovie_player <path>\nmovie_clip_dict\n\nEXAMPLE:\nmovie_player\n\nINPUTS and PARAMETERS:\n\npath:\nThe video file.\n\nplay / stop / loop:\nTransport.\n\nframe:\nJump to a frame. Send a stream of them to scrub.\n\nspeed:\nRate. 1.0 is normal.\n\nclip_start / clip_end / save clip:\nThe in and out points, and a button that sends them as a clip spec.\n\ninput:\nText commands - play, loop, stop, open and the rest.\n\nclip name / store / delete (movie_clip_dict):\nName the current spec, keep it, or remove it.\n\nplay / loop (movie_clip_dict):\nSend the selected clip to the player.\n\nsave / load:\nThe whole collection, to and from a file.\n\nOUTPUTS: \n\nframe:\nThe picture, as an array.\n\nframe_num / done:\nWhere it is, and when it finished.\n\nclip_spec:\n[start, end, speed] for the current in and out points.\n\ncommand out (movie_clip_dict):\nThe text command for the player.\n\nRELATED:\ncv_camera for live pictures rather than recorded ones.\nThe k. and tv. nodes to filter frames on the way past.\nsampler nodes if what you want to cut up is sound rather than picture.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These play a video file and keep a set of named pieces of it.\n\nTHE NODES:\n\nmovie_player     plays a file and sends frames\nmovie_clip_dict  remembers in and out points by name, and plays them back\n\nTHEY ARE DESIGNED TO BE WIRED TOGETHER:\nThe player has 'clip_start' and 'clip_end', and a 'save clip' button that sends\nthose out as a CLIP SPEC - a list of [start, end, speed]. The dictionary takes\nthat, stores it under a name you type, and can later send a command back to the\nplayer to play it.\n\nSo the working loop is: scrub to a moment, set the in and out points, name it,\nstore it. Do that a few times and you have a set of cues, kept in the patch and\nsaveable to a file.\n\nWire 'clip_spec' on the player to 'clip_spec in' on the dictionary, and\n'command out' on the dictionary back to 'input' on the player. That second cord\nis what makes the names do anything.\n\nTHE COMMANDS ARE PLAIN TEXT:\nWhat the dictionary sends is a message like:\n\n    play 240 512 1.0\n    loop 240 512 0.5\n\nwhich the player also accepts from anywhere else. That is worth knowing, because\nit means you do not need the dictionary at all if the numbers are coming from\nsomewhere else - a sequencer, a score, another patch over OSC.\n\nThe player understands open, import, play, loop, stop, pause, resume and\nsave_clip. Numbers after play or loop are read as start and end if they are\nwhole, and as speed if they have a decimal point - so 'play 100 200' and\n'play 100 200 0.5' both work, and the decimal point is what distinguishes speed\nfrom a frame number.\n\n'speed' IS A RATE, AND PLAYBACK FOLLOWS THE CLOCK:\n1.0 is the file's own rate, 0.5 half, 2.0 twice.\n\nHow it gets there is worth knowing. It accumulates fractional frames from the\nREAL time elapsed, multiplied by the file's frame rate and the speed, and moves\non only by whole frames. Two consequences:\n\nPlayback keeps real time even when the patch is running slowly. A heavy patch\ndrops frames from the video rather than playing it in slow motion, which is\nalmost always what you want and is not what a naive player does.\n\nAt slow speeds it sends FEWER frames, not repeated ones. Nothing is emitted\nuntil enough time has accumulated for the next whole frame, and nothing is\ninterpolated between frames. So a downstream counter counts real new frames,\nand the picture simply holds between them.\n\nFRAMES COME OUT AS ARRAYS:\n'frame' sends the picture, ready for the image nodes - the same kind of array\ncv_camera produces. 'frame_num' says where you are, and 'done' fires at the end - and on every\nwrap when looping, so it doubles as a lap marker. Use it to trigger whatever\ncomes next rather than watching the frame number.\n\n'frame' AS AN INLET IS A SCRUB:\nSend it a number and the player jumps there. Drive it from a signal and you are\nscrubbing rather than playing - which is a quite different instrument, and the\nreason the inlet exists alongside the transport buttons.\n\nSAVING AND LOADING A SET OF CLIPS:\n'save' and 'load' on the dictionary write the whole collection to a file, so a\nset of cues outlives the patch and can be moved between pieces. The clips are\njust names and numbers, so the file is small and readable.\n\nThe clip spec carries no reference to the movie. A set of clips belongs to the\nfile it was made from, and pointing the player at a different video will play\nthe same frame numbers of something else entirely.\n\nSYNTAX:\nmovie_player <path>\nmovie_clip_dict\n\nEXAMPLE:\nmovie_player\n\nINPUTS and PARAMETERS:\n\npath:\nThe video file.\n\nplay / stop / loop:\nTransport.\n\nframe:\nJump to a frame. Send a stream of them to scrub.\n\nspeed:\nRate. 1.0 is normal.\n\nclip_start / clip_end / save clip:\nThe in and out points, and a button that sends them as a clip spec.\n\ninput:\nText commands - play, loop, stop, open and the rest.\n\nclip name / store / delete (movie_clip_dict):\nName the current spec, keep it, or remove it.\n\nplay / loop (movie_clip_dict):\nSend the selected clip to the player.\n\nsave / load:\nThe whole collection, to and from a file.\n\nOUTPUTS: \n\nframe:\nThe picture, as an array.\n\nframe_num / done:\nWhere it is, and when it finished.\n\nclip_spec:\n[start, end, speed] for the current in and out points.\n\ncommand out (movie_clip_dict):\nThe text command for the player.\n\nRELATED:\ncv_camera for live pictures rather than recorded ones.\nThe k. and tv. nodes to filter frames on the way past.\nsampler nodes if what you want to cut up is sound rather than picture."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 520,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "/path/to/a/movie.mov",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 480,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment point this at a file and click it",
+            "name": "comment",
+            "id": 385,
+            "position_x": 786,
+            "position_y": 112,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "point this at a file and click it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "point this at a file and click it"
+        },
+        "5": {
+            "name": "movie_player",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 160,
+            "width": 340,
+            "height": 400,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment set clip_start and clip_end, then",
+            "name": "comment",
+            "id": 459,
+            "position_x": 786,
+            "position_y": 575,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set clip_start and clip_end, then",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set clip_start and clip_end, then"
+        },
+        "7": {
+            "init": "comment 'save clip' sends them out as a spec",
+            "name": "comment",
+            "id": 496,
+            "position_x": 786,
+            "position_y": 605,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'save clip' sends them out as a spec",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'save clip' sends them out as a spec"
+        },
+        "8": {
+            "name": "info",
+            "id": 533,
+            "position_x": 420,
+            "position_y": 160,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment frames are arrays, like a camera",
+            "name": "comment",
+            "id": 570,
+            "position_x": 786,
+            "position_y": 255,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "frames are arrays, like a camera",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "frames are arrays, like a camera"
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 300,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment where it has got to",
+            "name": "comment",
+            "id": 644,
+            "position_x": 786,
+            "position_y": 350,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "where it has got to",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "where it has got to"
+        },
+        "12": {
+            "name": "movie_clip_dict",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 340,
+            "height": 400,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment type a name, press store. The list",
+            "name": "comment",
+            "id": 718,
+            "position_x": 786,
+            "position_y": 1065,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "type a name, press store. The list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "type a name, press store. The list"
+        },
+        "14": {
+            "init": "comment builds up, and save/load keeps it",
+            "name": "comment",
+            "id": 755,
+            "position_x": 786,
+            "position_y": 1095,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "builds up, and save/load keeps it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "builds up, and save/load keeps it"
+        },
+        "15": {
+            "init": "comment BOTH cords matter: spec up, command",
+            "name": "comment",
+            "id": 792,
+            "position_x": 786,
+            "position_y": 1135,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "BOTH cords matter: spec up, command",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "BOTH cords matter: spec up, command"
+        },
+        "16": {
+            "init": "comment back down. Without the second one the",
+            "name": "comment",
+            "id": 829,
+            "position_x": 786,
+            "position_y": 1165,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "back down. Without the second one the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "back down. Without the second one the"
+        },
+        "17": {
+            "init": "comment names do nothing",
+            "name": "comment",
+            "id": 866,
+            "position_x": 786,
+            "position_y": 1195,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "names do nothing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "names do nothing"
+        },
+        "18": {
+            "name": "list",
+            "id": 903,
+            "position_x": 420,
+            "position_y": 650,
+            "width": 340,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment the command it sends: 'play 240 512 1.0'",
+            "name": "comment",
+            "id": 940,
+            "position_x": 786,
+            "position_y": 700,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the command it sends: 'play 240 512 1.0'",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the command it sends: 'play 240 512 1.0'"
+        },
+        "20": {
+            "init": "comment plain text, so anything else can send",
+            "name": "comment",
+            "id": 977,
+            "position_x": 786,
+            "position_y": 730,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "plain text, so anything else can send",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "plain text, so anything else can send"
+        },
+        "21": {
+            "init": "comment it too - a sequencer, a score, OSC",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 786,
+            "position_y": 760,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it too - a sequencer, a score, OSC",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it too - a sequencer, a score, OSC"
+        },
+        "22": {
+            "init": "comment whole numbers are frames, a number with",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 786,
+            "position_y": 800,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "whole numbers are frames, a number with",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "whole numbers are frames, a number with"
+        },
+        "23": {
+            "init": "comment a decimal point is the speed",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 786,
+            "position_y": 830,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a decimal point is the speed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a decimal point is the speed"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 1080,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "path"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame_num",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "clip_spec",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "clip_spec in"
+        },
+        "4": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "command out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "command out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

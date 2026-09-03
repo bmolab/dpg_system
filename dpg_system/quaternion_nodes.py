@@ -307,7 +307,11 @@ class QuaternionToRotationMatrixNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
-            if type(data) not in [torch.Tensor, np.ndarray]:
+            # Convert anything that is not already a tensor -- including a
+            # NumPy array. The old guard let ndarray through unconverted and
+            # the branch below only handled torch.Tensor, so a NumPy quaternion
+            # (which is what euler_to_quaternion emits) was silently dropped.
+            if type(data) is not torch.Tensor:
                 data = any_to_tensor(data)
             if type(data) is torch.Tensor:
                 if data.shape[-1] % 4 == 0:

@@ -1,0 +1,665 @@
+{
+    "height": 955,
+    "width": 1901,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "spacy_vector_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/spacy_vector_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment spacy vectors - meaning as a measurable quantity",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "spacy vectors - meaning as a measurable quantity",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "spacy vectors - meaning as a measurable quantity"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1053,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These turn words into vectors, so that meaning can be measured.\n\nTHE NODES:\n\nspacy_vector      a phrase as 300 numbers\nspacy_similarity  how alike two phrases are\nspacy_confusion   every phrase in one list against every phrase in another\n\nWHAT A WORD VECTOR IS:\nEach word has been given a position in a 300-dimensional space, arranged so that\nwords used in similar contexts sit near each other. Nothing was hand-labelled;\nthe positions come from how the words were actually used across a very large\namount of text.\n\nThis is what lets a patch treat meaning as a quantity. 'apple' and 'pear' are\nclose together, 'apple' and 'engine' are far apart, and the distance is a number\nyou can threshold, plot or send to a synth.\n\nA PHRASE IS THE AVERAGE OF ITS WORDS, AND THAT MATTERS:\nspacy_vector gives one 300-number vector for whatever you send it, however long.\nIt gets there by averaging the vectors of the individual words - and averaging\nis a blunt instrument.\n\nIt means word order is invisible: 'the dog bit the man' and 'the man bit the\ndog' come out identical. It also means every extra word pulls the result towards\nthe middle, because common words like 'a', 'the' and 'in' sit near the centre of\nthe space and drag everything towards each other.\n\nREAD THE SIMILARITY NUMBERS HONESTLY:\nSimilarity runs 0 to 1, but it does NOT use the bottom of that range. Measured\non this model, over a spread of deliberately unrelated phrases:\n\nsingle words        0.01 to 0.61, averaging about 0.21\nwhole phrases       0.25 to 0.85, averaging about 0.44\n\nSo 0.85 is a strong match between phrases and 0.4 means nothing in particular -\nit is roughly what any two unrelated phrases score. Judge a number against that\nbaseline rather than against zero, and calibrate on your own material before\nchoosing a threshold.\n\nThe compression gets worse the longer the phrases are. 'apple' against itself is\n1.0; against 'a red apple' it is 0.78; against 'a red apple sitting on a wooden\ntable in the morning light' it is 0.52 - the same subject, scored lower purely\nfor having more words around it. Compare short things.\n\nspacy_confusion IS THE ONE TO REACH FOR FIRST:\nIt takes two lists and gives back the whole grid of comparisons at once - one\nrow per phrase in the second list, one column per phrase in the first. Sent to a\nheat_map you can see the structure immediately, which is far more use than\nsquinting at single numbers.\n\nSYNTAX:\nspacy_vector\nspacy_similarity\nspacy_confusion\n\nEXAMPLE:\nspacy_similarity\n\nINPUTS and PARAMETERS:\n\nphrase in / phrase 2 in:\nThe two phrases to compare. Either one arriving recomputes the answer.\n\ninput / input2 (spacy_confusion):\nTwo LISTS of words. input2 becomes the rows, input the columns.\n\nOUTPUTS: \n\nphrase vector out:\n300 numbers.\n\nphrase similarity out:\nOne number, 0 to 1.\n\noutput (spacy_confusion):\nA matrix, rows by columns.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nlemma first, if you want 'running' and 'ran' to be the same word.\nnp.cosine_similarity does the same arithmetic on vectors you already have.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These turn words into vectors, so that meaning can be measured.\n\nTHE NODES:\n\nspacy_vector      a phrase as 300 numbers\nspacy_similarity  how alike two phrases are\nspacy_confusion   every phrase in one list against every phrase in another\n\nWHAT A WORD VECTOR IS:\nEach word has been given a position in a 300-dimensional space, arranged so that\nwords used in similar contexts sit near each other. Nothing was hand-labelled;\nthe positions come from how the words were actually used across a very large\namount of text.\n\nThis is what lets a patch treat meaning as a quantity. 'apple' and 'pear' are\nclose together, 'apple' and 'engine' are far apart, and the distance is a number\nyou can threshold, plot or send to a synth.\n\nA PHRASE IS THE AVERAGE OF ITS WORDS, AND THAT MATTERS:\nspacy_vector gives one 300-number vector for whatever you send it, however long.\nIt gets there by averaging the vectors of the individual words - and averaging\nis a blunt instrument.\n\nIt means word order is invisible: 'the dog bit the man' and 'the man bit the\ndog' come out identical. It also means every extra word pulls the result towards\nthe middle, because common words like 'a', 'the' and 'in' sit near the centre of\nthe space and drag everything towards each other.\n\nREAD THE SIMILARITY NUMBERS HONESTLY:\nSimilarity runs 0 to 1, but it does NOT use the bottom of that range. Measured\non this model, over a spread of deliberately unrelated phrases:\n\nsingle words        0.01 to 0.61, averaging about 0.21\nwhole phrases       0.25 to 0.85, averaging about 0.44\n\nSo 0.85 is a strong match between phrases and 0.4 means nothing in particular -\nit is roughly what any two unrelated phrases score. Judge a number against that\nbaseline rather than against zero, and calibrate on your own material before\nchoosing a threshold.\n\nThe compression gets worse the longer the phrases are. 'apple' against itself is\n1.0; against 'a red apple' it is 0.78; against 'a red apple sitting on a wooden\ntable in the morning light' it is 0.52 - the same subject, scored lower purely\nfor having more words around it. Compare short things.\n\nspacy_confusion IS THE ONE TO REACH FOR FIRST:\nIt takes two lists and gives back the whole grid of comparisons at once - one\nrow per phrase in the second list, one column per phrase in the first. Sent to a\nheat_map you can see the structure immediately, which is far more use than\nsquinting at single numbers.\n\nSYNTAX:\nspacy_vector\nspacy_similarity\nspacy_confusion\n\nEXAMPLE:\nspacy_similarity\n\nINPUTS and PARAMETERS:\n\nphrase in / phrase 2 in:\nThe two phrases to compare. Either one arriving recomputes the answer.\n\ninput / input2 (spacy_confusion):\nTwo LISTS of words. input2 becomes the rows, input the columns.\n\nOUTPUTS: \n\nphrase vector out:\n300 numbers.\n\nphrase similarity out:\nOne number, 0 to 1.\n\noutput (spacy_confusion):\nA matrix, rows by columns.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nlemma first, if you want 'running' and 'ran' to be the same word.\nnp.cosine_similarity does the same arithmetic on vectors you already have."
+        },
+        "3": {
+            "name": "message",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a red apple",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 220,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a green pear",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "spacy_similarity",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 180,
+            "width": 230,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "float",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment about 0.85 - a strong match",
+            "name": "comment",
+            "id": 496,
+            "position_x": 736,
+            "position_y": 355,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "about 0.85 - a strong match",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "about 0.85 - a strong match"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "quantum field theory",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment send this to the second inlet instead:",
+            "name": "comment",
+            "id": 570,
+            "position_x": 736,
+            "position_y": 450,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "send this to the second inlet instead:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "send this to the second inlet instead:"
+        },
+        "10": {
+            "init": "comment about 0.27 - and that is as low as",
+            "name": "comment",
+            "id": 607,
+            "position_x": 736,
+            "position_y": 480,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "about 0.27 - and that is as low as",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "about 0.27 - and that is as low as"
+        },
+        "11": {
+            "init": "comment unrelated phrases go. 0.4 means nothing.",
+            "name": "comment",
+            "id": 644,
+            "position_x": 736,
+            "position_y": 510,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unrelated phrases go. 0.4 means nothing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "unrelated phrases go. 0.4 means nothing."
+        },
+        "12": {
+            "name": "spacy_vector",
+            "id": 681,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 220,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "info",
+            "id": 718,
+            "position_x": 350,
+            "position_y": 160,
+            "width": 240,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment 300 numbers, however long the phrase",
+            "name": "comment",
+            "id": 755,
+            "position_x": 736,
+            "position_y": 255,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "300 numbers, however long the phrase",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "300 numbers, however long the phrase"
+        },
+        "15": {
+            "init": "comment word order is invisible: it is an average",
+            "name": "comment",
+            "id": 792,
+            "position_x": 736,
+            "position_y": 285,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "word order is invisible: it is an average",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "word order is invisible: it is an average"
+        },
+        "16": {
+            "name": "message",
+            "id": 829,
+            "position_x": 350,
+            "position_y": 400,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "apple pear engine",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "name": "message",
+            "id": 866,
+            "position_x": 350,
+            "position_y": 460,
+            "width": 360,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "fruit machine banana theory",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "name": "spacy_confusion",
+            "id": 903,
+            "position_x": 350,
+            "position_y": 520,
+            "width": 230,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "19": {
+            "name": "heat_map",
+            "id": 940,
+            "position_x": 350,
+            "position_y": 645,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "init": "comment rows apple/pear/engine, columns",
+            "name": "comment",
+            "id": 977,
+            "position_x": 736,
+            "position_y": 805,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rows apple/pear/engine, columns",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rows apple/pear/engine, columns"
+        },
+        "21": {
+            "init": "comment fruit/machine/banana/theory - the two",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 736,
+            "position_y": 835,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fruit/machine/banana/theory - the two",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fruit/machine/banana/theory - the two"
+        },
+        "22": {
+            "init": "comment fruits light up together, engine alone",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 736,
+            "position_y": 865,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fruits light up together, engine alone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fruits light up together, engine alone"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 823,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "phrase in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "phrase 2 in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phrase similarity out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "phrase in"
+        },
+        "4": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phrase vector out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input2"
+        },
+        "6": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "7": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

@@ -1,0 +1,381 @@
+{
+    "height": 741,
+    "width": 1583,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "comparison_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/comparison_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment comparison - test a value, report true or false",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "comparison - test a value, report true or false",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "comparison - test a value, report true or false"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 745,
+            "position_y": 45,
+            "width": 798,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The comparison nodes test the incoming value against an operand and report \nwhether the test is true or false.\n\nThe left inlet takes the value and triggers the test; the right inlet holds the \nvalue to compare against. The result comes out as true or false - or, if you \nprefer, as a 1/0 number.\n\nFeeding in a NumPy array or a PyTorch tensor compares every element, \nand you get back an array of results the same shape as the input. \nThat makes these nodes useful as masks, not just as switches.\n\nTHE NODES:\n\n>     greater than\n>=    greater than or equal to\n<     less than\n<=    less than or equal to\n==    equal to\n!=    not equal to\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n> 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be tested. Receiving data here triggers the comparison.\n\noperand:\nThe value to compare against. \nIf you supply the operand as an argument when creating the node, this inlet \nappears as a draggable number you can adjust by hand. \nIf you do not, it is a plain inlet expecting the operand from elsewhere.\n\noutput_type:\nChooses what the answer looks like. \n\"bool\" gives true or false, \"int\" gives 1 or 0, and \"float\" gives 1.0 or 0.0. \nUse int or float when you want to feed the result into arithmetic or a plot.\n\nOUTPUTS: \n\nresult:\nThe outcome of the test, in the type chosen by output_type. \nFor array input, an array of outcomes of the same shape.\n\nRELATED:\nFor a node that passes the value through when the test succeeds, rather than \nreporting true or false, see the change / increasing / decreasing / pass family.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The comparison nodes test the incoming value against an operand and report \nwhether the test is true or false.\n\nThe left inlet takes the value and triggers the test; the right inlet holds the \nvalue to compare against. The result comes out as true or false - or, if you \nprefer, as a 1/0 number.\n\nFeeding in a NumPy array or a PyTorch tensor compares every element, \nand you get back an array of results the same shape as the input. \nThat makes these nodes useful as masks, not just as switches.\n\nTHE NODES:\n\n>     greater than\n>=    greater than or equal to\n<     less than\n<=    less than or equal to\n==    equal to\n!=    not equal to\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n> 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be tested. Receiving data here triggers the comparison.\n\noperand:\nThe value to compare against. \nIf you supply the operand as an argument when creating the node, this inlet \nappears as a draggable number you can adjust by hand. \nIf you do not, it is a plain inlet expecting the operand from elsewhere.\n\noutput_type:\nChooses what the answer looks like. \n\"bool\" gives true or false, \"int\" gives 1 or 0, and \"float\" gives 1.0 or 0.0. \nUse int or float when you want to feed the result into arithmetic or a plot.\n\nOUTPUTS: \n\nresult:\nThe outcome of the test, in the type chosen by output_type. \nFor array input, an array of outcomes of the same shape.\n\nRELATED:\nFor a node that passes the value through when the test succeeds, rather than \nreporting true or false, see the change / increasing / decreasing / pass family."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": ">",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 235,
+            "width": 120,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "int",
+                    "value_type": "str"
+                }
+            },
+            "init": "> 0.0"
+        },
+        "7": {
+            "init": "comment output_type set to int, so it plots",
+            "name": "comment",
+            "id": 496,
+            "position_x": 449,
+            "position_y": 315,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output_type set to int, so it plots",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "output_type set to int, so it plots"
+        },
+        "8": {
+            "name": "plot",
+            "id": 533,
+            "position_x": 215,
+            "position_y": 205,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment a sine wave becomes a square wave",
+            "name": "comment",
+            "id": 570,
+            "position_x": 449,
+            "position_y": 345,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a sine wave becomes a square wave",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a sine wave becomes a square wave"
+        },
+        "10": {
+            "init": "comment drag the operand to move the threshold",
+            "name": "comment",
+            "id": 607,
+            "position_x": 449,
+            "position_y": 375,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag the operand to move the threshold",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag the operand to move the threshold"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 411,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

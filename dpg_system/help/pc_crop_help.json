@@ -1,0 +1,583 @@
+{
+    "height": 1376,
+    "width": 1860,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "pc_crop_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pc_crop_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pc_crop, pc_voxel, pc_info - reduce and inspect",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pc_crop, pc_voxel, pc_info - reduce and inspect",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pc_crop, pc_voxel, pc_info - reduce and inspect"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1002,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These reduce a cloud to the part you care about, and tell you what is in it.\n\nTHE NODES:\n\npc_crop   keep only the points inside a box\npc_voxel  collapse the cloud onto a grid - fewer, tidier points\npc_info   count, bounds and centroid, without changing anything\n\nTHE CLOUD FRAME, AND WHY pc_crop GOES FIRST:\nA cloud travelling between these nodes is either a plain (N, 3) array of points,\nor a small dict carrying the points AND the volume they were cropped to.\n\npc_crop is what turns the first into the second. Every grid-based node\ndownstream then uses the volume carried on the frame to build its voxel grid,\nand their own min/max widgets are only a fallback for when a raw array arrives\nwith nothing attached.\n\nSo pc_crop belongs at the head of the chain, and not only to throw away points.\nIt is how the rest of the chain learns what volume it is working in. Set the\nbox once, at the top, and everything after it agrees.\n\nThe metadata is passed along by every node, and the renderers unwrap it, so\neither form draws directly - you never have to unpack it by hand.\n\nONE ENGINE UNDERNEATH: A DENSE VOXEL GRID:\nEvery one of these nodes works the same way. The volume is divided into a grid\nof cubes, each point is turned into an integer cube number, and all the actual\nwork - counting, occupancy, background models, persistence - is arithmetic on\nflat arrays of those numbers. No kd-tree, no nearest-neighbour search, no\nper-point Python.\n\nThat is why they keep up with a live sensor, and it is also why 'voxel size (m)'\nappears on nearly all of them: it is the resolution of that grid, and it is the\none setting that changes everything else's meaning.\n\nThey are numpy rather than torch on purpose. At thirty frames a second with a\nfew hundred thousand points, moving data in and out of torch costs more than the\narithmetic saves. torch_voxel_nodes has the torch equivalents if you need them\nin a tensor chain.\n\npc_crop IS THE BIGGEST SPEED WIN YOU HAVE:\nA depth camera returns everything it can see - walls, floor, ceiling, the far\nside of the room. Usually you want a few cubic metres of it. Cropping first\nmeans every node after it is working on a fraction of the data, and the\ndifference is not subtle: in the measured example on this page, a scene of 5,560\npoints crops to 1,506.\n\n'invert' keeps the OUTSIDE of the box instead, which is how you remove a known\nobstruction rather than isolate a region.\n\npc_voxel TRADES DETAIL FOR EVENNESS:\nIt divides the volume into cubes and replaces all the points in each cube with\none point - the cube's centre, or the centroid of what was in it.\n\nThe real gain is not just fewer points, it is UNIFORM density. A depth camera\ngives you far more points close up than far away, purely because a near surface\nsubtends more pixels; voxelising removes that bias, so a measurement over the\ncloud is not dominated by whatever happens to be nearest.\n\nMeasured on the 1,506-point crop above:\n\nvoxel size 0.05 m   1,328 points\nvoxel size 0.1 m      746 points\nvoxel size 0.2 m      247 points\n\n'reduce' chooses centre or centroid. Centre gives you a tidy lattice; centroid\nkeeps the points where the data actually was, which looks less mechanical.\n\n'min points' drops cubes holding fewer than that many points, which is a cheap\nway to lose speckle in the same pass - but read the warning about it on the\npc_denoise page first, because it is sharper than it looks.\n\nWEIGHTS, AND WHY DISTANCE COMPENSATION EXISTS:\npc_voxel also sends 'counts', and puts a per-voxel weight on the frame so a\nrenderer can show how many points each voxel stood for.\n\n'distance compensation' corrects those counts for the same near/far bias: a\nvoxel twice as far away catches about a quarter as many depth pixels, so the\ndefault squares the distance before weighting. It uses radial distance rather\nthan depth, so it survives levelling and yaw.\n\npc_info IS FOR SETTING THE OTHERS UP:\nIt reports count, the bounding box, and the centroid, and passes the cloud\nthrough untouched. Put it after the sensor while you are choosing crop bounds:\nthe min and max it reports ARE the numbers to type into pc_crop.\n\nSYNTAX:\npc_crop\npc_voxel\npc_info\n\nEXAMPLE:\npc_crop\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud. Receiving it does the work.\n\nmin (x,y,z) / max (x,y,z):\nThe box, in metres. On pc_crop these are the real setting; elsewhere they are\nonly a fallback for a raw cloud with no volume attached.\n\ninvert (pc_crop):\nKeep the outside instead.\n\nvoxel size (m):\nThe grid resolution. The most consequential number here.\n\nreduce / min points (pc_voxel):\nCube centre or centroid, and the density floor.\n\nOUTPUTS: \n\ncropped / voxel cloud:\nThe reduced cloud, with the metadata carried forward.\n\ncounts:\nPoints per voxel.\n\ncount / min / max / centroid:\nWhat pc_info found.\n\ncloud out:\npc_info's passthrough - the cloud, unchanged.\n\nRELATED:\npc_background and pc_denoise remove things rather than reduce them.\nfemto and femto_bolt are the usual sources; mgl_point_cloud draws the result.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These reduce a cloud to the part you care about, and tell you what is in it.\n\nTHE NODES:\n\npc_crop   keep only the points inside a box\npc_voxel  collapse the cloud onto a grid - fewer, tidier points\npc_info   count, bounds and centroid, without changing anything\n\nTHE CLOUD FRAME, AND WHY pc_crop GOES FIRST:\nA cloud travelling between these nodes is either a plain (N, 3) array of points,\nor a small dict carrying the points AND the volume they were cropped to.\n\npc_crop is what turns the first into the second. Every grid-based node\ndownstream then uses the volume carried on the frame to build its voxel grid,\nand their own min/max widgets are only a fallback for when a raw array arrives\nwith nothing attached.\n\nSo pc_crop belongs at the head of the chain, and not only to throw away points.\nIt is how the rest of the chain learns what volume it is working in. Set the\nbox once, at the top, and everything after it agrees.\n\nThe metadata is passed along by every node, and the renderers unwrap it, so\neither form draws directly - you never have to unpack it by hand.\n\nONE ENGINE UNDERNEATH: A DENSE VOXEL GRID:\nEvery one of these nodes works the same way. The volume is divided into a grid\nof cubes, each point is turned into an integer cube number, and all the actual\nwork - counting, occupancy, background models, persistence - is arithmetic on\nflat arrays of those numbers. No kd-tree, no nearest-neighbour search, no\nper-point Python.\n\nThat is why they keep up with a live sensor, and it is also why 'voxel size (m)'\nappears on nearly all of them: it is the resolution of that grid, and it is the\none setting that changes everything else's meaning.\n\nThey are numpy rather than torch on purpose. At thirty frames a second with a\nfew hundred thousand points, moving data in and out of torch costs more than the\narithmetic saves. torch_voxel_nodes has the torch equivalents if you need them\nin a tensor chain.\n\npc_crop IS THE BIGGEST SPEED WIN YOU HAVE:\nA depth camera returns everything it can see - walls, floor, ceiling, the far\nside of the room. Usually you want a few cubic metres of it. Cropping first\nmeans every node after it is working on a fraction of the data, and the\ndifference is not subtle: in the measured example on this page, a scene of 5,560\npoints crops to 1,506.\n\n'invert' keeps the OUTSIDE of the box instead, which is how you remove a known\nobstruction rather than isolate a region.\n\npc_voxel TRADES DETAIL FOR EVENNESS:\nIt divides the volume into cubes and replaces all the points in each cube with\none point - the cube's centre, or the centroid of what was in it.\n\nThe real gain is not just fewer points, it is UNIFORM density. A depth camera\ngives you far more points close up than far away, purely because a near surface\nsubtends more pixels; voxelising removes that bias, so a measurement over the\ncloud is not dominated by whatever happens to be nearest.\n\nMeasured on the 1,506-point crop above:\n\nvoxel size 0.05 m   1,328 points\nvoxel size 0.1 m      746 points\nvoxel size 0.2 m      247 points\n\n'reduce' chooses centre or centroid. Centre gives you a tidy lattice; centroid\nkeeps the points where the data actually was, which looks less mechanical.\n\n'min points' drops cubes holding fewer than that many points, which is a cheap\nway to lose speckle in the same pass - but read the warning about it on the\npc_denoise page first, because it is sharper than it looks.\n\nWEIGHTS, AND WHY DISTANCE COMPENSATION EXISTS:\npc_voxel also sends 'counts', and puts a per-voxel weight on the frame so a\nrenderer can show how many points each voxel stood for.\n\n'distance compensation' corrects those counts for the same near/far bias: a\nvoxel twice as far away catches about a quarter as many depth pixels, so the\ndefault squares the distance before weighting. It uses radial distance rather\nthan depth, so it survives levelling and yaw.\n\npc_info IS FOR SETTING THE OTHERS UP:\nIt reports count, the bounding box, and the centroid, and passes the cloud\nthrough untouched. Put it after the sensor while you are choosing crop bounds:\nthe min and max it reports ARE the numbers to type into pc_crop.\n\nSYNTAX:\npc_crop\npc_voxel\npc_info\n\nEXAMPLE:\npc_crop\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud. Receiving it does the work.\n\nmin (x,y,z) / max (x,y,z):\nThe box, in metres. On pc_crop these are the real setting; elsewhere they are\nonly a fallback for a raw cloud with no volume attached.\n\ninvert (pc_crop):\nKeep the outside instead.\n\nvoxel size (m):\nThe grid resolution. The most consequential number here.\n\nreduce / min points (pc_voxel):\nCube centre or centroid, and the density floor.\n\nOUTPUTS: \n\ncropped / voxel cloud:\nThe reduced cloud, with the metadata carried forward.\n\ncounts:\nPoints per voxel.\n\ncount / min / max / centroid:\nWhat pc_info found.\n\ncloud out:\npc_info's passthrough - the cloud, unchanged.\n\nRELATED:\npc_background and pc_denoise remove things rather than reduce them.\nfemto and femto_bolt are the usual sources; mgl_point_cloud draws the result."
+        },
+        "3": {
+            "name": "femto",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment the sensor returns the whole room",
+            "name": "comment",
+            "id": 385,
+            "position_x": 706,
+            "position_y": 375,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the sensor returns the whole room",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the sensor returns the whole room"
+        },
+        "5": {
+            "name": "pc_crop",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 420,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment crop FIRST: it discards most of the",
+            "name": "comment",
+            "id": 459,
+            "position_x": 706,
+            "position_y": 635,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "crop FIRST: it discards most of the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "crop FIRST: it discards most of the"
+        },
+        "7": {
+            "init": "comment data and tells everything downstream",
+            "name": "comment",
+            "id": 496,
+            "position_x": 706,
+            "position_y": 665,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "data and tells everything downstream",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "data and tells everything downstream"
+        },
+        "8": {
+            "init": "comment what volume to build its grid over",
+            "name": "comment",
+            "id": 533,
+            "position_x": 706,
+            "position_y": 745,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what volume to build its grid over",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what volume to build its grid over"
+        },
+        "9": {
+            "name": "pc_info",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 420,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 400,
+            "position_y": 615,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment how many points are left",
+            "name": "comment",
+            "id": 644,
+            "position_x": 706,
+            "position_y": 705,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many points are left",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how many points are left"
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 710,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 765,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment min and max - these ARE the numbers",
+            "name": "comment",
+            "id": 755,
+            "position_x": 706,
+            "position_y": 815,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "min and max - these ARE the numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "min and max - these ARE the numbers"
+        },
+        "15": {
+            "init": "comment to type into pc_crop above",
+            "name": "comment",
+            "id": 792,
+            "position_x": 706,
+            "position_y": 845,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "to type into pc_crop above",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "to type into pc_crop above"
+        },
+        "16": {
+            "name": "pc_voxel",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 745,
+            "width": 300,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "pc_info",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 1005,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "18": {
+            "name": "int",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1200,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment fewer points, and evenly spread -",
+            "name": "comment",
+            "id": 940,
+            "position_x": 706,
+            "position_y": 1250,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fewer points, and evenly spread -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fewer points, and evenly spread -"
+        },
+        "20": {
+            "init": "comment no longer denser wherever it is nearer",
+            "name": "comment",
+            "id": 977,
+            "position_x": 706,
+            "position_y": 1280,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "no longer denser wherever it is nearer",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "no longer denser wherever it is nearer"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 1272,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "point_cloud",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "cropped",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "min",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "max",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "cloud out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "6": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "voxel cloud",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "7": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

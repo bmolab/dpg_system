@@ -1,0 +1,381 @@
+{
+    "height": 821,
+    "width": 1555,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.special.xlogy_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.xlogy_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.special.xlogy - surviving the edge cases",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.special.xlogy - surviving the edge cases",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.special.xlogy - surviving the edge cases"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 707,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Four functions that each exist to survive a case where the obvious calculation \nfalls over.\n\nTHE NODES:\n\nt.special.xlogy    x times the log of y, defined as 0 when x is 0\nt.special.xlog1py  x times the log of (1 plus y), same protection\nt.special.logits   the inverse of the sigmoid, with a safety margin\nt.special.zeta     the Hurwitz zeta function\n\nxlogy IS NOT JUST A MULTIPLY:\nWritten out directly, x times log(y) gives not-a-number when x is 0 and y is 0, \nbecause log(0) is minus infinity and 0 times infinity is undefined. But the \nlimit is 0, and 0 is the answer you want. This node returns it.\n\nThat matters because x times log(y) is the shape of every entropy and \ncross-entropy calculation - a probability multiplied by its own log - and zero \nprobabilities are entirely normal there. Doing it by hand produces NaN that then \npoisons every subsequent sum. Using this node does not.\n\nxlog1py does the same for log(1 plus y), which is the accurate way to take a \nlogarithm near 1 - the same reason log1p exists.\n\nlogits UNDOES A SIGMOID:\nGiven a probability between 0 and 1, it returns the unbounded score that a \nsigmoid would have turned into that probability. The trouble is at the ends: \nthe answer at exactly 0 or 1 is infinite. 'eps' pulls the input a hair away \nfrom both ends first, so a probability of exactly 1 returns a large number \nrather than an infinity.\n\nzeta:\nThe Hurwitz zeta function, a generalisation of the Riemann zeta. It appears in \nthe normalisation of some heavy-tailed distributions and in the derivatives of \nthe gamma function.\n\nSYNTAX:\nt.special.xlogy\nt.special.logits\n\nEXAMPLE:\nt.special.xlogy\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in / tensor 2 or number in:\nThe two arguments. Either may be a single number rather than a tensor, applied \neverywhere.\n\ntensor in / eps (logits):\nThe probabilities, and how far from 0 and 1 to hold them.\n\nOUTPUTS: \n\ntensor out:\nThe result, element by element.\n\nWHY THESE ARE WORTH KNOWING ABOUT:\nNone of them computes anything you could not write yourself. What they do is \nhandle the edge case correctly and without a branch. When a calculation over a \ntensor produces NaN somewhere in the middle and you cannot see where, a zero \ngoing through a logarithm is the first thing to suspect, and one of these is \nusually the fix.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Four functions that each exist to survive a case where the obvious calculation \nfalls over.\n\nTHE NODES:\n\nt.special.xlogy    x times the log of y, defined as 0 when x is 0\nt.special.xlog1py  x times the log of (1 plus y), same protection\nt.special.logits   the inverse of the sigmoid, with a safety margin\nt.special.zeta     the Hurwitz zeta function\n\nxlogy IS NOT JUST A MULTIPLY:\nWritten out directly, x times log(y) gives not-a-number when x is 0 and y is 0, \nbecause log(0) is minus infinity and 0 times infinity is undefined. But the \nlimit is 0, and 0 is the answer you want. This node returns it.\n\nThat matters because x times log(y) is the shape of every entropy and \ncross-entropy calculation - a probability multiplied by its own log - and zero \nprobabilities are entirely normal there. Doing it by hand produces NaN that then \npoisons every subsequent sum. Using this node does not.\n\nxlog1py does the same for log(1 plus y), which is the accurate way to take a \nlogarithm near 1 - the same reason log1p exists.\n\nlogits UNDOES A SIGMOID:\nGiven a probability between 0 and 1, it returns the unbounded score that a \nsigmoid would have turned into that probability. The trouble is at the ends: \nthe answer at exactly 0 or 1 is infinite. 'eps' pulls the input a hair away \nfrom both ends first, so a probability of exactly 1 returns a large number \nrather than an infinity.\n\nzeta:\nThe Hurwitz zeta function, a generalisation of the Riemann zeta. It appears in \nthe normalisation of some heavy-tailed distributions and in the derivatives of \nthe gamma function.\n\nSYNTAX:\nt.special.xlogy\nt.special.logits\n\nEXAMPLE:\nt.special.xlogy\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in / tensor 2 or number in:\nThe two arguments. Either may be a single number rather than a tensor, applied \neverywhere.\n\ntensor in / eps (logits):\nThe probabilities, and how far from 0 and 1 to hold them.\n\nOUTPUTS: \n\ntensor out:\nThe result, element by element.\n\nWHY THESE ARE WORTH KNOWING ABOUT:\nNone of them computes anything you could not write yourself. What they do is \nhandle the edge case correctly and without a branch. When a calculation over a \ntensor produces NaN somewhere in the middle and you cannot see where, a zero \ngoing through a logarithm is the first thing to suspect, and one of these is \nusually the fix."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.0 0.25 0.5 0.75",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment note the zero at the start",
+            "name": "comment",
+            "id": 422,
+            "position_x": 376,
+            "position_y": 168,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "note the zero at the start",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "note the zero at the start"
+        },
+        "6": {
+            "name": "t.special.xlogy",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 205,
+            "width": 240,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 310,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment x times log y, with 0 log 0 giving 0",
+            "name": "comment",
+            "id": 533,
+            "position_x": 376,
+            "position_y": 360,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x times log y, with 0 log 0 giving 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "x times log y, with 0 log 0 giving 0"
+        },
+        "9": {
+            "init": "comment doing it by hand would give NaN there",
+            "name": "comment",
+            "id": 570,
+            "position_x": 376,
+            "position_y": 390,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "doing it by hand would give NaN there",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "doing it by hand would give NaN there"
+        },
+        "10": {
+            "name": "t.special.logits",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 435,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment a sigmoid undone; eps keeps the ends finite",
+            "name": "comment",
+            "id": 681,
+            "position_x": 376,
+            "position_y": 590,
+            "width": 301,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a sigmoid undone; eps keeps the ends finite",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a sigmoid undone; eps keeps the ends finite"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 612,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2 or number in"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1 or number in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

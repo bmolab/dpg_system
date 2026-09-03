@@ -1,0 +1,456 @@
+{
+    "height": 721,
+    "width": 1547,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "trig_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/trig_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment trig - angles in, ratios out (and back again)",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "trig - angles in, ratios out (and back again)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "trig - angles in, ratios out (and back again)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 709,
+            "position_y": 45,
+            "width": 798,
+            "height": 616,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The trigonometry nodes convert between angles and ratios.\n\nsin, cos and tan take an angle and give you a number. \nasin, acos and atan go the other way, taking a number and giving you back an angle.\n\nBy default these nodes work in DEGREES, not radians. \nThis is unusual for a programming environment, and it is deliberate - most of the \nangles you deal with in a patch come from sensors, rotations and interfaces that \nspeak in degrees. Uncheck the \"degrees\" box to work in radians instead.\n\nThey accept single numbers, lists, NumPy arrays and PyTorch tensors, \nand an array is processed element by element.\n\nTHE NODES:\n\nsin    the sine of an angle, between -1 and 1\ncos    the cosine of an angle, between -1 and 1\ntan    the tangent of an angle - unbounded, and very large near 90 and 270 degrees\nasin   the angle whose sine is the input; the input must be between -1 and 1\nacos   the angle whose cosine is the input; the input must be between -1 and 1\natan   the angle whose tangent is the input; any input is valid\n\nSYNTAX:\n<function>\n\nEXAMPLE:\nsin\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be operated on. Receiving data here triggers the calculation. \nFor sin, cos and tan this is an angle. For asin, acos and atan it is a ratio.\n\ndegrees:\nWhen checked, angles are read and written in degrees. \nWhen unchecked, they are in radians. Checked is the default.\n\nOUTPUTS: \n\nout:\nThe result. For asin, acos and atan this is an angle, in whichever unit \nthe degrees checkbox is set to.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 600,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The trigonometry nodes convert between angles and ratios.\n\nsin, cos and tan take an angle and give you a number. \nasin, acos and atan go the other way, taking a number and giving you back an angle.\n\nBy default these nodes work in DEGREES, not radians. \nThis is unusual for a programming environment, and it is deliberate - most of the \nangles you deal with in a patch come from sensors, rotations and interfaces that \nspeak in degrees. Uncheck the \"degrees\" box to work in radians instead.\n\nThey accept single numbers, lists, NumPy arrays and PyTorch tensors, \nand an array is processed element by element.\n\nTHE NODES:\n\nsin    the sine of an angle, between -1 and 1\ncos    the cosine of an angle, between -1 and 1\ntan    the tangent of an angle - unbounded, and very large near 90 and 270 degrees\nasin   the angle whose sine is the input; the input must be between -1 and 1\nacos   the angle whose cosine is the input; the input must be between -1 and 1\natan   the angle whose tangent is the input; any input is valid\n\nSYNTAX:\n<function>\n\nEXAMPLE:\nsin\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be operated on. Receiving data here triggers the calculation. \nFor sin, cos and tan this is an angle. For asin, acos and atan it is a ratio.\n\ndegrees:\nWhen checked, angles are read and written in degrees. \nWhen unchecked, they are in radians. Checked is the default.\n\nOUTPUTS: \n\nout:\nThe result. For asin, acos and atan this is an angle, in whichever unit \nthe degrees checkbox is set to."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "comment a ramp from 0 to 360 degrees",
+            "name": "comment",
+            "id": 459,
+            "position_x": 434,
+            "position_y": 215,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a ramp from 0 to 360 degrees",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a ramp from 0 to 360 degrees"
+        },
+        "7": {
+            "name": "sin",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 252,
+            "width": 100,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "plot",
+            "id": 533,
+            "position_x": 200,
+            "position_y": 220,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "cos",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 100,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 200,
+            "position_y": 400,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the same ramp, a quarter turn apart",
+            "name": "comment",
+            "id": 644,
+            "position_x": 434,
+            "position_y": 420,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same ramp, a quarter turn apart",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same ramp, a quarter turn apart"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 606,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

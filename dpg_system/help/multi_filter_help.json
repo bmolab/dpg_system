@@ -1,0 +1,484 @@
+{
+    "height": 1012,
+    "width": 1362,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "multi_filter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/multi_filter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment multi_filter - many timescales at once",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 456,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "multi_filter - many timescales at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "multi_filter - many timescales at once"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 504,
+            "position_y": 45,
+            "width": 818,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes run several smoothing filters on the same signal at once, \neach at a different degree, and hand you all the results together.\n\nEvery one of them is the same one-pole filter as the filter node - move part of \nthe way towards the new value each time - just several of them side by side. \nYou give the degrees as arguments, and you get back a NumPy array with one \nelement per filter.\n\nThe interesting one is diff_filter. Instead of the smoothed values it sends the \nDIFFERENCES between neighbouring filters: the fast one minus the slower one \nnext to it, and so on. Each difference isolates the movement that happens \nbetween the two timescales - motion too quick for the slow filter to follow, \nbut slow enough that the fast one keeps up. \n\nThat is a band, in time rather than in frequency, and it is a cheap way to ask \n\"is this signal moving on a scale of a tenth of a second, or a second, \nor ten seconds?\" without doing any frequency analysis at all.\n\nTHE NODES:\n\nmulti_filter        the smoothed values, one per degree\ndiff_filter         the differences between neighbouring smoothed values\ndiff_filter_bank    the same as diff_filter\n\nNote that with N degrees, multi_filter sends N values but diff_filter sends \nN minus 1 - there is one fewer gap than there are filters.\n\nSYNTAX:\nmulti_filter <degree> <degree> ...\ndiff_filter <degree> <degree> ...\n\nEXAMPLE:\ndiff_filter 0.5 0.9 0.99\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to filter. Receiving data here triggers the node. \nA single number: these nodes spread one signal across many filters, \nthey do not filter an array element by element.\n\nfilter 0, filter 1, ...:\nOne inlet per filter, holding that filter's degree, from 0.0 to 1.0 - \nthe same meaning as on the filter node. Higher is smoother and laggier. \nGive them in increasing order so the differences come out in a sensible \nfast-to-slow sequence.\n\nMESSAGES:\n\nset <value> <value> ...\nForces the filters' internal values, one per filter.\n\nclear\nSets every filter back to zero.\n\nOUTPUTS: \n\nout:\nA NumPy array - the smoothed values for multi_filter, \nthe differences between neighbours for diff_filter.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes run several smoothing filters on the same signal at once, \neach at a different degree, and hand you all the results together.\n\nEvery one of them is the same one-pole filter as the filter node - move part of \nthe way towards the new value each time - just several of them side by side. \nYou give the degrees as arguments, and you get back a NumPy array with one \nelement per filter.\n\nThe interesting one is diff_filter. Instead of the smoothed values it sends the \nDIFFERENCES between neighbouring filters: the fast one minus the slower one \nnext to it, and so on. Each difference isolates the movement that happens \nbetween the two timescales - motion too quick for the slow filter to follow, \nbut slow enough that the fast one keeps up. \n\nThat is a band, in time rather than in frequency, and it is a cheap way to ask \n\"is this signal moving on a scale of a tenth of a second, or a second, \nor ten seconds?\" without doing any frequency analysis at all.\n\nTHE NODES:\n\nmulti_filter        the smoothed values, one per degree\ndiff_filter         the differences between neighbouring smoothed values\ndiff_filter_bank    the same as diff_filter\n\nNote that with N degrees, multi_filter sends N values but diff_filter sends \nN minus 1 - there is one fewer gap than there are filters.\n\nSYNTAX:\nmulti_filter <degree> <degree> ...\ndiff_filter <degree> <degree> ...\n\nEXAMPLE:\ndiff_filter 0.5 0.9 0.99\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to filter. Receiving data here triggers the node. \nA single number: these nodes spread one signal across many filters, \nthey do not filter an array element by element.\n\nfilter 0, filter 1, ...:\nOne inlet per filter, holding that filter's degree, from 0.0 to 1.0 - \nthe same meaning as on the filter node. Higher is smoother and laggier. \nGive them in increasing order so the differences come out in a sensible \nfast-to-slow sequence.\n\nMESSAGES:\n\nset <value> <value> ...\nForces the filters' internal values, one per filter.\n\nclear\nSets every filter back to zero.\n\nOUTPUTS: \n\nout:\nA NumPy array - the smoothed values for multi_filter, \nthe differences between neighbours for diff_filter."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 2.0 sin"
+        },
+        "6": {
+            "init": "comment one signal in",
+            "name": "comment",
+            "id": 459,
+            "position_x": 264,
+            "position_y": 215,
+            "width": 91,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one signal in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one signal in"
+        },
+        "7": {
+            "name": "multi_filter",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 190,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "filter 0",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "filter 1",
+                    "value": 0.9,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "filter 2",
+                    "value": 0.99,
+                    "value_type": "float"
+                }
+            },
+            "init": "multi_filter 0.5 0.9 0.99"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment three timescales at once",
+            "name": "comment",
+            "id": 570,
+            "position_x": 264,
+            "position_y": 550,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three timescales at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three timescales at once"
+        },
+        "10": {
+            "name": "diff_filter",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 590,
+            "width": 190,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "filter 0",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "filter 1",
+                    "value": 0.9,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "filter 2",
+                    "value": 0.99,
+                    "value_type": "float"
+                }
+            },
+            "init": "diff_filter 0.5 0.9 0.99"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 730,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -0.5,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment two gaps between three filters",
+            "name": "comment",
+            "id": 681,
+            "position_x": 264,
+            "position_y": 890,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two gaps between three filters",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two gaps between three filters"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 908,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

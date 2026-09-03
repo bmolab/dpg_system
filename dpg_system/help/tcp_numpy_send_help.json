@@ -1,0 +1,527 @@
+{
+    "height": 841,
+    "width": 1830,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "tcp_numpy_send_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/tcp_numpy_send_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment tcp_numpy_send - a connection, with guarantees",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tcp_numpy_send - a connection, with guarantees",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tcp_numpy_send - a connection, with guarantees"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 982,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These send arrays over TCP - a connection, with delivery guaranteed.\n\nTHE NODES:\n\ntcp_numpy_send      send arrays over a connection\ntcp_numpy_receive   accept a connection and receive them\ntcp_latent_send     the same, carrying a position and a serial number alongside\ntcp_latent_receive  the receiving end of that\n\nUDP OR TCP - THE CHOICE THAT MATTERS:\nUDP throws a packet at an address and does not look back. Nothing is\nacknowledged, nothing is retried, and packets can be lost or arrive out of\norder. TCP opens a connection and guarantees that everything arrives, in order.\n\nTCP's guarantee is not free: to keep it, a slow or stalled receiver makes the\nSENDER wait. For a continuous stream that is the wrong trade - the lag grows\nand never recovers, and you end up watching a body that is several seconds\nbehind the person.\n\nFor streaming live data at frame rate, UDP is almost always right. A dropped\nframe is invisible; a growing delay is not, and the next frame is along in\nsixteen milliseconds anyway.\n\nUse TCP when every byte must arrive and lateness is better than loss - a set of\nweights, a configuration, a single large transfer, anything you would have to\nsend again if part of it went missing.\n\nONE END SERVES, THE OTHER CONNECTS:\nThe receiving node has a 'serving ip' - it waits for a connection. The sending\nnode has an 'ip' - it goes and finds one. Both have a 'connected' outlet, and\nwatching it is how you tell a network problem from a data problem: if connected\nnever goes true, nothing about the data matters yet.\n\nStart the receiver first. A sender with nothing to connect to will keep trying,\nbut the order saves confusion.\n\nTHE DEFAULT PORTS DO NOT MATCH:\nWorth knowing before it costs you an afternoon: tcp_latent_send defaults to port\n4501 and tcp_latent_receive defaults to 4500. Dropped in with no arguments they\nwill sit there, both reporting not connected, looking for all the world like a\nnetwork fault.\n\nSet the port on both ends explicitly, as this patch does, and the question never\ncomes up.\n\nAND THE RECEIVER DOES NOT DEFAULT TO LOOPBACK:\nThe other half of the same trap. tcp_latent_receive sets its 'serving ip' to\nthis machine's NETWORK address when it is created, not to 127.0.0.1 - which is\nwhat you want between two machines, and wrong for two patches on one.\n\nLeft alone it binds to the network address while a sender aimed at 127.0.0.1\nknocks on loopback and is refused. The symptom is a receiver that is plainly\nrunning and a sender that cannot see it.\n\nFor two patches on one machine, set 127.0.0.1 at BOTH ends, as this patch does.\n\nTHE LATENT VARIANTS CARRY IDENTITY:\ntcp_latent_send takes a 'position' and a 'serial' alongside the array, and the\nreceiving end hands all three back out.\n\nThat matters when the arrays are frames of something - latents from a model,\nsuccessive poses - and the receiver needs to know WHICH frame it just got rather\nthan only that it got one. Over TCP nothing is lost or reordered, so a serial is\nnot there to detect loss; it is there so both ends can agree what they are\ntalking about, which matters as soon as one side is doing work that takes\nlonger than a frame.\n\nSYNTAX:\ntcp_numpy_send <ip> <port>\ntcp_numpy_receive <port>\n\nEXAMPLE:\ntcp_latent_send\n\nINPUTS and PARAMETERS:\n\ndata / latents:\nThe array to send.\n\nposition / serial (the latent nodes):\nWhat this array is - where it sits, and which one it is.\n\nip / serving ip / port:\nWhere to connect to, where to listen, and on which port.\n\nOUTPUTS: \n\nconnected:\nWhether the connection is up. Check this first, always.\n\ndata / latents:\nWhat arrived.\n\nposition / serial:\nThe identity that was sent with it.\n\nA SLOW RECEIVER SLOWS THE SENDER:\nThis is the property to keep in mind. TCP will not drop data to keep up, so a\nreceiver that cannot process fast enough applies back-pressure all the way to\nthe sending patch - which can show up as the sender's frame rate falling for no\nlocally visible reason.\n\nIf a patch slows down when a network node is connected and speeds up when it is\nnot, that is this, and UDP is the answer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These send arrays over TCP - a connection, with delivery guaranteed.\n\nTHE NODES:\n\ntcp_numpy_send      send arrays over a connection\ntcp_numpy_receive   accept a connection and receive them\ntcp_latent_send     the same, carrying a position and a serial number alongside\ntcp_latent_receive  the receiving end of that\n\nUDP OR TCP - THE CHOICE THAT MATTERS:\nUDP throws a packet at an address and does not look back. Nothing is\nacknowledged, nothing is retried, and packets can be lost or arrive out of\norder. TCP opens a connection and guarantees that everything arrives, in order.\n\nTCP's guarantee is not free: to keep it, a slow or stalled receiver makes the\nSENDER wait. For a continuous stream that is the wrong trade - the lag grows\nand never recovers, and you end up watching a body that is several seconds\nbehind the person.\n\nFor streaming live data at frame rate, UDP is almost always right. A dropped\nframe is invisible; a growing delay is not, and the next frame is along in\nsixteen milliseconds anyway.\n\nUse TCP when every byte must arrive and lateness is better than loss - a set of\nweights, a configuration, a single large transfer, anything you would have to\nsend again if part of it went missing.\n\nONE END SERVES, THE OTHER CONNECTS:\nThe receiving node has a 'serving ip' - it waits for a connection. The sending\nnode has an 'ip' - it goes and finds one. Both have a 'connected' outlet, and\nwatching it is how you tell a network problem from a data problem: if connected\nnever goes true, nothing about the data matters yet.\n\nStart the receiver first. A sender with nothing to connect to will keep trying,\nbut the order saves confusion.\n\nTHE DEFAULT PORTS DO NOT MATCH:\nWorth knowing before it costs you an afternoon: tcp_latent_send defaults to port\n4501 and tcp_latent_receive defaults to 4500. Dropped in with no arguments they\nwill sit there, both reporting not connected, looking for all the world like a\nnetwork fault.\n\nSet the port on both ends explicitly, as this patch does, and the question never\ncomes up.\n\nAND THE RECEIVER DOES NOT DEFAULT TO LOOPBACK:\nThe other half of the same trap. tcp_latent_receive sets its 'serving ip' to\nthis machine's NETWORK address when it is created, not to 127.0.0.1 - which is\nwhat you want between two machines, and wrong for two patches on one.\n\nLeft alone it binds to the network address while a sender aimed at 127.0.0.1\nknocks on loopback and is refused. The symptom is a receiver that is plainly\nrunning and a sender that cannot see it.\n\nFor two patches on one machine, set 127.0.0.1 at BOTH ends, as this patch does.\n\nTHE LATENT VARIANTS CARRY IDENTITY:\ntcp_latent_send takes a 'position' and a 'serial' alongside the array, and the\nreceiving end hands all three back out.\n\nThat matters when the arrays are frames of something - latents from a model,\nsuccessive poses - and the receiver needs to know WHICH frame it just got rather\nthan only that it got one. Over TCP nothing is lost or reordered, so a serial is\nnot there to detect loss; it is there so both ends can agree what they are\ntalking about, which matters as soon as one side is doing work that takes\nlonger than a frame.\n\nSYNTAX:\ntcp_numpy_send <ip> <port>\ntcp_numpy_receive <port>\n\nEXAMPLE:\ntcp_latent_send\n\nINPUTS and PARAMETERS:\n\ndata / latents:\nThe array to send.\n\nposition / serial (the latent nodes):\nWhat this array is - where it sits, and which one it is.\n\nip / serving ip / port:\nWhere to connect to, where to listen, and on which port.\n\nOUTPUTS: \n\nconnected:\nWhether the connection is up. Check this first, always.\n\ndata / latents:\nWhat arrived.\n\nposition / serial:\nThe identity that was sent with it.\n\nA SLOW RECEIVER SLOWS THE SENDER:\nThis is the property to keep in mind. TCP will not drop data to keep up, so a\nreceiver that cannot process fast enough applies back-pressure all the way to\nthe sending patch - which can show up as the sender's frame rate falling for no\nlocally visible reason.\n\nIf a patch slows down when a network node is connected and speeds up when it is\nnot, that is this, and UDP is the answer."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 16"
+        },
+        "5": {
+            "name": "counter",
+            "id": 422,
+            "position_x": 240,
+            "position_y": 120,
+            "width": 180,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "tcp_latent_send",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 325,
+            "width": 280,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "tcp_latent_send 127.0.0.1 4500"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 545,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment serial and position are set first -",
+            "name": "comment",
+            "id": 533,
+            "position_x": 686,
+            "position_y": 245,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "serial and position are set first -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "serial and position are set first -"
+        },
+        "9": {
+            "init": "comment the latents inlet is what sends",
+            "name": "comment",
+            "id": 570,
+            "position_x": 686,
+            "position_y": 275,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the latents inlet is what sends",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the latents inlet is what sends"
+        },
+        "10": {
+            "init": "comment check connected before anything else",
+            "name": "comment",
+            "id": 607,
+            "position_x": 686,
+            "position_y": 625,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "check connected before anything else",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "check connected before anything else"
+        },
+        "11": {
+            "name": "tcp_latent_receive",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 325,
+            "width": 280,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "tcp_latent_receive 127.0.0.1 4500"
+        },
+        "12": {
+            "name": "int",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 505,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment the serial says WHICH frame arrived",
+            "name": "comment",
+            "id": 718,
+            "position_x": 686,
+            "position_y": 555,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the serial says WHICH frame arrived",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the serial says WHICH frame arrived"
+        },
+        "14": {
+            "init": "comment start the receiver first",
+            "name": "comment",
+            "id": 755,
+            "position_x": 686,
+            "position_y": 585,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "start the receiver first",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "start the receiver first"
+        },
+        "15": {
+            "init": "comment BOTH set to 4500 - the defaults differ",
+            "name": "comment",
+            "id": 792,
+            "position_x": 686,
+            "position_y": 665,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "BOTH set to 4500 - the defaults differ",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "BOTH set to 4500 - the defaults differ"
+        },
+        "16": {
+            "init": "comment and 127.0.0.1 so both ends are on the",
+            "name": "comment",
+            "id": 829,
+            "position_x": 686,
+            "position_y": 705,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and 127.0.0.1 so both ends are on the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and 127.0.0.1 so both ends are on the"
+        },
+        "17": {
+            "init": "comment same address on this one machine",
+            "name": "comment",
+            "id": 866,
+            "position_x": 686,
+            "position_y": 745,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "same address on this one machine",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "same address on this one machine"
+        },
+        "18": {
+            "name": "info",
+            "id": 903,
+            "position_x": 380,
+            "position_y": 625,
+            "width": 240,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 735,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "serial"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "position"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "latents"
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "connected",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "serial",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "latents",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

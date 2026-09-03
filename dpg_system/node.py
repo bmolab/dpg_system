@@ -2738,13 +2738,46 @@ class Node:
     def set_preset_state(self, preset):
         pass
 
+    # label -> help file stem, loaded once from help/help_index.json. Lets one
+    # help patch serve a whole family of node names without setting
+    # help_file_name in every class.
+    _help_index = None
+
+    @staticmethod
+    def load_help_index(help_path):
+        if Node._help_index is not None:
+            return Node._help_index
+        Node._help_index = {}
+        index_path = help_path / 'help_index.json'
+        if index_path.exists():
+            try:
+                with open(str(index_path), 'r') as f:
+                    families = json.load(f)
+                for stem, labels in families.items():
+                    if stem.startswith('_'):     # '_comment' etc: notes, not a family
+                        continue
+                    for label in labels:
+                        Node._help_index[label] = stem
+            except Exception as e:
+                print('could not read help_index.json:', e)
+        return Node._help_index
+
     def get_help(self):
         help_path = Path('dpg_system') / 'help'
         if os.path.exists(str(help_path.resolve())):
             if self.help_file_name is not None:
-                temp_path = help_path / (self.help_file_name + '_help.json')
+                # Accept both spellings: 't.special' and 't.special_help'. The
+                # suffix is appended here, so a name that already carries it
+                # would otherwise resolve to 't.special_help_help.json'.
+                stem = self.help_file_name
+                if stem.endswith('_help'):
+                    stem = stem[:-len('_help')]
             else:
-                temp_path = help_path / (self.label + '_help.json')
+                # A node's own name wins; otherwise fall back to its family.
+                stem = self.label
+                if not (help_path / (stem + '_help.json')).exists():
+                    stem = Node.load_help_index(help_path).get(self.label, self.label)
+            temp_path = help_path / (stem + '_help.json')
             if temp_path.exists():
                 # if patcher is already open?
                 tabs = Node.app.tabs
@@ -2752,7 +2785,10 @@ class Node:
                     config = dpg.get_item_configuration(tab)
                     if 'label' in config:
                         title = config['label']
-                        if title == self.label + '_help':
+                        # Match on the resolved stem, not the label: a family
+                        # help file is shared by many labels, and comparing to
+                        # the label would reopen it in a second tab.
+                        if title == stem + '_help':
                             Node.app.select_tab(tab)
                             return
                 # Force a new tab — without this, load_from_file falls into

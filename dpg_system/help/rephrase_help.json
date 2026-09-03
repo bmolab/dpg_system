@@ -1,0 +1,629 @@
+{
+    "height": 950,
+    "width": 2068,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "rephrase_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/rephrase_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment lemma and rephrase - working from grammar",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lemma and rephrase - working from grammar",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lemma and rephrase - working from grammar"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1220,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Two nodes that use the grammar of a sentence rather than its vectors.\n\nTHE NODES:\n\nlemma     every word reduced to its dictionary form\nrephrase  fragments accumulated into a growing phrase\n\nlemma IS THE SMALL USEFUL ONE:\nIt gives back the dictionary form of every word: 'geese' becomes 'goose', 'were'\nbecomes 'be', 'running' becomes 'run'. It is not chopping off endings - it knows\nthe irregular forms, because it has parsed the sentence and knows which word is\ndoing what.\n\nThe use is matching. Counting words, comparing phrases or looking for a term all\nwork better on lemmas, because 'run', 'running' and 'ran' stop being three\ndifferent things. Put it in front of spacy_similarity or a word count and the\nresults get noticeably steadier.\n\nIt outputs a LIST, one lemma per word, punctuation included.\n\nrephrase IS NOT WHAT ITS NAME SUGGESTS:\nIt does not simplify a sentence. It ACCUMULATES: each fragment you send it is\nfolded into the phrase built so far, using the grammar of both to decide where\nthe new material belongs.\n\nSend it these, one at a time:\n\n    a woman             -> a woman\n    in a red coat       -> a woman, in a red coat\n    she is walking      -> a woman , in a red walking coat\n    through the park    -> a woman , in a red walking coat, through the park\n\n(the spacing around the commas really is uneven - it is stitching fragments\ntogether, not writing them out)\n\nNotice the third step. 'she' was resolved to the woman it has been tracking, and\nthe verb was folded in as a modifier rather than appended - which is how 'a red\nwalking coat' happens. That is the character of this node: it is a generative\ninstrument that produces compressed, slightly strange descriptions, not a\ngrammar engine that produces correct ones. Judge it by whether the results are\nworth having.\n\nSend 'no', 'wrong' or 'go back' and it steps back to the previous phrase.\n\nTHE THRESHOLDS, AND WHICH WAY THEY POINT:\n'complexity replace threshold' is an upper limit on what it will TRY. Complexity\ncounts nouns, verbs and prepositions, plus a quarter of the word count - so\nabout 1.5 for 'a woman' and 14 for a long descriptive sentence. A fragment above\nthe threshold is passed through untouched rather than folded in, so the default\nof 6 means it works with fragments, not whole sentences.\n\n'clip score' is a feedback path. When the score arriving there is ABOVE 'clip\nscore threshold' the node stops rewriting and emits nothing at all - the reading\nis that whatever is consuming the phrase is already doing well enough, so leave\nit alone. A rephrase that has gone quiet is usually this, not a fault.\n\n'clear input pause' is how long a phrase stays live. Fragments arriving within\nthat many seconds are folded into the phrase in progress; after the pause, the\nnext fragment starts fresh.\n\n'output as list' sends the result word by word instead of as one string.\n\nSYNTAX:\nlemma\nrephrase\n\nEXAMPLE:\nrephrase\n\nINPUTS and PARAMETERS:\n\ntext in:\nA fragment. Receiving it folds it in and sends the result.\n\nclip score:\nThe feedback number. High enough, and the node goes quiet.\n\nreplace similarity:\nHow alike two pieces must be before one replaces the other.\n\nOUTPUTS: \n\nlemmas out:\nA list, one dictionary form per word.\n\nresults:\nThe accumulated phrase.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nspacy_similarity works on meaning rather than grammar.\ncontext_tracker keeps track of place, time and actors across a stream of text.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Two nodes that use the grammar of a sentence rather than its vectors.\n\nTHE NODES:\n\nlemma     every word reduced to its dictionary form\nrephrase  fragments accumulated into a growing phrase\n\nlemma IS THE SMALL USEFUL ONE:\nIt gives back the dictionary form of every word: 'geese' becomes 'goose', 'were'\nbecomes 'be', 'running' becomes 'run'. It is not chopping off endings - it knows\nthe irregular forms, because it has parsed the sentence and knows which word is\ndoing what.\n\nThe use is matching. Counting words, comparing phrases or looking for a term all\nwork better on lemmas, because 'run', 'running' and 'ran' stop being three\ndifferent things. Put it in front of spacy_similarity or a word count and the\nresults get noticeably steadier.\n\nIt outputs a LIST, one lemma per word, punctuation included.\n\nrephrase IS NOT WHAT ITS NAME SUGGESTS:\nIt does not simplify a sentence. It ACCUMULATES: each fragment you send it is\nfolded into the phrase built so far, using the grammar of both to decide where\nthe new material belongs.\n\nSend it these, one at a time:\n\n    a woman             -> a woman\n    in a red coat       -> a woman, in a red coat\n    she is walking      -> a woman , in a red walking coat\n    through the park    -> a woman , in a red walking coat, through the park\n\n(the spacing around the commas really is uneven - it is stitching fragments\ntogether, not writing them out)\n\nNotice the third step. 'she' was resolved to the woman it has been tracking, and\nthe verb was folded in as a modifier rather than appended - which is how 'a red\nwalking coat' happens. That is the character of this node: it is a generative\ninstrument that produces compressed, slightly strange descriptions, not a\ngrammar engine that produces correct ones. Judge it by whether the results are\nworth having.\n\nSend 'no', 'wrong' or 'go back' and it steps back to the previous phrase.\n\nTHE THRESHOLDS, AND WHICH WAY THEY POINT:\n'complexity replace threshold' is an upper limit on what it will TRY. Complexity\ncounts nouns, verbs and prepositions, plus a quarter of the word count - so\nabout 1.5 for 'a woman' and 14 for a long descriptive sentence. A fragment above\nthe threshold is passed through untouched rather than folded in, so the default\nof 6 means it works with fragments, not whole sentences.\n\n'clip score' is a feedback path. When the score arriving there is ABOVE 'clip\nscore threshold' the node stops rewriting and emits nothing at all - the reading\nis that whatever is consuming the phrase is already doing well enough, so leave\nit alone. A rephrase that has gone quiet is usually this, not a fault.\n\n'clear input pause' is how long a phrase stays live. Fragments arriving within\nthat many seconds are folded into the phrase in progress; after the pause, the\nnext fragment starts fresh.\n\n'output as list' sends the result word by word instead of as one string.\n\nSYNTAX:\nlemma\nrephrase\n\nEXAMPLE:\nrephrase\n\nINPUTS and PARAMETERS:\n\ntext in:\nA fragment. Receiving it folds it in and sends the result.\n\nclip score:\nThe feedback number. High enough, and the node goes quiet.\n\nreplace similarity:\nHow alike two pieces must be before one replaces the other.\n\nOUTPUTS: \n\nlemmas out:\nA list, one dictionary form per word.\n\nresults:\nThe accumulated phrase.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nspacy_similarity works on meaning rather than grammar.\ncontext_tracker keeps track of place, time and actors across a stream of text."
+        },
+        "3": {
+            "name": "message",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 380,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "the geese were running quickly",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "name": "lemma",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "list",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 215,
+            "width": 380,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment geese -> goose, were -> be, running -> run",
+            "name": "comment",
+            "id": 459,
+            "position_x": 896,
+            "position_y": 265,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "geese -> goose, were -> be, running -> run",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "geese -> goose, were -> be, running -> run"
+        },
+        "7": {
+            "init": "comment it knows the irregular forms - it has",
+            "name": "comment",
+            "id": 496,
+            "position_x": 896,
+            "position_y": 295,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it knows the irregular forms - it has",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it knows the irregular forms - it has"
+        },
+        "8": {
+            "init": "comment parsed the sentence, not chopped endings",
+            "name": "comment",
+            "id": 533,
+            "position_x": 896,
+            "position_y": 325,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "parsed the sentence, not chopped endings",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "parsed the sentence, not chopped endings"
+        },
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 180,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a woman",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 455,
+            "width": 220,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "in a red coat",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 220,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "she is walking",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 565,
+            "width": 240,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "through the park",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "message",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 140,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "no",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment click these in order, one at a time",
+            "name": "comment",
+            "id": 755,
+            "position_x": 896,
+            "position_y": 670,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click these in order, one at a time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click these in order, one at a time"
+        },
+        "15": {
+            "init": "comment 'no' steps back to the previous phrase",
+            "name": "comment",
+            "id": 792,
+            "position_x": 896,
+            "position_y": 700,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'no' steps back to the previous phrase",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'no' steps back to the previous phrase"
+        },
+        "16": {
+            "name": "rephrase",
+            "id": 829,
+            "position_x": 450,
+            "position_y": 400,
+            "width": 300,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 450,
+            "position_y": 675,
+            "width": 420,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment each fragment is folded into the phrase",
+            "name": "comment",
+            "id": 903,
+            "position_x": 896,
+            "position_y": 740,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each fragment is folded into the phrase",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each fragment is folded into the phrase"
+        },
+        "19": {
+            "init": "comment built so far, not appended to it",
+            "name": "comment",
+            "id": 940,
+            "position_x": 896,
+            "position_y": 780,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "built so far, not appended to it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "built so far, not appended to it"
+        },
+        "20": {
+            "init": "comment complexity above the threshold is passed",
+            "name": "comment",
+            "id": 977,
+            "position_x": 896,
+            "position_y": 820,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "complexity above the threshold is passed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "complexity above the threshold is passed"
+        },
+        "21": {
+            "init": "comment through untouched - it works on fragments",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 896,
+            "position_y": 860,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "through untouched - it works on fragments",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "through untouched - it works on fragments"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 747,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "lemmas out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "3": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "7": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "results",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

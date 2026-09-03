@@ -1,0 +1,402 @@
+{
+    "height": 761,
+    "width": 1285,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "register_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/register_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment register - hold a value, send it when asked",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "register - hold a value, send it when asked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "register - hold a value, send it when asked"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 457,
+            "position_y": 45,
+            "width": 788,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The register node holds a value and sends it on when you ask.\n\nIt has three inlets and they do three different jobs. \nValues arriving at \"input\" are just watched - nothing is stored and nothing \ncomes out. Send anything to \"sample\" and whatever is currently at the input is \ncopied into the register, quietly. Send anything to \"trigger\" and the current \ninput is copied AND sent out.\n\nThe separation is the point. It lets you decide when to look and, separately, \nwhen to speak. A stream can run through the input all day; the register only \nnotices when you tell it to.\n\nSYNTAX:\nregister\n\nEXAMPLE:\nregister\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to be captured. This inlet is passive - data arriving here is held \nready but produces no output, and does not update the stored value.\n\nsample:\nCopies the current input into the register without sending anything. \nUse this to capture a value now and send it later.\n\ntrigger:\nCopies the current input into the register AND sends it out. \nAnything sent here works; only the arrival matters.\n\nOUTPUTS: \n\nout:\nThe stored value, sent when triggered. Before anything has been captured, \nthe register holds 0.\n\nRELATED:\nsample_hold does the opposite division of labour - data arriving at its input \ndrives the output continuously, and a switch decides whether the stored value \nfollows or freezes. Use sample_hold when you want a continuous stream out, \nand register when you want one value at a moment of your choosing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The register node holds a value and sends it on when you ask.\n\nIt has three inlets and they do three different jobs. \nValues arriving at \"input\" are just watched - nothing is stored and nothing \ncomes out. Send anything to \"sample\" and whatever is currently at the input is \ncopied into the register, quietly. Send anything to \"trigger\" and the current \ninput is copied AND sent out.\n\nThe separation is the point. It lets you decide when to look and, separately, \nwhen to speak. A stream can run through the input all day; the register only \nnotices when you tell it to.\n\nSYNTAX:\nregister\n\nEXAMPLE:\nregister\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to be captured. This inlet is passive - data arriving here is held \nready but produces no output, and does not update the stored value.\n\nsample:\nCopies the current input into the register without sending anything. \nUse this to capture a value now and send it later.\n\ntrigger:\nCopies the current input into the register AND sends it out. \nAnything sent here works; only the arrival matters.\n\nOUTPUTS: \n\nout:\nThe stored value, sent when triggered. Before anything has been captured, \nthe register holds 0.\n\nRELATED:\nsample_hold does the opposite division of labour - data arriving at its input \ndrives the output continuously, and a switch decides whether the stored value \nfollows or freezes. Use sample_hold when you want a continuous stream out, \nand register when you want one value at a moment of your choosing."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 112,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 50.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 50"
+        },
+        "5": {
+            "name": "random",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 192,
+            "width": 140,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "range",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "random 100.0"
+        },
+        "6": {
+            "init": "comment a stream of changing numbers",
+            "name": "comment",
+            "id": 459,
+            "position_x": 196,
+            "position_y": 280,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a stream of changing numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a stream of changing numbers"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "button",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 372,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment click to grab one value",
+            "name": "comment",
+            "id": 570,
+            "position_x": 196,
+            "position_y": 425,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to grab one value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to grab one value"
+        },
+        "10": {
+            "name": "register",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 460,
+            "width": 130,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "int",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 575,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment holds still until you click again",
+            "name": "comment",
+            "id": 681,
+            "position_x": 196,
+            "position_y": 625,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "holds still until you click again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "holds still until you click again"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 647,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

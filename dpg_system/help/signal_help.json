@@ -1,0 +1,493 @@
+{
+    "height": 821,
+    "width": 1595,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "signal_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/signal_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment signal - a free-running waveform",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 384,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "signal - a free-running waveform",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "signal - a free-running waveform"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 747,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The signal node is a free-running waveform generator. \nIt is the usual way to get something moving in a patch without wiring up a clock.\n\nOnce switched on it produces a new value on every frame, tracing out the chosen \nshape over and over. Unlike metro, which sends a bang and leaves you to make the \nvalue, signal sends the value itself.\n\nIts timing is based on the wall clock, not on a frame count, so the period means \nwhat it says however fast or slow the patch happens to be running.\n\nSYNTAX:\nsignal <period: float> <shape: name>\n\nBoth arguments are optional and may be given in either order - \na recognised shape name is taken as the shape, and any other number as the period.\n\nEXAMPLE:\nsignal 2.0 sin\n\nINPUTS and PARAMETERS:\n\non:\nStarts and stops the generator. Nothing comes out while it is off. \nThe phase carries on from where it stopped.\n\nperiod:\nHow long one complete cycle takes, IN SECONDS. \nA period of 2.0 means one full cycle every two seconds; \n0.1 means ten cycles a second. Values of zero or less are clamped \nto a thousandth of a second.\n\nshape:\nThe waveform, chosen from a menu:\n\nsin        a smooth sine, starting at zero and rising\ncos        the same wave a quarter cycle ahead, starting at its peak\nsaw        a straight ramp that jumps back at the end of each cycle\nsquare     an abrupt alternation between the two extremes\ntriangle   a straight ramp up and a straight ramp back down\nrandom     a fresh random value every frame, ignoring the period\n\nOPTIONS:\n\nrange:\nScales the output. The waveform is generated between -1 and 1 \n(or 0 and 1 when bipolar is off) and then multiplied by this. \nSet it to 360 for an angle, or 0.5 for a gentle modulation.\n\nbipolar:\nWhen checked, the wave swings either side of zero, from minus range to plus range. \nWhen unchecked, it is offset to sit entirely above zero, from 0 to range. \nUncheck it when you are driving something that has no meaning below zero, \nlike a brightness or a rate.\n\nvector size:\nWhen this is 1, the node sends one number per frame. \nSet it higher and the node sends a NumPy array of that many samples per frame \ninstead, with the cycle spread across them - so the waveform continues correctly \nfrom frame to frame at a higher effective sample rate. \nThis is how you feed a waveform to something that wants a buffer rather than \na single reading.\n\nOUTPUTS: \n\nout:\nThe current value of the waveform - a single float, or a NumPy array when \nvector size is greater than 1.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The signal node is a free-running waveform generator. \nIt is the usual way to get something moving in a patch without wiring up a clock.\n\nOnce switched on it produces a new value on every frame, tracing out the chosen \nshape over and over. Unlike metro, which sends a bang and leaves you to make the \nvalue, signal sends the value itself.\n\nIts timing is based on the wall clock, not on a frame count, so the period means \nwhat it says however fast or slow the patch happens to be running.\n\nSYNTAX:\nsignal <period: float> <shape: name>\n\nBoth arguments are optional and may be given in either order - \na recognised shape name is taken as the shape, and any other number as the period.\n\nEXAMPLE:\nsignal 2.0 sin\n\nINPUTS and PARAMETERS:\n\non:\nStarts and stops the generator. Nothing comes out while it is off. \nThe phase carries on from where it stopped.\n\nperiod:\nHow long one complete cycle takes, IN SECONDS. \nA period of 2.0 means one full cycle every two seconds; \n0.1 means ten cycles a second. Values of zero or less are clamped \nto a thousandth of a second.\n\nshape:\nThe waveform, chosen from a menu:\n\nsin        a smooth sine, starting at zero and rising\ncos        the same wave a quarter cycle ahead, starting at its peak\nsaw        a straight ramp that jumps back at the end of each cycle\nsquare     an abrupt alternation between the two extremes\ntriangle   a straight ramp up and a straight ramp back down\nrandom     a fresh random value every frame, ignoring the period\n\nOPTIONS:\n\nrange:\nScales the output. The waveform is generated between -1 and 1 \n(or 0 and 1 when bipolar is off) and then multiplied by this. \nSet it to 360 for an angle, or 0.5 for a gentle modulation.\n\nbipolar:\nWhen checked, the wave swings either side of zero, from minus range to plus range. \nWhen unchecked, it is offset to sit entirely above zero, from 0 to range. \nUncheck it when you are driving something that has no meaning below zero, \nlike a brightness or a rate.\n\nvector size:\nWhen this is 1, the node sends one number per frame. \nSet it higher and the node sends a NumPy array of that many samples per frame \ninstead, with the cycle spread across them - so the waveform continues correctly \nfrom frame to frame at a higher effective sample rate. \nThis is how you feed a waveform to something that wants a buffer rather than \na single reading.\n\nOUTPUTS: \n\nout:\nThe current value of the waveform - a single float, or a NumPy array when \nvector size is greater than 1."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 2.0 sin"
+        },
+        "6": {
+            "name": "plot",
+            "id": 459,
+            "position_x": 210,
+            "position_y": 108,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "comment change the shape and period and watch",
+            "name": "comment",
+            "id": 496,
+            "position_x": 444,
+            "position_y": 218,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "change the shape and period and watch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "change the shape and period and watch"
+        },
+        "8": {
+            "name": "signal",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 262,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "triangle",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 3.0 triangle"
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 210,
+            "position_y": 300,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment bipolar off: 0 to range, never negative",
+            "name": "comment",
+            "id": 607,
+            "position_x": 444,
+            "position_y": 348,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "bipolar off: 0 to range, never negative",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "bipolar off: 0 to range, never negative"
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 506,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

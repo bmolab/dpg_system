@@ -1,6 +1,6 @@
 {
-    "height": 596,
-    "width": 1226,
+    "height": 662,
+    "width": 1647,
     "position": [
         100,
         100
@@ -31,8 +31,8 @@
         "1": {
             "name": "close",
             "id": 821,
-            "position_x": 42,
-            "position_y": 474,
+            "position_x": 24,
+            "position_y": 451,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -75,7 +75,7 @@
             "init": "comment click the trigger on the top message last to trigger the concatenation",
             "name": "comment",
             "id": 885,
-            "position_x": 34,
+            "position_x": 418,
             "position_y": 72,
             "width": 439,
             "height": 30,
@@ -347,7 +347,7 @@
             "init": "comment concat 5",
             "name": "comment",
             "id": 1769,
-            "position_x": 286,
+            "position_x": 418,
             "position_y": 136,
             "width": 58,
             "height": 30,
@@ -371,7 +371,7 @@
         "12": {
             "name": "text_block",
             "id": 1788,
-            "position_x": 487,
+            "position_x": 887,
             "position_y": 63,
             "width": 720,
             "height": 539,

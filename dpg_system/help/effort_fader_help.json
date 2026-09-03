@@ -1,0 +1,380 @@
+{
+    "height": 1355,
+    "width": 1895,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "effort_fader_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/effort_fader_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment effort_fader - a moving body playing sounds",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "effort_fader - a moving body playing sounds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "effort_fader - a moving body playing sounds"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1037,
+            "position_y": 45,
+            "width": 818,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These turn measurements of a moving body into sound levels.\n\nThey are the join between the motion side of this system and the sampler.\nEach takes a body measurement and produces a fade list - [sound_id, level]\npairs - that a polyphonic sampler plays directly.\n\nTHE NODES:\n\neffort_fader             from smpl_torque's combined_effort\nmuscle_activation_fader  from a muscle activation dict\ncrossfade_scanner        from a single number, 0 to 1\n\neffort_fader MAPS JOINTS TO SOUNDS:\nsmpl_torque's 'combined_effort' is a per-joint effort vector, and its magnitude\nis CAPACITY-RELATIVE - a fraction of that joint's maximum torque rather than an\nabsolute figure. So a small joint working hard and a large one working hard read\nsimilarly, which is what you want when the sound should reflect exertion rather\nthan size.\n\nTwo modes:\n  magnitude   one fader per joint - the vector's length.\n              sound id = start_sid + joint\n  components  three faders per joint - one per axis.\n              sound id = start_sid + joint * 3 + axis\n\nMagnitude asks how hard a joint is working. Components asks in which direction,\nand gives you three times as many sounds to say it with.\n\nmuscle_activation_fader MAPS MUSCLES TO SOUNDS:\nIt takes the activation dict from mgl_smpl_heatmap and assigns each muscle name\na sound id on first sight, keeping that assignment stable across frames. So a\nmuscle always plays the same sound, without you writing out the mapping.\n\nThe 'mapping' outlet reports what it decided, which is how you find out which\nsound is which.\n\nSHAPING MATTERS MORE THAN THE MAPPING:\nBoth faders have 'threshold', 'curve' and 'gain', and these do most of the work.\nRaw activation or effort mapped straight to level gives a wash - everything\nmakes a bit of sound all the time, and nothing stands out.\n\nThe threshold silences what is merely present, the curve decides how sharply\nlevel rises with effort, and gain sets the top. Set the threshold first, by\nwatching what a still body produces and putting it above that.\n\n'top_n' on effort_fader keeps only the loudest few joints, which is a blunter\nversion of the same idea and sometimes the better one - it guarantees the\ntexture never fills up regardless of how the thresholds are set.\n\ncrossfade_scanner IS THE SIMPLE CASE:\nOne number from 0 to 1 walks a crossfade along a chain of sounds - the first\nfades up, then crossfades into the second, and so on. Any single continuous\ncontrol - a limb height, a distance, a fader - becomes a path through a set of\nsounds. 'equal_power' keeps the loudness even through each crossover rather than\ndipping in the middle.\n\nTHE fade LIST:\nThe dynamic players take a 'fade' input, and its shape is the thing that makes\nthis system work: a list of [sound_id, level] pairs. Send\n\n    [[0, 0.8], [3, 0.2], [7, 0.0]]\n\nand sound 0 plays at 0.8, sound 3 at 0.2, sound 7 is silent. Ids not mentioned\nkeep whatever level they had.\n\nThat means a whole polyphonic texture is ONE message, and anything that can\nproduce such a list can drive it. The fader nodes exist to produce them from\nbody data.\n\nSYNTAX:\neffort_fader\nmuscle_activation_fader\ncrossfade_scanner\n\nEXAMPLE:\neffort_fader\n\nINPUTS and PARAMETERS:\n\neffort / muscle activations / value:\nThe measurement.\n\nstart_sid:\nWhich sound id the mapping begins at.\n\nmode (effort_fader):\nmagnitude or components.\n\nthreshold / curve / gain:\nThe shaping. See above - this is where the work is.\n\ntop_n (effort_fader):\nKeep only the loudest few.\n\nstale_timeout:\nHow long before a sound that has stopped being mentioned fades out.\n\nreset_mapping (muscle_activation_fader):\nForget the name-to-id assignments and start again.\n\nn / sound_ids / equal_power (crossfade_scanner):\nHow many sounds, which ids, and whether to hold the loudness through crossovers.\n\nOUTPUTS: \n\nfade:\nThe [sound_id, level] list, for a polyphonic sampler.\n\nmapping:\nWhich name or joint got which sound id.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These turn measurements of a moving body into sound levels.\n\nThey are the join between the motion side of this system and the sampler.\nEach takes a body measurement and produces a fade list - [sound_id, level]\npairs - that a polyphonic sampler plays directly.\n\nTHE NODES:\n\neffort_fader             from smpl_torque's combined_effort\nmuscle_activation_fader  from a muscle activation dict\ncrossfade_scanner        from a single number, 0 to 1\n\neffort_fader MAPS JOINTS TO SOUNDS:\nsmpl_torque's 'combined_effort' is a per-joint effort vector, and its magnitude\nis CAPACITY-RELATIVE - a fraction of that joint's maximum torque rather than an\nabsolute figure. So a small joint working hard and a large one working hard read\nsimilarly, which is what you want when the sound should reflect exertion rather\nthan size.\n\nTwo modes:\n  magnitude   one fader per joint - the vector's length.\n              sound id = start_sid + joint\n  components  three faders per joint - one per axis.\n              sound id = start_sid + joint * 3 + axis\n\nMagnitude asks how hard a joint is working. Components asks in which direction,\nand gives you three times as many sounds to say it with.\n\nmuscle_activation_fader MAPS MUSCLES TO SOUNDS:\nIt takes the activation dict from mgl_smpl_heatmap and assigns each muscle name\na sound id on first sight, keeping that assignment stable across frames. So a\nmuscle always plays the same sound, without you writing out the mapping.\n\nThe 'mapping' outlet reports what it decided, which is how you find out which\nsound is which.\n\nSHAPING MATTERS MORE THAN THE MAPPING:\nBoth faders have 'threshold', 'curve' and 'gain', and these do most of the work.\nRaw activation or effort mapped straight to level gives a wash - everything\nmakes a bit of sound all the time, and nothing stands out.\n\nThe threshold silences what is merely present, the curve decides how sharply\nlevel rises with effort, and gain sets the top. Set the threshold first, by\nwatching what a still body produces and putting it above that.\n\n'top_n' on effort_fader keeps only the loudest few joints, which is a blunter\nversion of the same idea and sometimes the better one - it guarantees the\ntexture never fills up regardless of how the thresholds are set.\n\ncrossfade_scanner IS THE SIMPLE CASE:\nOne number from 0 to 1 walks a crossfade along a chain of sounds - the first\nfades up, then crossfades into the second, and so on. Any single continuous\ncontrol - a limb height, a distance, a fader - becomes a path through a set of\nsounds. 'equal_power' keeps the loudness even through each crossover rather than\ndipping in the middle.\n\nTHE fade LIST:\nThe dynamic players take a 'fade' input, and its shape is the thing that makes\nthis system work: a list of [sound_id, level] pairs. Send\n\n    [[0, 0.8], [3, 0.2], [7, 0.0]]\n\nand sound 0 plays at 0.8, sound 3 at 0.2, sound 7 is silent. Ids not mentioned\nkeep whatever level they had.\n\nThat means a whole polyphonic texture is ONE message, and anything that can\nproduce such a list can drive it. The fader nodes exist to produce them from\nbody data.\n\nSYNTAX:\neffort_fader\nmuscle_activation_fader\ncrossfade_scanner\n\nEXAMPLE:\neffort_fader\n\nINPUTS and PARAMETERS:\n\neffort / muscle activations / value:\nThe measurement.\n\nstart_sid:\nWhich sound id the mapping begins at.\n\nmode (effort_fader):\nmagnitude or components.\n\nthreshold / curve / gain:\nThe shaping. See above - this is where the work is.\n\ntop_n (effort_fader):\nKeep only the loudest few.\n\nstale_timeout:\nHow long before a sound that has stopped being mentioned fades out.\n\nreset_mapping (muscle_activation_fader):\nForget the name-to-id assignments and start again.\n\nn / sound_ids / equal_power (crossfade_scanner):\nHow many sounds, which ids, and whether to hold the loudness through crossovers.\n\nOUTPUTS: \n\nfade:\nThe [sound_id, level] list, for a polyphonic sampler.\n\nmapping:\nWhich name or joint got which sound id."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_beta_editor",
+            "id": 385,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 300,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "shadow_to_smpl",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 260,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "smpl_torque",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 300,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "effort_fader",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 920,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment set threshold above what a still body gives",
+            "name": "comment",
+            "id": 533,
+            "position_x": 706,
+            "position_y": 1235,
+            "width": 301,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set threshold above what a still body gives",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set threshold above what a still body gives"
+        },
+        "9": {
+            "init": "comment otherwise everything sounds, always",
+            "name": "comment",
+            "id": 570,
+            "position_x": 706,
+            "position_y": 1265,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "otherwise everything sounds, always",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "otherwise everything sounds, always"
+        },
+        "10": {
+            "name": "sampler_engine",
+            "id": 607,
+            "position_x": 380,
+            "position_y": 560,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "polyphonic_sampler",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 760,
+            "width": 300,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment the fade list plays the whole texture",
+            "name": "comment",
+            "id": 681,
+            "position_x": 706,
+            "position_y": 1095,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the fade list plays the whole texture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the fade list plays the whole texture"
+        },
+        "13": {
+            "init": "comment in one message",
+            "name": "comment",
+            "id": 718,
+            "position_x": 706,
+            "position_y": 1125,
+            "width": 98,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in one message",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in one message"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 1250,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trans",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trans"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "combined_effort",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "effort"
+        },
+        "7": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "fade",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "fade"
+        }
+    }
+}

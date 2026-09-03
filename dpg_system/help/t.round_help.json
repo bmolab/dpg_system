@@ -1,0 +1,495 @@
+{
+    "height": 812,
+    "width": 1600,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "t.round_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.round_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t rounding - whole numbers, several ways",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t rounding - whole numbers, several ways",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t rounding - whole numbers, several ways"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 752,
+            "position_y": 45,
+            "width": 808,
+            "height": 696,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These turn tensors of fractions into whole numbers, in the several different \nways that can mean.\n\nTHE NODES:\n\nt.round   to the nearest whole number\nt.floor   downward, towards negative\nt.ceil    upward, towards positive\nt.trunc   towards zero, dropping the fractional part\nt.frac    the opposite - keep only the fractional part, discard the whole\n\nTHEY DIFFER ONLY FOR NEGATIVES:\nGiven 2.5 they mostly agree. Given -2.5, floor gives -3, ceil gives -2, and \ntrunc gives -2. That is the distinction: floor always goes down the number \nline, trunc always goes towards zero, and for positive numbers those are the \nsame direction. Almost every bug involving these is a negative value going the \nway you did not expect.\n\nt.frac IS THE PHASE:\nWhatever whole number a value has passed, frac tells you how far it is into the \nnext one. Feed it a value that climbs steadily and you get a sawtooth from 0 to \n1 - which is how you make a repeating phase out of a counter, or a position \nwithin a cell out of a position in space.\n\nROUNDING TO THE NEAREST EVEN:\nt.round rounds half-way cases to the nearest EVEN number, so 0.5 becomes 0 and \n1.5 becomes 2. That is deliberate and standard - always rounding halves upward \nintroduces a small bias that accumulates over many values - but it surprises \npeople who expect 0.5 to become 1.\n\nSYNTAX:\nt.round\nt.floor\n\nEXAMPLE:\nt.round\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndecimals (t.round):\nHow many decimal places to keep. The default, 0, rounds to whole numbers; \n2 rounds to hundredths. Negative values round to tens and hundreds.\n\nOUTPUTS: \n\noutput:\nThe rounded tensor, in the same shape.\n\nRELATED:\nThe plain round, floor, ceil and trunc nodes do the same for ordinary numbers \nand NumPy arrays - see the math_single help patch.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 680,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These turn tensors of fractions into whole numbers, in the several different \nways that can mean.\n\nTHE NODES:\n\nt.round   to the nearest whole number\nt.floor   downward, towards negative\nt.ceil    upward, towards positive\nt.trunc   towards zero, dropping the fractional part\nt.frac    the opposite - keep only the fractional part, discard the whole\n\nTHEY DIFFER ONLY FOR NEGATIVES:\nGiven 2.5 they mostly agree. Given -2.5, floor gives -3, ceil gives -2, and \ntrunc gives -2. That is the distinction: floor always goes down the number \nline, trunc always goes towards zero, and for positive numbers those are the \nsame direction. Almost every bug involving these is a negative value going the \nway you did not expect.\n\nt.frac IS THE PHASE:\nWhatever whole number a value has passed, frac tells you how far it is into the \nnext one. Feed it a value that climbs steadily and you get a sawtooth from 0 to \n1 - which is how you make a repeating phase out of a counter, or a position \nwithin a cell out of a position in space.\n\nROUNDING TO THE NEAREST EVEN:\nt.round rounds half-way cases to the nearest EVEN number, so 0.5 becomes 0 and \n1.5 becomes 2. That is deliberate and standard - always rounding halves upward \nintroduces a small bias that accumulates over many values - but it surprises \npeople who expect 0.5 to become 1.\n\nSYNTAX:\nt.round\nt.floor\n\nEXAMPLE:\nt.round\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndecimals (t.round):\nHow many decimal places to keep. The default, 0, rounds to whole numbers; \n2 rounds to hundredths. Negative values round to tens and hundreds.\n\nOUTPUTS: \n\noutput:\nThe rounded tensor, in the same shape.\n\nRELATED:\nThe plain round, floor, ceil and trunc nodes do the same for ordinary numbers \nand NumPy arrays - see the math_single help patch."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -3.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -3.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment values either side of zero",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "values either side of zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "values either side of zero"
+        },
+        "7": {
+            "name": "t.floor",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -3.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment floor: always down the number line",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 430,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "floor: always down the number line",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "floor: always down the number line"
+        },
+        "10": {
+            "name": "t.trunc",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 530,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -3.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment trunc: always towards zero",
+            "name": "comment",
+            "id": 681,
+            "position_x": 484,
+            "position_y": 555,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "trunc: always towards zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "trunc: always towards zero"
+        },
+        "13": {
+            "init": "comment compare the negative values",
+            "name": "comment",
+            "id": 718,
+            "position_x": 484,
+            "position_y": 585,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "compare the negative values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "compare the negative values"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 708,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

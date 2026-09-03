@@ -1,0 +1,304 @@
+{
+    "height": 1284,
+    "width": 1832,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "bow~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/bow~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment bow~ and the friction models - stick, slip, sing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "bow~ and the friction models - stick, slip, sing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "bow~ and the friction models - stick, slip, sing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 954,
+            "position_y": 45,
+            "width": 838,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These models are sounded by RUBBING: sustained contact, stick and slip.\n\nFriction is what makes a bow sing rather than scrape, a hinge creak rather than \nsqueak, a spinning coin rattle faster as it settles. In every one of these the \nsound comes from a surface catching and releasing many times a second, and the \ncharacter comes from how it catches.\n\nTHE NODES:\n\nbow~     a bowed string. Velocity and force are the whole bow arm\nbowed~   the same node\nrub~     bowed glass - modal~'s tables under bow~'s hands\nglass~   the same node\nstroke~  a bow ARM: coordinated velocity and force from one gesture\nbowing~  the same node\nstrain~  solids under stress - bending made audible\ncreak~   the same node\nmotor~   a machine, with speed and load as two effort streams\nengine~  the same node\nspin~    a spinning disc settling: the rattle that runs away\ncoin~    the same node\n\nbow~ MISBEHAVES CORRECTLY:\nThe two sliders are mapped so their middles bow cleanly at any pitch. \nThe trouble at the edges - octave whistle from a fast light bow, subharmonic \nscratch from a slow heavy one - is the model's own, and it happens in the same \ndirections a real instrument's does. Those are not bugs to avoid; they are how \nyou get the sound of someone learning, or straining.\n\nstroke~ IS THE ARM, NOT THE INSTRUMENT:\nPatch its 'velocity' and 'force' outlets to the same inlets on bow~ or rub~, \nwith the destination's own knobs at zero, and the two move together the way a \nplayer's arm does - velocity a cornered trapezoid that crosses the awkward \nlow-speed region quickly, force leaning into the string.\n\nstrain~ TAKES EFFORT DIRECTLY:\nIt is the model whose input IS effort. Patch a joint angle, a stretch, a slow \nfader into 'strain' and the model runs on it. Motion releases events, stillness \nis silent by construction, and the material remembers where it has been bent - \nso repeating a movement quiets it, the way a hinge worked back and forth \nsettles down.\n\nspin~ RUNS AWAY:\nA dropped coin, a plate set down spinning, a hubcap in the road. The contact \npoint races round the rim at a rate that goes as one over the square root of \nthe tilt, so as the lean bleeds away the rattle ACCELERATES without limit and \nthen stops. It is not a bounce, and no envelope produces that shape.\n\nmotor~ IS TWO EFFORT STREAMS:\n'speed' is rotation - pitch linear in it, loudness rising, stillness silent. \n'load' is torque - each firing punchier and less regular, the bearing grind \nrising underneath. Velocity into one and torque into the other and a joint \nbecomes a machine.\n\nSYNTAX:\nbow~ <frequency>\nstrain~\nspin~\n\nEXAMPLE:\nbow~ 196\n\nINPUTS and PARAMETERS:\n\nvelocity / force (bow~, rub~):\nHow fast the bow moves and how hard it presses. The whole bow arm.\n\nposition:\nWhere on the string it is bowed.\n\nstrain / resist / stretch (strain~):\nThe bending, how much the material resists, and how far it gives.\n\nsqueal / grind / texture / pops (strain~):\nThe characters the release can take.\n\nspeed / load (motor~):\nRotation and torque.\n\nspin / size / settle / rush / twist (spin~):\nHow fast it is spinning, how big it is, how quickly the lean bleeds away, \nand the acceleration into the finish.\n\nOUTPUTS: \n\nout:\nThe sound.\n\nvelocity / force / tick (stroke~):\nThe bow arm's two coordinated signals, and a pulse at each stroke.\n\ngrind / landing / rate / face (spin~):\nThe separate parts of the settle, and where it ends up.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 830,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These models are sounded by RUBBING: sustained contact, stick and slip.\n\nFriction is what makes a bow sing rather than scrape, a hinge creak rather than \nsqueak, a spinning coin rattle faster as it settles. In every one of these the \nsound comes from a surface catching and releasing many times a second, and the \ncharacter comes from how it catches.\n\nTHE NODES:\n\nbow~     a bowed string. Velocity and force are the whole bow arm\nbowed~   the same node\nrub~     bowed glass - modal~'s tables under bow~'s hands\nglass~   the same node\nstroke~  a bow ARM: coordinated velocity and force from one gesture\nbowing~  the same node\nstrain~  solids under stress - bending made audible\ncreak~   the same node\nmotor~   a machine, with speed and load as two effort streams\nengine~  the same node\nspin~    a spinning disc settling: the rattle that runs away\ncoin~    the same node\n\nbow~ MISBEHAVES CORRECTLY:\nThe two sliders are mapped so their middles bow cleanly at any pitch. \nThe trouble at the edges - octave whistle from a fast light bow, subharmonic \nscratch from a slow heavy one - is the model's own, and it happens in the same \ndirections a real instrument's does. Those are not bugs to avoid; they are how \nyou get the sound of someone learning, or straining.\n\nstroke~ IS THE ARM, NOT THE INSTRUMENT:\nPatch its 'velocity' and 'force' outlets to the same inlets on bow~ or rub~, \nwith the destination's own knobs at zero, and the two move together the way a \nplayer's arm does - velocity a cornered trapezoid that crosses the awkward \nlow-speed region quickly, force leaning into the string.\n\nstrain~ TAKES EFFORT DIRECTLY:\nIt is the model whose input IS effort. Patch a joint angle, a stretch, a slow \nfader into 'strain' and the model runs on it. Motion releases events, stillness \nis silent by construction, and the material remembers where it has been bent - \nso repeating a movement quiets it, the way a hinge worked back and forth \nsettles down.\n\nspin~ RUNS AWAY:\nA dropped coin, a plate set down spinning, a hubcap in the road. The contact \npoint races round the rim at a rate that goes as one over the square root of \nthe tilt, so as the lean bleeds away the rattle ACCELERATES without limit and \nthen stops. It is not a bounce, and no envelope produces that shape.\n\nmotor~ IS TWO EFFORT STREAMS:\n'speed' is rotation - pitch linear in it, loudness rising, stillness silent. \n'load' is torque - each firing punchier and less regular, the bearing grind \nrising underneath. Velocity into one and torque into the other and a joint \nbecomes a machine.\n\nSYNTAX:\nbow~ <frequency>\nstrain~\nspin~\n\nEXAMPLE:\nbow~ 196\n\nINPUTS and PARAMETERS:\n\nvelocity / force (bow~, rub~):\nHow fast the bow moves and how hard it presses. The whole bow arm.\n\nposition:\nWhere on the string it is bowed.\n\nstrain / resist / stretch (strain~):\nThe bending, how much the material resists, and how far it gives.\n\nsqueal / grind / texture / pops (strain~):\nThe characters the release can take.\n\nspeed / load (motor~):\nRotation and torque.\n\nspin / size / settle / rush / twist (spin~):\nHow fast it is spinning, how big it is, how quickly the lean bleeds away, \nand the acceleration into the finish.\n\nOUTPUTS: \n\nout:\nThe sound.\n\nvelocity / force / tick (stroke~):\nThe bow arm's two coordinated signals, and a pulse at each stroke.\n\ngrind / landing / rate / face (spin~):\nThe separate parts of the settle, and where it ends up."
+        },
+        "3": {
+            "name": "clock~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "clock~ 0.4"
+        },
+        "4": {
+            "name": "stroke~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 280,
+            "width": 240,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment the bow arm: two coordinated signals",
+            "name": "comment",
+            "id": 422,
+            "position_x": 616,
+            "position_y": 550,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the bow arm: two coordinated signals",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the bow arm: two coordinated signals"
+        },
+        "6": {
+            "name": "bow~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 590,
+            "width": 260,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "bow~ 196"
+        },
+        "7": {
+            "init": "comment set its own velocity and force knobs to zero",
+            "name": "comment",
+            "id": 496,
+            "position_x": 616,
+            "position_y": 860,
+            "width": 308,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set its own velocity and force knobs to zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set its own velocity and force knobs to zero"
+        },
+        "8": {
+            "init": "comment the triad sums, so the arm drives it",
+            "name": "comment",
+            "id": 533,
+            "position_x": 616,
+            "position_y": 890,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the triad sums, so the arm drives it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the triad sums, so the arm drives it"
+        },
+        "9": {
+            "name": "scope~",
+            "id": 570,
+            "position_x": 330,
+            "position_y": 590,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "fader_out~",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 930,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 1180,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trigger",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gate"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "velocity",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "velocity"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "force",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "force"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

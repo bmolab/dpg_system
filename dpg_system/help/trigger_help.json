@@ -1,0 +1,488 @@
+{
+    "height": 821,
+    "width": 1570,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "trigger_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/trigger_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment trigger - fire on the way up, release on the way down",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 636,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "trigger - fire on the way up, release on the way down",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "trigger - fire on the way up, release on the way down"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 722,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The trigger node fires when a signal rises past a threshold, and again when it falls back.\n\nIt has two thresholds, not one, and that is the whole point. \nThe signal has to climb above the trigger threshold to turn the node on, \nand then fall below the RELEASE threshold - which you normally set lower - \nbefore it will turn off again. \nThe gap between the two is the dead zone where nothing happens.\n\nWithout that gap, a noisy signal sitting right on the threshold would \nrattle on and off many times a second. With it, the signal has to make a real \nexcursion before the node changes its mind. This is called hysteresis, \nand the hysteresis node is the same node with the trigger threshold preset \nto 0.2 to make the gap obvious.\n\nUse it to turn a continuous reading - a loudness, a speed, a distance - into a \nclean on/off decision that you can act on.\n\nSYNTAX:\ntrigger <threshold: float> <release threshold: float>\nhysteresis <threshold: float> <release threshold: float>\n\nEXAMPLE:\ntrigger 0.6 0.3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to watch. Receiving data here triggers the node. \nNumbers only - integers and floats, not arrays.\n\nthreshold:\nThe level the input must rise ABOVE to fire. Default 0.1, or 0.2 for hysteresis.\n\nrelease threshold:\nThe level the input must fall BELOW to release. Default 0.1. \nSet this lower than the trigger threshold; the distance between them is how \nmuch noise the node will ignore. Setting them equal removes the protection \nand you are back to a plain comparison.\n\ntrigger mode:\n\"output toggle\" sends 1 when it fires and 0 when it releases - a state you can \nuse to gate something. \n\"output bang\" sends a bang from each outlet instead - an event you can use to \nstart something.\n\nretrig delay:\nA minimum time, in seconds, before the node is allowed to fire again after \nfiring. Use it when a single physical event produces several bursts and you \nonly want the first.\n\nOUTPUTS: \n\nout:\nIn toggle mode, 1 on firing and 0 on release. In bang mode, a bang on firing.\n\nrelease:\nIn toggle mode, 1 on release. In bang mode, a bang on release. \nHaving the release on its own outlet lets you start one thing when the signal \narrives and a different thing when it goes away.\n\nRELATED:\ntogedge reports crossings of zero with no threshold and no dead zone. \nnoise_gate silences small values rather than reporting them.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The trigger node fires when a signal rises past a threshold, and again when it falls back.\n\nIt has two thresholds, not one, and that is the whole point. \nThe signal has to climb above the trigger threshold to turn the node on, \nand then fall below the RELEASE threshold - which you normally set lower - \nbefore it will turn off again. \nThe gap between the two is the dead zone where nothing happens.\n\nWithout that gap, a noisy signal sitting right on the threshold would \nrattle on and off many times a second. With it, the signal has to make a real \nexcursion before the node changes its mind. This is called hysteresis, \nand the hysteresis node is the same node with the trigger threshold preset \nto 0.2 to make the gap obvious.\n\nUse it to turn a continuous reading - a loudness, a speed, a distance - into a \nclean on/off decision that you can act on.\n\nSYNTAX:\ntrigger <threshold: float> <release threshold: float>\nhysteresis <threshold: float> <release threshold: float>\n\nEXAMPLE:\ntrigger 0.6 0.3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to watch. Receiving data here triggers the node. \nNumbers only - integers and floats, not arrays.\n\nthreshold:\nThe level the input must rise ABOVE to fire. Default 0.1, or 0.2 for hysteresis.\n\nrelease threshold:\nThe level the input must fall BELOW to release. Default 0.1. \nSet this lower than the trigger threshold; the distance between them is how \nmuch noise the node will ignore. Setting them equal removes the protection \nand you are back to a plain comparison.\n\ntrigger mode:\n\"output toggle\" sends 1 when it fires and 0 when it releases - a state you can \nuse to gate something. \n\"output bang\" sends a bang from each outlet instead - an event you can use to \nstart something.\n\nretrig delay:\nA minimum time, in seconds, before the node is allowed to fire again after \nfiring. Use it when a single physical event produces several bursts and you \nonly want the first.\n\nOUTPUTS: \n\nout:\nIn toggle mode, 1 on firing and 0 on release. In bang mode, a bang on firing.\n\nrelease:\nIn toggle mode, 1 on release. In bang mode, a bang on release. \nHaving the release on its own outlet lets you start one thing when the signal \narrives and a different thing when it goes away.\n\nRELATED:\ntogedge reports crossings of zero with no threshold and no dead zone. \nnoise_gate silences small values rather than reporting them."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 3.0 sin"
+        },
+        "6": {
+            "init": "comment a slow rise and fall, 0 to 1",
+            "name": "comment",
+            "id": 459,
+            "position_x": 433,
+            "position_y": 215,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slow rise and fall, 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slow rise and fall, 0 to 1"
+        },
+        "7": {
+            "name": "trigger",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 150,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "threshold",
+                    "value": 0.6,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "release threshold",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "trigger mode",
+                    "value": "output toggle",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "retrig delay",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "trigger 0.6 0.3"
+        },
+        "8": {
+            "init": "comment fires above 0.6, releases below 0.3",
+            "name": "comment",
+            "id": 533,
+            "position_x": 433,
+            "position_y": 380,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fires above 0.6, releases below 0.3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fires above 0.6, releases below 0.3"
+        },
+        "9": {
+            "init": "comment the gap between them is the dead zone",
+            "name": "comment",
+            "id": 570,
+            "position_x": 433,
+            "position_y": 410,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the gap between them is the dead zone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the gap between them is the dead zone"
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "counter",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 450,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "name": "int",
+            "id": 681,
+            "position_x": 280,
+            "position_y": 545,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment counts releases",
+            "name": "comment",
+            "id": 718,
+            "position_x": 433,
+            "position_y": 600,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counts releases",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counts releases"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 656,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "release",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

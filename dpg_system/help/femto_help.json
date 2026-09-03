@@ -1,0 +1,654 @@
+{
+    "height": 1075,
+    "width": 1921,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "femto_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/femto_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment femto - the depth camera",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 288,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "femto - the depth camera",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "femto - the depth camera"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1063,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This is the depth camera - the front of the point cloud pipeline.\n\nTHE NODE:\n\nfemto        an Orbbec Femto. 'femto_bolt' is the same node\nfemto_bolt   the other spelling\n\nIt gives you two things: 'depth', a picture where each pixel is a distance, and\n'point_cloud', those distances turned into points in space. The point cloud is\nwhat the pc_ nodes want.\n\nThe Bolt uses the same time-of-flight module as the Azure Kinect, so if you know\nthat camera the geometry here will be familiar.\n\nTHE DEPTH MODES ARE A REAL CHOICE:\n\nNFOV unbinned   640 x 576     30 fps    narrow, most detail\nNFOV binned     320 x 288     30 fps    narrow, less detail, less data\nWFOV binned     512 x 512     30 fps    wide, the usual choice for a room\nWFOV unbinned   1024 x 1024   15 fps    wide and detailed, at HALF the rate\n\nNarrow sees further into a smaller cone; wide sees a room but less far. Binning\ncombines neighbouring pixels - fewer points, and each one quieter, because\naveraging removes noise.\n\nThe one to notice is WFOV unbinned: it is the only mode that cannot do 30 fps.\nIf a patch that felt responsive suddenly does not, check whether that mode got\nselected - the camera is doing what it was asked, at 15.\n\n'level to gravity' IS THE ONE THAT SAVES THE MOST TIME:\nTick it and the camera works out which way down is, from its own accelerometer,\nand rotates the cloud so the floor is flat and vertical is vertical - whatever\nangle the camera is actually bolted at.\n\nThat matters because a depth camera is almost never level. It is on a bracket,\nangled down at a space, and without this every measurement you make is in the\ncamera's tilted frame rather than the room's. Levelling once at the top makes\nevery height, every floor test and every crop box downstream mean what it says.\n\nIt calibrates for about a second and then STOPS reading the accelerometer,\ndeliberately: leaving the IMU streaming makes the Bolt deliver depth in clumps\nrather than evenly. Toggle it off and on to recalibrate if the camera is moved.\n\n'yaw (deg)' turns the cloud about vertical, for squaring it to the room after\nlevelling has sorted out the tilt.\n\n'remove background' LEARNS THE EMPTY ROOM:\nWith 'background frames' frames of an empty space it builds a model and then\ndrops anything at that distance, so what comes out is only what is new. It is\nthe same idea as pc_background, done in the camera node before the points are\neven built - which is cheaper.\n\n'background guard (mm)' is the tolerance: how much nearer than the learned\nsurface something must be to count as foreground. Too small and sensor noise\ncomes through as a crust; too large and someone standing near a wall disappears\ninto it.\n\nWHEN IT GOES BURSTY - THE USB PROBLEM:\nThese cameras can drop into a state where frames arrive in clumps every hundred\nmilliseconds or so instead of steadily. The camera is not broken and the frame\nrate is nominally unchanged; the USB session has degraded, and it will stay that\nway until it is reset.\n\n'report frame gaps' shows it happening. 'auto usb reset on stutter' recovers\nfrom it without you noticing, and 'reset usb device' does it by hand.\n\nIf a camera has gone lumpy mid-rehearsal, that is this - reach for the reset\nbefore suspecting the patch.\n\nTHE REST OF THE CLEANING:\n'median filter' removes speckle, 'fill holes' patches small gaps where the\nsensor got no return - both cost a little time and both make the cloud easier to\nwork with. 'undistort' corrects the lens. 'flip x/y/z' fix a mirrored or\ninverted mounting.\n\n'units' chooses metres or millimetres. Metres, unless something downstream\ninsists otherwise - the pc_ nodes' crop boxes are written in metres.\n\nWITHOUT THE SDK THE NODE STILL EXISTS:\nIf pyorbbecsdk is not installed the node is still created and reports the\nproblem when you enable capture, rather than taking the whole node library down\nat import. So a patch built around a camera still opens on a machine that has\nnone.\n\nSYNTAX:\nfemto\nfemto_bolt\n\nEXAMPLE:\nfemto_bolt\n\nINPUTS and PARAMETERS:\n\nenable:\nStart and stop capture.\n\nresolution / fps:\nThe depth mode, and the rate. WFOV unbinned tops out at 15.\n\nlevel to gravity / yaw (deg):\nLevel the cloud using the accelerometer; then square it to the room.\n\nremove background / background frames / background guard (mm):\nLearn the empty space and drop it.\n\nunits:\nMetres or millimetres.\n\nmedian filter / fill holes / undistort:\nCleaning.\n\nflip x / flip y / flip z:\nFor a mirrored or inverted mounting.\n\nreport frame gaps / auto usb reset on stutter / reset usb device:\nDetect and recover from the bursty-USB state.\n\nOUTPUTS: \n\ndepth:\nA picture where each pixel is a distance.\n\npoint_cloud:\nThe points, ready for pc_crop.\n\nRELATED:\npc_crop, which should be the very next node - it both reduces the data and tells\neverything downstream what volume it is working in.\npc_background and pc_denoise if you want that work done after the camera rather\nthan inside it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "This is the depth camera - the front of the point cloud pipeline.\n\nTHE NODE:\n\nfemto        an Orbbec Femto. 'femto_bolt' is the same node\nfemto_bolt   the other spelling\n\nIt gives you two things: 'depth', a picture where each pixel is a distance, and\n'point_cloud', those distances turned into points in space. The point cloud is\nwhat the pc_ nodes want.\n\nThe Bolt uses the same time-of-flight module as the Azure Kinect, so if you know\nthat camera the geometry here will be familiar.\n\nTHE DEPTH MODES ARE A REAL CHOICE:\n\nNFOV unbinned   640 x 576     30 fps    narrow, most detail\nNFOV binned     320 x 288     30 fps    narrow, less detail, less data\nWFOV binned     512 x 512     30 fps    wide, the usual choice for a room\nWFOV unbinned   1024 x 1024   15 fps    wide and detailed, at HALF the rate\n\nNarrow sees further into a smaller cone; wide sees a room but less far. Binning\ncombines neighbouring pixels - fewer points, and each one quieter, because\naveraging removes noise.\n\nThe one to notice is WFOV unbinned: it is the only mode that cannot do 30 fps.\nIf a patch that felt responsive suddenly does not, check whether that mode got\nselected - the camera is doing what it was asked, at 15.\n\n'level to gravity' IS THE ONE THAT SAVES THE MOST TIME:\nTick it and the camera works out which way down is, from its own accelerometer,\nand rotates the cloud so the floor is flat and vertical is vertical - whatever\nangle the camera is actually bolted at.\n\nThat matters because a depth camera is almost never level. It is on a bracket,\nangled down at a space, and without this every measurement you make is in the\ncamera's tilted frame rather than the room's. Levelling once at the top makes\nevery height, every floor test and every crop box downstream mean what it says.\n\nIt calibrates for about a second and then STOPS reading the accelerometer,\ndeliberately: leaving the IMU streaming makes the Bolt deliver depth in clumps\nrather than evenly. Toggle it off and on to recalibrate if the camera is moved.\n\n'yaw (deg)' turns the cloud about vertical, for squaring it to the room after\nlevelling has sorted out the tilt.\n\n'remove background' LEARNS THE EMPTY ROOM:\nWith 'background frames' frames of an empty space it builds a model and then\ndrops anything at that distance, so what comes out is only what is new. It is\nthe same idea as pc_background, done in the camera node before the points are\neven built - which is cheaper.\n\n'background guard (mm)' is the tolerance: how much nearer than the learned\nsurface something must be to count as foreground. Too small and sensor noise\ncomes through as a crust; too large and someone standing near a wall disappears\ninto it.\n\nWHEN IT GOES BURSTY - THE USB PROBLEM:\nThese cameras can drop into a state where frames arrive in clumps every hundred\nmilliseconds or so instead of steadily. The camera is not broken and the frame\nrate is nominally unchanged; the USB session has degraded, and it will stay that\nway until it is reset.\n\n'report frame gaps' shows it happening. 'auto usb reset on stutter' recovers\nfrom it without you noticing, and 'reset usb device' does it by hand.\n\nIf a camera has gone lumpy mid-rehearsal, that is this - reach for the reset\nbefore suspecting the patch.\n\nTHE REST OF THE CLEANING:\n'median filter' removes speckle, 'fill holes' patches small gaps where the\nsensor got no return - both cost a little time and both make the cloud easier to\nwork with. 'undistort' corrects the lens. 'flip x/y/z' fix a mirrored or\ninverted mounting.\n\n'units' chooses metres or millimetres. Metres, unless something downstream\ninsists otherwise - the pc_ nodes' crop boxes are written in metres.\n\nWITHOUT THE SDK THE NODE STILL EXISTS:\nIf pyorbbecsdk is not installed the node is still created and reports the\nproblem when you enable capture, rather than taking the whole node library down\nat import. So a patch built around a camera still opens on a machine that has\nnone.\n\nSYNTAX:\nfemto\nfemto_bolt\n\nEXAMPLE:\nfemto_bolt\n\nINPUTS and PARAMETERS:\n\nenable:\nStart and stop capture.\n\nresolution / fps:\nThe depth mode, and the rate. WFOV unbinned tops out at 15.\n\nlevel to gravity / yaw (deg):\nLevel the cloud using the accelerometer; then square it to the room.\n\nremove background / background frames / background guard (mm):\nLearn the empty space and drop it.\n\nunits:\nMetres or millimetres.\n\nmedian filter / fill holes / undistort:\nCleaning.\n\nflip x / flip y / flip z:\nFor a mirrored or inverted mounting.\n\nreport frame gaps / auto usb reset on stutter / reset usb device:\nDetect and recover from the bursty-USB state.\n\nOUTPUTS: \n\ndepth:\nA picture where each pixel is a distance.\n\npoint_cloud:\nThe points, ready for pc_crop.\n\nRELATED:\npc_crop, which should be the very next node - it both reduces the data and tells\neverything downstream what volume it is working in.\npc_background and pc_denoise if you want that work done after the camera rather\nthan inside it."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment tick to start capture",
+            "name": "comment",
+            "id": 385,
+            "position_x": 746,
+            "position_y": 62,
+            "width": 147,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick to start capture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick to start capture"
+        },
+        "5": {
+            "name": "femto_bolt",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 340,
+            "height": 420,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment 'level to gravity' is the one that saves",
+            "name": "comment",
+            "id": 459,
+            "position_x": 746,
+            "position_y": 585,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'level to gravity' is the one that saves",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'level to gravity' is the one that saves"
+        },
+        "7": {
+            "init": "comment the most time - the floor becomes flat",
+            "name": "comment",
+            "id": 496,
+            "position_x": 746,
+            "position_y": 665,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the most time - the floor becomes flat",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the most time - the floor becomes flat"
+        },
+        "8": {
+            "init": "comment whatever angle the camera is bolted at,",
+            "name": "comment",
+            "id": 533,
+            "position_x": 746,
+            "position_y": 705,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "whatever angle the camera is bolted at,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "whatever angle the camera is bolted at,"
+        },
+        "9": {
+            "init": "comment so every height downstream means what",
+            "name": "comment",
+            "id": 570,
+            "position_x": 746,
+            "position_y": 745,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "so every height downstream means what",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "so every height downstream means what"
+        },
+        "10": {
+            "init": "comment it says",
+            "name": "comment",
+            "id": 607,
+            "position_x": 746,
+            "position_y": 785,
+            "width": 49,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it says",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it says"
+        },
+        "11": {
+            "name": "info",
+            "id": 644,
+            "position_x": 420,
+            "position_y": 120,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment the depth picture - each pixel a distance",
+            "name": "comment",
+            "id": 681,
+            "position_x": 746,
+            "position_y": 215,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the depth picture - each pixel a distance",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the depth picture - each pixel a distance"
+        },
+        "13": {
+            "name": "pc_crop",
+            "id": 718,
+            "position_x": 420,
+            "position_y": 270,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment pc_crop should be the very NEXT node:",
+            "name": "comment",
+            "id": 755,
+            "position_x": 746,
+            "position_y": 485,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pc_crop should be the very NEXT node:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pc_crop should be the very NEXT node:"
+        },
+        "15": {
+            "init": "comment it throws away most of the room and",
+            "name": "comment",
+            "id": 792,
+            "position_x": 746,
+            "position_y": 515,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it throws away most of the room and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it throws away most of the room and"
+        },
+        "16": {
+            "init": "comment tells the rest of the chain what volume",
+            "name": "comment",
+            "id": 829,
+            "position_x": 746,
+            "position_y": 545,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tells the rest of the chain what volume",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tells the rest of the chain what volume"
+        },
+        "17": {
+            "init": "comment it is working in",
+            "name": "comment",
+            "id": 866,
+            "position_x": 746,
+            "position_y": 625,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it is working in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it is working in"
+        },
+        "18": {
+            "name": "pc_info",
+            "id": 903,
+            "position_x": 420,
+            "position_y": 620,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "19": {
+            "name": "int",
+            "id": 940,
+            "position_x": 420,
+            "position_y": 815,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "init": "comment how many points survive the crop",
+            "name": "comment",
+            "id": 977,
+            "position_x": 746,
+            "position_y": 985,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many points survive the crop",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how many points survive the crop"
+        },
+        "21": {
+            "init": "comment IF IT GOES LUMPY mid-rehearsal - frames",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 746,
+            "position_y": 825,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "IF IT GOES LUMPY mid-rehearsal - frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "IF IT GOES LUMPY mid-rehearsal - frames"
+        },
+        "22": {
+            "init": "comment in clumps rather than steadily - that is",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 746,
+            "position_y": 865,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in clumps rather than steadily - that is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in clumps rather than steadily - that is"
+        },
+        "23": {
+            "init": "comment the USB session degrading, not the patch.",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 746,
+            "position_y": 905,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the USB session degrading, not the patch.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the USB session degrading, not the patch."
+        },
+        "24": {
+            "init": "comment Turn on 'auto usb reset on stutter'",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 746,
+            "position_y": 945,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Turn on 'auto usb reset on stutter'",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Turn on 'auto usb reset on stutter'"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 887,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "enable"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "depth",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "point_cloud",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "3": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "cropped",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "4": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

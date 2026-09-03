@@ -1,0 +1,303 @@
+{
+    "height": 681,
+    "width": 1463,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "replace_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/replace_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment replace - swap one value for another in passing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "replace - swap one value for another in passing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "replace - swap one value for another in passing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 625,
+            "position_y": 45,
+            "width": 798,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes substitute one value for another as data passes through.\n\nThey are search and replace for a patch: everything flows through unchanged \nexcept the thing you named, which comes out as something else. \nUse them to rename incoming labels to match what your patch expects, to swap a \ncode number for a word, or to fix up a stream from a device that calls things \nby names you did not choose.\n\nTHE NODES:\n\nreplace       find a piece of text, put a different one in its place\nint_replace   the same for whole numbers\ndict_replace  many substitutions at once, held as a dictionary of pairs\n\nreplace and int_replace each hold ONE substitution and are the simple case. \ndict_replace holds as many as you like - build the table by sending it pairs, \nand it applies all of them to everything that passes.\n\nSYNTAX:\nreplace <find> <replace>\nint_replace <find: int> <replace: int>\ndict_replace\n\nEXAMPLE:\nreplace left_hand LeftHand\n\nINPUTS and PARAMETERS:\n\nin / int in:\nThe data to pass through. Receiving it triggers the node. \nA single value or a list; a list is checked element by element and only the \nmatching elements are changed.\n\nfind / replace:\nThe value to look for and what to put in its place.\n\nreplace pairs (dict_replace):\nAdds one substitution to the table. Send a two-element list - the thing to \nfind, then what to replace it with. Send a ONE-element list to remove that \nsubstitution from the table again.\n\nclear (dict_replace):\nEmpties the table, so nothing is substituted any more.\n\nOUTPUTS: \n\nout:\nThe data, with any matches substituted. Everything else is untouched, \nand the shape of the input is preserved - a list in, a list out.\n\ndict out (dict_replace):\nThe substitution table itself, so you can inspect what the node is currently \ndoing or store it for later.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes substitute one value for another as data passes through.\n\nThey are search and replace for a patch: everything flows through unchanged \nexcept the thing you named, which comes out as something else. \nUse them to rename incoming labels to match what your patch expects, to swap a \ncode number for a word, or to fix up a stream from a device that calls things \nby names you did not choose.\n\nTHE NODES:\n\nreplace       find a piece of text, put a different one in its place\nint_replace   the same for whole numbers\ndict_replace  many substitutions at once, held as a dictionary of pairs\n\nreplace and int_replace each hold ONE substitution and are the simple case. \ndict_replace holds as many as you like - build the table by sending it pairs, \nand it applies all of them to everything that passes.\n\nSYNTAX:\nreplace <find> <replace>\nint_replace <find: int> <replace: int>\ndict_replace\n\nEXAMPLE:\nreplace left_hand LeftHand\n\nINPUTS and PARAMETERS:\n\nin / int in:\nThe data to pass through. Receiving it triggers the node. \nA single value or a list; a list is checked element by element and only the \nmatching elements are changed.\n\nfind / replace:\nThe value to look for and what to put in its place.\n\nreplace pairs (dict_replace):\nAdds one substitution to the table. Send a two-element list - the thing to \nfind, then what to replace it with. Send a ONE-element list to remove that \nsubstitution from the table again.\n\nclear (dict_replace):\nEmpties the table, so nothing is substituted any more.\n\nOUTPUTS: \n\nout:\nThe data, with any matches substituted. Everything else is untouched, \nand the shape of the input is preserved - a list in, a list out.\n\ndict out (dict_replace):\nThe substitution table itself, so you can inspect what the node is currently \ndoing or store it for later."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "left_hand right_hand head",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment a list of names",
+            "name": "comment",
+            "id": 422,
+            "position_x": 336,
+            "position_y": 168,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a list of names",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a list of names"
+        },
+        "6": {
+            "name": "replace",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 205,
+            "width": 210,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "find",
+                    "value": "left_hand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "replace",
+                    "value": "LeftHand",
+                    "value_type": "str"
+                }
+            },
+            "init": "replace left_hand LeftHand"
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment only the matching name changes",
+            "name": "comment",
+            "id": 533,
+            "position_x": 336,
+            "position_y": 370,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only the matching name changes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only the matching name changes"
+        },
+        "9": {
+            "init": "comment edit find and replace and click again",
+            "name": "comment",
+            "id": 570,
+            "position_x": 336,
+            "position_y": 400,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "edit find and replace and click again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "edit find and replace and click again"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 392,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "int in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

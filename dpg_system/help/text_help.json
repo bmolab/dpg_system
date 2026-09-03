@@ -1,0 +1,321 @@
+{
+    "height": 741,
+    "width": 1479,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "text_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/text_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment text and text_display - many lines, not one value",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "text and text_display - many lines, not one value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "text and text_display - many lines, not one value"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 651,
+            "position_y": 45,
+            "width": 788,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "text and text_display hold many lines of text rather than one value.\n\ntext is editable - type into it, and what you type is available to the patch. \ntext_display is for output: text arriving is added to it, and it scrolls as it \nfills, which makes it the place to put a running log, a transcript, or \nanything you want to read inside the patch rather than in a terminal.\n\nSYNTAX:\ntext\ntext_display\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. On text_display each arrival is appended; on text it replaces what \nis there.\n\nwrap:\nWhether long lines fold to fit the width or run off the edge.\n\nheight / width:\nThe size of the box.\n\nmax_lines (text_display):\nHow many lines to keep. Older ones fall off the top once it is full, \nso a long-running log cannot grow without limit.\n\nautoscroll (text_display):\nWhether the view follows new text as it arrives. On is what you want while \nwatching; turn it off to read back through what has already gone by without \nbeing dragged to the bottom.\n\ncopy to clipboard (text_display):\nTakes the whole contents, for pasting somewhere else.\n\nfont size / bind to / parameter name:\nAs on the other text widgets.\n\nOUTPUTS: \n\nstring out / list out / message out:\nThe contents, as a single string, as a list of words, or as a message.\n\nA NOTE ON WRAPPING:\nOnly these two can wrap. The single-line string and message widgets cannot \nfold text or scroll it, so anything longer than the box simply disappears off \nthe end - if you are losing text, this is usually why, and text_display is \nthe fix.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "text and text_display hold many lines of text rather than one value.\n\ntext is editable - type into it, and what you type is available to the patch. \ntext_display is for output: text arriving is added to it, and it scrolls as it \nfills, which makes it the place to put a running log, a transcript, or \nanything you want to read inside the patch rather than in a terminal.\n\nSYNTAX:\ntext\ntext_display\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. On text_display each arrival is appended; on text it replaces what \nis there.\n\nwrap:\nWhether long lines fold to fit the width or run off the edge.\n\nheight / width:\nThe size of the box.\n\nmax_lines (text_display):\nHow many lines to keep. Older ones fall off the top once it is full, \nso a long-running log cannot grow without limit.\n\nautoscroll (text_display):\nWhether the view follows new text as it arrives. On is what you want while \nwatching; turn it off to read back through what has already gone by without \nbeing dragged to the bottom.\n\ncopy to clipboard (text_display):\nTakes the whole contents, for pasting somewhere else.\n\nfont size / bind to / parameter name:\nAs on the other text widgets.\n\nOUTPUTS: \n\nstring out / list out / message out:\nThe contents, as a single string, as a list of words, or as a message.\n\nA NOTE ON WRAPPING:\nOnly these two can wrap. The single-line string and message widgets cannot \nfold text or scroll it, so anything longer than the box simply disappears off \nthe end - if you are losing text, this is usually why, and text_display is \nthe fix."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 112,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 700.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 700"
+        },
+        "5": {
+            "name": "counter",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 192,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "prepend",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 150,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "prepend line"
+        },
+        "7": {
+            "name": "text_display",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 320,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment switch on: lines pile up and scroll",
+            "name": "comment",
+            "id": 533,
+            "position_x": 376,
+            "position_y": 605,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "switch on: lines pile up and scroll",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "switch on: lines pile up and scroll"
+        },
+        "9": {
+            "init": "comment untick autoscroll to read back",
+            "name": "comment",
+            "id": 570,
+            "position_x": 376,
+            "position_y": 635,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "untick autoscroll to read back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "untick autoscroll to read back"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 620,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

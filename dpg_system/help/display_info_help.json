@@ -1,0 +1,399 @@
+{
+    "height": 745,
+    "width": 1567,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "display_info_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/display_info_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment display_info - which screen is where",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 432,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "display_info - which screen is where",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "display_info - which screen is where"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 739,
+            "position_y": 45,
+            "width": 788,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "What screens are attached, and where they are.\n\nTHE NODE:\n\ndisplay_info   the size and position of each display\n\nSend it a number and it reports that display: its width and height, where its\ntop-left corner sits in the whole desktop, how it is connected, and whether it\nis the primary one.\n\nWHAT IT IS FOR:\nPutting a window in the right place without hard-coding numbers. An installation\nthat must open full-screen on the projector and leave the operator's screen\nalone needs to know which display is which and where it starts - and those\nnumbers change when someone unplugs something.\n\nAsking at startup rather than typing the values means the patch survives being\nmoved to another rig.\n\n'x offset' and 'y offset' ARE THE IMPORTANT ONES:\nDisplays are laid out side by side in one large coordinate space. A second\nscreen to the right of a 2560-wide first one starts at x 2560, so a window\nplaced at x 0 lands on the wrong screen no matter what size you make it.\n\nIT NEEDS PLATFORM SUPPORT, AND SAYS SO:\nOn Linux it reads xrandr. On macOS it needs Quartz, from pyobjc - without that\ninstalled it reports nothing at all and prints why. An empty result is that,\nnot an absence of screens.\n\nSYNTAX:\ndisplay_info\n\nEXAMPLE:\ndisplay_info\n\nINPUTS and PARAMETERS:\n\nin:\nWhich display, counting from 0.\n\nOUTPUTS: \n\ndata out:\nWhat was found.\n\nThe width, height, offsets, connection and primary flag are shown on the node.\n\nRELATED:\npatch_window_position to actually move a window once you know where to put it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "What screens are attached, and where they are.\n\nTHE NODE:\n\ndisplay_info   the size and position of each display\n\nSend it a number and it reports that display: its width and height, where its\ntop-left corner sits in the whole desktop, how it is connected, and whether it\nis the primary one.\n\nWHAT IT IS FOR:\nPutting a window in the right place without hard-coding numbers. An installation\nthat must open full-screen on the projector and leave the operator's screen\nalone needs to know which display is which and where it starts - and those\nnumbers change when someone unplugs something.\n\nAsking at startup rather than typing the values means the patch survives being\nmoved to another rig.\n\n'x offset' and 'y offset' ARE THE IMPORTANT ONES:\nDisplays are laid out side by side in one large coordinate space. A second\nscreen to the right of a 2560-wide first one starts at x 2560, so a window\nplaced at x 0 lands on the wrong screen no matter what size you make it.\n\nIT NEEDS PLATFORM SUPPORT, AND SAYS SO:\nOn Linux it reads xrandr. On macOS it needs Quartz, from pyobjc - without that\ninstalled it reports nothing at all and prints why. An empty result is that,\nnot an absence of screens.\n\nSYNTAX:\ndisplay_info\n\nEXAMPLE:\ndisplay_info\n\nINPUTS and PARAMETERS:\n\nin:\nWhich display, counting from 0.\n\nOUTPUTS: \n\ndata out:\nWhat was found.\n\nThe width, height, offsets, connection and primary flag are shown on the node.\n\nRELATED:\npatch_window_position to actually move a window once you know where to put it."
+        },
+        "3": {
+            "name": "int",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "name": "display_info",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 300,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "list",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 380,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment send 0, 1, 2 to ask about each screen",
+            "name": "comment",
+            "id": 459,
+            "position_x": 436,
+            "position_y": 425,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "send 0, 1, 2 to ask about each screen",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "send 0, 1, 2 to ask about each screen"
+        },
+        "7": {
+            "init": "comment the OFFSETS are the important part:",
+            "name": "comment",
+            "id": 496,
+            "position_x": 436,
+            "position_y": 465,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the OFFSETS are the important part:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the OFFSETS are the important part:"
+        },
+        "8": {
+            "init": "comment screens sit side by side in one big",
+            "name": "comment",
+            "id": 533,
+            "position_x": 436,
+            "position_y": 495,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "screens sit side by side in one big",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "screens sit side by side in one big"
+        },
+        "9": {
+            "init": "comment coordinate space, so a second screen",
+            "name": "comment",
+            "id": 570,
+            "position_x": 436,
+            "position_y": 525,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "coordinate space, so a second screen",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "coordinate space, so a second screen"
+        },
+        "10": {
+            "init": "comment may start at x 2560, not x 0",
+            "name": "comment",
+            "id": 607,
+            "position_x": 436,
+            "position_y": 555,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "may start at x 2560, not x 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "may start at x 2560, not x 0"
+        },
+        "11": {
+            "init": "comment Linux reads xrandr; macOS needs Quartz",
+            "name": "comment",
+            "id": 644,
+            "position_x": 436,
+            "position_y": 595,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Linux reads xrandr; macOS needs Quartz",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Linux reads xrandr; macOS needs Quartz"
+        },
+        "12": {
+            "init": "comment from pyobjc. Without it you get nothing",
+            "name": "comment",
+            "id": 681,
+            "position_x": 436,
+            "position_y": 625,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "from pyobjc. Without it you get nothing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "from pyobjc. Without it you get nothing"
+        },
+        "13": {
+            "init": "comment and a printed reason - not no screens",
+            "name": "comment",
+            "id": 718,
+            "position_x": 436,
+            "position_y": 655,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and a printed reason - not no screens",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and a printed reason - not no screens"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 447,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "data out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

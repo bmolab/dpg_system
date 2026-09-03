@@ -1,0 +1,1087 @@
+{
+    "height": 1450,
+    "width": 2004,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1643,
+    "name": "weighted_prompt_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/weighted_prompt_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment weighted prompts - balance you can move",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 468,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "weighted prompts - balance you can move",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "weighted prompts - balance you can move"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1156,
+            "position_y": 45,
+            "width": 808,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These assemble a prompt for an image generator, with weights.\n\nTHE NODES:\n\nweighted_prompt   several phrases with weights, as a list\nambient_prompt    the same idea, written with brackets instead\nprompt_composer   merges live speech with enduring context, within a budget\n\nWHY WEIGHTS:\nA prompt is rarely one thing. It is a place, a light, a mood and a subject, and\nthey do not all matter equally - nor does their balance stay still while a piece\nruns. A weight per phrase lets the balance be something a patch controls rather\nthan something you retype.\n\nTWO WAYS OF SAYING THE SAME THING:\nweighted_prompt sends a LIST of phrase-and-weight pairs:\n\n    [['a dark forest', 2.0], ['rain', 1.0], ['harsh light', -2.0]]\n\nambient_prompt sends a STRING, using the older bracket convention where nesting\nis emphasis:\n\n    ((a dark forest)), (rain), [[harsh light]],\n\nSame intent, two conventions. Which you want depends entirely on what is\ndownstream: a generator that accepts weighted lists should get the list, because\nthe weights stay numbers and can be varied smoothly. The bracket string is for\nanything that only takes text - the weight has to be a whole number of brackets,\nso it moves in steps.\n\nNEGATIVE MEANS PUSH AWAY:\nA negative weight asks for LESS of something, not merely none of it. In the list\nthat is a negative number; in the bracket form it is square brackets rather than\nround. It is how you say \"not harshly lit\" without the word \"harsh\" ending up in\nthe picture, which is the usual failure of writing it as a sentence.\n\nTYPE THE WEIGHT WITH AN @:\nBoth take 'phrase@weight' in the text boxes - 'a dark forest@2', 'rain@1'. You\ncan also send a list of the phrase and its number.\n\nThe box then REWRITES ITSELF to show the weight it settled on, as\n'a dark forest@2.000'. That is worth knowing, because a phrase typed with no @\nkeeps whatever weight that slot had before - which for a fresh slot is ZERO, and\na phrase weighted zero contributes nothing. If a phrase seems to be ignored,\nlook at the number the box is showing you.\n\n'strength' IS THE MASTER FADER:\nEvery weight is multiplied by it before sending, so one number moves the whole\nprompt's influence without disturbing the balance between its parts. That is the\none to automate.\n\nprompt_composer IS FOR LIVE TEXT:\nIt merges two streams that behave quite differently. 'phrases' is what is being\nsaid now - short-lived, arriving constantly. 'context' is what has been\nestablished and endures - the place, the time of day, who is present.\n\n'prefix' and 'suffix' bracket the whole thing, for the parts that never change:\na style, a medium, a camera.\n\n'order' puts context or phrases first. 'char budget' and 'max chunks' cap the\nresult, because a generator will silently ignore whatever runs past its limit\nand you would rather choose what gets cut than let it be chosen for you.\n\nWHAT GETS DROPPED, AND WHAT NEVER DOES:\nWhen the budget is exceeded it drops the OLDEST phrases first, then the\nlowest-weight context. The newest phrase, the prefix and the suffix are never\ndropped. So the thing just said always survives, and so does the style.\n\n'newest phrase at' DOES NOT REORDER ANYTHING:\nIt tells the budget which END of the incoming list is the newest, so that drops\ncome off the old end. The phrases themselves pass through in exactly the order\nthey arrived. If you want the in-progress text to lead, set that on whatever is\nfeeding it, not here.\n\nWEIGHT ZERO MEANS EXPIRED, SO NEGATIVES DO NOT SURVIVE THE COMPOSER:\nprompt_composer treats a weight of zero or less as a phrase whose time is up and\ndrops it. That is how live speech fades: a phrase arrives at full weight, decays\nas it ages, and disappears when it reaches zero without anything having to\nremember to remove it.\n\nThe consequence is that the \"push away\" trick does not pass through here. A\nphrase at -2 goes straight through weighted_prompt and ambient_prompt and is\ndiscarded by prompt_composer. If you want something suppressed in a composed\nprompt, put it in the prefix or suffix, which are never dropped.\n\nREPEATS ARE FADED, NOT REMOVED:\nA context item that is already present in the live phrases has its weight scaled\ndown by 'dedupe scale' rather than being dropped. Saying something out loud\nshould not delete it from the background - it should stop it being said twice at\nfull strength.\n\nSYNTAX:\nweighted_prompt <count>\nambient_prompt <count>\nprompt_composer\n\nEXAMPLE:\nweighted_prompt 6\n\nINPUTS and PARAMETERS:\n\nthe numbered text boxes:\nA phrase each, as 'phrase@weight'.\n\nstrength:\nMultiplies every weight. The master fader.\n\nphrases / context (prompt_composer):\nLive text, and enduring text.\n\nprefix / suffix:\nWhat goes before and after, never dropped.\n\nchar budget / max chunks:\nHow long the result may get.\n\ndedupe scale:\nHow far to fade a context item that is already being said.\n\norder / newest phrase at:\nContext or phrases first; and which end of the phrase list is newest.\n\nOUTPUTS: \n\nweighted prompt out:\nThe list of phrase-and-weight pairs. From ambient_prompt, the bracket string.\n\nstring out (prompt_composer):\nThe same thing as plain text, weights discarded - for anything that wants only\nwords.\n\nRELATED:\ncontext_tracker produces the enduring context this composes with.\nfifo_string holds the recent live phrases.\ngemma_4 or a vision_describe node can supply the text in the first place.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These assemble a prompt for an image generator, with weights.\n\nTHE NODES:\n\nweighted_prompt   several phrases with weights, as a list\nambient_prompt    the same idea, written with brackets instead\nprompt_composer   merges live speech with enduring context, within a budget\n\nWHY WEIGHTS:\nA prompt is rarely one thing. It is a place, a light, a mood and a subject, and\nthey do not all matter equally - nor does their balance stay still while a piece\nruns. A weight per phrase lets the balance be something a patch controls rather\nthan something you retype.\n\nTWO WAYS OF SAYING THE SAME THING:\nweighted_prompt sends a LIST of phrase-and-weight pairs:\n\n    [['a dark forest', 2.0], ['rain', 1.0], ['harsh light', -2.0]]\n\nambient_prompt sends a STRING, using the older bracket convention where nesting\nis emphasis:\n\n    ((a dark forest)), (rain), [[harsh light]],\n\nSame intent, two conventions. Which you want depends entirely on what is\ndownstream: a generator that accepts weighted lists should get the list, because\nthe weights stay numbers and can be varied smoothly. The bracket string is for\nanything that only takes text - the weight has to be a whole number of brackets,\nso it moves in steps.\n\nNEGATIVE MEANS PUSH AWAY:\nA negative weight asks for LESS of something, not merely none of it. In the list\nthat is a negative number; in the bracket form it is square brackets rather than\nround. It is how you say \"not harshly lit\" without the word \"harsh\" ending up in\nthe picture, which is the usual failure of writing it as a sentence.\n\nTYPE THE WEIGHT WITH AN @:\nBoth take 'phrase@weight' in the text boxes - 'a dark forest@2', 'rain@1'. You\ncan also send a list of the phrase and its number.\n\nThe box then REWRITES ITSELF to show the weight it settled on, as\n'a dark forest@2.000'. That is worth knowing, because a phrase typed with no @\nkeeps whatever weight that slot had before - which for a fresh slot is ZERO, and\na phrase weighted zero contributes nothing. If a phrase seems to be ignored,\nlook at the number the box is showing you.\n\n'strength' IS THE MASTER FADER:\nEvery weight is multiplied by it before sending, so one number moves the whole\nprompt's influence without disturbing the balance between its parts. That is the\none to automate.\n\nprompt_composer IS FOR LIVE TEXT:\nIt merges two streams that behave quite differently. 'phrases' is what is being\nsaid now - short-lived, arriving constantly. 'context' is what has been\nestablished and endures - the place, the time of day, who is present.\n\n'prefix' and 'suffix' bracket the whole thing, for the parts that never change:\na style, a medium, a camera.\n\n'order' puts context or phrases first. 'char budget' and 'max chunks' cap the\nresult, because a generator will silently ignore whatever runs past its limit\nand you would rather choose what gets cut than let it be chosen for you.\n\nWHAT GETS DROPPED, AND WHAT NEVER DOES:\nWhen the budget is exceeded it drops the OLDEST phrases first, then the\nlowest-weight context. The newest phrase, the prefix and the suffix are never\ndropped. So the thing just said always survives, and so does the style.\n\n'newest phrase at' DOES NOT REORDER ANYTHING:\nIt tells the budget which END of the incoming list is the newest, so that drops\ncome off the old end. The phrases themselves pass through in exactly the order\nthey arrived. If you want the in-progress text to lead, set that on whatever is\nfeeding it, not here.\n\nWEIGHT ZERO MEANS EXPIRED, SO NEGATIVES DO NOT SURVIVE THE COMPOSER:\nprompt_composer treats a weight of zero or less as a phrase whose time is up and\ndrops it. That is how live speech fades: a phrase arrives at full weight, decays\nas it ages, and disappears when it reaches zero without anything having to\nremember to remove it.\n\nThe consequence is that the \"push away\" trick does not pass through here. A\nphrase at -2 goes straight through weighted_prompt and ambient_prompt and is\ndiscarded by prompt_composer. If you want something suppressed in a composed\nprompt, put it in the prefix or suffix, which are never dropped.\n\nREPEATS ARE FADED, NOT REMOVED:\nA context item that is already present in the live phrases has its weight scaled\ndown by 'dedupe scale' rather than being dropped. Saying something out loud\nshould not delete it from the background - it should stop it being said twice at\nfull strength.\n\nSYNTAX:\nweighted_prompt <count>\nambient_prompt <count>\nprompt_composer\n\nEXAMPLE:\nweighted_prompt 6\n\nINPUTS and PARAMETERS:\n\nthe numbered text boxes:\nA phrase each, as 'phrase@weight'.\n\nstrength:\nMultiplies every weight. The master fader.\n\nphrases / context (prompt_composer):\nLive text, and enduring text.\n\nprefix / suffix:\nWhat goes before and after, never dropped.\n\nchar budget / max chunks:\nHow long the result may get.\n\ndedupe scale:\nHow far to fade a context item that is already being said.\n\norder / newest phrase at:\nContext or phrases first; and which end of the phrase list is newest.\n\nOUTPUTS: \n\nweighted prompt out:\nThe list of phrase-and-weight pairs. From ambient_prompt, the bracket string.\n\nstring out (prompt_composer):\nThe same thing as plain text, weights discarded - for anything that wants only\nwords.\n\nRELATED:\ncontext_tracker produces the enduring context this composes with.\nfifo_string holds the recent live phrases.\ngemma_4 or a vision_describe node can supply the text in the first place."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a dark forest@2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "string",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "rain@1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 160,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "string",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 168,
+            "width": 280,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "harsh light@-2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 221,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "fog@0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 160,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "init": "comment click these four to fill the slots.",
+            "name": "comment",
+            "id": 496,
+            "position_x": 846,
+            "position_y": 271,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click these four to fill the slots.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click these four to fill the slots."
+        },
+        "8": {
+            "init": "comment string, not message - a message would",
+            "name": "comment",
+            "id": 533,
+            "position_x": 846,
+            "position_y": 1330,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "string, not message - a message would",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "string, not message - a message would"
+        },
+        "9": {
+            "init": "comment split the phrase into separate words",
+            "name": "comment",
+            "id": 570,
+            "position_x": 846,
+            "position_y": 1360,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "split the phrase into separate words",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "split the phrase into separate words"
+        },
+        "10": {
+            "name": "weighted_prompt",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 320,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "weighted_prompt 4"
+        },
+        "11": {
+            "init": "comment type 'a dark forest@2' - the box then",
+            "name": "comment",
+            "id": 644,
+            "position_x": 846,
+            "position_y": 625,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "type 'a dark forest@2' - the box then",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "type 'a dark forest@2' - the box then"
+        },
+        "12": {
+            "init": "comment rewrites itself as 'a dark forest@2.000'",
+            "name": "comment",
+            "id": 681,
+            "position_x": 846,
+            "position_y": 705,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rewrites itself as 'a dark forest@2.000'",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rewrites itself as 'a dark forest@2.000'"
+        },
+        "13": {
+            "init": "comment a phrase with no @ keeps the slot old",
+            "name": "comment",
+            "id": 718,
+            "position_x": 846,
+            "position_y": 745,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a phrase with no @ keeps the slot old",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a phrase with no @ keeps the slot old"
+        },
+        "14": {
+            "init": "comment weight - zero on a fresh one, and zero",
+            "name": "comment",
+            "id": 755,
+            "position_x": 846,
+            "position_y": 785,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "weight - zero on a fresh one, and zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "weight - zero on a fresh one, and zero"
+        },
+        "15": {
+            "init": "comment contributes nothing",
+            "name": "comment",
+            "id": 792,
+            "position_x": 846,
+            "position_y": 825,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "contributes nothing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "contributes nothing"
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 420,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment phrase and weight pairs - the weights",
+            "name": "comment",
+            "id": 866,
+            "position_x": 846,
+            "position_y": 112,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "phrase and weight pairs - the weights",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "phrase and weight pairs - the weights"
+        },
+        "18": {
+            "init": "comment stay numbers, so they can be moved",
+            "name": "comment",
+            "id": 903,
+            "position_x": 846,
+            "position_y": 142,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "stay numbers, so they can be moved",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "stay numbers, so they can be moved"
+        },
+        "19": {
+            "init": "comment smoothly. Negative asks for LESS",
+            "name": "comment",
+            "id": 940,
+            "position_x": 846,
+            "position_y": 172,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smoothly. Negative asks for LESS",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smoothly. Negative asks for LESS"
+        },
+        "20": {
+            "name": "ambient_prompt",
+            "id": 977,
+            "position_x": 400,
+            "position_y": 230,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "ambient_prompt 4"
+        },
+        "21": {
+            "name": "list",
+            "id": 1014,
+            "position_x": 400,
+            "position_y": 505,
+            "width": 420,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "22": {
+            "init": "comment the same idea as brackets - ((more)),",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 846,
+            "position_y": 555,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same idea as brackets - ((more)),",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same idea as brackets - ((more)),"
+        },
+        "23": {
+            "init": "comment [[less]]. For anything that only takes",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 846,
+            "position_y": 585,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "[[less]]. For anything that only takes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "[[less]]. For anything that only takes"
+        },
+        "24": {
+            "init": "comment text, but the weight moves in steps",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 846,
+            "position_y": 665,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "text, but the weight moves in steps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "text, but the weight moves in steps"
+        },
+        "25": {
+            "name": "string",
+            "id": 1162,
+            "position_x": 400,
+            "position_y": 690,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "cinematic",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 220,
+                    "value_type": "int"
+                }
+            }
+        },
+        "26": {
+            "name": "string",
+            "id": 1199,
+            "position_x": 400,
+            "position_y": 745,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a cold room",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                }
+            }
+        },
+        "27": {
+            "init": "comment prefix and context. The phrases come",
+            "name": "comment",
+            "id": 1236,
+            "position_x": 846,
+            "position_y": 865,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "prefix and context. The phrases come",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "prefix and context. The phrases come"
+        },
+        "28": {
+            "init": "comment from weighted_prompt above - already",
+            "name": "comment",
+            "id": 1273,
+            "position_x": 846,
+            "position_y": 905,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "from weighted_prompt above - already",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "from weighted_prompt above - already"
+        },
+        "29": {
+            "init": "comment phrase-and-weight pairs, which is what",
+            "name": "comment",
+            "id": 1310,
+            "position_x": 846,
+            "position_y": 945,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "phrase-and-weight pairs, which is what",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "phrase-and-weight pairs, which is what"
+        },
+        "30": {
+            "init": "comment this inlet wants",
+            "name": "comment",
+            "id": 1347,
+            "position_x": 846,
+            "position_y": 985,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this inlet wants",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this inlet wants"
+        },
+        "31": {
+            "name": "prompt_composer",
+            "id": 1384,
+            "position_x": 30,
+            "position_y": 790,
+            "width": 320,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "32": {
+            "name": "list",
+            "id": 1421,
+            "position_x": 30,
+            "position_y": 1150,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "33": {
+            "init": "comment prefix, then context, then what is being",
+            "name": "comment",
+            "id": 1458,
+            "position_x": 846,
+            "position_y": 1200,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "prefix, then context, then what is being",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "prefix, then context, then what is being"
+        },
+        "34": {
+            "init": "comment said, then suffix. Over budget it drops",
+            "name": "comment",
+            "id": 1495,
+            "position_x": 846,
+            "position_y": 1230,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "said, then suffix. Over budget it drops",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "said, then suffix. Over budget it drops"
+        },
+        "35": {
+            "init": "comment oldest phrases first - never the newest,",
+            "name": "comment",
+            "id": 1532,
+            "position_x": 846,
+            "position_y": 1260,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "oldest phrases first - never the newest,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "oldest phrases first - never the newest,"
+        },
+        "36": {
+            "init": "comment and never the prefix or suffix",
+            "name": "comment",
+            "id": 1569,
+            "position_x": 846,
+            "position_y": 1290,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and never the prefix or suffix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and never the prefix or suffix"
+        },
+        "37": {
+            "name": "close",
+            "id": 1606,
+            "position_x": 24,
+            "position_y": 1222,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "##0"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "##1"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "##2"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "##3"
+        },
+        "4": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in_0"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in_1"
+        },
+        "6": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in_2"
+        },
+        "7": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in_3"
+        },
+        "8": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "weighted prompt out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "weighted prompt out",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "10": {
+            "source_node": 1199,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 1384,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "context"
+        },
+        "11": {
+            "source_node": 1162,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 1384,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "prefix"
+        },
+        "12": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "weighted prompt out",
+            "dest_node": 1384,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "phrases"
+        },
+        "13": {
+            "source_node": 1384,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "weighted prompt out",
+            "dest_node": 1421,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

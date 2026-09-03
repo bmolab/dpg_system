@@ -1,0 +1,486 @@
+{
+    "height": 861,
+    "width": 2031,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "noise_review_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/noise_review_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment noise_review - looking at what was flagged",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "noise_review - looking at what was flagged",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "noise_review - looking at what was flagged"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1183,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Walk through everything a noise report flagged, one issue at a time.\n\nTHE NODE:\n\nnoise_review   step through flagged sections across a whole batch of files\n\nWHAT IT IS FOR:\nestimate_noise_torque.py goes through a corpus of motion capture and writes a\nJSON report of everything that looked wrong - stream breaks, corruption zones,\nspike frames, glitch clusters, and the various lens flags. That report is a long\nlist of file-and-frame references, and reading it is not the same as SEEING what\nwas flagged.\n\nThis node turns the report into a review session. Load the JSON, point it at the\ncorpus root, and Prev/Next walk you through the flags. Each step sends the NPZ\npath and the start frame, so a take player can load that file and jump straight\nto the moment in question.\n\nThe point is to look at each one and decide whether the detector was right.\n\nTHE CHECKBOXES CHOOSE WHAT YOU ARE REVIEWING:\n'stream breaks', 'corruption zones', 'spike frames', 'glitch clusters', 'lens\nflags' and 'clean sections' each turn a category of flag on or off in the walk.\n\nReviewing one category at a time is far more useful than all of them mixed\ntogether, because the judgement is different for each: a stream break is a fact,\na spike is a suspicion, and a lens flag is a statistical lean. Keeping them\nseparate stops one kind of decision contaminating another.\n\n'clean sections' is worth using deliberately. Walking through what the detector\ndid NOT flag is how you find false negatives, which no amount of staring at the\npositives will show you.\n\n'prev file' and 'next file' jump a whole file rather than a flag, for when a file\nis obviously bad and stepping through forty flags in it tells you nothing new.\n\nRECORDING THE VERDICT:\n'classification' and 'flag unrepresentative' are where the judgement goes -\nwhether this flag was right, and whether this file is odd enough that it should\nnot count towards a rate. 'folder yield' shows how much of a subset survives,\nwhich is the number that tells you whether a filter is usable.\n\nSYNTAX:\nnoise_review\n\nEXAMPLE:\nnoise_review\n\nINPUTS and PARAMETERS:\n\njson path / load:\nThe report from estimate_noise_torque.py.\n\namass root:\nWhere the corpus actually is, so the paths in the report resolve.\n\nprev / next:\nStep through flags.\n\nprev file / next file:\nStep a whole file.\n\nsection / filter:\nWhich flag, and which categories to include.\n\nOUTPUTS: \n\nnpz path / frame / end frame:\nThe file and the moment, for a player to open.\n\nbang:\nFires on each step, to trigger the load.\n\nRELATED:\ntake to load the file this points at.\nThe validation notes in dpg_system/noise_estimation/ for what the detector is\nactually claiming.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Walk through everything a noise report flagged, one issue at a time.\n\nTHE NODE:\n\nnoise_review   step through flagged sections across a whole batch of files\n\nWHAT IT IS FOR:\nestimate_noise_torque.py goes through a corpus of motion capture and writes a\nJSON report of everything that looked wrong - stream breaks, corruption zones,\nspike frames, glitch clusters, and the various lens flags. That report is a long\nlist of file-and-frame references, and reading it is not the same as SEEING what\nwas flagged.\n\nThis node turns the report into a review session. Load the JSON, point it at the\ncorpus root, and Prev/Next walk you through the flags. Each step sends the NPZ\npath and the start frame, so a take player can load that file and jump straight\nto the moment in question.\n\nThe point is to look at each one and decide whether the detector was right.\n\nTHE CHECKBOXES CHOOSE WHAT YOU ARE REVIEWING:\n'stream breaks', 'corruption zones', 'spike frames', 'glitch clusters', 'lens\nflags' and 'clean sections' each turn a category of flag on or off in the walk.\n\nReviewing one category at a time is far more useful than all of them mixed\ntogether, because the judgement is different for each: a stream break is a fact,\na spike is a suspicion, and a lens flag is a statistical lean. Keeping them\nseparate stops one kind of decision contaminating another.\n\n'clean sections' is worth using deliberately. Walking through what the detector\ndid NOT flag is how you find false negatives, which no amount of staring at the\npositives will show you.\n\n'prev file' and 'next file' jump a whole file rather than a flag, for when a file\nis obviously bad and stepping through forty flags in it tells you nothing new.\n\nRECORDING THE VERDICT:\n'classification' and 'flag unrepresentative' are where the judgement goes -\nwhether this flag was right, and whether this file is odd enough that it should\nnot count towards a rate. 'folder yield' shows how much of a subset survives,\nwhich is the number that tells you whether a filter is usable.\n\nSYNTAX:\nnoise_review\n\nEXAMPLE:\nnoise_review\n\nINPUTS and PARAMETERS:\n\njson path / load:\nThe report from estimate_noise_torque.py.\n\namass root:\nWhere the corpus actually is, so the paths in the report resolve.\n\nprev / next:\nStep through flags.\n\nprev file / next file:\nStep a whole file.\n\nsection / filter:\nWhich flag, and which categories to include.\n\nOUTPUTS: \n\nnpz path / frame / end frame:\nThe file and the moment, for a player to open.\n\nbang:\nFires on each step, to trigger the load.\n\nRELATED:\ntake to load the file this points at.\nThe validation notes in dpg_system/noise_estimation/ for what the detector is\nactually claiming."
+        },
+        "3": {
+            "name": "noise_review",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 340,
+            "height": 520,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment review ONE category at a time - the",
+            "name": "comment",
+            "id": 385,
+            "position_x": 866,
+            "position_y": 600,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "review ONE category at a time - the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "review ONE category at a time - the"
+        },
+        "5": {
+            "init": "comment judgement is different for each. A break",
+            "name": "comment",
+            "id": 422,
+            "position_x": 866,
+            "position_y": 630,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "judgement is different for each. A break",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "judgement is different for each. A break"
+        },
+        "6": {
+            "init": "comment is a fact, a spike is a suspicion, a lens",
+            "name": "comment",
+            "id": 459,
+            "position_x": 866,
+            "position_y": 660,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "is a fact, a spike is a suspicion, a lens",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "is a fact, a spike is a suspicion, a lens"
+        },
+        "7": {
+            "init": "comment flag is a statistical lean",
+            "name": "comment",
+            "id": 496,
+            "position_x": 866,
+            "position_y": 690,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flag is a statistical lean",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flag is a statistical lean"
+        },
+        "8": {
+            "init": "comment walk 'clean sections' too - it is the",
+            "name": "comment",
+            "id": 533,
+            "position_x": 866,
+            "position_y": 730,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "walk 'clean sections' too - it is the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "walk 'clean sections' too - it is the"
+        },
+        "9": {
+            "init": "comment only way to find FALSE NEGATIVES",
+            "name": "comment",
+            "id": 570,
+            "position_x": 866,
+            "position_y": 760,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only way to find FALSE NEGATIVES",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only way to find FALSE NEGATIVES"
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 62,
+            "width": 420,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the file this flag is in",
+            "name": "comment",
+            "id": 644,
+            "position_x": 866,
+            "position_y": 112,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the file this flag is in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the file this flag is in"
+        },
+        "12": {
+            "name": "int",
+            "id": 681,
+            "position_x": 420,
+            "position_y": 160,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment and the frame to jump to",
+            "name": "comment",
+            "id": 718,
+            "position_x": 866,
+            "position_y": 210,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and the frame to jump to",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and the frame to jump to"
+        },
+        "14": {
+            "name": "take",
+            "id": 755,
+            "position_x": 420,
+            "position_y": 260,
+            "width": 320,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "init": "comment the take player loads it and goes",
+            "name": "comment",
+            "id": 792,
+            "position_x": 866,
+            "position_y": 475,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the take player loads it and goes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the take player loads it and goes"
+        },
+        "16": {
+            "init": "comment straight to the moment in question",
+            "name": "comment",
+            "id": 829,
+            "position_x": 866,
+            "position_y": 505,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "straight to the moment in question",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "straight to the moment in question"
+        },
+        "17": {
+            "init": "comment so the loop is: next, look, decide",
+            "name": "comment",
+            "id": 866,
+            "position_x": 866,
+            "position_y": 545,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "so the loop is: next, look, decide",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "so the loop is: next, look, decide"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 612,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "npz path",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,783 @@
+{
+    "height": 1310,
+    "width": 2014,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "gemma_4_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gemma_4_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gemma_4 - a language model you can reach into",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gemma_4 - a language model you can reach into",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gemma_4 - a language model you can reach into"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1156,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A language model running on this machine, with the generation opened up.\n\nTHE NODES:\n\ngemma_4       Gemma 4 12B, quantised. 8192 tokens of context\ngemma_4_31b   the 31B model. 2048 of context, because it barely fits\n\nSame node, different weights. The 31B is better and much slower, and its context\nis short for a reason - at 31 billion parameters and 4096 of context it does not\nfit in 32GB of unified memory alongside anything else.\n\nThe model is downloaded on first use and cached; the first run of either will\nsit there for a long time before it says anything. Nothing is loaded until you\nswitch the node on, so having one in a patch costs nothing until you do.\n\nSeveral nodes using the same model SHARE one copy of it - the weights are held\nonce, not per node. So a patch can have three gemma_4 nodes with different\nsystem prompts for the price of one model in memory. Mixing gemma_4 and\ngemma_4_31b in one patch does load both, and that is what will not fit.\n\nIT IS NOT A CHATBOT NODE, IT IS A GENERATION YOU CAN REACH INTO:\nMost of what is unusual here is about interrupting, steering and measuring the\ngeneration while it happens, rather than about asking a question and waiting.\n\nTHREE WAYS TO STOP, AND THEY ARE DIFFERENT:\n\npolite_stop     finish the current sentence and stop. The text ends properly.\ninterrupt       stop generating now, mid-word if need be.\nhard interrupt  abandon it entirely.\n\nUse polite_stop for anything an audience is reading. The other two exist for\nwhen it has gone somewhere you do not want and waiting is worse than a broken\nsentence.\n\n'target_length' NUDGES, IT DOES NOT CUT:\nIt does not truncate. It makes the end-of-turn token progressively more likely\nas the text approaches the length you asked for, so the model finds its own way\nto finish at about the right size. Set it to 50 and you get something that reads\nas a finished short answer, not a long answer with the end cut off.\n\n'max_tokens' is the hard ceiling, and that one does cut.\n\n'step' AND 'choice' - WRITING WITH IT RATHER THAN RECEIVING FROM IT:\n'step' generates ONE token, forward or back. 'choice' then walks through the\nalternatives the model was considering at that point, in order of how likely it\nthought they were, and substitutes the one you pick - it sends a backspace and\nthe replacement.\n\nSo you can take a sentence one token at a time and choose a different branch\nwherever you like, from what the model itself was weighing. It is a different\nrelationship to the text: not asking for output, but choosing a path through\nwhat it was already prepared to say.\n\n'show_probs' has to be on for the alternatives to exist.\n\n'slowdown' PACES IT FOR READING:\nTokens otherwise arrive as fast as the machine manages, which is too fast to\nread and looks nothing like writing. This holds them back. It is a performance\ncontrol, not a technical one.\n\nTHE SAMPLING CONTROLS, IN THE ORDER WORTH TOUCHING:\n\ntemperature       flatness of the choice. Low is predictable and repetitive,\n                  high is surprising and eventually incoherent.\nmin_p             discards anything much less likely than the best candidate.\n                  The one to reach for after temperature.\ntop_k / top_p     older ways of narrowing the field - a fixed number of\n                  candidates, or enough to cover a share of the probability.\nrepeat_penalty    pushes against saying the same thing again.\nseed              the same seed and the same settings give the same text.\n\nSCORING TEXT YOU PUT IN, RATHER THAN TEXT IT MAKES:\nWith 'score_incoming_text' on, text you send is run through the model and each\ntoken reported with how likely the model thought it was -\n'input_token_score' per token, 'input_cumulative_score' as a running average.\n\nThis is a measure of how PREDICTABLE something is to the model. Ordinary prose\nscores high, and something strange or specific scores low, so it can be used to\nfind the unusual parts of a text without generating anything at all.\n\n'display_mode' picks what the layout display shows per token: temperature,\nentropy, probability, or unnormalised probability. 'sigmoid scaler' and\n'sigmoid offset' shape that reading into a usable range.\n\nTHINKING IS A SEPARATE CHANNEL:\nGemma 4 can reason before answering, and that reasoning comes out of 'thinking'\nrather than 'output'. Keep them apart - the thinking is often more interesting\nthan the answer, and it is almost never what you want an audience to read.\n\nSYNTAX:\ngemma_4\ngemma_4_31b\n\nEXAMPLE:\ngemma_4\n\nINPUTS and PARAMETERS:\n\non / off:\nLoad the model and be ready. This is what takes the time.\n\nprompt / pre-prompt / streaming_prompt:\nWhat to answer, what to put before it, and text arriving a piece at a time.\n\nsystem_prompt:\nWho it is being. Set before starting.\n\npolite_stop / interrupt / hard interrupt:\nThe three stops, in increasing rudeness.\n\nstep (+-1) / choice (+-1):\nOne token at a time, and which of the alternatives.\n\ntemperature / top_k / top_p / min_p / repeat_penalty / seed:\nThe sampling.\n\ntarget_length / max_tokens:\nA length to aim at, and a length not to exceed.\n\nslowdown:\nPace the output for reading.\n\nscore_incoming_text / reset_input_score:\nMeasure how predictable incoming text is.\n\nn_ctx / n_gpu_layers:\nHow much context, and how much runs on the GPU.\n\nOUTPUTS: \n\noutput:\nThe text, token by token as it comes.\n\nthinking:\nThe reasoning, if there was any.\n\ntoken_out / end / active:\nEach token, a signal at the end, and whether it is generating.\n\ninput_token_score / input_cumulative_score:\nHow predictable the text you sent was.\n\nlayout_out / actions_out:\nDisplay information, and anything marked as an action.\n\nRELATED:\ntext_display to read the output in the patch.\ncontext_tracker and prompt_composer to turn what it says into something else.\nvision_describe if the thing you want described is a picture.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A language model running on this machine, with the generation opened up.\n\nTHE NODES:\n\ngemma_4       Gemma 4 12B, quantised. 8192 tokens of context\ngemma_4_31b   the 31B model. 2048 of context, because it barely fits\n\nSame node, different weights. The 31B is better and much slower, and its context\nis short for a reason - at 31 billion parameters and 4096 of context it does not\nfit in 32GB of unified memory alongside anything else.\n\nThe model is downloaded on first use and cached; the first run of either will\nsit there for a long time before it says anything. Nothing is loaded until you\nswitch the node on, so having one in a patch costs nothing until you do.\n\nSeveral nodes using the same model SHARE one copy of it - the weights are held\nonce, not per node. So a patch can have three gemma_4 nodes with different\nsystem prompts for the price of one model in memory. Mixing gemma_4 and\ngemma_4_31b in one patch does load both, and that is what will not fit.\n\nIT IS NOT A CHATBOT NODE, IT IS A GENERATION YOU CAN REACH INTO:\nMost of what is unusual here is about interrupting, steering and measuring the\ngeneration while it happens, rather than about asking a question and waiting.\n\nTHREE WAYS TO STOP, AND THEY ARE DIFFERENT:\n\npolite_stop     finish the current sentence and stop. The text ends properly.\ninterrupt       stop generating now, mid-word if need be.\nhard interrupt  abandon it entirely.\n\nUse polite_stop for anything an audience is reading. The other two exist for\nwhen it has gone somewhere you do not want and waiting is worse than a broken\nsentence.\n\n'target_length' NUDGES, IT DOES NOT CUT:\nIt does not truncate. It makes the end-of-turn token progressively more likely\nas the text approaches the length you asked for, so the model finds its own way\nto finish at about the right size. Set it to 50 and you get something that reads\nas a finished short answer, not a long answer with the end cut off.\n\n'max_tokens' is the hard ceiling, and that one does cut.\n\n'step' AND 'choice' - WRITING WITH IT RATHER THAN RECEIVING FROM IT:\n'step' generates ONE token, forward or back. 'choice' then walks through the\nalternatives the model was considering at that point, in order of how likely it\nthought they were, and substitutes the one you pick - it sends a backspace and\nthe replacement.\n\nSo you can take a sentence one token at a time and choose a different branch\nwherever you like, from what the model itself was weighing. It is a different\nrelationship to the text: not asking for output, but choosing a path through\nwhat it was already prepared to say.\n\n'show_probs' has to be on for the alternatives to exist.\n\n'slowdown' PACES IT FOR READING:\nTokens otherwise arrive as fast as the machine manages, which is too fast to\nread and looks nothing like writing. This holds them back. It is a performance\ncontrol, not a technical one.\n\nTHE SAMPLING CONTROLS, IN THE ORDER WORTH TOUCHING:\n\ntemperature       flatness of the choice. Low is predictable and repetitive,\n                  high is surprising and eventually incoherent.\nmin_p             discards anything much less likely than the best candidate.\n                  The one to reach for after temperature.\ntop_k / top_p     older ways of narrowing the field - a fixed number of\n                  candidates, or enough to cover a share of the probability.\nrepeat_penalty    pushes against saying the same thing again.\nseed              the same seed and the same settings give the same text.\n\nSCORING TEXT YOU PUT IN, RATHER THAN TEXT IT MAKES:\nWith 'score_incoming_text' on, text you send is run through the model and each\ntoken reported with how likely the model thought it was -\n'input_token_score' per token, 'input_cumulative_score' as a running average.\n\nThis is a measure of how PREDICTABLE something is to the model. Ordinary prose\nscores high, and something strange or specific scores low, so it can be used to\nfind the unusual parts of a text without generating anything at all.\n\n'display_mode' picks what the layout display shows per token: temperature,\nentropy, probability, or unnormalised probability. 'sigmoid scaler' and\n'sigmoid offset' shape that reading into a usable range.\n\nTHINKING IS A SEPARATE CHANNEL:\nGemma 4 can reason before answering, and that reasoning comes out of 'thinking'\nrather than 'output'. Keep them apart - the thinking is often more interesting\nthan the answer, and it is almost never what you want an audience to read.\n\nSYNTAX:\ngemma_4\ngemma_4_31b\n\nEXAMPLE:\ngemma_4\n\nINPUTS and PARAMETERS:\n\non / off:\nLoad the model and be ready. This is what takes the time.\n\nprompt / pre-prompt / streaming_prompt:\nWhat to answer, what to put before it, and text arriving a piece at a time.\n\nsystem_prompt:\nWho it is being. Set before starting.\n\npolite_stop / interrupt / hard interrupt:\nThe three stops, in increasing rudeness.\n\nstep (+-1) / choice (+-1):\nOne token at a time, and which of the alternatives.\n\ntemperature / top_k / top_p / min_p / repeat_penalty / seed:\nThe sampling.\n\ntarget_length / max_tokens:\nA length to aim at, and a length not to exceed.\n\nslowdown:\nPace the output for reading.\n\nscore_incoming_text / reset_input_score:\nMeasure how predictable incoming text is.\n\nn_ctx / n_gpu_layers:\nHow much context, and how much runs on the GPU.\n\nOUTPUTS: \n\noutput:\nThe text, token by token as it comes.\n\nthinking:\nThe reasoning, if there was any.\n\ntoken_out / end / active:\nEach token, a signal at the end, and whether it is generating.\n\ninput_token_score / input_cumulative_score:\nHow predictable the text you sent was.\n\nlayout_out / actions_out:\nDisplay information, and anything marked as an action.\n\nRELATED:\ntext_display to read the output in the patch.\ncontext_tracker and prompt_composer to turn what it says into something else.\nvision_describe if the thing you want described is a picture."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment switch on and WAIT - the model is loaded",
+            "name": "comment",
+            "id": 385,
+            "position_x": 846,
+            "position_y": 62,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "switch on and WAIT - the model is loaded",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "switch on and WAIT - the model is loaded"
+        },
+        "5": {
+            "init": "comment here, and downloaded the first time",
+            "name": "comment",
+            "id": 422,
+            "position_x": 846,
+            "position_y": 92,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "here, and downloaded the first time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "here, and downloaded the first time"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 560,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "You are a terse, concrete writer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "name": "string",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 185,
+            "width": 560,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "Describe a room nobody has entered for a year.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "name": "gemma_4",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 380,
+            "height": 620,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "n_ctx",
+                    "value": 8192,
+                    "value_type": "int"
+                }
+            }
+        },
+        "9": {
+            "init": "comment target_length nudges it towards a size",
+            "name": "comment",
+            "id": 570,
+            "position_x": 846,
+            "position_y": 905,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "target_length nudges it towards a size",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "target_length nudges it towards a size"
+        },
+        "10": {
+            "init": "comment by making the ending more likely - it",
+            "name": "comment",
+            "id": 607,
+            "position_x": 846,
+            "position_y": 985,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "by making the ending more likely - it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "by making the ending more likely - it"
+        },
+        "11": {
+            "init": "comment does not cut. max_tokens does cut",
+            "name": "comment",
+            "id": 644,
+            "position_x": 846,
+            "position_y": 1025,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "does not cut. max_tokens does cut",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "does not cut. max_tokens does cut"
+        },
+        "12": {
+            "init": "comment slowdown paces it for reading",
+            "name": "comment",
+            "id": 681,
+            "position_x": 846,
+            "position_y": 1065,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "slowdown paces it for reading",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "slowdown paces it for reading"
+        },
+        "13": {
+            "name": "text_display",
+            "id": 718,
+            "position_x": 460,
+            "position_y": 250,
+            "width": 360,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment the answer, arriving token by token",
+            "name": "comment",
+            "id": 755,
+            "position_x": 846,
+            "position_y": 525,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the answer, arriving token by token",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the answer, arriving token by token"
+        },
+        "15": {
+            "name": "text_display",
+            "id": 792,
+            "position_x": 460,
+            "position_y": 570,
+            "width": 360,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment thinking is a SEPARATE channel - often",
+            "name": "comment",
+            "id": 829,
+            "position_x": 846,
+            "position_y": 805,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "thinking is a SEPARATE channel - often",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "thinking is a SEPARATE channel - often"
+        },
+        "17": {
+            "init": "comment the interesting part, and almost never",
+            "name": "comment",
+            "id": 866,
+            "position_x": 846,
+            "position_y": 835,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the interesting part, and almost never",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the interesting part, and almost never"
+        },
+        "18": {
+            "init": "comment what an audience should read",
+            "name": "comment",
+            "id": 903,
+            "position_x": 846,
+            "position_y": 865,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what an audience should read",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what an audience should read"
+        },
+        "19": {
+            "name": "toggle",
+            "id": 940,
+            "position_x": 460,
+            "position_y": 910,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "20": {
+            "init": "comment lit while it is generating",
+            "name": "comment",
+            "id": 977,
+            "position_x": 846,
+            "position_y": 945,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lit while it is generating",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lit while it is generating"
+        },
+        "21": {
+            "name": "plot",
+            "id": 1014,
+            "position_x": 460,
+            "position_y": 970,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -8.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "22": {
+            "init": "comment with score_incoming_text on, this is how",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 846,
+            "position_y": 1160,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "with score_incoming_text on, this is how",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "with score_incoming_text on, this is how"
+        },
+        "23": {
+            "init": "comment PREDICTABLE your text was to it - low",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 846,
+            "position_y": 1190,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "PREDICTABLE your text was to it - low",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "PREDICTABLE your text was to it - low"
+        },
+        "24": {
+            "init": "comment means unusual, and no generating needed",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 846,
+            "position_y": 1220,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "means unusual, and no generating needed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "means unusual, and no generating needed"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 1180,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on / off"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "system_prompt"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "prompt"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "thinking",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "input_token_score",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

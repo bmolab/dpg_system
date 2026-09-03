@@ -1,0 +1,459 @@
+{
+    "height": 812,
+    "width": 1579,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.diag_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.diag_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.diag, t.tril, t.triu - diagonals and triangles",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.diag, t.tril, t.triu - diagonals and triangles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.diag, t.tril, t.triu - diagonals and triangles"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 731,
+            "position_y": 45,
+            "width": 808,
+            "height": 676,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These are about a matrix's TRIANGLES and its diagonal.\n\nTHE NODES:\n\nt.diag  pull the diagonal out as a vector, or build a matrix from one\nt.tril  keep the lower triangle, zero the rest\nt.triu  keep the upper triangle, zero the rest\n\nt.diag GOES BOTH WAYS:\nGiven a matrix it returns the diagonal as a vector. Given a vector it builds a \nmatrix with that vector on the diagonal and zeros elsewhere. It works out which \nyou meant from the shape of what you send it.\n\nThe diagonal of a covariance matrix is the variance of each channel by itself, \nwith all the cross-terms removed - so t.diag on a t.corrcoef result separates \n\"how much does this vary\" from \"what does it vary WITH\".\n\nWHY TRIANGLES MATTER:\nA matrix of relationships between things - a covariance, a distance matrix, \na similarity - is symmetric: the entry for A against B equals the one for B \nagainst A. Half of it is therefore redundant, and taking one triangle is how \nyou avoid counting every pair twice.\n\nSet \"which diag\" to 1 and the diagonal itself is excluded as well, which for a \nsimilarity matrix removes the ones down the middle where everything is compared \nagainst itself. That is almost always what you want when you are asking about \npairs.\n\nSYNTAX:\nt.diag\nt.tril\n\nEXAMPLE:\nt.triu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix, or the vector to build one from.\n\nwhich diag:\nWhich diagonal to work from. 0 is the main one; positive moves above it, \nnegative below. On tril and triu this shifts where the triangle is cut, and \nsetting it to 1 on triu excludes the main diagonal.\n\nOUTPUTS: \n\noutput:\nThe diagonal, the built matrix, or the triangle with the rest zeroed.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 660,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These are about a matrix's TRIANGLES and its diagonal.\n\nTHE NODES:\n\nt.diag  pull the diagonal out as a vector, or build a matrix from one\nt.tril  keep the lower triangle, zero the rest\nt.triu  keep the upper triangle, zero the rest\n\nt.diag GOES BOTH WAYS:\nGiven a matrix it returns the diagonal as a vector. Given a vector it builds a \nmatrix with that vector on the diagonal and zeros elsewhere. It works out which \nyou meant from the shape of what you send it.\n\nThe diagonal of a covariance matrix is the variance of each channel by itself, \nwith all the cross-terms removed - so t.diag on a t.corrcoef result separates \n\"how much does this vary\" from \"what does it vary WITH\".\n\nWHY TRIANGLES MATTER:\nA matrix of relationships between things - a covariance, a distance matrix, \na similarity - is symmetric: the entry for A against B equals the one for B \nagainst A. Half of it is therefore redundant, and taking one triangle is how \nyou avoid counting every pair twice.\n\nSet \"which diag\" to 1 and the diagonal itself is excluded as well, which for a \nsimilarity matrix removes the ones down the middle where everything is compared \nagainst itself. That is almost always what you want when you are asking about \npairs.\n\nSYNTAX:\nt.diag\nt.tril\n\nEXAMPLE:\nt.triu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix, or the vector to build one from.\n\nwhich diag:\nWhich diagonal to work from. 0 is the main one; positive moves above it, \nnegative below. On tril and triu this shifts where the triangle is cut, and \nsetting it to 1 on triu excludes the main diagonal.\n\nOUTPUTS: \n\noutput:\nThe diagonal, the built matrix, or the triangle with the rest zeroed."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 5 5"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 5,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment a 5 by 5 matrix",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 5 by 5 matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 5 by 5 matrix"
+        },
+        "7": {
+            "name": "t.triu",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 180,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 5,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the upper triangle, rest zeroed",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 455,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the upper triangle, rest zeroed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the upper triangle, rest zeroed"
+        },
+        "10": {
+            "name": "t.diag",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 180,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 530,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 5,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the diagonal, as a vector",
+            "name": "comment",
+            "id": 681,
+            "position_x": 484,
+            "position_y": 605,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the diagonal, as a vector",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the diagonal, as a vector"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 708,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

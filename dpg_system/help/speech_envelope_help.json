@@ -1,0 +1,707 @@
+{
+    "height": 1240,
+    "width": 1847,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "speech_envelope_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/speech_envelope_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment speech_envelope - loudness on two time scales",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "speech_envelope - loudness on two time scales",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "speech_envelope - loudness on two time scales"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 989,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Loudness, followed on two time scales at once - and the onsets between them.\n\nTHE NODE:\n\nspeech_envelope   envelope, slow volume, crest factor, and an onset trigger\n\nTHE FAMILY, AND WHAT EACH ONE HEARS:\nspeech_pitch          the note being spoken - f0, and whether there is a voice\nspeech_prosody        the shape of that pitch over a window - the melody\nspeech_envelope       loudness, on two time scales, and onsets\nspeech_spectral       where the energy sits - bright or dark, tonal or noisy\nspeech_voice_quality  how clear the voice is - breathy, rough, or clean\n\nNone of these know what is being said. They measure HOW, which is the part that\ncarries urgency, hesitation and effort - and the part a patch can respond to\nwithout any of the machinery of understanding language.\n\nTHEY ANALYSE ON A CLOCK, NOT ON DATA:\nEach of these keeps an internal ring buffer, and runs its analysis at\n'analysis_fps' - measured against the wall clock. Audio arriving faster than\nthat is buffered, not analysed.\n\nThis is worth knowing because it means the outputs are NOT one-per-chunk. Push a\nfile through as fast as it will go and you get far fewer analysis frames than\nchunks - the node is pacing itself in real time. It is built for a live stream,\nwhere that is exactly right.\n\nTHE TWO TIME SCALES ARE THE WHOLE IDEA:\n'envelope' is fast. It follows the actual shape of speech - each syllable rising\nand falling.\n\n'volume_db' is slow. It follows the ambient level over seconds, and is meant to\nsit still while someone talks - it is the room, not the voice.\n\nAn ONSET is what happens when the fast one gets more than 'onset_threshold_db'\nabove the slow one: something just happened that is louder than the background\nhas been. That is a far better trigger than a fixed threshold, because it adapts\n- move to a noisier room and the baseline rises with it, and the onsets keep\nmeaning the same thing.\n\nThe default is 6 dB, which is roughly \"twice as loud as it has been\".\n\nWHAT min_cutoff AND beta ACTUALLY DO:\nBoth filters here are One Euro filters, and the two numbers trade steadiness\nagainst lag in a way a single smoothing amount cannot:\n\nmin_cutoff  how much smoothing when the signal is STILL. Lower is smoother and\n            calmer, at the cost of being slower to notice a change.\nbeta        how much the filter opens up when the signal is MOVING. Higher means\n            it stops smoothing and follows, so fast changes are not lagged.\n\nThat is why the defaults differ so sharply between the two followers.\nEnvelope: min_cutoff 1.0, beta 0.5 - lively, follows syllables. Volume:\nmin_cutoff 0.1, beta 0.01 - almost immovable, which is what a baseline is for.\n\nIf onsets are being missed, raise env_beta before touching the threshold. If the\nbaseline is drifting up during long speech, lower vol_beta.\n\nCREST FACTOR IS PEAKINESS:\nPeak divided by average, so it says whether the energy arrives in spikes or\nsteadily. Some measured reference points, which are worth having:\n\npure sine tone       1.41   (exactly the square root of 2)\nvoice-like harmonics 1.77\nwhite noise          3.45\n\nConsonants and plosives are peaky, sustained vowels are not. A rising crest\nfactor with the envelope steady means the character of the sound changed without\nthe loudness changing.\n\nSYNTAX:\nspeech_envelope\n\nEXAMPLE:\nspeech_envelope\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe live audio.\n\nframe_hop:\nSamples per envelope frame - how finely the envelope is sampled.\n\nenv_min_cutoff / env_beta:\nThe fast follower. Smoothing when still, and how much it opens up when moving.\n\nvol_min_cutoff / vol_beta:\nThe slow baseline. Both small, deliberately.\n\nonset_threshold_db:\nHow far above the baseline counts as an onset. 6 dB by default.\n\nOUTPUTS: \n\nenvelope / envelope_db:\nThe fast loudness, linear and in dB.\n\nvolume_db:\nThe slow baseline.\n\ncrest_factor:\nPeak over average - how spiky the sound is.\n\nonset:\nA one-shot trigger when the envelope jumps clear of the baseline.\n\nFEEDING THEM:\nt.audio_source is the usual source - a live input, giving audio tensors. The\ndemo here is wired that way, so it needs an actual input to show anything; with\nnothing arriving the outputs simply stay quiet.\n\nRELATED:\nspeech_pitch for how high rather than how loud.\nFeeding onset to a counter or a sample_hold is the usual way to make something\nhappen once per utterance.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Loudness, followed on two time scales at once - and the onsets between them.\n\nTHE NODE:\n\nspeech_envelope   envelope, slow volume, crest factor, and an onset trigger\n\nTHE FAMILY, AND WHAT EACH ONE HEARS:\nspeech_pitch          the note being spoken - f0, and whether there is a voice\nspeech_prosody        the shape of that pitch over a window - the melody\nspeech_envelope       loudness, on two time scales, and onsets\nspeech_spectral       where the energy sits - bright or dark, tonal or noisy\nspeech_voice_quality  how clear the voice is - breathy, rough, or clean\n\nNone of these know what is being said. They measure HOW, which is the part that\ncarries urgency, hesitation and effort - and the part a patch can respond to\nwithout any of the machinery of understanding language.\n\nTHEY ANALYSE ON A CLOCK, NOT ON DATA:\nEach of these keeps an internal ring buffer, and runs its analysis at\n'analysis_fps' - measured against the wall clock. Audio arriving faster than\nthat is buffered, not analysed.\n\nThis is worth knowing because it means the outputs are NOT one-per-chunk. Push a\nfile through as fast as it will go and you get far fewer analysis frames than\nchunks - the node is pacing itself in real time. It is built for a live stream,\nwhere that is exactly right.\n\nTHE TWO TIME SCALES ARE THE WHOLE IDEA:\n'envelope' is fast. It follows the actual shape of speech - each syllable rising\nand falling.\n\n'volume_db' is slow. It follows the ambient level over seconds, and is meant to\nsit still while someone talks - it is the room, not the voice.\n\nAn ONSET is what happens when the fast one gets more than 'onset_threshold_db'\nabove the slow one: something just happened that is louder than the background\nhas been. That is a far better trigger than a fixed threshold, because it adapts\n- move to a noisier room and the baseline rises with it, and the onsets keep\nmeaning the same thing.\n\nThe default is 6 dB, which is roughly \"twice as loud as it has been\".\n\nWHAT min_cutoff AND beta ACTUALLY DO:\nBoth filters here are One Euro filters, and the two numbers trade steadiness\nagainst lag in a way a single smoothing amount cannot:\n\nmin_cutoff  how much smoothing when the signal is STILL. Lower is smoother and\n            calmer, at the cost of being slower to notice a change.\nbeta        how much the filter opens up when the signal is MOVING. Higher means\n            it stops smoothing and follows, so fast changes are not lagged.\n\nThat is why the defaults differ so sharply between the two followers.\nEnvelope: min_cutoff 1.0, beta 0.5 - lively, follows syllables. Volume:\nmin_cutoff 0.1, beta 0.01 - almost immovable, which is what a baseline is for.\n\nIf onsets are being missed, raise env_beta before touching the threshold. If the\nbaseline is drifting up during long speech, lower vol_beta.\n\nCREST FACTOR IS PEAKINESS:\nPeak divided by average, so it says whether the energy arrives in spikes or\nsteadily. Some measured reference points, which are worth having:\n\npure sine tone       1.41   (exactly the square root of 2)\nvoice-like harmonics 1.77\nwhite noise          3.45\n\nConsonants and plosives are peaky, sustained vowels are not. A rising crest\nfactor with the envelope steady means the character of the sound changed without\nthe loudness changing.\n\nSYNTAX:\nspeech_envelope\n\nEXAMPLE:\nspeech_envelope\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe live audio.\n\nframe_hop:\nSamples per envelope frame - how finely the envelope is sampled.\n\nenv_min_cutoff / env_beta:\nThe fast follower. Smoothing when still, and how much it opens up when moving.\n\nvol_min_cutoff / vol_beta:\nThe slow baseline. Both small, deliberately.\n\nonset_threshold_db:\nHow far above the baseline counts as an onset. 6 dB by default.\n\nOUTPUTS: \n\nenvelope / envelope_db:\nThe fast loudness, linear and in dB.\n\nvolume_db:\nThe slow baseline.\n\ncrest_factor:\nPeak over average - how spiky the sound is.\n\nonset:\nA one-shot trigger when the envelope jumps clear of the baseline.\n\nFEEDING THEM:\nt.audio_source is the usual source - a live input, giving audio tensors. The\ndemo here is wired that way, so it needs an actual input to show anything; with\nnothing arriving the outputs simply stay quiet.\n\nRELATED:\nspeech_pitch for how high rather than how loud.\nFeeding onset to a counter or a sample_hold is the usual way to make something\nhappen once per utterance."
+        },
+        "3": {
+            "name": "t.audio_source",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "speech_envelope",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 290,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "plot",
+            "id": 422,
+            "position_x": 360,
+            "position_y": 270,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -60.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "init": "comment the fast one: syllables",
+            "name": "comment",
+            "id": 459,
+            "position_x": 686,
+            "position_y": 460,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the fast one: syllables",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the fast one: syllables"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 360,
+            "position_y": 505,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -60.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment the slow one: the room. It should sit",
+            "name": "comment",
+            "id": 533,
+            "position_x": 686,
+            "position_y": 730,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the slow one: the room. It should sit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the slow one: the room. It should sit"
+        },
+        "9": {
+            "init": "comment still while someone is talking",
+            "name": "comment",
+            "id": 570,
+            "position_x": 686,
+            "position_y": 770,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "still while someone is talking",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "still while someone is talking"
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment crest factor: sine 1.41, voice 1.77,",
+            "name": "comment",
+            "id": 644,
+            "position_x": 686,
+            "position_y": 660,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "crest factor: sine 1.41, voice 1.77,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "crest factor: sine 1.41, voice 1.77,"
+        },
+        "12": {
+            "init": "comment white noise 3.45 - how peaky it is",
+            "name": "comment",
+            "id": 681,
+            "position_x": 686,
+            "position_y": 690,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "white noise 3.45 - how peaky it is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "white noise 3.45 - how peaky it is"
+        },
+        "13": {
+            "name": "trigger",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 200,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "threshold",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "release threshold",
+                    "value": 0.25,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "trigger mode",
+                    "value": "output bang",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "counter",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 915,
+            "width": 180,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "int",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 1040,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment onset is a continuous 0/1 stream, not a",
+            "name": "comment",
+            "id": 829,
+            "position_x": 686,
+            "position_y": 810,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "onset is a continuous 0/1 stream, not a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "onset is a continuous 0/1 stream, not a"
+        },
+        "17": {
+            "init": "comment bang - a trigger in output bang mode",
+            "name": "comment",
+            "id": 866,
+            "position_x": 686,
+            "position_y": 850,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "bang - a trigger in output bang mode",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "bang - a trigger in output bang mode"
+        },
+        "18": {
+            "init": "comment turns it into one count per onset",
+            "name": "comment",
+            "id": 903,
+            "position_x": 686,
+            "position_y": 890,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "turns it into one count per onset",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "turns it into one count per onset"
+        },
+        "19": {
+            "init": "comment onset fires when the fast one gets 6 dB",
+            "name": "comment",
+            "id": 940,
+            "position_x": 686,
+            "position_y": 1090,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "onset fires when the fast one gets 6 dB",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "onset fires when the fast one gets 6 dB"
+        },
+        "20": {
+            "init": "comment clear of the slow one - so it adapts to",
+            "name": "comment",
+            "id": 977,
+            "position_x": 686,
+            "position_y": 1120,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "clear of the slow one - so it adapts to",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "clear of the slow one - so it adapts to"
+        },
+        "21": {
+            "init": "comment the room instead of a fixed threshold",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 686,
+            "position_y": 1150,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the room instead of a fixed threshold",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the room instead of a fixed threshold"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 1112,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "audio tensors",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "audio tensor in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "envelope_db",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "volume_db",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "crest_factor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "onset",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

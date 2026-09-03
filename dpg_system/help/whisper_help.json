@@ -1,0 +1,889 @@
+{
+    "height": 1515,
+    "width": 1954,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1347,
+    "name": "whisper_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/whisper_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment whisper and eleven_labs - speech in and out",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "whisper and eleven_labs - speech in and out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "whisper and eleven_labs - speech in and out"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1096,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Speech into text, and text back into speech.\n\nTHE NODES:\n\nwhisper       listens, and gives you what was said\neleven_labs   takes text, and says it aloud\n\nwhisper RUNS HERE; eleven_labs DOES NOT:\nwhisper transcribes on this machine - nothing leaves it, there is no account,\nand it keeps working with the network unplugged. eleven_labs sends your text to\na service and needs an API key in dpg_system/elevenlabs_key.py.\n\nThat difference decides where each belongs. Anything an audience says in\nconfidence can go through whisper and must not go through eleven_labs.\n\nwhisper GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:\n\nin_progress   what it thinks is being said RIGHT NOW. It changes as more sound\n              arrives - words appear, then get revised, then settle.\nphrases       what it has decided. A phrase is emitted once and does not change.\n\nUse in_progress for anything live and visual, where the guessing and revising is\npart of what the audience sees. Use phrases for anything that acts on meaning -\na decision, a lookup, a prompt to a language model - because acting on\nin_progress means acting on words it is about to withdraw.\n\nThe two are not alternatives. A common arrangement uses both: in_progress drives\nthe display, phrases drive the work.\n\nHOW A GUESS BECOMES A PHRASE:\nSegments have an AGE - how many analysis rounds they have survived unchanged -\nand 'confirmation_age' is how old one must be before it is trusted. A phrase is\nthen emitted when a confirmed segment ends in a full stop, question mark or\nexclamation.\n\nThe age required shrinks as the sentence gets longer, scaled by 'length_factor'.\nThe reasoning is that a long utterance has already given the model plenty of\ncontext, so its early words are unlikely to be revised - and waiting the full\nage on every one of them would leave the transcript lagging badly behind the\nspeaker.\n\n'minimum_confidence' and 'min_trailing_confidence' throw away segments the model\nitself is unsure of, the second applying to the end of a phrase where guessing\nis worst. 'minimum_lifespan' stops very short-lived fragments being emitted at\nall.\n\nTHE 'noises' OUTLET IS NOT A MISTAKE:\nWhisper hallucinates when there is no speech - it will confidently transcribe\nbreathing, a chair, a hum as words. Rather than let that into 'phrases', those\nsegments come out of 'noises' instead.\n\nWhich makes 'noises' quite interesting in its own right: it is what the room\nsounded like to something trying very hard to hear language in it.\n\n'silence_threshold' and 'silence_period' set what counts as nothing happening,\nand 'energy' reports the level so you can see where the threshold should be.\n\nTHE MODEL IS A TRADE:\nLarger models are more accurate and slower, and the delay is felt directly as\nthe transcript trailing the speaker. Start small and go larger only if the words\nare actually wrong; a smaller model that keeps up is usually better in\nperformance than a better one that lags.\n\n'language' can be set or left to detect, and 'translate' asks for English out\nregardless of what went in.\n\neleven_labs SPEAKS, AND QUEUES:\nSend text and it says it. 'backlog' reports how much is waiting, and 'speaking'\nwhether it is talking now - which is what to gate on, because sending a second\nline while the first is still going stacks them up rather than interrupting.\n\n'stop' finishes the current phrase and stops; 'hard stop' cuts immediately.\n'accept input' closes the door without stopping what is already queued.\n\nTHE VOICE SETTINGS ARE PERFORMANCE DIRECTION:\n'stability' low lets the delivery vary between renderings and sound more alive;\nhigh makes it consistent and flatter. 'style exaggeration' pushes the character\nof the voice. 'similarity_boost' holds it closer to the original recording.\n'speed' is rate.\n\n'latency' trades responsiveness against quality - worth raising only if the\ndelay before it starts is a problem, because the cost is audible.\n\nSYNTAX:\nwhisper\neleven_labs\n\nEXAMPLE:\nwhisper\n\nINPUTS and PARAMETERS:\n\non/off / audio device / audio_in:\nStart listening, and where from.\n\nmodel / language / translate:\nWhich model, what language, and whether to render English.\n\nsilence_threshold / silence_period:\nWhat counts as nothing being said.\n\nconfirmation_age / minimum_lifespan / minimum_confidence / length_factor:\nHow sure it must be before a phrase is emitted.\n\ntext to speak / voice / model:\nWhat to say and who says it.\n\nspeed / stability / style exaggeration / similarity_boost:\nHow it is said.\n\nstop / hard stop / accept input:\nEnd politely, end now, or stop taking new text.\n\nOUTPUTS: \n\nphrases:\nSettled text. Act on this.\n\nin_progress:\nThe current guess, revised as it goes. Display this.\n\nnoises:\nWhat it heard as words when there was no speech.\n\nenergy / rate / language:\nLevel, speed, and what language it thinks it is.\n\nspeaking / backlog:\nWhether it is talking, and how much is queued.\n\nRELATED:\ntranslate to move between languages in between.\ngemma_4 to answer rather than repeat.\ncairo_layout to put the words on a screen.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Speech into text, and text back into speech.\n\nTHE NODES:\n\nwhisper       listens, and gives you what was said\neleven_labs   takes text, and says it aloud\n\nwhisper RUNS HERE; eleven_labs DOES NOT:\nwhisper transcribes on this machine - nothing leaves it, there is no account,\nand it keeps working with the network unplugged. eleven_labs sends your text to\na service and needs an API key in dpg_system/elevenlabs_key.py.\n\nThat difference decides where each belongs. Anything an audience says in\nconfidence can go through whisper and must not go through eleven_labs.\n\nwhisper GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:\n\nin_progress   what it thinks is being said RIGHT NOW. It changes as more sound\n              arrives - words appear, then get revised, then settle.\nphrases       what it has decided. A phrase is emitted once and does not change.\n\nUse in_progress for anything live and visual, where the guessing and revising is\npart of what the audience sees. Use phrases for anything that acts on meaning -\na decision, a lookup, a prompt to a language model - because acting on\nin_progress means acting on words it is about to withdraw.\n\nThe two are not alternatives. A common arrangement uses both: in_progress drives\nthe display, phrases drive the work.\n\nHOW A GUESS BECOMES A PHRASE:\nSegments have an AGE - how many analysis rounds they have survived unchanged -\nand 'confirmation_age' is how old one must be before it is trusted. A phrase is\nthen emitted when a confirmed segment ends in a full stop, question mark or\nexclamation.\n\nThe age required shrinks as the sentence gets longer, scaled by 'length_factor'.\nThe reasoning is that a long utterance has already given the model plenty of\ncontext, so its early words are unlikely to be revised - and waiting the full\nage on every one of them would leave the transcript lagging badly behind the\nspeaker.\n\n'minimum_confidence' and 'min_trailing_confidence' throw away segments the model\nitself is unsure of, the second applying to the end of a phrase where guessing\nis worst. 'minimum_lifespan' stops very short-lived fragments being emitted at\nall.\n\nTHE 'noises' OUTLET IS NOT A MISTAKE:\nWhisper hallucinates when there is no speech - it will confidently transcribe\nbreathing, a chair, a hum as words. Rather than let that into 'phrases', those\nsegments come out of 'noises' instead.\n\nWhich makes 'noises' quite interesting in its own right: it is what the room\nsounded like to something trying very hard to hear language in it.\n\n'silence_threshold' and 'silence_period' set what counts as nothing happening,\nand 'energy' reports the level so you can see where the threshold should be.\n\nTHE MODEL IS A TRADE:\nLarger models are more accurate and slower, and the delay is felt directly as\nthe transcript trailing the speaker. Start small and go larger only if the words\nare actually wrong; a smaller model that keeps up is usually better in\nperformance than a better one that lags.\n\n'language' can be set or left to detect, and 'translate' asks for English out\nregardless of what went in.\n\neleven_labs SPEAKS, AND QUEUES:\nSend text and it says it. 'backlog' reports how much is waiting, and 'speaking'\nwhether it is talking now - which is what to gate on, because sending a second\nline while the first is still going stacks them up rather than interrupting.\n\n'stop' finishes the current phrase and stops; 'hard stop' cuts immediately.\n'accept input' closes the door without stopping what is already queued.\n\nTHE VOICE SETTINGS ARE PERFORMANCE DIRECTION:\n'stability' low lets the delivery vary between renderings and sound more alive;\nhigh makes it consistent and flatter. 'style exaggeration' pushes the character\nof the voice. 'similarity_boost' holds it closer to the original recording.\n'speed' is rate.\n\n'latency' trades responsiveness against quality - worth raising only if the\ndelay before it starts is a problem, because the cost is audible.\n\nSYNTAX:\nwhisper\neleven_labs\n\nEXAMPLE:\nwhisper\n\nINPUTS and PARAMETERS:\n\non/off / audio device / audio_in:\nStart listening, and where from.\n\nmodel / language / translate:\nWhich model, what language, and whether to render English.\n\nsilence_threshold / silence_period:\nWhat counts as nothing being said.\n\nconfirmation_age / minimum_lifespan / minimum_confidence / length_factor:\nHow sure it must be before a phrase is emitted.\n\ntext to speak / voice / model:\nWhat to say and who says it.\n\nspeed / stability / style exaggeration / similarity_boost:\nHow it is said.\n\nstop / hard stop / accept input:\nEnd politely, end now, or stop taking new text.\n\nOUTPUTS: \n\nphrases:\nSettled text. Act on this.\n\nin_progress:\nThe current guess, revised as it goes. Display this.\n\nnoises:\nWhat it heard as words when there was no speech.\n\nenergy / rate / language:\nLevel, speed, and what language it thinks it is.\n\nspeaking / backlog:\nWhether it is talking, and how much is queued.\n\nRELATED:\ntranslate to move between languages in between.\ngemma_4 to answer rather than repeat.\ncairo_layout to put the words on a screen."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "whisper",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 340,
+            "height": 480,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment runs on this machine - no account, and",
+            "name": "comment",
+            "id": 422,
+            "position_x": 786,
+            "position_y": 615,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "runs on this machine - no account, and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "runs on this machine - no account, and"
+        },
+        "6": {
+            "init": "comment nothing leaves the room",
+            "name": "comment",
+            "id": 459,
+            "position_x": 786,
+            "position_y": 695,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nothing leaves the room",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nothing leaves the room"
+        },
+        "7": {
+            "name": "text_display",
+            "id": 496,
+            "position_x": 420,
+            "position_y": 120,
+            "width": 340,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 140,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment in_progress: the current guess, revised",
+            "name": "comment",
+            "id": 533,
+            "position_x": 786,
+            "position_y": 315,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in_progress: the current guess, revised",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in_progress: the current guess, revised"
+        },
+        "9": {
+            "init": "comment as it listens. Show this.",
+            "name": "comment",
+            "id": 570,
+            "position_x": 786,
+            "position_y": 345,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "as it listens. Show this.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "as it listens. Show this."
+        },
+        "10": {
+            "name": "text_display",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 390,
+            "width": 340,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 140,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment phrases: settled, emitted once. ACT on",
+            "name": "comment",
+            "id": 644,
+            "position_x": 786,
+            "position_y": 585,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "phrases: settled, emitted once. ACT on",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "phrases: settled, emitted once. ACT on"
+        },
+        "12": {
+            "init": "comment this - in_progress will be withdrawn",
+            "name": "comment",
+            "id": 681,
+            "position_x": 786,
+            "position_y": 655,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this - in_progress will be withdrawn",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this - in_progress will be withdrawn"
+        },
+        "13": {
+            "name": "text_display",
+            "id": 718,
+            "position_x": 420,
+            "position_y": 660,
+            "width": 340,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment noises: what it heard as words when",
+            "name": "comment",
+            "id": 755,
+            "position_x": 786,
+            "position_y": 815,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "noises: what it heard as words when",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "noises: what it heard as words when"
+        },
+        "15": {
+            "init": "comment nobody was speaking. Kept out of",
+            "name": "comment",
+            "id": 792,
+            "position_x": 786,
+            "position_y": 845,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nobody was speaking. Kept out of",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nobody was speaking. Kept out of"
+        },
+        "16": {
+            "init": "comment phrases on purpose - and interesting",
+            "name": "comment",
+            "id": 829,
+            "position_x": 786,
+            "position_y": 875,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "phrases on purpose - and interesting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "phrases on purpose - and interesting"
+        },
+        "17": {
+            "name": "plot",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "18": {
+            "init": "comment energy - use it to set silence_threshold",
+            "name": "comment",
+            "id": 903,
+            "position_x": 786,
+            "position_y": 915,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "energy - use it to set silence_threshold",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "energy - use it to set silence_threshold"
+        },
+        "19": {
+            "name": "eleven_labs",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 930,
+            "width": 340,
+            "height": 420,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "20": {
+            "init": "comment this one SENDS YOUR TEXT to a service",
+            "name": "comment",
+            "id": 977,
+            "position_x": 786,
+            "position_y": 1365,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this one SENDS YOUR TEXT to a service",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this one SENDS YOUR TEXT to a service"
+        },
+        "21": {
+            "init": "comment and needs an API key. Nothing private",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 786,
+            "position_y": 1395,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and needs an API key. Nothing private",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and needs an API key. Nothing private"
+        },
+        "22": {
+            "init": "comment should go through it",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 786,
+            "position_y": 1425,
+            "width": 140,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "should go through it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "should go through it"
+        },
+        "23": {
+            "name": "toggle",
+            "id": 1088,
+            "position_x": 420,
+            "position_y": 930,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "24": {
+            "init": "comment 'speaking' - gate on this. Sending a",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 786,
+            "position_y": 955,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'speaking' - gate on this. Sending a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'speaking' - gate on this. Sending a"
+        },
+        "25": {
+            "init": "comment second line while the first is going",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 786,
+            "position_y": 995,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "second line while the first is going",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "second line while the first is going"
+        },
+        "26": {
+            "init": "comment stacks them up, it does not interrupt",
+            "name": "comment",
+            "id": 1199,
+            "position_x": 786,
+            "position_y": 1035,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "stacks them up, it does not interrupt",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "stacks them up, it does not interrupt"
+        },
+        "27": {
+            "name": "int",
+            "id": 1236,
+            "position_x": 420,
+            "position_y": 1030,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "28": {
+            "init": "comment backlog - how much is waiting",
+            "name": "comment",
+            "id": 1273,
+            "position_x": 786,
+            "position_y": 1080,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "backlog - how much is waiting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "backlog - how much is waiting"
+        },
+        "29": {
+            "name": "close",
+            "id": 1310,
+            "position_x": 24,
+            "position_y": 1380,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on/off"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "in_progress",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phrases",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "noises",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "energy",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phrases",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text to speak"
+        },
+        "6": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "speaking",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "backlog",
+            "dest_node": 1236,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

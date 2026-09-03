@@ -1,0 +1,409 @@
+{
+    "height": 1095,
+    "width": 1837,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "smpl_ragdoll_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_ragdoll_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_ragdoll - letting go of part of the body",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_ragdoll - letting go of part of the body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_ragdoll - letting go of part of the body"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 979,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smpl_ragdoll lets go of part of the body and hands it to physics.\n\nThe pose coming in is what the performer did. This node picks joints to RELEASE \nand simulates them instead - they fall, swing, collide and settle under gravity, \nwhile the rest of the body keeps following the performer.\n\nThat makes it a blend rather than a switch. A released arm is still attached to \na driven shoulder, so it swings from a body that is moving as the person moves. \n'blend_weight' sets how far each released joint has gone from driven to free, \nand 'ramp_ms' how long that transition takes - so a limb can be let go and \ncaught again without a discontinuity.\n\nTHE NODES:\n\nsmpl_ragdoll     the simulation\nragdoll_blend_ui a bank of named sliders for the per-joint blend weights\n\nragdoll_blend_ui EXISTS BECAUSE THE WEIGHTS ARE PER JOINT:\nIt is a slider_bank with the joint names filled in, sending the messages \nsmpl_ragdoll expects. Twenty-odd separate sliders and cords would be unusable; \nthis is one node and one cord.\n\nRELEASE AND CATCH:\n'release' hands the named joints to physics. 'catch' takes them back, ramping \nso the limb returns to the performer's pose rather than snapping to it.\n\n'auto_release_unsupported' releases a limb when nothing is holding it up, after \n'auto_release_delay'. That is how a body goes limp when it stops supporting \nitself, without anyone deciding the moment.\n\nWHAT COMES BACK OUT:\nBesides the blended pose, the node reports what the physics found - \n'contact_forces' where the body is touching, 'support' for whether it is held \nup, 'energy_removed' for what the collisions absorbed, and \n'free_torque_vectors' for what the released joints are experiencing.\n\nThose are worth watching rather than only using: 'support' falling is the \nphysical fact behind a body giving way, and it is available before anything \nvisibly collapses.\n\nSYNTAX:\nsmpl_ragdoll\n\nEXAMPLE:\nsmpl_ragdoll\n\nINPUTS and PARAMETERS:\n\npose / trans / config:\nThe driven pose, its translation, and the body's size and mass.\n\nweights:\nPer-joint blend, from ragdoll_blend_ui.\n\nrelease / catch / reset:\nHand joints to physics, take them back, start again.\n\nfree_joints:\nWhich joints may be released.\n\nblend_weight / ramp_ms / blend_soft / blend_firm:\nHow far from driven to free, and how the transition is shaped.\n\ngravity / total_mass / limit_stiffness / friction / self_collision:\nThe physics.\n\nfloor_enable / floor_height / floor_auto:\nThe ground it lands on.\n\nmotor_strength / spring_rate / partial_damping / gravity_comp:\nHow strongly a partly-released joint is still driven.\n\nsubsteps / substep_rate:\nSimulation accuracy. More is stabler and slower - raise it if limbs jitter or \npass through each other.\n\nup_axis / axis_permutation / quat_format:\nAs on smpl_torque, and with the same warning: this node does the conversion \nitself, so do not also do it upstream.\n\nOUTPUTS: \n\npose / smpl_pose / trans:\nThe blended result.\n\nblend_weights / support / contact_forces / energy_removed / free_torque_vectors:\nWhat the simulation is doing and what it found.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "smpl_ragdoll lets go of part of the body and hands it to physics.\n\nThe pose coming in is what the performer did. This node picks joints to RELEASE \nand simulates them instead - they fall, swing, collide and settle under gravity, \nwhile the rest of the body keeps following the performer.\n\nThat makes it a blend rather than a switch. A released arm is still attached to \na driven shoulder, so it swings from a body that is moving as the person moves. \n'blend_weight' sets how far each released joint has gone from driven to free, \nand 'ramp_ms' how long that transition takes - so a limb can be let go and \ncaught again without a discontinuity.\n\nTHE NODES:\n\nsmpl_ragdoll     the simulation\nragdoll_blend_ui a bank of named sliders for the per-joint blend weights\n\nragdoll_blend_ui EXISTS BECAUSE THE WEIGHTS ARE PER JOINT:\nIt is a slider_bank with the joint names filled in, sending the messages \nsmpl_ragdoll expects. Twenty-odd separate sliders and cords would be unusable; \nthis is one node and one cord.\n\nRELEASE AND CATCH:\n'release' hands the named joints to physics. 'catch' takes them back, ramping \nso the limb returns to the performer's pose rather than snapping to it.\n\n'auto_release_unsupported' releases a limb when nothing is holding it up, after \n'auto_release_delay'. That is how a body goes limp when it stops supporting \nitself, without anyone deciding the moment.\n\nWHAT COMES BACK OUT:\nBesides the blended pose, the node reports what the physics found - \n'contact_forces' where the body is touching, 'support' for whether it is held \nup, 'energy_removed' for what the collisions absorbed, and \n'free_torque_vectors' for what the released joints are experiencing.\n\nThose are worth watching rather than only using: 'support' falling is the \nphysical fact behind a body giving way, and it is available before anything \nvisibly collapses.\n\nSYNTAX:\nsmpl_ragdoll\n\nEXAMPLE:\nsmpl_ragdoll\n\nINPUTS and PARAMETERS:\n\npose / trans / config:\nThe driven pose, its translation, and the body's size and mass.\n\nweights:\nPer-joint blend, from ragdoll_blend_ui.\n\nrelease / catch / reset:\nHand joints to physics, take them back, start again.\n\nfree_joints:\nWhich joints may be released.\n\nblend_weight / ramp_ms / blend_soft / blend_firm:\nHow far from driven to free, and how the transition is shaped.\n\ngravity / total_mass / limit_stiffness / friction / self_collision:\nThe physics.\n\nfloor_enable / floor_height / floor_auto:\nThe ground it lands on.\n\nmotor_strength / spring_rate / partial_damping / gravity_comp:\nHow strongly a partly-released joint is still driven.\n\nsubsteps / substep_rate:\nSimulation accuracy. More is stabler and slower - raise it if limbs jitter or \npass through each other.\n\nup_axis / axis_permutation / quat_format:\nAs on smpl_torque, and with the same warning: this node does the conversion \nitself, so do not also do it upstream.\n\nOUTPUTS: \n\npose / smpl_pose / trans:\nThe blended result.\n\nblend_weights / support / contact_forces / energy_removed / free_torque_vectors:\nWhat the simulation is doing and what it found."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_beta_editor",
+            "id": 385,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 300,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "shadow_to_smpl",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 260,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "ragdoll_blend_ui",
+            "id": 459,
+            "position_x": 350,
+            "position_y": 420,
+            "width": 300,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment one cord instead of twenty",
+            "name": "comment",
+            "id": 496,
+            "position_x": 676,
+            "position_y": 735,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one cord instead of twenty",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one cord instead of twenty"
+        },
+        "8": {
+            "name": "smpl_ragdoll",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 300,
+            "height": 400,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment release a limb and it swings from a",
+            "name": "comment",
+            "id": 570,
+            "position_x": 676,
+            "position_y": 975,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "release a limb and it swings from a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "release a limb and it swings from a"
+        },
+        "10": {
+            "init": "comment shoulder the performer is still moving",
+            "name": "comment",
+            "id": 607,
+            "position_x": 676,
+            "position_y": 1005,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shoulder the performer is still moving",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shoulder the performer is still moving"
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 350,
+            "position_y": 780,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment support falling is the body giving way,",
+            "name": "comment",
+            "id": 681,
+            "position_x": 676,
+            "position_y": 830,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "support falling is the body giving way,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "support falling is the body giving way,"
+        },
+        "13": {
+            "init": "comment available before it visibly does",
+            "name": "comment",
+            "id": 718,
+            "position_x": 676,
+            "position_y": 860,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "available before it visibly does",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "available before it visibly does"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 990,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trans",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trans"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "messages",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "weights"
+        },
+        "7": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "support",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

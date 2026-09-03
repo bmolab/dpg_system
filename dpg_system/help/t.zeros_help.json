@@ -1,0 +1,485 @@
+{
+    "height": 904,
+    "width": 1658,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "t.zeros_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.zeros_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t tensor makers - something out of nothing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t tensor makers - something out of nothing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t tensor makers - something out of nothing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 800,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These make a tensor from nothing - the starting material for tensor work.\n\nYou need a tensor before you can do anything to one, and the tensor you need is \noften regular rather than measured: a block of zeros to accumulate into, ones to \nmultiply by, noise to test with, an identity matrix to start a transformation \nfrom.\n\nMAKING ONE FROM A SHAPE:\n\nt.zeros  every element zero\nt.ones   every element one\nt.rand   random values between limits you set\nt.full   every element the same value, which you choose\nt.eye    the identity matrix - ones down the diagonal, zeros elsewhere\n\nMAKING ONE THAT MATCHES ANOTHER:\n\nt.zeros_like  zeros, in the same shape as a tensor you give it\nt.ones_like   ones, likewise\nt.rand_like   random values, likewise\n\nWHY THE _like VERSIONS EXIST:\nThey take their shape - and their type, and their device - from a tensor you \nhand them, rather than from settings you typed. That matters because the shape \nyou need is usually the shape of something you already have, and hard-coding it \nmeans the patch breaks the moment the data changes size.\n\nAnything that has to match incoming data should use a _like node. Anything that \nis a fixed part of the design can use the plain one.\n\nTHE THREE OPTIONS EVERY ONE OF THESE HAS:\n\ndtype:\nThe number type. float32 is the usual choice and what most torch operations \nwant; float64 for precision; the integer types for indices.\n\ndevice:\nWhere the tensor lives - cpu, or a GPU. Two tensors on different devices cannot \nbe combined, and that is the commonest error in torch work: everything must be \nmoved to one device before it meets. The _like nodes inherit the device, which \navoids the problem entirely.\n\nrequires_grad:\nWhether to track operations on this tensor for automatic differentiation. \nLeave it off unless you are training something - it costs memory and time to \nrecord a history nobody is going to use.\n\nSYNTAX:\nt.zeros <dim> <dim> ...\nt.full <value>\nt.eye <n>\n\nEXAMPLE:\nt.rand 4 4\n\nINPUTS and PARAMETERS:\n\ninput:\nA button. Click it, or send anything, to produce a tensor. \nt.rand gives fresh numbers each time; the others give the same thing again.\n\nshape:\nThe dimensions to produce.\n\ntensor in (the _like nodes):\nThe tensor whose shape, type and device to copy.\n\nmin / max (t.rand):\nThe range the random values fall in.\n\nvalue (t.full):\nWhat to fill with.\n\nn (t.eye):\nThe size of the identity matrix.\n\nOUTPUTS: \n\nout:\nThe new tensor.\n\nRELATED:\nnp.zeros and its family do the same for NumPy arrays. \nThe t.dist nodes generate tensors from named statistical distributions rather \nthan flat randomness - see the t.dist help patch, which shows all of them side \nby side.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These make a tensor from nothing - the starting material for tensor work.\n\nYou need a tensor before you can do anything to one, and the tensor you need is \noften regular rather than measured: a block of zeros to accumulate into, ones to \nmultiply by, noise to test with, an identity matrix to start a transformation \nfrom.\n\nMAKING ONE FROM A SHAPE:\n\nt.zeros  every element zero\nt.ones   every element one\nt.rand   random values between limits you set\nt.full   every element the same value, which you choose\nt.eye    the identity matrix - ones down the diagonal, zeros elsewhere\n\nMAKING ONE THAT MATCHES ANOTHER:\n\nt.zeros_like  zeros, in the same shape as a tensor you give it\nt.ones_like   ones, likewise\nt.rand_like   random values, likewise\n\nWHY THE _like VERSIONS EXIST:\nThey take their shape - and their type, and their device - from a tensor you \nhand them, rather than from settings you typed. That matters because the shape \nyou need is usually the shape of something you already have, and hard-coding it \nmeans the patch breaks the moment the data changes size.\n\nAnything that has to match incoming data should use a _like node. Anything that \nis a fixed part of the design can use the plain one.\n\nTHE THREE OPTIONS EVERY ONE OF THESE HAS:\n\ndtype:\nThe number type. float32 is the usual choice and what most torch operations \nwant; float64 for precision; the integer types for indices.\n\ndevice:\nWhere the tensor lives - cpu, or a GPU. Two tensors on different devices cannot \nbe combined, and that is the commonest error in torch work: everything must be \nmoved to one device before it meets. The _like nodes inherit the device, which \navoids the problem entirely.\n\nrequires_grad:\nWhether to track operations on this tensor for automatic differentiation. \nLeave it off unless you are training something - it costs memory and time to \nrecord a history nobody is going to use.\n\nSYNTAX:\nt.zeros <dim> <dim> ...\nt.full <value>\nt.eye <n>\n\nEXAMPLE:\nt.rand 4 4\n\nINPUTS and PARAMETERS:\n\ninput:\nA button. Click it, or send anything, to produce a tensor. \nt.rand gives fresh numbers each time; the others give the same thing again.\n\nshape:\nThe dimensions to produce.\n\ntensor in (the _like nodes):\nThe tensor whose shape, type and device to copy.\n\nmin / max (t.rand):\nThe range the random values fall in.\n\nvalue (t.full):\nWhat to fill with.\n\nn (t.eye):\nThe size of the identity matrix.\n\nOUTPUTS: \n\nout:\nThe new tensor.\n\nRELATED:\nnp.zeros and its family do the same for NumPy arrays. \nThe t.dist nodes generate tensors from named statistical distributions rather \nthan flat randomness - see the t.dist help patch, which shows all of them side \nby side."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 200,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 4 4"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 270,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment click for fresh random numbers",
+            "name": "comment",
+            "id": 459,
+            "position_x": 504,
+            "position_y": 330,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click for fresh random numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click for fresh random numbers"
+        },
+        "7": {
+            "name": "t.eye",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 200,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.eye 4"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 270,
+            "position_y": 375,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the identity: ones down the diagonal",
+            "name": "comment",
+            "id": 570,
+            "position_x": 504,
+            "position_y": 565,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the identity: ones down the diagonal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the identity: ones down the diagonal"
+        },
+        "10": {
+            "name": "t.zeros_like",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 200,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 270,
+            "position_y": 610,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment shape taken from the tensor, not typed",
+            "name": "comment",
+            "id": 681,
+            "position_x": 504,
+            "position_y": 780,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape taken from the tensor, not typed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shape taken from the tensor, not typed"
+        },
+        "13": {
+            "init": "comment so it follows if the data changes size",
+            "name": "comment",
+            "id": 718,
+            "position_x": 504,
+            "position_y": 810,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "so it follows if the data changes size",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "so it follows if the data changes size"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 800,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

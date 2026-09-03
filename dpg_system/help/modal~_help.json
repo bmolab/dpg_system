@@ -1,0 +1,340 @@
+{
+    "height": 1269,
+    "width": 1846,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "modal~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/modal~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment modal~ and the struck models - hit it, hear it ring",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 612,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "modal~ and the struck models - hit it, hear it ring",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "modal~ and the struck models - hit it, hear it ring"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 968,
+            "position_y": 45,
+            "width": 838,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These models are sounded by a HIT: something strikes them and they ring.\n\nThey divide into what is struck and what does the striking.\n\nWHAT RINGS:\n\nmodal~      a bank of resonant modes - bells, bars, bowls, membranes. \n            'material' picks the tuning table, 'frequency' places it, \n            'decay' and 'brightness' stretch it\nresonator~  the same node\nstring~     a Karplus-Strong string\npluck~      the same node\ndrum~       the membrane bank plus the physics modal~ leaves out: a hard hit \n            lands pitched sharp and bends down through its ring, which is \n            'tension', where tabla and toms live. 'snares' are wires shaken \n            by the head itself\n\nWHAT HITS:\n\nstrike~     a mallet SWUNG - one hit when you ask for one, in a choice of \n            characters. Patch its output into any resonator's excite inlet\nbounce~     a mallet DROPPED. Everything after the first fall is gravity, \n            which is what a roll is made of\ndrop~       the same node\nrattle~     loose things in a container, shaken and turned - actual particles, \n            with positions and velocities and walls that hit them\nshaker~     shaken percussion by the STATISTICS of a gesture rather than by \n            simulating grains, which is cheap and very good for rain and \n            sleighbells\nrain~       the same node\n\nbounce~ IS THE INTERESTING ONE:\n'drop' rising from zero drops the mallet from that height, and the bounces \naccelerate and weaken geometrically until they blur into a buzz - which is \nexactly what gravity does and exactly what a drum roll is. An LFO into 'drop' \nis one stroke per cycle. A hand's height patched in is a roll played by \nlowering your hand.\n\nrattle~ VERSUS shaker~:\nshaker~ is a collision RATE driven by an agitation - nobody wants to simulate \na hundred thousand grains of rain. rattle~ has actual particles, which is what \nyou want when there are few enough things in the container to hear \nindividually, and when tipping and turning it should matter.\n\nTHE THREE WAYS TO PLAY ONE:\n\nMost of these accept excitation three ways at once, and they are genuinely \ndifferent gestures rather than three spellings of the same one.\n\n  the button      click it, or bang it, for one event\n  a trigger       patch a signal and it plays with sample accuracy, struck as \n                  hard as the trigger is tall\n  'excite in'     patch any signal and it drives the model CONTINUOUSLY - \n                  enveloped noise bows it, and an effort stream played straight \n                  in makes the movement itself the excitation\n\nThe third is the one that matters for effort data. There is no triggering, no \nthreshold and no note: the model simply sounds while the movement is happening \nand is silent when it is not, because that is what the physics does.\n\nSYNTAX:\nmodal~\nstring~ <frequency>\nbounce~\n\nEXAMPLE:\nmodal~\n\nINPUTS and PARAMETERS:\n\nfrequency / pitch:\nWhere the model is tuned. pitch is exponential, in octaves.\n\nmaterial (modal~, drum~):\nWhich mode table - the tuning that makes it a bell rather than a bar.\n\nhardness / position:\nWhat it is struck with and where it lands. Position changes which modes are \nexcited, which is why the same bell struck at the rim and at the crown are \ndifferent sounds.\n\ndecay / brightness:\nHow long it rings and how much high end survives.\n\nexcite in / sensitivity:\nContinuous excitation, and how much of it is taken.\n\ntension / snares (drum~):\nThe downward pitch bend of a hard hit, and the wires under the head.\n\ndrop / gravity / bounce (bounce~):\nThe height, the acceleration and how much is returned each time.\n\nOUTPUTS: \n\nout:\nThe sound.\n\nmodes out:\nThe mode table, so it can be inspected, stored, or sent to another node.\n\nRELATED:\nshape_modes works a mode table out from a described SHAPE rather than taking a \npreset - patch its 'modes' outlet into modal~ or rub~ and the table becomes \nwhatever you described.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 830,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These models are sounded by a HIT: something strikes them and they ring.\n\nThey divide into what is struck and what does the striking.\n\nWHAT RINGS:\n\nmodal~      a bank of resonant modes - bells, bars, bowls, membranes. \n            'material' picks the tuning table, 'frequency' places it, \n            'decay' and 'brightness' stretch it\nresonator~  the same node\nstring~     a Karplus-Strong string\npluck~      the same node\ndrum~       the membrane bank plus the physics modal~ leaves out: a hard hit \n            lands pitched sharp and bends down through its ring, which is \n            'tension', where tabla and toms live. 'snares' are wires shaken \n            by the head itself\n\nWHAT HITS:\n\nstrike~     a mallet SWUNG - one hit when you ask for one, in a choice of \n            characters. Patch its output into any resonator's excite inlet\nbounce~     a mallet DROPPED. Everything after the first fall is gravity, \n            which is what a roll is made of\ndrop~       the same node\nrattle~     loose things in a container, shaken and turned - actual particles, \n            with positions and velocities and walls that hit them\nshaker~     shaken percussion by the STATISTICS of a gesture rather than by \n            simulating grains, which is cheap and very good for rain and \n            sleighbells\nrain~       the same node\n\nbounce~ IS THE INTERESTING ONE:\n'drop' rising from zero drops the mallet from that height, and the bounces \naccelerate and weaken geometrically until they blur into a buzz - which is \nexactly what gravity does and exactly what a drum roll is. An LFO into 'drop' \nis one stroke per cycle. A hand's height patched in is a roll played by \nlowering your hand.\n\nrattle~ VERSUS shaker~:\nshaker~ is a collision RATE driven by an agitation - nobody wants to simulate \na hundred thousand grains of rain. rattle~ has actual particles, which is what \nyou want when there are few enough things in the container to hear \nindividually, and when tipping and turning it should matter.\n\nTHE THREE WAYS TO PLAY ONE:\n\nMost of these accept excitation three ways at once, and they are genuinely \ndifferent gestures rather than three spellings of the same one.\n\n  the button      click it, or bang it, for one event\n  a trigger       patch a signal and it plays with sample accuracy, struck as \n                  hard as the trigger is tall\n  'excite in'     patch any signal and it drives the model CONTINUOUSLY - \n                  enveloped noise bows it, and an effort stream played straight \n                  in makes the movement itself the excitation\n\nThe third is the one that matters for effort data. There is no triggering, no \nthreshold and no note: the model simply sounds while the movement is happening \nand is silent when it is not, because that is what the physics does.\n\nSYNTAX:\nmodal~\nstring~ <frequency>\nbounce~\n\nEXAMPLE:\nmodal~\n\nINPUTS and PARAMETERS:\n\nfrequency / pitch:\nWhere the model is tuned. pitch is exponential, in octaves.\n\nmaterial (modal~, drum~):\nWhich mode table - the tuning that makes it a bell rather than a bar.\n\nhardness / position:\nWhat it is struck with and where it lands. Position changes which modes are \nexcited, which is why the same bell struck at the rim and at the crown are \ndifferent sounds.\n\ndecay / brightness:\nHow long it rings and how much high end survives.\n\nexcite in / sensitivity:\nContinuous excitation, and how much of it is taken.\n\ntension / snares (drum~):\nThe downward pitch bend of a hard hit, and the wires under the head.\n\ndrop / gravity / bounce (bounce~):\nThe height, the acceleration and how much is returned each time.\n\nOUTPUTS: \n\nout:\nThe sound.\n\nmodes out:\nThe mode table, so it can be inspected, stored, or sent to another node.\n\nRELATED:\nshape_modes works a mode table out from a described SHAPE rather than taking a \npreset - patch its 'modes' outlet into modal~ or rub~ and the table becomes \nwhatever you described."
+        },
+        "3": {
+            "name": "clock~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "clock~ 0.7"
+        },
+        "4": {
+            "init": "comment tick run to start striking",
+            "name": "comment",
+            "id": 385,
+            "position_x": 616,
+            "position_y": 272,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick run to start striking",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick run to start striking"
+        },
+        "5": {
+            "name": "strike~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment a mallet swung: one hit per ask",
+            "name": "comment",
+            "id": 459,
+            "position_x": 616,
+            "position_y": 525,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a mallet swung: one hit per ask",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a mallet swung: one hit per ask"
+        },
+        "7": {
+            "name": "modal~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 565,
+            "width": 260,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment change material, then hardness and position",
+            "name": "comment",
+            "id": 533,
+            "position_x": 616,
+            "position_y": 875,
+            "width": 301,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "change material, then hardness and position",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "change material, then hardness and position"
+        },
+        "9": {
+            "name": "bounce~",
+            "id": 570,
+            "position_x": 330,
+            "position_y": 315,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment raise drop: the roll is gravity, not a pattern",
+            "name": "comment",
+            "id": 607,
+            "position_x": 616,
+            "position_y": 565,
+            "width": 322,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise drop: the roll is gravity, not a pattern",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise drop: the roll is gravity, not a pattern"
+        },
+        "11": {
+            "name": "scope~",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 585,
+            "width": 260,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "fader_out~",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 915,
+            "width": 220,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1165,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trigger",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "hit"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "excite in"
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "excite in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

@@ -1,0 +1,476 @@
+{
+    "height": 781,
+    "width": 1574,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "arithmetic_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/arithmetic_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment arithmetic - one calculation, one operand",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arithmetic - one calculation, one operand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "arithmetic - one calculation, one operand"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 726,
+            "position_y": 45,
+            "width": 808,
+            "height": 676,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The arithmetic nodes each perform one calculation on the value arriving at the left inlet, \nusing a second value - the operand - held in the right inlet.\n\nThey all work the same way. The left inlet takes the data and triggers the calculation; \nthe right inlet holds the other number, which you can type, drag, or send from elsewhere. \nThe operand keeps its value between calculations, so you set it once and it stays put.\n\nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors. \nWhen the input and the operand are different kinds of thing, the operand is converted \nto match the input, so feeding an array into a node with a single number as its operand \napplies that number to every element.\n\nYou give the starting operand as an argument when you create the node. \nWhether you write it with a decimal point matters: \"* 2\" gives you an integer operand \nand a stepped slider, \"* 2.0\" gives you a floating point one.\n\nTHE NODES:\n\n+     add                    -     subtract\n*     multiply               /     divide\n//    divide, discarding any remainder\n%     modulo - the remainder after division\n^     raise to a power       pow   the same as ^\nmin   the smaller of the two values\nmax   the larger of the two values\nmod   the same as %\n!-    reverse subtract - operand minus input, rather than input minus operand\n!/    reverse divide - operand divided by input\nperm  permutations: the number of ordered ways to pick operand items from input items\ncombination   the number of unordered ways to make that same pick\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n* 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\noperand:\nThe second value in the calculation. \nSetting it does not itself produce output - the node waits for the next value at \"in\".\n\nOUTPUTS: \n\nresult:\nThe result of the calculation, in the same shape as the input.\n\nA NOTE ON DIVISION:\nDividing by zero does not raise an error and does not stop your patch. \nFor single numbers the result is 0; for arrays the division is done with \nNumPy's error reporting switched off. Likewise \"%\" and \"mod\" return 0 \nwhen the operand is zero. The idea is that a live patch should keep running.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 660,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The arithmetic nodes each perform one calculation on the value arriving at the left inlet, \nusing a second value - the operand - held in the right inlet.\n\nThey all work the same way. The left inlet takes the data and triggers the calculation; \nthe right inlet holds the other number, which you can type, drag, or send from elsewhere. \nThe operand keeps its value between calculations, so you set it once and it stays put.\n\nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors. \nWhen the input and the operand are different kinds of thing, the operand is converted \nto match the input, so feeding an array into a node with a single number as its operand \napplies that number to every element.\n\nYou give the starting operand as an argument when you create the node. \nWhether you write it with a decimal point matters: \"* 2\" gives you an integer operand \nand a stepped slider, \"* 2.0\" gives you a floating point one.\n\nTHE NODES:\n\n+     add                    -     subtract\n*     multiply               /     divide\n//    divide, discarding any remainder\n%     modulo - the remainder after division\n^     raise to a power       pow   the same as ^\nmin   the smaller of the two values\nmax   the larger of the two values\nmod   the same as %\n!-    reverse subtract - operand minus input, rather than input minus operand\n!/    reverse divide - operand divided by input\nperm  permutations: the number of ordered ways to pick operand items from input items\ncombination   the number of unordered ways to make that same pick\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n* 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\noperand:\nThe second value in the calculation. \nSetting it does not itself produce output - the node waits for the next value at \"in\".\n\nOUTPUTS: \n\nresult:\nThe result of the calculation, in the same shape as the input.\n\nA NOTE ON DIVISION:\nDividing by zero does not raise an error and does not stop your patch. \nFor single numbers the result is 0; for arrays the division is done with \nNumPy's error reporting switched off. Likewise \"%\" and \"mod\" return 0 \nwhen the operand is zero. The idea is that a live patch should keep running."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "*",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 120,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.5,
+                    "value_type": "float"
+                }
+            },
+            "init": "* 0.5"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 210,
+            "position_y": 205,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment a sine wave, halved",
+            "name": "comment",
+            "id": 533,
+            "position_x": 444,
+            "position_y": 310,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a sine wave, halved",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a sine wave, halved"
+        },
+        "9": {
+            "init": "comment drag the operand and watch it change",
+            "name": "comment",
+            "id": 570,
+            "position_x": 444,
+            "position_y": 340,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag the operand and watch it change",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag the operand and watch it change"
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 405,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "+",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 462,
+            "width": 120,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 100,
+                    "value_type": "int"
+                }
+            },
+            "init": "+ 100"
+        },
+        "12": {
+            "name": "int",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 552,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment drag this number",
+            "name": "comment",
+            "id": 718,
+            "position_x": 444,
+            "position_y": 410,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag this number",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag this number"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 624,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

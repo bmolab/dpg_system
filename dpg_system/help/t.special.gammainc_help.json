@@ -1,0 +1,461 @@
+{
+    "height": 841,
+    "width": 1680,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.special.gammainc_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.gammainc_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.special gamma - factorials, continued",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 468,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.special gamma - factorials, continued",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.special gamma - factorials, continued"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 822,
+            "position_y": 45,
+            "width": 818,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The gamma function and its relatives.\n\nThe gamma function extends the factorial to values that are not whole numbers. \nWhere a factorial only makes sense at 1, 2, 3, gamma is defined smoothly in \nbetween, and it turns up throughout statistics because it is what normalises \nmost of the continuous distributions.\n\nTHE NODES:\n\nt.special.gammainc      the regularised lower incomplete gamma function\nt.special.gammaincc     the upper one - the complement, so the two sum to 1\nt.special.polygamma     the nth derivative of the log gamma function\nt.special.multigammaln  the log of the multivariate gamma function\n\nWHAT gammainc IS ACTUALLY FOR:\nIt is the cumulative distribution of a gamma-distributed quantity - how much of \nthe distribution lies below a given point. So given a waiting time, or a \nduration, or an accumulated amount, it answers \"what fraction of the time would \nwe expect to see a value at least this small\". \n\nThat makes it the node for turning a measurement into a probability, which is \nhow you say \"this reading is unusually large\" in a way that does not depend on \nthe units. gammaincc answers the other half - \"how surprising is a value this \nbig\" - and is the one you want for a tail probability.\n\npolygamma AND multigammaln:\nBoth are machinery rather than everyday tools. polygamma at n=0 is the digamma \nfunction, which is the derivative of log gamma and appears whenever you \ndifferentiate something involving a gamma distribution. multigammaln is the \nmultivariate version's logarithm, needed for distributions over matrices.\n\nSYNTAX:\nt.special.gammainc\nt.special.polygamma <n>\n\nEXAMPLE:\nt.special.gammainc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in / tensor 2 in (gammainc, gammaincc):\nThe shape parameter and the value to evaluate at.\n\ntensor in / n (polygamma):\nThe values, and which derivative - 0 is digamma, 1 is trigamma.\n\ntensor in / p (multigammaln):\nThe values, and the dimension.\n\nOUTPUTS: \n\ntensor out:\nThe result, element by element.\n\nWORKING IN LOGS:\nGamma values become enormous very quickly - the same reason factorials do - and \noverflow to infinity for quite modest inputs. That is why multigammaln returns \nthe logarithm rather than the value, and why t.special.gammaln (on the \nt.special help patch) exists alongside the plain gamma. If a gamma calculation \nis returning infinity, working in logs is the fix rather than a workaround.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The gamma function and its relatives.\n\nThe gamma function extends the factorial to values that are not whole numbers. \nWhere a factorial only makes sense at 1, 2, 3, gamma is defined smoothly in \nbetween, and it turns up throughout statistics because it is what normalises \nmost of the continuous distributions.\n\nTHE NODES:\n\nt.special.gammainc      the regularised lower incomplete gamma function\nt.special.gammaincc     the upper one - the complement, so the two sum to 1\nt.special.polygamma     the nth derivative of the log gamma function\nt.special.multigammaln  the log of the multivariate gamma function\n\nWHAT gammainc IS ACTUALLY FOR:\nIt is the cumulative distribution of a gamma-distributed quantity - how much of \nthe distribution lies below a given point. So given a waiting time, or a \nduration, or an accumulated amount, it answers \"what fraction of the time would \nwe expect to see a value at least this small\". \n\nThat makes it the node for turning a measurement into a probability, which is \nhow you say \"this reading is unusually large\" in a way that does not depend on \nthe units. gammaincc answers the other half - \"how surprising is a value this \nbig\" - and is the one you want for a tail probability.\n\npolygamma AND multigammaln:\nBoth are machinery rather than everyday tools. polygamma at n=0 is the digamma \nfunction, which is the derivative of log gamma and appears whenever you \ndifferentiate something involving a gamma distribution. multigammaln is the \nmultivariate version's logarithm, needed for distributions over matrices.\n\nSYNTAX:\nt.special.gammainc\nt.special.polygamma <n>\n\nEXAMPLE:\nt.special.gammainc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in / tensor 2 in (gammainc, gammaincc):\nThe shape parameter and the value to evaluate at.\n\ntensor in / n (polygamma):\nThe values, and which derivative - 0 is digamma, 1 is trigamma.\n\ntensor in / p (multigammaln):\nThe values, and the dimension.\n\nOUTPUTS: \n\ntensor out:\nThe result, element by element.\n\nWORKING IN LOGS:\nGamma values become enormous very quickly - the same reason factorials do - and \noverflow to infinity for quite modest inputs. That is why multigammaln returns \nthe logarithm rather than the value, and why t.special.gammaln (on the \nt.special help patch) exists alongside the plain gamma. If a gamma calculation \nis returning infinity, working in logs is the fix rather than a workaround."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "t.rand",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "6": {
+            "init": "comment a shape parameter and a value",
+            "name": "comment",
+            "id": 459,
+            "position_x": 526,
+            "position_y": 310,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a shape parameter and a value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a shape parameter and a value"
+        },
+        "7": {
+            "name": "t.special.gammainc",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 455,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the fraction of the distribution below",
+            "name": "comment",
+            "id": 570,
+            "position_x": 526,
+            "position_y": 615,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the fraction of the distribution below",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the fraction of the distribution below"
+        },
+        "10": {
+            "name": "t.special.gammaincc",
+            "id": 607,
+            "position_x": 280,
+            "position_y": 350,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 280,
+            "position_y": 455,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment and the tail above: the two sum to 1",
+            "name": "comment",
+            "id": 681,
+            "position_x": 526,
+            "position_y": 655,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and the tail above: the two sum to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and the tail above: the two sum to 1"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 633,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2 in"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1 in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2 in"
+        },
+        "6": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1 in"
+        },
+        "7": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

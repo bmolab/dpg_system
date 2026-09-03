@@ -1,0 +1,594 @@
+{
+    "height": 965,
+    "width": 1917,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "translate_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/translate_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment translate - free and official routes",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 432,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "translate - free and official routes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "translate - free and official routes"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1069,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These translate text between languages, using Google.\n\nTHE NODES:\n\ntranslate      the free route. No account, no key, works immediately\ntranslate_api  the official Cloud API. Needs credentials, and is reliable\n\nTHEY ARE NOT TWO WAYS OF DOING THE SAME THING:\nThe difference matters more than the shared name suggests, and it decides which\none belongs in a piece.\n\ntranslate asks the ordinary Google Translate web page for a translation, the way\na browser would. Nothing to sign up for, nothing to configure - drop it in and\nit works. Measured here: a sentence of English into French came back in about\n0.7 seconds, with no account of any kind.\n\ntranslate_api uses Google's paid Cloud Translation service. It needs a Google\nCloud project, the SDK installed, and GOOGLE_APPLICATION_CREDENTIALS pointing at\na key file. In exchange it is supported, rate-limited generously, and will not\nchange under you.\n\nIF translate_api IS NOT THERE, THAT IS WHY:\nThe node only appears when the Google Cloud SDK is installed. Without it,\n'translate' still works and 'translate_api' is simply not registered - the\nconsole says so when the patch starts.\n\nIf you have the SDK but the node reports no credentials, that is the environment\nvariable, not the node.\n\nWHAT 'FREE' COSTS YOU:\ntranslate is unofficial. It is not a service Google offers you, it is a page\nGoogle serves to browsers, so:\n\nIt can stop working without warning, if the page changes.\nIt will refuse you if you ask too often - it is not built for a stream of\nrequests, and there is no quota to raise.\nText is limited to 5000 characters at a time.\n\nSo: excellent for making a piece, for rehearsal, and for anything where an\noccasional failure is survivable. Not the thing to build an installation on that\nhas to run unattended for three months. Use translate while you work and swap in\ntranslate_api if it matters.\n\nYOUR TEXT GOES TO GOOGLE, EITHER WAY:\nBoth send what you give them over the network to be translated. That is\nobvious once said, and worth saying: anything private, anything an audience\nsaid in confidence, anything you would not put in a search box, should not go\nthrough these.\n\n'use queue' - BECAUSE A TRANSLATION TAKES TIME:\nA round trip is most of a second, which is an eternity in a patch running at\nframe rate. With the queue on, requests are handled one after another in the\nbackground and the patch never waits. With it off, a request that arrives while\nanother is in flight is simply lost.\n\nLeave it on unless you specifically want only the most recent request to matter.\n\n'time out' is how long to wait before giving up on one, in seconds. Five is\nsensible; raise it on a slow connection rather than lowering it to make things\nfeel responsive, because a timeout does not make the answer arrive sooner - it\njust throws it away.\n\nLANGUAGES ARE PICKED BY NAME:\n'source language' and 'dest language' are lists of language names rather than\ncodes, so you choose English and French rather than en and fr. Setting the\nsource to automatic detection is the usual choice when the text is arriving from\nspeech and you do not know what is coming.\n\nSYNTAX:\ntranslate <source> <dest>\ntranslate_api <source> <dest>\n\nEXAMPLE:\ntranslate English French\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. Receiving it starts a translation.\n\nsource language / dest language:\nFrom and to, by name.\n\nuse queue:\nHandle requests one after another in the background. Leave on.\n\ntime out:\nSeconds to wait before abandoning a request.\n\nOUTPUTS: \n\ntranslation out:\nThe translated text, when it arrives - which is not on the same frame it went\nout.\n\nRELATED:\nThe whisper nodes to get text out of speech in the first place.\ntext_display or cairo_layout to show the result.\ngemma_4 will also translate, locally and without sending anything anywhere,\nthough less reliably for the languages it saw little of.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These translate text between languages, using Google.\n\nTHE NODES:\n\ntranslate      the free route. No account, no key, works immediately\ntranslate_api  the official Cloud API. Needs credentials, and is reliable\n\nTHEY ARE NOT TWO WAYS OF DOING THE SAME THING:\nThe difference matters more than the shared name suggests, and it decides which\none belongs in a piece.\n\ntranslate asks the ordinary Google Translate web page for a translation, the way\na browser would. Nothing to sign up for, nothing to configure - drop it in and\nit works. Measured here: a sentence of English into French came back in about\n0.7 seconds, with no account of any kind.\n\ntranslate_api uses Google's paid Cloud Translation service. It needs a Google\nCloud project, the SDK installed, and GOOGLE_APPLICATION_CREDENTIALS pointing at\na key file. In exchange it is supported, rate-limited generously, and will not\nchange under you.\n\nIF translate_api IS NOT THERE, THAT IS WHY:\nThe node only appears when the Google Cloud SDK is installed. Without it,\n'translate' still works and 'translate_api' is simply not registered - the\nconsole says so when the patch starts.\n\nIf you have the SDK but the node reports no credentials, that is the environment\nvariable, not the node.\n\nWHAT 'FREE' COSTS YOU:\ntranslate is unofficial. It is not a service Google offers you, it is a page\nGoogle serves to browsers, so:\n\nIt can stop working without warning, if the page changes.\nIt will refuse you if you ask too often - it is not built for a stream of\nrequests, and there is no quota to raise.\nText is limited to 5000 characters at a time.\n\nSo: excellent for making a piece, for rehearsal, and for anything where an\noccasional failure is survivable. Not the thing to build an installation on that\nhas to run unattended for three months. Use translate while you work and swap in\ntranslate_api if it matters.\n\nYOUR TEXT GOES TO GOOGLE, EITHER WAY:\nBoth send what you give them over the network to be translated. That is\nobvious once said, and worth saying: anything private, anything an audience\nsaid in confidence, anything you would not put in a search box, should not go\nthrough these.\n\n'use queue' - BECAUSE A TRANSLATION TAKES TIME:\nA round trip is most of a second, which is an eternity in a patch running at\nframe rate. With the queue on, requests are handled one after another in the\nbackground and the patch never waits. With it off, a request that arrives while\nanother is in flight is simply lost.\n\nLeave it on unless you specifically want only the most recent request to matter.\n\n'time out' is how long to wait before giving up on one, in seconds. Five is\nsensible; raise it on a slow connection rather than lowering it to make things\nfeel responsive, because a timeout does not make the answer arrive sooner - it\njust throws it away.\n\nLANGUAGES ARE PICKED BY NAME:\n'source language' and 'dest language' are lists of language names rather than\ncodes, so you choose English and French rather than en and fr. Setting the\nsource to automatic detection is the usual choice when the text is arriving from\nspeech and you do not know what is coming.\n\nSYNTAX:\ntranslate <source> <dest>\ntranslate_api <source> <dest>\n\nEXAMPLE:\ntranslate English French\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. Receiving it starts a translation.\n\nsource language / dest language:\nFrom and to, by name.\n\nuse queue:\nHandle requests one after another in the background. Leave on.\n\ntime out:\nSeconds to wait before abandoning a request.\n\nOUTPUTS: \n\ntranslation out:\nThe translated text, when it arrives - which is not on the same frame it went\nout.\n\nRELATED:\nThe whisper nodes to get text out of speech in the first place.\ntext_display or cairo_layout to show the result.\ngemma_4 will also translate, locally and without sending anything anywhere,\nthough less reliably for the languages it saw little of."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 520,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "the room was colder than it had been",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 480,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment click to translate",
+            "name": "comment",
+            "id": 385,
+            "position_x": 766,
+            "position_y": 112,
+            "width": 126,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to translate",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to translate"
+        },
+        "5": {
+            "name": "translate",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 160,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment no account, no key - it asks the same",
+            "name": "comment",
+            "id": 459,
+            "position_x": 766,
+            "position_y": 435,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "no account, no key - it asks the same",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "no account, no key - it asks the same"
+        },
+        "7": {
+            "init": "comment page a browser would. About 0.7s",
+            "name": "comment",
+            "id": 496,
+            "position_x": 766,
+            "position_y": 515,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "page a browser would. About 0.7s",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "page a browser would. About 0.7s"
+        },
+        "8": {
+            "name": "text_display",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 160,
+            "width": 340,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the answer arrives LATER, not on the",
+            "name": "comment",
+            "id": 570,
+            "position_x": 766,
+            "position_y": 375,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the answer arrives LATER, not on the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the answer arrives LATER, not on the"
+        },
+        "10": {
+            "init": "comment same frame it went out - drive what",
+            "name": "comment",
+            "id": 607,
+            "position_x": 766,
+            "position_y": 405,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "same frame it went out - drive what",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "same frame it went out - drive what"
+        },
+        "11": {
+            "init": "comment comes next from this, not from the send",
+            "name": "comment",
+            "id": 644,
+            "position_x": 766,
+            "position_y": 475,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "comes next from this, not from the send",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "comes next from this, not from the send"
+        },
+        "12": {
+            "init": "comment leave use queue ON: with it off, a",
+            "name": "comment",
+            "id": 681,
+            "position_x": 766,
+            "position_y": 555,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "leave use queue ON: with it off, a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "leave use queue ON: with it off, a"
+        },
+        "13": {
+            "init": "comment request arriving while another is in",
+            "name": "comment",
+            "id": 718,
+            "position_x": 766,
+            "position_y": 595,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "request arriving while another is in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "request arriving while another is in"
+        },
+        "14": {
+            "init": "comment flight is simply lost",
+            "name": "comment",
+            "id": 755,
+            "position_x": 766,
+            "position_y": 635,
+            "width": 147,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flight is simply lost",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flight is simply lost"
+        },
+        "15": {
+            "init": "comment translate_api is the paid, supported",
+            "name": "comment",
+            "id": 792,
+            "position_x": 766,
+            "position_y": 675,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "translate_api is the paid, supported",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "translate_api is the paid, supported"
+        },
+        "16": {
+            "init": "comment route. It only appears if the Google",
+            "name": "comment",
+            "id": 829,
+            "position_x": 766,
+            "position_y": 715,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "route. It only appears if the Google",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "route. It only appears if the Google"
+        },
+        "17": {
+            "init": "comment Cloud SDK is installed - and then needs",
+            "name": "comment",
+            "id": 866,
+            "position_x": 766,
+            "position_y": 755,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Cloud SDK is installed - and then needs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Cloud SDK is installed - and then needs"
+        },
+        "18": {
+            "init": "comment GOOGLE_APPLICATION_CREDENTIALS set",
+            "name": "comment",
+            "id": 903,
+            "position_x": 766,
+            "position_y": 795,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "GOOGLE_APPLICATION_CREDENTIALS set",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "GOOGLE_APPLICATION_CREDENTIALS set"
+        },
+        "19": {
+            "init": "comment BOTH send your text to Google. Nothing",
+            "name": "comment",
+            "id": 940,
+            "position_x": 766,
+            "position_y": 835,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "BOTH send your text to Google. Nothing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "BOTH send your text to Google. Nothing"
+        },
+        "20": {
+            "init": "comment private should go through either",
+            "name": "comment",
+            "id": 977,
+            "position_x": 766,
+            "position_y": 875,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "private should go through either",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "private should go through either"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 450,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "translation out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

@@ -1,0 +1,296 @@
+{
+    "height": 821,
+    "width": 1816,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "t.audio.play_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.audio.play_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.audio.play - getting sound out",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 384,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.audio.play - getting sound out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.audio.play - getting sound out"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 968,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These play audio out, and manage the device it goes to.\n\nTHE NODES:\n\nt.audio.play         play one sound\nt.audio.multiplayer  hold several sounds and play them by name\naudio_mixer          the output device and format for all of them\n\naudio_mixer IS GLOBAL, AND THERE SHOULD BE ONE:\nIt sets the output device, the sample rate and the channel count for this whole \nsystem. More than one in a patch means two nodes claiming the same settings, so \nput a single one somewhere and leave it.\n\nIts 'stop all' is the panic button - everything playing stops at once. Worth \nwiring to a key or a foot button when you are working with long sounds.\n\nt.audio.multiplayer IS FOR A SET OF SOUNDS:\nLoad several files, each keeps its name, and trigger them by name. That is \nbetter than a t.audio.play per sound once there are more than a couple - one \nnode, one place to load things, and adding a sound does not mean rewiring.\n\n'remove wave' and 'clear waves' manage the set while the patch runs.\n\nWHEN TO USE THIS RATHER THAN THE SYNTH:\nThese play a tensor or a file, and that is all. They do not mix into a signal \nchain, they have no per-voice control, and they cannot be processed by ~ nodes \non the way out.\n\nFor a sound effect fired by an event, that is exactly enough and much simpler. \nFor anything that needs to be filtered, enveloped, spatialised or mixed with \nother sound, use sampler_osc~ in the synth system instead - it treats recorded \nmaterial as a modular oscillator, with everything else available to it.\n\nTWO AUDIO SYSTEMS, AND WHICH IS WHICH:\nThis is not the synth. The ~ nodes are a real-time DSP graph compiled into the\naudio callback; these carry audio as TENSORS through ordinary patch cords, a\nblock at a time.\n\nUse the ~ nodes when the audio is being made or heard live, and these when the\naudio is DATA - to be analysed, transformed by a torch operation, fed to\nwhisper or a pitch tracker, or read from a file for something other than\nlistening.\n\ncapture~ is the bridge from the synth world into this one: it hands whole\nblocks of a live signal out as arrays.\n\nSYNTAX:\nt.audio.play\nt.audio.multiplayer\naudio_mixer\n\nEXAMPLE:\nt.audio.multiplayer\n\nINPUTS and PARAMETERS:\n\ntrigger:\nPlay it.\n\naudio tensor in:\nPlay a tensor directly, rather than a loaded file.\n\npath in / load file:\nThe sound.\n\nremove wave / clear waves (t.audio.multiplayer):\nManage the loaded set.\n\nstop / stop all:\nStop this sound, or everything.\n\noutput device / sample rate / channels (audio_mixer):\nThe output format for the whole system.\n\nOUTPUTS: \n\nNone - these are endpoints.\n\nRELATED:\naudio_out~ is the synth system's output, and is a different device path. \nRunning both at once means two things claiming the audio hardware; if one goes \nsilent when the other starts, that is why.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These play audio out, and manage the device it goes to.\n\nTHE NODES:\n\nt.audio.play         play one sound\nt.audio.multiplayer  hold several sounds and play them by name\naudio_mixer          the output device and format for all of them\n\naudio_mixer IS GLOBAL, AND THERE SHOULD BE ONE:\nIt sets the output device, the sample rate and the channel count for this whole \nsystem. More than one in a patch means two nodes claiming the same settings, so \nput a single one somewhere and leave it.\n\nIts 'stop all' is the panic button - everything playing stops at once. Worth \nwiring to a key or a foot button when you are working with long sounds.\n\nt.audio.multiplayer IS FOR A SET OF SOUNDS:\nLoad several files, each keeps its name, and trigger them by name. That is \nbetter than a t.audio.play per sound once there are more than a couple - one \nnode, one place to load things, and adding a sound does not mean rewiring.\n\n'remove wave' and 'clear waves' manage the set while the patch runs.\n\nWHEN TO USE THIS RATHER THAN THE SYNTH:\nThese play a tensor or a file, and that is all. They do not mix into a signal \nchain, they have no per-voice control, and they cannot be processed by ~ nodes \non the way out.\n\nFor a sound effect fired by an event, that is exactly enough and much simpler. \nFor anything that needs to be filtered, enveloped, spatialised or mixed with \nother sound, use sampler_osc~ in the synth system instead - it treats recorded \nmaterial as a modular oscillator, with everything else available to it.\n\nTWO AUDIO SYSTEMS, AND WHICH IS WHICH:\nThis is not the synth. The ~ nodes are a real-time DSP graph compiled into the\naudio callback; these carry audio as TENSORS through ordinary patch cords, a\nblock at a time.\n\nUse the ~ nodes when the audio is being made or heard live, and these when the\naudio is DATA - to be analysed, transformed by a torch operation, fed to\nwhisper or a pitch tracker, or read from a file for something other than\nlistening.\n\ncapture~ is the bridge from the synth world into this one: it hands whole\nblocks of a live signal out as arrays.\n\nSYNTAX:\nt.audio.play\nt.audio.multiplayer\naudio_mixer\n\nEXAMPLE:\nt.audio.multiplayer\n\nINPUTS and PARAMETERS:\n\ntrigger:\nPlay it.\n\naudio tensor in:\nPlay a tensor directly, rather than a loaded file.\n\npath in / load file:\nThe sound.\n\nremove wave / clear waves (t.audio.multiplayer):\nManage the loaded set.\n\nstop / stop all:\nStop this sound, or everything.\n\noutput device / sample rate / channels (audio_mixer):\nThe output format for the whole system.\n\nOUTPUTS: \n\nNone - these are endpoints.\n\nRELATED:\naudio_out~ is the synth system's output, and is a different device path. \nRunning both at once means two things claiming the audio hardware; if one goes \nsilent when the other starts, that is why."
+        },
+        "3": {
+            "name": "audio_mixer",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment one of these in a patch, not several",
+            "name": "comment",
+            "id": 385,
+            "position_x": 686,
+            "position_y": 275,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one of these in a patch, not several",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one of these in a patch, not several"
+        },
+        "5": {
+            "name": "button",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "t.audio.multiplayer",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 385,
+            "width": 300,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment load several, trigger them by name",
+            "name": "comment",
+            "id": 496,
+            "position_x": 686,
+            "position_y": 680,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "load several, trigger them by name",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "load several, trigger them by name"
+        },
+        "8": {
+            "init": "comment adding a sound needs no rewiring",
+            "name": "comment",
+            "id": 533,
+            "position_x": 686,
+            "position_y": 710,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "adding a sound needs no rewiring",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "adding a sound needs no rewiring"
+        },
+        "9": {
+            "name": "button",
+            "id": 570,
+            "position_x": 380,
+            "position_y": 320,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "t.audio.play",
+            "id": 607,
+            "position_x": 380,
+            "position_y": 385,
+            "width": 280,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment one sound, fired by an event",
+            "name": "comment",
+            "id": 644,
+            "position_x": 686,
+            "position_y": 640,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one sound, fired by an event",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one sound, fired by an event"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 695,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "1": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        }
+    }
+}

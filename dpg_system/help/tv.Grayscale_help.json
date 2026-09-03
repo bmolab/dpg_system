@@ -1,0 +1,611 @@
+{
+    "height": 922,
+    "width": 1902,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "tv.Grayscale_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/tv.Grayscale_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment tv.Grayscale and tv.gaussian_blur - the k. twins",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tv.Grayscale and tv.gaussian_blur - the k. twins",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tv.Grayscale and tv.gaussian_blur - the k. twins"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1054,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Two transforms that torchvision and kornia both offer.\n\nTHE NODES:\n\ntv.Grayscale       colour to a single brightness channel\ntv.gaussian_blur   smooth the image\n\nTHESE HAVE k. TWINS - WHICH SHOULD YOU USE:\nk.rgb_to_grayscale and k.gaussian_blur do the same jobs. For ordinary work the\nresults are equivalent and the choice hardly matters, but three differences are\nworth knowing:\n\nWhole-number images. The tv nodes take 0..255 integers and give them back;\nthe k. nodes convert everything to floats. If an image is arriving from a camera\nor a file as integers and you want it to stay that way, use these.\n\nAlready-grayscale input. tv.Grayscale accepts a one-channel image and passes it\nthrough unchanged. k.rgb_to_grayscale refuses it - it wants three channels and\nsays so. If a chain might be handed either kind, tv.Grayscale is the forgiving\none.\n\nWhat comes next. If the next step is an edge or blob filter, you are in kornia's\nterritory anyway, and staying in one family keeps the assumptions consistent.\n\nBLUR IS A CHOICE ABOUT SCALE:\n'sigma' is how far the smoothing reaches, and that is really a decision about\nwhat counts as detail and what counts as noise. 'kernel size' is just the window\nthe arithmetic happens in; it needs to be comfortably wider than sigma or the\nblur is cut off at the edge of its own window. Sigma is the dial you want.\n\nSigma is clamped above zero, and the widget is corrected to whatever value was\nactually used - a blur of nothing is not a blur, and it will not pretend\notherwise.\n\nGRAYSCALE IS NOT THE AVERAGE OF THE CHANNELS:\nIt is a weighted sum, and green counts for far more than blue, because that is\nhow human vision works rather than because of anything about the numbers. Two\ncolours that look equally bright to you end up equally bright; averaging the\nthree channels instead would make blues too light and greens too dark.\n\nWhich matters whenever brightness is standing in for something perceptual. If\nyou want a plain average, that is a mean over the channel axis, not this.\n\nSYNTAX:\ntv.Grayscale\ntv.gaussian_blur\n\nEXAMPLE:\ntv.gaussian_blur\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the work.\n\nkernel size / sigma (tv.gaussian_blur):\nHow far the smoothing reaches, and the window it is computed in.\n\nOUTPUTS: \n\noutput:\nThe transformed image, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W)\nfor grayscale. Images from cameras and files usually arrive the other way round,\n(H, W, 3), so the nodes guess: a small last dimension and a large third-from-last\nmeans height-width-channels, and they transpose it for you. The guess is right\nexcept on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255\nintegers and you get 0..255 integers back, correctly scaled. Floats are taken to\nrun 0 to 1.\n\nRELATED:\ntv.adjust_saturation at 0 gives a grey image that still has three channels;\ntv.Grayscale gives one channel. Which you want depends on what comes next.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Two transforms that torchvision and kornia both offer.\n\nTHE NODES:\n\ntv.Grayscale       colour to a single brightness channel\ntv.gaussian_blur   smooth the image\n\nTHESE HAVE k. TWINS - WHICH SHOULD YOU USE:\nk.rgb_to_grayscale and k.gaussian_blur do the same jobs. For ordinary work the\nresults are equivalent and the choice hardly matters, but three differences are\nworth knowing:\n\nWhole-number images. The tv nodes take 0..255 integers and give them back;\nthe k. nodes convert everything to floats. If an image is arriving from a camera\nor a file as integers and you want it to stay that way, use these.\n\nAlready-grayscale input. tv.Grayscale accepts a one-channel image and passes it\nthrough unchanged. k.rgb_to_grayscale refuses it - it wants three channels and\nsays so. If a chain might be handed either kind, tv.Grayscale is the forgiving\none.\n\nWhat comes next. If the next step is an edge or blob filter, you are in kornia's\nterritory anyway, and staying in one family keeps the assumptions consistent.\n\nBLUR IS A CHOICE ABOUT SCALE:\n'sigma' is how far the smoothing reaches, and that is really a decision about\nwhat counts as detail and what counts as noise. 'kernel size' is just the window\nthe arithmetic happens in; it needs to be comfortably wider than sigma or the\nblur is cut off at the edge of its own window. Sigma is the dial you want.\n\nSigma is clamped above zero, and the widget is corrected to whatever value was\nactually used - a blur of nothing is not a blur, and it will not pretend\notherwise.\n\nGRAYSCALE IS NOT THE AVERAGE OF THE CHANNELS:\nIt is a weighted sum, and green counts for far more than blue, because that is\nhow human vision works rather than because of anything about the numbers. Two\ncolours that look equally bright to you end up equally bright; averaging the\nthree channels instead would make blues too light and greens too dark.\n\nWhich matters whenever brightness is standing in for something perceptual. If\nyou want a plain average, that is a mean over the channel axis, not this.\n\nSYNTAX:\ntv.Grayscale\ntv.gaussian_blur\n\nEXAMPLE:\ntv.gaussian_blur\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the work.\n\nkernel size / sigma (tv.gaussian_blur):\nHow far the smoothing reaches, and the window it is computed in.\n\nOUTPUTS: \n\noutput:\nThe transformed image, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W)\nfor grayscale. Images from cameras and files usually arrive the other way round,\n(H, W, 3), so the nodes guess: a small last dimension and a large third-from-last\nmeans height-width-channels, and they transpose it for you. The guess is right\nexcept on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255\nintegers and you get 0..255 integers back, correctly scaled. Floats are taken to\nrun 0 to 1.\n\nRELATED:\ntv.adjust_saturation at 0 gives a grey image that still has three channels;\ntv.Grayscale gives one channel. Which you want depends on what comes next."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 190,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 3 32 32"
+        },
+        "5": {
+            "name": "t.info",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 200,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "list",
+            "id": 459,
+            "position_x": 250,
+            "position_y": 285,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment 3 channels in",
+            "name": "comment",
+            "id": 496,
+            "position_x": 786,
+            "position_y": 335,
+            "width": 91,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "3 channels in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "3 channels in"
+        },
+        "8": {
+            "name": "tv.Grayscale",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 200,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "t.info",
+            "id": 570,
+            "position_x": 250,
+            "position_y": 380,
+            "width": 200,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 250,
+            "position_y": 545,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment 1 channel out - a weighted sum,",
+            "name": "comment",
+            "id": 644,
+            "position_x": 786,
+            "position_y": 595,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "1 channel out - a weighted sum,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "1 channel out - a weighted sum,"
+        },
+        "12": {
+            "init": "comment not the average of the three",
+            "name": "comment",
+            "id": 681,
+            "position_x": 786,
+            "position_y": 625,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "not the average of the three",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "not the average of the three"
+        },
+        "13": {
+            "name": "t.squeeze",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 575,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "name": "tv.gaussian_blur",
+            "id": 792,
+            "position_x": 530,
+            "position_y": 380,
+            "width": 230,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sigma",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "kernel size",
+                    "value": "9",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "name": "t.squeeze",
+            "id": 829,
+            "position_x": 530,
+            "position_y": 545,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 530,
+            "position_y": 640,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.2,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.8,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment the same picture, smoothed - sigma",
+            "name": "comment",
+            "id": 903,
+            "position_x": 786,
+            "position_y": 800,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same picture, smoothed - sigma",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same picture, smoothed - sigma"
+        },
+        "19": {
+            "init": "comment decides what counts as detail",
+            "name": "comment",
+            "id": 940,
+            "position_x": 786,
+            "position_y": 830,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "decides what counts as detail",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "decides what counts as detail"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 818,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "9": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "10": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

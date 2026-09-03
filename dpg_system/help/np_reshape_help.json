@@ -1,0 +1,532 @@
+{
+    "height": 861,
+    "width": 1596,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "np_reshape_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np_reshape_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np shape - the same numbers, arranged differently",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np shape - the same numbers, arranged differently",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np shape - the same numbers, arranged differently"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 748,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes change an array's SHAPE without changing the numbers in it.\n\nAn array of twelve numbers can be twelve in a row, or three rows of four, or \nfour rows of three, or a single 1 by 12 slab. The numbers are identical; \nonly the arrangement differs. Nodes downstream care a great deal about the \narrangement, and most \"why won't this connect\" problems in array work are a \nshape mismatch rather than a data problem.\n\nTHE NODES:\n\nnp.shape         report the current shape - the first thing to check when \n                 something is refusing data\nnp.reshape       rearrange into a shape you specify\nflatten          collapse everything into one long row\nnp.ravel         the same as flatten\nnp.transpose     swap the axes over - rows become columns\nnp.expand_dims   add a new axis of length 1\nnp.unsqueeze     the same as expand_dims, under the torch name\nnp.squeeze       remove axes of length 1\n\nWHY LENGTH-1 AXES MATTER:\nAn array of shape (3,) and one of shape (1, 3) hold the same three numbers, \nand many operations treat them differently - one is a vector, the other a \nmatrix with a single row. expand_dims and squeeze exist to convert between the \ntwo without touching the data. When a node insists it wants a 2D array and you \nhave a 1D one, expand_dims is usually the answer; when a result comes out with \na stray extra dimension, squeeze removes it.\n\nSYNTAX:\nnp.reshape <dim> <dim> ...\nnp.expand_dims\n\nEXAMPLE:\nnp.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array. Receiving it triggers the node.\n\nshape (np.reshape):\nThe new shape, as a list of dimensions. They must multiply to the number of \nelements you actually have - 3 by 4 works for twelve numbers and fails for \nten. A -1 means \"work this one out for me\", so \"6 -1\" gives six rows of \nwhatever fits.\n\naxis (expand_dims, squeeze):\nWhere to add or remove the length-1 axis.\n\norder (flatten, np.ravel):\nWhether to read the array row by row or column by column when flattening.\n\nOUTPUTS: \n\noutput / flattened array / transposed array / array out:\nThe same numbers, differently arranged.\n\nshape:\nA list of the dimensions.\n\nTRANSPOSE DOES NOT MOVE ANYTHING:\nTransposing swaps how the array is READ rather than reorganising memory, \nso it is effectively free however large the array. Reshaping is usually free \ntoo. Neither is a copy unless it has to be.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes change an array's SHAPE without changing the numbers in it.\n\nAn array of twelve numbers can be twelve in a row, or three rows of four, or \nfour rows of three, or a single 1 by 12 slab. The numbers are identical; \nonly the arrangement differs. Nodes downstream care a great deal about the \narrangement, and most \"why won't this connect\" problems in array work are a \nshape mismatch rather than a data problem.\n\nTHE NODES:\n\nnp.shape         report the current shape - the first thing to check when \n                 something is refusing data\nnp.reshape       rearrange into a shape you specify\nflatten          collapse everything into one long row\nnp.ravel         the same as flatten\nnp.transpose     swap the axes over - rows become columns\nnp.expand_dims   add a new axis of length 1\nnp.unsqueeze     the same as expand_dims, under the torch name\nnp.squeeze       remove axes of length 1\n\nWHY LENGTH-1 AXES MATTER:\nAn array of shape (3,) and one of shape (1, 3) hold the same three numbers, \nand many operations treat them differently - one is a vector, the other a \nmatrix with a single row. expand_dims and squeeze exist to convert between the \ntwo without touching the data. When a node insists it wants a 2D array and you \nhave a 1D one, expand_dims is usually the answer; when a result comes out with \na stray extra dimension, squeeze removes it.\n\nSYNTAX:\nnp.reshape <dim> <dim> ...\nnp.expand_dims\n\nEXAMPLE:\nnp.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array. Receiving it triggers the node.\n\nshape (np.reshape):\nThe new shape, as a list of dimensions. They must multiply to the number of \nelements you actually have - 3 by 4 works for twelve numbers and fails for \nten. A -1 means \"work this one out for me\", so \"6 -1\" gives six rows of \nwhatever fits.\n\naxis (expand_dims, squeeze):\nWhere to add or remove the length-1 axis.\n\norder (flatten, np.ravel):\nWhether to read the array row by row or column by column when flattening.\n\nOUTPUTS: \n\noutput / flattened array / transposed array / array out:\nThe same numbers, differently arranged.\n\nshape:\nA list of the dimensions.\n\nTRANSPOSE DOES NOT MOVE ANYTHING:\nTransposing swaps how the array is READ rather than reorganising memory, \nso it is effectively free however large the array. Reshaping is usually free \ntoo. Neither is a copy unless it has to be."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 140,
+            "height": 130,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dim 0",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 3 4"
+        },
+        "5": {
+            "name": "np.shape",
+            "id": 422,
+            "position_x": 230,
+            "position_y": 120,
+            "width": 140,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "list",
+            "id": 459,
+            "position_x": 230,
+            "position_y": 195,
+            "width": 160,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment three rows of four",
+            "name": "comment",
+            "id": 496,
+            "position_x": 466,
+            "position_y": 245,
+            "width": 126,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three rows of four",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three rows of four"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "np.transpose",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 160,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 515,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the same numbers, read the other way",
+            "name": "comment",
+            "id": 644,
+            "position_x": 466,
+            "position_y": 675,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same numbers, read the other way",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same numbers, read the other way"
+        },
+        "12": {
+            "name": "flatten",
+            "id": 681,
+            "position_x": 280,
+            "position_y": 440,
+            "width": 150,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "np.shape",
+            "id": 718,
+            "position_x": 280,
+            "position_y": 515,
+            "width": 140,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 280,
+            "position_y": 590,
+            "width": 160,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment flattened: twelve in a row",
+            "name": "comment",
+            "id": 792,
+            "position_x": 466,
+            "position_y": 640,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flattened: twelve in a row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flattened: twelve in a row"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 693,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "transposed array",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flattened array",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "8": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

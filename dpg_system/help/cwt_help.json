@@ -1,0 +1,655 @@
+{
+    "height": 930,
+    "width": 1916,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "cwt_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/cwt_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment cwt and confusion - making a matrix to look at",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cwt and confusion - making a matrix to look at",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cwt and confusion - making a matrix to look at"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1068,
+            "position_y": 45,
+            "width": 808,
+            "height": 786,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Two nodes that turn what you send them into a matrix to look at.\n\nTHE NODES:\n\ncwt        a signal, spread out into time against frequency\nconfusion  two lists, compared item by item\n\nThey have nothing to do with each other mathematically. What they share is the\nshape of the answer: both take something one-dimensional and give back a grid,\nand both are meant for a heat_map, where a pattern you would never find in a\ncolumn of numbers is obvious at a glance.\n\ncwt: WHERE THE FREQUENCIES ARE, AND WHEN:\nA Fourier transform tells you which frequencies are present in a signal, and\nthrows away when they happened. A wavelet transform keeps both: the output is a\nmatrix, frequency down one axis and time along the other, so you can see a pitch\nrise, a thump arrive, or a tremor start and stop.\n\nThat is the whole reason to reach for it over an FFT. If the question has the\nword \"when\" in it, you want this.\n\nThe output is the MAGNITUDE of the coefficients - how much of each frequency was\npresent at each moment. The phase is discarded, which is what you want for\nlooking and not what you want for reconstructing.\n\n'octaves' IS REALLY VOICES PER OCTAVE:\nIt sets how finely the frequency axis is sampled, not how many octaves are\ncovered. Higher gives more rows and a smoother picture, at proportionally more\nwork. Measured on a 512-sample input:\n\noctaves 2   ->  17 rows by 512 columns\noctaves 8   ->  65 rows by 512 columns\n\nThe columns always match the input length, so the time axis is simply the signal\nyou sent. Feed it from a buffer or rolling_buffer to give it a window to work on\n- a single sample has no time in it to analyse.\n\n'wavelet' chooses the shape being matched against the signal. They trade\nsharpness in time against sharpness in frequency, and you cannot have both -\nthat is a property of the world, not of the software. morlet is the familiar\ngeneral-purpose choice; the others differ in where they sit on that trade.\n\nconfusion: WHERE TWO LISTS AGREE:\nIt takes two lists and marks every place an item in one EXACTLY equals an item\nin the other - one row per item in the second list, one column per item in the\nfirst, 1.0 where they match and 0 everywhere else.\n\nSending ['apple','pear','engine'] and ['fruit','apple','engine','apple']:\n\n              fruit  apple  engine  apple\n    apple       0      1       0      1\n    pear        0      0       0      0\n    engine      0      0       1      0\n\nNote 'pear' is an empty row: it appears in neither. That is the useful part -\nthe gaps show you what one list has that the other does not, and repeats show up\nas repeated marks along a row.\n\nIT IS EQUALITY, NOT SIMILARITY:\nWorth being clear about, because there is a node that looks almost identical and\ndoes something quite different. This one asks \"are these the same thing\"; it has\nno notion of two things being nearly alike, and 'apple' against 'apples' scores\nzero.\n\nspacy_confusion has the same shape of output and compares MEANING, so 'apple'\nagainst 'fruit' scores well there and nothing at all here. Use this one for\ntokens, labels and categories; use that one for words.\n\nSYNTAX:\ncwt\nconfusion\n\nEXAMPLE:\ncwt\n\nINPUTS and PARAMETERS:\n\ninput (cwt):\nA window of signal. Receiving it does the transform.\n\noctaves / wavelet:\nHow finely to sample frequency, and which wavelet shape to use.\n\ninput / input2 (confusion):\nThe two lists. input2 becomes the rows, input the columns.\n\nOUTPUTS: \n\noutput (cwt):\nA matrix, frequency by time.\n\noutput (confusion):\nA matrix of ones and zeros, rows by columns.\n\nRELATED:\nrolling_buffer is the usual way to give cwt a window.\nspacy_confusion for meaning rather than equality.\nheat_map is where either of these wants to end up.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 770,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Two nodes that turn what you send them into a matrix to look at.\n\nTHE NODES:\n\ncwt        a signal, spread out into time against frequency\nconfusion  two lists, compared item by item\n\nThey have nothing to do with each other mathematically. What they share is the\nshape of the answer: both take something one-dimensional and give back a grid,\nand both are meant for a heat_map, where a pattern you would never find in a\ncolumn of numbers is obvious at a glance.\n\ncwt: WHERE THE FREQUENCIES ARE, AND WHEN:\nA Fourier transform tells you which frequencies are present in a signal, and\nthrows away when they happened. A wavelet transform keeps both: the output is a\nmatrix, frequency down one axis and time along the other, so you can see a pitch\nrise, a thump arrive, or a tremor start and stop.\n\nThat is the whole reason to reach for it over an FFT. If the question has the\nword \"when\" in it, you want this.\n\nThe output is the MAGNITUDE of the coefficients - how much of each frequency was\npresent at each moment. The phase is discarded, which is what you want for\nlooking and not what you want for reconstructing.\n\n'octaves' IS REALLY VOICES PER OCTAVE:\nIt sets how finely the frequency axis is sampled, not how many octaves are\ncovered. Higher gives more rows and a smoother picture, at proportionally more\nwork. Measured on a 512-sample input:\n\noctaves 2   ->  17 rows by 512 columns\noctaves 8   ->  65 rows by 512 columns\n\nThe columns always match the input length, so the time axis is simply the signal\nyou sent. Feed it from a buffer or rolling_buffer to give it a window to work on\n- a single sample has no time in it to analyse.\n\n'wavelet' chooses the shape being matched against the signal. They trade\nsharpness in time against sharpness in frequency, and you cannot have both -\nthat is a property of the world, not of the software. morlet is the familiar\ngeneral-purpose choice; the others differ in where they sit on that trade.\n\nconfusion: WHERE TWO LISTS AGREE:\nIt takes two lists and marks every place an item in one EXACTLY equals an item\nin the other - one row per item in the second list, one column per item in the\nfirst, 1.0 where they match and 0 everywhere else.\n\nSending ['apple','pear','engine'] and ['fruit','apple','engine','apple']:\n\n              fruit  apple  engine  apple\n    apple       0      1       0      1\n    pear        0      0       0      0\n    engine      0      0       1      0\n\nNote 'pear' is an empty row: it appears in neither. That is the useful part -\nthe gaps show you what one list has that the other does not, and repeats show up\nas repeated marks along a row.\n\nIT IS EQUALITY, NOT SIMILARITY:\nWorth being clear about, because there is a node that looks almost identical and\ndoes something quite different. This one asks \"are these the same thing\"; it has\nno notion of two things being nearly alike, and 'apple' against 'apples' scores\nzero.\n\nspacy_confusion has the same shape of output and compares MEANING, so 'apple'\nagainst 'fruit' scores well there and nothing at all here. Use this one for\ntokens, labels and categories; use that one for words.\n\nSYNTAX:\ncwt\nconfusion\n\nEXAMPLE:\ncwt\n\nINPUTS and PARAMETERS:\n\ninput (cwt):\nA window of signal. Receiving it does the transform.\n\noctaves / wavelet:\nHow finely to sample frequency, and which wavelet shape to use.\n\ninput / input2 (confusion):\nThe two lists. input2 becomes the rows, input the columns.\n\nOUTPUTS: \n\noutput (cwt):\nA matrix, frequency by time.\n\noutput (confusion):\nA matrix of ones and zeros, rows by columns.\n\nRELATED:\nrolling_buffer is the usual way to give cwt a window.\nspacy_confusion for meaning rather than equality.\nheat_map is where either of these wants to end up."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "rolling_buffer",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                }
+            },
+            "init": "rolling_buffer 256"
+        },
+        "5": {
+            "init": "comment cwt needs a WINDOW - a single sample",
+            "name": "comment",
+            "id": 422,
+            "position_x": 786,
+            "position_y": 370,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cwt needs a WINDOW - a single sample",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cwt needs a WINDOW - a single sample"
+        },
+        "6": {
+            "init": "comment has no time in it to analyse",
+            "name": "comment",
+            "id": 459,
+            "position_x": 786,
+            "position_y": 400,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "has no time in it to analyse",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "has no time in it to analyse"
+        },
+        "7": {
+            "name": "cwt",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 445,
+            "width": 240,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "octaves",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "wavelet",
+                    "value": "morlet",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment frequency down, time across - an FFT",
+            "name": "comment",
+            "id": 570,
+            "position_x": 786,
+            "position_y": 780,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "frequency down, time across - an FFT",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "frequency down, time across - an FFT"
+        },
+        "10": {
+            "init": "comment would tell you which frequencies but",
+            "name": "comment",
+            "id": 607,
+            "position_x": 786,
+            "position_y": 810,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "would tell you which frequencies but",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "would tell you which frequencies but"
+        },
+        "11": {
+            "init": "comment not when they happened",
+            "name": "comment",
+            "id": 644,
+            "position_x": 786,
+            "position_y": 840,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "not when they happened",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "not when they happened"
+        },
+        "12": {
+            "name": "message",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "apple pear engine",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "message",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 120,
+            "width": 360,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "fruit apple engine apple",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "confusion",
+            "id": 755,
+            "position_x": 400,
+            "position_y": 180,
+            "width": 220,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 792,
+            "position_x": 400,
+            "position_y": 305,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment EXACT matches only - apple hits two",
+            "name": "comment",
+            "id": 829,
+            "position_x": 786,
+            "position_y": 465,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "EXACT matches only - apple hits two",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "EXACT matches only - apple hits two"
+        },
+        "17": {
+            "init": "comment columns, pear is an empty row",
+            "name": "comment",
+            "id": 866,
+            "position_x": 786,
+            "position_y": 495,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "columns, pear is an empty row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "columns, pear is an empty row"
+        },
+        "18": {
+            "init": "comment spacy_confusion looks the same and",
+            "name": "comment",
+            "id": 903,
+            "position_x": 786,
+            "position_y": 540,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "spacy_confusion looks the same and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "spacy_confusion looks the same and"
+        },
+        "19": {
+            "init": "comment compares meaning instead",
+            "name": "comment",
+            "id": 940,
+            "position_x": 786,
+            "position_y": 570,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "compares meaning instead",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "compares meaning instead"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 798,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input2"
+        },
+        "4": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

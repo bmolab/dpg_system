@@ -1,0 +1,530 @@
+{
+    "height": 1011,
+    "width": 1605,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "t.info_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.info_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.info - what a tensor actually is",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 408,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.info - what a tensor actually is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.info - what a tensor actually is"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 757,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These tell you what a tensor actually is, which is how most torch problems \nget diagnosed.\n\nTHE NODES:\n\nt.info           shape, dtype, device and gradient tracking, on four outlets\nt.numel          how many elements it holds in total\nt.is_contiguous  whether its memory is laid out straight\nt.contiguous     make it so\n\nt.info IS THE FIRST THING TO REACH FOR:\nWhen an operation refuses a tensor, the reason is almost always one of the four\nthings this reports. The shape is wrong, the dtype is wrong, it is on the wrong\ndevice, or it is carrying gradient history it should not be.\n\nPatch it in beside whatever is failing. It costs nothing and it answers the\nquestion directly, where guessing from the error message often does not.\n\nCONTIGUITY, AND WHY t.view FAILS:\nA tensor's numbers live in a flat block of memory, and its shape is a way of\nreading that block. Transposing or permuting changes the reading without moving\nanything - which is why those operations are free at any size - but it leaves a\ntensor whose memory is no longer in the order its shape implies.\n\nThat is non-contiguous. Most operations do not care. t.view does: it requires\nthat the new shape can be read from the existing memory without moving anything,\nand after a transpose it cannot, so it fails.\n\nt.contiguous makes a copy laid out straight, after which view works. t.reshape\ndoes this for you when it has to, which is why reshape always works and view\nsometimes does not - see the t.reshape help patch.\n\nt.is_contiguous answers the question without changing anything, which is worth\nusing before inserting a t.contiguous that may be copying a large tensor for no\nreason.\n\nt.numel:\nThe total element count - the product of the shape. Useful for checking that a\nreshape is possible before attempting it, since the dimensions must multiply to\nthis.\n\nSYNTAX:\nt.info\nt.contiguous\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin / tensor in:\nThe tensor. Receiving it triggers the node.\n\nOUTPUTS: \n\nshape / dtype / device / grad (t.info):\nThe four things worth knowing, separately so each can be tested or displayed.\n\nnumel out:\nThe total element count.\n\nresult (t.is_contiguous):\nTrue or false.\n\ntensor out (t.contiguous):\nA contiguous copy - or the same tensor unchanged, if it already was.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These tell you what a tensor actually is, which is how most torch problems \nget diagnosed.\n\nTHE NODES:\n\nt.info           shape, dtype, device and gradient tracking, on four outlets\nt.numel          how many elements it holds in total\nt.is_contiguous  whether its memory is laid out straight\nt.contiguous     make it so\n\nt.info IS THE FIRST THING TO REACH FOR:\nWhen an operation refuses a tensor, the reason is almost always one of the four\nthings this reports. The shape is wrong, the dtype is wrong, it is on the wrong\ndevice, or it is carrying gradient history it should not be.\n\nPatch it in beside whatever is failing. It costs nothing and it answers the\nquestion directly, where guessing from the error message often does not.\n\nCONTIGUITY, AND WHY t.view FAILS:\nA tensor's numbers live in a flat block of memory, and its shape is a way of\nreading that block. Transposing or permuting changes the reading without moving\nanything - which is why those operations are free at any size - but it leaves a\ntensor whose memory is no longer in the order its shape implies.\n\nThat is non-contiguous. Most operations do not care. t.view does: it requires\nthat the new shape can be read from the existing memory without moving anything,\nand after a transpose it cannot, so it fails.\n\nt.contiguous makes a copy laid out straight, after which view works. t.reshape\ndoes this for you when it has to, which is why reshape always works and view\nsometimes does not - see the t.reshape help patch.\n\nt.is_contiguous answers the question without changing anything, which is worth\nusing before inserting a t.contiguous that may be copying a large tensor for no\nreason.\n\nt.numel:\nThe total element count - the product of the shape. Useful for checking that a\nreshape is possible before attempting it, since the dimensions must multiply to\nthis.\n\nSYNTAX:\nt.info\nt.contiguous\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin / tensor in:\nThe tensor. Receiving it triggers the node.\n\nOUTPUTS: \n\nshape / dtype / device / grad (t.info):\nThe four things worth knowing, separately so each can be tested or displayed.\n\nnumel out:\nThe total element count.\n\nresult (t.is_contiguous):\nTrue or false.\n\ntensor out (t.contiguous):\nA contiguous copy - or the same tensor unchanged, if it already was."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 3 4"
+        },
+        "5": {
+            "name": "t.is_contiguous",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "int",
+            "id": 459,
+            "position_x": 250,
+            "position_y": 225,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment fresh from t.rand: contiguous",
+            "name": "comment",
+            "id": 496,
+            "position_x": 496,
+            "position_y": 280,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fresh from t.rand: contiguous",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fresh from t.rand: contiguous"
+        },
+        "8": {
+            "name": "t.t",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 140,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "t.is_contiguous",
+            "id": 570,
+            "position_x": 250,
+            "position_y": 320,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 250,
+            "position_y": 425,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment after a transpose: not contiguous",
+            "name": "comment",
+            "id": 644,
+            "position_x": 496,
+            "position_y": 480,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "after a transpose: not contiguous",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "after a transpose: not contiguous"
+        },
+        "12": {
+            "init": "comment this is why t.view fails there",
+            "name": "comment",
+            "id": 681,
+            "position_x": 496,
+            "position_y": 510,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this is why t.view fails there",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this is why t.view fails there"
+        },
+        "13": {
+            "name": "t.contiguous",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 550,
+            "width": 200,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "t.is_contiguous",
+            "id": 755,
+            "position_x": 250,
+            "position_y": 550,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "int",
+            "id": 792,
+            "position_x": 250,
+            "position_y": 655,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment and contiguous again after a copy",
+            "name": "comment",
+            "id": 829,
+            "position_x": 496,
+            "position_y": 710,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and contiguous again after a copy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and contiguous again after a copy"
+        },
+        "17": {
+            "name": "t.info",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 200,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "18": {
+            "name": "string",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 835,
+            "width": 200,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 907,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

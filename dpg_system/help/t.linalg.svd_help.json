@@ -1,0 +1,399 @@
+{
+    "height": 901,
+    "width": 1589,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "t.linalg.svd_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.svd_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t decompositions - what a matrix is made of",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 516,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t decompositions - what a matrix is made of",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t decompositions - what a matrix is made of"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 731,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These break a matrix apart into the pieces it is made of.\n\nA matrix is a transformation. These nodes answer what that transformation is \nactually DOING - which directions it stretches, which it leaves alone, and how \nmuch of it could be thrown away without much being lost.\n\nTHE NODES:\n\nt.linalg.svd             singular value decomposition\nt.linalg.pca_low_rank    principal components, found approximately and quickly\nt.linalg.eig             eigenvalues and eigenvectors\nt.linalg.qr              QR decomposition\n\nSVD IS THE ONE TO KNOW:\nIt splits any matrix into a rotation, a set of scalings, and another rotation. \nThe scalings - the singular values - come out in descending order, and how \nquickly they fall away tells you how much of the data lives in how few \ndimensions. If the first three are large and the rest are near zero, your \nhigh-dimensional data is really three-dimensional with noise on top.\n\nThat is what makes it the tool for asking \"how many things are actually varying \nhere\". For a set of poses, or joint angles over time, the answer is usually far \nfewer than the number of channels.\n\npca_low_rank IS SVD WHEN YOU ONLY WANT THE TOP FEW:\nComputing a full decomposition of a large matrix is expensive and mostly wasted \nif you are going to keep six components. This finds the leading ones directly. \nIt also centres the data first by default, which is what makes it principal \ncomponent analysis rather than a bare decomposition - and centring matters, \nbecause otherwise the first component just points at where the data sits rather \nthan how it varies.\n\neig FINDS THE DIRECTIONS THAT DO NOT TURN:\nAn eigenvector is a direction the matrix only stretches, without rotating, \nand its eigenvalue is by how much. For a covariance matrix those directions are \nthe axes of variation. Note that eigenvalues can be complex even for real \nmatrices, which is the transformation containing a rotation.\n\nqr SPLITS INTO A ROTATION AND A TRIANGLE:\nMostly a building block - it is how least-squares problems get solved stably - \nbut Q is also a convenient way to get a set of mutually perpendicular directions \nout of a set of arbitrary ones.\n\nSYNTAX:\nt.linalg.svd\nt.linalg.pca_low_rank\n\nEXAMPLE:\nt.linalg.svd\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix. Receiving it triggers the node.\n\nfull (t.linalg.svd, pca_low_rank):\nWhether to compute the complete decomposition or only the part that carries \ninformation. The reduced form is smaller and faster and is usually what you want.\n\ncenter (pca_low_rank):\nSubtract the mean first. Leave it on unless you specifically want the \ndecomposition of the raw data.\n\nmode (t.linalg.qr):\nComplete or reduced.\n\nOUTPUTS: \n\nS tensor out:\nThe singular values - the amount of variation along each component, \nin descending order. This is the outlet to look at first; its shape tells you \nhow many dimensions your data really has.\n\nU / V / D tensor out:\nThe component directions.\n\nL / V tensor out (eig):\nThe eigenvalues and eigenvectors.\n\nQ / R tensor out (qr):\nThe perpendicular directions and the triangular factor.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These break a matrix apart into the pieces it is made of.\n\nA matrix is a transformation. These nodes answer what that transformation is \nactually DOING - which directions it stretches, which it leaves alone, and how \nmuch of it could be thrown away without much being lost.\n\nTHE NODES:\n\nt.linalg.svd             singular value decomposition\nt.linalg.pca_low_rank    principal components, found approximately and quickly\nt.linalg.eig             eigenvalues and eigenvectors\nt.linalg.qr              QR decomposition\n\nSVD IS THE ONE TO KNOW:\nIt splits any matrix into a rotation, a set of scalings, and another rotation. \nThe scalings - the singular values - come out in descending order, and how \nquickly they fall away tells you how much of the data lives in how few \ndimensions. If the first three are large and the rest are near zero, your \nhigh-dimensional data is really three-dimensional with noise on top.\n\nThat is what makes it the tool for asking \"how many things are actually varying \nhere\". For a set of poses, or joint angles over time, the answer is usually far \nfewer than the number of channels.\n\npca_low_rank IS SVD WHEN YOU ONLY WANT THE TOP FEW:\nComputing a full decomposition of a large matrix is expensive and mostly wasted \nif you are going to keep six components. This finds the leading ones directly. \nIt also centres the data first by default, which is what makes it principal \ncomponent analysis rather than a bare decomposition - and centring matters, \nbecause otherwise the first component just points at where the data sits rather \nthan how it varies.\n\neig FINDS THE DIRECTIONS THAT DO NOT TURN:\nAn eigenvector is a direction the matrix only stretches, without rotating, \nand its eigenvalue is by how much. For a covariance matrix those directions are \nthe axes of variation. Note that eigenvalues can be complex even for real \nmatrices, which is the transformation containing a rotation.\n\nqr SPLITS INTO A ROTATION AND A TRIANGLE:\nMostly a building block - it is how least-squares problems get solved stably - \nbut Q is also a convenient way to get a set of mutually perpendicular directions \nout of a set of arbitrary ones.\n\nSYNTAX:\nt.linalg.svd\nt.linalg.pca_low_rank\n\nEXAMPLE:\nt.linalg.svd\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix. Receiving it triggers the node.\n\nfull (t.linalg.svd, pca_low_rank):\nWhether to compute the complete decomposition or only the part that carries \ninformation. The reduced form is smaller and faster and is usually what you want.\n\ncenter (pca_low_rank):\nSubtract the mean first. Leave it on unless you specifically want the \ndecomposition of the raw data.\n\nmode (t.linalg.qr):\nComplete or reduced.\n\nOUTPUTS: \n\nS tensor out:\nThe singular values - the amount of variation along each component, \nin descending order. This is the outlet to look at first; its shape tells you \nhow many dimensions your data really has.\n\nU / V / D tensor out:\nThe component directions.\n\nL / V tensor out (eig):\nThe eigenvalues and eigenvectors.\n\nQ / R tensor out (qr):\nThe perpendicular directions and the triangular factor."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 6 6"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment a 6 by 6 matrix",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 6 by 6 matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 6 by 6 matrix"
+        },
+        "7": {
+            "name": "t.linalg.svd",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 200,
+            "height": 130,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the singular values, descending",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 660,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the singular values, descending",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the singular values, descending"
+        },
+        "10": {
+            "init": "comment how fast they fall is how few",
+            "name": "comment",
+            "id": 607,
+            "position_x": 484,
+            "position_y": 690,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how fast they fall is how few",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how fast they fall is how few"
+        },
+        "11": {
+            "init": "comment dimensions the data really has",
+            "name": "comment",
+            "id": 644,
+            "position_x": 484,
+            "position_y": 720,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dimensions the data really has",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dimensions the data really has"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 678,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "S tensor out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

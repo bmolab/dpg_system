@@ -1,0 +1,373 @@
+{
+    "height": 1219,
+    "width": 1678,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "mgl_camera_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_camera_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl camera, light and material - seeing the scene",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl camera, light and material - seeing the scene",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl camera, light and material - seeing the scene"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 820,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These decide where the scene is seen from, how it is lit, and what it is made of.\n\nLike everything in the chain they apply from where they sit onward - so a \nmaterial placed before three shapes gives all three that material, and a second \nmaterial after them changes only what follows.\n\nTHE NODES:\n\nmgl_camera        a fixed viewpoint: a position, a target and a field of view\nmgl_orbit_camera  a viewpoint you can drag - it takes the window's interaction \n                  events and turns them into yaw, elevation and distance\nmgl_light         a light source\nmgl_material      how surfaces respond to light\nmgl_color         a flat colour, ignoring lighting\nmgl_texture       an image mapped onto surfaces\nmgl_image         an image drawn directly\n\nA SCENE NEEDS A CAMERA AND A LIGHT:\nWithout a camera there is no viewpoint and nothing appears. Without a light, \nanything using a material is black. Those two are the usual reason a chain that \nlooks correct renders an empty window - the shapes are being drawn, and there \nis nothing to see them by.\n\nmgl_color IS NOT mgl_material:\nA colour is applied flat, so the shape comes out an even patch with no shading \nand no sense of form. A material responds to lights, so the same shape shows its \ncurvature. Use colour for markers, lines and anything schematic; use material \nfor anything meant to look like an object.\n\nTHE MATERIAL COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, \n'specular' the colour of the highlight, and 'shininess' how tight that highlight \nis. High shininess is a small hard glint; low is a broad sheen. The light node \nhas the matching three, and what you see is the product of the two.\n\nSYNTAX:\nmgl_camera\nmgl_orbit_camera\n\nEXAMPLE:\nmgl_orbit_camera\n\nINPUTS and PARAMETERS:\n\npos / target / up (mgl_camera):\nWhere the camera is, what it looks at, and which way is up.\n\nfov:\nThe field of view. Wide values exaggerate depth; narrow ones flatten it.\n\ntarget / distance / yaw / elevation (mgl_orbit_camera):\nWhat to orbit around, and where on the orbit to be.\n\nui (mgl_orbit_camera):\nPatch this from the context's 'ui' outlet and dragging in the window moves \nthe camera.\n\nposition / ambient / diffuse / specular / intensity (mgl_light):\nWhere the light is and what it contributes.\n\nambient / diffuse / specular / shininess (mgl_material):\nHow the surface answers.\n\ntexture (mgl_texture, and the texture inlet on every shape):\nThe image to map.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, with the setting in force downstream.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These decide where the scene is seen from, how it is lit, and what it is made of.\n\nLike everything in the chain they apply from where they sit onward - so a \nmaterial placed before three shapes gives all three that material, and a second \nmaterial after them changes only what follows.\n\nTHE NODES:\n\nmgl_camera        a fixed viewpoint: a position, a target and a field of view\nmgl_orbit_camera  a viewpoint you can drag - it takes the window's interaction \n                  events and turns them into yaw, elevation and distance\nmgl_light         a light source\nmgl_material      how surfaces respond to light\nmgl_color         a flat colour, ignoring lighting\nmgl_texture       an image mapped onto surfaces\nmgl_image         an image drawn directly\n\nA SCENE NEEDS A CAMERA AND A LIGHT:\nWithout a camera there is no viewpoint and nothing appears. Without a light, \nanything using a material is black. Those two are the usual reason a chain that \nlooks correct renders an empty window - the shapes are being drawn, and there \nis nothing to see them by.\n\nmgl_color IS NOT mgl_material:\nA colour is applied flat, so the shape comes out an even patch with no shading \nand no sense of form. A material responds to lights, so the same shape shows its \ncurvature. Use colour for markers, lines and anything schematic; use material \nfor anything meant to look like an object.\n\nTHE MATERIAL COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, \n'specular' the colour of the highlight, and 'shininess' how tight that highlight \nis. High shininess is a small hard glint; low is a broad sheen. The light node \nhas the matching three, and what you see is the product of the two.\n\nSYNTAX:\nmgl_camera\nmgl_orbit_camera\n\nEXAMPLE:\nmgl_orbit_camera\n\nINPUTS and PARAMETERS:\n\npos / target / up (mgl_camera):\nWhere the camera is, what it looks at, and which way is up.\n\nfov:\nThe field of view. Wide values exaggerate depth; narrow ones flatten it.\n\ntarget / distance / yaw / elevation (mgl_orbit_camera):\nWhat to orbit around, and where on the orbit to be.\n\nui (mgl_orbit_camera):\nPatch this from the context's 'ui' outlet and dragging in the window moves \nthe camera.\n\nposition / ambient / diffuse / specular / intensity (mgl_light):\nWhere the light is and what it contributes.\n\nambient / diffuse / specular / shininess (mgl_material):\nHow the surface answers.\n\ntexture (mgl_texture, and the texture inlet on every shape):\nThe image to map.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, with the setting in force downstream."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 220,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_orbit_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment drag in the window to orbit",
+            "name": "comment",
+            "id": 422,
+            "position_x": 566,
+            "position_y": 435,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag in the window to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag in the window to orbit"
+        },
+        "6": {
+            "name": "mgl_light",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "mgl_material",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 220,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "mgl_sphere",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 885,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment material: it shows its curvature",
+            "name": "comment",
+            "id": 570,
+            "position_x": 566,
+            "position_y": 1100,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "material: it shows its curvature",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "material: it shows its curvature"
+        },
+        "10": {
+            "name": "mgl_color",
+            "id": 607,
+            "position_x": 300,
+            "position_y": 690,
+            "width": 220,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "mgl_box",
+            "id": 644,
+            "position_x": 300,
+            "position_y": 825,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment colour: flat, no shading",
+            "name": "comment",
+            "id": 681,
+            "position_x": 566,
+            "position_y": 1040,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "colour: flat, no shading",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "colour: flat, no shading"
+        },
+        "13": {
+            "name": "mgl_display",
+            "id": 718,
+            "position_x": 320,
+            "position_y": 200,
+            "width": 220,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 1115,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "7": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "texture_tag",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture_tag"
+        }
+    }
+}

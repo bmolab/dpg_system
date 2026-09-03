@@ -1,0 +1,482 @@
+{
+    "height": 935,
+    "width": 1687,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "t.audio.loudness_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.audio.loudness_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.audio analysis - loudness and pitch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 444,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.audio analysis - loudness and pitch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.audio analysis - loudness and pitch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 839,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These measure audio rather than change it.\n\nTHE NODES:\n\nt.audio.loudness     how loud it is, properly weighted\nt.audio.kaldi_pitch  what pitch it is, and how confidently\n\nLOUDNESS IS NOT AMPLITUDE:\nThe largest sample in a block tells you almost nothing about how loud it sounds. \nHearing is far more sensitive around speech frequencies than at the extremes, so \na quiet midrange sound can be louder to a listener than a large low rumble.\n\nThis node applies that weighting. Use it whenever the question is \"how loud does \nthis SEEM\" - a gate, a threshold, anything driven by presence. Use a plain peak \nor RMS only when the question is genuinely about signal level, like avoiding \nclipping.\n\nPITCH COMES WITH A CONFIDENCE, AND YOU SHOULD USE IT:\nt.audio.kaldi_pitch has two outlets. 'pitch out' is the estimate. 'nccf out' is \nhow strongly periodic the signal was - effectively how much to believe the \npitch.\n\nThat second one matters more than it looks. A pitch tracker always returns a \nnumber, including during silence, consonants, breath and noise, where there is \nno pitch to find and the value is arbitrary. Wired straight to something, that \nproduces confident nonsense in exactly the gaps between the notes.\n\nGate on the confidence: hold the last pitch, or output nothing, when it falls. \nThat single step is the difference between a usable pitch stream and a jumpy one.\n\nSAMPLE RATE MUST BE RIGHT:\nBoth nodes take a 'sample_rate' setting, and neither can detect it from the \ntensor - a tensor is just numbers. Set it to match the source. If it is wrong, \nloudness weighting is applied at the wrong frequencies and every pitch is off by \nthe ratio, both while looking entirely plausible.\n\nTWO AUDIO SYSTEMS, AND WHICH IS WHICH:\nThis is not the synth. The ~ nodes are a real-time DSP graph compiled into the\naudio callback; these carry audio as TENSORS through ordinary patch cords, a\nblock at a time.\n\nUse the ~ nodes when the audio is being made or heard live, and these when the\naudio is DATA - to be analysed, transformed by a torch operation, fed to\nwhisper or a pitch tracker, or read from a file for something other than\nlistening.\n\ncapture~ is the bridge from the synth world into this one: it hands whole\nblocks of a live signal out as arrays.\n\nSYNTAX:\nt.audio.loudness\nt.audio.kaldi_pitch\n\nEXAMPLE:\nt.audio.kaldi_pitch\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe audio. Receiving it triggers the measurement.\n\nsample_rate:\nThe rate the audio was recorded at. Set it correctly - see above.\n\nOUTPUTS: \n\nloudness out:\nPerceptual loudness.\n\npitch out:\nThe estimated pitch.\n\nnccf out:\nHow periodic the signal was - the confidence. Gate on this.\n\nRELATED:\nThe speech_analysis and whisper nodes do more with the same kind of input. \nspectrum and band_pass answer \"which frequencies\" rather than \"which pitch\", \nwhich is a different question and often the more robust one for movement work.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These measure audio rather than change it.\n\nTHE NODES:\n\nt.audio.loudness     how loud it is, properly weighted\nt.audio.kaldi_pitch  what pitch it is, and how confidently\n\nLOUDNESS IS NOT AMPLITUDE:\nThe largest sample in a block tells you almost nothing about how loud it sounds. \nHearing is far more sensitive around speech frequencies than at the extremes, so \na quiet midrange sound can be louder to a listener than a large low rumble.\n\nThis node applies that weighting. Use it whenever the question is \"how loud does \nthis SEEM\" - a gate, a threshold, anything driven by presence. Use a plain peak \nor RMS only when the question is genuinely about signal level, like avoiding \nclipping.\n\nPITCH COMES WITH A CONFIDENCE, AND YOU SHOULD USE IT:\nt.audio.kaldi_pitch has two outlets. 'pitch out' is the estimate. 'nccf out' is \nhow strongly periodic the signal was - effectively how much to believe the \npitch.\n\nThat second one matters more than it looks. A pitch tracker always returns a \nnumber, including during silence, consonants, breath and noise, where there is \nno pitch to find and the value is arbitrary. Wired straight to something, that \nproduces confident nonsense in exactly the gaps between the notes.\n\nGate on the confidence: hold the last pitch, or output nothing, when it falls. \nThat single step is the difference between a usable pitch stream and a jumpy one.\n\nSAMPLE RATE MUST BE RIGHT:\nBoth nodes take a 'sample_rate' setting, and neither can detect it from the \ntensor - a tensor is just numbers. Set it to match the source. If it is wrong, \nloudness weighting is applied at the wrong frequencies and every pitch is off by \nthe ratio, both while looking entirely plausible.\n\nTWO AUDIO SYSTEMS, AND WHICH IS WHICH:\nThis is not the synth. The ~ nodes are a real-time DSP graph compiled into the\naudio callback; these carry audio as TENSORS through ordinary patch cords, a\nblock at a time.\n\nUse the ~ nodes when the audio is being made or heard live, and these when the\naudio is DATA - to be analysed, transformed by a torch operation, fed to\nwhisper or a pitch tracker, or read from a file for something other than\nlistening.\n\ncapture~ is the bridge from the synth world into this one: it hands whole\nblocks of a live signal out as arrays.\n\nSYNTAX:\nt.audio.loudness\nt.audio.kaldi_pitch\n\nEXAMPLE:\nt.audio.kaldi_pitch\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe audio. Receiving it triggers the measurement.\n\nsample_rate:\nThe rate the audio was recorded at. Set it correctly - see above.\n\nOUTPUTS: \n\nloudness out:\nPerceptual loudness.\n\npitch out:\nThe estimated pitch.\n\nnccf out:\nHow periodic the signal was - the confidence. Gate on this.\n\nRELATED:\nThe speech_analysis and whisper nodes do more with the same kind of input. \nspectrum and band_pass answer \"which frequencies\" rather than \"which pitch\", \nwhich is a different question and often the more robust one for movement work."
+        },
+        "3": {
+            "name": "t.audio.file_stream",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 300,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.audio.kaldi_pitch",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 385,
+            "width": 260,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment set sample_rate to match the file",
+            "name": "comment",
+            "id": 422,
+            "position_x": 564,
+            "position_y": 540,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set sample_rate to match the file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set sample_rate to match the file"
+        },
+        "6": {
+            "name": "plot",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 580,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 400.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the pitch - jumpy in the gaps",
+            "name": "comment",
+            "id": 496,
+            "position_x": 564,
+            "position_y": 765,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the pitch - jumpy in the gaps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the pitch - jumpy in the gaps"
+        },
+        "8": {
+            "name": "plot",
+            "id": 533,
+            "position_x": 330,
+            "position_y": 580,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the confidence - low where there is",
+            "name": "comment",
+            "id": 570,
+            "position_x": 564,
+            "position_y": 805,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the confidence - low where there is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the confidence - low where there is"
+        },
+        "10": {
+            "init": "comment no pitch to find. Gate on this.",
+            "name": "comment",
+            "id": 607,
+            "position_x": 564,
+            "position_y": 845,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "no pitch to find. Gate on this.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "no pitch to find. Gate on this."
+        },
+        "11": {
+            "name": ">",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 385,
+            "width": 130,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "int",
+                    "value_type": "str"
+                }
+            },
+            "init": "> 0.5"
+        },
+        "12": {
+            "name": "sample_hold",
+            "id": 681,
+            "position_x": 330,
+            "position_y": 470,
+            "width": 150,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment hold the last good pitch",
+            "name": "comment",
+            "id": 718,
+            "position_x": 564,
+            "position_y": 490,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hold the last good pitch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hold the last good pitch"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 786,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "audio tensors",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "audio tensor in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pitch out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "nccf out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "nccf out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "sample/hold"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pitch out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}

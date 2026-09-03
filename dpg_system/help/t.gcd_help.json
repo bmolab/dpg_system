@@ -1,0 +1,417 @@
+{
+    "height": 867,
+    "width": 1569,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "t.gcd_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.gcd_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.gcd, t.lcm, t.copysign - whole numbers and signs",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 600,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.gcd, t.lcm, t.copysign - whole numbers and signs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.gcd, t.lcm, t.copysign - whole numbers and signs"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 731,
+            "position_y": 45,
+            "width": 798,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Three nodes that work on whole numbers and on signs.\n\nTHE NODES:\n\nt.gcd        the greatest common divisor of two tensors, element by element\nt.lcm        the least common multiple\nt.copysign   take the size from one tensor and the sign from another\n\nt.gcd and t.lcm want INTEGER tensors - they are number theory, not arithmetic, \nand a float tensor is the wrong kind of thing to ask them about. Their use in a \npatch is rhythmic more often than mathematical: the lowest common multiple of \ntwo cycle lengths is how long it takes before they line up again, which is the \nlength of the combined pattern.\n\nt.copysign IS THE USEFUL ODD ONE:\nIt gives you the magnitude of one tensor with the sign of another. That is how \nyou apply a symmetric curve to a signal that swings both ways: take the \nabsolute value, put it through the curve, then copy the original sign back. \nWithout that last step a curve applied to a bipolar signal folds its negative \nhalf the wrong way.\n\nIt also handles negative zero correctly, which matters more than it sounds when \nthe sign is carrying information about a direction that has momentarily \nstopped.\n\nSYNTAX:\nt.gcd\nt.copysign\n\nEXAMPLE:\nt.copysign\n\nINPUTS and PARAMETERS:\n\ntensor a in / tensor b in:\nThe two tensors. Receiving the first triggers the node.\n\ntensor in / sign tensor (t.copysign):\nWhere the magnitude comes from, and where the sign comes from.\n\nOUTPUTS: \n\nout / tensor with copied sign:\nThe result, in the same shape.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Three nodes that work on whole numbers and on signs.\n\nTHE NODES:\n\nt.gcd        the greatest common divisor of two tensors, element by element\nt.lcm        the least common multiple\nt.copysign   take the size from one tensor and the sign from another\n\nt.gcd and t.lcm want INTEGER tensors - they are number theory, not arithmetic, \nand a float tensor is the wrong kind of thing to ask them about. Their use in a \npatch is rhythmic more often than mathematical: the lowest common multiple of \ntwo cycle lengths is how long it takes before they line up again, which is the \nlength of the combined pattern.\n\nt.copysign IS THE USEFUL ODD ONE:\nIt gives you the magnitude of one tensor with the sign of another. That is how \nyou apply a symmetric curve to a signal that swings both ways: take the \nabsolute value, put it through the curve, then copy the original sign back. \nWithout that last step a curve applied to a bipolar signal folds its negative \nhalf the wrong way.\n\nIt also handles negative zero correctly, which matters more than it sounds when \nthe sign is carrying information about a direction that has momentarily \nstopped.\n\nSYNTAX:\nt.gcd\nt.copysign\n\nEXAMPLE:\nt.copysign\n\nINPUTS and PARAMETERS:\n\ntensor a in / tensor b in:\nThe two tensors. Receiving the first triggers the node.\n\ntensor in / sign tensor (t.copysign):\nWhere the magnitude comes from, and where the sign comes from.\n\nOUTPUTS: \n\nout / tensor with copied sign:\nThe result, in the same shape."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment values with mixed signs",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 161,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "values with mixed signs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "values with mixed signs"
+        },
+        "7": {
+            "name": "abs",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment sign discarded, magnitude kept",
+            "name": "comment",
+            "id": 533,
+            "position_x": 484,
+            "position_y": 430,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sign discarded, magnitude kept",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sign discarded, magnitude kept"
+        },
+        "9": {
+            "name": "t.copysign",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 200,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 585,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment and the original signs put back",
+            "name": "comment",
+            "id": 644,
+            "position_x": 484,
+            "position_y": 745,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and the original signs put back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and the original signs put back"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 763,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "sign tensor"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor with copied sign",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

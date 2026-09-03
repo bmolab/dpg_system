@@ -1,6 +1,6 @@
 {
-    "height": 1131,
-    "width": 1367,
+    "height": 635,
+    "width": 1452,
     "position": [
         100,
         100
@@ -31,8 +31,8 @@
         "1": {
             "name": "close",
             "id": 325,
-            "position_x": 21,
-            "position_y": 528,
+            "position_x": 24,
+            "position_y": 531,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -74,7 +74,7 @@
         "3": {
             "name": "text_block",
             "id": 373,
-            "position_x": 522,
+            "position_x": 614,
             "position_y": 46,
             "width": 798,
             "height": 467,
@@ -114,7 +114,7 @@
             "init": "comment gate 4",
             "name": "comment",
             "id": 1085,
-            "position_x": 344,
+            "position_x": 526,
             "position_y": 101,
             "width": 58,
             "height": 30,

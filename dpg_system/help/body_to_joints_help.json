@@ -1,0 +1,316 @@
+{
+    "height": 909,
+    "width": 1729,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "body_to_joints_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/body_to_joints_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment body_to_joints - local, global, and per joint",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "body_to_joints - local, global, and per joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "body_to_joints - local, global, and per joint"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 881,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These convert between the ways a skeleton can be expressed.\n\nTHE NODES:\n\nbody_to_joints         split a pose into one outlet per joint\nshadow_body_to_joints  the same for the 37-joint Shadow layout\nlocal_to_global_body   turn joint-relative rotations into world-space ones\nglobal_to_local_body   turn them back\nlimb_size              set the limb proportions a body is drawn with\n\nLOCAL AND GLOBAL ARE THE IMPORTANT PAIR:\nA pose is normally stored as LOCAL rotations - each joint's rotation relative \nto its parent. That is the right representation for a skeleton, because it is \nwhat stays constant when the body moves as a whole: bend an elbow and only the \nelbow's local rotation changes.\n\nA GLOBAL rotation is where that bone actually points in the world, which is \nwhat you need to ask about direction: is the forearm horizontal, are the two \nhands parallel, which way is the head facing. Those questions are unanswerable \nfrom local rotations without walking up the chain, which is what \nlocal_to_global_body does for you.\n\nThe rule of thumb: measure in global, edit in local. A correction applied to a \nglobal rotation moves every child of that joint as well, which is almost never \nwhat you meant.\n\nlimb_size AND WHY PROPORTIONS MATTER:\nThe suit measures orientations, and positions are worked out from those plus the \nlimb lengths. If the lengths are wrong the positions are wrong, even though \nevery orientation is correct - and the error shows up as feet that do not reach \nthe floor or hands that do not meet.\n\n'symmetric' keeps left and right the same, which is usually right and saves \nhalf the adjusting.\n\nSYNTAX:\nbody_to_joints\nlocal_to_global_body\n\nEXAMPLE:\nlocal_to_global_body\n\nINPUTS and PARAMETERS:\n\npose in:\nThe pose.\n\nlimb_sizes_dict (limb_size):\nThe current proportions, from gl_body.\n\nsymmetric (limb_size):\nMirror left and right.\n\nreset:\nBack to the defaults.\n\nOUTPUTS: \n\nabsolute pose out:\nWorld-space rotations.\n\none outlet per joint (body_to_joints):\nThe joints individually, for patching to different places.\n\nout to gl_body (limb_size):\nThe proportions, back to the body being drawn.\n\nRELATED:\nThe quaternion nodes work on the rotations once you have them out.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These convert between the ways a skeleton can be expressed.\n\nTHE NODES:\n\nbody_to_joints         split a pose into one outlet per joint\nshadow_body_to_joints  the same for the 37-joint Shadow layout\nlocal_to_global_body   turn joint-relative rotations into world-space ones\nglobal_to_local_body   turn them back\nlimb_size              set the limb proportions a body is drawn with\n\nLOCAL AND GLOBAL ARE THE IMPORTANT PAIR:\nA pose is normally stored as LOCAL rotations - each joint's rotation relative \nto its parent. That is the right representation for a skeleton, because it is \nwhat stays constant when the body moves as a whole: bend an elbow and only the \nelbow's local rotation changes.\n\nA GLOBAL rotation is where that bone actually points in the world, which is \nwhat you need to ask about direction: is the forearm horizontal, are the two \nhands parallel, which way is the head facing. Those questions are unanswerable \nfrom local rotations without walking up the chain, which is what \nlocal_to_global_body does for you.\n\nThe rule of thumb: measure in global, edit in local. A correction applied to a \nglobal rotation moves every child of that joint as well, which is almost never \nwhat you meant.\n\nlimb_size AND WHY PROPORTIONS MATTER:\nThe suit measures orientations, and positions are worked out from those plus the \nlimb lengths. If the lengths are wrong the positions are wrong, even though \nevery orientation is correct - and the error shows up as feet that do not reach \nthe floor or hands that do not meet.\n\n'symmetric' keeps left and right the same, which is usually right and saves \nhalf the adjusting.\n\nSYNTAX:\nbody_to_joints\nlocal_to_global_body\n\nEXAMPLE:\nlocal_to_global_body\n\nINPUTS and PARAMETERS:\n\npose in:\nThe pose.\n\nlimb_sizes_dict (limb_size):\nThe current proportions, from gl_body.\n\nsymmetric (limb_size):\nMirror left and right.\n\nreset:\nBack to the defaults.\n\nOUTPUTS: \n\nabsolute pose out:\nWorld-space rotations.\n\none outlet per joint (body_to_joints):\nThe joints individually, for patching to different places.\n\nout to gl_body (limb_size):\nThe proportions, back to the body being drawn.\n\nRELATED:\nThe quaternion nodes work on the rotations once you have them out."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "active_joints",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 220,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "local_to_global_body",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 505,
+            "width": 260,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment world-space: where each bone points",
+            "name": "comment",
+            "id": 459,
+            "position_x": 606,
+            "position_y": 610,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "world-space: where each bone points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "world-space: where each bone points"
+        },
+        "7": {
+            "init": "comment measure in global, edit in local",
+            "name": "comment",
+            "id": 496,
+            "position_x": 606,
+            "position_y": 640,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "measure in global, edit in local",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "measure in global, edit in local"
+        },
+        "8": {
+            "name": "global_to_local_body",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 685,
+            "width": 260,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment and back again",
+            "name": "comment",
+            "id": 570,
+            "position_x": 606,
+            "position_y": 790,
+            "width": 98,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and back again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and back again"
+        },
+        "10": {
+            "name": "body_to_joints",
+            "id": 607,
+            "position_x": 340,
+            "position_y": 505,
+            "width": 240,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment one outlet per joint",
+            "name": "comment",
+            "id": 644,
+            "position_x": 606,
+            "position_y": 720,
+            "width": 140,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one outlet per joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one outlet per joint"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 805,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "full pose quats in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active joint quats out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "absolute pose out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "absolute pose in"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active joint quats out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        }
+    }
+}

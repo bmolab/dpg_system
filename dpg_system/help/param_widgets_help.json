@@ -1,0 +1,370 @@
+{
+    "height": 741,
+    "width": 1403,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "param_widgets_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/param_widgets_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment param_ widgets - a value that carries its name",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "param_ widgets - a value that carries its name",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "param_ widgets - a value that carries its name"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 565,
+            "position_y": 45,
+            "width": 798,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The param_ widgets are ordinary widgets that also carry a NAME.\n\nEvery one of them behaves exactly like the widget it is named after - \nparam_float is a float box, param_slider is a slider. The difference is that \nthe first argument is a parameter name, and the widget carries it. \n\nThat matters when a value has to travel somewhere that needs to know what it IS, \nnot just what it equals - an OSC address, a preset file, a control surface, a \nlist of settings being gathered up. A bare 0.75 tells the far end nothing. \n\"gain 0.75\" tells it everything.\n\nTHE NODES:\n\nparam_float     a float box with a name\nparam_int       an int box with a name\nparam_slider    a slider with a name\nparam_knob      a knob with a name\nparam_string    a text box with a name\nparam_message   a message with a name\nparam_list      a list box with a name\n\nSYNTAX:\nparam_<widget> <parameter name> <value>\n\nEXAMPLE:\nparam_slider gain 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value, exactly as on the plain widget.\n\nparameter name:\nThe name this widget carries. It is set by the first argument and can be \nchanged here afterwards.\n\nEverything else - min, max, format, speed_property, width, font size, bind to - \nworks as it does on the plain widget. See the float, slider and string help \npatches for those.\n\nOUTPUTS: \n\nout:\nThe value. The parameter name travels with it wherever the receiving end knows \nto look for it.\n\nCHOOSING BETWEEN THIS AND bind to:\nBoth attach a name to a widget, and they solve different problems. \n\"bind to\" ties the widget to a variable INSIDE this patch, so several places \nshare one live value. A parameter name labels the value for something OUTSIDE \nthe patch - a console, a file, a device. You can use both on the same widget.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The param_ widgets are ordinary widgets that also carry a NAME.\n\nEvery one of them behaves exactly like the widget it is named after - \nparam_float is a float box, param_slider is a slider. The difference is that \nthe first argument is a parameter name, and the widget carries it. \n\nThat matters when a value has to travel somewhere that needs to know what it IS, \nnot just what it equals - an OSC address, a preset file, a control surface, a \nlist of settings being gathered up. A bare 0.75 tells the far end nothing. \n\"gain 0.75\" tells it everything.\n\nTHE NODES:\n\nparam_float     a float box with a name\nparam_int       an int box with a name\nparam_slider    a slider with a name\nparam_knob      a knob with a name\nparam_string    a text box with a name\nparam_message   a message with a name\nparam_list      a list box with a name\n\nSYNTAX:\nparam_<widget> <parameter name> <value>\n\nEXAMPLE:\nparam_slider gain 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value, exactly as on the plain widget.\n\nparameter name:\nThe name this widget carries. It is set by the first argument and can be \nchanged here afterwards.\n\nEverything else - min, max, format, speed_property, width, font size, bind to - \nworks as it does on the plain widget. See the float, slider and string help \npatches for those.\n\nOUTPUTS: \n\nout:\nThe value. The parameter name travels with it wherever the receiving end knows \nto look for it.\n\nCHOOSING BETWEEN THIS AND bind to:\nBoth attach a name to a widget, and they solve different problems. \n\"bind to\" ties the widget to a variable INSIDE this patch, so several places \nshare one live value. A parameter name labels the value for something OUTSIDE \nthe patch - a console, a file, a device. You can use both on the same widget."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "param_slider",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 220,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "parameter name",
+                    "value": "gain",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "param_slider gain 0.5"
+        },
+        "6": {
+            "init": "comment a slider that knows it is called gain",
+            "name": "comment",
+            "id": 459,
+            "position_x": 276,
+            "position_y": 220,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slider that knows it is called gain",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slider that knows it is called gain"
+        },
+        "7": {
+            "name": "float",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "param_float",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 160,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "parameter name",
+                    "value": "threshold",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 120,
+                    "value_type": "int"
+                }
+            },
+            "init": "param_float threshold 0.25"
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment open the options to see the names",
+            "name": "comment",
+            "id": 607,
+            "position_x": 276,
+            "position_y": 430,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "open the options to see the names",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "open the options to see the names"
+        },
+        "11": {
+            "init": "comment otherwise they are ordinary widgets",
+            "name": "comment",
+            "id": 644,
+            "position_x": 276,
+            "position_y": 460,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "otherwise they are ordinary widgets",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "otherwise they are ordinary widgets"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 452,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

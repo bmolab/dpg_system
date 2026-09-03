@@ -1,0 +1,399 @@
+{
+    "height": 841,
+    "width": 1786,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "osc_receive_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/osc_receive_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment osc_receive, osc_send, osc_route - by address",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "osc_receive, osc_send, osc_route - by address",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "osc_receive, osc_send, osc_route - by address"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 938,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These send and receive individual messages, by address.\n\nAn OSC address looks like a file path - /fader/1/level, /body/left_hand/x. \nA connection carries all of them mixed together; these three pick out the ones \nyou want and send the ones you mean.\n\nTHE NODES:\n\nosc_receive  everything arriving at one address\nosc_send     send to one address on a named target\nosc_route    split an incoming stream by address, one outlet each\n\nosc_route IS THE USEFUL ONE:\nGive it a list of addresses and it grows an outlet for each, sending each \nmessage out of its own. Anything that matches nothing goes to 'unmatched' - \nand wiring that up is worth doing, because it is how you discover what a device \nis actually sending as opposed to what its documentation says.\n\nThat is the normal way to handle a device: one source, one route, and a branch \nper thing you care about. The alternative - an osc_receive per address - works \nbut scales badly and hides the shape of what is arriving.\n\nTHROTTLING:\nosc_receive has a 'throttle (ms)' setting, which limits how often it passes a \nmessage on. Some devices send continuously at a rate far beyond what anything \ndownstream needs; throttling there is cheaper than filtering afterwards, and it \nkeeps the patch's frame from being spent on messages it will discard.\n\nSYNTAX:\nosc_receive <source name> <address>\nosc_send <target name> <address>\nosc_route <address> <address> ...\n\nEXAMPLE:\nosc_route /fader /button /encoder\n\nINPUTS and PARAMETERS:\n\nsource name / target name:\nWhich connection, by the name you gave it.\n\naddress:\nThe OSC address. On osc_receive this is what to listen for; on osc_send it is \nwhere to send.\n\nin (osc_route):\nThe stream to split - patch it from a source's 'osc received'.\n\nthrottle (ms) (osc_receive):\nMinimum time between messages passed on.\n\ntype (osc_send):\nHow to type the outgoing values.\n\nOUTPUTS: \n\nosc received:\nMessages at that address.\n\none outlet per address (osc_route):\nThe matching messages.\n\nunmatched:\nEverything that matched nothing. Wire it up.\n\nA NOTE ON ADDRESS MATCHING:\nOSC addresses are hierarchical, and routing on a prefix catches everything \nbelow it - /fader catches /fader/1/level. That is usually what you want, and \nit means the order you list addresses in matters when one is a prefix of \nanother.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These send and receive individual messages, by address.\n\nAn OSC address looks like a file path - /fader/1/level, /body/left_hand/x. \nA connection carries all of them mixed together; these three pick out the ones \nyou want and send the ones you mean.\n\nTHE NODES:\n\nosc_receive  everything arriving at one address\nosc_send     send to one address on a named target\nosc_route    split an incoming stream by address, one outlet each\n\nosc_route IS THE USEFUL ONE:\nGive it a list of addresses and it grows an outlet for each, sending each \nmessage out of its own. Anything that matches nothing goes to 'unmatched' - \nand wiring that up is worth doing, because it is how you discover what a device \nis actually sending as opposed to what its documentation says.\n\nThat is the normal way to handle a device: one source, one route, and a branch \nper thing you care about. The alternative - an osc_receive per address - works \nbut scales badly and hides the shape of what is arriving.\n\nTHROTTLING:\nosc_receive has a 'throttle (ms)' setting, which limits how often it passes a \nmessage on. Some devices send continuously at a rate far beyond what anything \ndownstream needs; throttling there is cheaper than filtering afterwards, and it \nkeeps the patch's frame from being spent on messages it will discard.\n\nSYNTAX:\nosc_receive <source name> <address>\nosc_send <target name> <address>\nosc_route <address> <address> ...\n\nEXAMPLE:\nosc_route /fader /button /encoder\n\nINPUTS and PARAMETERS:\n\nsource name / target name:\nWhich connection, by the name you gave it.\n\naddress:\nThe OSC address. On osc_receive this is what to listen for; on osc_send it is \nwhere to send.\n\nin (osc_route):\nThe stream to split - patch it from a source's 'osc received'.\n\nthrottle (ms) (osc_receive):\nMinimum time between messages passed on.\n\ntype (osc_send):\nHow to type the outgoing values.\n\nOUTPUTS: \n\nosc received:\nMessages at that address.\n\none outlet per address (osc_route):\nThe matching messages.\n\nunmatched:\nEverything that matched nothing. Wire it up.\n\nA NOTE ON ADDRESS MATCHING:\nOSC addresses are hierarchical, and routing on a prefix catches everything \nbelow it - /fader catches /fader/1/level. That is usually what you want, and \nit means the order you list addresses in matters when one is a prefix of \nanother."
+        },
+        "3": {
+            "name": "osc_source",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_source listener 8001"
+        },
+        "4": {
+            "name": "osc_route",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 280,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_route /fader /button"
+        },
+        "5": {
+            "init": "comment one outlet per address",
+            "name": "comment",
+            "id": 422,
+            "position_x": 656,
+            "position_y": 480,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one outlet per address",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one outlet per address"
+        },
+        "6": {
+            "name": "float",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 520,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "print",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 585,
+            "width": 200,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "unmatched",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            },
+            "init": "print unmatched"
+        },
+        "9": {
+            "init": "comment wire unmatched up: it tells you what",
+            "name": "comment",
+            "id": 570,
+            "position_x": 656,
+            "position_y": 720,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "wire unmatched up: it tells you what",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "wire unmatched up: it tells you what"
+        },
+        "10": {
+            "init": "comment the device is really sending",
+            "name": "comment",
+            "id": 607,
+            "position_x": 656,
+            "position_y": 750,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the device is really sending",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the device is really sending"
+        },
+        "11": {
+            "name": "slider",
+            "id": 644,
+            "position_x": 350,
+            "position_y": 305,
+            "width": 220,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 0.0"
+        },
+        "12": {
+            "name": "osc_send",
+            "id": 681,
+            "position_x": 350,
+            "position_y": 380,
+            "width": 280,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_send console /fader/1"
+        },
+        "13": {
+            "init": "comment and out to a named target",
+            "name": "comment",
+            "id": 718,
+            "position_x": 656,
+            "position_y": 575,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and out to a named target",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and out to a named target"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 735,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "osc received",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "unmatched",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "osc to send"
+        }
+    }
+}

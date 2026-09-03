@@ -27,7 +27,10 @@ class KorniaGrayscaleNode(TorchNode):
         if input_tensor is None:
             return
         try:
-            output_tensor = K.color.rgb_to_grayscale(input_tensor)
+            # float first, as every other node here does: on a uint8 image the
+            # weighted RGB sum otherwise truncates back to uint8 and most of
+            # the precision is thrown away.
+            output_tensor = K.color.rgb_to_grayscale(input_tensor.float())
             self.output.send(output_tensor)
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
@@ -83,6 +86,11 @@ class KorniaColorMapNode(TorchNode):
             if input_tensor.dim() >= 3 and input_tensor.shape[-3] == 3:
                 input_tensor = K.color.rgb_to_grayscale(input_tensor)
             output_tensor = K.color.apply_colormap(input_tensor, K.color.AUTUMN())
+            # apply_colormap adds a channel axis, so a (1, H, W) grayscale comes
+            # back (1, 3, H, W). The other nodes here all strip that leading
+            # batch dim before sending; do the same so downstream sees CHW.
+            if output_tensor.dim() == 4 and output_tensor.shape[0] == 1:
+                output_tensor = output_tensor[0]
             self.output.send(output_tensor)
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')

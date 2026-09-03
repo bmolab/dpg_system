@@ -1,0 +1,275 @@
+{
+    "height": 895,
+    "width": 1835,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "take_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/take_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment take - recording, playing back, reviewing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "take - recording, playing back, reviewing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "take - recording, playing back, reviewing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 987,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These record and play back motion, and pick frames out of recorded files.\n\nTHE NODES:\n\ntake                  record and play a stream of quaternions and positions\ntake_dict             the same, carrying a dictionary - so anything can travel \n                      alongside the pose\njson_npz_frame_picker step through frames a analysis run has flagged\n\ntake VERSUS take_dict:\ntake handles the pose itself. take_dict records a whole dictionary, which means \nthe pose plus whatever else you want kept with it - contacts, torques, the \nperformer's name, the settings the patch was using. When a recording is going \nto be analysed later, that context is what makes it interpretable, and it is \nmuch easier to record it alongside than to reconstruct it.\n\ntake_dict also carries a 'globals' channel, sent once rather than per frame, \nfor the things that do not change - limb lengths, calibration, file paths.\n\nPLAYING BACK:\n'speed' scales playback rate, and 'frame' seeks. 'loop' repeats. \n'output when paused' decides whether a paused take keeps sending its current \nframe or goes quiet - keep it on when the take is driving something that needs \ncontinuous input, off when silence means \"nothing is happening\".\n\njson_npz_frame_picker IS FOR REVIEWING FINDINGS:\nAn offline analysis run produces a list of interesting frames - flagged \nglitches, detected events - as a json file. This node walks that list, and \nsends the file path and the frame number so the patch can jump straight to each \none. It is what turns a list of numbers in a report into something you can look \nat, one case at a time.\n\nSYNTAX:\ntake\ntake_dict\n\nEXAMPLE:\ntake_dict\n\nINPUTS and PARAMETERS:\n\nquaternions in / take data in:\nWhat to record.\n\nrecord / play / stop / loop:\nTransport.\n\nframe:\nSeek to a frame.\n\nspeed:\nPlayback rate.\n\nload / save:\nThe file.\n\nnext / json path (json_npz_frame_picker):\nAdvance to the next flagged frame, and where the list is.\n\nOUTPUTS: \n\nquaternions / positions / take data out:\nThe playing frames.\n\nglobals (take_dict):\nThe things recorded once rather than per frame.\n\nframe / done:\nWhere playback has got to, and when it finishes.\n\nnpz path / event frame (json_npz_frame_picker):\nWhich file and which frame to look at next.\n\njerk values / joints:\nWhat the analysis found there, so you can see why it was flagged.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These record and play back motion, and pick frames out of recorded files.\n\nTHE NODES:\n\ntake                  record and play a stream of quaternions and positions\ntake_dict             the same, carrying a dictionary - so anything can travel \n                      alongside the pose\njson_npz_frame_picker step through frames a analysis run has flagged\n\ntake VERSUS take_dict:\ntake handles the pose itself. take_dict records a whole dictionary, which means \nthe pose plus whatever else you want kept with it - contacts, torques, the \nperformer's name, the settings the patch was using. When a recording is going \nto be analysed later, that context is what makes it interpretable, and it is \nmuch easier to record it alongside than to reconstruct it.\n\ntake_dict also carries a 'globals' channel, sent once rather than per frame, \nfor the things that do not change - limb lengths, calibration, file paths.\n\nPLAYING BACK:\n'speed' scales playback rate, and 'frame' seeks. 'loop' repeats. \n'output when paused' decides whether a paused take keeps sending its current \nframe or goes quiet - keep it on when the take is driving something that needs \ncontinuous input, off when silence means \"nothing is happening\".\n\njson_npz_frame_picker IS FOR REVIEWING FINDINGS:\nAn offline analysis run produces a list of interesting frames - flagged \nglitches, detected events - as a json file. This node walks that list, and \nsends the file path and the frame number so the patch can jump straight to each \none. It is what turns a list of numbers in a report into something you can look \nat, one case at a time.\n\nSYNTAX:\ntake\ntake_dict\n\nEXAMPLE:\ntake_dict\n\nINPUTS and PARAMETERS:\n\nquaternions in / take data in:\nWhat to record.\n\nrecord / play / stop / loop:\nTransport.\n\nframe:\nSeek to a frame.\n\nspeed:\nPlayback rate.\n\nload / save:\nThe file.\n\nnext / json path (json_npz_frame_picker):\nAdvance to the next flagged frame, and where the list is.\n\nOUTPUTS: \n\nquaternions / positions / take data out:\nThe playing frames.\n\nglobals (take_dict):\nThe things recorded once rather than per frame.\n\nframe / done:\nWhere playback has got to, and when it finishes.\n\nnpz path / event frame (json_npz_frame_picker):\nWhich file and which frame to look at next.\n\njerk values / joints:\nWhat the analysis found there, so you can see why it was flagged."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "take_dict",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 280,
+            "height": 360,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment record, then play it back",
+            "name": "comment",
+            "id": 422,
+            "position_x": 656,
+            "position_y": 775,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "record, then play it back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "record, then play it back"
+        },
+        "6": {
+            "init": "comment globals are sent once, not per frame",
+            "name": "comment",
+            "id": 459,
+            "position_x": 656,
+            "position_y": 805,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "globals are sent once, not per frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "globals are sent once, not per frame"
+        },
+        "7": {
+            "name": "json_npz_frame_picker",
+            "id": 496,
+            "position_x": 350,
+            "position_y": 400,
+            "width": 280,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "int",
+            "id": 533,
+            "position_x": 350,
+            "position_y": 635,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment step through the frames an analysis flagged",
+            "name": "comment",
+            "id": 570,
+            "position_x": 656,
+            "position_y": 685,
+            "width": 301,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "step through the frames an analysis flagged",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "step through the frames an analysis flagged"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 790,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take data in"
+        },
+        "1": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "event frame",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

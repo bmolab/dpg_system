@@ -1,0 +1,291 @@
+{
+    "height": 890,
+    "width": 1504,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "osc_query_json_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/osc_query_json_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment osc_query_json - finding out what a device offers",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "osc_query_json - finding out what a device offers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "osc_query_json - finding out what a device offers"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 666,
+            "position_y": 45,
+            "width": 798,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Two nodes for finding out what a device offers, and for driving a cue list.\n\nTHE NODES:\n\nosc_query_json  print a device's OSCQuery description\nosc_cue         send a cue number to a target\n\nosc_query_json AND THE DISCOVERY PROBLEM:\nOSC on its own is write-only in a sense: you can send to an address, but \nnothing tells you what addresses exist. Every integration therefore begins with \nfinding out what the far end responds to, and that is usually done by reading \ndocumentation that is out of date.\n\nOSCQuery is the answer to that - a device publishes a description of its whole \nnamespace, and this node prints it. What you get back is the actual, current \nlist of addresses, their types and their ranges, from the device itself.\n\nThat turns \"which address is the fader\" into something you look up rather than \nguess, and it is the first thing to reach for with an unfamiliar device.\n\nNote that not every device offers OSCQuery. When one does not, the way to learn \nits namespace is the reverse: patch an osc_route with nothing matched and watch \n'unmatched' while you touch things on the device.\n\nosc_cue:\nSends a cue number to a named target. Cue lists are how lighting and sound \nconsoles are actually operated, so the useful interface to one is usually not \na fader per parameter but a cue number - the console already holds the states, \nand the patch just says which one.\n\nSYNTAX:\nosc_query_json\nosc_cue\n\nEXAMPLE:\nosc_cue\n\nINPUTS and PARAMETERS:\n\nprint osc query json:\nFetch and print the description.\n\ncue # to send:\nThe cue number.\n\ntarget name:\nWhich connection to send it on.\n\npath:\nThe address, where it differs from the default.\n\nOUTPUTS: \n\nNone - both act rather than pass data on. The query prints to the console the \npatch was launched from.\n\nRELATED:\nThere are OSCQuery proxies in this repo for consoles that do not offer one \nthemselves - see eos_oscquery_proxy.py and digico_oscquery_proxy.py, which \nexpose a Gio and an S21 respectively.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Two nodes for finding out what a device offers, and for driving a cue list.\n\nTHE NODES:\n\nosc_query_json  print a device's OSCQuery description\nosc_cue         send a cue number to a target\n\nosc_query_json AND THE DISCOVERY PROBLEM:\nOSC on its own is write-only in a sense: you can send to an address, but \nnothing tells you what addresses exist. Every integration therefore begins with \nfinding out what the far end responds to, and that is usually done by reading \ndocumentation that is out of date.\n\nOSCQuery is the answer to that - a device publishes a description of its whole \nnamespace, and this node prints it. What you get back is the actual, current \nlist of addresses, their types and their ranges, from the device itself.\n\nThat turns \"which address is the fader\" into something you look up rather than \nguess, and it is the first thing to reach for with an unfamiliar device.\n\nNote that not every device offers OSCQuery. When one does not, the way to learn \nits namespace is the reverse: patch an osc_route with nothing matched and watch \n'unmatched' while you touch things on the device.\n\nosc_cue:\nSends a cue number to a named target. Cue lists are how lighting and sound \nconsoles are actually operated, so the useful interface to one is usually not \na fader per parameter but a cue number - the console already holds the states, \nand the patch just says which one.\n\nSYNTAX:\nosc_query_json\nosc_cue\n\nEXAMPLE:\nosc_cue\n\nINPUTS and PARAMETERS:\n\nprint osc query json:\nFetch and print the description.\n\ncue # to send:\nThe cue number.\n\ntarget name:\nWhich connection to send it on.\n\npath:\nThe address, where it differs from the default.\n\nOUTPUTS: \n\nNone - both act rather than pass data on. The query prints to the console the \npatch was launched from.\n\nRELATED:\nThere are OSCQuery proxies in this repo for consoles that do not offer one \nthemselves - see eos_oscquery_proxy.py and digico_oscquery_proxy.py, which \nexpose a Gio and an S21 respectively."
+        },
+        "3": {
+            "name": "osc_device",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 300,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_device console 127.0.0.1 8000 8001"
+        },
+        "4": {
+            "name": "osc_query_json",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 345,
+            "width": 260,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment prints the whole namespace of the device",
+            "name": "comment",
+            "id": 422,
+            "position_x": 356,
+            "position_y": 480,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "prints the whole namespace of the device",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "prints the whole namespace of the device"
+        },
+        "6": {
+            "init": "comment to the console, not into the patch",
+            "name": "comment",
+            "id": 459,
+            "position_x": 356,
+            "position_y": 510,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "to the console, not into the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "to the console, not into the patch"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 555,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "osc_cue",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 615,
+            "width": 260,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment the console holds the states;",
+            "name": "comment",
+            "id": 570,
+            "position_x": 356,
+            "position_y": 770,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the console holds the states;",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the console holds the states;"
+        },
+        "10": {
+            "init": "comment the patch just says which one",
+            "name": "comment",
+            "id": 607,
+            "position_x": 356,
+            "position_y": 800,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the patch just says which one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the patch just says which one"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 785,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "cue # to send"
+        }
+    }
+}

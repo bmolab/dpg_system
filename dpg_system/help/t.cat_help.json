@@ -1,0 +1,439 @@
+{
+    "height": 881,
+    "width": 1617,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.cat_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cat_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.cat and t.stack - extend an axis, or add one",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.cat and t.stack - extend an axis, or add one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.cat and t.stack - extend an axis, or add one"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 759,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These put tensors together, and take them apart again.\n\nTHE NODES:\n\nt.cat           join along an EXISTING axis\nt.stack         join along a NEW axis\nt.hstack        stack side by side\nt.vstack        stack one above the other\nt.dstack        stack in depth\nt.column_stack  as columns\nt.row_stack     as rows\nt.chunk         cut into a number of pieces\nt.tensor_split  the same, with more control over where\n\ncat VERSUS stack, WHICH CATCHES EVERYONE:\nJoining two tensors of 3 numbers with cat gives you 6 numbers in a row - \nshape (6,). With stack it gives you shape (2, 3) - the originals kept separate, \nside by side. cat EXTENDS an axis that already exists; stack ADDS one.\n\nWhich you want follows from what the pieces are. Two halves of the same thing \njoin with cat. Two things that happened at different times, or to different \njoints, stack - because you will want to index them apart again afterwards.\n\nThe named stacks - hstack, vstack, dstack - are conveniences that pick the axis \nfor you by what it usually means. They are clearer to read than cat with an \naxis number when the tensors are 2D and the intent is obvious.\n\nSPLITTING:\nchunk cuts into a number of pieces as evenly as it can. tensor_split does the \nsame but lets you say WHERE to cut rather than how many pieces you want, \nwhich is what you need when the parts are not equal - separating a pose tensor \ninto a root and the joints, say.\n\nSYNTAX:\nt.cat <dim>\nt.stack <dim>\nt.chunk <count>\n\nEXAMPLE:\nt.stack 0\n\nINPUTS and PARAMETERS:\n\ntensor 1, tensor 2, ...:\nThe tensors to join. For cat they must match in every dimension except the one \nbeing joined along; for stack they must match exactly.\n\ndim:\nWhich axis to join along, or to split along.\n\nsplit (t.chunk):\nHow many pieces.\n\nOUTPUTS: \n\noutput:\nThe joined tensor, or - for chunk and tensor_split - one outlet per piece. \nThose outlets are unnamed, so patch them by position.\n\nA NOTE ON SHAPES:\ncat's requirement is easy to violate without noticing: joining a (3, 4) and a \n(3, 5) along axis 0 fails, because they differ in a dimension that is not the \none being joined. The error names the mismatched dimension, which is usually \nenough to see which tensor is the wrong shape.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These put tensors together, and take them apart again.\n\nTHE NODES:\n\nt.cat           join along an EXISTING axis\nt.stack         join along a NEW axis\nt.hstack        stack side by side\nt.vstack        stack one above the other\nt.dstack        stack in depth\nt.column_stack  as columns\nt.row_stack     as rows\nt.chunk         cut into a number of pieces\nt.tensor_split  the same, with more control over where\n\ncat VERSUS stack, WHICH CATCHES EVERYONE:\nJoining two tensors of 3 numbers with cat gives you 6 numbers in a row - \nshape (6,). With stack it gives you shape (2, 3) - the originals kept separate, \nside by side. cat EXTENDS an axis that already exists; stack ADDS one.\n\nWhich you want follows from what the pieces are. Two halves of the same thing \njoin with cat. Two things that happened at different times, or to different \njoints, stack - because you will want to index them apart again afterwards.\n\nThe named stacks - hstack, vstack, dstack - are conveniences that pick the axis \nfor you by what it usually means. They are clearer to read than cat with an \naxis number when the tensors are 2D and the intent is obvious.\n\nSPLITTING:\nchunk cuts into a number of pieces as evenly as it can. tensor_split does the \nsame but lets you say WHERE to cut rather than how many pieces you want, \nwhich is what you need when the parts are not equal - separating a pose tensor \ninto a root and the joints, say.\n\nSYNTAX:\nt.cat <dim>\nt.stack <dim>\nt.chunk <count>\n\nEXAMPLE:\nt.stack 0\n\nINPUTS and PARAMETERS:\n\ntensor 1, tensor 2, ...:\nThe tensors to join. For cat they must match in every dimension except the one \nbeing joined along; for stack they must match exactly.\n\ndim:\nWhich axis to join along, or to split along.\n\nsplit (t.chunk):\nHow many pieces.\n\nOUTPUTS: \n\noutput:\nThe joined tensor, or - for chunk and tensor_split - one outlet per piece. \nThose outlets are unnamed, so patch them by position.\n\nA NOTE ON SHAPES:\ncat's requirement is easy to violate without noticing: joining a (3, 4) and a \n(3, 5) along axis 0 fails, because they differ in a dimension that is not the \none being joined. The error names the mismatched dimension, which is usually \nenough to see which tensor is the wrong shape."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 4"
+        },
+        "5": {
+            "name": "t.rand",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 4"
+        },
+        "6": {
+            "init": "comment two tensors of four",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two tensors of four",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two tensors of four"
+        },
+        "7": {
+            "name": "t.cat",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 180,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment cat: eight in a row",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 465,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cat: eight in a row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cat: eight in a row"
+        },
+        "10": {
+            "name": "t.stack",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 180,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 530,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment stack: two rows of four, kept apart",
+            "name": "comment",
+            "id": 681,
+            "position_x": 484,
+            "position_y": 625,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "stack: two rows of four, kept apart",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "stack: two rows of four, kept apart"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 708,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2"
+        },
+        "6": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1"
+        },
+        "7": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

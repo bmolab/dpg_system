@@ -1,0 +1,259 @@
+{
+    "height": 821,
+    "width": 1796,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "smpl_pose_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_pose_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_pose - the body, its shape and its posture",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_pose - the body, its shape and its posture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_pose - the body, its shape and its posture"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 948,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These hold an SMPL body: its shape, its pose, and recorded takes of both.\n\nWHAT SMPL IS:\nA parametric model of a human body. Its shape is a handful of numbers - the \nBETAS - and its pose is 22 joint rotations. Between them they describe a \nspecific person in a specific posture, and from that the model produces the \nactual surface: where every vertex of the body is.\n\nThat is the value of it. A skeleton tells you where the joints are; SMPL tells \nyou where the BODY is, which is what you need for contact, for volume, for \nanything about the physical thing rather than the stick figure.\n\nTHE NODES:\n\nsmpl_pose        hold and edit a 22-joint SMPL pose\nsmpl_body        the skeleton for a given set of betas\nsmpl_take        play back a recorded SMPL take\nsmpl_beta_editor tune the betas by hand and produce a config\n\nBETAS ARE THE PERSON:\nThe first beta is roughly overall size, the second roughly the tall-versus-wide \naxis, and the rest progressively subtler. They are not anatomical measurements - \nthey are the axes a model found in a population, so no single one means \n\"leg length\". You tune them by eye against the person you are working with.\n\nsmpl_beta_editor produces a CONFIG dict, and that config is what the other \nnodes want. Almost everything downstream - torque, ragdoll, floor calibration - \ntakes it, because none of them can work out where the body is without knowing \nits size and mass.\n\nIts 'limb_lengths' outlet feeds the motion capture side, so the skeleton the \nsuit assumes and the body SMPL builds can be made to agree.\n\nSYNTAX:\nsmpl_pose\nsmpl_beta_editor\nsmpl_take\n\nEXAMPLE:\nsmpl_beta_editor\n\nINPUTS and PARAMETERS:\n\nin / betas_in:\nThe pose, or the shape numbers.\n\ngender / total_mass (smpl_beta_editor):\nWhich body model, and the mass the physics nodes should assume.\n\nsolve \u03b21 / solve_target \u03b21 / solve_reg:\nFit the first beta to a target rather than setting it by hand.\n\nsave / load / file_path:\nStore a set of betas.\n\non/off / speed / frame (smpl_take):\nTransport for a recorded take.\n\nOUTPUTS: \n\nout / pose:\nThe pose.\n\nconfig:\nThe dict every other SMPL node wants - betas, gender, mass.\n\nbetas / limb_lengths:\nThe shape numbers, and the resulting bone lengths.\n\njoint_data / root_position (smpl_take):\nThe playing frames.\n\nskeleton_data (smpl_body):\nThe skeleton for those betas.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These hold an SMPL body: its shape, its pose, and recorded takes of both.\n\nWHAT SMPL IS:\nA parametric model of a human body. Its shape is a handful of numbers - the \nBETAS - and its pose is 22 joint rotations. Between them they describe a \nspecific person in a specific posture, and from that the model produces the \nactual surface: where every vertex of the body is.\n\nThat is the value of it. A skeleton tells you where the joints are; SMPL tells \nyou where the BODY is, which is what you need for contact, for volume, for \nanything about the physical thing rather than the stick figure.\n\nTHE NODES:\n\nsmpl_pose        hold and edit a 22-joint SMPL pose\nsmpl_body        the skeleton for a given set of betas\nsmpl_take        play back a recorded SMPL take\nsmpl_beta_editor tune the betas by hand and produce a config\n\nBETAS ARE THE PERSON:\nThe first beta is roughly overall size, the second roughly the tall-versus-wide \naxis, and the rest progressively subtler. They are not anatomical measurements - \nthey are the axes a model found in a population, so no single one means \n\"leg length\". You tune them by eye against the person you are working with.\n\nsmpl_beta_editor produces a CONFIG dict, and that config is what the other \nnodes want. Almost everything downstream - torque, ragdoll, floor calibration - \ntakes it, because none of them can work out where the body is without knowing \nits size and mass.\n\nIts 'limb_lengths' outlet feeds the motion capture side, so the skeleton the \nsuit assumes and the body SMPL builds can be made to agree.\n\nSYNTAX:\nsmpl_pose\nsmpl_beta_editor\nsmpl_take\n\nEXAMPLE:\nsmpl_beta_editor\n\nINPUTS and PARAMETERS:\n\nin / betas_in:\nThe pose, or the shape numbers.\n\ngender / total_mass (smpl_beta_editor):\nWhich body model, and the mass the physics nodes should assume.\n\nsolve \u03b21 / solve_target \u03b21 / solve_reg:\nFit the first beta to a target rather than setting it by hand.\n\nsave / load / file_path:\nStore a set of betas.\n\non/off / speed / frame (smpl_take):\nTransport for a recorded take.\n\nOUTPUTS: \n\nout / pose:\nThe pose.\n\nconfig:\nThe dict every other SMPL node wants - betas, gender, mass.\n\nbetas / limb_lengths:\nThe shape numbers, and the resulting bone lengths.\n\njoint_data / root_position (smpl_take):\nThe playing frames.\n\nskeleton_data (smpl_body):\nThe skeleton for those betas."
+        },
+        "3": {
+            "name": "smpl_beta_editor",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 300,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment tune by eye against the person",
+            "name": "comment",
+            "id": 385,
+            "position_x": 666,
+            "position_y": 415,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tune by eye against the person",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tune by eye against the person"
+        },
+        "5": {
+            "init": "comment config is what everything else wants",
+            "name": "comment",
+            "id": 422,
+            "position_x": 666,
+            "position_y": 445,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "config is what everything else wants",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "config is what everything else wants"
+        },
+        "6": {
+            "name": "smpl_body",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 240,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "smpl_take",
+            "id": 496,
+            "position_x": 380,
+            "position_y": 62,
+            "width": 260,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "smpl_pose",
+            "id": 533,
+            "position_x": 380,
+            "position_y": 285,
+            "width": 260,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment a recorded take driving a pose",
+            "name": "comment",
+            "id": 570,
+            "position_x": 666,
+            "position_y": 500,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a recorded take driving a pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a recorded take driving a pose"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 640,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "betas",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "betas"
+        },
+        "1": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

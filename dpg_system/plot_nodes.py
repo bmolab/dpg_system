@@ -387,7 +387,16 @@ class PlotNode(BasePlotNode):
 
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
-            data_array = self._process_input_to_array(self.input())
+            data = self.input()
+            # 'dump' hands the collected history out of the outlet. HeatMapNode
+            # and ProfileNode both answered it; PlotNode did not, so plot's
+            # outlet could never fire at all. Same three lines as its siblings.
+            if isinstance(data, str) and data == 'dump':
+                self.output.send(self.y_data.get_buffer()[0])
+                self.y_data.release_buffer()
+                self.lock.release()
+                return
+            data_array = self._process_input_to_array(data)
 
             if data_array is not None:
                 if self.update_style == 'input is stream of samples':

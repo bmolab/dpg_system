@@ -1,0 +1,462 @@
+{
+    "height": 881,
+    "width": 1530,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "np_target_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np_target_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np targets - how near is this to that",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 444,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np targets - how near is this to that",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np targets - how near is this to that"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 672,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes measure a position against a reference, and report when it gets close.\n\nThey exist because \"how near is this to that\" is a question you ask constantly \nof tracked bodies, and answering it with separate subtract, norm and compare \nnodes is both tedious and easy to get wrong.\n\nTHE NODES:\n\nnp.distance_from_target  how far the input is from a stored target\nnp.proximity_to_target   the same measurement inverted, so near is HIGH - \n                         the shape you want for driving something\nproximity_trigger        the same, plus a trigger that fires on arrival\nnp.line_intersection     where two line segments cross, if they do\nrotate_position          rotate a position about an axis\n\nThe target is captured rather than typed. Put the thing where you want the \ntarget to be, click \"set target\", and the node remembers that position. \nFrom then on it reports against it.\n\nproximity_trigger is the one that turns this into an event. It has two \nthresholds, near and far, and fires when the input comes closer than the near \none - then will not fire again until it has retreated past the far one. \nThat is the same hysteresis the trigger node uses, and for the same reason: \nwithout the gap, a hand hovering at the boundary fires continuously.\n\nSYNTAX:\nnp.distance_from_target\nproximity_trigger\n\nEXAMPLE:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as an array. Receiving it triggers the node.\n\nset target:\nA button. Captures whatever is at the input right now as the reference.\n\naxis:\nFor arrays of several positions at once, which direction the coordinates run \nalong - so you can measure a whole set of points against a whole set of \ntargets in one go.\n\nthreshold / release_threshold (proximity_trigger):\nHow close counts as arrived, and how far away it must go before it can arrive \nagain. Keep the release larger than the threshold.\n\narm / reset_count (proximity_trigger):\nEnable the trigger, and set its count back to zero.\n\nline 1 start / line 1 end / line 2 start / line 2 end (np.line_intersection):\nThe two segments.\n\ndirection matters / intersect line 2 segment (np.line_intersection):\nWhether to treat the lines as directed, and whether the crossing has to fall \nwithin the second segment rather than on its infinite extension.\n\nposition / angle / axis (rotate_position):\nThe point to rotate, by how much, and about which axis.\n\nOUTPUTS: \n\nnorm:\nThe distance, or the proximity.\n\nstate / count / proximity (proximity_trigger):\nWhether it is currently near, how many times it has arrived, and the \nunderlying measurement.\n\nintersection is valid / point of intersection / fraction of segment 2:\nWhether the segments actually cross, where, and how far along the second one - \ncheck the valid outlet before using the point, since parallel lines have no \ncrossing to report.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes measure a position against a reference, and report when it gets close.\n\nThey exist because \"how near is this to that\" is a question you ask constantly \nof tracked bodies, and answering it with separate subtract, norm and compare \nnodes is both tedious and easy to get wrong.\n\nTHE NODES:\n\nnp.distance_from_target  how far the input is from a stored target\nnp.proximity_to_target   the same measurement inverted, so near is HIGH - \n                         the shape you want for driving something\nproximity_trigger        the same, plus a trigger that fires on arrival\nnp.line_intersection     where two line segments cross, if they do\nrotate_position          rotate a position about an axis\n\nThe target is captured rather than typed. Put the thing where you want the \ntarget to be, click \"set target\", and the node remembers that position. \nFrom then on it reports against it.\n\nproximity_trigger is the one that turns this into an event. It has two \nthresholds, near and far, and fires when the input comes closer than the near \none - then will not fire again until it has retreated past the far one. \nThat is the same hysteresis the trigger node uses, and for the same reason: \nwithout the gap, a hand hovering at the boundary fires continuously.\n\nSYNTAX:\nnp.distance_from_target\nproximity_trigger\n\nEXAMPLE:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as an array. Receiving it triggers the node.\n\nset target:\nA button. Captures whatever is at the input right now as the reference.\n\naxis:\nFor arrays of several positions at once, which direction the coordinates run \nalong - so you can measure a whole set of points against a whole set of \ntargets in one go.\n\nthreshold / release_threshold (proximity_trigger):\nHow close counts as arrived, and how far away it must go before it can arrive \nagain. Keep the release larger than the threshold.\n\narm / reset_count (proximity_trigger):\nEnable the trigger, and set its count back to zero.\n\nline 1 start / line 1 end / line 2 start / line 2 end (np.line_intersection):\nThe two segments.\n\ndirection matters / intersect line 2 segment (np.line_intersection):\nWhether to treat the lines as directed, and whether the crossing has to fall \nwithin the second segment rather than on its infinite extension.\n\nposition / angle / axis (rotate_position):\nThe point to rotate, by how much, and about which axis.\n\nOUTPUTS: \n\nnorm:\nThe distance, or the proximity.\n\nstate / count / proximity (proximity_trigger):\nWhether it is currently near, how many times it has arrived, and the \nunderlying measurement.\n\nintersection is valid / point of intersection / fraction of segment 2:\nWhether the segments actually cross, where, and how far along the second one - \ncheck the valid outlet before using the point, since parallel lines have no \ncrossing to report."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "6": {
+            "name": "signal",
+            "id": 459,
+            "position_x": 200,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "cos",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 5.0 cos"
+        },
+        "7": {
+            "name": "pack",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 130,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 2"
+        },
+        "8": {
+            "init": "comment a position wandering about",
+            "name": "comment",
+            "id": 533,
+            "position_x": 355,
+            "position_y": 322,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a position wandering about",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a position wandering about"
+        },
+        "9": {
+            "name": "np.distance_from_target",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 360,
+            "width": 240,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment click \"set target\" to capture a reference",
+            "name": "comment",
+            "id": 607,
+            "position_x": 355,
+            "position_y": 490,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click \"set target\" to capture a reference",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click \"set target\" to capture a reference"
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 530,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment distance from wherever you captured",
+            "name": "comment",
+            "id": 681,
+            "position_x": 355,
+            "position_y": 715,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "distance from wherever you captured",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "distance from wherever you captured"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 736,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "norm",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

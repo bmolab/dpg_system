@@ -1,0 +1,846 @@
+{
+    "height": 1632,
+    "width": 1874,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "torque_gang_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/torque_gang_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment torque gangs - joints heard as one",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 408,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "torque gangs - joints heard as one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "torque gangs - joints heard as one"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1016,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A gang is a group of joints whose effort only makes sense together.\n\nTHE NODES:\n\ntorque_gang       one named group, as sound-ready numbers. 'gang' is the same\ngang              the short spelling\ntorque_residual   everything the gangs in the patch are NOT describing\n\nWHY GROUP JOINTS AT ALL:\nBending forward is not any one joint. It is distributed across spine1, spine2\nand spine3, and no single one of them IS the movement. The same is true of a leg\npushing off - hip, knee and ankle together - and of the collar and shoulder,\nwhich SMPL separates and no listener could hear apart.\n\nSo the useful quantity is often the group. A gang is a named weighted sum over\nseveral joints' torque, and the weights carry three things at once: which axis,\nwhich anatomical sign, and how much each joint contributes. Triple extension is\nthe clearest case, because hip, knee and ankle do not share a sign - the weights\nabsorb the flips so the whole push reads as one rising number.\n\nTHREE NUMBERS, BECAUSE GROUPING FORCES A CHOICE:\nAs soon as several joints contribute, they can oppose each other, and there are\ntwo honest answers to \"how much is happening\":\n\nnet         the signed sum - opposing efforts cancel\ntotal       the sum of magnitudes - nothing cancels\ncoherence   |net| / total, from 0 to 1\n\nCOHERENCE IS THE ONE GANGING GIVES YOU:\nA spine hinging as a single unit and a spine curling at the waist while\nextending at the chest have the SAME TOTAL and completely different coherence.\nPer-joint torque cannot tell you that; nothing but a group can.\n\n    hinge (100, 100, 100):   net 1.08   total 1.08   coherence 1.00\n    curl  (100, 100, -100):  net 0.52   total 1.08   coherence 0.48\n\n1.0 is the group acting as one thing. Towards 0 is internal counter-effort -\nwork being done against itself, a body bracing rather than moving.\n\nThe three are perceptually independent, which is what makes them good to patch:\nnet to pitch or direction, total to amplitude, coherence to consonance, noise or\ndetune spread.\n\nCoherence only means something for a group of more than one. Several presets\nare single-joint, and their coherence is identically 1 - do not patch those as\nthough the number carried information.\n\n'stream' IS THE BIGGEST LEVER ON HOW IT SOUNDS:\nThe same weights on a different component of torque are a different instrument.\n\ngravity    postural load - slow, continuous, drone material\ndynamic    the effort of actually moving - transient, percussive\ntotal      both together\npassive    rarely non-zero; most gangs never see it\n\nSpine flex on gravity is the weight of holding yourself up. Spine flex on\ndynamic is the act of bending. Same gang, and they sound nothing alike.\n\n'normalize' SHOULD USUALLY STAY ON:\nEach joint's torque is divided by what that joint can produce before the sum is\ntaken. Without it the lumbar spine, which is enormously strong, swamps\neverything and the gang becomes a single-joint signal wearing a group's name.\nWith it, every term is \"fraction of this joint's capacity\" and the weights are\nfree to be an aesthetic choice.\n\n'surprise' IS THE CONTRADICTION DETECTOR:\nThe fourth outlet compares what the body is doing against a statistical model of\nwhat bodies usually do, built from twenty million frames of motion capture. It\nis high when this combination of efforts is unusual.\n\nThe informative signal is a gang contradicting what normally accompanies it -\nrarity is not strangeness by itself. Note also that about half of all surprise\nlies outside anything the named gangs can express, so a quiet surprise outlet\ndoes not mean nothing unusual is happening.\n\ntorque_residual IS THE CONSCIENCE OF A GANG BANK:\nIt reports, per joint, the effort that no live gang in the patch accounted for.\nPatch it and you can hear what your gangs are missing; it recompiles as you add\nand remove them, so it always describes the bank you actually have.\n\nA bank of gangs is a vocabulary, and a vocabulary leaves things out. This is how\nyou find out what.\n\nTHE NUMBERS ARE FROM MOTION CAPTURE, NOT FROM A SUIT:\nThe ranges and the surprise model were measured on the AMASS corpus. Dance is\nbarely represented in it, and a Shadow suit sees far more extreme movement, so\nexpect the constants to be wrong at the edges even though the anatomy behind\nthem holds.\n\nSYNTAX:\ntorque_gang <preset> <side> <stream>\ngang <preset>\ntorque_residual <stream>\n\nEXAMPLE:\ntorque_gang spine_flex\n\nINPUTS and PARAMETERS:\n\ngang:\nWhich preset. Fifteen of them, from spine_flex and leg_push to counter_rotation\nand contralateral_swing.\n\nside:\nLeft, right, or whatever sides the preset offers.\n\nstream:\ngravity, dynamic, total or passive.\n\nnormalize / gender / invert:\nScale by joint capacity, which body model to size against, and flip the sign.\n\nOUTPUTS: \n\nnet / total / coherence:\nSigned sum, unsigned sum, and how much of one the group is being.\n\nsurprise:\nHow unusual this combination is against the corpus.\n\nresidual / magnitude (torque_residual):\nPer-joint effort no gang claimed.\n\nRELATED:\nsmpl_torque produces the torque these consume.\nThe working notes in GANG_NOTES.md and CHARACTERIZATION_RESULTS.md carry the\nformalism and what twenty million frames say about it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A gang is a group of joints whose effort only makes sense together.\n\nTHE NODES:\n\ntorque_gang       one named group, as sound-ready numbers. 'gang' is the same\ngang              the short spelling\ntorque_residual   everything the gangs in the patch are NOT describing\n\nWHY GROUP JOINTS AT ALL:\nBending forward is not any one joint. It is distributed across spine1, spine2\nand spine3, and no single one of them IS the movement. The same is true of a leg\npushing off - hip, knee and ankle together - and of the collar and shoulder,\nwhich SMPL separates and no listener could hear apart.\n\nSo the useful quantity is often the group. A gang is a named weighted sum over\nseveral joints' torque, and the weights carry three things at once: which axis,\nwhich anatomical sign, and how much each joint contributes. Triple extension is\nthe clearest case, because hip, knee and ankle do not share a sign - the weights\nabsorb the flips so the whole push reads as one rising number.\n\nTHREE NUMBERS, BECAUSE GROUPING FORCES A CHOICE:\nAs soon as several joints contribute, they can oppose each other, and there are\ntwo honest answers to \"how much is happening\":\n\nnet         the signed sum - opposing efforts cancel\ntotal       the sum of magnitudes - nothing cancels\ncoherence   |net| / total, from 0 to 1\n\nCOHERENCE IS THE ONE GANGING GIVES YOU:\nA spine hinging as a single unit and a spine curling at the waist while\nextending at the chest have the SAME TOTAL and completely different coherence.\nPer-joint torque cannot tell you that; nothing but a group can.\n\n    hinge (100, 100, 100):   net 1.08   total 1.08   coherence 1.00\n    curl  (100, 100, -100):  net 0.52   total 1.08   coherence 0.48\n\n1.0 is the group acting as one thing. Towards 0 is internal counter-effort -\nwork being done against itself, a body bracing rather than moving.\n\nThe three are perceptually independent, which is what makes them good to patch:\nnet to pitch or direction, total to amplitude, coherence to consonance, noise or\ndetune spread.\n\nCoherence only means something for a group of more than one. Several presets\nare single-joint, and their coherence is identically 1 - do not patch those as\nthough the number carried information.\n\n'stream' IS THE BIGGEST LEVER ON HOW IT SOUNDS:\nThe same weights on a different component of torque are a different instrument.\n\ngravity    postural load - slow, continuous, drone material\ndynamic    the effort of actually moving - transient, percussive\ntotal      both together\npassive    rarely non-zero; most gangs never see it\n\nSpine flex on gravity is the weight of holding yourself up. Spine flex on\ndynamic is the act of bending. Same gang, and they sound nothing alike.\n\n'normalize' SHOULD USUALLY STAY ON:\nEach joint's torque is divided by what that joint can produce before the sum is\ntaken. Without it the lumbar spine, which is enormously strong, swamps\neverything and the gang becomes a single-joint signal wearing a group's name.\nWith it, every term is \"fraction of this joint's capacity\" and the weights are\nfree to be an aesthetic choice.\n\n'surprise' IS THE CONTRADICTION DETECTOR:\nThe fourth outlet compares what the body is doing against a statistical model of\nwhat bodies usually do, built from twenty million frames of motion capture. It\nis high when this combination of efforts is unusual.\n\nThe informative signal is a gang contradicting what normally accompanies it -\nrarity is not strangeness by itself. Note also that about half of all surprise\nlies outside anything the named gangs can express, so a quiet surprise outlet\ndoes not mean nothing unusual is happening.\n\ntorque_residual IS THE CONSCIENCE OF A GANG BANK:\nIt reports, per joint, the effort that no live gang in the patch accounted for.\nPatch it and you can hear what your gangs are missing; it recompiles as you add\nand remove them, so it always describes the bank you actually have.\n\nA bank of gangs is a vocabulary, and a vocabulary leaves things out. This is how\nyou find out what.\n\nTHE NUMBERS ARE FROM MOTION CAPTURE, NOT FROM A SUIT:\nThe ranges and the surprise model were measured on the AMASS corpus. Dance is\nbarely represented in it, and a Shadow suit sees far more extreme movement, so\nexpect the constants to be wrong at the edges even though the anatomy behind\nthem holds.\n\nSYNTAX:\ntorque_gang <preset> <side> <stream>\ngang <preset>\ntorque_residual <stream>\n\nEXAMPLE:\ntorque_gang spine_flex\n\nINPUTS and PARAMETERS:\n\ngang:\nWhich preset. Fifteen of them, from spine_flex and leg_push to counter_rotation\nand contralateral_swing.\n\nside:\nLeft, right, or whatever sides the preset offers.\n\nstream:\ngravity, dynamic, total or passive.\n\nnormalize / gender / invert:\nScale by joint capacity, which body model to size against, and flip the sign.\n\nOUTPUTS: \n\nnet / total / coherence:\nSigned sum, unsigned sum, and how much of one the group is being.\n\nsurprise:\nHow unusual this combination is against the corpus.\n\nresidual / magnitude (torque_residual):\nPer-joint effort no gang claimed.\n\nRELATED:\nsmpl_torque produces the torque these consume.\nThe working notes in GANG_NOTES.md and CHARACTERIZATION_RESULTS.md carry the\nformalism and what twenty million frames say about it."
+        },
+        "3": {
+            "name": "smpl_pose",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 240,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_torque",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 220,
+            "width": 300,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment a pose stream, turned into torque -",
+            "name": "comment",
+            "id": 422,
+            "position_x": 706,
+            "position_y": 535,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a pose stream, turned into torque -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a pose stream, turned into torque -"
+        },
+        "6": {
+            "init": "comment which the gangs then read",
+            "name": "comment",
+            "id": 459,
+            "position_x": 706,
+            "position_y": 565,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which the gangs then read",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which the gangs then read"
+        },
+        "7": {
+            "name": "torque_gang",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 300,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "stream",
+                    "value": "dynamic",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "normalize",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            },
+            "init": "torque_gang spine_flex"
+        },
+        "8": {
+            "init": "comment spine_flex on the dynamic stream is the",
+            "name": "comment",
+            "id": 533,
+            "position_x": 706,
+            "position_y": 925,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "spine_flex on the dynamic stream is the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "spine_flex on the dynamic stream is the"
+        },
+        "9": {
+            "init": "comment ACT of bending. Switch stream to gravity",
+            "name": "comment",
+            "id": 570,
+            "position_x": 706,
+            "position_y": 955,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ACT of bending. Switch stream to gravity",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ACT of bending. Switch stream to gravity"
+        },
+        "10": {
+            "init": "comment and it becomes postural load instead",
+            "name": "comment",
+            "id": 607,
+            "position_x": 706,
+            "position_y": 985,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and it becomes postural load instead",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and it becomes postural load instead"
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 380,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment net: signed, so opposing efforts cancel",
+            "name": "comment",
+            "id": 681,
+            "position_x": 706,
+            "position_y": 605,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "net: signed, so opposing efforts cancel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "net: signed, so opposing efforts cancel"
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 380,
+            "position_y": 615,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment total: nothing cancels",
+            "name": "comment",
+            "id": 755,
+            "position_x": 706,
+            "position_y": 805,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "total: nothing cancels",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "total: nothing cancels"
+        },
+        "15": {
+            "name": "plot",
+            "id": 792,
+            "position_x": 380,
+            "position_y": 850,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "16": {
+            "init": "comment coherence: 1 is the spine hinging as one",
+            "name": "comment",
+            "id": 829,
+            "position_x": 706,
+            "position_y": 1040,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "coherence: 1 is the spine hinging as one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "coherence: 1 is the spine hinging as one"
+        },
+        "17": {
+            "init": "comment thing, low is it working against itself",
+            "name": "comment",
+            "id": 866,
+            "position_x": 706,
+            "position_y": 1070,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "thing, low is it working against itself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "thing, low is it working against itself"
+        },
+        "18": {
+            "name": "float",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1035,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment surprise: unusual against 20M frames",
+            "name": "comment",
+            "id": 940,
+            "position_x": 706,
+            "position_y": 1110,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "surprise: unusual against 20M frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "surprise: unusual against 20M frames"
+        },
+        "20": {
+            "name": "torque_residual",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 1135,
+            "width": 280,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "21": {
+            "name": "heat_map",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 1350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "22": {
+            "init": "comment what the gangs above did NOT account",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 706,
+            "position_y": 1510,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what the gangs above did NOT account",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what the gangs above did NOT account"
+        },
+        "23": {
+            "init": "comment for - one value per joint",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 706,
+            "position_y": 1540,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "for - one value per joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "for - one value per joint"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 1528,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dynamic_torque_vectors",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dynamic"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gravity_torque_vectors",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gravity"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "torque_vectors",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "torque"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "torque_vectors",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "torque"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "net",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "total",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "coherence",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "surprise",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "residual",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

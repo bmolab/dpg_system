@@ -78,9 +78,19 @@ class TorchCrossEntropyLossNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is None:
             return
-        target_tensor = self.data_to_tensor(self.target_input(), match_tensor=input_tensor)
+        # NOT match_tensor: that copied the input's float dtype onto the target,
+        # and class indices must be int64 -- so every class-index target failed
+        # with 'expected scalar type Long but found Float', which is the normal
+        # way to use this loss. cross_entropy takes either class indices (long,
+        # one per row) or soft targets (float, the same shape as the input);
+        # tell them apart by shape and convert to whichever was meant.
+        target_tensor = self.data_to_tensor(self.target_input())
         if target_tensor is None:
             return
+        if target_tensor.shape == input_tensor.shape:
+            target_tensor = target_tensor.to(input_tensor.dtype)
+        else:
+            target_tensor = target_tensor.long()
         try:
             loss = torch.nn.functional.cross_entropy(input_tensor, target_tensor)
             self.loss_output.send(loss.item())

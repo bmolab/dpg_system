@@ -1,0 +1,534 @@
+{
+    "height": 994,
+    "width": 1692,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "t.linspace_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linspace_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t sequences - counts, steps and ratios",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 456,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t sequences - counts, steps and ratios",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t sequences - counts, steps and ratios"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 834,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These make a sequence: evenly spaced values from one number to another.\n\nThey differ in what you specify and in how the spacing is measured, and the \ndifference matters more than it looks.\n\nTHE NODES:\n\nt.linspace  give a start, a stop and a COUNT. Both ends are included, and the \n            spacing is worked out to fit\nt.logspace  the same, but the spacing is even in the logarithm - so each step is \n            the same RATIO rather than the same difference\nt.arange    give a start, a stop and a STEP. The stop is not included\nt.range     the same, including the stop\n\nlinspace VERSUS arange, WHICH TO REACH FOR:\nIf you know how many values you want, use linspace. If you know how far apart \nthey should be, use arange. Asking for the wrong one is how you end up with an \noff-by-one - arange from 0 to 1 in steps of 0.1 gives ten values, not eleven, \nbecause the stop is excluded.\n\nlinspace is also the safer one for floating point. arange accumulates its step, \nso rounding error builds up and the last value may not be quite where you \nexpect; linspace computes each position from the two ends, so the endpoints are \nexact.\n\nWHY logspace:\nAnything perceptual is logarithmic - frequency, loudness, brightness. \nTen evenly spaced frequencies between 20 and 20000 put almost all of them in \nthe top octave, where nobody can tell them apart, and none in the bass. \nTen logarithmically spaced ones put the same number in each octave, which is \nhow the ear actually divides the range.\n\nThe same is true of any quantity you are sampling across several orders of \nmagnitude - a threshold sweep, a decay time, a learning rate.\n\nSYNTAX:\nt.linspace <start> <stop> <steps>\nt.arange <start> <stop> <step>\n\nEXAMPLE:\nt.linspace 0.0 1.0 16\n\nINPUTS and PARAMETERS:\n\ninput:\nA button. Click it, or send anything, to produce the sequence.\n\nstart / stop:\nThe two ends.\n\nsteps (linspace, logspace):\nHow many values, both ends included.\n\nstep (arange, range):\nHow far apart, with the stop excluded on arange.\n\ndtype / device / requires_grad:\nAs on the other tensor makers.\n\nOUTPUTS: \n\nout:\nThe sequence, as a 1D tensor.\n\nWHAT A SEQUENCE IS FOR:\nMostly, it is the x axis. Evaluating a curve, sampling a function, sweeping a \nparameter to see what it does, interpolating between two states in a set number \nof steps - all of them start with a sequence, and all of them go wrong at the \nends if the endpoint handling is not what you assumed.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These make a sequence: evenly spaced values from one number to another.\n\nThey differ in what you specify and in how the spacing is measured, and the \ndifference matters more than it looks.\n\nTHE NODES:\n\nt.linspace  give a start, a stop and a COUNT. Both ends are included, and the \n            spacing is worked out to fit\nt.logspace  the same, but the spacing is even in the logarithm - so each step is \n            the same RATIO rather than the same difference\nt.arange    give a start, a stop and a STEP. The stop is not included\nt.range     the same, including the stop\n\nlinspace VERSUS arange, WHICH TO REACH FOR:\nIf you know how many values you want, use linspace. If you know how far apart \nthey should be, use arange. Asking for the wrong one is how you end up with an \noff-by-one - arange from 0 to 1 in steps of 0.1 gives ten values, not eleven, \nbecause the stop is excluded.\n\nlinspace is also the safer one for floating point. arange accumulates its step, \nso rounding error builds up and the last value may not be quite where you \nexpect; linspace computes each position from the two ends, so the endpoints are \nexact.\n\nWHY logspace:\nAnything perceptual is logarithmic - frequency, loudness, brightness. \nTen evenly spaced frequencies between 20 and 20000 put almost all of them in \nthe top octave, where nobody can tell them apart, and none in the bass. \nTen logarithmically spaced ones put the same number in each octave, which is \nhow the ear actually divides the range.\n\nThe same is true of any quantity you are sampling across several orders of \nmagnitude - a threshold sweep, a decay time, a learning rate.\n\nSYNTAX:\nt.linspace <start> <stop> <steps>\nt.arange <start> <stop> <step>\n\nEXAMPLE:\nt.linspace 0.0 1.0 16\n\nINPUTS and PARAMETERS:\n\ninput:\nA button. Click it, or send anything, to produce the sequence.\n\nstart / stop:\nThe two ends.\n\nsteps (linspace, logspace):\nHow many values, both ends included.\n\nstep (arange, range):\nHow far apart, with the stop excluded on arange.\n\ndtype / device / requires_grad:\nAs on the other tensor makers.\n\nOUTPUTS: \n\nout:\nThe sequence, as a 1D tensor.\n\nWHAT A SEQUENCE IS FOR:\nMostly, it is the x axis. Evaluating a curve, sampling a function, sweeping a \nparameter to see what it does, interpolating between two states in a set number \nof steps - all of them start with a sequence, and all of them go wrong at the \nends if the endpoint handling is not what you assumed."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.linspace",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 16,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0.0 1.0 16"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 290,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment evenly spaced, both ends included",
+            "name": "comment",
+            "id": 459,
+            "position_x": 524,
+            "position_y": 330,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "evenly spaced, both ends included",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "evenly spaced, both ends included"
+        },
+        "7": {
+            "name": "t.logspace",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 16,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.logspace 0.0 2.0 16"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 290,
+            "position_y": 375,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment even in the logarithm: equal ratios",
+            "name": "comment",
+            "id": 570,
+            "position_x": 524,
+            "position_y": 585,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "even in the logarithm: equal ratios",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "even in the logarithm: equal ratios"
+        },
+        "10": {
+            "init": "comment crowded at the bottom, spread at the top",
+            "name": "comment",
+            "id": 607,
+            "position_x": 524,
+            "position_y": 615,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "crowded at the bottom, spread at the top",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "crowded at the bottom, spread at the top"
+        },
+        "11": {
+            "name": "t.arange",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 220,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "step",
+                    "value": 0.1,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.arange 0.0 1.0 0.1"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 290,
+            "position_y": 660,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment ten values, not eleven: stop excluded",
+            "name": "comment",
+            "id": 718,
+            "position_x": 524,
+            "position_y": 870,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ten values, not eleven: stop excluded",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ten values, not eleven: stop excluded"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 890,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

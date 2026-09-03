@@ -1,0 +1,513 @@
+{
+    "height": 1136,
+    "width": 1864,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "smpl_torque_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_torque_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_torque - what the body had to do",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 444,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_torque - what the body had to do",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_torque - what the body had to do"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 986,
+            "position_y": 45,
+            "width": 838,
+            "height": 856,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smpl_torque works out the forces inside a moving body.\n\nA pose tells you where the body is. This tells you what it had to DO to be \nthere - the torque at every joint, frame by frame. That is a different kind of \ninformation: position is geometry, torque is effort, and effort is what a body \nis actually spending.\n\nThe calculation is inverse dynamics. Given the pose, the translation, and the \nbody's size and mass from the config, it works backwards from the motion to the \nforces that must have produced it - gravity acting on every segment, the \nacceleration of each mass, the passive resistance of joints near their limits, \nand the reaction from the floor where the body is in contact with it.\n\nTHE OUTLETS, AND WHY THERE ARE SO MANY:\nThe total torque at a joint is a sum of causes, and separating them is most of \nthe value.\n\ntorque_vectors           the total at each joint\ngravity_torque_vectors   the part that is just holding the body up\ndynamic_torque_vectors   the part that is accelerating it\npassive_torque_vectors   the part the joint's own limits are contributing\nroot_torque              what the whole body is doing about its root\ncombined_effort          a single summary figure\njoint_positions          where the joints ended up\ninertias                 what each segment is resisting with\n\nHolding an arm out and swinging an arm can produce the same total, and they are \nnot the same act. Gravity torque is the cost of the posture; dynamic torque is \nthe cost of the change. Passive torque is the body resisting itself, and it \nrising is a sign of a joint near the end of its range.\n\nTHE SETTING TO GET RIGHT FIRST:\n'axis_permutation' - and it defaults to 'x, z, -y', which converts SMPL's Z-up \ninto Y-up. This node does the conversion ITSELF. Do not convert before it and \nleave the setting at its default, or it is applied twice.\n\nMatch the permutation to what you are actually feeding in, rather than \nconverting upstream to suit it. Everything else in the node - gravity, floor \ncontact, which way is down - depends on this being right, and getting it wrong \ngives plausible-looking numbers that are wrong.\n\nTHE REST OF THE OPTIONS, BY GROUP:\nThere are a great many. They divide into:\n\n  what to include   add_gravity, enable_passive_limits, enable_apparent_gravity,\n                    zero_root_torque, world_frame_dynamics\n  the floor         floor_contact_enable, floor_height, floor_tolerance,\n                    contact_method, enable_body_contacts\n  contact sensing   the lo_ group - a log-odds estimate of which feet are\n                    bearing weight, fusing height, kinematics, structural load,\n                    divergence and touchdown\n  smoothing         the com_ and smooth_ groups, and torque_smooth_window\n  gating            the coherence_gate_ group, which suppresses torque that is\n                    not coherent across the body\n\nMost have sensible defaults. The ones worth touching early are \naxis_permutation, the floor settings, and torque_smooth_window.\n\nSYNTAX:\nsmpl_torque\n\nEXAMPLE:\nsmpl_torque\n\nINPUTS and PARAMETERS:\n\npose:\nThe SMPL pose. Receiving it triggers the calculation.\n\ntrans:\nThe root translation. Without it the body has no motion through space, so \ndynamic torque is only what the limbs do relative to the root.\n\nconfig:\nBetas, gender and total mass, from smpl_beta_editor. The mass matters directly - \nevery torque scales with it.\n\nreset_state / reset_noise_stats / reset_floor:\nClear the running estimates.\n\nOUTPUTS: \n\nSee above. All the vector outlets are per joint.\n\nA CAUTION ON TRUSTING THE NUMBERS:\nInverse dynamics amplifies noise, because it depends on acceleration and \nacceleration is the second derivative of a measured position. A jitter too \nsmall to see in the pose becomes a large spike in the torque. That is what the \nsmoothing and gating options are for, and it is why a torque trace should be \nlooked at alongside the movement that produced it rather than on its own.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 830,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 840,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "smpl_torque works out the forces inside a moving body.\n\nA pose tells you where the body is. This tells you what it had to DO to be \nthere - the torque at every joint, frame by frame. That is a different kind of \ninformation: position is geometry, torque is effort, and effort is what a body \nis actually spending.\n\nThe calculation is inverse dynamics. Given the pose, the translation, and the \nbody's size and mass from the config, it works backwards from the motion to the \nforces that must have produced it - gravity acting on every segment, the \nacceleration of each mass, the passive resistance of joints near their limits, \nand the reaction from the floor where the body is in contact with it.\n\nTHE OUTLETS, AND WHY THERE ARE SO MANY:\nThe total torque at a joint is a sum of causes, and separating them is most of \nthe value.\n\ntorque_vectors           the total at each joint\ngravity_torque_vectors   the part that is just holding the body up\ndynamic_torque_vectors   the part that is accelerating it\npassive_torque_vectors   the part the joint's own limits are contributing\nroot_torque              what the whole body is doing about its root\ncombined_effort          a single summary figure\njoint_positions          where the joints ended up\ninertias                 what each segment is resisting with\n\nHolding an arm out and swinging an arm can produce the same total, and they are \nnot the same act. Gravity torque is the cost of the posture; dynamic torque is \nthe cost of the change. Passive torque is the body resisting itself, and it \nrising is a sign of a joint near the end of its range.\n\nTHE SETTING TO GET RIGHT FIRST:\n'axis_permutation' - and it defaults to 'x, z, -y', which converts SMPL's Z-up \ninto Y-up. This node does the conversion ITSELF. Do not convert before it and \nleave the setting at its default, or it is applied twice.\n\nMatch the permutation to what you are actually feeding in, rather than \nconverting upstream to suit it. Everything else in the node - gravity, floor \ncontact, which way is down - depends on this being right, and getting it wrong \ngives plausible-looking numbers that are wrong.\n\nTHE REST OF THE OPTIONS, BY GROUP:\nThere are a great many. They divide into:\n\n  what to include   add_gravity, enable_passive_limits, enable_apparent_gravity,\n                    zero_root_torque, world_frame_dynamics\n  the floor         floor_contact_enable, floor_height, floor_tolerance,\n                    contact_method, enable_body_contacts\n  contact sensing   the lo_ group - a log-odds estimate of which feet are\n                    bearing weight, fusing height, kinematics, structural load,\n                    divergence and touchdown\n  smoothing         the com_ and smooth_ groups, and torque_smooth_window\n  gating            the coherence_gate_ group, which suppresses torque that is\n                    not coherent across the body\n\nMost have sensible defaults. The ones worth touching early are \naxis_permutation, the floor settings, and torque_smooth_window.\n\nSYNTAX:\nsmpl_torque\n\nEXAMPLE:\nsmpl_torque\n\nINPUTS and PARAMETERS:\n\npose:\nThe SMPL pose. Receiving it triggers the calculation.\n\ntrans:\nThe root translation. Without it the body has no motion through space, so \ndynamic torque is only what the limbs do relative to the root.\n\nconfig:\nBetas, gender and total mass, from smpl_beta_editor. The mass matters directly - \nevery torque scales with it.\n\nreset_state / reset_noise_stats / reset_floor:\nClear the running estimates.\n\nOUTPUTS: \n\nSee above. All the vector outlets are per joint.\n\nA CAUTION ON TRUSTING THE NUMBERS:\nInverse dynamics amplifies noise, because it depends on acceleration and \nacceleration is the second derivative of a measured position. A jitter too \nsmall to see in the pose becomes a large spike in the torque. That is what the \nsmoothing and gating options are for, and it is why a torque trace should be \nlooked at alongside the movement that produced it rather than on its own."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_beta_editor",
+            "id": 385,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 300,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "shadow_to_smpl",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 260,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "smpl_torque",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 300,
+            "height": 400,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment set axis_permutation to match your input",
+            "name": "comment",
+            "id": 496,
+            "position_x": 676,
+            "position_y": 975,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set axis_permutation to match your input",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set axis_permutation to match your input"
+        },
+        "8": {
+            "init": "comment it does the up-axis conversion itself",
+            "name": "comment",
+            "id": 533,
+            "position_x": 676,
+            "position_y": 1005,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it does the up-axis conversion itself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it does the up-axis conversion itself"
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 570,
+            "position_x": 380,
+            "position_y": 560,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 22,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 50.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment total torque per joint",
+            "name": "comment",
+            "id": 607,
+            "position_x": 676,
+            "position_y": 720,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "total torque per joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "total torque per joint"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 760,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 22,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 50.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment gravity only: the cost of the posture",
+            "name": "comment",
+            "id": 681,
+            "position_x": 676,
+            "position_y": 920,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gravity only: the cost of the posture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gravity only: the cost of the posture"
+        },
+        "13": {
+            "name": "float",
+            "id": 718,
+            "position_x": 380,
+            "position_y": 960,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment combined effort, as one number",
+            "name": "comment",
+            "id": 755,
+            "position_x": 676,
+            "position_y": 1045,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "combined effort, as one number",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "combined effort, as one number"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1032,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trans",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trans"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "torque_vectors",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gravity_torque_vectors",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "combined_effort",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

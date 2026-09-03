@@ -1,0 +1,426 @@
+{
+    "height": 910,
+    "width": 1517,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "envelope_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/envelope_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment envelope - draw a curve, read values from it",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 528,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "envelope - draw a curve, read values from it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "envelope - draw a curve, read values from it"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 679,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "envelope is a curve you draw with the mouse and then read values from.\n\nDrag a point to move it. Right-click on empty space to add one, or near an \nexisting point to remove it. Shift and left-drag a segment to bend it into a \ncurve rather than a straight line.\n\nOnce drawn, there are two ways to get values out. Send an x position and it \nreports the height of the curve there - the curve acting as a lookup table, \na mapping from one range to another that you shaped by hand instead of \ncalculating. Or bang \"trigger\" and a playhead sweeps across the whole curve \nover the duration you set, sending values as it goes - the curve acting as an \nenvelope in the usual sense, a shape unfolding in time.\n\nThe first use is the more interesting one in a patch. Any relationship you can \ndescribe better by drawing than by writing - a response curve, a fade law, \na mapping from effort to brightness - can be drawn here and read continuously.\n\nSYNTAX:\nenvelope\n\nINPUTS and PARAMETERS:\n\nx:\nA position along the curve. The height there is reported immediately. \nThis is the lookup use.\n\ntrigger:\nStarts a sweep from the beginning of the curve to the end, taking \"duration\" \nto do it and sending values as it travels.\n\nduration:\nHow long a triggered sweep takes, in seconds.\n\nx max / y min / y max:\nThe ranges the curve spans, which set what the values coming out actually mean.\n\nwidth / height:\nThe size of the editor.\n\nOUTPUTS: \n\nvalue out:\nThe height of the curve - at the x you asked for, or at the playhead during \na sweep.\n\npoints out:\nThe control points themselves, so a curve can be stored, sent elsewhere, \nor restored later.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "envelope is a curve you draw with the mouse and then read values from.\n\nDrag a point to move it. Right-click on empty space to add one, or near an \nexisting point to remove it. Shift and left-drag a segment to bend it into a \ncurve rather than a straight line.\n\nOnce drawn, there are two ways to get values out. Send an x position and it \nreports the height of the curve there - the curve acting as a lookup table, \na mapping from one range to another that you shaped by hand instead of \ncalculating. Or bang \"trigger\" and a playhead sweeps across the whole curve \nover the duration you set, sending values as it goes - the curve acting as an \nenvelope in the usual sense, a shape unfolding in time.\n\nThe first use is the more interesting one in a patch. Any relationship you can \ndescribe better by drawing than by writing - a response curve, a fade law, \na mapping from effort to brightness - can be drawn here and read continuously.\n\nSYNTAX:\nenvelope\n\nINPUTS and PARAMETERS:\n\nx:\nA position along the curve. The height there is reported immediately. \nThis is the lookup use.\n\ntrigger:\nStarts a sweep from the beginning of the curve to the end, taking \"duration\" \nto do it and sending values as it travels.\n\nduration:\nHow long a triggered sweep takes, in seconds.\n\nx max / y min / y max:\nThe ranges the curve spans, which set what the values coming out actually mean.\n\nwidth / height:\nThe size of the editor.\n\nOUTPUTS: \n\nvalue out:\nThe height of the curve - at the x you asked for, or at the playhead during \na sweep.\n\npoints out:\nThe control points themselves, so a curve can be stored, sent elsewhere, \nor restored later."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 saw"
+        },
+        "6": {
+            "init": "comment a ramp sweeping across the curve",
+            "name": "comment",
+            "id": 459,
+            "position_x": 376,
+            "position_y": 215,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a ramp sweeping across the curve",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a ramp sweeping across the curve"
+        },
+        "7": {
+            "name": "envelope",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 255,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "y max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 280,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "init": "comment drag the points; right-click to add one",
+            "name": "comment",
+            "id": 533,
+            "position_x": 376,
+            "position_y": 530,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag the points; right-click to add one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag the points; right-click to add one"
+        },
+        "9": {
+            "init": "comment shift-drag a segment to bend it",
+            "name": "comment",
+            "id": 570,
+            "position_x": 376,
+            "position_y": 560,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shift-drag a segment to bend it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shift-drag a segment to bend it"
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the shape you drew, read out over time",
+            "name": "comment",
+            "id": 644,
+            "position_x": 376,
+            "position_y": 785,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the shape you drew, read out over time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the shape you drew, read out over time"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 806,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "x"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "value out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

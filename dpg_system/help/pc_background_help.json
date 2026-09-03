@@ -1,0 +1,535 @@
+{
+    "height": 1391,
+    "width": 1921,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "pc_background_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pc_background_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pc_background and pc_denoise - removing things",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pc_background and pc_denoise - removing things",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pc_background and pc_denoise - removing things"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1063,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These remove what you do not want: the room itself, and the sensor's noise.\n\nTHE NODES:\n\npc_background   learn the empty room, then subtract it\npc_denoise      drop speckle and flicker\n\nTHE CLOUD FRAME, AND WHY pc_crop GOES FIRST:\nA cloud travelling between these nodes is either a plain (N, 3) array of points,\nor a small dict carrying the points AND the volume they were cropped to.\n\npc_crop is what turns the first into the second. Every grid-based node\ndownstream then uses the volume carried on the frame to build its voxel grid,\nand their own min/max widgets are only a fallback for when a raw array arrives\nwith nothing attached.\n\nSo pc_crop belongs at the head of the chain, and not only to throw away points.\nIt is how the rest of the chain learns what volume it is working in. Set the\nbox once, at the top, and everything after it agrees.\n\nThe metadata is passed along by every node, and the renderers unwrap it, so\neither form draws directly - you never have to unpack it by hand.\n\npc_background: SHOW IT THE EMPTY ROOM:\nPress 'learn' with nobody in the volume. It watches for 'frames' frames, marks\nevery voxel that was occupied in at least 'min hits' of them, and from then on\nthrows away any point landing in one of those voxels.\n\nWhat is left is whatever is NEW - which for most installations is the person.\nIt is far more robust than trying to crop a person out geometrically, because it\ndoes not care what shape the room is.\n\nPRESS learn WITH THE CLOUD ALREADY RUNNING:\nThis is the one procedural trap. The learned model is tied to the exact voxel\ngrid it was built on, so if the volume changes - because the first frame arrives\ncarrying a crop, or because you adjust the crop or the voxel size - the model no\nlonger maps to anything and the run is thrown away.\n\nStart the sensor, get the crop the way you want it, and only then press learn.\nDoing it the other way round, the node now tells you it has abandoned the run;\nit used to announce that it had started learning and then stop in silence.\n\n'dilate' IS USUALLY WORTH 1:\nSensor noise makes points on a learned surface jitter into neighbouring voxels,\nwhere the model does not expect them, and they survive as a thin crust of false\nforeground. dilate grows the background by that many voxels to catch them.\n\nMeasured on a 3,000-point wall with realistic jitter:\n\ndilate 0    229 points of wall survive\ndilate 1      1 point survives\ndilate 2      0 points survive\n\nand in the same test the person in front was untouched at every setting -\n1,500 points in, 1,500 out from dilate 1 upward. The cost of dilating is that\nthe background grows slightly, so something pressed right up against a learned\nsurface starts to disappear into it. 1 is the sensible default; go higher only\nif the crust persists.\n\n'clear' throws the model away and passes everything through again.\n\npc_denoise: TWO FILTERS, EITHER OR BOTH:\n'min points' is the spatial one - drop any voxel holding fewer than that many\npoints this frame. Speckle is by definition isolated, so it goes first.\n\n'persistence' is the temporal one - keep a running average of how often each\nvoxel is occupied, and drop the ones that only flicker on briefly. 0 turns it\noff. 'decay' sets how long that memory is. This is the one for a sensor that\nsparkles in mid-air, which no amount of spatial filtering will fix, because at\nany single instant the sparkle looks like a real point.\n\nTHE TRAP: min points AND voxel size ARE ONE CONTROL, NOT TWO:\n'min points' means nothing on its own - it is a density, and density depends\nentirely on how big the voxel is. The same setting can be harmless or\ncatastrophic. Measured on a solid 1,500-point object:\n\n                 min points 1    2       4\nvoxel 0.04 m         1500      194       5\nvoxel 0.08 m         1500      861     215\nvoxel 0.15 m         1500     1345    1099\n\nAt the default voxel size, asking for just two points per voxel destroys seven\neighths of a perfectly real object. If denoising is eating your subject, this is\nwhy - raise the voxel size or lower min points, and change them together.\n\nSYNTAX:\npc_background\npc_denoise\n\nEXAMPLE:\npc_denoise\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud. Receiving it does the work.\n\nlearn / frames / min hits:\nStart learning, over how many frames, requiring how many hits per voxel.\n\ndilate (voxels):\nGrow the learned background to catch surface jitter. 1 is usually right.\n\nclear:\nForget the background.\n\nmin points / persistence / decay:\nThe spatial filter, the temporal one, and its memory.\n\nOUTPUTS: \n\nforeground:\nWhat was not in the learned background.\n\ndenoised:\nWhat survived the filters.\n\nPoints outside the volume pass through both nodes untouched - the filtering only\nhappens inside the box.\n\nRELATED:\npc_crop, which should come before either of these.\npc_info to see how many points you are actually losing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These remove what you do not want: the room itself, and the sensor's noise.\n\nTHE NODES:\n\npc_background   learn the empty room, then subtract it\npc_denoise      drop speckle and flicker\n\nTHE CLOUD FRAME, AND WHY pc_crop GOES FIRST:\nA cloud travelling between these nodes is either a plain (N, 3) array of points,\nor a small dict carrying the points AND the volume they were cropped to.\n\npc_crop is what turns the first into the second. Every grid-based node\ndownstream then uses the volume carried on the frame to build its voxel grid,\nand their own min/max widgets are only a fallback for when a raw array arrives\nwith nothing attached.\n\nSo pc_crop belongs at the head of the chain, and not only to throw away points.\nIt is how the rest of the chain learns what volume it is working in. Set the\nbox once, at the top, and everything after it agrees.\n\nThe metadata is passed along by every node, and the renderers unwrap it, so\neither form draws directly - you never have to unpack it by hand.\n\npc_background: SHOW IT THE EMPTY ROOM:\nPress 'learn' with nobody in the volume. It watches for 'frames' frames, marks\nevery voxel that was occupied in at least 'min hits' of them, and from then on\nthrows away any point landing in one of those voxels.\n\nWhat is left is whatever is NEW - which for most installations is the person.\nIt is far more robust than trying to crop a person out geometrically, because it\ndoes not care what shape the room is.\n\nPRESS learn WITH THE CLOUD ALREADY RUNNING:\nThis is the one procedural trap. The learned model is tied to the exact voxel\ngrid it was built on, so if the volume changes - because the first frame arrives\ncarrying a crop, or because you adjust the crop or the voxel size - the model no\nlonger maps to anything and the run is thrown away.\n\nStart the sensor, get the crop the way you want it, and only then press learn.\nDoing it the other way round, the node now tells you it has abandoned the run;\nit used to announce that it had started learning and then stop in silence.\n\n'dilate' IS USUALLY WORTH 1:\nSensor noise makes points on a learned surface jitter into neighbouring voxels,\nwhere the model does not expect them, and they survive as a thin crust of false\nforeground. dilate grows the background by that many voxels to catch them.\n\nMeasured on a 3,000-point wall with realistic jitter:\n\ndilate 0    229 points of wall survive\ndilate 1      1 point survives\ndilate 2      0 points survive\n\nand in the same test the person in front was untouched at every setting -\n1,500 points in, 1,500 out from dilate 1 upward. The cost of dilating is that\nthe background grows slightly, so something pressed right up against a learned\nsurface starts to disappear into it. 1 is the sensible default; go higher only\nif the crust persists.\n\n'clear' throws the model away and passes everything through again.\n\npc_denoise: TWO FILTERS, EITHER OR BOTH:\n'min points' is the spatial one - drop any voxel holding fewer than that many\npoints this frame. Speckle is by definition isolated, so it goes first.\n\n'persistence' is the temporal one - keep a running average of how often each\nvoxel is occupied, and drop the ones that only flicker on briefly. 0 turns it\noff. 'decay' sets how long that memory is. This is the one for a sensor that\nsparkles in mid-air, which no amount of spatial filtering will fix, because at\nany single instant the sparkle looks like a real point.\n\nTHE TRAP: min points AND voxel size ARE ONE CONTROL, NOT TWO:\n'min points' means nothing on its own - it is a density, and density depends\nentirely on how big the voxel is. The same setting can be harmless or\ncatastrophic. Measured on a solid 1,500-point object:\n\n                 min points 1    2       4\nvoxel 0.04 m         1500      194       5\nvoxel 0.08 m         1500      861     215\nvoxel 0.15 m         1500     1345    1099\n\nAt the default voxel size, asking for just two points per voxel destroys seven\neighths of a perfectly real object. If denoising is eating your subject, this is\nwhy - raise the voxel size or lower min points, and change them together.\n\nSYNTAX:\npc_background\npc_denoise\n\nEXAMPLE:\npc_denoise\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud. Receiving it does the work.\n\nlearn / frames / min hits:\nStart learning, over how many frames, requiring how many hits per voxel.\n\ndilate (voxels):\nGrow the learned background to catch surface jitter. 1 is usually right.\n\nclear:\nForget the background.\n\nmin points / persistence / decay:\nThe spatial filter, the temporal one, and its memory.\n\nOUTPUTS: \n\nforeground:\nWhat was not in the learned background.\n\ndenoised:\nWhat survived the filters.\n\nPoints outside the volume pass through both nodes untouched - the filtering only\nhappens inside the box.\n\nRELATED:\npc_crop, which should come before either of these.\npc_info to see how many points you are actually losing."
+        },
+        "3": {
+            "name": "femto",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "pc_crop",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment crop first, always",
+            "name": "comment",
+            "id": 422,
+            "position_x": 746,
+            "position_y": 590,
+            "width": 126,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "crop first, always",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "crop first, always"
+        },
+        "6": {
+            "name": "pc_background",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 635,
+            "width": 320,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dilate (voxels)",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "init": "comment get the crop right, THEN press learn",
+            "name": "comment",
+            "id": 496,
+            "position_x": 746,
+            "position_y": 980,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "get the crop right, THEN press learn",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "get the crop right, THEN press learn"
+        },
+        "8": {
+            "init": "comment with nobody in the volume - changing",
+            "name": "comment",
+            "id": 533,
+            "position_x": 746,
+            "position_y": 1060,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "with nobody in the volume - changing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "with nobody in the volume - changing"
+        },
+        "9": {
+            "init": "comment the volume abandons the run",
+            "name": "comment",
+            "id": 570,
+            "position_x": 746,
+            "position_y": 1100,
+            "width": 189,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the volume abandons the run",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the volume abandons the run"
+        },
+        "10": {
+            "init": "comment dilate 1 catches the jitter crust on",
+            "name": "comment",
+            "id": 607,
+            "position_x": 746,
+            "position_y": 1140,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dilate 1 catches the jitter crust on",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dilate 1 catches the jitter crust on"
+        },
+        "11": {
+            "init": "comment learned surfaces - almost always worth it",
+            "name": "comment",
+            "id": 644,
+            "position_x": 746,
+            "position_y": 1180,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "learned surfaces - almost always worth it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "learned surfaces - almost always worth it"
+        },
+        "12": {
+            "name": "pc_denoise",
+            "id": 681,
+            "position_x": 420,
+            "position_y": 635,
+            "width": 300,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment min points is a DENSITY: it means",
+            "name": "comment",
+            "id": 718,
+            "position_x": 746,
+            "position_y": 910,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "min points is a DENSITY: it means",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "min points is a DENSITY: it means"
+        },
+        "14": {
+            "init": "comment nothing without the voxel size. At 0.04",
+            "name": "comment",
+            "id": 755,
+            "position_x": 746,
+            "position_y": 940,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nothing without the voxel size. At 0.04",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nothing without the voxel size. At 0.04"
+        },
+        "15": {
+            "init": "comment min points 2 removes 7/8 of a real object",
+            "name": "comment",
+            "id": 792,
+            "position_x": 746,
+            "position_y": 1020,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "min points 2 removes 7/8 of a real object",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "min points 2 removes 7/8 of a real object"
+        },
+        "16": {
+            "name": "pc_info",
+            "id": 829,
+            "position_x": 420,
+            "position_y": 1020,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "int",
+            "id": 866,
+            "position_x": 420,
+            "position_y": 1215,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment watch the count while you tune - it is",
+            "name": "comment",
+            "id": 903,
+            "position_x": 746,
+            "position_y": 1265,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "watch the count while you tune - it is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "watch the count while you tune - it is"
+        },
+        "19": {
+            "init": "comment how you catch a filter eating the subject",
+            "name": "comment",
+            "id": 940,
+            "position_x": 746,
+            "position_y": 1295,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how you catch a filter eating the subject",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how you catch a filter eating the subject"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 1287,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "point_cloud",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "cropped",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "foreground",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "3": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "denoised",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "4": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

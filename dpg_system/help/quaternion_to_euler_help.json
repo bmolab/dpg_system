@@ -1,0 +1,535 @@
+{
+    "height": 1002,
+    "width": 1717,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "quaternion_to_euler_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/quaternion_to_euler_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment rotation conversions - four ways to say one thing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 588,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rotation conversions - four ways to say one thing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rotation conversions - four ways to say one thing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 849,
+            "position_y": 45,
+            "width": 828,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These convert a rotation between the four ways of writing one down.\n\nA rotation is one thing. There are several ways to describe it, each good at \nsomething and bad at something else, and most of the trouble in orientation work \nis a value in the wrong one.\n\nTHE FOUR REPRESENTATIONS:\n\nquaternion        four numbers. No gimbal lock, composes cleanly, interpolates \n                  properly. Unreadable by eye. This is the one to STORE and \n                  COMPUTE in\neuler angles      three angles about three axes. Readable, and what a person \n                  can type. Gimbal locks, and the order of the axes changes \n                  what the numbers mean\nrotation matrix   nine numbers. What actually gets applied to a vector, and how \n                  a graphics system wants it\naxis-angle        an axis and how far round it. The most physical description - \n                  it is what a rotation IS\nrotation vector   the same thing packed into three numbers, with the angle \n                  carried in the length\n\nTHE NODES:\n\nquaternion_to_euler      matrix_to_quaternion       quaternion_to_rotvec\neuler_to_quaternion      quaternion_to_matrix       rotvec_to_quaternion\nquaternion_to_axis_angle matrix_to_axis_angle       matrix_to_rotvec\naxis_angle_to_quaternion\n\nWHAT GIMBAL LOCK ACTUALLY COSTS YOU:\nWhen two of an Euler triple's axes line up, a degree of freedom disappears - \ntwo of the three angles then do the same job, and the values jump about wildly \nfor a rotation that is moving smoothly. Near that configuration, small real \nmovements produce enormous changes in the numbers.\n\nThis is why converting sensor quaternions to Euler angles to do arithmetic on \nthem, and converting back, is a mistake even though it reads more naturally. \nWhatever you were computing behaves badly in exactly the postures where the \nangles broke - typically arms overhead, which is where the interesting movement \nusually is.\n\nConvert to Euler for DISPLAY, and to let a person type a value. Do the work in \nquaternions.\n\nORDER AND DEGREES:\neuler_to_quaternion has an 'order' option because rotating about x then y then \nz gives a different result from z then y then x. There is no universal \nconvention, so two systems that both say \"Euler angles\" will usually disagree. \nIf a conversion is nearly right but wrong in a way that grows with the angle, \nthe order is the first thing to check.\n\nThe 'degrees' option decides whether the angles are in degrees or radians. \nAs elsewhere in this system, degrees is the default.\n\nSYNTAX:\nquaternion_to_euler\neuler_to_quaternion\n\nEXAMPLE:\nquaternion_to_euler\n\nINPUTS and PARAMETERS:\n\nquaternion / rotation matrix / xyz rotation / rotation vector:\nThe rotation, in whichever form the node takes. Receiving it triggers the \nconversion.\n\ndegrees:\nWhether angles are in degrees. On by default.\n\norder (euler_to_quaternion):\nWhich axis order the three angles apply in.\n\noffset x / offset y (quaternion_to_euler):\nConstant offsets added to the result, for matching a convention that differs \nfrom this one.\n\nOUTPUTS: \n\nThe rotation in the target representation.\n\nA NOTE ON QUATERNION ORDER:\nThe quaternions here are scalar-first - w, x, y, z. Several libraries use \nscalar-last, and a quaternion read in the wrong order is not an error, just a \ndifferent and wrong rotation. If an imported orientation is confidently \nincorrect rather than noisy, suspect this.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These convert a rotation between the four ways of writing one down.\n\nA rotation is one thing. There are several ways to describe it, each good at \nsomething and bad at something else, and most of the trouble in orientation work \nis a value in the wrong one.\n\nTHE FOUR REPRESENTATIONS:\n\nquaternion        four numbers. No gimbal lock, composes cleanly, interpolates \n                  properly. Unreadable by eye. This is the one to STORE and \n                  COMPUTE in\neuler angles      three angles about three axes. Readable, and what a person \n                  can type. Gimbal locks, and the order of the axes changes \n                  what the numbers mean\nrotation matrix   nine numbers. What actually gets applied to a vector, and how \n                  a graphics system wants it\naxis-angle        an axis and how far round it. The most physical description - \n                  it is what a rotation IS\nrotation vector   the same thing packed into three numbers, with the angle \n                  carried in the length\n\nTHE NODES:\n\nquaternion_to_euler      matrix_to_quaternion       quaternion_to_rotvec\neuler_to_quaternion      quaternion_to_matrix       rotvec_to_quaternion\nquaternion_to_axis_angle matrix_to_axis_angle       matrix_to_rotvec\naxis_angle_to_quaternion\n\nWHAT GIMBAL LOCK ACTUALLY COSTS YOU:\nWhen two of an Euler triple's axes line up, a degree of freedom disappears - \ntwo of the three angles then do the same job, and the values jump about wildly \nfor a rotation that is moving smoothly. Near that configuration, small real \nmovements produce enormous changes in the numbers.\n\nThis is why converting sensor quaternions to Euler angles to do arithmetic on \nthem, and converting back, is a mistake even though it reads more naturally. \nWhatever you were computing behaves badly in exactly the postures where the \nangles broke - typically arms overhead, which is where the interesting movement \nusually is.\n\nConvert to Euler for DISPLAY, and to let a person type a value. Do the work in \nquaternions.\n\nORDER AND DEGREES:\neuler_to_quaternion has an 'order' option because rotating about x then y then \nz gives a different result from z then y then x. There is no universal \nconvention, so two systems that both say \"Euler angles\" will usually disagree. \nIf a conversion is nearly right but wrong in a way that grows with the angle, \nthe order is the first thing to check.\n\nThe 'degrees' option decides whether the angles are in degrees or radians. \nAs elsewhere in this system, degrees is the default.\n\nSYNTAX:\nquaternion_to_euler\neuler_to_quaternion\n\nEXAMPLE:\nquaternion_to_euler\n\nINPUTS and PARAMETERS:\n\nquaternion / rotation matrix / xyz rotation / rotation vector:\nThe rotation, in whichever form the node takes. Receiving it triggers the \nconversion.\n\ndegrees:\nWhether angles are in degrees. On by default.\n\norder (euler_to_quaternion):\nWhich axis order the three angles apply in.\n\noffset x / offset y (quaternion_to_euler):\nConstant offsets added to the result, for matching a convention that differs \nfrom this one.\n\nOUTPUTS: \n\nThe rotation in the target representation.\n\nA NOTE ON QUATERNION ORDER:\nThe quaternions here are scalar-first - w, x, y, z. Several libraries use \nscalar-last, and a quaternion read in the wrong order is not an error, just a \ndifferent and wrong rotation. If an imported orientation is confidently \nincorrect rather than noisy, suspect this."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 180.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 5.0 saw"
+        },
+        "6": {
+            "name": "pack",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 140,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "7": {
+            "init": "comment a sweeping angle on one axis",
+            "name": "comment",
+            "id": 496,
+            "position_x": 616,
+            "position_y": 345,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a sweeping angle on one axis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a sweeping angle on one axis"
+        },
+        "8": {
+            "name": "euler_to_quaternion",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 385,
+            "width": 260,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment as a quaternion: w x y z",
+            "name": "comment",
+            "id": 607,
+            "position_x": 616,
+            "position_y": 570,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "as a quaternion: w x y z",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "as a quaternion: w x y z"
+        },
+        "11": {
+            "name": "quaternion_to_euler",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 615,
+            "width": 260,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 790,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment and back again",
+            "name": "comment",
+            "id": 718,
+            "position_x": 616,
+            "position_y": 840,
+            "width": 98,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and back again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and back again"
+        },
+        "14": {
+            "name": "quaternion_to_matrix",
+            "id": 755,
+            "position_x": 350,
+            "position_y": 615,
+            "width": 240,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 792,
+            "position_x": 350,
+            "position_y": 720,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment the same rotation as a matrix",
+            "name": "comment",
+            "id": 829,
+            "position_x": 616,
+            "position_y": 880,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same rotation as a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same rotation as a matrix"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 898,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xyz rotation"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "euler angles",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rotation matrix",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

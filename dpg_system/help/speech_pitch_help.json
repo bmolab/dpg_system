@@ -1,0 +1,617 @@
+{
+    "height": 1070,
+    "width": 1827,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "speech_pitch_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/speech_pitch_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment speech_pitch and speech_prosody - the melody",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 528,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "speech_pitch and speech_prosody - the melody",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "speech_pitch and speech_prosody - the melody"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 969,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These follow the pitch of a voice, and the melody it traces.\n\nTHE NODES:\n\nspeech_pitch    the note being spoken, right now\nspeech_prosody  what that note has been doing over the last second\n\nTHE FAMILY, AND WHAT EACH ONE HEARS:\nspeech_pitch          the note being spoken - f0, and whether there is a voice\nspeech_prosody        the shape of that pitch over a window - the melody\nspeech_envelope       loudness, on two time scales, and onsets\nspeech_spectral       where the energy sits - bright or dark, tonal or noisy\nspeech_voice_quality  how clear the voice is - breathy, rough, or clean\n\nNone of these know what is being said. They measure HOW, which is the part that\ncarries urgency, hesitation and effort - and the part a patch can respond to\nwithout any of the machinery of understanding language.\n\nTHEY ANALYSE ON A CLOCK, NOT ON DATA:\nEach of these keeps an internal ring buffer, and runs its analysis at\n'analysis_fps' - measured against the wall clock. Audio arriving faster than\nthat is buffered, not analysed.\n\nThis is worth knowing because it means the outputs are NOT one-per-chunk. Push a\nfile through as fast as it will go and you get far fewer analysis frames than\nchunks - the node is pacing itself in real time. It is built for a live stream,\nwhere that is exactly right.\n\nf0 IS THE NOTE, voiced IS WHETHER THERE IS ONE:\nf0 is the fundamental frequency in Hz - roughly 85 to 180 for an adult male\nvoice, 165 to 255 for an adult female one, higher for children.\n\nBut speech is not continuously pitched. Vowels have a pitch; 's', 'f' and 't' do\nnot, and neither do the gaps. So 'voiced' matters as much as f0: it says whether\nthere is a note to report at all, and 'voiced_prob' gives the confidence behind\nthat as a number rather than a yes or no.\n\nAnything downstream should check voiced first. An f0 reading taken during an 's'\nis not a quiet note, it is a meaningless one.\n\nSET min_freq AND max_freq TO THE ACTUAL SPEAKER:\nThis is the single most useful adjustment here. Pitch trackers make OCTAVE\nERRORS - reporting half or double the real frequency - and a range that matches\nthe person talking removes most of them at a stroke.\n\nLeaving the range wide does not make the node more general, it makes it less\nreliable. Narrow it to the voice you actually have.\n\n'voiced_attack' and 'voiced_release' are hysteresis on the voiced flag: how\nquickly it is willing to say a voice has started, and how long it waits before\nsaying it has stopped. Longer release stops the flag chattering during the small\ngaps inside continuous speech.\n\nTHREE BACKENDS, AND IT PICKS THE BEST ONE PRESENT:\nparselmouth (Praat) is preferred, then pyin (librosa), then kaldi (torchaudio).\nThey differ in accuracy and cost rather than in what they mean, and the node\nfalls back to whichever is installed. If none is, it produces nothing.\n\nspeech_prosody TAKES THE CONTOUR, NOT THE NOTE:\nFeed it 'f0_raw' - the recent history as an array - not 'f0'. Prosody is about\nwhat the pitch has been DOING, and that question needs the contour.\n\nOver 'window_sec' of history it reports:\n\npitch_slope        Hz per second - rising or falling, and how fast\npitch_range        the span covered in the window\npitch_variability  how much it wanders\npitch_mean         where it sits\nintonation         a WORD: 'rising', 'falling', 'flat' or 'unvoiced'\n\nintonation is a string, not a number - it is the slope already judged for you,\nflat meaning under 5 Hz per second either way. A question rising at the end, a\nstatement falling: that is what this outlet is for.\n\nSYNTAX:\nspeech_pitch\nspeech_prosody\n\nEXAMPLE:\nspeech_pitch\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe live audio.\n\nbuffer_sec / analysis_fps:\nHow much history to analyse, and how often - in real seconds.\n\nmin_freq / max_freq:\nThe speaker's range. Narrow it.\n\nf0_in (speech_prosody):\nThe f0 CONTOUR, from f0_raw.\n\nwindow_sec / smoothing:\nHow much history the prosody covers, and how much it is smoothed.\n\nOUTPUTS: \n\nf0 / f0_raw:\nThe current note, and the recent contour.\n\nvoiced / voiced_prob:\nWhether there is a note, and the confidence.\n\npitch_slope / pitch_range / pitch_variability / pitch_mean:\nThe melody, as numbers.\n\nintonation:\nThe melody, as a word.\n\nFEEDING THEM:\nt.audio_source is the usual source - a live input, giving audio tensors. The\ndemo here is wired that way, so it needs an actual input to show anything; with\nnothing arriving the outputs simply stay quiet.\n\nRELATED:\nspeech_envelope for how loud rather than how high.\nspeech_voice_quality for how clear the voice is - and it needs 'voiced' too.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These follow the pitch of a voice, and the melody it traces.\n\nTHE NODES:\n\nspeech_pitch    the note being spoken, right now\nspeech_prosody  what that note has been doing over the last second\n\nTHE FAMILY, AND WHAT EACH ONE HEARS:\nspeech_pitch          the note being spoken - f0, and whether there is a voice\nspeech_prosody        the shape of that pitch over a window - the melody\nspeech_envelope       loudness, on two time scales, and onsets\nspeech_spectral       where the energy sits - bright or dark, tonal or noisy\nspeech_voice_quality  how clear the voice is - breathy, rough, or clean\n\nNone of these know what is being said. They measure HOW, which is the part that\ncarries urgency, hesitation and effort - and the part a patch can respond to\nwithout any of the machinery of understanding language.\n\nTHEY ANALYSE ON A CLOCK, NOT ON DATA:\nEach of these keeps an internal ring buffer, and runs its analysis at\n'analysis_fps' - measured against the wall clock. Audio arriving faster than\nthat is buffered, not analysed.\n\nThis is worth knowing because it means the outputs are NOT one-per-chunk. Push a\nfile through as fast as it will go and you get far fewer analysis frames than\nchunks - the node is pacing itself in real time. It is built for a live stream,\nwhere that is exactly right.\n\nf0 IS THE NOTE, voiced IS WHETHER THERE IS ONE:\nf0 is the fundamental frequency in Hz - roughly 85 to 180 for an adult male\nvoice, 165 to 255 for an adult female one, higher for children.\n\nBut speech is not continuously pitched. Vowels have a pitch; 's', 'f' and 't' do\nnot, and neither do the gaps. So 'voiced' matters as much as f0: it says whether\nthere is a note to report at all, and 'voiced_prob' gives the confidence behind\nthat as a number rather than a yes or no.\n\nAnything downstream should check voiced first. An f0 reading taken during an 's'\nis not a quiet note, it is a meaningless one.\n\nSET min_freq AND max_freq TO THE ACTUAL SPEAKER:\nThis is the single most useful adjustment here. Pitch trackers make OCTAVE\nERRORS - reporting half or double the real frequency - and a range that matches\nthe person talking removes most of them at a stroke.\n\nLeaving the range wide does not make the node more general, it makes it less\nreliable. Narrow it to the voice you actually have.\n\n'voiced_attack' and 'voiced_release' are hysteresis on the voiced flag: how\nquickly it is willing to say a voice has started, and how long it waits before\nsaying it has stopped. Longer release stops the flag chattering during the small\ngaps inside continuous speech.\n\nTHREE BACKENDS, AND IT PICKS THE BEST ONE PRESENT:\nparselmouth (Praat) is preferred, then pyin (librosa), then kaldi (torchaudio).\nThey differ in accuracy and cost rather than in what they mean, and the node\nfalls back to whichever is installed. If none is, it produces nothing.\n\nspeech_prosody TAKES THE CONTOUR, NOT THE NOTE:\nFeed it 'f0_raw' - the recent history as an array - not 'f0'. Prosody is about\nwhat the pitch has been DOING, and that question needs the contour.\n\nOver 'window_sec' of history it reports:\n\npitch_slope        Hz per second - rising or falling, and how fast\npitch_range        the span covered in the window\npitch_variability  how much it wanders\npitch_mean         where it sits\nintonation         a WORD: 'rising', 'falling', 'flat' or 'unvoiced'\n\nintonation is a string, not a number - it is the slope already judged for you,\nflat meaning under 5 Hz per second either way. A question rising at the end, a\nstatement falling: that is what this outlet is for.\n\nSYNTAX:\nspeech_pitch\nspeech_prosody\n\nEXAMPLE:\nspeech_pitch\n\nINPUTS and PARAMETERS:\n\naudio tensor in:\nThe live audio.\n\nbuffer_sec / analysis_fps:\nHow much history to analyse, and how often - in real seconds.\n\nmin_freq / max_freq:\nThe speaker's range. Narrow it.\n\nf0_in (speech_prosody):\nThe f0 CONTOUR, from f0_raw.\n\nwindow_sec / smoothing:\nHow much history the prosody covers, and how much it is smoothed.\n\nOUTPUTS: \n\nf0 / f0_raw:\nThe current note, and the recent contour.\n\nvoiced / voiced_prob:\nWhether there is a note, and the confidence.\n\npitch_slope / pitch_range / pitch_variability / pitch_mean:\nThe melody, as numbers.\n\nintonation:\nThe melody, as a word.\n\nFEEDING THEM:\nt.audio_source is the usual source - a live input, giving audio tensors. The\ndemo here is wired that way, so it needs an actual input to show anything; with\nnothing arriving the outputs simply stay quiet.\n\nRELATED:\nspeech_envelope for how loud rather than how high.\nspeech_voice_quality for how clear the voice is - and it needs 'voiced' too."
+        },
+        "3": {
+            "name": "t.audio_source",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "speech_pitch",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "float",
+            "id": 422,
+            "position_x": 340,
+            "position_y": 270,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment f0 in Hz - but check voiced first",
+            "name": "comment",
+            "id": 459,
+            "position_x": 666,
+            "position_y": 320,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "f0 in Hz - but check voiced first",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "f0 in Hz - but check voiced first"
+        },
+        "7": {
+            "name": "float",
+            "id": 496,
+            "position_x": 340,
+            "position_y": 365,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment voiced: 0 through s, f, t and silence",
+            "name": "comment",
+            "id": 533,
+            "position_x": 666,
+            "position_y": 415,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "voiced: 0 through s, f, t and silence",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "voiced: 0 through s, f, t and silence"
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 340,
+            "position_y": 460,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 50.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 350.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment narrow min_freq/max_freq to the actual",
+            "name": "comment",
+            "id": 607,
+            "position_x": 666,
+            "position_y": 600,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "narrow min_freq/max_freq to the actual",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "narrow min_freq/max_freq to the actual"
+        },
+        "11": {
+            "init": "comment speaker - it removes most octave errors",
+            "name": "comment",
+            "id": 644,
+            "position_x": 666,
+            "position_y": 630,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "speaker - it removes most octave errors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "speaker - it removes most octave errors"
+        },
+        "12": {
+            "name": "speech_prosody",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 280,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment fed from f0_raw, the CONTOUR - prosody",
+            "name": "comment",
+            "id": 718,
+            "position_x": 666,
+            "position_y": 950,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fed from f0_raw, the CONTOUR - prosody",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fed from f0_raw, the CONTOUR - prosody"
+        },
+        "14": {
+            "init": "comment is about what the pitch has been doing",
+            "name": "comment",
+            "id": 755,
+            "position_x": 666,
+            "position_y": 980,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "is about what the pitch has been doing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "is about what the pitch has been doing"
+        },
+        "15": {
+            "name": "float",
+            "id": 792,
+            "position_x": 350,
+            "position_y": 680,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment slope, Hz per second",
+            "name": "comment",
+            "id": 829,
+            "position_x": 666,
+            "position_y": 730,
+            "width": 140,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "slope, Hz per second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "slope, Hz per second"
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 350,
+            "position_y": 775,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment intonation is a WORD: rising, falling,",
+            "name": "comment",
+            "id": 903,
+            "position_x": 666,
+            "position_y": 825,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "intonation is a WORD: rising, falling,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "intonation is a WORD: rising, falling,"
+        },
+        "19": {
+            "init": "comment flat or unvoiced",
+            "name": "comment",
+            "id": 940,
+            "position_x": 666,
+            "position_y": 855,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flat or unvoiced",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flat or unvoiced"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 950,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "audio tensors",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "audio tensor in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "f0",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "voiced",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "f0",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "f0_raw",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "f0_in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pitch_slope",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "intonation",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

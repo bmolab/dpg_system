@@ -1,0 +1,459 @@
+{
+    "height": 861,
+    "width": 1659,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.cumsum_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cumsum_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.cumsum and t.diff - the running story",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 468,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.cumsum and t.diff - the running story",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.cumsum and t.diff - the running story"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 801,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These look ALONG a tensor and report how it develops, rather than summarising it.\n\nA sum gives you the total. A cumulative sum gives you the total so far at every \nposition - the running story rather than the ending. Anything with an order to \nit, which is anything indexed by time or by position along a body, has a \ndevelopment worth seeing.\n\nTHE NODES:\n\nt.cumsum         the running total\nt.cumprod        the running product\nt.cummax         the largest value seen so far - a running high-water mark\nt.cummin         the smallest so far\nt.logcumsumexp   a running sum done in the log domain\nt.diff           the difference between neighbouring elements\n\nt.cumsum AND t.diff UNDO EACH OTHER:\ndiff turns positions into steps; cumsum turns steps back into positions. \nReach for diff when a tensor holds where something WAS and you want how far it \nMOVED, and cumsum when you have the movements and want the path.\n\nt.cummax IS A DECAY-FREE PEAK HOLD:\nRunning it along a time axis gives you, at every instant, the largest value \nthat has occurred up to then. That is the shape of a peak meter that never \nfalls back, and it is a cheap way to ask \"has this ever exceeded X, and when \ndid it first do so\".\n\nWHY logcumsumexp EXISTS:\nAdding up many small probabilities directly underflows to zero. Working in the \nlog domain keeps them representable, but you cannot simply add logs when you \nwant a sum of the underlying values. This node does that correctly, and it is \nthe node you want whenever you are accumulating likelihoods.\n\nSYNTAX:\nt.cumsum\nt.diff <n>\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWhich axis to run along. This matters more here than on a reduction - the \ndirection IS the ordering you are claiming exists, so getting it wrong gives a \nrunning total across the wrong thing entirely.\n\nn (t.diff):\nHow many times to difference. 1 gives the change, 2 the change in the change - \nso from positions, 1 is velocity and 2 is acceleration.\n\nOUTPUTS: \n\noutput:\nThe running result.\n\nindices (t.cummax, t.cummin):\nWHERE each running maximum or minimum came from - the position of the value, \nnot just its size.\n\nA NOTE ON LENGTH:\nt.diff returns a tensor one element shorter along the differenced axis, \nbecause there is one fewer gap than there are values. Anything expecting the \noriginal length will refuse it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These look ALONG a tensor and report how it develops, rather than summarising it.\n\nA sum gives you the total. A cumulative sum gives you the total so far at every \nposition - the running story rather than the ending. Anything with an order to \nit, which is anything indexed by time or by position along a body, has a \ndevelopment worth seeing.\n\nTHE NODES:\n\nt.cumsum         the running total\nt.cumprod        the running product\nt.cummax         the largest value seen so far - a running high-water mark\nt.cummin         the smallest so far\nt.logcumsumexp   a running sum done in the log domain\nt.diff           the difference between neighbouring elements\n\nt.cumsum AND t.diff UNDO EACH OTHER:\ndiff turns positions into steps; cumsum turns steps back into positions. \nReach for diff when a tensor holds where something WAS and you want how far it \nMOVED, and cumsum when you have the movements and want the path.\n\nt.cummax IS A DECAY-FREE PEAK HOLD:\nRunning it along a time axis gives you, at every instant, the largest value \nthat has occurred up to then. That is the shape of a peak meter that never \nfalls back, and it is a cheap way to ask \"has this ever exceeded X, and when \ndid it first do so\".\n\nWHY logcumsumexp EXISTS:\nAdding up many small probabilities directly underflows to zero. Working in the \nlog domain keeps them representable, but you cannot simply add logs when you \nwant a sum of the underlying values. This node does that correctly, and it is \nthe node you want whenever you are accumulating likelihoods.\n\nSYNTAX:\nt.cumsum\nt.diff <n>\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWhich axis to run along. This matters more here than on a reduction - the \ndirection IS the ordering you are claiming exists, so getting it wrong gives a \nrunning total across the wrong thing entirely.\n\nn (t.diff):\nHow many times to difference. 1 gives the change, 2 the change in the change - \nso from positions, 1 is velocity and 2 is acceleration.\n\nOUTPUTS: \n\noutput:\nThe running result.\n\nindices (t.cummax, t.cummin):\nWHERE each running maximum or minimum came from - the position of the value, \nnot just its size.\n\nA NOTE ON LENGTH:\nt.diff returns a tensor one element shorter along the differenced axis, \nbecause there is one fewer gap than there are values. Anything expecting the \noriginal length will refuse it."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 180,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment eight values in a row",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 147,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eight values in a row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eight values in a row"
+        },
+        "7": {
+            "name": "t.cumsum",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 180,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 350,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the running total: it only climbs",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 465,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the running total: it only climbs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the running total: it only climbs"
+        },
+        "10": {
+            "name": "t.diff",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 180,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 250,
+            "position_y": 530,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 7,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the steps between them - seven, not eight",
+            "name": "comment",
+            "id": 681,
+            "position_x": 484,
+            "position_y": 645,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the steps between them - seven, not eight",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the steps between them - seven, not eight"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 708,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

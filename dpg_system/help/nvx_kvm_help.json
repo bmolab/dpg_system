@@ -1,0 +1,619 @@
+{
+    "height": 865,
+    "width": 1898,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "nvx_kvm_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/nvx_kvm_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment nvx_kvm - KVM over IP",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 252,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nvx_kvm - KVM over IP",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nvx_kvm - KVM over IP"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1050,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Switch one workstation between several computers, over the network.\n\nTHE NODE:\n\nnvx_kvm   one button per target machine, and a way to switch from the patch\n\nWHAT IT IS DOING:\nEach computer you want to reach has a Crestron DM-NVX transmitter on its video\nand USB. The workstation - the monitor, keyboard and mouse you are actually\nsitting at - has a receiver. Switching means pointing that receiver at a\ndifferent transmitter.\n\nVideo and USB route INDEPENDENTLY, so a switch is really two changes made\ntogether. That is worth knowing when only one of them follows: a picture that\nchanged but a mouse that did not is the USB pairing, not the video subscription.\n\nThere is no control processor in this. The node talks to the endpoints directly\nover their REST API.\n\nTHE BUTTONS COME FROM A CONFIG FILE:\nIt reads ~/.nvx_kvm.json - or another path given as the argument - and makes one\nbutton per entry in its 'targets' list, in that order, marking the live one.\n\nBecause a node's shape is fixed when it is created, CHANGING THE TARGET LIST\nMEANS RE-CREATING THE NODE. Edit the file, then delete and retype the node;\nreopening the patch is not enough.\n\nDRIVING IT FROM THE PATCH:\n'select' takes either a target's name or its number, counting from 1. 'active\ntarget' sends whenever the live target changes - including when someone presses\na button by hand, so it is a report of what happened rather than an echo of what\nyou asked for.\n\nOpening a patch does NOT fire a switch. The button callbacks check whether the\npatch is loading, which they have to: without that, loading a saved patch would\nreplay the buttons and switch your KVM out from under you.\n\nIT TAKES ABOUT A SECOND, SOMETIMES SEVERAL:\nMeasured over four switches: 0.8, 0.9, 3.5 and 7.7 seconds. Usually about a\nsecond. The long tail is the receiver taking its time to report itself fully\nstarted and paired, not the picture being slow to arrive.\n\nEvery call is network-bound, so switching and polling happen on worker threads\nand the results are applied to the widgets on the main thread. The node stays\nresponsive while a switch is in progress.\n\nTHE THING THAT WILL BITE YOU: IGMP SNOOPING:\nA 4K60 stream is about 700 megabits a second. On a switch WITHOUT IGMP snooping,\nstarting one floods every port - which in this system took all four NVX units off\nthe network and only recovered when the transmitter was physically unplugged.\n\nSo: snooping and a querier must be enabled on the switch these live on, before a\ntransmitter is started with a real source attached. If this setup ever moves to\ndifferent network hardware, check that first. It is a prerequisite, not a\ntuning option.\n\nWHY THE STATUS LINE IS WORTH READING:\nThe devices are not always honest, and the node's status line is where the truth\nsurfaces. In particular, an HTTP 200 from one of these does NOT mean the write\nsucceeded - a refused write returns 200 too, and the real outcome is buried in a\nper-property status inside the reply. The underlying code checks that and raises;\nif it did not, every failed write would look like it worked.\n\nSYNTAX:\nnvx_kvm\nnvx_kvm <path to config>\n\nEXAMPLE:\nnvx_kvm ~/patches/studio_kvm.json\n\nINPUTS and PARAMETERS:\n\nselect:\nA target's name, or its number counting from 1.\n\nthe buttons:\nOne per target, in config order. The live one is marked.\n\nOUTPUTS: \n\nactive target:\nThe target that is now live, sent whenever it changes - including from a button\npress or a switch made elsewhere.\n\nRELATED:\nThe full recipe, including the topology, the config format and what was learned\nagainst real hardware, is in dpg_system/NVX_KVM_README.md. Read that before\nsetting one up; this page is for using one that already works.\npjlink_projector and visca_camera for the other things in a rack that answer to\nthe network.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Switch one workstation between several computers, over the network.\n\nTHE NODE:\n\nnvx_kvm   one button per target machine, and a way to switch from the patch\n\nWHAT IT IS DOING:\nEach computer you want to reach has a Crestron DM-NVX transmitter on its video\nand USB. The workstation - the monitor, keyboard and mouse you are actually\nsitting at - has a receiver. Switching means pointing that receiver at a\ndifferent transmitter.\n\nVideo and USB route INDEPENDENTLY, so a switch is really two changes made\ntogether. That is worth knowing when only one of them follows: a picture that\nchanged but a mouse that did not is the USB pairing, not the video subscription.\n\nThere is no control processor in this. The node talks to the endpoints directly\nover their REST API.\n\nTHE BUTTONS COME FROM A CONFIG FILE:\nIt reads ~/.nvx_kvm.json - or another path given as the argument - and makes one\nbutton per entry in its 'targets' list, in that order, marking the live one.\n\nBecause a node's shape is fixed when it is created, CHANGING THE TARGET LIST\nMEANS RE-CREATING THE NODE. Edit the file, then delete and retype the node;\nreopening the patch is not enough.\n\nDRIVING IT FROM THE PATCH:\n'select' takes either a target's name or its number, counting from 1. 'active\ntarget' sends whenever the live target changes - including when someone presses\na button by hand, so it is a report of what happened rather than an echo of what\nyou asked for.\n\nOpening a patch does NOT fire a switch. The button callbacks check whether the\npatch is loading, which they have to: without that, loading a saved patch would\nreplay the buttons and switch your KVM out from under you.\n\nIT TAKES ABOUT A SECOND, SOMETIMES SEVERAL:\nMeasured over four switches: 0.8, 0.9, 3.5 and 7.7 seconds. Usually about a\nsecond. The long tail is the receiver taking its time to report itself fully\nstarted and paired, not the picture being slow to arrive.\n\nEvery call is network-bound, so switching and polling happen on worker threads\nand the results are applied to the widgets on the main thread. The node stays\nresponsive while a switch is in progress.\n\nTHE THING THAT WILL BITE YOU: IGMP SNOOPING:\nA 4K60 stream is about 700 megabits a second. On a switch WITHOUT IGMP snooping,\nstarting one floods every port - which in this system took all four NVX units off\nthe network and only recovered when the transmitter was physically unplugged.\n\nSo: snooping and a querier must be enabled on the switch these live on, before a\ntransmitter is started with a real source attached. If this setup ever moves to\ndifferent network hardware, check that first. It is a prerequisite, not a\ntuning option.\n\nWHY THE STATUS LINE IS WORTH READING:\nThe devices are not always honest, and the node's status line is where the truth\nsurfaces. In particular, an HTTP 200 from one of these does NOT mean the write\nsucceeded - a refused write returns 200 too, and the real outcome is buried in a\nper-property status inside the reply. The underlying code checks that and raises;\nif it did not, every failed write would look like it worked.\n\nSYNTAX:\nnvx_kvm\nnvx_kvm <path to config>\n\nEXAMPLE:\nnvx_kvm ~/patches/studio_kvm.json\n\nINPUTS and PARAMETERS:\n\nselect:\nA target's name, or its number counting from 1.\n\nthe buttons:\nOne per target, in config order. The live one is marked.\n\nOUTPUTS: \n\nactive target:\nThe target that is now live, sent whenever it changes - including from a button\npress or a switch made elsewhere.\n\nRELATED:\nThe full recipe, including the topology, the config format and what was learned\nagainst real hardware, is in dpg_system/NVX_KVM_README.md. Read that before\nsetting one up; this page is for using one that already works.\npjlink_projector and visca_camera for the other things in a rack that answer to\nthe network."
+        },
+        "3": {
+            "name": "nvx_kvm",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment one button per target, from the config",
+            "name": "comment",
+            "id": 385,
+            "position_x": 726,
+            "position_y": 335,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one button per target, from the config",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one button per target, from the config"
+        },
+        "5": {
+            "init": "comment file. The live one is marked.",
+            "name": "comment",
+            "id": 422,
+            "position_x": 726,
+            "position_y": 415,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "file. The live one is marked.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "file. The live one is marked."
+        },
+        "6": {
+            "init": "comment EDIT THE CONFIG and you must re-create",
+            "name": "comment",
+            "id": 459,
+            "position_x": 726,
+            "position_y": 495,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "EDIT THE CONFIG and you must re-create",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "EDIT THE CONFIG and you must re-create"
+        },
+        "7": {
+            "init": "comment the node - its shape is fixed when it is",
+            "name": "comment",
+            "id": 496,
+            "position_x": 726,
+            "position_y": 575,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the node - its shape is fixed when it is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the node - its shape is fixed when it is"
+        },
+        "8": {
+            "init": "comment made, so reopening the patch is not enough",
+            "name": "comment",
+            "id": 533,
+            "position_x": 726,
+            "position_y": 655,
+            "width": 294,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "made, so reopening the patch is not enough",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "made, so reopening the patch is not enough"
+        },
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 140,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment select takes a name or a number,",
+            "name": "comment",
+            "id": 607,
+            "position_x": 726,
+            "position_y": 112,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "select takes a name or a number,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "select takes a name or a number,"
+        },
+        "11": {
+            "init": "comment counting from 1",
+            "name": "comment",
+            "id": 644,
+            "position_x": 726,
+            "position_y": 142,
+            "width": 105,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counting from 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counting from 1"
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 190,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment what is live NOW - it reports, rather",
+            "name": "comment",
+            "id": 718,
+            "position_x": 726,
+            "position_y": 240,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what is live NOW - it reports, rather",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what is live NOW - it reports, rather"
+        },
+        "14": {
+            "init": "comment than echoing what you asked for, so a",
+            "name": "comment",
+            "id": 755,
+            "position_x": 726,
+            "position_y": 270,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "than echoing what you asked for, so a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "than echoing what you asked for, so a"
+        },
+        "15": {
+            "init": "comment button press by hand shows up here too",
+            "name": "comment",
+            "id": 792,
+            "position_x": 726,
+            "position_y": 300,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "button press by hand shows up here too",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "button press by hand shows up here too"
+        },
+        "16": {
+            "init": "comment a switch takes about a second - measured",
+            "name": "comment",
+            "id": 829,
+            "position_x": 726,
+            "position_y": 375,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a switch takes about a second - measured",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a switch takes about a second - measured"
+        },
+        "17": {
+            "init": "comment 0.8, 0.9, 3.5 and 7.7s over four. The",
+            "name": "comment",
+            "id": 866,
+            "position_x": 726,
+            "position_y": 455,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "0.8, 0.9, 3.5 and 7.7s over four. The",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "0.8, 0.9, 3.5 and 7.7s over four. The"
+        },
+        "18": {
+            "init": "comment long ones are the receiver reporting",
+            "name": "comment",
+            "id": 903,
+            "position_x": 726,
+            "position_y": 535,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "long ones are the receiver reporting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "long ones are the receiver reporting"
+        },
+        "19": {
+            "init": "comment itself paired, not the picture arriving",
+            "name": "comment",
+            "id": 940,
+            "position_x": 726,
+            "position_y": 615,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "itself paired, not the picture arriving",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "itself paired, not the picture arriving"
+        },
+        "20": {
+            "init": "comment video and USB route SEPARATELY. Picture",
+            "name": "comment",
+            "id": 977,
+            "position_x": 726,
+            "position_y": 695,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "video and USB route SEPARATELY. Picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "video and USB route SEPARATELY. Picture"
+        },
+        "21": {
+            "init": "comment changed but mouse did not? That is the",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 726,
+            "position_y": 735,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "changed but mouse did not? That is the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "changed but mouse did not? That is the"
+        },
+        "22": {
+            "init": "comment USB pairing, not the video",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 726,
+            "position_y": 775,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "USB pairing, not the video",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "USB pairing, not the video"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 352,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 348,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "select"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active target",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

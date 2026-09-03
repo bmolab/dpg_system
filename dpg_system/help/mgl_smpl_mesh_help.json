@@ -1,0 +1,674 @@
+{
+    "height": 1345,
+    "width": 1921,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "mgl_smpl_mesh_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_smpl_mesh_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl SMPL body - the figure and its effort",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl SMPL body - the figure and its effort",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl SMPL body - the figure and its effort"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1063,
+            "position_y": 45,
+            "width": 818,
+            "height": 786,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Drawing a body, and painting its effort onto the skin.\n\nTHE NODES:\n\nmgl_smpl_mesh      the SMPL body as a solid mesh\nmgl_smpl_heatmap   the same body, translucent, coloured by torque\n\nTHEY ARE MEANT TO BE STACKED:\nThe heatmap is designed to sit ON TOP of the mesh. Put mgl_smpl_mesh in the\nchain first to draw the body, then mgl_smpl_heatmap after it to lay a\ntranslucent coloured skin over the same pose. You see the figure and the effort\nat once.\n\nEither works alone - the heatmap on its own gives a ghostly body made only of\ncolour - but the pair is the arrangement they were built for.\n\nBoth need the same pose and trans that drive any SMPL body, and the same\n'config' for the shape.\n\nA NOTE ON THE PORT NAMES:\nmgl_smpl_heatmap labels its chain ports 'gl chain in' and 'gl chain out' where\nevery other mgl node says 'mgl chain'. It IS an mgl node - the naming is a\nleftover, not a sign that it belongs to the older gl system. Wire it into an mgl\nchain like anything else.\n\nWHAT THE COLOUR MEANS:\nPer-joint torque is spread onto the vertices using the same skinning weights\nthat move the mesh, so the colour lands where the muscle would be rather than in\na ball at the joint. 'max torque' sets what counts as full scale - the value the\ntop of the colour range corresponds to - and getting it wrong is the usual\nreason a heatmap reads as entirely blue or entirely red.\n\n'color mode' picks the palette: heatmap for blue-to-red, viridis for something\neven and readable, grayscale when the colour is carrying something else.\n\n'lighting' chooses whether the overlay is lit like a surface or glows regardless\nof the light, and 'opacity' and 'min opacity' set how much of the body beneath\nshows through.\n\n'weight mode' IS THE INTERESTING ONE, AND IT IS UNSETTLED:\nIt chooses how joint torque becomes vertex colour. 'skinning' is the plain\nanswer - use the mesh's own weights. The 'muscle' modes instead try to place the\ncolour where a particular muscle would be, and the numbered versions are\nsuccessive attempts at that.\n\nBe careful how much you read into them. The muscle model is a fixed direction\nper muscle multiplied by the joint torque, which is right for some movements and\nwrong for others - it tracks facing well and mis-tracks arm elevation, where a\nsingle fixed axis cannot decompose the torque properly. Treat the muscle modes\nas an expressive rendering rather than an anatomical measurement.\n\n'iso' and 'proximity' modes spread by distance rather than by muscle, which is\nblunter and more predictable.\n\n'muscle activations' COMES BACK OUT:\nThe node also sends the per-muscle values it computed, so whatever is on screen\ncan drive something else - a sound, a store, a plot - without recomputing it.\n\nSYNTAX:\nmgl_smpl_mesh\nmgl_smpl_heatmap\n\nEXAMPLE:\nmgl_smpl_mesh\n\nINPUTS and PARAMETERS:\n\nmgl chain in / gl chain in:\nThe scene chain. Both are the same thing despite the names.\n\npose / trans / config:\nThe body: its joint rotations, where it is, and its shape.\n\ntorques:\nPer-joint torque, for the heatmap.\n\nmax torque:\nWhat counts as full scale. Set this from the torque you actually see.\n\nmode / cull / point_size / round / texture:\nHow the mesh is drawn.\n\ncolor mode / lighting / ambient / opacity / min opacity:\nHow the overlay looks.\n\nweight mode / spread / edge threshold / dir bias:\nHow torque is spread onto the skin.\n\ngender / model_path / up_axis:\nWhich SMPL model, and which way is up.\n\nOUTPUTS: \n\nmgl chain out / gl chain out:\nThe chain, to continue it.\n\nmuscle activations:\nThe per-muscle values, for anything else that wants them.\n\nRELATED:\nsmpl_torque produces the torques.\ntorque_gang if you want groups of joints as numbers rather than colour on a\nbody.\nThe mgl pages for the rest of the scene chain.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 770,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Drawing a body, and painting its effort onto the skin.\n\nTHE NODES:\n\nmgl_smpl_mesh      the SMPL body as a solid mesh\nmgl_smpl_heatmap   the same body, translucent, coloured by torque\n\nTHEY ARE MEANT TO BE STACKED:\nThe heatmap is designed to sit ON TOP of the mesh. Put mgl_smpl_mesh in the\nchain first to draw the body, then mgl_smpl_heatmap after it to lay a\ntranslucent coloured skin over the same pose. You see the figure and the effort\nat once.\n\nEither works alone - the heatmap on its own gives a ghostly body made only of\ncolour - but the pair is the arrangement they were built for.\n\nBoth need the same pose and trans that drive any SMPL body, and the same\n'config' for the shape.\n\nA NOTE ON THE PORT NAMES:\nmgl_smpl_heatmap labels its chain ports 'gl chain in' and 'gl chain out' where\nevery other mgl node says 'mgl chain'. It IS an mgl node - the naming is a\nleftover, not a sign that it belongs to the older gl system. Wire it into an mgl\nchain like anything else.\n\nWHAT THE COLOUR MEANS:\nPer-joint torque is spread onto the vertices using the same skinning weights\nthat move the mesh, so the colour lands where the muscle would be rather than in\na ball at the joint. 'max torque' sets what counts as full scale - the value the\ntop of the colour range corresponds to - and getting it wrong is the usual\nreason a heatmap reads as entirely blue or entirely red.\n\n'color mode' picks the palette: heatmap for blue-to-red, viridis for something\neven and readable, grayscale when the colour is carrying something else.\n\n'lighting' chooses whether the overlay is lit like a surface or glows regardless\nof the light, and 'opacity' and 'min opacity' set how much of the body beneath\nshows through.\n\n'weight mode' IS THE INTERESTING ONE, AND IT IS UNSETTLED:\nIt chooses how joint torque becomes vertex colour. 'skinning' is the plain\nanswer - use the mesh's own weights. The 'muscle' modes instead try to place the\ncolour where a particular muscle would be, and the numbered versions are\nsuccessive attempts at that.\n\nBe careful how much you read into them. The muscle model is a fixed direction\nper muscle multiplied by the joint torque, which is right for some movements and\nwrong for others - it tracks facing well and mis-tracks arm elevation, where a\nsingle fixed axis cannot decompose the torque properly. Treat the muscle modes\nas an expressive rendering rather than an anatomical measurement.\n\n'iso' and 'proximity' modes spread by distance rather than by muscle, which is\nblunter and more predictable.\n\n'muscle activations' COMES BACK OUT:\nThe node also sends the per-muscle values it computed, so whatever is on screen\ncan drive something else - a sound, a store, a plot - without recomputing it.\n\nSYNTAX:\nmgl_smpl_mesh\nmgl_smpl_heatmap\n\nEXAMPLE:\nmgl_smpl_mesh\n\nINPUTS and PARAMETERS:\n\nmgl chain in / gl chain in:\nThe scene chain. Both are the same thing despite the names.\n\npose / trans / config:\nThe body: its joint rotations, where it is, and its shape.\n\ntorques:\nPer-joint torque, for the heatmap.\n\nmax torque:\nWhat counts as full scale. Set this from the torque you actually see.\n\nmode / cull / point_size / round / texture:\nHow the mesh is drawn.\n\ncolor mode / lighting / ambient / opacity / min opacity:\nHow the overlay looks.\n\nweight mode / spread / edge threshold / dir bias:\nHow torque is spread onto the skin.\n\ngender / model_path / up_axis:\nWhich SMPL model, and which way is up.\n\nOUTPUTS: \n\nmgl chain out / gl chain out:\nThe chain, to continue it.\n\nmuscle activations:\nThe per-muscle values, for anything else that wants them.\n\nRELATED:\nsmpl_torque produces the torques.\ntorque_gang if you want groups of joints as numbers rather than colour on a\nbody.\nThe mgl pages for the rest of the scene chain."
+        },
+        "3": {
+            "name": "smpl_take",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_torque",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 285,
+            "width": 300,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment a pose, and the torque it implies",
+            "name": "comment",
+            "id": 422,
+            "position_x": 746,
+            "position_y": 600,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a pose, and the torque it implies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a pose, and the torque it implies"
+        },
+        "6": {
+            "name": "mgl_context",
+            "id": 459,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "mgl_smpl_mesh",
+            "id": 496,
+            "position_x": 400,
+            "position_y": 285,
+            "width": 300,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment the solid body, first in the chain",
+            "name": "comment",
+            "id": 533,
+            "position_x": 746,
+            "position_y": 540,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the solid body, first in the chain",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the solid body, first in the chain"
+        },
+        "9": {
+            "name": "mgl_smpl_heatmap",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 590,
+            "width": 320,
+            "height": 460,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment then the translucent overlay ON TOP -",
+            "name": "comment",
+            "id": 607,
+            "position_x": 746,
+            "position_y": 1095,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then the translucent overlay ON TOP -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then the translucent overlay ON TOP -"
+        },
+        "11": {
+            "init": "comment you see the figure and the effort at once",
+            "name": "comment",
+            "id": 644,
+            "position_x": 746,
+            "position_y": 1175,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "you see the figure and the effort at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "you see the figure and the effort at once"
+        },
+        "12": {
+            "init": "comment its ports say 'gl chain' but it is an",
+            "name": "comment",
+            "id": 681,
+            "position_x": 746,
+            "position_y": 1215,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its ports say 'gl chain' but it is an",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its ports say 'gl chain' but it is an"
+        },
+        "13": {
+            "init": "comment mgl node - the name is a leftover",
+            "name": "comment",
+            "id": 718,
+            "position_x": 746,
+            "position_y": 1255,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl node - the name is a leftover",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl node - the name is a leftover"
+        },
+        "14": {
+            "init": "comment set max torque from the torque you",
+            "name": "comment",
+            "id": 755,
+            "position_x": 746,
+            "position_y": 645,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set max torque from the torque you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set max torque from the torque you"
+        },
+        "15": {
+            "init": "comment actually see. Wrong, and the body reads",
+            "name": "comment",
+            "id": 792,
+            "position_x": 746,
+            "position_y": 675,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "actually see. Wrong, and the body reads",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "actually see. Wrong, and the body reads"
+        },
+        "16": {
+            "init": "comment as entirely blue or entirely red",
+            "name": "comment",
+            "id": 829,
+            "position_x": 746,
+            "position_y": 705,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "as entirely blue or entirely red",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "as entirely blue or entirely red"
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 760,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment the muscle values come back out, so",
+            "name": "comment",
+            "id": 903,
+            "position_x": 746,
+            "position_y": 920,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the muscle values come back out, so",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the muscle values come back out, so"
+        },
+        "19": {
+            "init": "comment what is on screen can drive a sound",
+            "name": "comment",
+            "id": 940,
+            "position_x": 746,
+            "position_y": 950,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what is on screen can drive a sound",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what is on screen can drive a sound"
+        },
+        "20": {
+            "init": "comment without computing it twice",
+            "name": "comment",
+            "id": 977,
+            "position_x": 746,
+            "position_y": 980,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "without computing it twice",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "without computing it twice"
+        },
+        "21": {
+            "init": "comment the muscle weight modes are expressive,",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 746,
+            "position_y": 1025,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the muscle weight modes are expressive,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the muscle weight modes are expressive,"
+        },
+        "22": {
+            "init": "comment not anatomical - a fixed axis per muscle",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 746,
+            "position_y": 1055,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "not anatomical - a fixed axis per muscle",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "not anatomical - a fixed axis per muscle"
+        },
+        "23": {
+            "init": "comment cannot decompose arm elevation",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 746,
+            "position_y": 1135,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cannot decompose arm elevation",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cannot decompose arm elevation"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 1080,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "torque_vectors",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "torques"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "muscle activations",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

@@ -1,0 +1,461 @@
+{
+    "height": 821,
+    "width": 1437,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "float_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/float_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment float and int - read a number, or set one",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "float and int - read a number, or set one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "float and int - read a number, or set one"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 589,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "float and int are number boxes: you can read the value, and you can change it by hand.\n\nThey are the plainest interface in the system, and they do three jobs at once. \nA number arriving at the inlet is displayed, so they work as a readout. \nDragging or typing in them sends a number, so they work as a control. \nAnd they hold the value between times, so the patch can ask for it later.\n\nfloat keeps decimals; int rounds to whole numbers. \nChoose int when a fraction would be meaningless - a count, an index, a channel - \nbecause it stops nonsense arriving downstream rather than tidying it up later.\n\nTO USE THEM:\nDrag left and right on the number to change it. Double-click, or click and type, \nto enter one exactly. A bang at the inlet re-sends the current value without \nchanging it - which is how you ask a number box what it is holding.\n\nSYNTAX:\nfloat <value>\nint <value>\n\nEXAMPLE:\nfloat 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to display and store. Receiving a number here sets the box and sends \nit on. Receiving a bang re-sends whatever is already there.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes - whether that was you dragging it or a \nnumber arriving at the inlet.\n\nRELATED:\nslider and knob are the same value with a different way of setting it. \nmessage and list hold text rather than numbers.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "float and int are number boxes: you can read the value, and you can change it by hand.\n\nThey are the plainest interface in the system, and they do three jobs at once. \nA number arriving at the inlet is displayed, so they work as a readout. \nDragging or typing in them sends a number, so they work as a control. \nAnd they hold the value between times, so the patch can ask for it later.\n\nfloat keeps decimals; int rounds to whole numbers. \nChoose int when a fraction would be meaningless - a count, an index, a channel - \nbecause it stops nonsense arriving downstream rather than tidying it up later.\n\nTO USE THEM:\nDrag left and right on the number to change it. Double-click, or click and type, \nto enter one exactly. A bang at the inlet re-sends the current value without \nchanging it - which is how you ask a number box what it is holding.\n\nSYNTAX:\nfloat <value>\nint <value>\n\nEXAMPLE:\nfloat 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to display and store. Receiving a number here sets the box and sends \nit on. Receiving a bang re-sends whatever is already there.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes - whether that was you dragging it or a \nnumber arriving at the inlet.\n\nRELATED:\nslider and knob are the same value with a different way of setting it. \nmessage and list hold text rather than numbers."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "6": {
+            "name": "float",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 232,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment as a readout: it shows what arrives",
+            "name": "comment",
+            "id": 496,
+            "position_x": 314,
+            "position_y": 282,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "as a readout: it shows what arrives",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "as a readout: it shows what arrives"
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "init": "float 0.5"
+        },
+        "9": {
+            "name": "*",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 130,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 100.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "* 100.0"
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment as a control: drag the 0.5 box",
+            "name": "comment",
+            "id": 644,
+            "position_x": 314,
+            "position_y": 530,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "as a control: drag the 0.5 box",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "as a control: drag the 0.5 box"
+        },
+        "12": {
+            "init": "comment int rounds whatever it is given",
+            "name": "comment",
+            "id": 681,
+            "position_x": 314,
+            "position_y": 560,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "int rounds whatever it is given",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "int rounds whatever it is given"
+        },
+        "13": {
+            "name": "button",
+            "id": 718,
+            "position_x": 200,
+            "position_y": 330,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment bang it to re-send without changing",
+            "name": "comment",
+            "id": 755,
+            "position_x": 314,
+            "position_y": 385,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "bang it to re-send without changing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "bang it to re-send without changing"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 552,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

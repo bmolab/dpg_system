@@ -1,0 +1,500 @@
+{
+    "height": 881,
+    "width": 1511,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "color_convert_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/color_convert_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment color_convert - the same colour, described differently",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 648,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "color_convert - the same colour, described differently",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "color_convert - the same colour, described differently"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 643,
+            "position_y": 45,
+            "width": 828,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes convert a colour from one way of describing it to another.\n\nA colour is three numbers, but what those three numbers MEAN depends on the \nspace you are working in, and the spaces are good at different things. \nConverting between them is not decoration - it is what lets you say \n\"the same colour but brighter\" without also changing its hue.\n\nTHE SPACES:\n\nrgb   red, green, blue - how a screen makes light. \n      Natural for output, awkward for adjustment: there is no component \n      that means \"brightness\" or \"how vivid\".\ncmy   cyan, magenta, yellow - the inverse of rgb, how inks subtract light. \n      Each value is simply one minus the rgb one.\nhsl   hue, saturation, lightness. Hue is the colour itself as an angle \n      round the wheel, saturation is how vivid, lightness runs black to white \n      with the pure colour at the middle.\nhsv   hue, saturation, value. Like hsl, but value runs black to the pure \n      colour rather than through to white. Handy when you think of it as \n      \"how much light is on this\".\n\nReach for hsl or hsv whenever you want to CHANGE a colour - rotate the hue, \ndrain the saturation, dim it - then convert back to rgb to display it.\n\nTHE NODES:\n\nThere is one node per pairing, named for what it does:\n\nrgb_to_cmy   rgb_to_hsl   rgb_to_hsv\ncmy_to_rgb   cmy_to_hsl   cmy_to_hsv\nhsl_to_rgb   hsl_to_cmy   hsl_to_hsv\nhsv_to_rgb   hsv_to_cmy   hsv_to_hsl\n\ncolor_convert is the same node with nothing preset - choose both spaces \nyourself from its menus. The named versions are just conveniences; every one \nof them can be repointed after the fact, so a rgb_to_hsl node can be turned \ninto a hsv_to_rgb node without replacing it.\n\nSYNTAX:\n<from>_to_<to>\ncolor_convert\n\nEXAMPLE:\nrgb_to_hsl\n\nINPUTS and PARAMETERS:\n\nin:\nThree numbers - a list, or a NumPy array. Receiving data here triggers \nthe conversion.\n\nfrom / to:\nThe spaces being converted between: rgb, cmy, hsl or hsv. \nThe node name sets these; the menus let you change them.\n\nin scale / out scale:\nWhat numeric range the values use, INDEPENDENTLY at each end:\n\n  0-1     0.0 to 1.0, the usual choice inside a patch\n  0-100   percentages, as design tools tend to use\n  0-255   bytes, as image files and many devices use\n\nBecause the two are separate, this node also does the rescaling for you: \nset in scale to 0-255 and out scale to 0-1 to bring an image's colours into \npatch range in the same move as the conversion.\n\nHUE IS ALWAYS IN DEGREES:\nThe scale settings apply to every component EXCEPT hue, which is always 0 to \n360 whatever the scale says. Hue is an angle, not a proportion, and 360 of them \ngo round the circle regardless. This catches people out: an hsl value coming \nout as [210, 0.5, 0.4] with a 0-1 scale is correct, not a bug.\n\nOUTPUTS: \n\nout:\nThe converted colour, as a list of three numbers in the output space and scale.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes convert a colour from one way of describing it to another.\n\nA colour is three numbers, but what those three numbers MEAN depends on the \nspace you are working in, and the spaces are good at different things. \nConverting between them is not decoration - it is what lets you say \n\"the same colour but brighter\" without also changing its hue.\n\nTHE SPACES:\n\nrgb   red, green, blue - how a screen makes light. \n      Natural for output, awkward for adjustment: there is no component \n      that means \"brightness\" or \"how vivid\".\ncmy   cyan, magenta, yellow - the inverse of rgb, how inks subtract light. \n      Each value is simply one minus the rgb one.\nhsl   hue, saturation, lightness. Hue is the colour itself as an angle \n      round the wheel, saturation is how vivid, lightness runs black to white \n      with the pure colour at the middle.\nhsv   hue, saturation, value. Like hsl, but value runs black to the pure \n      colour rather than through to white. Handy when you think of it as \n      \"how much light is on this\".\n\nReach for hsl or hsv whenever you want to CHANGE a colour - rotate the hue, \ndrain the saturation, dim it - then convert back to rgb to display it.\n\nTHE NODES:\n\nThere is one node per pairing, named for what it does:\n\nrgb_to_cmy   rgb_to_hsl   rgb_to_hsv\ncmy_to_rgb   cmy_to_hsl   cmy_to_hsv\nhsl_to_rgb   hsl_to_cmy   hsl_to_hsv\nhsv_to_rgb   hsv_to_cmy   hsv_to_hsl\n\ncolor_convert is the same node with nothing preset - choose both spaces \nyourself from its menus. The named versions are just conveniences; every one \nof them can be repointed after the fact, so a rgb_to_hsl node can be turned \ninto a hsv_to_rgb node without replacing it.\n\nSYNTAX:\n<from>_to_<to>\ncolor_convert\n\nEXAMPLE:\nrgb_to_hsl\n\nINPUTS and PARAMETERS:\n\nin:\nThree numbers - a list, or a NumPy array. Receiving data here triggers \nthe conversion.\n\nfrom / to:\nThe spaces being converted between: rgb, cmy, hsl or hsv. \nThe node name sets these; the menus let you change them.\n\nin scale / out scale:\nWhat numeric range the values use, INDEPENDENTLY at each end:\n\n  0-1     0.0 to 1.0, the usual choice inside a patch\n  0-100   percentages, as design tools tend to use\n  0-255   bytes, as image files and many devices use\n\nBecause the two are separate, this node also does the rescaling for you: \nset in scale to 0-255 and out scale to 0-1 to bring an image's colours into \npatch range in the same move as the conversion.\n\nHUE IS ALWAYS IN DEGREES:\nThe scale settings apply to every component EXCEPT hue, which is always 0 to \n360 whatever the scale says. Hue is an angle, not a proportion, and 360 of them \ngo round the circle regardless. This catches people out: an hsl value coming \nout as [210, 0.5, 0.4] with a 0-1 scale is correct, not a bug.\n\nOUTPUTS: \n\nout:\nThe converted colour, as a list of three numbers in the output space and scale."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "t",
+            "id": 422,
+            "position_x": 200,
+            "position_y": 66,
+            "width": 40,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 0.8"
+        },
+        "6": {
+            "name": "t",
+            "id": 459,
+            "position_x": 260,
+            "position_y": 66,
+            "width": 40,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 0.5"
+        },
+        "7": {
+            "name": "signal",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 6.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 6.0 saw"
+        },
+        "8": {
+            "init": "comment a hue sweeping round the wheel",
+            "name": "comment",
+            "id": 533,
+            "position_x": 326,
+            "position_y": 215,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a hue sweeping round the wheel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a hue sweeping round the wheel"
+        },
+        "9": {
+            "name": "pack",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 255,
+            "width": 150,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "10": {
+            "init": "comment hue, saturation 0.8, lightness 0.5",
+            "name": "comment",
+            "id": 607,
+            "position_x": 326,
+            "position_y": 365,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hue, saturation 0.8, lightness 0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hue, saturation 0.8, lightness 0.5"
+        },
+        "11": {
+            "name": "hsl_to_rgb",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 405,
+            "width": 170,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "from",
+                    "value": "hsl",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "to",
+                    "value": "rgb",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "in scale",
+                    "value": "0-1",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "out scale",
+                    "value": "0-1",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 565,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment red, green and blue rise and fall in turn",
+            "name": "comment",
+            "id": 718,
+            "position_x": 326,
+            "position_y": 725,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "red, green and blue rise and fall in turn",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "red, green and blue rise and fall in turn"
+        },
+        "14": {
+            "init": "comment set out scale to 0-255 for byte values",
+            "name": "comment",
+            "id": 755,
+            "position_x": 326,
+            "position_y": 755,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set out scale to 0-255 for byte values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set out scale to 0-255 for byte values"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 743,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "0.8",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "4": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "0.5",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 3"
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

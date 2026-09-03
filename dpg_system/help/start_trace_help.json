@@ -1,0 +1,317 @@
+{
+    "height": 726,
+    "width": 1370,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "start_trace_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/start_trace_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment start_trace - watch what the patch actually does",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 576,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "start_trace - watch what the patch actually does",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "start_trace - watch what the patch actually does"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 542,
+            "position_y": 45,
+            "width": 788,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "start_trace and end_trace print what the patch is doing, between the two of them.\n\nPut start_trace where you want to begin watching and end_trace where you want to \nstop, wire your data through both, and the patch reports every node that \nexecutes in between, in the order it happens.\n\nThis is the tool for \"why did that not fire?\" and \"which of these runs first?\". \nExecution order in a patch is decided by the shape of the connections, and it is \nnot always the order you assumed. A trace shows you what actually happened \nrather than what the layout suggests.\n\nBoth nodes pass their input straight through, so you can leave them in place and \nswitch tracing off rather than rewiring to remove them.\n\nTHE NODES:\n\nstart_trace   begin reporting, and pass the input on\nend_trace     stop reporting, and pass the input on\n\nSYNTAX:\nstart_trace\nend_trace\n\nINPUTS and PARAMETERS:\n\nstart trace / end trace:\nThe data. It triggers the node, is passed through unchanged, and marks the \npoint in the flow where tracing starts or stops.\n\nenable (start_trace):\nTurns tracing on and off without unwiring anything. When off, the node is a \nplain pass-through.\n\nOUTPUTS: \n\npass input:\nWhatever arrived, unchanged.\n\nWHERE THE OUTPUT GOES:\nThe trace is printed to the console the patch was launched from, not into the \npatch. Start it as narrowly as you can - a trace across a busy patch produces \na great deal of text very quickly, and the thing you are looking for scrolls \npast.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "start_trace and end_trace print what the patch is doing, between the two of them.\n\nPut start_trace where you want to begin watching and end_trace where you want to \nstop, wire your data through both, and the patch reports every node that \nexecutes in between, in the order it happens.\n\nThis is the tool for \"why did that not fire?\" and \"which of these runs first?\". \nExecution order in a patch is decided by the shape of the connections, and it is \nnot always the order you assumed. A trace shows you what actually happened \nrather than what the layout suggests.\n\nBoth nodes pass their input straight through, so you can leave them in place and \nswitch tracing off rather than rewiring to remove them.\n\nTHE NODES:\n\nstart_trace   begin reporting, and pass the input on\nend_trace     stop reporting, and pass the input on\n\nSYNTAX:\nstart_trace\nend_trace\n\nINPUTS and PARAMETERS:\n\nstart trace / end trace:\nThe data. It triggers the node, is passed through unchanged, and marks the \npoint in the flow where tracing starts or stops.\n\nenable (start_trace):\nTurns tracing on and off without unwiring anything. When off, the node is a \nplain pass-through.\n\nOUTPUTS: \n\npass input:\nWhatever arrived, unchanged.\n\nWHERE THE OUTPUT GOES:\nThe trace is printed to the console the patch was launched from, not into the \npatch. Start it as narrowly as you can - a trace across a busy patch produces \na great deal of text very quickly, and the thing you are looking for scrolls \npast."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click, then look at the console",
+            "name": "comment",
+            "id": 385,
+            "position_x": 246,
+            "position_y": 115,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click, then look at the console",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click, then look at the console"
+        },
+        "5": {
+            "name": "start_trace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 150,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "enable",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "repeat_in_order",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 255,
+            "width": 190,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 2"
+        },
+        "7": {
+            "init": "comment everything between the two is reported",
+            "name": "comment",
+            "id": 496,
+            "position_x": 246,
+            "position_y": 335,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "everything between the two is reported",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "everything between the two is reported"
+        },
+        "8": {
+            "name": "counter",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 375,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "9": {
+            "name": "end_trace",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 150,
+            "height": 60,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "int",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 550,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 622,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "start trace"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pass input",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "end trace"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pass input",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

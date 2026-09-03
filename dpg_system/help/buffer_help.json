@@ -1,0 +1,723 @@
+{
+    "height": 1207,
+    "width": 1870,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "buffer_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/buffer_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment buffer and rolling_buffer - keeping a history",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "buffer and rolling_buffer - keeping a history",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "buffer and rolling_buffer - keeping a history"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1022,
+            "position_y": 45,
+            "width": 808,
+            "height": 786,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These two keep a history of what has gone past.\n\nTHE NODES:\n\nbuffer          a fixed block you write into and read back from\nrolling_buffer  a window on the recent past, always scrolling\n\nWHICH OF THE TWO:\nbuffer is a place to PUT things. It has an index inlet, so you can write a\nstream in and then ask for sample 40 whenever you like. Use it when the data is\na record you want to address.\n\nrolling_buffer is a place to WATCH things. There is no index; the newest sample\ngoes in at one end, the oldest falls off the other, and what comes out is always\nthe last N moments in order. Use it when you want the shape of the recent past -\nwhich is nearly always what you want for a display or an analysis window.\n\n'update style' DECIDES WHAT AN INCOMING VALUE IS:\nThis is the setting to get right first, because it changes what the buffer even\nholds. Sending the list [1, 2, 3] to a buffer of 8, the three choices give three\ndifferent things:\n\nbuffer holds one sample of input   the buffer BECOMES the input. Shape (3,) -\n                                   the sample count is ignored entirely.\ninput is stream of samples         the three numbers are three successive\n                                   samples, written in one after another.\n                                   Shape (8,).\ninput is multi-channel sample      the three numbers are one moment of a\n                                   3-channel signal. Shape (8, 3) - eight rows\n                                   of three.\n\nThe last is the one to use for anything with several streams at once - the\nchannels of a sound, the joints of a body - because it keeps them aligned in\ntime instead of interleaving them.\n\n'output style' ON buffer:\noutput buffer on every input       the whole buffer comes out each time\n                                   something goes in. This is the streaming\n                                   arrangement - straight into a plot.\noutput samples on demand by index  nothing comes out until you ask. Send a\n                                   number to 'sample to output' and you get\n                                   that one sample.\n\nThe second is what makes buffer a lookup table: fill it once, then read it in\nany order you like - forwards, backwards, at random, driven by another signal.\nThat is a wavetable, or a delay line, depending on what you do with the index.\n\nWHAT COMES OUT IS IN ORDER, NOT IN STORAGE ORDER:\nInternally the buffer is circular - the write position runs round and wraps. But\nwhat it sends is rotated back into time order, oldest first, so you never have\nto think about where the seam is. Wire it to a plot and the picture is stable\nrather than lurching each time the write position wraps.\n\n'scroll direction' ON rolling_buffer:\nWhether new data arrives at the right and pushes left, or at the bottom and\npushes up. It changes the orientation of the output matrix, so pick whichever\nmatches how you are drawing it.\n\nSYNTAX:\nbuffer <sample count>\nrolling_buffer <sample count>\n\nEXAMPLE:\nbuffer 256\n\nINPUTS and PARAMETERS:\n\ninput:\nThe data. What it counts as depends on 'update style'.\n\nsample to output (buffer):\nAn index. Send one and that sample comes out.\n\nreset (rolling_buffer):\nClear it and start again, keeping the same size.\n\nsample count:\nHow long the history is. In seconds, that is this divided by the rate things\nare arriving - at 60 frames a second, 60 samples is one second.\n\nOUTPUTS: \n\noutput:\nThe buffer, or one sample of it.\n\nRELATED:\nt.buffer and t.rolling_buffer are the same two ideas for torch tensors.\nplot and heat_map are the usual destinations.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 770,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These two keep a history of what has gone past.\n\nTHE NODES:\n\nbuffer          a fixed block you write into and read back from\nrolling_buffer  a window on the recent past, always scrolling\n\nWHICH OF THE TWO:\nbuffer is a place to PUT things. It has an index inlet, so you can write a\nstream in and then ask for sample 40 whenever you like. Use it when the data is\na record you want to address.\n\nrolling_buffer is a place to WATCH things. There is no index; the newest sample\ngoes in at one end, the oldest falls off the other, and what comes out is always\nthe last N moments in order. Use it when you want the shape of the recent past -\nwhich is nearly always what you want for a display or an analysis window.\n\n'update style' DECIDES WHAT AN INCOMING VALUE IS:\nThis is the setting to get right first, because it changes what the buffer even\nholds. Sending the list [1, 2, 3] to a buffer of 8, the three choices give three\ndifferent things:\n\nbuffer holds one sample of input   the buffer BECOMES the input. Shape (3,) -\n                                   the sample count is ignored entirely.\ninput is stream of samples         the three numbers are three successive\n                                   samples, written in one after another.\n                                   Shape (8,).\ninput is multi-channel sample      the three numbers are one moment of a\n                                   3-channel signal. Shape (8, 3) - eight rows\n                                   of three.\n\nThe last is the one to use for anything with several streams at once - the\nchannels of a sound, the joints of a body - because it keeps them aligned in\ntime instead of interleaving them.\n\n'output style' ON buffer:\noutput buffer on every input       the whole buffer comes out each time\n                                   something goes in. This is the streaming\n                                   arrangement - straight into a plot.\noutput samples on demand by index  nothing comes out until you ask. Send a\n                                   number to 'sample to output' and you get\n                                   that one sample.\n\nThe second is what makes buffer a lookup table: fill it once, then read it in\nany order you like - forwards, backwards, at random, driven by another signal.\nThat is a wavetable, or a delay line, depending on what you do with the index.\n\nWHAT COMES OUT IS IN ORDER, NOT IN STORAGE ORDER:\nInternally the buffer is circular - the write position runs round and wraps. But\nwhat it sends is rotated back into time order, oldest first, so you never have\nto think about where the seam is. Wire it to a plot and the picture is stable\nrather than lurching each time the write position wraps.\n\n'scroll direction' ON rolling_buffer:\nWhether new data arrives at the right and pushes left, or at the bottom and\npushes up. It changes the orientation of the output matrix, so pick whichever\nmatches how you are drawing it.\n\nSYNTAX:\nbuffer <sample count>\nrolling_buffer <sample count>\n\nEXAMPLE:\nbuffer 256\n\nINPUTS and PARAMETERS:\n\ninput:\nThe data. What it counts as depends on 'update style'.\n\nsample to output (buffer):\nAn index. Send one and that sample comes out.\n\nreset (rolling_buffer):\nClear it and start again, keeping the same size.\n\nsample count:\nHow long the history is. In seconds, that is this divided by the rate things\nare arriving - at 60 frames a second, 60 samples is one second.\n\nOUTPUTS: \n\noutput:\nThe buffer, or one sample of it.\n\nRELATED:\nt.buffer and t.rolling_buffer are the same two ideas for torch tensors.\nplot and heat_map are the usual destinations."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment a slow sine to fill them with",
+            "name": "comment",
+            "id": 385,
+            "position_x": 726,
+            "position_y": 155,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slow sine to fill them with",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slow sine to fill them with"
+        },
+        "5": {
+            "name": "buffer",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sample count",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "output style",
+                    "value": "output buffer on every input",
+                    "value_type": "str"
+                }
+            },
+            "init": "buffer 128"
+        },
+        "6": {
+            "name": "plot",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 415,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 128.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the whole buffer on every input -",
+            "name": "comment",
+            "id": 496,
+            "position_x": 726,
+            "position_y": 605,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the whole buffer on every input -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the whole buffer on every input -"
+        },
+        "8": {
+            "init": "comment and it comes out in time order, so the",
+            "name": "comment",
+            "id": 533,
+            "position_x": 726,
+            "position_y": 635,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and it comes out in time order, so the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and it comes out in time order, so the"
+        },
+        "9": {
+            "init": "comment picture does not lurch when it wraps",
+            "name": "comment",
+            "id": 570,
+            "position_x": 726,
+            "position_y": 665,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "picture does not lurch when it wraps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "picture does not lurch when it wraps"
+        },
+        "10": {
+            "name": "buffer",
+            "id": 607,
+            "position_x": 400,
+            "position_y": 200,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sample count",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "output style",
+                    "value": "output samples on demand by index",
+                    "value_type": "str"
+                }
+            },
+            "init": "buffer 128"
+        },
+        "11": {
+            "name": "signal",
+            "id": 644,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 127.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "init": "comment a ramp of indices reads the buffer",
+            "name": "comment",
+            "id": 681,
+            "position_x": 726,
+            "position_y": 195,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a ramp of indices reads the buffer",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a ramp of indices reads the buffer"
+        },
+        "13": {
+            "name": "float",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 415,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment one sample at a time, on demand -",
+            "name": "comment",
+            "id": 755,
+            "position_x": 726,
+            "position_y": 465,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one sample at a time, on demand -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one sample at a time, on demand -"
+        },
+        "15": {
+            "init": "comment which is what makes it a wavetable",
+            "name": "comment",
+            "id": 792,
+            "position_x": 726,
+            "position_y": 495,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which is what makes it a wavetable",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which is what makes it a wavetable"
+        },
+        "16": {
+            "name": "rolling_buffer",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 710,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                }
+            },
+            "init": "rolling_buffer 64"
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 925,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment no index, no asking: always the last",
+            "name": "comment",
+            "id": 903,
+            "position_x": 726,
+            "position_y": 1085,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "no index, no asking: always the last",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "no index, no asking: always the last"
+        },
+        "19": {
+            "init": "comment 64 moments, oldest to newest",
+            "name": "comment",
+            "id": 940,
+            "position_x": 726,
+            "position_y": 1115,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "64 moments, oldest to newest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "64 moments, oldest to newest"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 1103,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "sample to output"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

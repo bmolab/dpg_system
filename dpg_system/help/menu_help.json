@@ -1,6 +1,6 @@
 {
-    "height": 470,
-    "width": 996,
+    "height": 349,
+    "width": 886,
     "position": [
         100,
         100
@@ -56,7 +56,7 @@
             "init": "comment arguments: list of menu items",
             "name": "comment",
             "id": 5998,
-            "position_x": 493,
+            "position_x": 457,
             "position_y": 95,
             "width": 389,
             "height": 30,
@@ -81,8 +81,8 @@
             "init": "comment arguments: list of menu items",
             "name": "comment",
             "id": 6009,
-            "position_x": 494,
-            "position_y": 154,
+            "position_x": 457,
+            "position_y": 165,
             "width": 224,
             "height": 30,
             "visibility": "show_all",
@@ -342,7 +342,7 @@
             "init": "comment input: any thing causes output of current selection",
             "name": "comment",
             "id": 6381,
-            "position_x": 493,
+            "position_x": 457,
             "position_y": 125,
             "width": 322,
             "height": 30,
@@ -409,8 +409,8 @@
         "12": {
             "name": "close",
             "id": 6450,
-            "position_x": 799,
-            "position_y": 189,
+            "position_x": 24,
+            "position_y": 245,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

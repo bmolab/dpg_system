@@ -1,0 +1,303 @@
+{
+    "height": 1369,
+    "width": 1699,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "gl_sphere_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_sphere_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gl shapes - the built-in geometry",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 396,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gl shapes - the built-in geometry",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gl shapes - the built-in geometry"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 851,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The built-in shapes: geometry you can draw without supplying any.\n\nTHE NODES:\n\ngl_sphere         a sphere\ngl_cylinder       a cylinder, or a cone if the two radii differ\ngl_disk           a filled circle, or a ring if you give it an inner radius\ngl_partial_disk   a wedge - a disk with a start angle and a sweep\ngl_line           a line between two points\ngl_nested_spheres several spheres at a set of sizes, drawn together\n\ngl_cylinder MAKES CONES:\nIts base and top radii are separate, so setting the top to zero gives a cone \nand setting it small gives a tapered shaft. That is the shape you want for \narrows and for anything that should read as pointing.\n\ngl_partial_disk IS THE READOUT:\nA wedge with a start angle and a sweep is how you draw a value as an arc - a \ndial, a proportion, a range. Patch a stream into 'sweep angle' and it becomes a \ngauge that lives in the scene rather than in the patch, next to the thing it \ndescribes.\n\ngl_nested_spheres:\nTakes a list of sizes and draws a sphere at each. With transparency enabled \nthat is a set of shells - a way of showing several radii at once, a \ndistribution over distance, or a falloff.\n\nWHERE A SHAPE APPEARS:\nAt the origin, until a transform moves it. Two shapes with nothing between them \nare in the same place, one inside the other - which is the usual reason a scene \nseems to be missing something.\n\n'slices' and 'stacks' are how finely a curved shape is divided. More is \nsmoother and slower. On a sphere they are longitude and latitude, so the \ntriangles bunch at the poles.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_sphere\ngl_partial_disk\n\nEXAMPLE:\ngl_cylinder\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nsize / base radius / top radius / height:\nThe dimensions.\n\nouter radius / inner radius:\nFor the disks - an inner radius makes a ring.\n\nstart angle / sweep angle (gl_partial_disk):\nWhere the wedge begins and how far it goes.\n\nslices / stacks / rings:\nHow finely it is divided.\n\nstart_vertex / end_vertex (gl_line):\nThe two ends.\n\nsizes (gl_nested_spheres):\nThe list of radii.\n\ntexture:\nAn image mapped onto the surface.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, continuing - shapes change no state for what follows.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The built-in shapes: geometry you can draw without supplying any.\n\nTHE NODES:\n\ngl_sphere         a sphere\ngl_cylinder       a cylinder, or a cone if the two radii differ\ngl_disk           a filled circle, or a ring if you give it an inner radius\ngl_partial_disk   a wedge - a disk with a start angle and a sweep\ngl_line           a line between two points\ngl_nested_spheres several spheres at a set of sizes, drawn together\n\ngl_cylinder MAKES CONES:\nIts base and top radii are separate, so setting the top to zero gives a cone \nand setting it small gives a tapered shaft. That is the shape you want for \narrows and for anything that should read as pointing.\n\ngl_partial_disk IS THE READOUT:\nA wedge with a start angle and a sweep is how you draw a value as an arc - a \ndial, a proportion, a range. Patch a stream into 'sweep angle' and it becomes a \ngauge that lives in the scene rather than in the patch, next to the thing it \ndescribes.\n\ngl_nested_spheres:\nTakes a list of sizes and draws a sphere at each. With transparency enabled \nthat is a set of shells - a way of showing several radii at once, a \ndistribution over distance, or a falloff.\n\nWHERE A SHAPE APPEARS:\nAt the origin, until a transform moves it. Two shapes with nothing between them \nare in the same place, one inside the other - which is the usual reason a scene \nseems to be missing something.\n\n'slices' and 'stacks' are how finely a curved shape is divided. More is \nsmoother and slower. On a sphere they are longitude and latitude, so the \ntriangles bunch at the poles.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_sphere\ngl_partial_disk\n\nEXAMPLE:\ngl_cylinder\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nsize / base radius / top radius / height:\nThe dimensions.\n\nouter radius / inner radius:\nFor the disks - an inner radius makes a ring.\n\nstart angle / sweep angle (gl_partial_disk):\nWhere the wedge begins and how far it goes.\n\nslices / stacks / rings:\nHow finely it is divided.\n\nstart_vertex / end_vertex (gl_line):\nThe two ends.\n\nsizes (gl_nested_spheres):\nThe list of radii.\n\ntexture:\nAn image mapped onto the surface.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, continuing - shapes change no state for what follows."
+        },
+        "3": {
+            "name": "gl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 240,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "gl_light",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 202,
+            "width": 240,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "gl_cylinder",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 240,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment set top radius to 0 for a cone",
+            "name": "comment",
+            "id": 459,
+            "position_x": 576,
+            "position_y": 735,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set top radius to 0 for a cone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set top radius to 0 for a cone"
+        },
+        "7": {
+            "name": "gl_translate",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 775,
+            "width": 240,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "gl_partial_disk",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 955,
+            "width": 240,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment drag sweep angle: a value as an arc",
+            "name": "comment",
+            "id": 570,
+            "position_x": 576,
+            "position_y": 1250,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag sweep angle: a value as an arc",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag sweep angle: a value as an arc"
+        },
+        "10": {
+            "name": "gl_nested_spheres",
+            "id": 607,
+            "position_x": 310,
+            "position_y": 775,
+            "width": 240,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment a sphere at each size in the list",
+            "name": "comment",
+            "id": 644,
+            "position_x": 576,
+            "position_y": 1010,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a sphere at each size in the list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a sphere at each size in the list"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1265,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        }
+    }
+}

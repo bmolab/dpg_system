@@ -1,0 +1,479 @@
+{
+    "height": 960,
+    "width": 1428,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "physics_filter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/physics_filter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment physics_filter - smooth by obeying physics",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "physics_filter - smooth by obeying physics",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "physics_filter - smooth by obeying physics"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 560,
+            "position_y": 45,
+            "width": 828,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These filters smooth a signal by refusing to let it move in ways a physical object could not.\n\nInstead of averaging, they carry a position, a velocity and an acceleration, and \nmove that towards the incoming value under limits you set. A spike in the input \ndoes not get averaged away - it simply cannot be followed, because reaching it \nwould need an impossible acceleration.\n\nThat gives a very different character from a plain filter. Smooth output with no \nconstant lag: the result tracks the input exactly while the input behaves \nplausibly, and falls behind only when the input does something abrupt. \nFor anything driving a physical or apparently-physical thing - a motor, a camera \nmove, a rendered object - it usually looks right where an averaging filter looks \nsoggy.\n\nTHE NODES:\n\nphysics_filter   a spring-damper chase with velocity, acceleration and jerk limits\nkinetic_filter   a simpler limiter, reporting position, velocity and acceleration \n                 separately\n\nphysics_filter is the one to reach for. kinetic_filter is useful when you want \nthe derivatives as well as the smoothed value - it hands you all three.\n\nSYNTAX:\nphysics_filter\nkinetic_filter\n\nINPUTS and PARAMETERS - physics_filter:\n\ninput:\nThe target to chase. Receiving data here triggers the node. \nAccepts single numbers, lists, NumPy arrays and PyTorch tensors.\n\nmax_vel / max_accel / max_jerk:\nThe limits, in units per second, per second squared, and per second cubed. \nVelocity caps how fast the output can travel, acceleration caps how fast it can \nchange speed, and jerk caps how abruptly it can change acceleration - \nthat last one is what removes the visible corners from the motion.\n\nfreq:\nHow stiff the spring is, in Hz. Higher chases harder and arrives sooner.\n\nzeta:\nThe damping. Below 1 the output overshoots and springs back; at 1 it arrives \nwithout overshoot; above 1 it eases in slowly. Default 2.5 - firmly damped, \nno bounce.\n\ndt:\nTime between samples, in seconds. Default 1/60. The limits above are all \nper-second, so this has to be right for them to mean what they say.\n\nINPUTS and PARAMETERS - kinetic_filter:\n\nin:\nThe target. Receiving data here triggers the node.\n\nmax delta accel:\nThe largest change in acceleration allowed per step - the jerk limit, \nand the main smoothing control.\n\nmax accel / max velocity:\nCeilings on acceleration and speed.\n\nreset:\nA button that returns position, velocity and acceleration to zero.\n\nOUTPUTS: \n\nout (physics_filter):\nThe smoothed value.\n\nposition out / velocity out / accel out (kinetic_filter):\nThe smoothed value and its first two derivatives. \nThe velocity outlet is a much cleaner speed estimate than putting diff after a \nfilter, because it is part of the model rather than a difference of noisy \nsamples.\n\nTUNING:\nStart loose - limits high enough that nothing is constrained - and bring them \ndown until the jitter goes. The first limit that changes anything is the one \ndoing the work. If the output lags badly, that limit is too tight; if it still \njitters, it is not tight enough.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These filters smooth a signal by refusing to let it move in ways a physical object could not.\n\nInstead of averaging, they carry a position, a velocity and an acceleration, and \nmove that towards the incoming value under limits you set. A spike in the input \ndoes not get averaged away - it simply cannot be followed, because reaching it \nwould need an impossible acceleration.\n\nThat gives a very different character from a plain filter. Smooth output with no \nconstant lag: the result tracks the input exactly while the input behaves \nplausibly, and falls behind only when the input does something abrupt. \nFor anything driving a physical or apparently-physical thing - a motor, a camera \nmove, a rendered object - it usually looks right where an averaging filter looks \nsoggy.\n\nTHE NODES:\n\nphysics_filter   a spring-damper chase with velocity, acceleration and jerk limits\nkinetic_filter   a simpler limiter, reporting position, velocity and acceleration \n                 separately\n\nphysics_filter is the one to reach for. kinetic_filter is useful when you want \nthe derivatives as well as the smoothed value - it hands you all three.\n\nSYNTAX:\nphysics_filter\nkinetic_filter\n\nINPUTS and PARAMETERS - physics_filter:\n\ninput:\nThe target to chase. Receiving data here triggers the node. \nAccepts single numbers, lists, NumPy arrays and PyTorch tensors.\n\nmax_vel / max_accel / max_jerk:\nThe limits, in units per second, per second squared, and per second cubed. \nVelocity caps how fast the output can travel, acceleration caps how fast it can \nchange speed, and jerk caps how abruptly it can change acceleration - \nthat last one is what removes the visible corners from the motion.\n\nfreq:\nHow stiff the spring is, in Hz. Higher chases harder and arrives sooner.\n\nzeta:\nThe damping. Below 1 the output overshoots and springs back; at 1 it arrives \nwithout overshoot; above 1 it eases in slowly. Default 2.5 - firmly damped, \nno bounce.\n\ndt:\nTime between samples, in seconds. Default 1/60. The limits above are all \nper-second, so this has to be right for them to mean what they say.\n\nINPUTS and PARAMETERS - kinetic_filter:\n\nin:\nThe target. Receiving data here triggers the node.\n\nmax delta accel:\nThe largest change in acceleration allowed per step - the jerk limit, \nand the main smoothing control.\n\nmax accel / max velocity:\nCeilings on acceleration and speed.\n\nreset:\nA button that returns position, velocity and acceleration to zero.\n\nOUTPUTS: \n\nout (physics_filter):\nThe smoothed value.\n\nposition out / velocity out / accel out (kinetic_filter):\nThe smoothed value and its first two derivatives. \nThe velocity outlet is a much cleaner speed estimate than putting diff after a \nfilter, because it is part of the model rather than a difference of noisy \nsamples.\n\nTUNING:\nStart loose - limits high enough that nothing is constrained - and bring them \ndown until the jitter goes. The first limit that changes anything is the one \ndoing the work. If the output lags badly, that limit is too tight; if it still \njitters, it is not tight enough."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "square",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 5.0 square"
+        },
+        "6": {
+            "init": "comment an abrupt step",
+            "name": "comment",
+            "id": 459,
+            "position_x": 264,
+            "position_y": 215,
+            "width": 98,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "an abrupt step",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "an abrupt step"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "name": "physics_filter",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 190,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "max_vel",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max_accel",
+                    "value": 50.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max_jerk",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "freq",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "zeta",
+                    "value": 2.5,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "dt",
+                    "value": 0.0166,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment it accelerates, travels, and settles",
+            "name": "comment",
+            "id": 607,
+            "position_x": 264,
+            "position_y": 835,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "it accelerates, travels, and settles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "it accelerates, travels, and settles"
+        },
+        "11": {
+            "init": "comment drop zeta below 1 to make it overshoot",
+            "name": "comment",
+            "id": 644,
+            "position_x": 264,
+            "position_y": 865,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drop zeta below 1 to make it overshoot",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drop zeta below 1 to make it overshoot"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 856,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

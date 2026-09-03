@@ -1,0 +1,603 @@
+{
+    "height": 1015,
+    "width": 1954,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "vision_describe_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vision_describe_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment vision_describe - what is in this picture",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 492,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vision_describe - what is in this picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "vision_describe - what is in this picture"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1096,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These look at an image and describe it in words, on this machine.\n\nTHE NODES - THE SAME NODE FOUR TIMES, WITH DIFFERENT MODELS BEHIND IT:\n\nvision_describe         moondream2 - and the only one with a caption mode\nvision_describe_smol    SmolVLM, at 256M, 500M or 2.2B - the small fast one\nvision_describe_qwen    Qwen2.5-VL 3B\nvision_describe_gemma   Gemma 4, at E2B or E4B\n\nThey take the same inlets and give the same single answer, so you can swap one\nfor another without rewiring. Which to use is a question of how good the\ndescription needs to be against how long you are willing to wait, and the only\nway to settle it is to try them on your actual material.\n\nStart with vision_describe_smol at 500M. It is small enough to be genuinely\ninteractive, and if its descriptions are good enough for what you are doing, the\nlarger models are just a slower way to get the same patch working.\n\nTHEY DROP FRAMES, ON PURPOSE, AND THIS IS THE THING TO UNDERSTAND:\nThe model runs on its own thread, so the patch never stalls waiting for it. But\nthere is no queue: while the model is busy, an arriving frame REPLACES whatever\nwas waiting, and only the most recent one is ever picked up.\n\nMeasured, sending ten frames as fast as the patch could:\n\n    10 frames in  ->  2 descriptions out\n\nThe eight in between were discarded, and that is the correct behaviour. The\nalternative is a queue that grows without limit and descriptions that fall\nfurther and further behind what the camera is actually looking at. Here the\nanswer rate is simply however fast the model manages, and every answer is about\na recent frame.\n\nSo do not expect one description per frame, and do not build anything that\ncounts on it. Drive whatever comes next from the description ARRIVING, not from\nthe frame going in.\n\nIT IS A QUESTION, NOT JUST A CAPTION:\n'prompt' is a real prompt. These are vision-language models, so you can ask\nthings - \"how many people are in this?\", \"what colour is the coat?\", \"is anyone\nholding anything?\" - and get an answer about that, rather than a general\ndescription you then have to search.\n\nThat is usually the more useful way to use them in a patch, because a specific\nquestion gives a short, parseable answer, where a general caption gives a\nsentence you have to interpret.\n\nThe default is 'Describe this scene concisely.'\n\nSEND THE PROMPT AS A STRING, NOT FROM A message NODE:\nA message node splits what you type into a list of separate words, and this\ninlet wants one string. Handed a list it does not complain - it quietly falls\nback to its own default prompt, so the patch looks wired and the model answers a\nquestion you did not ask.\n\nUse a string node, or a text node, both of which send the whole line intact.\n\n'max_image_dim' IS A SPEED CONTROL, AND SMALLER IS OFTEN FINE:\nThe image is scaled down to this before the model sees it - 384 pixels by\ndefault. Raising it costs time on every single frame and often changes nothing,\nbecause these models are not reading fine detail; they are recognising a scene.\n\nRaise it only when the thing you are asking about is genuinely small in frame.\nLower it when you want more answers per minute.\n\n'max_tokens' caps how long the answer can be. It is a limit, not a target - a\nshort answer stays short.\n\nTHE FIRST FRAME IS SLOW:\nNothing is loaded until the first image arrives, so the first description takes\nnoticeably longer than the rest while the model is read in - and the very first\ntime, it may be downloaded, which for the larger models is gigabytes.\n\nMeasured on SmolVLM 500M, a small model already on disk:\n\nfirst description   3.3 s\nafter that          1.9 s\n\nThe larger models are slower on both counts. Send one frame and wait before\njudging whether a chain works.\n\n'device' picks where it runs, and 'auto' takes the fastest available - CUDA if\nthere is one, otherwise MPS on Apple silicon, otherwise the CPU. Leave it on\nauto unless you are deliberately keeping the GPU free for something else.\n\nmoondream's EXTRA OPTIONS:\n'mode' chooses between 'query' - answer the prompt - and 'caption', which\nignores the prompt and just describes the image. With 'caption' selected,\n'caption_length' picks short, normal or long.\n\nThe others have no caption mode: they always answer the prompt.\n\nSYNTAX:\nvision_describe\nvision_describe_smol\nvision_describe_qwen\nvision_describe_gemma\n\nEXAMPLE:\nvision_describe_smol\n\nINPUTS and PARAMETERS:\n\nimage:\nAn RGB image as an array. Receiving one asks for a description - or replaces the\nframe already waiting.\n\nprompt:\nWhat to ask about the image.\n\nmax_tokens:\nThe longest answer allowed.\n\nmax_image_dim:\nWhat the image is scaled down to first. The main speed control.\n\ndevice:\nauto, cpu, mps or cuda.\n\nmode / caption_length (vision_describe only):\nAnswer the prompt, or just caption; and how long a caption to write.\n\nmodel_size:\nWhich size of the model to load. Changing it loads a different model.\n\nOUTPUTS: \n\ndescription:\nThe answer, as a string. It arrives whenever the model finishes - not on any\nparticular frame.\n\nRELATED:\ntext_display is the place to put the answer where you can read it.\ncontext_tracker will pull place, time and actors out of a stream of descriptions.\nclip_embedding turns words into vectors you can compare with each other - note\nthat it is CLIP's TEXT side only, so it cannot score an image against words.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These look at an image and describe it in words, on this machine.\n\nTHE NODES - THE SAME NODE FOUR TIMES, WITH DIFFERENT MODELS BEHIND IT:\n\nvision_describe         moondream2 - and the only one with a caption mode\nvision_describe_smol    SmolVLM, at 256M, 500M or 2.2B - the small fast one\nvision_describe_qwen    Qwen2.5-VL 3B\nvision_describe_gemma   Gemma 4, at E2B or E4B\n\nThey take the same inlets and give the same single answer, so you can swap one\nfor another without rewiring. Which to use is a question of how good the\ndescription needs to be against how long you are willing to wait, and the only\nway to settle it is to try them on your actual material.\n\nStart with vision_describe_smol at 500M. It is small enough to be genuinely\ninteractive, and if its descriptions are good enough for what you are doing, the\nlarger models are just a slower way to get the same patch working.\n\nTHEY DROP FRAMES, ON PURPOSE, AND THIS IS THE THING TO UNDERSTAND:\nThe model runs on its own thread, so the patch never stalls waiting for it. But\nthere is no queue: while the model is busy, an arriving frame REPLACES whatever\nwas waiting, and only the most recent one is ever picked up.\n\nMeasured, sending ten frames as fast as the patch could:\n\n    10 frames in  ->  2 descriptions out\n\nThe eight in between were discarded, and that is the correct behaviour. The\nalternative is a queue that grows without limit and descriptions that fall\nfurther and further behind what the camera is actually looking at. Here the\nanswer rate is simply however fast the model manages, and every answer is about\na recent frame.\n\nSo do not expect one description per frame, and do not build anything that\ncounts on it. Drive whatever comes next from the description ARRIVING, not from\nthe frame going in.\n\nIT IS A QUESTION, NOT JUST A CAPTION:\n'prompt' is a real prompt. These are vision-language models, so you can ask\nthings - \"how many people are in this?\", \"what colour is the coat?\", \"is anyone\nholding anything?\" - and get an answer about that, rather than a general\ndescription you then have to search.\n\nThat is usually the more useful way to use them in a patch, because a specific\nquestion gives a short, parseable answer, where a general caption gives a\nsentence you have to interpret.\n\nThe default is 'Describe this scene concisely.'\n\nSEND THE PROMPT AS A STRING, NOT FROM A message NODE:\nA message node splits what you type into a list of separate words, and this\ninlet wants one string. Handed a list it does not complain - it quietly falls\nback to its own default prompt, so the patch looks wired and the model answers a\nquestion you did not ask.\n\nUse a string node, or a text node, both of which send the whole line intact.\n\n'max_image_dim' IS A SPEED CONTROL, AND SMALLER IS OFTEN FINE:\nThe image is scaled down to this before the model sees it - 384 pixels by\ndefault. Raising it costs time on every single frame and often changes nothing,\nbecause these models are not reading fine detail; they are recognising a scene.\n\nRaise it only when the thing you are asking about is genuinely small in frame.\nLower it when you want more answers per minute.\n\n'max_tokens' caps how long the answer can be. It is a limit, not a target - a\nshort answer stays short.\n\nTHE FIRST FRAME IS SLOW:\nNothing is loaded until the first image arrives, so the first description takes\nnoticeably longer than the rest while the model is read in - and the very first\ntime, it may be downloaded, which for the larger models is gigabytes.\n\nMeasured on SmolVLM 500M, a small model already on disk:\n\nfirst description   3.3 s\nafter that          1.9 s\n\nThe larger models are slower on both counts. Send one frame and wait before\njudging whether a chain works.\n\n'device' picks where it runs, and 'auto' takes the fastest available - CUDA if\nthere is one, otherwise MPS on Apple silicon, otherwise the CPU. Leave it on\nauto unless you are deliberately keeping the GPU free for something else.\n\nmoondream's EXTRA OPTIONS:\n'mode' chooses between 'query' - answer the prompt - and 'caption', which\nignores the prompt and just describes the image. With 'caption' selected,\n'caption_length' picks short, normal or long.\n\nThe others have no caption mode: they always answer the prompt.\n\nSYNTAX:\nvision_describe\nvision_describe_smol\nvision_describe_qwen\nvision_describe_gemma\n\nEXAMPLE:\nvision_describe_smol\n\nINPUTS and PARAMETERS:\n\nimage:\nAn RGB image as an array. Receiving one asks for a description - or replaces the\nframe already waiting.\n\nprompt:\nWhat to ask about the image.\n\nmax_tokens:\nThe longest answer allowed.\n\nmax_image_dim:\nWhat the image is scaled down to first. The main speed control.\n\ndevice:\nauto, cpu, mps or cuda.\n\nmode / caption_length (vision_describe only):\nAnswer the prompt, or just caption; and how long a caption to write.\n\nmodel_size:\nWhich size of the model to load. Changing it loads a different model.\n\nOUTPUTS: \n\ndescription:\nThe answer, as a string. It arrives whenever the model finishes - not on any\nparticular frame.\n\nRELATED:\ntext_display is the place to put the answer where you can read it.\ncontext_tracker will pull place, time and actors out of a stream of descriptions.\nclip_embedding turns words into vectors you can compare with each other - note\nthat it is CLIP's TEXT side only, so it cannot score an image against words."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "cv_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 220,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment any source of RGB frames will do",
+            "name": "comment",
+            "id": 422,
+            "position_x": 786,
+            "position_y": 270,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "any source of RGB frames will do",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "any source of RGB frames will do"
+        },
+        "6": {
+            "name": "subsample",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 170,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "rate",
+                    "value": 30,
+                    "value_type": "int"
+                }
+            },
+            "init": "subsample 30"
+        },
+        "7": {
+            "init": "comment not required - the node drops frames",
+            "name": "comment",
+            "id": 496,
+            "position_x": 786,
+            "position_y": 435,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "not required - the node drops frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "not required - the node drops frames"
+        },
+        "8": {
+            "init": "comment by itself - but there is no point",
+            "name": "comment",
+            "id": 533,
+            "position_x": 786,
+            "position_y": 515,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "by itself - but there is no point",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "by itself - but there is no point"
+        },
+        "9": {
+            "init": "comment handing it work it will only throw away",
+            "name": "comment",
+            "id": 570,
+            "position_x": 786,
+            "position_y": 555,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "handing it work it will only throw away",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "handing it work it will only throw away"
+        },
+        "10": {
+            "name": "string",
+            "id": 607,
+            "position_x": 300,
+            "position_y": 315,
+            "width": 460,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "How many people are in this, and what are they doing?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 440,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "init": "comment ask a QUESTION - a specific one gives a",
+            "name": "comment",
+            "id": 644,
+            "position_x": 786,
+            "position_y": 365,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ask a QUESTION - a specific one gives a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ask a QUESTION - a specific one gives a"
+        },
+        "12": {
+            "init": "comment short answer you can act on, where a",
+            "name": "comment",
+            "id": 681,
+            "position_x": 786,
+            "position_y": 395,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "short answer you can act on, where a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "short answer you can act on, where a"
+        },
+        "13": {
+            "init": "comment general caption gives you prose",
+            "name": "comment",
+            "id": 718,
+            "position_x": 786,
+            "position_y": 475,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "general caption gives you prose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "general caption gives you prose"
+        },
+        "14": {
+            "name": "vision_describe_smol",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "model_size",
+                    "value": "500M",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "device",
+                    "value": "auto",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the first frame is slow - the model is",
+            "name": "comment",
+            "id": 792,
+            "position_x": 786,
+            "position_y": 805,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the first frame is slow - the model is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the first frame is slow - the model is"
+        },
+        "16": {
+            "init": "comment loaded then, and may be downloaded",
+            "name": "comment",
+            "id": 829,
+            "position_x": 786,
+            "position_y": 885,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "loaded then, and may be downloaded",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "loaded then, and may be downloaded"
+        },
+        "17": {
+            "name": "text_display",
+            "id": 866,
+            "position_x": 400,
+            "position_y": 510,
+            "width": 340,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment answers arrive when the model finishes,",
+            "name": "comment",
+            "id": 903,
+            "position_x": 786,
+            "position_y": 765,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "answers arrive when the model finishes,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "answers arrive when the model finishes,"
+        },
+        "19": {
+            "init": "comment not once per frame - drive what comes",
+            "name": "comment",
+            "id": 940,
+            "position_x": 786,
+            "position_y": 845,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "not once per frame - drive what comes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "not once per frame - drive what comes"
+        },
+        "20": {
+            "init": "comment next from the answer, not from the frame",
+            "name": "comment",
+            "id": 977,
+            "position_x": 786,
+            "position_y": 925,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "next from the answer, not from the frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "next from the answer, not from the frame"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 800,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on/off"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "image"
+        },
+        "3": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "prompt"
+        },
+        "4": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "description",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

@@ -1,0 +1,309 @@
+{
+    "height": 681,
+    "width": 1336,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "print_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/print_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment print - see what is actually going past",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 468,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "print - see what is actually going past",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "print - see what is actually going past"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 508,
+            "position_y": 45,
+            "width": 788,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The print node writes whatever it receives to the console.\n\nIt is the first thing to reach for when a patch is not doing what you expect. \nWire it in beside whatever you are unsure of and you can see the actual values \ngoing past, rather than inferring them from what happens downstream.\n\nThe output goes to the terminal the patch was launched from, not into the patch \nitself. If you started it from an application icon rather than a terminal, \nyou will not see anything - which is the usual reason a print appears to do \nnothing.\n\nSYNTAX:\nprint <identifier>\n\nEXAMPLE:\nprint incoming\n\nINPUTS and PARAMETERS:\n\nin:\nAnything at all. It is printed as it arrives.\n\nidentifier:\nA label printed before the value. Give every print node one as soon as you have \nmore than a couple - unlabelled output from three prints at once is unreadable, \nand naming them costs nothing.\n\nprecision:\nHow many decimal places to show for floating point numbers. \nRaise it when you are trying to see whether something is really zero, \nor really constant.\n\nend:\nWhat is printed after each value. A newline by default. \nSet it to a space and successive values run along one line, which is much \neasier to scan when you are watching a fast stream.\n\nOUTPUTS: \n\nNone. This node is a dead end by design.\n\nRELATED:\ninfo and type report what KIND of thing something is, rather than its value - \nwhich is often the actual question when a node is refusing data. \nstart_trace and end_trace report which nodes execute, and in what order.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The print node writes whatever it receives to the console.\n\nIt is the first thing to reach for when a patch is not doing what you expect. \nWire it in beside whatever you are unsure of and you can see the actual values \ngoing past, rather than inferring them from what happens downstream.\n\nThe output goes to the terminal the patch was launched from, not into the patch \nitself. If you started it from an application icon rather than a terminal, \nyou will not see anything - which is the usual reason a print appears to do \nnothing.\n\nSYNTAX:\nprint <identifier>\n\nEXAMPLE:\nprint incoming\n\nINPUTS and PARAMETERS:\n\nin:\nAnything at all. It is printed as it arrives.\n\nidentifier:\nA label printed before the value. Give every print node one as soon as you have \nmore than a couple - unlabelled output from three prints at once is unreadable, \nand naming them costs nothing.\n\nprecision:\nHow many decimal places to show for floating point numbers. \nRaise it when you are trying to see whether something is really zero, \nor really constant.\n\nend:\nWhat is printed after each value. A newline by default. \nSet it to a space and successive values run along one line, which is much \neasier to scan when you are watching a fast stream.\n\nOUTPUTS: \n\nNone. This node is a dead end by design.\n\nRELATED:\ninfo and type report what KIND of thing something is, rather than its value - \nwhich is often the actual question when a node is refusing data. \nstart_trace and end_trace report which nodes execute, and in what order."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 112,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "name": "counter",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 192,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "print",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 170,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "count",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "end",
+                    "value": "\\n",
+                    "value_type": "str"
+                }
+            },
+            "init": "print count"
+        },
+        "7": {
+            "init": "comment switch it on, then watch the console",
+            "name": "comment",
+            "id": 496,
+            "position_x": 226,
+            "position_y": 425,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "switch it on, then watch the console",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "switch it on, then watch the console"
+        },
+        "8": {
+            "init": "comment nothing appears in the patch itself",
+            "name": "comment",
+            "id": 533,
+            "position_x": 226,
+            "position_y": 455,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nothing appears in the patch itself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nothing appears in the patch itself"
+        },
+        "9": {
+            "init": "comment always give it an identifier",
+            "name": "comment",
+            "id": 570,
+            "position_x": 226,
+            "position_y": 485,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "always give it an identifier",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "always give it an identifier"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 440,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

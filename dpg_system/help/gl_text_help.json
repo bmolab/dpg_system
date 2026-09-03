@@ -1,0 +1,393 @@
+{
+    "height": 1420,
+    "width": 1771,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "gl_text_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_text_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gl_text - labels and controls in the scene",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gl_text - labels and controls in the scene",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gl_text - labels and controls in the scene"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 923,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These put readable things into the scene: labels, and a grid of buttons.\n\nTHE NODES:\n\ngl_text         text in the scene\ngl_korean_text  the same with Korean glyph support\ngl_button_grid  a grid of buttons drawn in GL\n\nTEXT NEEDS A BILLBOARD, OR A SCREEN POSITION:\nText drawn in 3D turns edge-on and vanishes as the camera moves. There are two \nways round that. Put gl_billboard before it and it stays facing the viewer \nwhile remaining at its place in the scene. Or use 'position_x' and \n'position_y', which place it in SCREEN coordinates - fixed on the window, \nunaffected by the camera, which is what you want for a title, a readout, or a \nstate indicator.\n\nThe second is usually right for anything the viewer must always be able to \nread, and the first for a label that belongs to a thing in the scene.\n\ngl_button_grid:\nAn array of buttons drawn in the GL window rather than in the patch. \nThe point is that a scene shown fullscreen has no patch visible - so any \ncontrol the performer needs has to live inside the render. 'selection' reports \nwhat was pressed.\n\n'scale', 'spacing', 'thickness' and 'alpha' size it and set how present it is; \na low alpha gives you a control that is available without dominating what it \nsits over.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_button_grid\n\nEXAMPLE:\ngl_text\n\nINPUTS and PARAMETERS:\n\ntext:\nWhat to draw.\n\nposition_x / position_y:\nScreen position - fixed on the window rather than in the scene.\n\nscale / alpha / font:\nSize, transparency and typeface.\n\nselection (gl_button_grid):\nWhich button is pressed.\n\nspacing / thickness:\nThe grid's layout and line weight.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_text is the newer equivalent. gl_billboard keeps in-scene text facing \nthe viewer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These put readable things into the scene: labels, and a grid of buttons.\n\nTHE NODES:\n\ngl_text         text in the scene\ngl_korean_text  the same with Korean glyph support\ngl_button_grid  a grid of buttons drawn in GL\n\nTEXT NEEDS A BILLBOARD, OR A SCREEN POSITION:\nText drawn in 3D turns edge-on and vanishes as the camera moves. There are two \nways round that. Put gl_billboard before it and it stays facing the viewer \nwhile remaining at its place in the scene. Or use 'position_x' and \n'position_y', which place it in SCREEN coordinates - fixed on the window, \nunaffected by the camera, which is what you want for a title, a readout, or a \nstate indicator.\n\nThe second is usually right for anything the viewer must always be able to \nread, and the first for a label that belongs to a thing in the scene.\n\ngl_button_grid:\nAn array of buttons drawn in the GL window rather than in the patch. \nThe point is that a scene shown fullscreen has no patch visible - so any \ncontrol the performer needs has to live inside the render. 'selection' reports \nwhat was pressed.\n\n'scale', 'spacing', 'thickness' and 'alpha' size it and set how present it is; \na low alpha gives you a control that is available without dominating what it \nsits over.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_button_grid\n\nEXAMPLE:\ngl_text\n\nINPUTS and PARAMETERS:\n\ntext:\nWhat to draw.\n\nposition_x / position_y:\nScreen position - fixed on the window rather than in the scene.\n\nscale / alpha / font:\nSize, transparency and typeface.\n\nselection (gl_button_grid):\nWhich button is pressed.\n\nspacing / thickness:\nThe grid's layout and line weight.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_text is the newer equivalent. gl_billboard keeps in-scene text facing \nthe viewer."
+        },
+        "3": {
+            "name": "gl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 240,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "gl_light",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 202,
+            "width": 240,
+            "height": 240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "gl_text",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 260,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "font",
+                    "value": "Inconsolata-g.otf",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment position_x and _y are SCREEN coordinates",
+            "name": "comment",
+            "id": 459,
+            "position_x": 606,
+            "position_y": 755,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "position_x and _y are SCREEN coordinates",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "position_x and _y are SCREEN coordinates"
+        },
+        "7": {
+            "init": "comment so it stays put as the camera moves",
+            "name": "comment",
+            "id": 496,
+            "position_x": 606,
+            "position_y": 785,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "so it stays put as the camera moves",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "so it stays put as the camera moves"
+        },
+        "8": {
+            "name": "gl_billboard",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 830,
+            "width": 240,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "gl_text",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 1025,
+            "width": 260,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "font",
+                    "value": "Inconsolata-g.otf",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment behind a billboard instead: in the scene,",
+            "name": "comment",
+            "id": 607,
+            "position_x": 606,
+            "position_y": 1300,
+            "width": 287,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "behind a billboard instead: in the scene,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "behind a billboard instead: in the scene,"
+        },
+        "11": {
+            "init": "comment but always turned to face you",
+            "name": "comment",
+            "id": 644,
+            "position_x": 606,
+            "position_y": 1330,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "but always turned to face you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "but always turned to face you"
+        },
+        "12": {
+            "name": "gl_button_grid",
+            "id": 681,
+            "position_x": 320,
+            "position_y": 480,
+            "width": 260,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "int",
+            "id": 718,
+            "position_x": 320,
+            "position_y": 775,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment controls inside a fullscreen render",
+            "name": "comment",
+            "id": 755,
+            "position_x": 606,
+            "position_y": 825,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "controls inside a fullscreen render",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "controls inside a fullscreen render"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1315,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        }
+    }
+}

@@ -1,0 +1,619 @@
+{
+    "height": 955,
+    "width": 1797,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "clip_embedding_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/clip_embedding_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment clip_embedding - words as CLIP sees them",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "clip_embedding - words as CLIP sees them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "clip_embedding - words as CLIP sees them"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 949,
+            "position_y": 45,
+            "width": 808,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These turn a phrase into the numbers CLIP would use for it.\n\nTHE NODES:\n\nclip_embedding         a phrase as 512 numbers\nclip_embedding_length  the magnitude of that vector, as one number\n\nTHEY ARE CLIP'S TEXT SIDE ONLY:\nCLIP is known for putting pictures and words in the same space, so that an image\ncan be scored against a description. These nodes are the TEXT half of it. There\nis no image encoder here, and no way to compare a picture to a phrase with these\nalone.\n\nWhat they give you is the text embedding - the vector CLIP would produce for\nthat phrase - which is useful for comparing phrases to each other, and for\nanything downstream that consumes CLIP text vectors, image generators included.\n\n512 NUMBERS, AND THE MEANING IS IN THE DIRECTION:\nEvery phrase becomes 512 numbers, however long it is. Two phrases are alike when\ntheir vectors point the same way, which is what cosine similarity measures - not\nwhen the numbers are individually close.\n\nMeasured on this model:\n\n    a dark forest  <->  a forest at night      0.831\n    a dark forest  <->  a bright kitchen       0.431\n    a forest at night <-> quantum field theory 0.393\n\nAs with the spacy nodes, the scale does not use its bottom end. Unrelated\nphrases sit around 0.39 to 0.45, not near zero, so judge a number against that\nbaseline. Above 0.8 is a genuinely close pair.\n\nclip_embedding_length IS NEARLY CONSTANT - BE CAREFUL WITH IT:\nIt gives the Euclidean length of the vector, and measured across deliberately\nunrelated phrases that length barely moves:\n\n    a dark forest          24.34\n    a forest at night      23.54\n    a bright kitchen       23.41\n    quantum field theory   24.46\n\nA one-part-in-twenty spread across phrases with nothing in common. So the length\nis not a measure of meaning, and a patch that maps it to something audible will\nbe responding mostly to noise.\n\nThat is not a fault - the meaning was never in the magnitude, it is in the\ndirection, which is exactly why similarity is computed on normalised vectors and\nthe length is normally thrown away. Use this node if you have a use for the\nmagnitude specifically; reach for the full embedding and a cosine comparison if\nwhat you want is \"how alike are these\".\n\nTHE MODEL IS SHARED AND LOADED ONCE:\nThe first of these nodes to be created loads the CLIP text model, and every\nother one uses the same copy. It is small by modern standards and quick, but the\nfirst one still pays for it - and downloads it if it is not already cached.\n\nIf the model fails to load, the nodes go quiet rather than erroring on every\ninput, and a later node will try again. A silent clip node with everything\ncorrectly wired usually means the model never arrived.\n\nSYNTAX:\nclip_embedding\nclip_embedding_length\n\nEXAMPLE:\nclip_embedding\n\nINPUTS and PARAMETERS:\n\ninput:\nA phrase. Receiving it does the work. Long text is truncated - CLIP takes 77\ntokens and no more.\n\nOUTPUTS: \n\noutput:\n512 numbers, or the single length.\n\nRELATED:\nspacy_vector does the same job with a different model, and spacy_confusion will\ncompare two whole lists at once, which is usually more informative than single\nnumbers.\nnp.cosine_similarity to compare two embeddings once you have them.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These turn a phrase into the numbers CLIP would use for it.\n\nTHE NODES:\n\nclip_embedding         a phrase as 512 numbers\nclip_embedding_length  the magnitude of that vector, as one number\n\nTHEY ARE CLIP'S TEXT SIDE ONLY:\nCLIP is known for putting pictures and words in the same space, so that an image\ncan be scored against a description. These nodes are the TEXT half of it. There\nis no image encoder here, and no way to compare a picture to a phrase with these\nalone.\n\nWhat they give you is the text embedding - the vector CLIP would produce for\nthat phrase - which is useful for comparing phrases to each other, and for\nanything downstream that consumes CLIP text vectors, image generators included.\n\n512 NUMBERS, AND THE MEANING IS IN THE DIRECTION:\nEvery phrase becomes 512 numbers, however long it is. Two phrases are alike when\ntheir vectors point the same way, which is what cosine similarity measures - not\nwhen the numbers are individually close.\n\nMeasured on this model:\n\n    a dark forest  <->  a forest at night      0.831\n    a dark forest  <->  a bright kitchen       0.431\n    a forest at night <-> quantum field theory 0.393\n\nAs with the spacy nodes, the scale does not use its bottom end. Unrelated\nphrases sit around 0.39 to 0.45, not near zero, so judge a number against that\nbaseline. Above 0.8 is a genuinely close pair.\n\nclip_embedding_length IS NEARLY CONSTANT - BE CAREFUL WITH IT:\nIt gives the Euclidean length of the vector, and measured across deliberately\nunrelated phrases that length barely moves:\n\n    a dark forest          24.34\n    a forest at night      23.54\n    a bright kitchen       23.41\n    quantum field theory   24.46\n\nA one-part-in-twenty spread across phrases with nothing in common. So the length\nis not a measure of meaning, and a patch that maps it to something audible will\nbe responding mostly to noise.\n\nThat is not a fault - the meaning was never in the magnitude, it is in the\ndirection, which is exactly why similarity is computed on normalised vectors and\nthe length is normally thrown away. Use this node if you have a use for the\nmagnitude specifically; reach for the full embedding and a cosine comparison if\nwhat you want is \"how alike are these\".\n\nTHE MODEL IS SHARED AND LOADED ONCE:\nThe first of these nodes to be created loads the CLIP text model, and every\nother one uses the same copy. It is small by modern standards and quick, but the\nfirst one still pays for it - and downloads it if it is not already cached.\n\nIf the model fails to load, the nodes go quiet rather than erroring on every\ninput, and a later node will try again. A silent clip node with everything\ncorrectly wired usually means the model never arrived.\n\nSYNTAX:\nclip_embedding\nclip_embedding_length\n\nEXAMPLE:\nclip_embedding\n\nINPUTS and PARAMETERS:\n\ninput:\nA phrase. Receiving it does the work. Long text is truncated - CLIP takes 77\ntokens and no more.\n\nOUTPUTS: \n\noutput:\n512 numbers, or the single length.\n\nRELATED:\nspacy_vector does the same job with a different model, and spacy_confusion will\ncompare two whole lists at once, which is usually more informative than single\nnumbers.\nnp.cosine_similarity to compare two embeddings once you have them."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a dark forest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 280,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "string",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 320,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a forest at night",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 280,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "init": "comment click either to embed it",
+            "name": "comment",
+            "id": 422,
+            "position_x": 646,
+            "position_y": 165,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click either to embed it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click either to embed it"
+        },
+        "6": {
+            "name": "clip_embedding",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 210,
+            "width": 240,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "info",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment 512 numbers, however long the phrase",
+            "name": "comment",
+            "id": 533,
+            "position_x": 646,
+            "position_y": 400,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "512 numbers, however long the phrase",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "512 numbers, however long the phrase"
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 320,
+            "position_y": 305,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -3.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment the vector itself - the meaning is in",
+            "name": "comment",
+            "id": 607,
+            "position_x": 646,
+            "position_y": 495,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the vector itself - the meaning is in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the vector itself - the meaning is in"
+        },
+        "11": {
+            "init": "comment which way it points, not in any one",
+            "name": "comment",
+            "id": 644,
+            "position_x": 646,
+            "position_y": 525,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which way it points, not in any one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which way it points, not in any one"
+        },
+        "12": {
+            "init": "comment of these numbers",
+            "name": "comment",
+            "id": 681,
+            "position_x": 646,
+            "position_y": 555,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "of these numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "of these numbers"
+        },
+        "13": {
+            "name": "clip_embedding_length",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 300,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "float",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 695,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment try both phrases, and something quite",
+            "name": "comment",
+            "id": 792,
+            "position_x": 646,
+            "position_y": 745,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "try both phrases, and something quite",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "try both phrases, and something quite"
+        },
+        "16": {
+            "init": "comment unlike them: the length hardly moves.",
+            "name": "comment",
+            "id": 829,
+            "position_x": 646,
+            "position_y": 775,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unlike them: the length hardly moves.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "unlike them: the length hardly moves."
+        },
+        "17": {
+            "init": "comment Measured range across unrelated phrases",
+            "name": "comment",
+            "id": 866,
+            "position_x": 646,
+            "position_y": 805,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Measured range across unrelated phrases",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Measured range across unrelated phrases"
+        },
+        "18": {
+            "init": "comment is only 23.4 to 24.5 - it is not a",
+            "name": "comment",
+            "id": 903,
+            "position_x": 646,
+            "position_y": 835,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "is only 23.4 to 24.5 - it is not a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "is only 23.4 to 24.5 - it is not a"
+        },
+        "19": {
+            "init": "comment measure of meaning",
+            "name": "comment",
+            "id": 940,
+            "position_x": 646,
+            "position_y": 865,
+            "width": 126,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "measure of meaning",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "measure of meaning"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 767,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

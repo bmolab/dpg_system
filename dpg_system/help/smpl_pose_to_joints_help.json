@@ -1,0 +1,301 @@
+{
+    "height": 1095,
+    "width": 1845,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "smpl_pose_to_joints_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_pose_to_joints_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_pose_to_joints - one outlet per joint",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_pose_to_joints - one outlet per joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_pose_to_joints - one outlet per joint"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1007,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These split an SMPL pose into one outlet per joint.\n\nA pose is 22 rotations travelling together. Most of the time that is what you \nwant - it stays one thing, and every node downstream takes it whole. \nSometimes you want ONE joint: the left knee to drive something, the head to \npoint a camera, the spine to set a mood.\n\nTHE NODES:\n\nsmpl_pose_to_joints   split an axis-angle pose, one outlet per joint\nsmpl_quats_to_joints  the same for a quaternion pose\n\nThe outlets are named for the joints, so the patch says what it is doing - a \ncord from \"left elbow\" is self-documenting in a way that indexing into an array \nis not.\n\nWHEN NOT TO USE THESE:\nIf you are going to do the same thing to every joint, keep the pose whole and \nwork on the array - the numpy and torch nodes will do it in one operation, and \ntwenty-two parallel branches of identical patching is both slower and much \nharder to change.\n\nThese are for when joints are being treated DIFFERENTLY.\n\nSYNTAX:\nsmpl_pose_to_joints\nsmpl_quats_to_joints\n\nEXAMPLE:\nsmpl_quats_to_joints\n\nINPUTS and PARAMETERS:\n\npose in:\nThe pose. Receiving it triggers the node.\n\nOUTPUTS: \n\nOne outlet per SMPL joint, named.\n\nRELATED:\nbody_to_joints does the same for a Shadow or active pose. \nt.index_select and np.[] pull one joint out of a pose kept whole, which is the \nbetter choice when the index is decided by the patch rather than by the \npatching.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These split an SMPL pose into one outlet per joint.\n\nA pose is 22 rotations travelling together. Most of the time that is what you \nwant - it stays one thing, and every node downstream takes it whole. \nSometimes you want ONE joint: the left knee to drive something, the head to \npoint a camera, the spine to set a mood.\n\nTHE NODES:\n\nsmpl_pose_to_joints   split an axis-angle pose, one outlet per joint\nsmpl_quats_to_joints  the same for a quaternion pose\n\nThe outlets are named for the joints, so the patch says what it is doing - a \ncord from \"left elbow\" is self-documenting in a way that indexing into an array \nis not.\n\nWHEN NOT TO USE THESE:\nIf you are going to do the same thing to every joint, keep the pose whole and \nwork on the array - the numpy and torch nodes will do it in one operation, and \ntwenty-two parallel branches of identical patching is both slower and much \nharder to change.\n\nThese are for when joints are being treated DIFFERENTLY.\n\nSYNTAX:\nsmpl_pose_to_joints\nsmpl_quats_to_joints\n\nEXAMPLE:\nsmpl_quats_to_joints\n\nINPUTS and PARAMETERS:\n\npose in:\nThe pose. Receiving it triggers the node.\n\nOUTPUTS: \n\nOne outlet per SMPL joint, named.\n\nRELATED:\nbody_to_joints does the same for a Shadow or active pose. \nt.index_select and np.[] pull one joint out of a pose kept whole, which is the \nbetter choice when the index is decided by the patch rather than by the \npatching."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 320,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_beta_editor",
+            "id": 385,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 300,
+            "height": 340,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "shadow_to_smpl",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 260,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "smpl_to_quats",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 240,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "smpl_quats_to_joints",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 670,
+            "width": 280,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment outlets named for the joints",
+            "name": "comment",
+            "id": 533,
+            "position_x": 676,
+            "position_y": 945,
+            "width": 196,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "outlets named for the joints",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "outlets named for the joints"
+        },
+        "9": {
+            "init": "comment use these when joints are treated",
+            "name": "comment",
+            "id": 570,
+            "position_x": 676,
+            "position_y": 975,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "use these when joints are treated",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "use these when joints are treated"
+        },
+        "10": {
+            "init": "comment differently - not for the same thing to all",
+            "name": "comment",
+            "id": 607,
+            "position_x": 676,
+            "position_y": 1005,
+            "width": 301,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "differently - not for the same thing to all",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "differently - not for the same thing to all"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 960,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "smpl pose"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "smpl pose as quaternions",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        }
+    }
+}

@@ -1,0 +1,303 @@
+{
+    "height": 806,
+    "width": 1509,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "color_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/color_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment color - pick a colour by eye",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 336,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "color - pick a colour by eye",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "color - pick a colour by eye"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 681,
+            "position_y": 45,
+            "width": 788,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These nodes pick a colour by eye rather than by number.\n\ncolor opens the usual colour picker - a wheel or a square, with sliders beside \nit - and sends the result as a list. color_cmy is the subtractive equivalent, \nbuilt from cyan, magenta and yellow for when you are thinking in inks rather \nthan in light.\n\nPicking a colour is one of the things that genuinely cannot be done well with \nthree number boxes. Use these to choose, then color_convert to get it into \nwhatever space and range the rest of your patch wants.\n\nSYNTAX:\ncolor\ncolor_cmy\n\nINPUTS and PARAMETERS:\n\ncolor in:\nA colour to set the picker to.\n\ncyan / magenta / yellow (color_cmy):\nThe three components, settable individually.\n\nhue_wheel (color):\nWhether to show a wheel or a square. A matter of preference.\n\nalpha (color):\nWhether to include a transparency component, making it four numbers rather \nthan three.\n\ninputs (color):\nWhether the numeric fields are shown beside the picker, for typing an exact \nvalue.\n\nOUTPUTS: \n\nout / cmy:\nThe colour, as a list of components.\n\nRELATED:\ncolor_convert turns the result into any other space, and rescales it - \n0 to 1 for a patch, 0 to 255 for a file or a device.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These nodes pick a colour by eye rather than by number.\n\ncolor opens the usual colour picker - a wheel or a square, with sliders beside \nit - and sends the result as a list. color_cmy is the subtractive equivalent, \nbuilt from cyan, magenta and yellow for when you are thinking in inks rather \nthan in light.\n\nPicking a colour is one of the things that genuinely cannot be done well with \nthree number boxes. Use these to choose, then color_convert to get it into \nwhatever space and range the rest of your patch wants.\n\nSYNTAX:\ncolor\ncolor_cmy\n\nINPUTS and PARAMETERS:\n\ncolor in:\nA colour to set the picker to.\n\ncyan / magenta / yellow (color_cmy):\nThe three components, settable individually.\n\nhue_wheel (color):\nWhether to show a wheel or a square. A matter of preference.\n\nalpha (color):\nWhether to include a transparency component, making it four numbers rather \nthan three.\n\ninputs (color):\nWhether the numeric fields are shown beside the picker, for typing an exact \nvalue.\n\nOUTPUTS: \n\nout / cmy:\nThe colour, as a list of components.\n\nRELATED:\ncolor_convert turns the result into any other space, and rescales it - \n0 to 1 for a patch, 0 to 255 for a file or a device."
+        },
+        "3": {
+            "name": "color",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "hue_wheel",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "alpha",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "inputs",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment pick a colour",
+            "name": "comment",
+            "id": 385,
+            "position_x": 336,
+            "position_y": 375,
+            "width": 91,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pick a colour",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pick a colour"
+        },
+        "5": {
+            "name": "list",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 415,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "rgb_to_hsl",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 170,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "from",
+                    "value": "rgb",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "to",
+                    "value": "hsl",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "in scale",
+                    "value": "0-1",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "out scale",
+                    "value": "0-1",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 260,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment the same colour as hue, saturation, lightness",
+            "name": "comment",
+            "id": 533,
+            "position_x": 336,
+            "position_y": 680,
+            "width": 315,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same colour as hue, saturation, lightness",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same colour as hue, saturation, lightness"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 702,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

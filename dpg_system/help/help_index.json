@@ -1,0 +1,1453 @@
+{
+  "_comment": [
+    "Maps node names to the help patch that documents them.",
+    "A node whose own name matches a help file uses that file directly;",
+    "everything else is looked up here. Keys starting with _ are ignored.",
+    "Each key is a help file stem: 'trig' means trig_help.json.",
+    "Regenerate the interface index with tools/extract_interface.py,",
+    "then check what is still undocumented with tools/check_coverage.py."
+  ],
+  "_basic_nodes": [
+    "--- basic_nodes.py ---"
+  ],
+  "color_convert": [
+    "cmy_to_hsl",
+    "cmy_to_hsv",
+    "cmy_to_rgb",
+    "color_convert",
+    "hsl_to_cmy",
+    "hsl_to_hsv",
+    "hsl_to_rgb",
+    "hsv_to_cmy",
+    "hsv_to_hsl",
+    "hsv_to_rgb",
+    "rgb_to_cmy",
+    "rgb_to_hsl",
+    "rgb_to_hsv"
+  ],
+  "dict": [
+    "construct_dict",
+    "dict",
+    "dict_extract",
+    "dict_keys",
+    "dict_retrieve",
+    "dict_stream",
+    "gather_to_dict",
+    "unpack_dict"
+  ],
+  "dict_search": [
+    "dict_search",
+    "list_box"
+  ],
+  "directory_iterator": [
+    "directory_iterator"
+  ],
+  "info": [
+    "info",
+    "type"
+  ],
+  "pack": [
+    "pack",
+    "pak"
+  ],
+  "present": [
+    "active_widget",
+    "patch_window_position",
+    "present"
+  ],
+  "repeat": [
+    "repeat",
+    "repeat_in_order"
+  ],
+  "replace": [
+    "dict_replace",
+    "int_replace",
+    "replace"
+  ],
+  "send": [
+    "r",
+    "receive",
+    "s",
+    "send"
+  ],
+  "slice_list": [
+    "slice_list",
+    "stream_list",
+    "sublist"
+  ],
+  "start_trace": [
+    "end_trace",
+    "start_trace"
+  ],
+  "timer": [
+    "elapsed",
+    "timer"
+  ],
+  "var": [
+    "var"
+  ],
+  "_clip_nodes": [
+    "--- clip_nodes.py ---"
+  ],
+  "clip_embedding": [
+    "clip_embedding",
+    "clip_embedding_length"
+  ],
+  "_context_tracker_nodes": [
+    "--- context_tracker_nodes.py ---"
+  ],
+  "context_tracker": [
+    "context_tracker"
+  ],
+  "_digico_nodes": [
+    "--- digico_nodes.py ---"
+  ],
+  "digico.fader": [
+    "digico.fader"
+  ],
+  "_eos_nodes": [
+    "--- eos_nodes.py ---"
+  ],
+  "eos_console": [
+    "eos_console",
+    "color_source",
+    "eos_send"
+  ],
+  "_gang_nodes": [
+    "--- gang_nodes.py ---"
+  ],
+  "torque_gang": [
+    "torque_gang",
+    "gang",
+    "torque_residual"
+  ],
+  "_gemma_4_node": [
+    "--- gemma_4_node.py ---"
+  ],
+  "gemma_4": [
+    "gemma_4",
+    "gemma_4_31b"
+  ],
+  "_gemma_node": [
+    "--- gemma_node.py ---"
+  ],
+  "gemma": [
+    "gemma",
+    "neuronpedia_search"
+  ],
+  "_gl_nodes": [
+    "--- gl_nodes.py (the older GL system; mgl_ is the successor) ---"
+  ],
+  "gl_context": [
+    "gl_context",
+    "gl_enable"
+  ],
+  "gl_light": [
+    "gl_light",
+    "gl_material",
+    "gl_color"
+  ],
+  "gl_line_array": [
+    "gl_line_array",
+    "gl_vertex_buffer",
+    "gl_rotation_disk",
+    "gl_orientation_disks"
+  ],
+  "gl_sphere": [
+    "gl_sphere",
+    "gl_cylinder",
+    "gl_disk",
+    "gl_partial_disk",
+    "gl_line",
+    "gl_nested_spheres"
+  ],
+  "gl_text": [
+    "gl_text",
+    "gl_korean_text",
+    "gl_button_grid"
+  ],
+  "gl_translate": [
+    "gl_translate",
+    "gl_rotate",
+    "gl_scale",
+    "gl_quaternion_rotate",
+    "gl_axis_angle_rotate",
+    "gl_align",
+    "gl_billboard"
+  ],
+  "_google_translate_nodes": [
+    "--- google_translate_nodes.py ---"
+  ],
+  "translate": [
+    "translate",
+    "translate_api"
+  ],
+  "_interface_nodes": [
+    "--- interface_nodes.py ---"
+  ],
+  "button": [
+    "b",
+    "button",
+    "set_reset",
+    "toggle"
+  ],
+  "color": [
+    "color",
+    "color_cmy"
+  ],
+  "envelope": [
+    "envelope"
+  ],
+  "float": [
+    "float",
+    "int"
+  ],
+  "load_bang": [
+    "load_action",
+    "load_bang"
+  ],
+  "momentary": [
+    "joy_stick",
+    "momentary",
+    "momentary_int",
+    "momentary_slider",
+    "momentary_slider_int",
+    "momentary_xy"
+  ],
+  "mouse": [
+    "keys",
+    "mouse"
+  ],
+  "pan_view": [
+    "home_view",
+    "pan_view"
+  ],
+  "param_widgets": [
+    "param_float",
+    "param_int",
+    "param_knob",
+    "param_list",
+    "param_message",
+    "param_slider",
+    "param_string"
+  ],
+  "presets": [
+    "archive",
+    "presets",
+    "snapshots",
+    "states",
+    "versions"
+  ],
+  "print": [
+    "print"
+  ],
+  "radio": [
+    "radio",
+    "radio_h",
+    "radio_v"
+  ],
+  "shape_sequencer": [
+    "function_sequencer",
+    "shape_seq",
+    "shape_sequencer"
+  ],
+  "slider": [
+    "slider",
+    "knob"
+  ],
+  "slider_bank": [
+    "gain",
+    "slider_bank"
+  ],
+  "string": [
+    "list",
+    "message",
+    "string"
+  ],
+  "table": [
+    "table"
+  ],
+  "text": [
+    "text",
+    "text_display"
+  ],
+  "_layout_nodes": [
+    "--- layout_nodes.py ---"
+  ],
+  "cairo_layout": [
+    "cairo_layout",
+    "llm_layout"
+  ],
+  "_math_nodes": [
+    "--- math_nodes.py ---"
+  ],
+  "accumulate": [
+    "accumulate"
+  ],
+  "arithmetic": [
+    "!-",
+    "!/",
+    "%",
+    "*",
+    "+",
+    "-",
+    "/",
+    "//",
+    "^",
+    "combination",
+    "max",
+    "min",
+    "mod",
+    "perm",
+    "pow"
+  ],
+  "change": [
+    "change",
+    "decreasing",
+    "increasing",
+    "pass"
+  ],
+  "comparison": [
+    "!=",
+    "<",
+    "<=",
+    "==",
+    ">",
+    ">="
+  ],
+  "continuous_rotation": [
+    "continuous_rotation"
+  ],
+  "crossfade": [
+    "crossfade",
+    "lerp"
+  ],
+  "math_single": [
+    "abs",
+    "ceil",
+    "exp",
+    "floor",
+    "inverse",
+    "log10",
+    "log2",
+    "norm",
+    "np.ceil",
+    "np.floor",
+    "np.round",
+    "np.trunc",
+    "round",
+    "sqrt",
+    "trunc"
+  ],
+  "trig": [
+    "acos",
+    "asin",
+    "atan",
+    "cos",
+    "sin",
+    "tan"
+  ],
+  "_matrix_nodes": [
+    "--- matrix_nodes.py ---"
+  ],
+  "buffer": [
+    "buffer",
+    "rolling_buffer"
+  ],
+  "cwt": [
+    "cwt",
+    "confusion"
+  ],
+  "_mgl_shader_node": [
+    "--- mgl_shader_node.py ---"
+  ],
+  "mgl_shader": [
+    "mgl_shader"
+  ],
+  "_mgl_smpl_mesh_node": [
+    "--- mgl_smpl_mesh_node.py ---"
+  ],
+  "mgl_smpl_mesh": [
+    "mgl_smpl_mesh",
+    "mgl_smpl_heatmap"
+  ],
+  "_midi_nodes": [
+    "--- midi_nodes.py ---"
+  ],
+  "midi_control_in": [
+    "midi_control_in",
+    "midi_control_out",
+    "midi_program_in",
+    "midi_program_out"
+  ],
+  "midi_device": [
+    "midi_device",
+    "midi_in",
+    "midi_out"
+  ],
+  "midi_note_in": [
+    "midi_note_in",
+    "midi_note_out",
+    "midi_poly_pressure_in",
+    "midi_poly_pressure_out"
+  ],
+  "midi_pitchbend_in": [
+    "midi_pitchbend_in",
+    "midi_pitchbend_out",
+    "midi_aftertouch_in",
+    "midi_aftertouch_out"
+  ],
+  "mpd218": [
+    "mpd218",
+    "blue_board"
+  ],
+  "_moderngl_nodes": [
+    "--- moderngl_nodes.py ---"
+  ],
+  "mgl_body": [
+    "mgl_body",
+    "mgl_body_orientation",
+    "mgl_contact_disks",
+    "mgl_orientation_disks",
+    "mgl_torque_arc"
+  ],
+  "mgl_camera": [
+    "mgl_camera",
+    "mgl_orbit_camera",
+    "mgl_light",
+    "mgl_material",
+    "mgl_color",
+    "mgl_texture",
+    "mgl_image"
+  ],
+  "mgl_context": [
+    "mgl_context",
+    "mgl_display",
+    "mgl_enable"
+  ],
+  "mgl_mesh": [
+    "mgl_mesh",
+    "mgl_model",
+    "mgl_point_cloud",
+    "mgl_surface",
+    "mgl_line_array",
+    "mgl_text"
+  ],
+  "mgl_sphere": [
+    "mgl_box",
+    "mgl_sphere",
+    "mgl_geo_sphere",
+    "mgl_cylinder",
+    "mgl_disk",
+    "mgl_partial_disk",
+    "mgl_plane",
+    "mgl_line"
+  ],
+  "mgl_transform": [
+    "mgl_transform",
+    "mgl_translate",
+    "mgl_rotate",
+    "mgl_scale",
+    "mgl_quaternion_rotate",
+    "mgl_axis_angle_rotate",
+    "mgl_billboard"
+  ],
+  "_monitor_nodes": [
+    "--- monitor_nodes.py ---"
+  ],
+  "display_info": [
+    "display_info"
+  ],
+  "_motion_cap_nodes": [
+    "--- motion_cap_nodes.py ---"
+  ],
+  "body_to_joints": [
+    "body_to_joints",
+    "shadow_body_to_joints",
+    "local_to_global_body",
+    "global_to_local_body",
+    "limb_size"
+  ],
+  "cadence_filter": [
+    "cadence_filter",
+    "check_burst"
+  ],
+  "gl_body": [
+    "gl_body",
+    "gl_simple_body",
+    "gl_alt_body"
+  ],
+  "mag_offset": [
+    "mag_offset",
+    "mag_yaw_correct",
+    "shadow_arm_correct"
+  ],
+  "pose": [
+    "pose",
+    "active_pose",
+    "target_pose",
+    "active_joints",
+    "pose_adjust",
+    "calibrate_pose"
+  ],
+  "sensor_to_root": [
+    "sensor_to_root",
+    "tracker_root_inference",
+    "quaternion_diff_and_axis"
+  ],
+  "shadow": [
+    "shadow",
+    "shadow_sensor",
+    "shadow_pose"
+  ],
+  "take": [
+    "take",
+    "take_dict",
+    "json_npz_frame_picker"
+  ],
+  "_movesense_nodes": [
+    "--- movesense_nodes.py ---"
+  ],
+  "movesense": [
+    "movesense"
+  ],
+  "_movie_nodes": [
+    "--- movie_nodes.py ---"
+  ],
+  "movie_player": [
+    "movie_player",
+    "movie_clip_dict"
+  ],
+  "_ndi_nodes": [
+    "--- ndi_nodes.py ---"
+  ],
+  "ndi_receiver": [
+    "ndi_receiver",
+    "depth_anything"
+  ],
+  "_node": [
+    "--- node.py ---"
+  ],
+  "patcher": [
+    "patcher",
+    "p",
+    "in",
+    "out"
+  ],
+  "_noise_review_node": [
+    "--- noise_review_node.py ---"
+  ],
+  "noise_review": [
+    "noise_review"
+  ],
+  "_numpy_nodes": [
+    "--- numpy_nodes.py ---"
+  ],
+  "np_clip": [
+    "np.clip",
+    "np.max",
+    "np.min"
+  ],
+  "np_cumulative": [
+    "np.cumsum",
+    "np.cumprod",
+    "np.diff",
+    "np.rolling_buffer"
+  ],
+  "np_generator": [
+    "np.zeros",
+    "np.ones",
+    "np.rand",
+    "np.linspace",
+    "np.grid",
+    "np.sequence"
+  ],
+  "np_linalg": [
+    "np.linalg.det",
+    "np.linalg.inv",
+    "np.linalg.matrix_rank",
+    "np.linalg.solve",
+    "np.linalg.norm",
+    "euclidean_distance",
+    "np.dot",
+    "np.inner",
+    "np.outer",
+    "np.cross",
+    "np.matmul"
+  ],
+  "np_rearrange": [
+    "np.flip",
+    "np.roll",
+    "np.rot90",
+    "np.rotate",
+    "np.repeat",
+    "np.sort",
+    "np.argsort",
+    "np.split",
+    "np.concatenate",
+    "np.stack"
+  ],
+  "np_reshape": [
+    "np.reshape",
+    "np.shape",
+    "flatten",
+    "np.ravel",
+    "np.expand_dims",
+    "np.unsqueeze",
+    "np.squeeze",
+    "np.transpose"
+  ],
+  "np_select": [
+    "np.[]",
+    "np.crop",
+    "np.where",
+    "np.argwhere"
+  ],
+  "np_stats": [
+    "np.amax",
+    "np.amin",
+    "np.argmax",
+    "np.argmin",
+    "np.mean",
+    "np.median",
+    "np.nanmean",
+    "np.nanmedian",
+    "np.nansum",
+    "np.std",
+    "np.sum",
+    "np.var",
+    "np.any",
+    "np.all",
+    "np.robust_mean"
+  ],
+  "np_target": [
+    "np.distance_from_target",
+    "np.proximity_to_target",
+    "proximity_trigger",
+    "np.line_intersection",
+    "rotate_position"
+  ],
+  "np_util": [
+    "np.astype",
+    "np.add_alpha",
+    "np.edit",
+    "np.load"
+  ],
+  "_nvx_nodes": [
+    "--- nvx_nodes.py ---"
+  ],
+  "nvx_kvm": [
+    "nvx_kvm"
+  ],
+  "_opencv_nodes": [
+    "--- opencv_nodes.py ---"
+  ],
+  "cv_camera": [
+    "cv_camera",
+    "cv_capture",
+    "cv_image"
+  ],
+  "_orbbec_nodes": [
+    "--- orbbec_nodes.py ---"
+  ],
+  "femto": [
+    "femto",
+    "femto_bolt"
+  ],
+  "_osc_nodes": [
+    "--- osc_nodes.py ---"
+  ],
+  "osc_float": [
+    "osc_float",
+    "osc_int",
+    "osc_knob",
+    "osc_slider",
+    "osc_string",
+    "osc_message",
+    "osc_button",
+    "osc_toggle",
+    "osc_menu",
+    "osc_radio",
+    "osc_vector"
+  ],
+  "osc_query_json": [
+    "osc_query_json",
+    "osc_cue"
+  ],
+  "osc_receive": [
+    "osc_receive",
+    "osc_send",
+    "osc_route"
+  ],
+  "osc_source": [
+    "osc_source",
+    "osc_source_async",
+    "osc_target",
+    "osc_device",
+    "osc_manager"
+  ],
+  "pipo_motion": [
+    "pipo_motion",
+    "pipo_range"
+  ],
+  "_oscquery_nodes": [
+    "--- oscquery_nodes.py ---"
+  ],
+  "oscq_service": [
+    "oscq_service",
+    "oscq_browse",
+    "oscq_host"
+  ],
+  "_pjlink_nodes": [
+    "--- pjlink_nodes.py ---"
+  ],
+  "pjlink_projector": [
+    "pjlink_projector",
+    "projector_control"
+  ],
+  "_plot_nodes": [
+    "--- plot_nodes.py ---"
+  ],
+  "plot": [
+    "plot",
+    "heat_map",
+    "heat_scroll"
+  ],
+  "_point_cloud_nodes": [
+    "--- point_cloud_nodes.py ---"
+  ],
+  "pc_background": [
+    "pc_background",
+    "pc_denoise"
+  ],
+  "pc_crop": [
+    "pc_crop",
+    "pc_voxel",
+    "pc_info"
+  ],
+  "_prompt_nodes": [
+    "--- prompt_nodes.py ---"
+  ],
+  "weighted_prompt": [
+    "weighted_prompt",
+    "ambient_prompt",
+    "prompt_composer"
+  ],
+  "_pybullet_nodes": [
+    "--- pybullet_nodes.py ---"
+  ],
+  "pybullet_body": [
+    "pybullet_body"
+  ],
+  "_quaternion_nodes": [
+    "--- quaternion_nodes.py ---"
+  ],
+  "quaternion_diff": [
+    "quaternion_diff",
+    "quaternion_distance",
+    "quaternion_relative",
+    "rotation_matrix_diff"
+  ],
+  "quaternion_norm": [
+    "quaternion_norm",
+    "tracker_align"
+  ],
+  "quaternion_to_6d": [
+    "quaternion_to_6d",
+    "matrix_to_6d",
+    "6d_to_matrix",
+    "6d_to_axis_angle",
+    "6d_to_rotvec"
+  ],
+  "quaternion_to_euler": [
+    "quaternion_to_euler",
+    "euler_to_quaternion",
+    "quaternion_to_matrix",
+    "matrix_to_quaternion",
+    "quaternion_to_axis_angle",
+    "quaternion_to_rotvec",
+    "axis_angle_to_quaternion",
+    "rotvec_to_quaternion",
+    "matrix_to_axis_angle",
+    "matrix_to_rotvec"
+  ],
+  "_sampler_nodes": [
+    "--- sampler_nodes.py ---"
+  ],
+  "effort_fader": [
+    "effort_fader",
+    "muscle_activation_fader",
+    "crossfade_scanner"
+  ],
+  "polyphonic_sampler": [
+    "polyphonic_sampler",
+    "granular_sampler",
+    "scratch_sampler"
+  ],
+  "sampler_engine": [
+    "sampler_engine",
+    "sampler_voice",
+    "multi_voice_sampler"
+  ],
+  "_signal_nodes": [
+    "--- signal_nodes.py ---"
+  ],
+  "adaptive_filter": [
+    "adaptive_filter",
+    "adaptive_quaternion_filter",
+    "one_euro_filter"
+  ],
+  "band_pass": [
+    "band_pass",
+    "filter_bank",
+    "spectrum"
+  ],
+  "diff": [
+    "diff"
+  ],
+  "filter": [
+    "filter",
+    "smooth"
+  ],
+  "kalman_filter": [
+    "kalman_filter"
+  ],
+  "multi_filter": [
+    "diff_filter",
+    "diff_filter_bank",
+    "multi_filter"
+  ],
+  "noise_gate": [
+    "noise_gate"
+  ],
+  "physics_filter": [
+    "kinetic_filter",
+    "physics_filter"
+  ],
+  "random": [
+    "random",
+    "random.betavariate",
+    "random.expovariate",
+    "random.gammavariate",
+    "random.gauss",
+    "random.lognormvariate",
+    "random.normalvariate",
+    "random.paretovariate",
+    "random.triangular",
+    "random.vonmisesvariate",
+    "random.weibullvariate"
+  ],
+  "ranger": [
+    "ranger"
+  ],
+  "register": [
+    "register"
+  ],
+  "sample_hold": [
+    "sample_hold"
+  ],
+  "signal": [
+    "signal"
+  ],
+  "stream": [
+    "stream",
+    "subsample"
+  ],
+  "togedge": [
+    "togedge"
+  ],
+  "trigger": [
+    "hysteresis",
+    "trigger"
+  ],
+  "_smpl_nodes": [
+    "--- smpl_nodes.py ---"
+  ],
+  "shadow_to_smpl": [
+    "shadow_to_smpl",
+    "active_to_smpl",
+    "smpl_to_active",
+    "smpl_to_quats",
+    "quats_flip_y_z",
+    "smpl_trans_to_y_up"
+  ],
+  "smpl_pose": [
+    "smpl_pose",
+    "smpl_body",
+    "smpl_take",
+    "smpl_beta_editor"
+  ],
+  "smpl_pose_adjust": [
+    "smpl_pose_adjust",
+    "smpl_mag_yaw_correct",
+    "floor_zero"
+  ],
+  "smpl_pose_to_joints": [
+    "smpl_pose_to_joints",
+    "smpl_quats_to_joints"
+  ],
+  "smpl_ragdoll": [
+    "smpl_ragdoll",
+    "ragdoll_blend_ui"
+  ],
+  "smpl_torque": [
+    "smpl_torque"
+  ],
+  "_socket_nodes": [
+    "--- socket_nodes.py ---"
+  ],
+  "process_group": [
+    "process_group",
+    "ip_address"
+  ],
+  "tcp_numpy_send": [
+    "tcp_numpy_send",
+    "tcp_numpy_receive",
+    "tcp_latent_send",
+    "tcp_latent_receive"
+  ],
+  "udp_numpy_send": [
+    "udp_numpy_send",
+    "udp_numpy_receive"
+  ],
+  "_spacy_nodes": [
+    "--- spacy_nodes.py ---"
+  ],
+  "rephrase": [
+    "rephrase",
+    "lemma"
+  ],
+  "spacy_vector": [
+    "spacy_vector",
+    "spacy_similarity",
+    "spacy_confusion"
+  ],
+  "_speech_analysis_nodes": [
+    "--- speech_analysis_nodes.py ---"
+  ],
+  "speech_envelope": [
+    "speech_envelope"
+  ],
+  "speech_pitch": [
+    "speech_pitch",
+    "speech_prosody"
+  ],
+  "speech_spectral": [
+    "speech_spectral",
+    "speech_voice_quality"
+  ],
+  "_synth_nodes": [
+    "--- synth_nodes.py ---"
+  ],
+  "additive~": [
+    "additive~",
+    "plugin~",
+    "shape_modes",
+    "spectrum~",
+    "vst~"
+  ],
+  "adsr~": [
+    "adsr~",
+    "clock~",
+    "line~",
+    "metro~",
+    "ramp~"
+  ],
+  "audio_out~": [
+    "audio_out~"
+  ],
+  "bow~": [
+    "bowed~",
+    "bowing~",
+    "bow~",
+    "coin~",
+    "creak~",
+    "engine~",
+    "glass~",
+    "motor~",
+    "rub~",
+    "spin~",
+    "strain~",
+    "stroke~"
+  ],
+  "clean~": [
+    "clean~",
+    "condition~",
+    "one_euro~",
+    "smooth~"
+  ],
+  "delay~": [
+    "delay~",
+    "echo~"
+  ],
+  "fold~": [
+    "*~",
+    "crush~",
+    "decimate~",
+    "distort~",
+    "fold~",
+    "mult~",
+    "ring~"
+  ],
+  "modal~": [
+    "bounce~",
+    "drop~",
+    "drum~",
+    "modal~",
+    "pluck~",
+    "rain~",
+    "rattle~",
+    "resonator~",
+    "shaker~",
+    "skin~",
+    "strike~",
+    "string~"
+  ],
+  "shaper~": [
+    "envelope~",
+    "lookup~",
+    "scaler~",
+    "scale~",
+    "shaper~"
+  ],
+  "snapshot~": [
+    "array~",
+    "capture~",
+    "place~",
+    "scope~",
+    "snapshot~"
+  ],
+  "vca~": [
+    "fader_out~",
+    "fader~",
+    "meter~",
+    "mix~",
+    "pan~",
+    "vca~",
+    "vu~"
+  ],
+  "vcf~": [
+    "formant~",
+    "vcf~",
+    "vocoder~",
+    "vowel~"
+  ],
+  "vco~": [
+    "hiss~",
+    "lfo~",
+    "noise~",
+    "phasor~",
+    "sampler_osc~",
+    "sig~",
+    "vco~"
+  ],
+  "wind~": [
+    "blow~",
+    "brass~",
+    "bubbles~",
+    "flute~",
+    "gurgle~",
+    "horn~",
+    "pipe~",
+    "reed~",
+    "swish~",
+    "vessel~",
+    "whoosh~",
+    "wind~"
+  ],
+  "_text_nodes": [
+    "--- text_nodes.py ---"
+  ],
+  "ascii": [
+    "ascii",
+    "ord",
+    "char",
+    "character"
+  ],
+  "combine": [
+    "combine",
+    "kombine",
+    "join",
+    "split"
+  ],
+  "gather_sentence": [
+    "gather_sentence",
+    "string_builder",
+    "fifo_string",
+    "text_change"
+  ],
+  "string_replace": [
+    "string_replace",
+    "word_replace",
+    "unescape_text",
+    "printable"
+  ],
+  "text_file": [
+    "text_editor",
+    "text_file"
+  ],
+  "word_trigger": [
+    "word_trigger",
+    "first_letter_trigger",
+    "word_gate",
+    "fuzzy_match"
+  ],
+  "_torch_activation_nodes": [
+    "--- torch_activation_nodes.py ---"
+  ],
+  "t.nn.elu": [
+    "t.nn.celu",
+    "t.nn.elu",
+    "t.nn.hardshrink",
+    "t.nn.leaky_relu",
+    "t.nn.softshrink",
+    "t.nn.hardtanh",
+    "t.nn.rrelu",
+    "t.nn.softplus",
+    "t.nn.Threshold"
+  ],
+  "t.nn.relu": [
+    "t.nn.gelu",
+    "t.nn.glu",
+    "t.nn.hardsigmoid",
+    "t.nn.hardswish",
+    "t.nn.logsigmoid",
+    "t.nn.mish",
+    "t.nn.relu",
+    "t.nn.relu6",
+    "t.nn.selu",
+    "t.nn.sigmoid",
+    "t.nn.silu",
+    "t.nn.softsign",
+    "t.nn.tanh",
+    "t.nn.tanhshrink"
+  ],
+  "t.nn.softmax": [
+    "t.nn.softmax",
+    "t.nn.softmin",
+    "t.nn.log_softmax",
+    "t.nn.gumbel_softmax",
+    "t.special.softmax",
+    "t.special.log_softmax"
+  ],
+  "t.special.gammainc": [
+    "t.special.gammainc",
+    "t.special.gammaincc",
+    "t.special.polygamma",
+    "t.special.multigammaln"
+  ],
+  "t.special.xlogy": [
+    "t.special.xlogy",
+    "t.special.xlog1py",
+    "t.special.logits",
+    "t.special.zeta"
+  ],
+  "_torch_analysis_nodes": [
+    "--- torch_analysis_nodes.py ---"
+  ],
+  "t.any": [
+    "t.any",
+    "t.all",
+    "t.count_nonzero",
+    "t.argwhere",
+    "t.non_zero"
+  ],
+  "t.histc": [
+    "t.histc",
+    "t.bincount",
+    "t.bucketize"
+  ],
+  "t.max": [
+    "t.max",
+    "t.min",
+    "t.argmax",
+    "t.argsort"
+  ],
+  "_torch_butterworth_nodes": [
+    "--- torch_butterworth_nodes.py ---"
+  ],
+  "t.ESEKF": [
+    "t.ESEKF",
+    "t.quat_ESEKF"
+  ],
+  "t.filter_bank": [
+    "t.filter_bank",
+    "t.rotation_band_diff"
+  ],
+  "t.sav_gol_filter": [
+    "t.sav_gol_filter"
+  ],
+  "t.smart_clamp_kf": [
+    "t.smart_clamp_kf",
+    "t.smart_clamp_quat_kf",
+    "t.persistence_quat_kf",
+    "t.hybrid_quat_kf",
+    "t.jerk_aware_quat_kf"
+  ],
+  "_torch_calculation_nodes": [
+    "--- torch_calculation_nodes.py ---"
+  ],
+  "t.clamp": [
+    "t.clamp",
+    "t.maximum",
+    "t.minimum"
+  ],
+  "t.comparison": [
+    "t.eq",
+    "t.ge",
+    "t.gt",
+    "t.le",
+    "t.lt",
+    "t.ne"
+  ],
+  "t.complex": [
+    "t.complex",
+    "t.real",
+    "t.imag"
+  ],
+  "t.cumsum": [
+    "t.cumsum",
+    "t.cumprod",
+    "t.cummax",
+    "t.cummin",
+    "t.logcumsumexp",
+    "t.diff"
+  ],
+  "t.distance": [
+    "t.length",
+    "t.cdist",
+    "t.cosine_similarity",
+    "t.normalize",
+    "t.energy",
+    "t.corrcoef"
+  ],
+  "t.gcd": [
+    "t.gcd",
+    "t.lcm",
+    "t.copysign"
+  ],
+  "t.linalg.svd": [
+    "t.linalg.svd",
+    "t.linalg.qr",
+    "t.linalg.eig",
+    "t.linalg.pca_low_rank"
+  ],
+  "t.round": [
+    "t.round",
+    "t.ceil",
+    "t.floor",
+    "t.trunc",
+    "t.frac"
+  ],
+  "_torch_dataloaders": [
+    "--- torch_dataloaders.py ---"
+  ],
+  "t.data_set": [
+    "t.data_set"
+  ],
+  "_torch_generator_nodes": [
+    "--- torch_generator_nodes.py ---",
+    "the 21 t.dist.* names reach t.dist_help via",
+    "help_file_name on their base class, so they are not listed here"
+  ],
+  "t.linspace": [
+    "t.linspace",
+    "t.logspace",
+    "t.arange",
+    "t.range"
+  ],
+  "t.zeros": [
+    "t.zeros",
+    "t.ones",
+    "t.rand",
+    "t.full",
+    "t.eye",
+    "t.zeros_like",
+    "t.ones_like",
+    "t.rand_like"
+  ],
+  "_torch_kornia_nodes": [
+    "--- torch_kornia_nodes.py ---"
+  ],
+  "k.rgb_to_grayscale": [
+    "k.rgb_to_grayscale",
+    "k.rgb_to_hls",
+    "k.apply_colormap"
+  ],
+  "k.sobel": [
+    "k.sobel",
+    "k.canny",
+    "k.gaussian_blur",
+    "k.dog_response_single"
+  ],
+  "_torch_loss_nodes": [
+    "--- torch_loss_nodes.py ---"
+  ],
+  "t.mse_loss": [
+    "t.mse_loss",
+    "t.l1_loss",
+    "t.cross_entropy_loss"
+  ],
+  "_torch_manipulation_nodes": [
+    "--- torch_manipulation_nodes.py ---"
+  ],
+  "t.cat": [
+    "t.cat",
+    "t.stack",
+    "t.hstack",
+    "t.vstack",
+    "t.dstack",
+    "t.column_stack",
+    "t.row_stack",
+    "t.chunk",
+    "t.tensor_split"
+  ],
+  "t.diag": [
+    "t.diag",
+    "t.tril",
+    "t.triu"
+  ],
+  "t.index_select": [
+    "t[]",
+    "t.select",
+    "t.index_select",
+    "t.masked_select",
+    "t.take",
+    "t.take_along_dim",
+    "t.narrow"
+  ],
+  "t.reshape": [
+    "t.reshape",
+    "t.view",
+    "t.flatten",
+    "t.ravel",
+    "t.squeeze",
+    "t.unsqueeze",
+    "t.permute",
+    "t.transpose",
+    "t.t",
+    "t.adjoint"
+  ],
+  "t.roll": [
+    "t.roll",
+    "t.flip",
+    "t.repeat",
+    "t.tile"
+  ],
+  "t.scatter": [
+    "t.scatter",
+    "t.scatter_hold"
+  ],
+  "_torch_nodes": [
+    "--- torch_nodes.py ---"
+  ],
+  "t.buffer": [
+    "t.buffer",
+    "t.rolling_buffer"
+  ],
+  "t.info": [
+    "t.info",
+    "t.numel",
+    "t.contiguous",
+    "t.is_contiguous"
+  ],
+  "tensor": [
+    "tensor",
+    "t.to",
+    "t.detach"
+  ],
+  "_torch_voxel_nodes": [
+    "--- torch_voxel_nodes.py ---"
+  ],
+  "t.point_cloud_voxels": [
+    "t.point_cloud_voxels",
+    "t.point_cloud_crop"
+  ],
+  "_torchaudio_nodes": [
+    "--- torchaudio_nodes.py ---"
+  ],
+  "t.audio.gain": [
+    "t.audio.gain",
+    "t.audio.contrast",
+    "t.audio.overdrive"
+  ],
+  "t.audio.loudness": [
+    "t.audio.loudness",
+    "t.audio.kaldi_pitch"
+  ],
+  "t.audio.play": [
+    "t.audio.play",
+    "t.audio.multiplayer",
+    "audio_mixer"
+  ],
+  "t.audio_source": [
+    "t.audio_source",
+    "t.audio.file",
+    "t.audio.file_stream"
+  ],
+  "_torchvision_nodes": [
+    "--- torchvision_nodes.py ---"
+  ],
+  "tv.Grayscale": [
+    "tv.Grayscale",
+    "tv.gaussian_blur"
+  ],
+  "tv.adjust_brightness": [
+    "tv.adjust_brightness",
+    "tv.adjust_contrast",
+    "tv.adjust_saturation",
+    "tv.adjust_sharpness",
+    "tv.adjust_hue"
+  ],
+  "_ultracwt_nodes": [
+    "--- ultracwt_nodes.py ---"
+  ],
+  "t.ultracwt": [
+    "t.ultracwt",
+    "ultracwt"
+  ],
+  "_vae_nodes": [
+    "--- vae_nodes.py ---"
+  ],
+  "vposer": [
+    "vposer",
+    "vposer6D",
+    "vae"
+  ],
+  "_visca_nodes": [
+    "--- visca_nodes.py ---"
+  ],
+  "visca_camera": [
+    "visca_camera",
+    "ptz_camera"
+  ],
+  "_vision_describe_nodes": [
+    "--- vision_describe_nodes.py ---"
+  ],
+  "vision_describe": [
+    "vision_describe",
+    "vision_describe_smol",
+    "vision_describe_qwen",
+    "vision_describe_gemma"
+  ],
+  "_vive_tracker_nodes": [
+    "--- vive_tracker_nodes.py ---"
+  ],
+  "vive_tracker": [
+    "vive_tracker",
+    "vive_base_stations"
+  ],
+  "_wavelet_nodes": [
+    "--- wavelet_nodes.py ---"
+  ],
+  "t.cwt": [
+    "t.cwt"
+  ],
+  "_whisper_nodes": [
+    "--- whisper_nodes.py ---"
+  ],
+  "whisper": [
+    "whisper",
+    "eleven_labs"
+  ]
+}

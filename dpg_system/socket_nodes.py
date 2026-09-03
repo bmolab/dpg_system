@@ -1,6 +1,7 @@
 import dearpygui.dearpygui as dpg
 from dpg_system.conversion_utils import *
 import asyncio
+import os
 from dpg_system.node import Node
 import threading
 import socket
@@ -160,7 +161,7 @@ class UDPNumpySendNode(Node):
 
         self.socket = UDPSendSocket(ip=self.ip, port=self.port)
         self.data_input = self.add_input('data', triggers_execution=True)
-        self.ip_in = self.add_input('ip', widget_type='text_input', default_value= self.ip, width=120, triggers_execution=True)
+        self.ip_in = self.add_input('ip', widget_type='text_input', default_value=self.ip, widget_width=120, triggers_execution=True)
         self.port_in = self.add_input('port', widget_type='drag_int', default_value=self.port, triggers_execution=True)
 
     def pack_data(self, data):
@@ -268,13 +269,19 @@ class UDPNumpyReceiveNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        # There was no default at all: with no argument self.port was never set
+        # and the next line raised AttributeError, so a bare udp_numpy_receive
+        # could not be created. 3500 matches udp_numpy_send's default, so a
+        # naked pair talks to each other.
+        self.port = 3500
         if len(args) > 0:
             port = any_to_int(args[0], validate=True)
             if port is not None:
                 self.port = port
 
         self.socket = UDPReceiveSocket(port=self.port)
-        self.port_in = self.add_input('port', widget_type='drag_int', triggers_execution=True)
+        self.port_in = self.add_input('port', widget_type='drag_int',
+                                      default_value=self.port, triggers_execution=True)
         self.data_output = self.add_output('received data')
         self.buffer = None
         self.buffer_ptr = 0
@@ -1171,7 +1178,10 @@ class ProcessGroup:
         self.backend = backend
         self.rank = rank
         self.world_size = world_size
-        self.setup_thread = threading.Thread(target=self.setup_process_group)
+        # init_process_group blocks until all world_size participants show
+        # up, which may be never. Daemon so it cannot hold up shutdown.
+        self.setup_thread = threading.Thread(target=self.setup_process_group,
+                                            daemon=True)
         self.ready = False
         self.setup_thread.start()
         print('after starting thread')

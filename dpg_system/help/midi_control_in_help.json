@@ -1,0 +1,491 @@
+{
+    "height": 980,
+    "width": 1686,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "midi_control_in_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/midi_control_in_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment midi controllers - knobs, faders, programs",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 504,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "midi controllers - knobs, faders, programs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "midi controllers - knobs, faders, programs"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 848,
+            "position_y": 45,
+            "width": 798,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These handle the continuous controls - knobs, faders, pedals - and program changes.\n\nTHE NODES:\n\nmidi_control_in    a controller's value arriving\nmidi_control_out   send a controller value\nmidi_program_in    a program change arriving\nmidi_program_out   send a program change\n\nCONTROLLERS ARE NUMBERED, NOT NAMED:\nEvery knob and fader on a device sends a CONTROLLER NUMBER and a value from 0 \nto 127. The number is how you tell one knob from another, and there is no \nnaming - controller 74 is whatever the maker decided it should be on that \ndevice.\n\nSo the first job with any controller is finding the numbers. Patch midi_in into \na print, move each control, write down what it reports. Then set 'controller #' \non a midi_control_in per control you want.\n\nSome numbers are conventional - 1 is the modulation wheel, 7 is volume, 64 is \nthe sustain pedal - but conventions are not guarantees.\n\n0 TO 127 IS THE WHOLE RANGE:\nA MIDI controller value is a whole number in that range and nothing finer. \nThat is 128 steps, which is audibly coarse on anything smoothly varying - a \nslow filter sweep driven directly from a MIDI knob steps.\n\nThe fix is downstream: put a filter or one_euro_filter after it and the steps \nbecome a smooth line. It costs a little lag and is almost always worth it for \nanything a listener will hear moving.\n\nPROGRAM CHANGES SELECT, THEY DO NOT SET:\nA program change says \"use setting 12\" rather than carrying any values. What \nsetting 12 IS lives in the device. So a program change is the right thing for \nrecalling a state a synth or effect already holds, and no use at all for \ntelling it something new.\n\nport AND channel:\nEvery one of these has a 'port' inlet, which selects the physical device, and \nmost have a 'channel' option. MIDI carries sixteen channels on one cable, so \nthe port says which piece of hardware and the channel says which voice within \nit. A node listening on the wrong channel hears nothing at all and looks \nbroken, so channel is the first thing to check when a device is plainly sending \nand nothing arrives.\n\nSYNTAX:\nmidi_control_in <controller #>\nmidi_control_out <controller #>\n\nEXAMPLE:\nmidi_control_in 1\n\nINPUTS and PARAMETERS:\n\ncontroller #:\nWhich knob or fader.\n\nmidi to send:\nThe value, 0 to 127.\n\nprogram to send:\nWhich program.\n\nport / channel:\nWhich device and channel.\n\nOUTPUTS: \n\nout:\nThe controller's value, or the program number.\n\nRELATED:\nranger maps 0 to 127 into whatever range you actually need, and can calibrate \nitself against the control's real travel.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These handle the continuous controls - knobs, faders, pedals - and program changes.\n\nTHE NODES:\n\nmidi_control_in    a controller's value arriving\nmidi_control_out   send a controller value\nmidi_program_in    a program change arriving\nmidi_program_out   send a program change\n\nCONTROLLERS ARE NUMBERED, NOT NAMED:\nEvery knob and fader on a device sends a CONTROLLER NUMBER and a value from 0 \nto 127. The number is how you tell one knob from another, and there is no \nnaming - controller 74 is whatever the maker decided it should be on that \ndevice.\n\nSo the first job with any controller is finding the numbers. Patch midi_in into \na print, move each control, write down what it reports. Then set 'controller #' \non a midi_control_in per control you want.\n\nSome numbers are conventional - 1 is the modulation wheel, 7 is volume, 64 is \nthe sustain pedal - but conventions are not guarantees.\n\n0 TO 127 IS THE WHOLE RANGE:\nA MIDI controller value is a whole number in that range and nothing finer. \nThat is 128 steps, which is audibly coarse on anything smoothly varying - a \nslow filter sweep driven directly from a MIDI knob steps.\n\nThe fix is downstream: put a filter or one_euro_filter after it and the steps \nbecome a smooth line. It costs a little lag and is almost always worth it for \nanything a listener will hear moving.\n\nPROGRAM CHANGES SELECT, THEY DO NOT SET:\nA program change says \"use setting 12\" rather than carrying any values. What \nsetting 12 IS lives in the device. So a program change is the right thing for \nrecalling a state a synth or effect already holds, and no use at all for \ntelling it something new.\n\nport AND channel:\nEvery one of these has a 'port' inlet, which selects the physical device, and \nmost have a 'channel' option. MIDI carries sixteen channels on one cable, so \nthe port says which piece of hardware and the channel says which voice within \nit. A node listening on the wrong channel hears nothing at all and looks \nbroken, so channel is the first thing to check when a device is plainly sending \nand nothing arrives.\n\nSYNTAX:\nmidi_control_in <controller #>\nmidi_control_out <controller #>\n\nEXAMPLE:\nmidi_control_in 1\n\nINPUTS and PARAMETERS:\n\ncontroller #:\nWhich knob or fader.\n\nmidi to send:\nThe value, 0 to 127.\n\nprogram to send:\nWhich program.\n\nport / channel:\nWhich device and channel.\n\nOUTPUTS: \n\nout:\nThe controller's value, or the program number.\n\nRELATED:\nranger maps 0 to 127 into whatever range you actually need, and can calibrate \nitself against the control's real travel."
+        },
+        "3": {
+            "name": "midi_control_in",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 260,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "midi_control_in 1"
+        },
+        "4": {
+            "name": "int",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment 0 to 127, in whole numbers",
+            "name": "comment",
+            "id": 422,
+            "position_x": 566,
+            "position_y": 315,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "0 to 127, in whole numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "0 to 127, in whole numbers"
+        },
+        "6": {
+            "name": "plot",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 355,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 127.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the steps are audible on a sweep",
+            "name": "comment",
+            "id": 496,
+            "position_x": 566,
+            "position_y": 540,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the steps are audible on a sweep",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the steps are audible on a sweep"
+        },
+        "8": {
+            "name": "filter",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 585,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degree",
+                    "value": 0.9,
+                    "value_type": "float"
+                }
+            },
+            "init": "filter 0.9"
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 670,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 127.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment smoothed: worth the small lag",
+            "name": "comment",
+            "id": 607,
+            "position_x": 566,
+            "position_y": 855,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smoothed: worth the small lag",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smoothed: worth the small lag"
+        },
+        "11": {
+            "name": "ranger",
+            "id": 644,
+            "position_x": 300,
+            "position_y": 585,
+            "width": 240,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input_min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "input_max",
+                    "value": 127.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "output_min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "output_max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "clamp",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            },
+            "init": "ranger 0.0 127.0 0.0 1.0"
+        },
+        "12": {
+            "init": "comment and into the range you actually want",
+            "name": "comment",
+            "id": 681,
+            "position_x": 566,
+            "position_y": 800,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and into the range you actually want",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and into the range you actually want"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 876,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

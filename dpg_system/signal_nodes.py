@@ -148,7 +148,14 @@ class DifferentiateNode(Node):
             self.output.send(output)
 
         else:
-            output = np.zeros_like(received)
+            # First value: nothing to difference against yet. np.zeros_like on a
+            # Python scalar returns a 0-dimensional array, and anything
+            # downstream that indexes shape[0] (plot, the matrix buffers) raises
+            # IndexError on it. Send a plain zero of the same kind instead.
+            if isinstance(received, (bool, int, float)):
+                output = type(received)(0)
+            else:
+                output = np.zeros_like(received)
             self.output.send(output)
 
         # Scalars (int/float/bool) don't have .copy(); they're immutable so
@@ -184,9 +191,11 @@ class RandomGaussNode(Node):
         mean = 0.0
         dev = 1.0
         if len(args) > 0:
-            mean = self.arg_as_number(default_value=0.0)
+            mean = self.arg_as_number(default_value=0.0, index=0)
         if len(args) > 1:
-            dev = self.arg_as_number(default_value=1.0)
+            # index=1, or dev reads the mean's argument and a deviation of 0
+            # makes this node emit the mean forever.
+            dev = self.arg_as_number(default_value=1.0, index=1)
 
         self.trigger_input = self.add_input('trigger', triggers_execution=True)
         self.mean = self.add_input(label_1, widget_type='drag_float', default_value=mean)
@@ -218,9 +227,9 @@ class RandomGammaNode(Node):
         alpha = 1.0
         beta = 0.5
         if len(args) > 0:
-            alpha = self.arg_as_number(default_value=alpha)
+            alpha = self.arg_as_number(default_value=alpha, index=0)
         if len(args) > 1:
-            beta = self.arg_as_number(default_value=beta)
+            beta = self.arg_as_number(default_value=beta, index=1)
 
         self.trigger_input = self.add_input('trigger', triggers_execution=True)
         self.alpha = self.add_input('alpha', widget_type='drag_float', default_value=alpha)
@@ -247,11 +256,11 @@ class RandomTriangularNode(Node):
         high = 1.0
         mode = 0.0
         if len(args) > 0:
-            low = self.arg_as_number(default_value=-1.0)
+            low = self.arg_as_number(default_value=-1.0, index=0)
         if len(args) > 1:
-            high = self.arg_as_number(default_value=1.0)
+            high = self.arg_as_number(default_value=1.0, index=1)
         if len(args) > 2:
-            mode = self.arg_as_number(default_value=0.0)
+            mode = self.arg_as_number(default_value=0.0, index=2)
 
         self.trigger_input = self.add_input('trigger', triggers_execution=True)
         self.low = self.add_input('low', widget_type='drag_float', default_value=low)
@@ -333,7 +342,11 @@ class SignalNode(Node):
         self.period = 1.0
         self.on = False
         self.shape = 'sin'
-        self.signal_value = 0
+        # Float, not int: the 'on' inlet triggers execution, so the very first
+        # thing this node emits is this initial value. An int 0 downstream makes
+        # arithmetic nodes conform their operand to int -- turning '* 0.5' into
+        # '* 0' permanently.
+        self.signal_value = 0.0
         self.first_tick = 0
         self.last_tick = 0
         self.time = 0
@@ -625,7 +638,10 @@ class ThresholdTriggerNode(Node):
 
         self.input = self.add_input('input', triggers_execution=True)
         self.threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.threshold, callback=self.option_changed)
-        self.release_threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.release_threshold, callback=self.option_changed)
+        # Named distinctly from the trigger threshold above. Properties restore
+        # by label, and two widgets called 'threshold' meant the second saved
+        # value matched the first widget -- so neither survived a reload.
+        self.release_threshold_property = self.add_property('release threshold', widget_type='drag_float', default_value=self.release_threshold, callback=self.option_changed)
         self.output = self.add_output('out')
         self.release_output = self.add_output('release')
         self.output_mode_option = self.add_option('trigger mode', widget_type='combo', default_value='output toggle', width=100, callback=self.option_changed)
@@ -646,7 +662,12 @@ class ThresholdTriggerNode(Node):
         data = self.input()
         t = type(data)
 
-        if t in [float, np.double, int, np.int64]:
+        # bool is NOT caught by an exact type check even though it
+        # subclasses int -- type(True) is bool. Without it a boolean
+        # input fell through every branch and was silently dropped,
+        # which is how speech_envelope's 'onset' reached trigger and
+        # produced nothing at all.
+        if t in [float, np.double, int, np.int64, bool, np.bool_]:
             if self.state:
                 if data < self.release_threshold:
                     self.state = False
@@ -1835,7 +1856,12 @@ class OneEuroFilterNode(Node):
         t = type(data)
         timestamp = time.time()
         
-        if t in [float, np.double, int, np.int64]:
+        # bool is NOT caught by an exact type check even though it
+        # subclasses int -- type(True) is bool. Without it a boolean
+        # input fell through every branch and was silently dropped,
+        # which is how speech_envelope's 'onset' reached trigger and
+        # produced nothing at all.
+        if t in [float, np.double, int, np.int64, bool, np.bool_]:
             val = float(data)
             out = self.filter(val, timestamp)
             self.output.send(out)

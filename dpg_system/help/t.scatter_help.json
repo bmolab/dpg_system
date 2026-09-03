@@ -1,0 +1,402 @@
+{
+    "height": 801,
+    "width": 1674,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "t.scatter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.scatter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.scatter_hold - assemble a tensor from pieces",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 552,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.scatter_hold - assemble a tensor from pieces",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.scatter_hold - assemble a tensor from pieces"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 836,
+            "position_y": 45,
+            "width": 798,
+            "height": 696,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These write values INTO a tensor at positions you choose - the reverse of selecting.\n\nTHE NODES:\n\nt.scatter       write a source tensor's values into a target at given indices\nt.scatter_hold  keep a tensor and update parts of it as pairs arrive\n\nt.scatter_hold IS THE USEFUL ONE IN A PATCH:\nIt holds a tensor of a length you set and remembers it between messages. \nSend it a list of index and value pairs - \"3 0.8 7 0.2\" - and it writes those \nvalues at those positions, leaving everything else exactly as it was.\n\nThat is how you assemble one tensor from many separate sources. Values arriving \none at a time, from different nodes, at different rates, accumulate into a \nsingle tensor that always holds the latest of each - which is what you want \nwhen per-joint readings arrive separately and something downstream wants them \nall together.\n\nIndices are clamped into range rather than raising, so a stray index writes to \nthe nearest valid slot instead of stopping the patch. An odd number of values \nis ignored, since it cannot be read as pairs.\n\nSYNTAX:\nt.scatter_hold <length: int>\nt.scatter\n\nEXAMPLE:\nt.scatter_hold 16\n\nINPUTS and PARAMETERS:\n\nlist of index value pairs (t.scatter_hold):\nAlternating positions and values. Receiving them triggers the node.\n\nlength of target tensor (t.scatter_hold):\nHow long the held tensor is. Changing it clears the contents.\n\nclear (t.scatter_hold):\nSets everything back to zero.\n\ntensor to scatter into / indices in / source in (t.scatter):\nThe target, where to write, and what to write.\n\ndim:\nWhich axis the indices refer to.\n\nOUTPUTS: \n\noutput:\nThe whole tensor after the write - not just the parts that changed. \nSo every update produces a complete current picture, which is what makes this \nusable as a source for anything that wants the full state.\n\nRELATED:\nThe selecting nodes go the other way, pulling values out at given positions.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 680,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These write values INTO a tensor at positions you choose - the reverse of selecting.\n\nTHE NODES:\n\nt.scatter       write a source tensor's values into a target at given indices\nt.scatter_hold  keep a tensor and update parts of it as pairs arrive\n\nt.scatter_hold IS THE USEFUL ONE IN A PATCH:\nIt holds a tensor of a length you set and remembers it between messages. \nSend it a list of index and value pairs - \"3 0.8 7 0.2\" - and it writes those \nvalues at those positions, leaving everything else exactly as it was.\n\nThat is how you assemble one tensor from many separate sources. Values arriving \none at a time, from different nodes, at different rates, accumulate into a \nsingle tensor that always holds the latest of each - which is what you want \nwhen per-joint readings arrive separately and something downstream wants them \nall together.\n\nIndices are clamped into range rather than raising, so a stray index writes to \nthe nearest valid slot instead of stopping the patch. An odd number of values \nis ignored, since it cannot be read as pairs.\n\nSYNTAX:\nt.scatter_hold <length: int>\nt.scatter\n\nEXAMPLE:\nt.scatter_hold 16\n\nINPUTS and PARAMETERS:\n\nlist of index value pairs (t.scatter_hold):\nAlternating positions and values. Receiving them triggers the node.\n\nlength of target tensor (t.scatter_hold):\nHow long the held tensor is. Changing it clears the contents.\n\nclear (t.scatter_hold):\nSets everything back to zero.\n\ntensor to scatter into / indices in / source in (t.scatter):\nThe target, where to write, and what to write.\n\ndim:\nWhich axis the indices refer to.\n\nOUTPUTS: \n\noutput:\nThe whole tensor after the write - not just the parts that changed. \nSo every update produces a complete current picture, which is what makes this \nusable as a source for anything that wants the full state.\n\nRELATED:\nThe selecting nodes go the other way, pulling values out at given positions."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 220,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2 0.9 5 0.4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "button",
+            "id": 422,
+            "position_x": 280,
+            "position_y": 62,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 280,
+            "position_y": 118,
+            "width": 220,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.7 7 0.2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment click either: index, value, index, value",
+            "name": "comment",
+            "id": 496,
+            "position_x": 526,
+            "position_y": 170,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click either: index, value, index, value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click either: index, value, index, value"
+        },
+        "8": {
+            "name": "t.scatter_hold",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 210,
+            "width": 240,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.scatter_hold 8"
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment each click updates only its own slots",
+            "name": "comment",
+            "id": 607,
+            "position_x": 526,
+            "position_y": 530,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each click updates only its own slots",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each click updates only its own slots"
+        },
+        "11": {
+            "init": "comment the rest keeps what it had",
+            "name": "comment",
+            "id": 644,
+            "position_x": 526,
+            "position_y": 560,
+            "width": 182,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the rest keeps what it had",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the rest keeps what it had"
+        },
+        "12": {
+            "init": "comment click clear on the node to zero it",
+            "name": "comment",
+            "id": 681,
+            "position_x": 526,
+            "position_y": 590,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click clear on the node to zero it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click clear on the node to zero it"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 548,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "list of index value pairs"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "list of index value pairs"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

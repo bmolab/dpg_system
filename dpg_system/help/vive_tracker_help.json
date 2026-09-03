@@ -1,0 +1,960 @@
+{
+    "height": 1330,
+    "width": 2274,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1532,
+    "name": "vive_tracker_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vive_tracker_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment vive_tracker - a point in the room (Linux only)",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 564,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vive_tracker - a point in the room (Linux only)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "vive_tracker - a point in the room (Linux only)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1416,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Position and orientation from a Vive tracker, in room coordinates.\n\nTHESE NODES ARE LINUX ONLY:\nThey need OpenVR and a running SteamVR, together with the triad_openvr wrapper\nalongside this file. On any other platform the module does not load at all -\nthe console says so at startup and the nodes simply do not exist, so a patch\nbuilt around them will open with those nodes missing rather than half working.\n\nThat is worth knowing before you go looking for a fault: if 'vive_tracker' is\nnot in the node list, the machine is the reason.\n\nTHE NODES:\n\nvive_tracker         where a tracker is, and which way up\nvive_base_stations   whether the base stations are steady enough to believe\n\nRAW TRACKER SPACE IS NOT ROOM SPACE:\nThe tracking system has its own origin and its own idea of which way is forward,\ndecided by where the base stations happen to be and how SteamVR was set up. What\nyou almost always want instead is coordinates in the ROOM - metres from the\nmiddle of the floor, with forward pointing where the audience is.\n\nThe play-area settings are that transform. You can type them if you know them,\nbut the corner capture is the way to get them right.\n\nTHE CORNER CAPTURE, WHICH IS THE PART WORTH LEARNING:\nPut the tracker on the floor at each corner of the space in turn and press the\nmatching button - front-left, front-right, back-right, back-left. Then press\n'compute_from_corners'.\n\nFrom those four points it works out all of it at once: the centre of the space,\nits width and depth, the yaw needed to square it to the room, and the height of\nthe floor. It prints what it found, and fills the play-area fields in for you.\n\nThe corners do not have to be exact and the space does not have to be square -\nit averages the opposite edges, so a slightly trapezoidal capture still gives a\nsensible answer. What matters is that the four points are at floor level and in\nthe right order.\n\n'apply_chaperone' pushes the result into SteamVR itself, so its own boundary\nmatches the space you just measured.\n\n'clear_corners' starts again.\n\n'output_format' - QUATERNION, EULER OR MATRIX:\nQuaternion is the one to prefer for anything that gets combined, interpolated or\nfiltered. Euler angles are easier to read on screen and are the right choice for\na display or a single angle you want to threshold, but they wrap and they gimbal\nand they do not average sensibly.\n\n'which_tracker' selects between up to four.\n\nvive_base_stations IS A DIAGNOSTIC, NOT A SOURCE:\nIt does not track anything. It watches the base stations and reports whether\nthey are still where they were, which is what you check when tracking has become\nunreliable and you do not yet know why.\n\nIt separates two quite different problems:\n\njitter_mm    how much the reading wobbles from moment to moment, as a spread\n             about its own recent average. This is noise - reflections, a\n             partly blocked view, sunlight.\ndrift_mm     how far that average has MOVED from a baseline you captured. This\n             is the mounting shifting - a bumped stand, a flexing truss, a\n             building warming up over an afternoon.\n\nThey need different remedies, which is why they are separate outlets. Jitter is\nan environment problem; drift is a screwdriver problem.\n\nPress 'set_baseline' once when everything is right - after a warm-up, before the\naudience arrives. From then on 'drift_mm' answers \"has anything moved since\nthen\", and 'all_stable' is a single yes-or-no against your thresholds, which is\nthe one to wire to a warning light.\n\n'window_size' is how many samples the statistics cover, so it sets how quickly\nthey respond and how much they smooth.\n\nSYNTAX:\nvive_tracker\nvive_base_stations\n\nEXAMPLE:\nvive_tracker\n\nINPUTS and PARAMETERS:\n\nenable_in:\nStart reading.\n\nwhich_tracker / output_format:\nWhich of up to four, and quaternion, euler or matrix.\n\ncapture_FL_corner ... capture_BL_corner:\nRecord the tracker's position at each corner, in order.\n\ncompute_from_corners:\nWork out the play area from those four points.\n\napply_chaperone / clear_corners:\nPush the result into SteamVR; start the capture again.\n\nplay_area_x_m / play_area_z_m / play_area_yaw_deg / play_area_center_x_m /\nplay_area_center_z_m / floor_height_m:\nThe transform itself, if you would rather type it.\n\nwindow_size / jitter_threshold_mm / drift_threshold_mm (base stations):\nHow much history the statistics cover, and what counts as too much.\n\nset_baseline / print_report / reset:\nCapture the reference, write a report, start over.\n\nOUTPUTS: \n\nposition / orientation:\nWhere the tracker is, in room coordinates, and which way it is facing.\n\nconnected:\nWhether it is being seen.\n\nnum_stations / serials / positions_m / orientations:\nWhat base stations are present and where.\n\njitter_mm / orient_jitter_deg / drift_mm:\nWobble, and movement since the baseline.\n\nall_stable:\nOne number: everything within thresholds, or not.\n\nreport:\nThe written version.\n\nRELATED:\nshadow nodes for a whole body rather than one point.\nquaternion nodes for working with the orientation once you have it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Position and orientation from a Vive tracker, in room coordinates.\n\nTHESE NODES ARE LINUX ONLY:\nThey need OpenVR and a running SteamVR, together with the triad_openvr wrapper\nalongside this file. On any other platform the module does not load at all -\nthe console says so at startup and the nodes simply do not exist, so a patch\nbuilt around them will open with those nodes missing rather than half working.\n\nThat is worth knowing before you go looking for a fault: if 'vive_tracker' is\nnot in the node list, the machine is the reason.\n\nTHE NODES:\n\nvive_tracker         where a tracker is, and which way up\nvive_base_stations   whether the base stations are steady enough to believe\n\nRAW TRACKER SPACE IS NOT ROOM SPACE:\nThe tracking system has its own origin and its own idea of which way is forward,\ndecided by where the base stations happen to be and how SteamVR was set up. What\nyou almost always want instead is coordinates in the ROOM - metres from the\nmiddle of the floor, with forward pointing where the audience is.\n\nThe play-area settings are that transform. You can type them if you know them,\nbut the corner capture is the way to get them right.\n\nTHE CORNER CAPTURE, WHICH IS THE PART WORTH LEARNING:\nPut the tracker on the floor at each corner of the space in turn and press the\nmatching button - front-left, front-right, back-right, back-left. Then press\n'compute_from_corners'.\n\nFrom those four points it works out all of it at once: the centre of the space,\nits width and depth, the yaw needed to square it to the room, and the height of\nthe floor. It prints what it found, and fills the play-area fields in for you.\n\nThe corners do not have to be exact and the space does not have to be square -\nit averages the opposite edges, so a slightly trapezoidal capture still gives a\nsensible answer. What matters is that the four points are at floor level and in\nthe right order.\n\n'apply_chaperone' pushes the result into SteamVR itself, so its own boundary\nmatches the space you just measured.\n\n'clear_corners' starts again.\n\n'output_format' - QUATERNION, EULER OR MATRIX:\nQuaternion is the one to prefer for anything that gets combined, interpolated or\nfiltered. Euler angles are easier to read on screen and are the right choice for\na display or a single angle you want to threshold, but they wrap and they gimbal\nand they do not average sensibly.\n\n'which_tracker' selects between up to four.\n\nvive_base_stations IS A DIAGNOSTIC, NOT A SOURCE:\nIt does not track anything. It watches the base stations and reports whether\nthey are still where they were, which is what you check when tracking has become\nunreliable and you do not yet know why.\n\nIt separates two quite different problems:\n\njitter_mm    how much the reading wobbles from moment to moment, as a spread\n             about its own recent average. This is noise - reflections, a\n             partly blocked view, sunlight.\ndrift_mm     how far that average has MOVED from a baseline you captured. This\n             is the mounting shifting - a bumped stand, a flexing truss, a\n             building warming up over an afternoon.\n\nThey need different remedies, which is why they are separate outlets. Jitter is\nan environment problem; drift is a screwdriver problem.\n\nPress 'set_baseline' once when everything is right - after a warm-up, before the\naudience arrives. From then on 'drift_mm' answers \"has anything moved since\nthen\", and 'all_stable' is a single yes-or-no against your thresholds, which is\nthe one to wire to a warning light.\n\n'window_size' is how many samples the statistics cover, so it sets how quickly\nthey respond and how much they smooth.\n\nSYNTAX:\nvive_tracker\nvive_base_stations\n\nEXAMPLE:\nvive_tracker\n\nINPUTS and PARAMETERS:\n\nenable_in:\nStart reading.\n\nwhich_tracker / output_format:\nWhich of up to four, and quaternion, euler or matrix.\n\ncapture_FL_corner ... capture_BL_corner:\nRecord the tracker's position at each corner, in order.\n\ncompute_from_corners:\nWork out the play area from those four points.\n\napply_chaperone / clear_corners:\nPush the result into SteamVR; start the capture again.\n\nplay_area_x_m / play_area_z_m / play_area_yaw_deg / play_area_center_x_m /\nplay_area_center_z_m / floor_height_m:\nThe transform itself, if you would rather type it.\n\nwindow_size / jitter_threshold_mm / drift_threshold_mm (base stations):\nHow much history the statistics cover, and what counts as too much.\n\nset_baseline / print_report / reset:\nCapture the reference, write a report, start over.\n\nOUTPUTS: \n\nposition / orientation:\nWhere the tracker is, in room coordinates, and which way it is facing.\n\nconnected:\nWhether it is being seen.\n\nnum_stations / serials / positions_m / orientations:\nWhat base stations are present and where.\n\njitter_mm / orient_jitter_deg / drift_mm:\nWobble, and movement since the baseline.\n\nall_stable:\nOne number: everything within thresholds, or not.\n\nreport:\nThe written version.\n\nRELATED:\nshadow nodes for a whole body rather than one point.\nquaternion nodes for working with the orientation once you have it."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment LINUX ONLY - needs OpenVR and SteamVR.",
+            "name": "comment",
+            "id": 385,
+            "position_x": 1106,
+            "position_y": 62,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "LINUX ONLY - needs OpenVR and SteamVR.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "LINUX ONLY - needs OpenVR and SteamVR."
+        },
+        "5": {
+            "init": "comment On other platforms these nodes do not",
+            "name": "comment",
+            "id": 422,
+            "position_x": 1106,
+            "position_y": 92,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "On other platforms these nodes do not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "On other platforms these nodes do not"
+        },
+        "6": {
+            "init": "comment exist at all, and the console says so",
+            "name": "comment",
+            "id": 459,
+            "position_x": 1106,
+            "position_y": 122,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "exist at all, and the console says so",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "exist at all, and the console says so"
+        },
+        "7": {
+            "name": "vive_tracker",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 170,
+            "width": 340,
+            "height": 560,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment walk the tracker to each corner of the",
+            "name": "comment",
+            "id": 533,
+            "position_x": 1106,
+            "position_y": 760,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "walk the tracker to each corner of the",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "walk the tracker to each corner of the"
+        },
+        "9": {
+            "init": "comment floor, capture in order FL FR BR BL,",
+            "name": "comment",
+            "id": 570,
+            "position_x": 1106,
+            "position_y": 800,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "floor, capture in order FL FR BR BL,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "floor, capture in order FL FR BR BL,"
+        },
+        "10": {
+            "init": "comment then compute_from_corners - it works out",
+            "name": "comment",
+            "id": 607,
+            "position_x": 1106,
+            "position_y": 840,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then compute_from_corners - it works out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then compute_from_corners - it works out"
+        },
+        "11": {
+            "init": "comment centre, size, yaw and floor height at",
+            "name": "comment",
+            "id": 644,
+            "position_x": 1106,
+            "position_y": 880,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "centre, size, yaw and floor height at",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "centre, size, yaw and floor height at"
+        },
+        "12": {
+            "init": "comment once, and fills the fields in",
+            "name": "comment",
+            "id": 681,
+            "position_x": 1106,
+            "position_y": 920,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once, and fills the fields in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once, and fills the fields in"
+        },
+        "13": {
+            "name": "info",
+            "id": 718,
+            "position_x": 420,
+            "position_y": 170,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment position, in metres from the middle of",
+            "name": "comment",
+            "id": 755,
+            "position_x": 1106,
+            "position_y": 265,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "position, in metres from the middle of",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "position, in metres from the middle of"
+        },
+        "15": {
+            "init": "comment the floor - not raw tracker space",
+            "name": "comment",
+            "id": 792,
+            "position_x": 1106,
+            "position_y": 295,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the floor - not raw tracker space",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the floor - not raw tracker space"
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 420,
+            "position_y": 340,
+            "width": 300,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment orientation - quaternion by default,",
+            "name": "comment",
+            "id": 866,
+            "position_x": 1106,
+            "position_y": 390,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "orientation - quaternion by default,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "orientation - quaternion by default,"
+        },
+        "18": {
+            "init": "comment which is what to prefer for anything",
+            "name": "comment",
+            "id": 903,
+            "position_x": 1106,
+            "position_y": 420,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which is what to prefer for anything",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which is what to prefer for anything"
+        },
+        "19": {
+            "init": "comment combined, filtered or interpolated",
+            "name": "comment",
+            "id": 940,
+            "position_x": 1106,
+            "position_y": 450,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "combined, filtered or interpolated",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "combined, filtered or interpolated"
+        },
+        "20": {
+            "name": "vive_base_stations",
+            "id": 977,
+            "position_x": 420,
+            "position_y": 500,
+            "width": 320,
+            "height": 400,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "21": {
+            "name": "plot",
+            "id": 1014,
+            "position_x": 780,
+            "position_y": 500,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 5.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "22": {
+            "init": "comment JITTER: wobble about its own average -",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 1106,
+            "position_y": 690,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "JITTER: wobble about its own average -",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "JITTER: wobble about its own average -"
+        },
+        "23": {
+            "init": "comment reflections, a blocked view, sunlight",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 1106,
+            "position_y": 720,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "reflections, a blocked view, sunlight",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "reflections, a blocked view, sunlight"
+        },
+        "24": {
+            "name": "plot",
+            "id": 1125,
+            "position_x": 780,
+            "position_y": 765,
+            "width": 300,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 20.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "25": {
+            "init": "comment DRIFT: how far that average has moved",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 1106,
+            "position_y": 1000,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "DRIFT: how far that average has moved",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "DRIFT: how far that average has moved"
+        },
+        "26": {
+            "init": "comment since you set the baseline - a bumped",
+            "name": "comment",
+            "id": 1199,
+            "position_x": 1106,
+            "position_y": 1080,
+            "width": 259,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "since you set the baseline - a bumped",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "since you set the baseline - a bumped"
+        },
+        "27": {
+            "init": "comment stand, a flexing truss, a warm building",
+            "name": "comment",
+            "id": 1236,
+            "position_x": 1106,
+            "position_y": 1160,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "stand, a flexing truss, a warm building",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "stand, a flexing truss, a warm building"
+        },
+        "28": {
+            "init": "comment jitter is an environment problem,",
+            "name": "comment",
+            "id": 1273,
+            "position_x": 1106,
+            "position_y": 1200,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "jitter is an environment problem,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "jitter is an environment problem,"
+        },
+        "29": {
+            "init": "comment drift is a screwdriver problem",
+            "name": "comment",
+            "id": 1310,
+            "position_x": 1106,
+            "position_y": 1240,
+            "width": 210,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drift is a screwdriver problem",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drift is a screwdriver problem"
+        },
+        "30": {
+            "name": "toggle",
+            "id": 1347,
+            "position_x": 420,
+            "position_y": 930,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "31": {
+            "init": "comment all_stable - wire this to a warning",
+            "name": "comment",
+            "id": 1384,
+            "position_x": 1106,
+            "position_y": 960,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "all_stable - wire this to a warning",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "all_stable - wire this to a warning"
+        },
+        "32": {
+            "init": "comment light and set the baseline once when",
+            "name": "comment",
+            "id": 1421,
+            "position_x": 1106,
+            "position_y": 1040,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "light and set the baseline once when",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "light and set the baseline once when"
+        },
+        "33": {
+            "init": "comment everything is right",
+            "name": "comment",
+            "id": 1458,
+            "position_x": 1106,
+            "position_y": 1120,
+            "width": 133,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "everything is right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "everything is right"
+        },
+        "34": {
+            "name": "close",
+            "id": 1495,
+            "position_x": 24,
+            "position_y": 1002,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "enable_in"
+        },
+        "1": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "position",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "orientation",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "jitter_mm",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "drift_mm",
+            "dest_node": 1125,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "all_stable",
+            "dest_node": 1347,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

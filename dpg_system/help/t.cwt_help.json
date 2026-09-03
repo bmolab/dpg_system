@@ -1,0 +1,697 @@
+{
+    "height": 1155,
+    "width": 1844,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "t.cwt_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cwt_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.cwt - wavelets, properly parameterised",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 480,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.cwt - wavelets, properly parameterised",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.cwt - wavelets, properly parameterised"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 996,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A wavelet transform of a whole window, on the GPU, properly parameterised.\n\nTHE NODE:\n\nt.cwt   a Morlet continuous wavelet transform, in torch\n\nTHERE ARE THREE WAVELET TRANSFORMS HERE - THIS IS THE CAREFUL ONE:\n\ncwt          a whole window, several wavelet families to choose from\nt.ultracwt   streaming - one sample at a time, only the newest column\nt.cwt        a whole window, Morlet only, with the real parameters exposed\n\nUse t.ultracwt when the signal is arriving now and you need to keep up. Use cwt\nto try different wavelet shapes quickly. Use this one when the analysis matters\nand you want to set it correctly - it is the only one of the three that lets you\nsay what a sample is worth in time, and it runs on the GPU in batches.\n\nTHE THREE SETTINGS ARE dt, dj AND w0 IN DISGUISE:\nThe labels are friendly; the quantities are the standard ones, and if you know\nwavelets these are what you are looking for.\n\n'sample_scaling' is dt - how much time one sample represents. 0.01 means a\nhundred samples a second. It does NOT change the shape of the answer; it decides\nwhat the rows MEAN. Set it wrong and every frequency you read off is wrong by\nthe same factor, silently, because the picture looks identical.\n\nThis is the setting to get right first, and the one most likely to be left at\nits default by mistake.\n\n'scale_distribution' is dj - how finely the scales are sampled, in octaves.\n0.125 is an eighth of an octave, so eight rows per octave. This is what decides\nhow many rows you get:\n\n    dj 0.25     33 rows\n    dj 0.125    65 rows      (the default)\n    dj 0.0625   129 rows\n\nHalving it doubles the rows and doubles the work. Finer is smoother to look at\nand tells you very little more.\n\n'wavelet_constant' is w0 - the number of oscillations in the wavelet, and so the\ntrade between resolution in time and in frequency. 6 is the conventional choice\nand is what most published work uses. Higher makes it sharper in frequency and\nblurrier in time; lower does the reverse. It also shifts the range of scales, so\nthe row count changes with it - w0 12 gave 113 rows where 6 gave 129.\n\nYou cannot have both resolutions at once. That is a property of the world rather\nthan a limitation of the software, and w0 is where you choose your side of it.\n\n'unbias' corrects the power spectrum so that scales are comparable to one\nanother. Without it the large scales read higher simply for being large. Turn it\non if you intend to compare rows; leave it off if you want the raw transform.\n\nTHE MAGNITUDES ARE NOT NORMALISED:\nNothing scales the answer to a convenient range - it depends on the amplitude of\nyour signal and on the settings. On the demo here the values run 0 to about 27\nwith a mean near 2.6, which is nowhere near the 0-to-1 a display defaults to.\n\nSo read the range off the data before setting min y and max y on whatever you\nare drawing it with, or the picture will be uniformly saturated and tell you\nnothing. This is the commonest way a correct transform looks broken.\n\nTHE OUTPUT HAS A BATCH DIMENSION:\nThe answer is (batch, scales, time) - so a single signal comes back as\n(1, 65, 512) rather than (65, 512). That leading 1 will surprise anything\nexpecting a plain image; a t.squeeze in front of a heat_map sorts it out.\n\nThe cwt node in matrix_nodes has no such dimension, which is worth remembering\nwhen swapping one for the other.\n\nSYNTAX:\nt.cwt\n\nEXAMPLE:\nt.cwt\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA window of signal. Receiving it does the transform.\n\nsample_scaling:\ndt - seconds per sample. Sets what the frequencies mean. Get this right.\n\nscale_distribution:\ndj - octave spacing of the scales. Sets how many rows.\n\nwavelet_constant:\nw0 - oscillations in the wavelet. 6 unless you have a reason. Trades time\nresolution against frequency resolution.\n\nunbias:\nMake the scales comparable to one another.\n\nOUTPUTS: \n\nwavelets out:\n(batch, scales, time).\n\nRELATED:\nt.ultracwt for a live signal, where only the newest column is computed.\ncwt for trying other wavelet shapes on a recorded window.\nheat_map or heat_scroll to look at the result - through a t.squeeze, because of\nthe batch dimension.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A wavelet transform of a whole window, on the GPU, properly parameterised.\n\nTHE NODE:\n\nt.cwt   a Morlet continuous wavelet transform, in torch\n\nTHERE ARE THREE WAVELET TRANSFORMS HERE - THIS IS THE CAREFUL ONE:\n\ncwt          a whole window, several wavelet families to choose from\nt.ultracwt   streaming - one sample at a time, only the newest column\nt.cwt        a whole window, Morlet only, with the real parameters exposed\n\nUse t.ultracwt when the signal is arriving now and you need to keep up. Use cwt\nto try different wavelet shapes quickly. Use this one when the analysis matters\nand you want to set it correctly - it is the only one of the three that lets you\nsay what a sample is worth in time, and it runs on the GPU in batches.\n\nTHE THREE SETTINGS ARE dt, dj AND w0 IN DISGUISE:\nThe labels are friendly; the quantities are the standard ones, and if you know\nwavelets these are what you are looking for.\n\n'sample_scaling' is dt - how much time one sample represents. 0.01 means a\nhundred samples a second. It does NOT change the shape of the answer; it decides\nwhat the rows MEAN. Set it wrong and every frequency you read off is wrong by\nthe same factor, silently, because the picture looks identical.\n\nThis is the setting to get right first, and the one most likely to be left at\nits default by mistake.\n\n'scale_distribution' is dj - how finely the scales are sampled, in octaves.\n0.125 is an eighth of an octave, so eight rows per octave. This is what decides\nhow many rows you get:\n\n    dj 0.25     33 rows\n    dj 0.125    65 rows      (the default)\n    dj 0.0625   129 rows\n\nHalving it doubles the rows and doubles the work. Finer is smoother to look at\nand tells you very little more.\n\n'wavelet_constant' is w0 - the number of oscillations in the wavelet, and so the\ntrade between resolution in time and in frequency. 6 is the conventional choice\nand is what most published work uses. Higher makes it sharper in frequency and\nblurrier in time; lower does the reverse. It also shifts the range of scales, so\nthe row count changes with it - w0 12 gave 113 rows where 6 gave 129.\n\nYou cannot have both resolutions at once. That is a property of the world rather\nthan a limitation of the software, and w0 is where you choose your side of it.\n\n'unbias' corrects the power spectrum so that scales are comparable to one\nanother. Without it the large scales read higher simply for being large. Turn it\non if you intend to compare rows; leave it off if you want the raw transform.\n\nTHE MAGNITUDES ARE NOT NORMALISED:\nNothing scales the answer to a convenient range - it depends on the amplitude of\nyour signal and on the settings. On the demo here the values run 0 to about 27\nwith a mean near 2.6, which is nowhere near the 0-to-1 a display defaults to.\n\nSo read the range off the data before setting min y and max y on whatever you\nare drawing it with, or the picture will be uniformly saturated and tell you\nnothing. This is the commonest way a correct transform looks broken.\n\nTHE OUTPUT HAS A BATCH DIMENSION:\nThe answer is (batch, scales, time) - so a single signal comes back as\n(1, 65, 512) rather than (65, 512). That leading 1 will surprise anything\nexpecting a plain image; a t.squeeze in front of a heat_map sorts it out.\n\nThe cwt node in matrix_nodes has no such dimension, which is worth remembering\nwhen swapping one for the other.\n\nSYNTAX:\nt.cwt\n\nEXAMPLE:\nt.cwt\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA window of signal. Receiving it does the transform.\n\nsample_scaling:\ndt - seconds per sample. Sets what the frequencies mean. Get this right.\n\nscale_distribution:\ndj - octave spacing of the scales. Sets how many rows.\n\nwavelet_constant:\nw0 - oscillations in the wavelet. 6 unless you have a reason. Trades time\nresolution against frequency resolution.\n\nunbias:\nMake the scales comparable to one another.\n\nOUTPUTS: \n\nwavelets out:\n(batch, scales, time).\n\nRELATED:\nt.ultracwt for a live signal, where only the newest column is computed.\ncwt for trying other wavelet shapes on a recorded window.\nheat_map or heat_scroll to look at the result - through a t.squeeze, because of\nthe batch dimension."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "rolling_buffer",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 300,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                }
+            },
+            "init": "rolling_buffer 256"
+        },
+        "5": {
+            "init": "comment a window to transform - this node takes",
+            "name": "comment",
+            "id": 422,
+            "position_x": 686,
+            "position_y": 370,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a window to transform - this node takes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a window to transform - this node takes"
+        },
+        "6": {
+            "init": "comment the whole thing at once, unlike ultracwt",
+            "name": "comment",
+            "id": 459,
+            "position_x": 686,
+            "position_y": 400,
+            "width": 280,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the whole thing at once, unlike ultracwt",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the whole thing at once, unlike ultracwt"
+        },
+        "7": {
+            "name": "t.cwt",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 445,
+            "width": 320,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment sample_scaling is dt - seconds per",
+            "name": "comment",
+            "id": 533,
+            "position_x": 686,
+            "position_y": 720,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sample_scaling is dt - seconds per",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sample_scaling is dt - seconds per"
+        },
+        "9": {
+            "init": "comment sample. It does not change the picture,",
+            "name": "comment",
+            "id": 570,
+            "position_x": 686,
+            "position_y": 750,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sample. It does not change the picture,",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sample. It does not change the picture,"
+        },
+        "10": {
+            "init": "comment only what the rows MEAN in Hz - so a",
+            "name": "comment",
+            "id": 607,
+            "position_x": 686,
+            "position_y": 780,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only what the rows MEAN in Hz - so a",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only what the rows MEAN in Hz - so a"
+        },
+        "11": {
+            "init": "comment wrong value is wrong silently",
+            "name": "comment",
+            "id": 644,
+            "position_x": 686,
+            "position_y": 810,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "wrong value is wrong silently",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "wrong value is wrong silently"
+        },
+        "12": {
+            "name": "info",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 445,
+            "width": 260,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment note the leading 1: the answer is",
+            "name": "comment",
+            "id": 718,
+            "position_x": 686,
+            "position_y": 540,
+            "width": 231,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "note the leading 1: the answer is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "note the leading 1: the answer is"
+        },
+        "14": {
+            "init": "comment batch by scales by time, not a plain",
+            "name": "comment",
+            "id": 755,
+            "position_x": 686,
+            "position_y": 570,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "batch by scales by time, not a plain",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "batch by scales by time, not a plain"
+        },
+        "15": {
+            "init": "comment image. Squeeze it before displaying",
+            "name": "comment",
+            "id": 792,
+            "position_x": 686,
+            "position_y": 600,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "image. Squeeze it before displaying",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "image. Squeeze it before displaying"
+        },
+        "16": {
+            "name": "t.squeeze",
+            "id": 829,
+            "position_x": 400,
+            "position_y": 650,
+            "width": 160,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 400,
+            "position_y": 745,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment scale_distribution sets the row count:",
+            "name": "comment",
+            "id": 903,
+            "position_x": 686,
+            "position_y": 905,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scale_distribution sets the row count:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scale_distribution sets the row count:"
+        },
+        "19": {
+            "init": "comment 0.25 -> 33 rows, 0.125 -> 65, 0.0625",
+            "name": "comment",
+            "id": 940,
+            "position_x": 686,
+            "position_y": 935,
+            "width": 252,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "0.25 -> 33 rows, 0.125 -> 65, 0.0625",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "0.25 -> 33 rows, 0.125 -> 65, 0.0625"
+        },
+        "20": {
+            "init": "comment -> 129. Halving it doubles the work",
+            "name": "comment",
+            "id": 977,
+            "position_x": 686,
+            "position_y": 965,
+            "width": 245,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "-> 129. Halving it doubles the work",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "-> 129. Halving it doubles the work"
+        },
+        "21": {
+            "init": "comment wavelet_constant is w0 - 6 is standard.",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 686,
+            "position_y": 1005,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "wavelet_constant is w0 - 6 is standard.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "wavelet_constant is w0 - 6 is standard."
+        },
+        "22": {
+            "init": "comment Higher is sharper in frequency and",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 686,
+            "position_y": 1035,
+            "width": 238,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Higher is sharper in frequency and",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Higher is sharper in frequency and"
+        },
+        "23": {
+            "init": "comment blurrier in time. You cannot have both",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 686,
+            "position_y": 1065,
+            "width": 266,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "blurrier in time. You cannot have both",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "blurrier in time. You cannot have both"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 923,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "wavelets out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "wavelets out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}
