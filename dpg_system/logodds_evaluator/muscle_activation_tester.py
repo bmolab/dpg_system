@@ -137,7 +137,7 @@ def run_frames(processor, poses, trans, opts, start=0, end=None):
         com_h = com[0, 1] - floor_h if com is not None and com.ndim == 2 else 0.0
 
         lo = getattr(processor, '_logodds_result', None)
-        cp = getattr(processor, 'contact_pressure', None)
+        cp = getattr(processor, 'contact_mass', None)
         if cp is not None:
             cp = cp[0].copy() if cp.ndim > 1 else cp.copy()
         fe = getattr(processor, '_frame_eval_result', None)
@@ -308,7 +308,7 @@ def test_pressure(path, start, end):
         res = pr.process_frame(reshape_pose(poses[f]), trans[f:f + 1], opts)
         if f < start:
             continue
-        cp = getattr(pr, 'contact_pressure', None)
+        cp = getattr(pr, 'contact_mass', None)
         if cp is None:
             continue
         cp0 = cp[0] if cp.ndim > 1 else cp

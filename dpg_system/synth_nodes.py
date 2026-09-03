@@ -15,10 +15,15 @@ there is no penalty for exposing all of them.
 import dearpygui.dearpygui as dpg
 import math
 import time
+import os
+import json
+
+from fuzzywuzzy import fuzz
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
+    VesselUnit, RattleUnit, StrikeUnit, FaderOutUnit,
     synth_graph, start_filter_warm_up,
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
@@ -26,11 +31,12 @@ from dpg_system.synth_core import (
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit, VuUnit,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
-    StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, FaderUnit,
+    StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, BlowUnit, FaderUnit,
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
     plugin_names_in_file, open_plugin, plugin_file_refusal,
-    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit, MotorUnit, BubblesUnit)
+    LFO_SHAPES, VCO_SHAPES, SAMPLER_MODES, NoiseUnit, BounceUnit, DrumUnit, MotorUnit, BubblesUnit,
+    SpinUnit)
 
 import os
 
@@ -86,6 +92,11 @@ def register_synth_nodes():
     Node.app.register_node('pluck~', StringNode.factory)
     Node.app.register_node('modal~', ModalNode.factory)
     Node.app.register_node('resonator~', ModalNode.factory)
+    Node.app.register_node('shape_modes', ShapeModesNode.factory)
+    Node.app.register_node('strike~', StrikeNode.factory)
+    Node.app.register_node('fader_out~', FaderOutNode.factory)
+    Node.app.register_node('fader_out~', FaderOutNode.factory)
+    Node.app.register_node('vessel~', VesselNode.factory)
     Node.app.register_node('wind~', WindNode.factory)
     Node.app.register_node('reed~', WindNode.factory)
     Node.app.register_node('flute~', WindNode.factory)
@@ -99,6 +110,8 @@ def register_synth_nodes():
     Node.app.register_node('engine~', MotorNode.factory)
     Node.app.register_node('bounce~', BounceNode.factory)
     Node.app.register_node('drop~', BounceNode.factory)
+    Node.app.register_node('spin~', SpinNode.factory)
+    Node.app.register_node('coin~', SpinNode.factory)
     Node.app.register_node('drum~', DrumNode.factory)
     Node.app.register_node('skin~', DrumNode.factory)
     Node.app.register_node('strain~', StrainNode.factory)
@@ -109,10 +122,13 @@ def register_synth_nodes():
     Node.app.register_node('swish~', WhooshNode.factory)
     Node.app.register_node('rub~', RubNode.factory)
     Node.app.register_node('glass~', RubNode.factory)
+    Node.app.register_node('blow~', BlowNode.factory)
+    Node.app.register_node('pipe~', BlowNode.factory)
     Node.app.register_node('fader~', FaderNode.factory)
     Node.app.register_node('stroke~', StrokeNode.factory)
     Node.app.register_node('bowing~', StrokeNode.factory)
     Node.app.register_node('shaker~', ShakerNode.factory)
+    Node.app.register_node('rattle~', RattleNode.factory)
     Node.app.register_node('rain~', ShakerNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
@@ -194,6 +210,18 @@ class SynthNode(Node):
         'left carrier': ('carrier',),
         'left out': ('signal', 'left'),
         'right out': ('right',),
+        # 'drive' was the wrong voice for it. A resonator is passive --
+        # 'excite in' says so correctly -- and what this sets is how
+        # keenly the body hears what arrives, not how hard something
+        # pushes. It sits under the excite inlet now, where the thing it
+        # scales is.
+        'sensitivity': ('drive',),
+        # spin~ once made a blow every time its rim unloaded. Testing
+        # against real coins said otherwise -- a settling coin stays on
+        # the table and its flop is the grinding gone sharp -- so the
+        # only impact left is the one at the end, and the outlet is
+        # named for it.
+        'landing': ('strikes',),
     }
 
     def add_signal_input(self, label, inlet):
@@ -258,6 +286,13 @@ class SynthNode(Node):
             port.widget.prefix_label = label
             port.widget._label = '##' + label
         port.synth_inlet = inlet
+        # A renamed knob has to answer to what it used to be called, or the
+        # loader searches by name, fails, and drops the cord -- silently,
+        # in every patch that ever used it. Signal ports have carried this
+        # since the stereo rename; modulation ports were missed, which made
+        # renaming one of them a quiet way to break saved work.
+        for old_name in SynthNode.LEGACY_PORT_NAMES.get(label, ()):
+            port.name_archive.append(old_name)
         self.signal_inputs.append(port)
         self._parameter_bindings.append((port, inlet))
         self._modulation_ports.append(port)
@@ -270,6 +305,10 @@ class SynthNode(Node):
             if option.widget is not None:
                 option.widget.speed = 0.01
                 option.widget._label = '##' + label + ' depth'
+                # The depth is saved under its own name, so it needs the
+                # same memory as the knob it belongs to.
+                for old_name in SynthNode.LEGACY_PORT_NAMES.get(label, ()):
+                    option.name_archive.append(old_name + ' depth')
                 option.widget.set_tooltip('depth: scales whatever is patched '
                                           'to the ' + label + ' inlet')
                 option.inline_with = port.widget
@@ -4064,6 +4103,16 @@ class StringNode(SynthNode):
         self.unit.mode = StringUnit.MODES.index(mode)
 
         self.add_signal_input('excite in', self.unit.excite_in)
+        sense_port = self.add_modulation_input(
+            'sensitivity', self.unit.sensitivity_in,
+            default_value=self.unit.sensitivity_in.base,
+            minimum=0.0, maximum=8.0, speed=0.01, slider=False)
+        self.make_drag_proportional(sense_port)
+        if sense_port.widget is not None:
+            sense_port.widget.set_tooltip(
+                'how keenly the string hears what is patched to the excite '
+                'inlet above. Unity leaves it as it always was; it reaches '
+                'past that for excitations too sparse to speak')
         self.add_trigger_signal_input('pluck', self.unit.trigger_in,
                                       self.pluck)
         self.add_modulation_input('frequency', self.unit.frequency_in,
@@ -4169,6 +4218,19 @@ MODAL_MATERIALS = {
         (1.0, 1.0, 1.0), (2.572, 0.6, 0.5), (4.644, 0.35, 0.3),
         (6.984, 0.2, 0.15),
     ],
+    # A free circular plate: a coin, a cymbal, a dropped saucepan lid.
+    # The flexural modes of a disc clamped nowhere, so ratio 1 is the
+    # two-nodal-diameter mode rather than any kind of fundamental, and
+    # nothing above it is an integer of anything. Ratios are the free
+    # plate's tabulated series, and only the first few of them are
+    # precise -- the upper rows are voiced by ear, like every other
+    # table's weights. This is what spin~ wants; fix frequency high for
+    # a coin (two to three kHz) and low for a plate.
+    'plate': [
+        (1.0, 1.0, 1.0), (1.73, 0.85, 0.9), (2.33, 0.7, 0.75),
+        (3.91, 0.55, 0.55), (4.06, 0.5, 0.5), (5.94, 0.35, 0.35),
+        (8.72, 0.22, 0.25), (11.75, 0.15, 0.18),
+    ],
     'gong': [
         (1.0, 1.0, 1.0), (1.16, 0.9, 0.95), (1.42, 0.85, 0.9),
         (1.79, 0.7, 0.8), (2.06, 0.65, 0.7), (2.33, 0.55, 0.65),
@@ -4207,6 +4269,48 @@ MODAL_MATERIALS = {
     ],
     # Ratio 1 is the soundhole's air mode (fix frequency ~100 Hz), then the
     # top plate, the back, and the forest.
+    # --- added for tailoring, grouped by MODAL_MATERIAL_ORDER ---
+    # A stopped pipe: odd harmonics only, which is the clarinet family
+    # and the one shape none of the others has.
+    'tube': [
+        (1.0, 1.0, 1.0), (3.0, 0.5, 0.6), (5.0, 0.3, 0.35),
+        (7.0, 0.2, 0.22), (9.0, 0.12, 0.14), (11.0, 0.08, 0.1),
+    ],
+    # A thin-walled vessel -- a tin, a dish, a hubcap. Close low-order
+    # partials over a strong ring, which is what a coin spun in a dish
+    # is actually sounding.
+    'can': [
+        (1.0, 1.0, 1.0), (1.28, 0.85, 0.9), (2.15, 0.6, 0.7),
+        (2.94, 0.45, 0.5), (4.36, 0.3, 0.35), (5.72, 0.2, 0.25),
+        (7.31, 0.12, 0.16),
+    ],
+    # Dense and barely tuned: modes crowded close and falling slowly, so
+    # it stays bright for as long as it rings. Where 'gong' has pitch,
+    # this has none.
+    'cymbal': [
+        (1.0, 1.0, 1.0), (1.11, 0.95, 0.95), (1.27, 0.9, 0.9),
+        (1.48, 0.88, 0.85), (1.66, 0.85, 0.82), (1.93, 0.8, 0.8),
+        (2.21, 0.78, 0.75), (2.55, 0.72, 0.7), (2.94, 0.7, 0.68),
+        (3.41, 0.65, 0.62), (3.9, 0.6, 0.58), (4.6, 0.55, 0.52),
+    ],
+    # Solid metal struck: few modes, wide apart, high and hard.
+    'anvil': [
+        (1.0, 1.0, 1.0), (2.71, 0.7, 0.8), (4.93, 0.5, 0.6),
+        (7.68, 0.35, 0.4), (11.2, 0.2, 0.25),
+    ],
+    # Dense and dark: almost everything above the first mode already
+    # gone, which is why stone reads as a thud with a pitch in it.
+    'stone': [
+        (1.0, 1.0, 1.0), (1.84, 0.45, 0.5), (2.93, 0.22, 0.25),
+        (4.31, 0.1, 0.12),
+    ],
+    # A membrane with the life damped out of it -- the same ratios as
+    # 'membrane', the upper modes taken well down. A tom with a cloth on
+    # it rather than a tuned drum.
+    'skin': [
+        (1.0, 1.0, 1.0), (1.594, 0.55, 0.6), (2.136, 0.3, 0.35),
+        (2.296, 0.25, 0.3), (2.653, 0.15, 0.2), (2.918, 0.1, 0.12),
+    ],
     'guitar': [
         (1.0, 1.0, 1.0), (1.93, 0.9, 0.8), (2.5, 0.6, 0.7),
         (2.9, 0.5, 0.6), (3.4, 0.55, 0.55), (4.05, 0.5, 0.5),
@@ -4215,6 +4319,857 @@ MODAL_MATERIALS = {
         (13.5, 0.25, 0.22), (16.0, 0.2, 0.2),
     ],
 }
+
+
+# Dearpygui's combo cannot nest, so the only grouping available is the
+# order things appear in. Families are kept adjacent here rather than
+# renamed, so every patch that already names a material keeps working.
+# Anything not listed -- a material saved since, or one added to the
+# table without being placed -- follows on the end rather than
+# disappearing from the menu.
+MODAL_MATERIAL_ORDER = (
+    'bell', 'gong', 'cymbal', 'metal', 'anvil', 'bowl', 'can', 'plate',
+    'tube',
+    'marimba', 'bar', 'wood',
+    'glass', 'ice', 'stone',
+    'membrane', 'skin', 'tabla',
+    'violin', 'guitar',
+    'paper',
+)
+
+# Materials saved from the editor live beside the app's other state, in
+# the same working directory and under the same naming as
+# dpg_system_config.json. They are merged over the built-ins at import,
+# so a saved material with a built-in's name shadows it -- which is the
+# point: it is how a table gets voiced and kept.
+MODAL_MATERIALS_FILE = 'dpg_system_materials.json'
+CUSTOM_MATERIALS = {}
+
+
+def _clean_mode_table(table):
+    """A table is rows of (ratio, weight, decay), all positive."""
+    rows = []
+    for row in table or ():
+        try:
+            ratio, weight, decay = (float(row[0]), float(row[1]),
+                                    float(row[2]))
+        except (TypeError, ValueError, IndexError):
+            continue
+        if ratio > 0.0:
+            rows.append((ratio, max(0.0, weight), max(0.0, decay)))
+    rows.sort(key=lambda r: r[0])
+    return rows
+
+
+def load_custom_materials(path=MODAL_MATERIALS_FILE):
+    """Read the saved library and merge it in. Missing is not an error --
+    most installations will never have one -- but a file that IS there and
+    will not parse is reported, because silently starting with a library
+    the user has spent time on is worse than saying so."""
+    CUSTOM_MATERIALS.clear()
+    if not os.path.exists(path):
+        return CUSTOM_MATERIALS
+    try:
+        with open(path, 'r') as handle:
+            stored = json.load(handle)
+    except (OSError, ValueError) as problem:
+        print('could not read', path, '--', problem)
+        return CUSTOM_MATERIALS
+    if not isinstance(stored, dict):
+        print(path, 'is not a table of materials')
+        return CUSTOM_MATERIALS
+    for name, table in stored.items():
+        rows = _clean_mode_table(table)
+        if rows:
+            CUSTOM_MATERIALS[str(name)] = rows
+    MODAL_MATERIALS.update(CUSTOM_MATERIALS)
+    return CUSTOM_MATERIALS
+
+
+def save_custom_material(name, table, path=MODAL_MATERIALS_FILE):
+    """Add a material to the library and write it out. Returns the name
+    saved, or None with a reason printed."""
+    name = str(name).strip()
+    if not name:
+        print('save_material needs a name')
+        return None
+    rows = _clean_mode_table(table)
+    if not rows:
+        print('save_material: nothing to save for', name)
+        return None
+    CUSTOM_MATERIALS[name] = rows
+    MODAL_MATERIALS[name] = rows
+    try:
+        with open(path, 'w') as handle:
+            json.dump({key: [list(row) for row in value]
+                       for key, value in CUSTOM_MATERIALS.items()},
+                      handle, indent=1)
+    except OSError as problem:
+        print('could not write', path, '--', problem)
+        return None
+    return name
+
+
+def forget_custom_material(name, path=MODAL_MATERIALS_FILE):
+    """Drop a saved material. A built-in of the same name comes back."""
+    name = str(name).strip()
+    if name not in CUSTOM_MATERIALS:
+        print('no saved material called', name)
+        return None
+    del CUSTOM_MATERIALS[name]
+    if name in BUILTIN_MATERIALS:
+        MODAL_MATERIALS[name] = BUILTIN_MATERIALS[name]
+    else:
+        MODAL_MATERIALS.pop(name, None)
+    try:
+        with open(path, 'w') as handle:
+            json.dump({key: [list(row) for row in value]
+                       for key, value in CUSTOM_MATERIALS.items()},
+                      handle, indent=1)
+    except OSError as problem:
+        print('could not write', path, '--', problem)
+    return name
+
+
+def material_names():
+    """Menu order: families adjacent, saved materials last."""
+    ordered = [name for name in MODAL_MATERIAL_ORDER
+               if name in MODAL_MATERIALS]
+    ordered += [name for name in MODAL_MATERIALS if name not in ordered]
+    return ordered
+
+
+def rank_materials(text, limit=8):
+    """The materials a few keystrokes could mean, best first.
+
+    Exact, then prefix, then fuzzy -- so typing the start of a name
+    always puts it at the top however the scorer feels about it, which
+    is the difference between a finder and a guess.
+    """
+    text = str(text).strip().lower()
+    if not text:
+        return []
+    names = material_names()
+    exact = [name for name in names if name.lower() == text]
+    starts = [name for name in names
+              if name.lower().startswith(text) and name not in exact]
+    rest = []
+    for name in names:
+        if name in exact or name in starts:
+            continue
+        score = (fuzz.partial_ratio(name.lower(), text)
+                 + fuzz.ratio(name.lower(), text)) / 2.0
+        if score > 45.0:
+            rest.append((score, name))
+    rest.sort(key=lambda pair: (-pair[0], pair[1]))
+    return (exact + starts + [name for _, name in rest])[:limit]
+
+
+def find_material(text):
+    """The best material for a few keystrokes, the way the new-object box
+    finds a node. Returns None if nothing is close."""
+    text = str(text).strip().lower()
+    if not text:
+        return None
+    names = material_names()
+    for name in names:
+        if name == text:
+            return name
+    ranked = rank_materials(text, limit=1)
+    return ranked[0] if ranked else None
+
+
+# Kept so 'forget' can put a shadowed built-in back.
+BUILTIN_MATERIALS = {key: list(value) for key, value in
+                     MODAL_MATERIALS.items()}
+load_custom_materials()
+
+
+class StrikeNode(SynthNode):
+    """A deliberate hit, in a choice of characters.
+
+    bounce~ is a mallet DROPPED, and everything after the first fall is
+    gravity -- which is what a roll is made of. This is a mallet SWUNG:
+    one hit when you ask for one. Patch its output at any resonator's
+    excite inlet -- modal~, drum~, string~, resonator~.
+
+    The trigger carries timing AND how hard, the way it does everywhere
+    here: a taller edge hits harder, so an envelope or an effort value
+    patched there plays dynamics with no second cord. What that buys is
+    the thing neither bounce~ nor a unit's own strike does --
+
+    a contact STIFFENS as it compresses. Press a ball against a plate
+    and the harder you press the stiffer it gets, since more of it is
+    touching. What follows is that a harder blow is a SHORTER one, so
+    hitting harder does not merely make a thing louder, it makes it
+    brighter. That is most of what dynamics on a struck instrument are,
+    and with a fixed contact time none of it happens -- everything just
+    gets louder, evenly, the way a sampler does.
+
+    Every hit keeps its impulse and spends it over a contact the style,
+    the hardness and the force decide, so hardness colours a blow rather
+    than weighing it.
+
+      tap     one hard short contact -- a fingernail, claves, a rim.
+      mallet  one long soft one, and felt stiffens harder than a ball,
+              so it brightens more steeply as you lean on it.
+      stick   hard, held loosely, so it comes back once.
+      flam    a grace note and then the hit.
+      drag    three quick ones into the hit.
+      brush   a spray of tiny contacts -- wire, or a bundle of straws.
+
+    A brush is ONE stroke divided among its hairs, so its momentum is
+    the same as a tap's. A flam is two strokes and a drag is four, and
+    those really do put in more, which is what they are for.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return StrikeNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = StrikeUnit(synth_graph.sample_rate)
+        self.add_trigger_signal_input('hit', self.unit.trigger_in,
+                                      self.hit_once)
+        self.style_input = self.add_input(
+            'style', widget_type='combo', default_value=StrikeUnit.STYLES[0],
+            callback=self.parameters_changed)
+        self.style_input.widget.combo_items = list(StrikeUnit.STYLES)
+        force_port = self.add_modulation_input(
+            'force', self.unit.force_in, minimum=0.0, maximum=2.0,
+            speed=0.01)
+        hard_port = self.add_modulation_input(
+            'hardness', self.unit.hardness_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        spread_port = self.add_modulation_input(
+            'spread', self.unit.spread_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        scatter_port = self.add_modulation_input(
+            'scatter', self.unit.scatter_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        level_port = self.add_modulation_input(
+            'level', self.unit.level_in, minimum=0.0, maximum=4.0,
+            speed=0.02)
+        if level_port.widget is not None:
+            level_port.widget.set_tooltip(
+                'reaches well past unity, and needs to. A unit blow is '
+                'worth what a resonator\'s own trigger is worth at a '
+                'height of one -- but that cannot be ONE number, because '
+                'the excite inlet scales each mode by the root of one '
+                'minus its pole radius, so that a SUSTAINED drive sounds '
+                'the same at any decay. That makes an IMPULSE weaker the '
+                'longer the decay: over a spread of pitches, decays and '
+                'hardnesses the same blow wants anywhere from eight to '
+                'two hundred times. The default is the middle of that '
+                'and this is how you cover the rest')
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        for port, tip in (
+                (self.style_input,
+                 'what kind of hit. The styles differ in three things '
+                 'and nothing else: how long the contact is, how much '
+                 'it stiffens as it squashes, and how many contacts '
+                 'there are'),
+                (force_port,
+                 'how hard, multiplying whatever the trigger\'s own '
+                 'height says -- so an envelope on the cord plays the '
+                 'dynamics and this sets the room it plays in. It moves '
+                 'colour as well as loudness: the impulse goes up with '
+                 'it and the contact time DOWN, as the fifth root, so a '
+                 'harder blow is a brighter one'),
+                (hard_port,
+                 'how long the contact is, eight milliseconds of felt '
+                 'down to a third of one of glass, before the style '
+                 'scales it. Impulse is kept, so this colours a blow '
+                 'rather than weighing it -- and a contact too soft to '
+                 'reach a mode will not ring it, which is why a felt '
+                 'beater does not make a bell speak'),
+                (spread_port,
+                 'how long the multiple contacts are laid over: the gap '
+                 'of a flam, the rate of a drag, the width of a brush. '
+                 'Nothing at all to the single-contact styles'),
+                (scatter_port,
+                 'how much one hit differs from the last, so a repeated '
+                 'figure is not a copy of itself')):
+            if port is not None and port.widget is not None:
+                port.widget.set_tooltip(tip)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def hit_once(self):
+        self.unit.fire()
+
+    def sync_options(self):
+        style = any_to_string(self.style_input())
+        if style in StrikeUnit.STYLES:
+            self.unit.style = StrikeUnit.STYLES.index(style)
+
+
+class ShapeModesNode(Node):
+    """A mode table worked out from a shape, instead of looked up.
+
+    Patch its 'modes' outlet into modal~ or rub~ and their table stops
+    being a preset and becomes whatever you described. Give it an
+    outline -- a list of half-widths along the length -- say how that
+    outline is swept into a volume, and say what it is made of, and it
+    solves for the modes.
+
+    The three sweeps:
+
+      revolve   the outline is a RADIUS, spun about the long axis: a
+                club, an egg, a cone, a turned bead.
+      extrude   it is a HALF-WIDTH, and the section is that wide by
+                'depth' deep: a bar with a shaped outline, which is what
+                an undercut marimba bar is.
+
+    'wall' hollows whichever of them you chose: a tube, a pipe, a thick
+    bowl, a mortar. It reaches down to a wall a sixth of the radius and
+    no further, which is where solid bricks stop being honest -- a bell
+    or a wine glass has walls of one or two percent, and those want a
+    shell element rather than more mesh.
+
+    'mirror' is a checkbox beside them, not a third one of them: it says
+    the outline is only half of one, running from an end to the middle,
+    and reflects it. It happens to the OUTLINE, before either sweep, so
+    it goes with both -- a symmetrically undercut bar, or a vase drawn as
+    one half.
+
+    WHAT WAITS FOR 'compute' AND WHAT DOES NOT. Anything you CLICK
+    re-solves at once -- the sweep, the material, how it is carved -- and
+    so does a profile arriving on the cord. Anything you DRAG waits: the
+    length, the width, the depth and the detail, because a solve takes
+    tens to hundreds of milliseconds and you do not want one on every
+    frame of a drag. The mallet controls are free either way, since they
+    only reweigh modes that are already solved.
+
+    'strike' is where along it the mallet lands and 'direction' is which
+    way, and both matter as much as the shape. A free-free bar has a
+    node at its middle in the second mode, so struck there that mode is
+    simply absent -- which is the model getting something right, not
+    losing something. Neither needs the shape solving again, so they
+    stay live; the outline, the size and the material do, so those wait
+    for 'compute'.
+
+    MATERIAL AND SIZE BARELY TOUCH THE TABLE, and that is not a fault:
+    every mode's frequency scales as the root of stiffness over density,
+    so a change of material moves them all together and cancels out of a
+    RATIO. Only Poisson's ratio is left, which shifts things by under a
+    percent -- though it can push a mode over or under the floor, so one
+    may appear or vanish. What material and size really change is the
+    PITCH, by a factor of twenty-four across the materials here, and
+    modal~ overrides that with its own 'frequency'. Patch this node's
+    'frequency' outlet into it and they are heard -- and note that is
+    modal~'s 'frequency', not its 'pitch', which is a transposition on
+    top of it and takes octaves.
+
+    The three outlets are named for the inlets they feed, so a solved
+    shape is three straight cords: frequency, decay, modes.
+
+    The 'decay' outlet is how long the MATERIAL says it should ring, at
+    the pitch it came out at -- from the loss factor, which is the one
+    property of a material that survives into the sound, since
+    everything else about it cancels out of a ratio. Patch it into
+    modal~'s 'decay' and steel rings for twenty-seven seconds where wood
+    rings for less than one. Note it is per CYCLE, so a low thing rings
+    longer in seconds even when it is lossier: rubber at 36 Hz outlasts
+    wood at 690.
+
+    What it does NOT work out is the rest of decay. Frequencies follow from geometry
+    and elasticity; decay follows from the material's own losses, from
+    how the thing is held and from what it radiates, none of which is in
+    here. 'damping' is an imposed power law, honestly labelled: 0 leaves
+    every mode ringing as long as the last, 1 has a mode an octave up
+    die twice as fast.
+
+    Solids only for now. A thin shell -- a bell, a bowl, a can, a glass
+    -- wants a shell element to do properly, since bricks lock in
+    bending unless several sit across the wall.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShapeModesNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        from dpg_system import modal_shape
+        self._shape = modal_shape
+        self._solved = None
+        self._key = None
+        self._cavity = False
+        self._openness = 'one end'
+        # Flat, so what comes up first is a plain bar with straight
+        # edges. A waist by default looked like the drawing was wrong.
+        self._profile = [1.0, 1.0, 1.0, 1.0]
+
+        self.profile_input = self.add_input('profile',
+                                            callback=self.profile_received)
+        self.solve_input = self.add_input(
+            'solve', widget_type='combo', default_value='body',
+            callback=self.solve_and_send)
+        self.solve_input.widget.combo_items = ['body', 'cavity']
+        if self.solve_input.widget is not None:
+            self.solve_input.widget.set_tooltip(
+                'which resonator: the THING, or the AIR inside it. They '
+                'are two, and they are not alike -- a 40 cm brass tube '
+                'rings at 1112 Hz as metal and 429 Hz as an air column, '
+                'and nothing about one is in the other. A cavity needs '
+                '"wall" below 1, since a solid has no inside. Use two of '
+                'these nodes into two resonators if you want both, which '
+                'is what a real vessel is')
+        self.openness_input = self.add_input(
+            'open', widget_type='combo', default_value='one end',
+            callback=self.solve_and_send)
+        self.openness_input.widget.combo_items = ['both ends', 'one end',
+                                                 'sealed']
+        if self.openness_input.widget is not None:
+            self.openness_input.widget.set_tooltip(
+                'which ends of the cavity are open, and it is worth an '
+                'octave: a pipe stopped at one end sounds an octave BELOW '
+                'the same pipe open at both, and gives only the odd '
+                'harmonics -- 1, 3, 5, 7 -- where the open one gives them '
+                'all. Sealed rings longest and radiates least. Nothing to '
+                'the body')
+        self.sweep_input = self.add_input(
+            'sweep', widget_type='combo', default_value='extrude',
+            callback=self.solve_and_send)
+        self.sweep_input.widget.combo_items = list(modal_shape.SWEEPS)
+        self.mirror_input = self.add_input(
+            'mirror', widget_type='checkbox', default_value=False,
+            callback=self.solve_and_send)
+        if self.mirror_input.widget is not None:
+            self.mirror_input.widget.set_tooltip(
+                'the outline is only HALF of one, running from an end to '
+                'the middle, and is reflected from there: n half-widths '
+                'become 2n-1 stations and the last one you give sits at '
+                'the centre. A checkbox and not a kind of sweep, because '
+                'it happens to the OUTLINE before the sweep does '
+                'anything -- so it goes with a revolve as well, which a '
+                'third sweep could never have done. Draw half a vase')
+        self.carve_input = self.add_input(
+            'carve', widget_type='combo', default_value='depth',
+            callback=self.solve_and_send)
+        self.carve_input.widget.combo_items = ['depth', 'width']
+        if self.carve_input.widget is not None:
+            self.carve_input.widget.set_tooltip(
+                'which way an extruded outline is taken, and it is not a '
+                'detail: a marimba bar\'s arch is cut into its UNDERSIDE, '
+                'not into its plan. Carving the depth takes the second '
+                'mode 2.69 to 3.95 for the same cut that only reaches '
+                '3.20 across the width, because bending stiffness goes '
+                'as the depth CUBED and only as the width itself. '
+                'Nothing to a revolve, which has one way across')
+        self.material_input = self.add_input(
+            'material', widget_type='combo', default_value='wood',
+            callback=self.solve_and_send)
+        self.material_input.widget.combo_items = sorted(
+            modal_shape.MATERIALS)
+        if self.material_input.widget is not None:
+            self.material_input.widget.set_tooltip(
+                'what it is made of. It hardly touches the TABLE, and '
+                'cannot: every mode scales as the root of stiffness over '
+                'density, so a change of material moves them all '
+                'together and cancels out of a ratio -- only Poisson\'s '
+                'ratio is left, worth under a percent, though it can '
+                'push a mode over or under the floor so one may appear '
+                'or vanish. What it changes is the PITCH, 36 Hz of '
+                'rubber against 858 of glass for the same bar. Patch '
+                'the "frequency" outlet into modal~\'s frequency inlet '
+                'to hear it -- not into its "pitch", which is a '
+                'transposition on top and takes octaves')
+        # All three in METRES, over four orders of magnitude: a two
+        # millimetre tine to a twenty metre beam. Nothing about the
+        # solve minds -- a bar's ratios do not depend on its size at all
+        # -- and a LONG one is the more accurate of the two, since it is
+        # the more slender and so the closer to the ideal a bar formula
+        # describes. Element shape does not seem to matter much either:
+        # bricks a hundred and eighty times longer than they are thick
+        # still gave the book ratios, because the bending happens along
+        # the length where there are plenty of them.
+        self.length_input = self.add_input(
+            'length', widget_type='drag_float', default_value=0.4,
+            min=0.002, max=20.0, callback=self.sizes_changed)
+        self.width_input = self.add_input(
+            'width', widget_type='drag_float', default_value=0.05,
+            min=0.0005, max=5.0, callback=self.sizes_changed)
+        self.depth_input = self.add_input(
+            'depth', widget_type='drag_float', default_value=0.02,
+            min=0.0005, max=5.0, callback=self.sizes_changed)
+        # Waits for 'compute' like the sizes do, and more than any of
+        # them: it is a DRAG, and it is the one control where dragging
+        # costs more the further you drag. Wired to re-solve it fired
+        # thirty-odd solves on the way from 6 to 40, each slower than
+        # the last.
+        self.wall_input = self.add_input(
+            'wall', widget_type='drag_float', default_value=1.0,
+            min=0.15, max=1.0, callback=self.solve_and_send)
+        if self.wall_input.widget is not None:
+            self.wall_input.widget.set_tooltip(
+                'hollows it, as a fraction of the way in from the '
+                'outside: 1 is solid, 0.4 leaves a wall four tenths of '
+                'the radius. A tube, a pipe, a thick bowl, a mortar. It '
+                'stops at 0.15 on purpose -- bricks hold to about a '
+                'fifth, where bending is still within three percent of a '
+                'bar\'s and the ovalling modes a tube has turn up where '
+                'they should, but a tenth already puts a spurious mode '
+                'just above the fundamental. A bell or a wine glass is '
+                'one or two percent and wants a shell element, which is '
+                'a different job and not done')
+        self.detail_input = self.add_input(
+            'detail', widget_type='drag_int', default_value=16,
+            min=6, max=40)
+        self.strike_input = self.add_input(
+            'strike', widget_type='drag_float', default_value=1.0,
+            min=0.0, max=1.0, callback=self.send_table)
+        self.direction_input = self.add_input(
+            'direction', widget_type='combo', default_value='face',
+            callback=self.send_table)
+        self.direction_input.widget.combo_items = ['face', 'edge', 'along']
+        self.damping_input = self.add_input(
+            'damping', widget_type='drag_float', default_value=1.0,
+            min=0.0, max=2.0, callback=self.send_table)
+        # Capped at what the far end will actually hold. modal~ keeps
+        # the first MAX_MODES rows and drops the rest without a word, so
+        # a knob that goes higher only promises modes that are quietly
+        # thrown away.
+        self.count_input = self.add_input(
+            'count', widget_type='drag_int', default_value=14,
+            min=2, max=ModalUnit.MAX_MODES, callback=self.send_table)
+        self.show_input = self.add_input(
+            'show', widget_type='drag_int', default_value=0, min=0, max=32,
+            callback=self.send_mesh)
+        self.swell_input = self.add_input(
+            'swell', widget_type='drag_float', default_value=1.0,
+            min=0.0, max=4.0, callback=self.send_mesh)
+        self.compute_input = self.add_input('compute', widget_type='button',
+                                            callback=self.solve_and_send)
+        self.report_output = self.add_output('report')
+        # Named for the inlet it feeds, like 'decay' and 'modes' beside
+        # it, so the three cords read themselves. NOT 'pitch': modal~
+        # has both, and they are different -- 'frequency' is where the
+        # first mode sits, in hertz, and 'pitch' is a transposition on
+        # top of it, in octaves. An outlet called pitch carrying hertz
+        # would invite the one cord that does not work.
+        self.frequency_output = self.add_output('frequency')
+        self.decay_output = self.add_output('decay')
+        self.modes_output = self.add_output('modes')
+        self.mesh_output = self.add_output('mesh')
+        for port, tip in (
+                (self.profile_input,
+                 'the outline: half-widths along the length, as a list. '
+                 'A list of at least two numbers. They are taken as '
+                 'PROPORTIONS and scaled to "width", so '
+                 'a flat list is a plain bar and a dip in the middle is '
+                 'an undercut one. On an extrude or a mirror it shapes '
+                 'the WIDTH only and "depth" stays the depth all the way '
+                 'along, which is what an undercut bar is; revolved, it '
+                 'is a radius and there is only one way across. '
+                 '[1, 2, 3] and [10, 20, 30] are the same outline. '
+                 'Spaced evenly, and resampled to "detail" stations '
+                 'however many you send. A nought is pulled up to a '
+                 'hundredth of the widest rather than refused, so a cone '
+                 'or a teardrop can come to a point'),
+                (self.strike_input,
+                 'where along it the mallet lands, nought at one end and '
+                 'one at the other. It decides what you HEAR: a bar has '
+                 'a node at its middle in the second mode, so struck '
+                 'there that mode is missing altogether. Free -- it does '
+                 'not need the shape solving again'),
+                (self.direction_input,
+                 'which way it is struck. A bar hit on its face wakes '
+                 'the modes that bend it that way and hardly touches the '
+                 'ones that bend it sideways or twist it, so this thins '
+                 'the table down to what a mallet could actually reach'),
+                (self.damping_input,
+                 'how much faster the upper modes die. 1 is not an '
+                 'arbitrary default: a material with a constant loss '
+                 'factor loses the same FRACTION of a mode\'s energy '
+                 'every cycle, and a mode an octave up gets through its '
+                 'cycles twice as fast, so its ring is exactly half as '
+                 'long. What is still imposed is everything that is not '
+                 'a constant loss factor -- how it is held, what it '
+                 'radiates -- so the knob is here. 0 rings them all '
+                 'alike'),
+                (self.detail_input,
+                 'how finely it is chopped up. The ratios settle by '
+                 'about 16 and cost more above that -- worth raising '
+                 'once to see whether the answer moves, and leaving low '
+                 'while you draw. Waits for "compute", like the sizes: '
+                 'it is the one control where dragging costs more the '
+                 'further you drag'),
+                (self.count_input,
+                 'how many modes to hand over. It is a cut, not a '
+                 'search: all of them are solved either way, and this '
+                 'trims the list that is SENT -- so it costs nothing to '
+                 'move, and the resonator gets a shorter bank to run. '
+                 'The list is in order of frequency, so this keeps the '
+                 'LOWEST, which are usually also the loudest but need '
+                 'not be. Capped at what modal~ holds; above that it '
+                 'drops the extra rows without saying so'),
+                (self.show_input,
+                 'what the mesh outlet shows: 0 the shape itself, 1 and '
+                 'up that numbered mode, pushed into its own shape. Free '
+                 '-- the modes are already solved, this only moves them'),
+                (self.swell_input,
+                 'how far a mode pushes the shape, against the size of '
+                 'the thing: 1 moves the surface about a tenth of it. '
+                 'Only for looking at -- it is not part of the table'),
+                (self.compute_input,
+                 'solve it. Everything you DRAG waits for this -- the '
+                 'length, width, depth and detail -- because a solve is '
+                 'tens to hundreds of milliseconds and you do not want '
+                 'one per frame of a drag. Everything you CLICK has '
+                 'already re-solved itself, and the mallet controls '
+                 'never needed to')):
+            if port.widget is not None:
+                port.widget.set_tooltip(tip)
+
+    def sizes_changed(self):
+        """Each pixel moves a size by a fraction of ITSELF.
+
+        Four orders of magnitude on a linear drag is unusable at the
+        bottom: a step fine enough to set two millimetres takes all day
+        to reach twenty metres, and one coarse enough for twenty metres
+        cannot find two millimetres at all. Proportional stepping keeps
+        the number honest -- it stays metres -- and the feel even.
+
+        These do not re-solve, and neither does 'detail'. The rule is
+        not geometry versus the rest -- the material and the sweep are
+        clicks and they re-solve at once -- it is DRAGS versus clicks: a
+        solve is too slow to want one on every frame of a drag.
+        """
+        for port in (self.length_input, self.width_input,
+                     self.depth_input):
+            widget = port.widget
+            if widget is None:
+                continue
+            speed = min(0.5, max(0.0002,
+                                 abs(any_to_float(port())) * 0.04))
+            widget.speed = speed
+            if dpg.does_item_exist(widget.uuid):
+                try:
+                    dpg.configure_item(widget.uuid, speed=speed)
+                except Exception:
+                    pass
+
+    def custom_create(self, from_file):
+        self.sizes_changed()
+        # NOT in __init__. The widgets do not exist yet there, so every
+        # combo reads back as an empty string and the material lookup
+        # raises before the node is ever drawn. This runs once they do.
+        self.solve_and_send()
+
+    # A half-width may not be nothing -- a station of no width at all is
+    # an element of no volume, and the solve would hand back nonsense --
+    # but a POINT is a shape anyone would want: a cone, a teardrop, a
+    # club. So a thin one is pulled up to this fraction of the widest
+    # rather than the whole outline being refused. A tip a hundredth of
+    # the base solves perfectly well and looks pointed.
+    PROFILE_FLOOR = 0.01
+
+    def profile_received(self):
+        """An outline off the cord: a list of at least two numbers.
+
+        Taken as PROPORTIONS, not metres. They are divided by the largest
+        of them and scaled to 'width', so [1, 2, 3] and [10, 20, 30] are
+        the same outline, and how wide the thing really is stays 'width's
+        business. Spaced evenly along the length, and resampled to
+        'detail' stations however many you send.
+        """
+        data = self.profile_input()
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        if not isinstance(data, (list, tuple)):
+            self.report_output.send(['error', 'an outline is a list of '
+                                     'numbers'])
+            return
+        values = []
+        for item in data:
+            try:
+                values.append(float(item))
+            except (TypeError, ValueError):
+                continue
+        if len(values) < 2:
+            self.report_output.send(['error', 'an outline needs at least '
+                                     'two numbers'])
+            return
+        peak = max(values)
+        if peak <= 0.0:
+            self.report_output.send(['error', 'an outline needs something '
+                                     'wider than nothing in it'])
+            return
+        floor = peak * ShapeModesNode.PROFILE_FLOOR
+        pulled = sum(1 for value in values if value < floor)
+        self._profile = [max(value, floor) for value in values]
+        if pulled:
+            self.report_output.send(['outline', len(values), 'pulled up',
+                                     pulled, 'to a hundredth of the '
+                                     'widest'])
+        self.solve_and_send()
+
+    DIRECTIONS = {'face': (0.0, 0.0, 1.0),
+                  'edge': (0.0, 1.0, 0.0),
+                  'along': (1.0, 0.0, 0.0)}
+
+    def _direction(self):
+        return ShapeModesNode.DIRECTIONS.get(
+            self._chosen(self.direction_input, ShapeModesNode.DIRECTIONS,
+                         'face'), (0.0, 0.0, 1.0))
+
+    def _chosen(self, port, allowed, fallback):
+        """A combo's value, or the fallback if it is not one we know.
+
+        A widget that has not been made yet reads back as an empty
+        string, and one typed into by hand can read back as anything at
+        all. Neither should raise from inside a solve.
+        """
+        value = any_to_string(port())
+        return value if value in allowed else fallback
+
+    def solve_and_send(self):
+        """Mesh it and solve it, unless nothing that matters has moved."""
+        sweep_mode = self._chosen(self.sweep_input, self._shape.SWEEPS,
+                                  'extrude')
+        mirror = any_to_bool(self.mirror_input())
+        # A patch written while mirroring was a third KIND of sweep still
+        # means what it meant: take it as an extrude with the box ticked,
+        # and move the controls to match so the face stops lying.
+        if any_to_string(self.sweep_input()) == 'mirror':
+            sweep_mode, mirror = 'extrude', True
+            self.sweep_input.set('extrude')
+            self.mirror_input.set(True)
+        material = self._chosen(self.material_input,
+                                self._shape.MATERIALS, 'wood')
+        length = max(0.01, any_to_float(self.length_input()))
+        width = max(0.002, any_to_float(self.width_input()))
+        depth = max(0.002, any_to_float(self.depth_input()))
+        detail = max(6, any_to_int(self.detail_input()))
+        carve = self._chosen(self.carve_input, ('depth', 'width'), 'depth')
+        wall = min(1.0, max(0.15, any_to_float(self.wall_input())))
+        want_cavity = self._chosen(self.solve_input, ('body', 'cavity'),
+                                   'body') == 'cavity'
+        openness = self._chosen(self.openness_input,
+                                ('both ends', 'one end', 'sealed'),
+                                'one end')
+        peak = max(self._profile)
+        profile = [width * 0.5 * v / peak for v in self._profile]
+        # Resampled to the asked-for detail, so how finely it is chopped
+        # up is not decided by how many numbers were drawn.
+        # Halved before doubling back, so a mirrored shape ends up as
+        # finely chopped as an unmirrored one rather than twice.
+        want = max(3, detail // 2) if mirror else detail
+        if len(profile) != want + 1:
+            src = np.linspace(0.0, 1.0, len(profile))
+            profile = list(np.interp(np.linspace(0.0, 1.0, want + 1),
+                                     src, profile))
+        key = (tuple(profile), sweep_mode, material, length, depth, detail,
+               carve, mirror, wall, want_cavity, openness)
+        if want_cavity and wall >= 0.999:
+            self.report_output.send(['error', 'a solid has no cavity -- '
+                                     'bring "wall" below 1'])
+            return
+        if key != self._key:
+            try:
+                # No section handed over: sweep picks a solid one or a
+                # hollow one from 'wall', and its defaults are the ones
+                # this used to name.
+                if want_cavity:
+                    nodes, hexes = self._shape.cavity_mesh(
+                        profile, length, sweep_mode, depth, carve,
+                        mirror, wall)
+                    freq, shape = self._shape.cavity_modes(
+                        nodes, hexes,
+                        open_start=openness == 'both ends',
+                        open_end=openness != 'sealed', want=32)
+                else:
+                    nodes, hexes = self._shape.sweep(
+                        profile, length, sweep_mode, depth, None, carve,
+                        mirror, wall)
+                    freq, shape = self._shape.solve_modes(
+                        nodes, hexes, material, want=32)
+            except (ValueError, RuntimeError) as err:
+                self.report_output.send(['error', str(err)])
+                return
+            self._solved = (nodes, freq, shape, length, hexes)
+            self._cavity = want_cavity
+            self._openness = openness
+            self._key = key
+        self.send_table()
+        self.send_mesh()
+
+    def send_mesh(self):
+        """The skin of it, for looking at: bare geometry, no drawing.
+
+        A solver has no business owning a graphics context, and the
+        chain's draw runs on its own thread -- so this only hands over
+        vertices, triangles and normals and lets mgl_mesh do the rest,
+        which keeps everything that touches the GPU on the thread that
+        owns it.
+        """
+        if self._solved is None or getattr(self, 'in_loading_process',
+                                           False):
+            return
+        nodes, freq, shape, length, hexes = self._solved
+        which = any_to_int(self.show_input()) - 1
+        if which >= 0:
+            nodes = self._shape.displaced(
+                nodes, shape, which, any_to_float(self.swell_input()))
+        verts, tris, normals = self._shape.surface(nodes, hexes)
+        self.mesh_output.send({'vertices': verts, 'faces': tris,
+                               'normals': normals})
+
+    def send_table(self):
+        if self._solved is None or getattr(self, 'in_loading_process', False):
+            return
+        nodes, freq, shape, length = self._solved[:4]
+        if self._cavity:
+            table = self._shape.cavity_table(
+                nodes, freq, shape, length,
+                strike=min(1.0, max(0.0,
+                                    any_to_float(self.strike_input()))),
+                damping=any_to_float(self.damping_input()))
+            table = table[:max(2, any_to_int(self.count_input()))]
+            if not table or freq.size == 0:
+                self.report_output.send(['error', 'nothing that drive '
+                                         'could reach'])
+                return
+            opens = {'both ends': 2, 'one end': 1, 'sealed': 0}
+            self.report_output.send(['cavity', len(table), 'lowest',
+                                     round(float(freq[0]), 2), 'Hz'])
+            self.frequency_output.send(float(freq[0]))
+            self.decay_output.send(self._shape.cavity_ring(
+                opens.get(self._openness, 1), float(freq[0])))
+            self.modes_output.send(table)
+            return
+        table = self._shape.table_from(
+            nodes, freq, shape, length,
+            strike=min(1.0, max(0.0, any_to_float(self.strike_input()))),
+            damping=any_to_float(self.damping_input()),
+            direction=self._direction())
+        table = table[:max(2, any_to_int(self.count_input()))]
+        if not table:
+            self.report_output.send(['error', 'nothing that mallet could '
+                                     'reach'])
+            return
+        self.report_output.send(['modes', len(table), 'lowest',
+                                 round(float(freq[0]), 2), 'Hz'])
+        # The pitch it worked out, so the material and the size can be
+        # HEARD. They barely touch the table: every mode scales as the
+        # root of stiffness over density together, so that cancels out
+        # of a ratio and only Poisson's ratio is left, which moves things
+        # by under a percent. What they do move is the PITCH -- 36 Hz of
+        # rubber against 858 of glass for the same bar -- and modal~
+        # overrides that with its own 'frequency' unless this is wired
+        # to it.
+        self.frequency_output.send(float(freq[0]))
+        # And how long the material says it should ring, at the pitch it
+        # actually came out at. This is where a material's own character
+        # survives into the sound: everything else about it cancels out
+        # of a ratio, and this does not.
+        self.decay_output.send(self._shape.ring_time(
+            self._chosen(self.material_input, self._shape.MATERIALS,
+                         'wood'), float(freq[0])))
+        self.modes_output.send(table)
 
 
 class ModeTableNode(SynthNode):
@@ -4248,15 +5203,34 @@ class ModeTableNode(SynthNode):
         self._modes_loaded = False
         for name in ModeEditor.MESSAGES:
             self.message_handlers[name] = self.modes_message
+        self.message_handlers['find'] = self.find_material_message
+        self.message_handlers['save_material'] = self.save_material_message
+        self.message_handlers['forget_material'] = self.forget_material_message
 
     def _add_mode_table_ports(self, material):
         self.modes_input = self.add_input('modes',
                                           callback=self.modes_received)
+        # Twenty-odd materials is already more than a combo is pleasant
+        # to hunt through, and dearpygui's combo cannot nest to group
+        # them. Typing a few letters here jumps straight to one, the
+        # way the new-object box finds a node -- the combo stays for
+        # browsing.
+        self.find_input = self.add_input('find', widget_type='text_input',
+                                         widget_width=110,
+                                         callback=self.find_material_typed)
+        # What those keystrokes could mean, best first, hidden until
+        # there are keystrokes. The top one is adopted as you type, so
+        # the table follows the typing and the list says what else was
+        # close; arrow down the list to take one of the others.
+        self.match_list = self.add_property('##matches',
+                                            widget_type='list_box',
+                                            width=110)
+        self._matches = []
         self.material_input = self.add_input('material', widget_type='combo',
                                              default_value=material,
                                              callback=self.material_changed)
         self.material_input.widget.combo_items = ([ModeTableNode.CUSTOM]
-                                                  + list(MODAL_MATERIALS))
+                                                  + material_names())
         self.modes_display = self.add_display('')
         self.modes_display.submit_callback = self.submit_display
 
@@ -4286,6 +5260,7 @@ class ModeTableNode(SynthNode):
     def custom_create(self, from_file):
         self.size_changed()
         self.push_modes()
+        self._show_matches(None)
 
     def size_changed(self):
         self.editor.set_size(any_to_int(self.width_option()),
@@ -4369,6 +5344,164 @@ class ModeTableNode(SynthNode):
     def modes_message(self, message='', message_data=[]):
         self.editor.handle_message(message, message_data)
 
+    def _refresh_material_menu(self, select=None):
+        """Put the menu back after the library has changed."""
+        widget = self.material_input.widget
+        if widget is None:
+            return
+        items = [ModeTableNode.CUSTOM] + material_names()
+        widget.combo_items = items
+        if dpg.does_item_exist(widget.uuid):
+            dpg.configure_item(widget.uuid, items=items)
+        if select is not None:
+            self.material_input.set(select)
+
+    def _adopt_material(self, name):
+        """Adopt a material by name and move the combo to match, so the
+        menu never says one thing while the table is another."""
+        if name not in MODAL_MATERIALS:
+            return False
+        self.material_input.set(name)
+        self._material_shown = name
+        self.apply_material(name)
+        return True
+
+    def _show_matches(self, items):
+        """Put the match list up, or take it away when there is nothing
+        to say. Guarded on the widget existing, since ports are built
+        before the window is."""
+        box = getattr(self, 'match_list', None)
+        if box is None or box.widget is None:
+            return
+        if not dpg.does_item_exist(box.widget.uuid):
+            return
+        if not items:
+            dpg.configure_item(box.widget.uuid, show=False)
+            return
+        # Only 'items' and 'show' are configured after creation, which is
+        # the path the new-object box already proves works.
+        dpg.configure_item(box.widget.uuid, items=list(items), show=True)
+
+    def on_edit(self, widget):
+        """Per keystroke, not per return: the match is shown and taken as
+        it is typed, which is the whole point of a finder."""
+        finder = getattr(self, 'find_input', None)
+        box = getattr(self, 'match_list', None)
+        if finder is None or finder.widget is None:
+            return
+        if self._applying_material or self.in_loading_process:
+            return
+        if widget is finder.widget:
+            ranked = rank_materials(dpg.get_value(finder.widget.uuid))
+            self._matches = ranked
+            self._show_matches(ranked)
+            if ranked:
+                if box is not None and box.widget is not None \
+                        and dpg.does_item_exist(box.widget.uuid):
+                    dpg.set_value(box.widget.uuid, ranked[0])
+                self._adopt_material(ranked[0])
+        elif box is not None and widget is box.widget:
+            chosen = dpg.get_value(box.widget.uuid)
+            if chosen:
+                self._adopt_material(chosen)
+                self._end_search()
+
+    def _end_search(self):
+        """The search is over: the list goes away and the field is
+        emptied, so the next few keystrokes start clean rather than
+        landing on the end of the last search."""
+        self._matches = []
+        self._show_matches(None)
+        finder = getattr(self, 'find_input', None)
+        if finder is None or finder.widget is None:
+            return
+        finder.set('')
+        if dpg.does_item_exist(finder.widget.uuid):
+            dpg.set_value(finder.widget.uuid, '')
+
+    def _step_matches(self, widget, step):
+        """Walk the list with the arrow keys. Returns whether the key was
+        ours -- everything else has to reach the widget it was aimed at,
+        or arrowing the node's other controls would stop working."""
+        box = getattr(self, 'match_list', None)
+        finder = getattr(self, 'find_input', None)
+        if box is None or box.widget is None or not self._matches:
+            return False
+        if widget is not box.widget and (finder is None
+                                         or widget is not finder.widget):
+            return False
+        if not dpg.does_item_exist(box.widget.uuid):
+            return False
+        current = dpg.get_value(box.widget.uuid)
+        index = (self._matches.index(current)
+                 if current in self._matches else 0)
+        index += step
+        if index < 0 or index >= len(self._matches):
+            # Consumed at the ends, so arrowing past the edge of the
+            # list does not fall through and start nudging a knob.
+            return True
+        chosen = self._matches[index]
+        dpg.set_value(box.widget.uuid, chosen)
+        self._adopt_material(chosen)
+        return True
+
+    def increment_widget(self, widget):
+        if self._step_matches(widget, -1):
+            return
+        super().increment_widget(widget)
+
+    def decrement_widget(self, widget):
+        if self._step_matches(widget, 1):
+            return
+        super().decrement_widget(widget)
+
+    def on_deactivate(self, widget):
+        """Leaving the field puts the list away -- unless the pointer is
+        on the list itself, which is someone about to pick from it."""
+        finder = getattr(self, 'find_input', None)
+        box = getattr(self, 'match_list', None)
+        if finder is None or widget is not finder.widget:
+            return
+        if box is not None and box.widget is not None \
+                and dpg.does_item_exist(box.widget.uuid):
+            if dpg.is_item_hovered(box.widget.uuid) \
+                    or dpg.is_item_clicked(box.widget.uuid):
+                return
+        self._end_search()
+
+    def find_material_typed(self):
+        # Widgets can fire while a patch is still loading, before the
+        # table being restored has arrived -- adopting a material here
+        # would overwrite it. The same guard the material combo uses.
+        if self._applying_material or self.in_loading_process:
+            return
+        found = find_material(any_to_string(self.find_input()))
+        if found is not None:
+            self._adopt_material(found)
+        # Return was pressed: the search is over either way.
+        self._end_search()
+
+    def find_material_message(self, message='', message_data=[]):
+        found = find_material(' '.join(any_to_list(message_data)))
+        if found is None:
+            print('no material like that')
+            return
+        self._adopt_material(found)
+
+    def save_material_message(self, message='', message_data=[]):
+        """save_material <name> -- put the table being edited into the
+        library, so it is in the menu next time as well as this one."""
+        name = ' '.join(str(part) for part in any_to_list(message_data))
+        saved = save_custom_material(name, self.editor.get_modes())
+        if saved is not None:
+            self._refresh_material_menu(select=saved)
+            self._material_shown = saved
+
+    def forget_material_message(self, message='', message_data=[]):
+        name = ' '.join(str(part) for part in any_to_list(message_data))
+        if forget_custom_material(name) is not None:
+            self._refresh_material_menu()
+
     def modes_received(self):
         """A whole table sent to the 'modes' inlet replaces the drawing.
 
@@ -4449,12 +5582,17 @@ class ModalNode(ModeTableNode):
     def factory(name, data, args=None):
         return ModalNode(name, data, args)
 
+    # So a vessel can be the same node with water in it.
+    UNIT = ModalUnit
+    DEFAULT_MATERIAL = 'bell'
+    DEFAULT_FREQUENCY = 220.0
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.unit = ModalUnit(synth_graph.sample_rate)
+        self.unit = self.UNIT(synth_graph.sample_rate)
 
-        frequency = 220.0
-        material = 'bell'
+        frequency = self.DEFAULT_FREQUENCY
+        material = self.DEFAULT_MATERIAL
         if args is not None:
             for arg in args:
                 if arg in MODAL_MATERIALS:
@@ -4469,6 +5607,16 @@ class ModalNode(ModeTableNode):
         self._init_mode_editor(label, material)
 
         self.add_signal_input('excite in', self.unit.excite_in)
+        sense_port = self.add_modulation_input(
+            'sensitivity', self.unit.sensitivity_in,
+            default_value=self.unit.sensitivity_in.base,
+            minimum=0.0, maximum=8.0, speed=0.01, slider=False)
+        self.make_drag_proportional(sense_port)
+        if sense_port.widget is not None:
+            sense_port.widget.set_tooltip(
+                'how keenly the modes hear what is patched to the excite '
+                'inlet above -- it reaches well past unity, because a '
+                'sparse excitation into a high bank needs real gain')
         self.add_trigger_signal_input('strike', self.unit.trigger_in,
                                       self.strike)
         self.add_modulation_input('frequency', self.unit.frequency_in,
@@ -4481,17 +5629,24 @@ class ModalNode(ModeTableNode):
                                       slider=False))
         self.add_modulation_input('brightness', self.unit.brightness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
+        tilt_port = self.add_modulation_input('tilt', self.unit.tilt_in,
+                                              minimum=-24.0, maximum=24.0,
+                                              speed=0.1)
+        if tilt_port.widget is not None:
+            tilt_port.widget.set_tooltip(
+                'the same slope brightness works on, in decibels per '
+                'octave of each mode\'s own ratio -- as additive~ tilts '
+                'its partials. Negative takes the upper modes down for a '
+                'duller, heavier object, positive lifts them for a '
+                'thinner brighter one. Brightness is this on a 0-1 knob '
+                'spanning about plus or minus six; this reaches four '
+                'times as far and is worth reading off a number. They '
+                'multiply, so use either. It moves weight BETWEEN the '
+                'modes rather than changing the level')
         self.add_modulation_input('hardness', self.unit.hardness_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
         self.add_modulation_input('position', self.unit.position_in,
                                   minimum=0.0, maximum=1.0, speed=0.01)
-        drive_port = self.add_modulation_input('drive', self.unit.drive_in,
-                                               minimum=0.0, maximum=2.0,
-                                               speed=0.01)
-        if drive_port.widget is not None:
-            drive_port.widget.set_tooltip(
-                'how hard the excite input speaks through the modes; its '
-                'partner below is how much of it passes around them')
         dry_port = self.add_modulation_input('dry', self.unit.dry_in,
                                              minimum=0.0, maximum=1.0,
                                              speed=0.01)
@@ -4513,6 +5668,124 @@ class ModalNode(ModeTableNode):
 
     def strike(self):
         self.unit.fire()
+
+
+class VesselNode(ModalNode):
+    """A vessel with water in it: glass, bowl, can, and tipped.
+
+    modal~ with the water added, so everything there still holds --
+    material, frequency, decay, the mallet, the excite input. What is
+    new is what the water does, and it does three separate things.
+
+    'fill' takes the pitch DOWN, by about ten semitones from empty to
+    full, because water touching a moving wall has to move with it and
+    that is mass without stiffness. It is nowhere near linear: the wall
+    hardly moves near the base and moves most at the rim, and the
+    loading follows the square of that, so the fill counts to the fifth
+    power. A third full is worth almost nothing; the last centimetre
+    under the rim is worth two thirds of the whole range. That is the
+    real behaviour and it is why a glass has to be nearly full before it
+    sounds full.
+
+    'tip' hardly changes the pitch at all -- under a semitone at thirty
+    degrees. What it does is BEAT. Upright, the modes come in pairs at
+    the same frequency; tipping loads one side more than the other, the
+    pair comes apart, and two close frequencies beat against each other.
+    It has a threshold: below about twenty degrees almost nothing
+    happens, because a tilted surface is the wrong SHAPE to split a
+    pair, and only starts to be the right shape once the water line runs
+    into the base or the rim. Past that it comes on fast -- a slow
+    warble around thirty degrees, a flutter by forty-five.
+
+    And moving 'tip' sets the water sloshing, at around three hertz
+    whatever the fill, which rides on top as a waver that settles. Tilt
+    it quickly and it wavers and calms; hold it there and it is steady
+    but beating.
+
+    'turn' is where the water sits low against where it is struck, and
+    it decides how much of that beat is heard at all: on a belly of the
+    pattern only one of the pair answers and there is no beat, between
+    them both answer and it is deepest. Round every ninety degrees.
+
+    'swirl' is that low point going ROUND, in turns a second, and it is
+    a different sound from a tilt held still. A static tilt gives two
+    pitches beating slowly; a swirl gives sidebands either side of every
+    mode spaced at four times the swirl rate -- a shimmer locked to the
+    hand rather than a beat. It also pushes the water round and round,
+    so swirling near the sloshing rate builds the slop up on itself, the
+    way it does in a glass.
+
+    'size' is the radius in metres. It sets the slosh rate only -- the
+    ringing pitch is 'frequency', as everywhere else.
+    """
+
+    UNIT = VesselUnit
+    DEFAULT_MATERIAL = 'glass'
+    DEFAULT_FREQUENCY = 800.0
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return VesselNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        fill_port = self.add_modulation_input('fill', self.unit.fill_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if fill_port.widget is not None:
+            fill_port.widget.set_tooltip(
+                'how full, and it takes the pitch DOWN -- about ten '
+                'semitones from empty to full. Weighted to the fifth '
+                'power of the fill, because the wall barely moves at '
+                'the base and moves most at the rim: a third full does '
+                'almost nothing, and the last centimetre does most of '
+                'it')
+        tip_port = self.add_modulation_input('tip', self.unit.tip_in,
+                                             minimum=0.0, maximum=60.0,
+                                             speed=0.1)
+        if tip_port.widget is not None:
+            tip_port.widget.set_tooltip(
+                'degrees off level. Hardly moves the pitch -- under a '
+                'semitone at thirty -- it makes it BEAT, by loading one '
+                'side more than the other and splitting the mode pairs. '
+                'There is a threshold: nothing much under twenty '
+                'degrees, a slow warble by thirty, a flutter by '
+                'forty-five. MOVING it also sets the water sloshing, '
+                'which wavers and settles')
+        turn_port = self.add_modulation_input('turn', self.unit.turn_in,
+                                              minimum=0.0, maximum=360.0,
+                                              speed=0.5)
+        if turn_port.widget is not None:
+            turn_port.widget.set_tooltip(
+                'where the water sits low, against where the vessel is '
+                'struck. Tipping splits the ring into two; this is which '
+                'of them a blow wakes. Strike where the pattern has a '
+                'belly and only one answers -- one pitch, no beat at '
+                'all. Strike between them and both answer and the beat '
+                'is deepest. It comes round every ninety degrees, '
+                'because the pattern has four bellies. It moves the '
+                'sound between the two without changing how loud it is')
+        swirl_port = self.add_modulation_input('swirl', self.unit.swirl_in,
+                                               minimum=-8.0, maximum=8.0,
+                                               speed=0.02)
+        if swirl_port.widget is not None:
+            swirl_port.widget.set_tooltip(
+                'turns a second of the low point going round the rim -- '
+                'a swirl rather than a tilt held still. It does not beat '
+                'like a static tilt does; it puts sidebands either side '
+                'of every mode, spaced at FOUR times the swirl, so the '
+                'shimmer is locked to the hand. And it pushes the water '
+                'round: swirl near the sloshing rate (a few hertz, and '
+                '\'size\' sets it) and the slop builds on itself')
+        size_port = self.add_modulation_input('size', self.unit.size_in,
+                                              minimum=0.005, maximum=0.5,
+                                              speed=0.001)
+        if size_port.widget is not None:
+            size_port.widget.set_tooltip(
+                'the vessel\'s radius in metres. This sets how fast the '
+                'water sloshes and nothing else -- the ringing pitch is '
+                '\'frequency\'. A tumbler is about 0.035, a mixing bowl '
+                '0.12')
 
 
 class RubNode(ModeTableNode):
@@ -4583,6 +5856,104 @@ class RubNode(ModeTableNode):
         self.finish_synth_node()
 
 
+class BlowNode(ModeTableNode):
+    """A blown mode table: the third hand, after the mallet and the bow.
+
+    modal~ strikes a table, rub~ bows it, this blows it -- and it is the
+    driver shape_modes' cavity tables had been waiting for, an air column
+    having had nothing to sound it but a mallet. Patch a shape_modes
+    'modes' outlet in with the cavity solved and it plays that air.
+
+    The reed is fused with the bank inside the unit, which is what makes
+    this blowing an object rather than filtering a breath sound. Nothing
+    is triggered: raise 'pressure' and above a threshold the loop finds
+    its own oscillation, which is what starting a note is.
+
+    'pressure' is the breath, measured against what it takes to shut the
+    reed, so a third of the way up is a floor no reed gets under and real
+    losses put the note nearer 0.6. Push past about 0.95 and the breath
+    holds the reed shut and the sound stops, as over-blowing one does.
+    Breath buys brightness more than level, which is how a wind
+    instrument actually gets louder, and pulls the pitch sharp as it goes.
+
+    'stiffness' is what it takes to shut the reed, so it divides the
+    breath: a harder reed wants more air and gives more back. 'breath' is
+    turbulence, and it is not decoration -- it is the disturbance the loop
+    grows into speech, and with none at all the note starts too cleanly
+    to believe. 'position' is where on the bore the mouthpiece sits, with
+    0 the closed end where a reed belongs; away from it the upper modes
+    are nulled one by one, which is a colour rather than a pitch.
+
+    'register' is the register key: it spoils the lowest resonance until
+    the reed gives up on it and takes the next one it can hold. That is
+    how a wind player reaches the upper register, and blowing harder is
+    not -- past the top of the breath range the air simply holds the reed
+    shut, here as on the instrument.
+
+    A bore with only odd modes -- the 'tube' table, a stopped pipe, which
+    is to say a clarinet -- speaks on odd partials, and opening the
+    register takes it up a TWELFTH rather than an octave, since an octave
+    would need an even mode to jump to and there is none. Neither is
+    arranged anywhere; both fall out of the table. Strike the same table
+    with a modal~ if it also needs a tap.
+
+    blow~ <frequency> <material>, e.g. blow~ 220 tube.
+    """
+
+    SAVE_KEY = 'blow_modes'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return BlowNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = BlowUnit(synth_graph.sample_rate)
+
+        frequency = 220.0
+        material = 'tube'
+        if args is not None:
+            for arg in args:
+                if arg in MODAL_MATERIALS:
+                    material = arg
+                else:
+                    try:
+                        frequency = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+        self.unit.frequency_in.base = frequency
+        self.unit.set_modes(MODAL_MATERIALS[material])
+        self._init_mode_editor(label, material)
+
+        self.add_modulation_input('pressure', self.unit.pressure_in,
+                                  minimum=0.0, maximum=1.5, speed=0.01)
+        self.add_modulation_input('stiffness', self.unit.stiffness_in,
+                                  minimum=0.1, maximum=3.0, speed=0.01)
+        self.add_modulation_input('breath', self.unit.breath_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('position', self.unit.position_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('register', self.unit.register_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        self.add_modulation_input('frequency', self.unit.frequency_in,
+                                  default_value=frequency,
+                                  minimum=BlowUnit.MIN_FREQUENCY, speed=1.0)
+        self.add_modulation_input('pitch', self.unit.pitch_in, speed=0.01)
+        self.make_drag_proportional(
+            self.add_modulation_input('decay', self.unit.decay_in,
+                                      minimum=0.01, maximum=60.0, speed=0.05,
+                                      slider=False))
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self._add_mode_table_ports(material)
+        self._add_mode_table_options()
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.modes_output = self.add_output('modes out')
+        self.add_switch()
+        self.finish_synth_node()
+
+
 class BounceNode(SynthNode):
     """A dropped mallet: rolls and rebounds as gravity, not patterns.
 
@@ -4641,6 +6012,226 @@ class BounceNode(SynthNode):
         self.signal_output = self.add_signal_output('out', self.unit.out)
         self.add_switch()
         self.finish_synth_node()
+
+
+class SpinNode(SynthNode):
+    """A spinning disc settling: the rattle that runs away.
+
+    A dropped coin, a plate set down spinning, a hubcap in the road --
+    and it is not a bounce. The contact point races around the rim at a
+    rate that goes as one over the square root of the tilt, so as the
+    lean bleeds away the rattle accelerates without limit and then
+    stops dead. That runaway is the whole mechanism; the strikes weaken
+    as the tilt's square root while their rate rises as its inverse
+    square root, which is why a settling disc thins to a shimmer rather
+    than building. And the disc's own face turns slower as the rattle
+    gets faster, heard as a wobble that drags while the pitch runs
+    away.
+
+    'spin' can only add energy: raise it and the disc leans that far,
+    and everything after is loss. Hold it and the clatter holds at the
+    pitch that level sets; let go and it settles from wherever it had
+    got to. That is the point of patching movement here -- the tail is
+    what the disc does after the hand has stopped, and a big gesture
+    buys a long low one.
+
+    'size' is the radius in metres (a coin turns ten times a second at
+    full lean, a dinner plate four), 'settle' the seconds to flat,
+    'rush' where in the tail the acceleration lives -- 0 spreads it
+    evenly, 0.7 is rolling friction, 1 is Moffatt's viscous-air law,
+    which holds still and then spends the last per cent of the settle
+    on the whole scream.
+
+    A rolling disc keeps its contact, and a settling coin hardly ever
+    leaves the table, so this is one continuous sound modulated by the
+    rotation rather than a series of blows. The rim passes under the
+    contact at the precession rate, which rises, and that ripple in the
+    load is the pitch; the disc's own weight comes round at the face
+    rate, which FALLS, and that is the slow waver in intensity.
+
+    'twist' is how much spin was in the fall, and it is the main thing.
+    At 1 the coin was set true on its edge: it rolls, the contact
+    drifts round the rim regularly, nothing leaves the table. At 0 it
+    was simply pushed over: it never rolls at all, the lean swings past
+    level every cycle, the face slaps, and it rattles to a stop. That
+    works by nutation -- the lean oscillating instead of falling
+    smoothly -- so a bad cast warbles the PITCH as well as the load,
+    and since spin is what holds a disc in steady precession, the swing
+    dies away in proportion to the twist it was given.
+
+    'wobble' is the coin's own trueness, which matters but matters
+    less: the swing in how hard it presses, several times its weight at
+    full. It buys the tone (a true disc has no ripple to hear) and the
+    flop. That flop is not an impact; the contact stays down carrying
+    far more weight for a moment, and since a loaded contact engages
+    more surface and stiffens, the grinding grows faster than the load
+    and brightens as it grows. 'hardness' is how sharply it answers
+    that load -- coin on stone cuts, something soft merely leans.
+
+    'scrape' is the roughness under the contact, 'polish' how near flat
+    it gets before it lands -- how high the whir climbs, and whether
+    the end is a clack or a vanishing.
+
+    Five outlets, because the dynamics are worth more than the sound.
+    'out' is everything, 'grind' the rolling, which is nearly all of
+    it, and 'landing' the single impact at the end, alone, so it can
+    have its own resonator and gain. 'rate' is the precession frequency
+    in Hz, rising, and 'face' the disc's profile coming round, falling
+    -- two counter-moving controls out of one gesture, for a pitch, a
+    cutoff, or rub~'s velocity.
+
+    For a coin, into modal~ or drum~ on the 'plate' table. A coin's
+    modes are up at two or three kilohertz and a bank that high rings
+    small, so bring modal~'s drive and level up -- a real coin is not
+    loud. spin~ <radius>, coin~ too.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return SpinNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = SpinUnit(synth_graph.sample_rate)
+
+        if args is not None:
+            for arg in args:
+                try:
+                    self.unit.size_in.base = max(0.004, min(0.6, float(arg)))
+                except (ValueError, TypeError):
+                    continue
+
+        spin_port = self.add_modulation_input('spin', self.unit.spin_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if spin_port.widget is not None:
+            spin_port.widget.set_tooltip(
+                'the lean, and it only ever adds: hold it for the sound, '
+                'release it for the tail. THE control -- map a movement here')
+        size_port = self.add_modulation_input(
+            'size', self.unit.size_in,
+            default_value=self.unit.size_in.base,
+            minimum=0.004, maximum=0.6, speed=0.002, slider=False)
+        self.make_drag_proportional(size_port)
+        if size_port.widget is not None:
+            size_port.widget.set_tooltip(
+                'the disc\'s radius in metres: it sets every rate. 0.012 is '
+                'a coin, 0.12 a dinner plate')
+        settle_port = self.add_modulation_input(
+            'settle', self.unit.settle_in,
+            default_value=self.unit.settle_in.base,
+            minimum=0.05, maximum=60.0, speed=0.01, slider=False)
+        self.make_drag_proportional(settle_port)
+        if settle_port.widget is not None:
+            settle_port.widget.set_tooltip(
+                'seconds from full lean to flat: the length of the tail')
+        rush_port = self.add_modulation_input('rush', self.unit.rush_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if rush_port.widget is not None:
+            rush_port.widget.set_tooltip(
+                'which loss dominates, so where in the tail the acceleration '
+                'lives: 0 spreads it evenly, 0.7 is rolling friction, 1 is '
+                'the viscous-air law -- still, then all of it at once')
+        twist_port = self.add_modulation_input('twist', self.unit.twist_in,
+                                               minimum=0.0, maximum=1.0,
+                                               speed=0.01)
+        if twist_port.widget is not None:
+            twist_port.widget.set_tooltip(
+                'how much spin was in the fall. 1 is a coin set true on '
+                'its edge -- it rolls, and the contact drifts round in a '
+                'regular way. 0 is one simply pushed over: it never rolls '
+                'at all, the lean swings past level every cycle, and it '
+                'rattles to a stop. Everything between is a real throw')
+        wobble_port = self.add_modulation_input('wobble', self.unit.wobble_in,
+                                                minimum=0.0, maximum=1.0,
+                                                speed=0.01)
+        if wobble_port.widget is not None:
+            wobble_port.widget.set_tooltip(
+                'how far off centre the disc is -- the rim once round. '
+                'It swells the load on the face\'s own slowing turn, up '
+                'to several times the disc\'s weight, and buys the tone '
+                'AND the flop. A true disc has no ripple to hear. This '
+                'is a SHAPE, so it swells; it does not chatter')
+        profile_port = self.add_modulation_input(
+            'profile', self.unit.profile_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if profile_port.widget is not None:
+            profile_port.widget.set_tooltip(
+                'the state of the EDGE -- nicks, burrs, a milled rim worn '
+                'unevenly. A different fault from being off centre and it '
+                'sounds different: where wobble swells, this makes the '
+                'contact JUMP, throwing the disc clear of the table and '
+                'back once a turn. It rides the traverse rate SQUARED, so '
+                'it grows as the contact races round the rim')
+        scrape_port = self.add_modulation_input('scrape', self.unit.scrape_in,
+                                                minimum=0.0, maximum=1.0,
+                                                speed=0.01)
+        if scrape_port.widget is not None:
+            scrape_port.widget.set_tooltip(
+                'the roughness under the contact, rising with the speed it '
+                'travels: the body of the whir')
+        hard_port = self.add_modulation_input('hardness',
+                                              self.unit.hardness_in,
+                                              minimum=0.0, maximum=1.0,
+                                              speed=0.01)
+        if hard_port.widget is not None:
+            hard_port.widget.set_tooltip(
+                'how sharply the grinding answers a load: high and each '
+                'flop cuts, low and it merely swells. This is what makes '
+                'a flop sound like a flop')
+        polish_port = self.add_modulation_input('polish', self.unit.polish_in,
+                                                minimum=0.0, maximum=1.0,
+                                                speed=0.01)
+        if polish_port.widget is not None:
+            polish_port.widget.set_tooltip(
+                'how near flat it gets before it lands -- how high the whir '
+                'climbs, and whether the end is a clack or a vanishing')
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+
+        self.spin_mode_input = self.add_input(
+            'spin mode', widget_type='combo',
+            default_value=SpinUnit.SPIN_MODES[0],
+            callback=self.parameters_changed)
+        self.spin_mode_input.widget.combo_items = list(SpinUnit.SPIN_MODES)
+        if self.spin_mode_input.widget is not None:
+            self.spin_mode_input.widget.set_tooltip(
+                "how 'spin' is read. 'throw' works by CHANGE -- rising "
+                "injects energy, falling drains it, and holding still "
+                "does nothing at all, so a gesture throws a coin. "
+                "'hold' works by LEVEL -- the gesture is the lean it "
+                "asks for, and sustained motion keeps the coin going")
+
+        self.model_input = self.add_input('model', widget_type='combo',
+                                          default_value=SpinUnit.MODELS[1],
+                                          callback=self.parameters_changed)
+        self.model_input.widget.combo_items = list(SpinUnit.MODELS)
+        if self.model_input.widget is not None:
+            self.model_input.widget.set_tooltip(
+                "'derived' integrates the disc's own equations of motion "
+                "and reads the sound off it; 'voiced' is the earlier "
+                "model, assembled behaviour by behaviour and fitted by "
+                "ear. Note that 'wobble' has no meaning under 'derived' "
+                "-- those equations describe a perfectly uniform disc, "
+                "so all of the roughness comes from the cast")
+
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.grind_output = self.add_signal_output('grind', self.unit.grind)
+        self.landing_output = self.add_signal_output('landing',
+                                                     self.unit.landing)
+        self.rate_output = self.add_signal_output('rate', self.unit.rate)
+        self.face_output = self.add_signal_output('face', self.unit.face)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def sync_options(self):
+        chosen = any_to_string(self.model_input())
+        if chosen in SpinUnit.MODELS:
+            self.unit.model = SpinUnit.MODELS.index(chosen)
+        mode = any_to_string(self.spin_mode_input())
+        if mode in SpinUnit.SPIN_MODES:
+            self.unit.spin_mode = SpinUnit.SPIN_MODES.index(mode)
 
 
 class BubblesNode(SynthNode):
@@ -4888,6 +6479,16 @@ class DrumNode(ModeTableNode):
         self._init_mode_editor(label, material)
 
         self.add_signal_input('excite in', self.unit.excite_in)
+        sense_port = self.add_modulation_input(
+            'sensitivity', self.unit.sensitivity_in,
+            default_value=self.unit.sensitivity_in.base,
+            minimum=0.0, maximum=8.0, speed=0.01, slider=False)
+        self.make_drag_proportional(sense_port)
+        if sense_port.widget is not None:
+            sense_port.widget.set_tooltip(
+                'how keenly the head hears what is patched to the excite '
+                'inlet above. Unity leaves it as it always was; it reaches '
+                'past that for excitations too sparse to speak')
         self.add_trigger_signal_input('hit', self.unit.trigger_in,
                                       self.hit)
         self.add_modulation_input('frequency', self.unit.frequency_in,
@@ -5536,6 +7137,263 @@ SHAKER_KINDS = {
 }
 
 
+class RattleNode(SynthNode):
+    """Loose things in a container, shaken and turned -- simulated.
+
+    shaker~ is a collision RATE driven by an agitation, which is cheap
+    and very good for rain and sleighbells where nobody wants to
+    simulate a hundred thousand grains. This has particles instead:
+    positions, velocities, and walls that hit them when the walls come
+    to them.
+
+    What that buys is that the gesture stops needing translating. Shake
+    it along a line and swirl it in a circle and those are the same
+    simulation given a line and a circle -- and the difference between
+    them comes out on its own: more glancing contact, and an envelope
+    that stops pulsing because a circle never stops the way a line does
+    at each end. None of that is modelled here; it is what happens.
+
+    'shake x/y/z' is where the container is being ACCELERATED, in
+    gravities, and 'turn x/y/z' is how far it is TIPPED, in degrees --
+    an angle, not a rate. A body's movement drives it
+    directly. Turning matters three ways -- the centrifugal push
+    outward, the Coriolis deflection of whatever is already moving, and
+    the Euler shove when the turning itself changes -- and all three are
+    what a swirl is made of.
+
+    'shape' is sphere, box, egg or tube, and 'aspect' is how long it is
+    against how wide. A tube is a cylinder -- curved round the barrel,
+    flat at the ends -- so it glances one way and strikes the other,
+    which no single-surface shape can do. Both are only the boundary test, so they are nearly free
+    and change a great deal: flat walls take a bean head on where a
+    curved one lets it glance, and a long container lets things travel
+    its length where a flat one pins them between two close walls.
+
+    'knock' and 'scrape' come out separately as well as mixed. Like
+    bounce~, what comes out is a train of force pulses rather than a
+    sound -- patch it into modal~, drum~ or resonator~.
+
+    A thing resting against the wall is HELD while the slope under it is
+    shallower than the friction can support, and slides or lets go when
+    it is not -- so 'friction' and 'texture' are two different things.
+    Friction is the coefficient, one number everywhere, and on a smooth
+    shell a thing that starts sliding goes on sliding. Texture differs
+    from place to place, so a thing catches, is carried, lets go, and
+    catches again somewhere else. A slow turn on a smooth shell is a
+    continuous slide; the same turn on a rough one is a rattle.
+
+    Inter-particle collisions are left out on purpose: most of the cost,
+    least of the sound. What is heard is the wall. The one case where
+    they are missed is a handful driven along a single axis onto a flat
+    wall -- with no bounce the grains are then EXACTLY identical, since
+    they leave together carrying the wall's speed, fall in a field that
+    is the same everywhere, and land dead. Raise 'variety', and give the
+    wall some 'texture' for them to sit on unevenly: a rough wall is not
+    a plane, so it throws each of them off at its own speed, and that is
+    the only thing that parts them.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RattleNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = RattleUnit(synth_graph.sample_rate)
+        count = 48
+        if args is not None:
+            for arg in args:
+                try:
+                    count = int(arg)
+                except (ValueError, TypeError):
+                    continue
+        self.unit.set_count(count)
+
+        for axis in ('x', 'y', 'z'):
+            port = self.add_modulation_input(
+                f'shake {axis}', getattr(self.unit, f'shake_{axis}_in'),
+                minimum=-8.0, maximum=8.0, speed=0.02)
+            if port.widget is not None:
+                port.widget.set_tooltip(
+                    f'how hard the container is being accelerated along '
+                    f'{axis}, in GRAVITIES -- 1.0 is its own weight, '
+                    f'which is roughly where things start leaving the '
+                    f'floor. Patch a body: this is what a body gives, '
+                    f'and it needs no translating into how agitated '
+                    f'anything is')
+        for axis in ('x', 'y', 'z'):
+            port = self.add_modulation_input(
+                f'turn {axis}', getattr(self.unit, f'turn_{axis}_in'),
+                minimum=-180.0, maximum=180.0, speed=0.5)
+            if port.widget is not None:
+                port.widget.set_tooltip(
+                    f'how far it is TIPPED about {axis}, in degrees -- '
+                    f'where it is pointing, not how fast it is going. '
+                    f'Send 30 and it sits tipped at 30, and gravity '
+                    f'sits tipped with it. Rock it with a sine and it '
+                    f'rocks through that many degrees. For a continuous '
+                    f'roll, send a ramp. How fast it is turning is '
+                    f'taken from how fast the angle changes, and that '
+                    f'is what throws the particles outward, deflects '
+                    f'whatever is already moving, and shoves them when '
+                    f'the turning changes -- which is what a swirl is, '
+                    f'as against a shake')
+        self.count_input = self.add_input(
+            'count', widget_type='drag_int', default_value=count,
+            callback=self.count_changed)
+        if self.count_input.widget is not None:
+            self.count_input.widget.set_tooltip(
+                'how many things are in there. Changes the texture and '
+                'not the level -- a handful is countable, hundreds is a '
+                'wash')
+        self.shape_input = self.add_input(
+            'shape', widget_type='combo',
+            default_value=RattleUnit.SHAPES[0],
+            callback=self.parameters_changed)
+        self.shape_input.widget.combo_items = list(RattleUnit.SHAPES)
+        if self.shape_input.widget is not None:
+            self.shape_input.widget.set_tooltip(
+                'the container. Only a boundary test, so it costs almost '
+                'nothing and changes a great deal: a box takes a bean '
+                'head on where a sphere lets it glance, and an egg is '
+                'the sphere with one axis stretched -- struck at its '
+                'pointed end it answers at the angle that end really '
+                'presents. A tube is a cylinder, curved round the '
+                'barrel and flat at the two ends, so it does BOTH and '
+                'which one you get depends on which way you shake it: '
+                'along its length things are taken head on by the caps, '
+                'across it they glance off the side. With a long '
+                '"aspect" that is a rainstick or a tube shaker')
+        aspect_port = self.add_modulation_input(
+            'aspect', self.unit.aspect_in, minimum=0.2, maximum=5.0,
+            speed=0.01)
+        if aspect_port.widget is not None:
+            aspect_port.widget.set_tooltip(
+                'how long it is against how wide, along z. 1 is a ball '
+                'or a cube; below that a slab, above it a tube. Like '
+                'shape this is only the boundary test, so it costs '
+                'nothing at all and changes a great deal: in a long one '
+                'things travel the length and pile at whichever end is '
+                'down, in a flat one they are pinned between two close '
+                'walls and rattle far more often -- 112 contacts a '
+                'second against 199 for the same handful. An egg keeps '
+                'its own stretch on top of this. Lay it on its side '
+                'with "turn" if you want the length horizontal')
+        size_port = self.add_modulation_input(
+            'size', self.unit.size_in, minimum=0.005, maximum=0.5,
+            speed=0.001)
+        if size_port.widget is not None:
+            size_port.widget.set_tooltip(
+                'how big the container is, as a half-width in METRES: '
+                '0.04 is a maraca, 0.5 is a metre across. It sets the '
+                'pitch of everything, because it sets how far things '
+                'fall and how fast the wall sweeps past when it is '
+                'turned')
+        grain_port = self.add_modulation_input(
+            'grain', self.unit.grain_in, minimum=0.0, maximum=0.6,
+            speed=0.005)
+        if grain_port.widget is not None:
+            grain_port.widget.set_tooltip(
+                'how big each thing in there is, as a FRACTION of the '
+                'container -- so it stays a handful of beans whatever '
+                'size the container is. 0.05 is a bean in a maraca; at '
+                '0.16 a hundred and twenty-eight of them fill over half '
+                'the shell, which is gravel in a bucket. It sets how '
+                'far a thing rides between the bumps of the surface, so '
+                'it sets how bright a rub is')
+        # Small at one end and not at the other, and the useful part is
+        # all down at the bottom -- so each pixel moves these by a
+        # fraction of themselves. That is exponential travel while the
+        # number shown stays a real size, which matters here because
+        # both are modulation inlets: a hidden mapping would quietly
+        # change what a patch cord into them means.
+        self.make_drag_proportional(aspect_port, fraction=0.05,
+                                    floor=0.005, ceiling=0.2)
+        self.make_drag_proportional(size_port, fraction=0.05,
+                                    floor=0.0002, ceiling=0.02)
+        self.make_drag_proportional(grain_port, fraction=0.05,
+                                    floor=0.0004, ceiling=0.02)
+        self.add_modulation_input('bounce', self.unit.bounce_in,
+                                  minimum=0.0, maximum=0.95, speed=0.01)
+        grip_port = self.add_modulation_input(
+            'friction', self.unit.friction_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if grip_port.widget is not None:
+            grip_port.widget.set_tooltip(
+                'how much purchase the shell has -- the friction '
+                'coefficient itself, so more of it means more grip, not '
+                'less. It sets the angle a resting thing is held at: '
+                'below that slope it does not move at all, above it it '
+                'slides. Turn a slippery container slowly and the '
+                'contents stay put while the shell goes round under '
+                'them, which is a continuous slide and no knocks. Grip '
+                'it harder and they are carried further up before the '
+                'slope stops holding them, and then they have further '
+                'to fall')
+        texture_port = self.add_modulation_input(
+            'texture', self.unit.texture_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if texture_port.widget is not None:
+            texture_port.widget.set_tooltip(
+                'how rough the inside is. It resists like friction '
+                'does -- riding over bumps costs something, so a rough '
+                'shell holds and rasps even with the friction at zero '
+                '-- but it differs from PLACE to place, where friction '
+                'is one number everywhere. So a thing catches, is '
+                'carried until that place no longer holds it, lets go, '
+                'drops to the next and catches again, and each letting '
+                'go is a tick. That is the whole difference between a '
+                'hiss and a rattle, and it comes in by degrees rather '
+                'than at a threshold. For pure slide and no knocks at '
+                'all, leave this at zero and set friction around 0.15 '
+                'to 0.3')
+        self.add_modulation_input('hardness', self.unit.hardness_in,
+                                  minimum=0.0, maximum=1.0, speed=0.01)
+        variety_port = self.add_modulation_input(
+            'variety', self.unit.variety_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if variety_port.widget is not None:
+            variety_port.widget.set_tooltip(
+                'how unalike the things in there are. It spreads their '
+                'SIZES, spreads how BOUNCY they are, varies how bouncy '
+                'each single LANDING is -- an irregular grain presents '
+                'a different face every time, and its contact sits off '
+                'to one side of its middle -- gives them a bounce of '
+                'their own from tipping on their corners even when the '
+                'material has none, and lets each of them sit on the '
+                'wall\'s roughness differently, so a rough wall throws '
+                'them off unevenly. All of that matters because '
+                'grains here do not collide with EACH OTHER: that is '
+                'most of the cost and least of the sound, except in one '
+                'case, which is a handful driven along one axis onto a '
+                'flat wall. Identical grains there all leave and land '
+                'together for ever, a hundred and twenty-eight of them '
+                'inside a fifth of a millisecond -- one enormous click '
+                'a cycle. Turn this up, with some "texture" on the wall '
+                'for them to sit unevenly on, and they spread over 45 '
+                'ms of it instead. It does not change how loud anything '
+                'is')
+        self.add_modulation_input('gravity', self.unit.gravity_in,
+                                  minimum=0.0, maximum=40.0, speed=0.1)
+        self.add_modulation_input('level', self.unit.level_in,
+                                  minimum=0.0, maximum=2.0, speed=0.01)
+        self.signal_output = self.add_signal_output('out', self.unit.out)
+        self.knock_output = self.add_signal_output('knock',
+                                                   self.unit.knock)
+        self.scrape_output = self.add_signal_output('scrape',
+                                                    self.unit.scrape)
+        self.add_switch()
+        self.finish_synth_node()
+
+    def count_changed(self):
+        self.unit.set_count(any_to_int(self.count_input()))
+
+    def sync_options(self):
+        shape = any_to_string(self.shape_input())
+        if shape in RattleUnit.SHAPES:
+            self.unit.shape = RattleUnit.SHAPES.index(shape)
+
+
 class ShakerNode(SynthNode):
     """Shaken percussion: grains by the statistics of a gesture.
 
@@ -5570,6 +7428,39 @@ class ShakerNode(SynthNode):
         self.add_modulation_input('shake', self.unit.shake_in,
                                   minimum=0.0, maximum=2.0, speed=0.01,
                                   slider=False)
+        self.shake_mode_input = self.add_input(
+            'shake mode', widget_type='combo',
+            default_value=ShakerUnit.SHAKE_MODES[0],
+            callback=self.parameters_changed)
+        self.shake_mode_input.widget.combo_items = list(
+            ShakerUnit.SHAKE_MODES)
+        if self.shake_mode_input.widget is not None:
+            self.shake_mode_input.widget.set_tooltip(
+                "how 'shake' is read. 'throw' is a STROKE: it pumps the "
+                "beans and they carry on by themselves and settle, "
+                "which is what a shaker does in a hand. 'hold' is how "
+                "agitated they are right NOW -- the gesture is the "
+                "agitation, a steady hand gives a steady wash, and "
+                "letting go stops it at the settle rate. An effort "
+                "stream already means the second thing")
+        swirl_port = self.add_modulation_input(
+            'swirl', self.unit.swirl_in, minimum=0.0, maximum=1.0,
+            speed=0.01)
+        if swirl_port.widget is not None:
+            swirl_port.widget.set_tooltip(
+                'the ANGLE the beans meet the shell at, not a second '
+                'gesture. You cannot shake a maraca while you are '
+                'rolling it, or roll it while you are shaking it -- '
+                'there is one agitation and this is how it arrives. At '
+                '0 they go head on and stop dead against the wall and '
+                'ring it: the tick. At 1 they go tangential and keep '
+                'their speed along it and drag: the graze. Between is '
+                'both, and finer and more numerous on the way, because '
+                'a bean that skips rather than stops makes more '
+                'contacts and smaller ones. Nothing in here wobbles it '
+                '-- a real roll surges as the heap comes round, but '
+                'that is a shape a hand makes, so make it: patch the '
+                'movement, or an LFO, into this or into shake')
         self.add_modulation_input('density', self.unit.density_in,
                                   minimum=1.0, maximum=2000.0, speed=2.0,
                                   slider=False)
@@ -5627,6 +7518,11 @@ class ShakerNode(SynthNode):
         # knobs the patch saved.
         if not from_file:
             self.apply_kind(self._kind_shown)
+
+    def sync_options(self):
+        mode = any_to_string(self.shake_mode_input())
+        if mode in ShakerUnit.SHAKE_MODES:
+            self.unit.shake_mode = ShakerUnit.SHAKE_MODES.index(mode)
 
     def kind_changed(self):
         chosen = any_to_string(self.kind_input())
@@ -5740,7 +7636,10 @@ class FaderNode(SynthNode):
     hand. Stereo when something is patched to the right inlet. The face is
     kept to the throw: pins say only left and right (which side of the node
     they sit on says the rest), and there is no bypass -- a fader's own
-    bottom is its off.
+    bottom is its off. There is a MUTE, though, which is a different
+    thing: it silences the channel and leaves the handle where it was, so
+    unmuting comes back to the balance you had rather than to wherever
+    silence left the hand.
     """
 
     @staticmethod
@@ -5749,7 +7648,11 @@ class FaderNode(SynthNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.unit = FaderUnit(synth_graph.sample_rate)
+        # Through a hook, so a strip that ends at the socket can be this
+        # same face with a different unit under it rather than a copy of
+        # it -- the taper, the pan law and the meters then cannot drift
+        # apart from fader~'s.
+        self.unit = self._make_unit(args)
 
         # Bare 'left' and 'right': which side of the node a pin sits on
         # already says in or out, and a fader wants no more face than its
@@ -5786,15 +7689,37 @@ class FaderNode(SynthNode):
                 'equal-power pan, unity at center: existing patches hear '
                 'no change until the knob moves')
 
+        self.mute_input = self.add_input('mute', widget_type='checkbox',
+                                        default_value=False,
+                                        callback=self.parameters_changed)
+        if self.mute_input.widget is not None:
+            self.mute_input.widget.set_tooltip(
+                'silence without moving the handle -- which is the whole '
+                'difference between muting a channel and pulling it '
+                'down: unmuting comes back to the balance you had. '
+                'Ramped over a few milliseconds, so it does not click')
         self.db_display = self.add_property('dB', widget_type='label',
                                             default_value='+0.0 dB')
 
-        self.signal_output = self.add_signal_output('left', self.unit.out)
-        self.right_output = self.add_signal_output('right', self.unit.right)
+        self._add_outputs()
+        self._extra_face()
         self.finish_synth_node()
         self._shown_db = 0.0
         self._meter_tags = None
         self._meter_shown = (-1.0, -1.0, -1.0, -1.0)
+
+    def sync_options(self):
+        self.unit.muted = any_to_bool(self.mute_input())
+
+    def _make_unit(self, args):
+        return FaderUnit(synth_graph.sample_rate)
+
+    def _add_outputs(self):
+        self.signal_output = self.add_signal_output('left', self.unit.out)
+        self.right_output = self.add_signal_output('right', self.unit.right)
+
+    def _extra_face(self):
+        """Anything a subclass wants after the strip and before the end."""
 
     def _fraction(self, value):
         # vu~'s scale, standing up: -60 dB at the foot, +6 at the crown.
@@ -5888,6 +7813,80 @@ class FaderNode(SynthNode):
             if self.db_display.widget is not None:
                 self.db_display.widget.set(f'{db:+.1f} dB')
 
+
+
+class FaderOutNode(FaderNode):
+    """A fader and the socket it lands on, in one.
+
+    The split between fader~ and audio_out~ is right and it stays: level
+    is one job, the wall is another, and a patch with several sources
+    wants several faders into one socket. But almost every new patch
+    begins by making both and joining them, so this is that pair
+    ready-made -- a strip that ends at the device.
+
+    Everything fader~ has, because it IS fader~ with a different unit
+    under it: the long-throw handle on the desk taper, the pan, the pair
+    of meters, the dB readout, the mute. What it adds is the only part of
+    a socket that differs from one strip to the next --
+
+    'channels' is which device outputs it lands on, counted from 1 the
+    way an interface's front panel counts them, so the default 1 2 is the
+    first pair. A channel the device does not have is silent rather than
+    an error, so a patch written for a rig still runs on a laptop.
+
+    There is deliberately no device chooser. The device is ENGINE-WIDE --
+    one stream, shared with the sampler -- so a copy of that control on
+    every strip would be several ways of saying one thing. It follows
+    whatever the engine is on; set it on an audio_out~ if you need to
+    move it.
+
+    Left and right still come out as well as going to the device, so a
+    meter, a recorder or a second socket can take the same signal.
+
+    fader_out~ <channels...>, e.g. fader_out~ 3 4.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return FaderOutNode(name, data, args)
+
+    def _make_unit(self, args):
+        channels = [1, 2]
+        if args is not None and len(args) > 0:
+            values = [decode_arg(args, index) for index in range(len(args))]
+            whole = [int(value) for value, kind in values if kind == int]
+            if len(whole) >= 2:
+                channels = whole[:2]
+        self._channel_list = channels
+        unit = FaderOutUnit(synth_graph.sample_rate)
+        unit.channels = [max(0, channel - 1) for channel in channels]
+        return unit
+
+    def _extra_face(self):
+        self.channels_option = self.add_option(
+            'channels', widget_type='text_input', width=110,
+            default_value=' '.join(str(c) for c in self._channel_list),
+            callback=self.parameters_changed)
+        if self.channels_option.widget is not None:
+            self.channels_option.widget.set_tooltip(
+                'which device outputs this lands on, counted from 1 the '
+                'way the interface\'s front panel counts them. A channel '
+                'the device does not have is silent rather than an error, '
+                'so a patch written for a rig still runs on a laptop. The '
+                'DEVICE itself is engine-wide and is not here -- set it '
+                'on an audio_out~')
+
+    def sync_options(self):
+        super().sync_options()
+        wanted = []
+        for word in any_to_string(
+                self.channels_option()).replace(',', ' ').split():
+            try:
+                wanted.append(max(1, min(32, int(word))))
+            except (ValueError, TypeError):
+                continue
+        if len(wanted) >= 2:
+            self.unit.channels = [max(0, c - 1) for c in wanted[:2]]
 
 class CaptureNode(SynthNode):
     """Signal to numpy array: hands whole blocks of audio to the node world.

@@ -31,6 +31,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_geo_sphere', MGLGeodesicSphereNode.factory)
     Node.app.register_node('mgl_point_cloud', MGLPointCloudNode.factory)
     Node.app.register_node('mgl_model', MGLModelNode.factory)
+    Node.app.register_node('mgl_mesh', MGLMeshNode.factory)
     Node.app.register_node('mgl_cylinder', MGLCylinderNode.factory)
     Node.app.register_node('mgl_color', MGLColorNode.factory)
     Node.app.register_node('mgl_light', MGLLightNode.factory)
@@ -4004,6 +4005,191 @@ class MGLTorqueArcNode(MGLNode):
                 vao.render(mode=mode)
                 vbo.release()
                 vao.release()
+
+
+class MGLMeshNode(MGLShapeNode):
+    """Draws a mesh handed to it, rather than one loaded from a file.
+
+    mgl_model reads a shape off disk; this takes one from a cord, so
+    anything in the patch that WORKS OUT a shape can be looked at.
+    shape_modes is the reason it exists: its mesh outlet sends the skin
+    of whatever outline it just solved, and set to show a mode it sends
+    that mode's own shape, so you can see which way a thing bends and
+    why a strike in one place misses it.
+
+    It accepts, on 'mesh':
+      a dict of 'vertices' (n by 3), 'faces' (m by 3) and optionally
+      'normals' -- what shape_modes sends;
+      a pair or list of [vertices, faces];
+      or a bare n-by-3 array of points, drawn as points.
+
+    Normals are worked out from the faces if none came with it. Nothing
+    here touches the GPU: the cord only puts the arrays down and marks
+    the geometry stale, and the buffers are built inside draw(), on the
+    thread that owns the context. Doing it the other way round is a
+    segfault waiting for a busy patch.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLMeshNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.mesh_input = self.add_input('mesh', callback=self.mesh_received)
+        self.scale_input = self.add_input('scale', widget_type='drag_float',
+                                          widget_width=50,
+                                          default_value=1.0)
+        self.center_input = self.add_input('center', widget_type='checkbox',
+                                           widget_width=50,
+                                           default_value=True)
+        self.normalize_input = self.add_input('fit', widget_type='checkbox',
+                                              widget_width=50,
+                                              default_value=True)
+        # What it is holding, said out loud. Without this there is no
+        # telling a mesh that never arrived from one that arrived and
+        # drew somewhere you are not looking, and those want completely
+        # different things done about them.
+        self.holding = self.add_property('holding', widget_type='label',
+                                         default_value='nothing yet')
+        self._mesh = None
+        self._said = ''
+        self.end_initialization()
+
+    def mesh_received(self):
+        """Put the arrays down and mark it stale. No GL here."""
+        data = self.mesh_input()
+        mesh = self._as_mesh(data)
+        if mesh is None:
+            return
+        self._mesh = mesh
+        self.geometry_changed()
+
+    @staticmethod
+    def _as_mesh(data):
+        """(vertices, faces, normals) out of whatever arrived, or None."""
+        verts = faces = normals = None
+        if isinstance(data, dict):
+            verts = data.get('vertices')
+            faces = data.get('faces')
+            normals = data.get('normals')
+        elif isinstance(data, (list, tuple)) and len(data) in (2, 3) \
+                and not np.isscalar(data[0]):
+            verts = data[0]
+            faces = data[1]
+            if len(data) == 3:
+                normals = data[2]
+        else:
+            verts = data
+        if verts is None:
+            return None
+        # Whatever came down the cord may be nothing like a mesh -- a
+        # word, a number, an empty list. Refusing it is right; raising
+        # from a cord callback is not.
+        try:
+            verts = np.asarray(verts, dtype='f4')
+        except (TypeError, ValueError):
+            return None
+        if verts.ndim != 2 or verts.shape[1] != 3 or len(verts) == 0:
+            return None
+        if faces is not None:
+            try:
+                faces = np.asarray(faces, dtype='i4')
+            except (TypeError, ValueError):
+                faces = None
+        if faces is not None:
+            if faces.ndim != 2 or faces.shape[1] != 3 or len(faces) == 0 \
+                    or int(faces.max()) >= len(verts) or int(faces.min()) < 0:
+                # An index past the end of the corners would be read off
+                # the end of a GPU buffer, which is not a thing to find
+                # out about later.
+                faces = None
+        if normals is not None:
+            try:
+                normals = np.asarray(normals, dtype='f4')
+            except (TypeError, ValueError):
+                normals = None
+            if normals is not None and normals.shape != verts.shape:
+                normals = None
+        return verts, faces, normals
+
+    @staticmethod
+    def _normals_from(verts, faces):
+        """Averaged at each corner, so a curved skin lights as a curve."""
+        normals = np.zeros_like(verts)
+        e1 = verts[faces[:, 1]] - verts[faces[:, 0]]
+        e2 = verts[faces[:, 2]] - verts[faces[:, 0]]
+        face_n = np.cross(e1, e2)
+        for column in range(3):
+            np.add.at(normals, faces[:, column], face_n)
+        length = np.linalg.norm(normals, axis=1)
+        length[length < 1e-30] = 1.0
+        return normals / length[:, None]
+
+    def handle_shape_params(self):
+        # Writing M is not optional. Every shape here does it, and a
+        # shape that does not is drawn with whatever matrix the node
+        # BEFORE it left in the program -- so it ignores the whole
+        # transform chain and turns up wherever that happened to point,
+        # which from in front of the camera looks exactly like nothing
+        # being drawn at all.
+        if self.ctx is not None and self.prog is not None \
+                and 'M' in self.prog:
+            model = self.ctx.get_model_matrix()
+            scale = self.scale_input()
+            if scale != 1.0:
+                # On the matrix rather than on the vertices, so turning
+                # the knob does not rebuild the buffer every frame.
+                model = np.dot(model,
+                               np.diag([scale, scale, scale,
+                                        1.0]).astype(np.float32))
+            self.prog['M'].write(model.astype('f4').T.tobytes())
+
+    def create_geometry(self):
+        # One read, into a local: the cord may hand over a new mesh at
+        # any moment and half of one is not a mesh.
+        mesh = self._mesh
+        if mesh is None:
+            self._say('nothing yet')
+            return [], None
+        verts, faces, normals = mesh
+        verts = verts.copy()
+        if self.center_input():
+            verts -= verts.mean(axis=0)
+        if self.normalize_input():
+            # A solved shape may be four centimetres across or four
+            # metres; the camera is neither. Scaled to about a unit so
+            # something is on screen whatever units it was solved in.
+            span = float(np.abs(verts).max())
+            if span > 1e-12:
+                verts /= span
+        if faces is None:
+            normals = np.tile(np.array([0.0, 0.0, 1.0], dtype='f4'),
+                              (len(verts), 1))
+        elif normals is None:
+            normals = self._normals_from(verts, faces)
+        # A flat texcoord: the default shader wants the slot filled, and
+        # a solved mesh has no unwrapping to speak of.
+        uv = np.zeros((len(verts), 2), dtype='f4')
+        interleaved = np.hstack([verts.astype('f4'),
+                                 normals.astype('f4'), uv])
+        if faces is None:
+            self._say('%d points' % len(verts))
+            return interleaved, None
+        self._say('%d corners, %d triangles' % (len(verts), len(faces)))
+        return interleaved, faces.reshape(-1)
+
+    def _say(self, text):
+        # From create_geometry, which runs inside draw() and so on the
+        # main thread. Setting a widget from whatever thread a cord
+        # happened to arrive on is asking for trouble.
+        if text != self._said:
+            self._said = text
+            if self.holding.widget is not None:
+                self.holding.widget.set(text)
 
 
 class MGLModelNode(MGLShapeNode):

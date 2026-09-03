@@ -13,9 +13,14 @@ Arguments: torque_gang <preset> [side] [stream]
     torque_gang leg_push differential dynamic
     torque_gang arm_reach left
 
-Outputs are net, total and coherence -- see gang_core for what they mean. The
-short version is that net is direction, total is how much work, and coherence
-is whether the group is acting as one thing or against itself.
+Outputs are net, total, coherence and surprise -- see gang_core for the first
+three. The short version is that net is direction, total is how much work, and
+coherence is whether the group is acting as one thing or against itself.
+
+surprise is the companion: how UNUSUAL this gang's activation is, measured
+against a prior over 12.5M frames of AMASS. A gang firing says the body did
+the expected thing; a gang firing in a way the corpus rarely does is the more
+informative event. See gang_prior for the measure and its cautions.
 """
 
 import dearpygui.dearpygui as dpg
@@ -26,7 +31,9 @@ from dpg_system.gang_core import (
     gang_graph, GANG_PRESETS, STREAMS, SIDES, NO_SIDE,
     JOINT_COUNT, AXIS_COUNT,
     preset_names, preset_is_bilateral, sides_for, spec_from_preset,
+    max_torque_array,
 )
+from dpg_system.gang_prior import get_prior, PRIOR_STREAM
 
 import numpy as np
 
@@ -179,6 +186,14 @@ class TorqueGangNode(GangStreamNode):
         self.net_output = self.add_output('net')
         self.total_output = self.add_output('total')
         self.coherence_output = self.add_output('coherence')
+        # How unusual this gang's activation is, measured against the corpus
+        # prior: the whitened deviation along this gang's own direction,
+        # divided by the frame's torque magnitude so it reports strangeness of
+        # shape rather than amount of effort. See gang_prior for the cautions.
+        # 0 when there is no prior, or when the gang reads a stream the prior
+        # was not built on.
+        self.surprise_output = self.add_output('surprise')
+        self._warned_stream = False
 
         # Built from the parsed arguments, not from the widgets: widget values
         # read None until the widget is created, and options are created after
@@ -296,9 +311,63 @@ class TorqueGangNode(GangStreamNode):
             net_value = -net_value
 
         # Right to left, matching send_all.
+        self.surprise_output.send(self._shape_surprise(spec))
         self.coherence_output.send(float(coherence[row]))
         self.total_output.send(float(total[row]))
         self.net_output.send(net_value)
+
+    def _shape_surprise(self, spec):
+        """How unusual this gang's activation is, per unit torque.
+
+        z is whitened once per frame for the whole patch; this is the component
+        of it along this gang's direction, over the frame's torque magnitude.
+        Sign is dropped -- unusual in either direction is unusual -- and invert
+        is deliberately not applied, since it is an aesthetic flip of net and
+        says nothing about rarity.
+        """
+        if spec.stream != PRIOR_STREAM:
+            if not self._warned_stream:
+                self._warned_stream = True
+                print(self.label + ": surprise needs the '" + PRIOR_STREAM
+                      + "' stream; this gang reads '" + spec.stream
+                      + "' and will report 0")
+            return 0.0
+
+        whitened = gang_graph.whitened(Node.app.frame_number,
+                                       self.current_bundle())
+        if whitened is None:
+            return 0.0
+        z, magnitude = whitened
+        if magnitude <= 1e-9:
+            return 0.0
+
+        prior = get_prior()
+        if prior is None:
+            return 0.0
+        direction = prior.direction(spec, self._weight_vector(spec))
+        if direction is None:
+            return 0.0
+        return float(abs(z @ direction) / magnitude)
+
+    @staticmethod
+    def _weight_vector(spec):
+        """This gang's terms as a 66-channel weight vector.
+
+        spec.terms carries the raw weights: capacity normalization is applied
+        by the compiler, not folded into the spec. It has to be applied here
+        too, or surprise would be measured along a different direction than the
+        net this node reports -- they differ whenever a gang spans joints of
+        unequal capacity, which is most of the interesting ones (leg_push runs
+        hip 300, knee 250, ankle 100).
+        """
+        capacity = max_torque_array(spec.gender) if spec.normalize else None
+        weights = np.zeros(66)
+        for joint, axis, weight in spec.terms:
+            if joint < 22:
+                if capacity is not None:
+                    weight = weight / capacity[joint][axis]
+                weights[joint * 3 + axis] += weight
+        return weights
 
 
 class TorqueResidualNode(GangStreamNode):

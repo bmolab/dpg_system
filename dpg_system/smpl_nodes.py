@@ -2009,7 +2009,11 @@ class SMPLTorqueNode(SMPLNode):
         self.dynamic_torque_vec_output = self.add_output('dynamic_torque_vectors')
         self.passive_torque_vec_output = self.add_output('passive_torque_vectors')
 
-        self.contact_pressure_output = self.add_output('contact_pressure')
+        # kilograms, not newtons -- the body's mass distributed over contact
+        # points. x 9.81 for weight-equivalent force. Renamed from
+        # 'contact_pressure'; the archive keeps old links working.
+        self.contact_mass_output = self.add_output('contact_mass')
+        self.contact_mass_output.name_archive.append('contact_pressure')
         self.output_com = self.add_output('com_pos')
         self.output_zmp = self.add_output('zmp_pos')
         self.output_limb_lengths = self.add_output('limb_lengths')
@@ -2506,11 +2510,11 @@ class SMPLTorqueNode(SMPLNode):
                 
 
                      
-                press_out = getattr(self.processor, 'contact_pressure', None)
+                press_out = getattr(self.processor, 'contact_mass', None)
                 if press_out is not None:
                      if press_out.ndim > 1:
                          press_out = press_out.flatten()
-                     self.contact_pressure_output.send(press_out)
+                     self.contact_mass_output.send(press_out)
                      
                 self.output_com.send(com_out)
                 self.output_zmp.send(zmp_out)
@@ -2549,7 +2553,7 @@ class SMPLTorqueNode(SMPLNode):
                 # Active contact points: [[x, y, z, force], ...]
                 up = 1 if self.up_axis_prop() == 'Y' else 2
                 floor_h = getattr(self.processor, '_inferred_floor_height', 0.0)
-                cp = getattr(self.processor, 'contact_pressure', None)
+                cp = getattr(self.processor, 'contact_mass', None)
                 if cp is not None and cp.size > 0:
                     forces = cp[-1] if cp.ndim == 2 else cp
                 elif 'frame_eval' in res:
