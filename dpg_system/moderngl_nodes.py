@@ -4289,11 +4289,27 @@ class MGLOrbitCameraNode(MGLNode):
         self.elevation = self.add_input('elevation', widget_type='drag_float', widget_width=50, default_value=20.0)
         # wire mgl_context's ui output here: left-drag orbits, scroll zooms
         self.ui_input = self.add_input('ui', callback=self.ui_event_in)
+        # In orthographic mode the view volume's half-height is
+        # distance * tan(fov/2), so zoom (distance) and fov keep working
+        # and toggling projections preserves apparent scale at the target.
+        self.projection_option = self.add_option('projection', widget_type='combo',
+                                                 default_value='perspective')
+        self.projection_option.widget.combo_items = ['perspective', 'orthographic']
         self.near = self.add_option('near', widget_type='drag_float', default_value=0.1)
         self.far = self.add_option('far', widget_type='drag_float', default_value=100.0)
         self.drag_speed = self.add_option('drag_speed', widget_type='drag_float', default_value=0.3)
         self.zoom_speed = self.add_option('zoom_speed', widget_type='drag_float', default_value=1.0)
         self._drag_last = None
+        # canonical views: message 'top' / 'front' / 'side' into any input
+        # snaps yaw/elevation (target and distance stay put)
+        self._view_presets = {'top': (0.0, 90.0), 'front': (180.0, 0.0), 'side': (90.0, 0.0)}
+        for view in self._view_presets:
+            self.message_handlers[view] = self._view_message
+
+    def _view_message(self, message='', args=None):
+        yaw, elevation = self._view_presets[message]
+        self.yaw.set(yaw)
+        self.elevation.set(elevation)
 
     def custom_create(self, from_file):
         dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
@@ -4354,18 +4370,27 @@ class MGLOrbitCameraNode(MGLNode):
         elev_rad = math.radians(elev_deg)
         cos_elev = math.cos(elev_rad)
 
+        sin_elev = math.sin(elev_rad)
+
         eye_x = tgt[0] + dist * cos_elev * math.sin(yaw_rad)
-        eye_y = tgt[1] + dist * math.sin(elev_rad)
+        eye_y = tgt[1] + dist * sin_elev
         eye_z = tgt[2] + dist * cos_elev * math.cos(yaw_rad)
 
         eye = [eye_x, eye_y, eye_z]
-        up = [0.0, 1.0, 0.0]
+        # The orthonormalized up for a [0,1,0] hint, in closed form. Identical
+        # view to the plain hint away from the poles, but stays defined at
+        # elevation +/-90 so the 'top' view message can be an exact 90.
+        up = [-sin_elev * math.sin(yaw_rad), cos_elev, -sin_elev * math.cos(yaw_rad)]
 
         # Projection
         aspect = self.ctx.width / self.ctx.height
         if aspect == 0:
             aspect = 1.0
-        p = perspective(fov_val, aspect, self.near(), self.far())
+        if self.projection_option() == 'orthographic':
+            half_h = dist * math.tan(math.radians(max(1.0, min(179.0, fov_val))) * 0.5)
+            p = orthographic(half_h * aspect, half_h, self.near(), self.far())
+        else:
+            p = perspective(fov_val, aspect, self.near(), self.far())
         self.ctx.set_projection_matrix(p)
 
         # View
