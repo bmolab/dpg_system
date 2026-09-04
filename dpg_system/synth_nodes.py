@@ -8792,6 +8792,18 @@ class VstNode(SynthNode):
                 self._cost_countdown = 30
                 self.set_status(self.describe_plugin())
 
+    def custom_cleanup(self):
+        # Unregister first: the recompile takes the unit out of the program,
+        # so the audio thread has let go of the plugin before it is dropped.
+        # The parameter objects each hold the plugin, so they go too. What is
+        # left is destroyed here, on the main thread, with JUCE still whole,
+        # which is the only order pedalboard tears down cleanly in.
+        super().custom_cleanup()
+        self.unit.attach(None, 1)
+        self._parameters = {}
+        self._applied_choices = {}
+        self.plugin = None
+
     def load_requested_plugin(self):
         self.unit.attach(None, 1)
         self.plugin = None

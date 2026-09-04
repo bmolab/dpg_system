@@ -908,6 +908,22 @@ class App:
         self.do_exit = True
 
     def shutdown(self):
+        # Every way out of the app must end here: the menu, the window's
+        # close box, and Ctrl-C. Falling off the end of the script instead
+        # runs a normal Python exit, whose C++ static destructors race the
+        # threads that pedalboard/JUCE leave running behind a hosted plugin
+        # (a segfault in 'JUCE Timer' at __cxa_finalize).
+        self.do_exit = True
+        # Close the audio stream first, so no callback is rendering while the
+        # nodes below release their plugins and buffers. The engine can exist
+        # without a sampler_engine node (any ~ object creates it), so it is
+        # stopped here rather than relying on a node's cleanup.
+        try:
+            from dpg_system.sampler_nodes import SamplerEngineNode
+            if SamplerEngineNode.engine is not None:
+                SamplerEngineNode.engine.stop()
+        except Exception:
+            traceback.print_exc()
         # Stop daemon threads (playback workers, etc.) and release per-node
         # resources before DPG's globals start tearing down. Without this,
         # daemon threads can be killed mid-allocation by interpreter
@@ -2456,4 +2472,8 @@ class App:
                 print('run_loop exception:')
                 traceback.print_exception(exc_)
                 continue
+
+        # The viewport's close box ends the loop without setting do_exit;
+        # it needs the same orderly teardown as the menu's quit.
+        self.shutdown()
 

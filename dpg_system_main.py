@@ -55,3 +55,13 @@ except Exception as e:
     print('dpg_system_main unhandled exception:')
     traceback.print_exception(e)
 
+# Whatever brought us here, leave through App.shutdown so the audio engine
+# and hosted plugins are released in order and the process ends with
+# os._exit rather than a normal interpreter exit (see App.shutdown).
+if dpg_app is not None:
+    try:
+        dpg_app.shutdown()
+    except Exception as e:
+        import traceback
+        traceback.print_exception(e)
+
