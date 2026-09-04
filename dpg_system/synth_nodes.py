@@ -8028,8 +8028,14 @@ class StreamNode(SynthNode):
     streamer's sample_rate outlet can drive it; there is no way to read it
     off the numbers themselves. 'latency' is how much audio, in ms, to hold
     before starting: too little and a bursty source runs dry (counted on
-    'underruns'), too much and the sound lags. A backlog beyond a quarter
-    second is skipped to keep the stream live, counted on 'dropped'.
+    'underruns'), too much and the sound lags.
+
+    'max backlog' (an option, in ms) is for a live source: audio queued
+    beyond it is skipped so the stream stays current, counted on 'dropped'.
+    That is right for a microphone and wrong for anything that arrives
+    faster than it plays -- eleven_labs delivers a whole phrase in a
+    fraction of its length, and with the limit on all that survives is a
+    chopped burst. Set it to 0 to keep everything and play it out in order.
 
     Arguments: stream~ <rate> <latency ms>. Also registered as audio_in~.
     """
@@ -8071,13 +8077,32 @@ class StreamNode(SynthNode):
         self.dropped_output = self.add_output('dropped')
         self._reported = (0, 0)
 
+        self.max_backlog_option = self.add_option(
+            'max backlog', widget_type='drag_int',
+            default_value=int(StreamUnit.MAX_BACKLOG_SECONDS * 1000.0),
+            min=0, max=60000, callback=self.settings_changed)
+        if self.max_backlog_option.widget is not None:
+            self.max_backlog_option.widget.set_tooltip(
+                'ms of queued audio beyond which the stream skips ahead to '
+                'stay live; 0 keeps everything, for speech and other sources '
+                'that arrive faster than they play')
+
         self.add_switch()
         self.finish_synth_node()
+        self.settings_changed()
+
+    def custom_create(self, from_file):
+        # The widgets exist only now; read in __init__ they are all None, and
+        # a fresh node would otherwise run at 1000 Hz with no latency until
+        # something was touched. A loaded node is read again after its
+        # saved values land, in update_parameters_from_widgets.
         self.settings_changed()
 
     def settings_changed(self):
         self.unit.source_rate = float(max(1000, any_to_int(self.rate_input())))
         self.unit.latency = max(0.0, any_to_float(self.latency_input())) / 1000.0
+        backlog_ms = max(0, any_to_int(self.max_backlog_option()))
+        self.unit.max_backlog = backlog_ms / 1000.0 if backlog_ms > 0 else None
 
     def update_parameters_from_widgets(self):
         super().update_parameters_from_widgets()

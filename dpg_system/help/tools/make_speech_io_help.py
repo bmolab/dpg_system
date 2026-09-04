@@ -71,9 +71,16 @@ performance than a better one that lags.
 regardless of what went in.
 
 eleven_labs SPEAKS, AND QUEUES:
-Send text and it says it. 'backlog' reports how much is waiting, and 'speaking'
-whether it is talking now - which is what to gate on, because sending a second
-line while the first is still going stacks them up rather than interrupting.
+Send text and it says it - out of 'left out' / 'right out', as a signal, so it
+sounds through whatever fader_out~ or audio_out~ it is patched to and can go
+through vocoder~, vst~ or a filter on the way, like any other source. Unpatched,
+it is silent. 'backlog' reports how much is waiting, and 'speaking'
+whether it is busy - from the moment a line is sent off until the last of it
+has played - which is what to gate on, because sending a second line while the
+first is still going stacks them up rather than interrupting. 'sounding' is
+narrower: true only while sound is actually coming out, not during the pause
+before a phrase starts. That is the one to hand whisper, so it does not
+transcribe the node talking, or a face that should move with the voice.
 
 'stop' finishes the current phrase and stops; 'hard stop' cuts immediately.
 'accept input' closes the door without stopping what is already queued.
@@ -85,7 +92,8 @@ of the voice. 'similarity_boost' holds it closer to the original recording.
 'speed' is rate.
 
 'latency' trades responsiveness against quality - worth raising only if the
-delay before it starts is a problem, because the cost is audible.
+delay before it starts is a problem, because the cost is audible. The v3
+models do not take it at all, so it is left out of the request for them.
 
 SYNTAX:
 whisper
@@ -117,9 +125,8 @@ How it is said.
 stop / hard stop / accept input:
 End politely, end now, or stop taking new text.
 
-play / level:
-Whether to sound it through the shared audio engine, and how loud. Turn play 
-off to use the 'audio' outlet alone.
+level / enable:
+How loud, and whether it is on at all.
 
 OUTPUTS: 
 
@@ -135,13 +142,19 @@ What it heard as words when there was no speech.
 energy / rate / language:
 Level, speed, and what language it thinks it is.
 
-speaking / backlog:
-Whether it is talking, and how much is queued.
+speaking / sounding / backlog:
+Whether it is busy, whether sound is coming out this instant, and how much is
+queued.
 
-audio / sample_rate:
-The speech itself, as chunks of samples at 24 kHz, for stream~, the speech 
-analysis nodes, or recording. With 'play' on it sounds through the same engine 
-as the sampler and synth - one stream, no external player.
+left out / right out:
+The speech as a signal. Patch to fader_out~ or audio_out~ to hear it.
+
+phrase samples:
+The same speech as data, not sound: chunks of 24 kHz samples, delivered as they
+arrive from the service - a whole phrase in a fraction of a second, so it is
+all out long before the voice has finished. For recording, or analysis of a
+whole phrase. Not for hearing it, and anything that should line up with what
+is heard wants capture~ on the signal instead.
 
 RELATED:
 translate to move between languages in between.
@@ -151,36 +164,26 @@ cairo_layout to put the words on a screen."""
 demo = [
     {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
     {'key': 'wh', 'init': 'whisper', 'pos': (30, 120), 'w': 340, 'h': 480},
-    {'key': 'c0', 'comment': True, 'text': 'runs on this machine - no account, and',
+    {'key': 'c0', 'comment': True, 'text': 'runs on this machine - no account, and\nnothing leaves the room',
      'pos': (30, 615)},
-    {'key': 'c1', 'comment': True, 'text': 'nothing leaves the room',
-     'pos': (30, 645)},
 
     {'key': 'td', 'init': 'text_display', 'pos': (420, 120), 'w': 340, 'h': 180,
      'props': {'width': 320, 'height': 140, 'wrap': True, 'max_lines': 100,
                'autoscroll': True, 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'in_progress: the current guess, revised',
+    {'key': 'c2', 'comment': True, 'text': 'in_progress: the current guess, revised\nas it listens. Show this.',
      'pos': (420, 315)},
-    {'key': 'c3', 'comment': True, 'text': 'as it listens. Show this.',
-     'pos': (420, 345)},
 
     {'key': 'td2', 'init': 'text_display', 'pos': (420, 390), 'w': 340, 'h': 180,
      'props': {'width': 320, 'height': 140, 'wrap': True, 'max_lines': 100,
                'autoscroll': True, 'font size': '24'}},
-    {'key': 'c4', 'comment': True, 'text': 'phrases: settled, emitted once. ACT on',
+    {'key': 'c4', 'comment': True, 'text': 'phrases: settled, emitted once. ACT on\nthis - in_progress will be withdrawn',
      'pos': (420, 585)},
-    {'key': 'c5', 'comment': True, 'text': 'this - in_progress will be withdrawn',
-     'pos': (420, 615)},
 
     {'key': 'td3', 'init': 'text_display', 'pos': (420, 660), 'w': 340, 'h': 140,
      'props': {'width': 320, 'height': 100, 'wrap': True, 'max_lines': 60,
                'autoscroll': True, 'font size': '24'}},
-    {'key': 'c6', 'comment': True, 'text': 'noises: what it heard as words when',
+    {'key': 'c6', 'comment': True, 'text': 'noises: what it heard as words when\nnobody was speaking. Kept out of\nphrases on purpose - and interesting',
      'pos': (420, 815)},
-    {'key': 'c7', 'comment': True, 'text': 'nobody was speaking. Kept out of',
-     'pos': (420, 845)},
-    {'key': 'c8', 'comment': True, 'text': 'phrases on purpose - and interesting',
-     'pos': (420, 875)},
 
     {'key': 'pl', 'init': 'plot', 'pos': (30, 690), 'w': 300, 'h': 180,
      'props': PLOT(0.0, 1.0, 200)},
@@ -188,23 +191,19 @@ demo = [
      'pos': (30, 880)},
 
     {'key': 'el', 'init': 'eleven_labs', 'pos': (30, 930), 'w': 340, 'h': 420},
-    {'key': 'c10', 'comment': True, 'text': 'this one SENDS YOUR TEXT to a service',
+    {'key': 'c10', 'comment': True, 'text': 'this one SENDS YOUR TEXT to a service\nand needs an API key. Nothing private\nshould go through it',
      'pos': (30, 1365)},
-    {'key': 'c11', 'comment': True, 'text': 'and needs an API key. Nothing private',
-     'pos': (30, 1395)},
-    {'key': 'c12', 'comment': True, 'text': 'should go through it',
-     'pos': (30, 1425)},
 
     {'key': 'tg2', 'init': 'toggle', 'pos': (420, 930), 'w': 45, 'h': 42},
-    {'key': 'c13', 'comment': True, 'text': "'speaking' - gate on this. Sending a",
+    {'key': 'c13', 'comment': True, 'text': "'speaking' - gate on this. Sending a\nsecond line while the first is going\nstacks them up, it does not interrupt",
      'pos': (480, 930)},
-    {'key': 'c14', 'comment': True, 'text': 'second line while the first is going',
-     'pos': (480, 960)},
-    {'key': 'c15', 'comment': True, 'text': 'stacks them up, it does not interrupt',
-     'pos': (480, 990)},
     {'key': 'i1', 'init': 'int', 'pos': (420, 1030), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c16', 'comment': True, 'text': 'backlog - how much is waiting',
      'pos': (420, 1080)},
+
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (780, 930), 'w': 70, 'h': 308},
+    {'key': 'c17', 'comment': True, 'text': 'the speech is a signal: nothing\nsounds until it reaches a fader_out~\nor audio_out~',
+     'pos': (780, 1250)},
 ]
 links = [('tog', '', 'wh', 'on/off'),
          ('wh', 'in_progress', 'td', '###text in'),
@@ -213,6 +212,8 @@ links = [('tog', '', 'wh', 'on/off'),
          ('wh', 'energy', 'pl', 'y'),
          ('wh', 'phrases', 'el', 'text to speak'),
          ('el', 'speaking', 'tg2', ''),
-         ('el', 'backlog', 'i1', '')]
+         ('el', 'backlog', 'i1', ''),
+         ('el', 'left out', 'fo', 'left', 0, 0),
+         ('el', 'right out', 'fo', 'right', 1, 1)]
 print(build('whisper', 'whisper and eleven_labs - speech in and out', body,
             demo, links, demo_width=840, text_width=810, text_height=790))

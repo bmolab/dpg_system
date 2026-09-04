@@ -16035,10 +16035,13 @@ class StreamUnit(Unit):
     seconds -- a stalled patch catching up -- is skipped rather than played
     late, so a live stream stays live; the samples let go are counted as
     dropped. Set `max_backlog` to None for material that arrives faster
-    than real time and must all be heard, such as streamed speech.
+    than real time and must all be heard, such as streamed speech: the
+    ring then holds the whole phrase, and a push that would overrun what
+    is still unplayed is cut short and counted as dropped rather than
+    written over the top of it.
     """
 
-    CAPACITY = 1 << 17            # per channel; ~3 s at 44.1 kHz
+    CAPACITY = 1 << 20            # per channel; ~22 s at 48 kHz, 8 MB in all
     MAX_BACKLOG_SECONDS = 0.25
 
     def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
@@ -16082,6 +16085,15 @@ class StreamUnit(Unit):
         if frames > half:
             data = data[:, -half:]
             frames = half
+        # Only the reader moves _read, so the room measured here can only
+        # grow before the write lands.
+        room = self.capacity - int(self._write - self._read)
+        if frames > room:
+            self.dropped += frames - max(0, room)
+            if room <= 0:
+                return
+            data = data[:, :room]
+            frames = room
         self.stereo = data.shape[0] >= 2
         left = data[0]
         right = data[1] if self.stereo else data[0]
@@ -16106,6 +16118,12 @@ class StreamUnit(Unit):
     def backlog(self):
         """Source samples pushed but not yet played."""
         return self._write - self._read
+
+    @property
+    def playing(self):
+        """True while audio is actually leaving the outlets: not during the
+        latency hold before a phrase, not after the tail has run dry."""
+        return not self._waiting
 
     # -- audio side --------------------------------------------------------
 

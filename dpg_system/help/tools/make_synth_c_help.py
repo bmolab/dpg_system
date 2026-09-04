@@ -128,7 +128,9 @@ as a signal, so a microphone can drive vocoder~, a recording excite string~, or
 live input reach a vst~. Set 'rate' to the rate the chunks were made at; 
 file_stream's sample_rate outlet can drive it. 'latency' is how much to hold 
 before starting: too little and a bursty source runs dry, counted on 
-'underruns'; a backlog past a quarter second is skipped, counted on 'dropped'.
+'underruns'; a backlog past the 'max backlog' option is skipped, counted on 
+'dropped' - set it to 0 for speech or anything else that arrives faster than 
+it plays.
 
 place~ PUTS IT SOMEWHERE:
 One outlet per speaker, patched onward to audio_out~'s inputs. Several place~ 
