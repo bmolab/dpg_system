@@ -117,6 +117,10 @@ How it is said.
 stop / hard stop / accept input:
 End politely, end now, or stop taking new text.
 
+play / level:
+Whether to sound it through the shared audio engine, and how loud. Turn play 
+off to use the 'audio' outlet alone.
+
 OUTPUTS: 
 
 phrases:
@@ -133,6 +137,11 @@ Level, speed, and what language it thinks it is.
 
 speaking / backlog:
 Whether it is talking, and how much is queued.
+
+audio / sample_rate:
+The speech itself, as chunks of samples at 24 kHz, for stream~, the speech 
+analysis nodes, or recording. With 'play' on it sounds through the same engine 
+as the sampler and synth - one stream, no external player.
 
 RELATED:
 translate to move between languages in between.

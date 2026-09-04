@@ -1569,7 +1569,30 @@ class PolyphonicSamplerNode(Node):
              v = SamplerEngineNode.engine.voices[i]
              if not v.active and i not in busy_indices:
                  return i
-        return None
+        return self._steal_voice(start, end)
+
+    def _steal_voice(self, start, end):
+        """The pool is full: take a voice rather than drop the trigger.
+
+        A voice already releasing is the least loss, so those go first;
+        otherwise the allocation that has been sounding longest. Its
+        record is dropped here so the caller's fresh one is the only
+        claim on that index. Retriggering cuts the old sound at the
+        sample -- the same price any polyphonic sampler pays for stealing.
+        """
+        voices = SamplerEngineNode.engine.voices
+        candidates = [a for a in self.active_allocations
+                      if start <= a["idx"] < end]
+        if not candidates:
+            return None
+        releasing = [a for a in candidates
+                     if voices[a["idx"]].target_envelope <= 0.0]
+        pool = releasing if releasing else candidates
+        victim = min(pool, key=lambda a: a.get("time", 0.0))
+        idx = victim["idx"]
+        self.active_allocations = [a for a in self.active_allocations
+                                   if a["idx"] != idx]
+        return idx
 
     def _stop_all_voices(self):
         """Stop all currently active voices for this node (used for mono mode)."""

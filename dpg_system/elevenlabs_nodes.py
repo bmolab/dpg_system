@@ -1,24 +1,13 @@
-import requests  # you have to install this library, with pip for example
-import io
-from pydub import AudioSegment
-from pydub.playback import play
-import dearpygui.dearpygui as dpg
-import math
 import numpy as np
-import json
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
-from elevenlabs import stream
 from elevenlabs.types import VoiceSettings
 from elevenlabs.client import ElevenLabs
-from elevenlabs.play import play
 from queue import Queue, Empty, Full
 import threading
 import traceback
 import time
-import shutil
-import subprocess
-from typing import Iterator, Union
+from typing import Iterator
 
 # create a file called elevenlabs_key.py and put in
 # api_key = 'xxxxxxxx....'
@@ -30,81 +19,118 @@ def register_elevenlabs_nodes():
     Node.app.register_node("eleven_labs", ElevenLabsNode.factory)
 
 
-def is_installed(lib_name: str) -> bool:
-    lib = shutil.which(lib_name)
-    if lib is None:
-        return False
-    return True
+class PcmStreamer:
+    """Speech from the API into the shared audio engine, as it arrives.
 
+    The API is asked for raw 24 kHz PCM rather than MP3, so there is nothing
+    to decode and no external player: each chunk becomes float samples and
+    goes into a StreamUnit (the same ring stream~ uses) that the engine
+    mixes beside its voices and the synth graph. One stream, one device,
+    and a device chosen on audio_out~ or audio_mixer applies here too.
 
-class Streamer:
+    Every chunk is also handed to `chunk_listener`, which the node uses for
+    its 'audio' outlet, so speech can be patched into stream~, the speech
+    analysis nodes, or anything else that takes audio.
+    """
+
+    RATE = 24000
+    LATENCY = 0.1        # seconds held before a phrase starts sounding
+
     def __init__(self):
         self.force_stop = False
-        self.process = None
+        self.play = True
+        self.level = 1.0
+        self.unit = None
+        self.engine = None
+        self.chunk_listener = None
+        self._pending = b''
+
+    def _ensure_engine(self):
+        if self.engine is not None:
+            return self.engine
+        try:
+            from dpg_system.sampler_nodes import SamplerEngineNode
+            from dpg_system.sampler import SamplerEngine
+            from dpg_system.synth_core import StreamUnit
+        except Exception as error:
+            print(f'ElevenLabs: audio engine unavailable ({error})')
+            return None
+        engine = SamplerEngineNode.engine
+        if engine is None:
+            engine = SamplerEngine()
+            if not engine.start():
+                return None
+            SamplerEngineNode.engine = engine
+        self.unit = StreamUnit(engine.sample_rate)
+        self.unit.source_rate = float(PcmStreamer.RATE)
+        self.unit.latency = PcmStreamer.LATENCY
+        # Speech arrives faster than real time and must all be heard.
+        self.unit.max_backlog = None
+        engine.add_renderer(self)
+        self.engine = engine
+        return engine
+
+    # -- audio thread --
+
+    def render_into(self, mix, frames):
+        unit = self.unit
+        unit.render(frames)
+        out = unit.out
+        if out.constant and out.value == 0.0:
+            return
+        block = out.array(frames)
+        if self.level != 1.0:
+            block = block * self.level
+        mix[:, 0] += block
+        if mix.shape[1] > 1:
+            mix[:, 1] += block
+
+    # -- service thread --
+
+    def stream(self, audio_stream: Iterator[bytes]):
+        self.force_stop = False
+        engine = self._ensure_engine() if self.play else self.engine
+        self._pending = b''
+        for chunk in audio_stream:
+            if self.force_stop:
+                break
+            if not chunk:
+                continue
+            data = self._pending + chunk
+            usable = len(data) - (len(data) % 2)      # whole 16-bit samples only
+            self._pending = data[usable:]
+            if usable == 0:
+                continue
+            samples = np.frombuffer(data[:usable], dtype='<i2').astype(np.float32) / 32768.0
+            if self.play and self.unit is not None:
+                self.unit.push(samples)
+            if self.chunk_listener is not None:
+                try:
+                    self.chunk_listener(samples)
+                except Exception as error:
+                    print(f'ElevenLabs: audio outlet error ({error})')
+        if self.force_stop and self.unit is not None:
+            self.unit.deactivate()
+        self.force_stop = False
+
+    def speaking(self):
+        """True while queued speech is still sounding after the API is done."""
+        return self.unit is not None and self.unit.backlog > 0
 
     def do_stop(self):
         self.force_stop = True
+        if self.unit is not None:
+            self.unit.deactivate()
 
     def hard_stop(self):
-        if self.process is not None:
-            try:
-                self.process.terminate()
-            except Exception as e:
-                print('ElevenLabs Streamer error', e)
+        self.do_stop()
 
-    def stream(self, audio_stream: Iterator[bytes]) -> bytes:
-        if not is_installed("mpv"):
-            message = (
-                "mpv not found, necessary to stream audio. "
-                "On mac you can install it with 'brew install mpv'. "
-                "On linux and windows you can install it from https://mpv.io/"
-            )
-            raise ValueError(message)
+    def close(self):
+        self.do_stop()
+        if self.engine is not None:
+            self.engine.remove_renderer(self)
+            self.engine = None
 
-        mpv_command = ["mpv", "--no-cache", "--no-terminal", "--", "fd://0"]
-        mpv_process = subprocess.Popen(
-            mpv_command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-
-        self.process = mpv_process
-
-        audio = b""
-
-        for chunk in audio_stream:
-            if self.force_stop:
-                audio = b""
-                break
-            if chunk is not None:
-                if self.force_stop:
-                    audio = b""
-                    break
-                try:
-                    mpv_process.stdin.write(chunk)  # type: ignore
-                    mpv_process.stdin.flush()  # type: ignore
-                except (BrokenPipeError, OSError) as e:
-                    print('ElevenLabs Streamer: mpv write failed', e)
-                    break
-
-                audio += chunk
-                if self.force_stop:
-                    audio = b""
-                    break
-
-        if mpv_process.stdin:
-            try:
-                mpv_process.stdin.close()
-            except (BrokenPipeError, OSError):
-                pass
-        if self.force_stop:
-             mpv_process.terminate()
-             self.force_stop = False
-        else:
-            mpv_process.wait()
-        self.force_stop = False
-        return audio
 
 def service_eleven_labs():
     while not ElevenLabsNode._stop_event.is_set():
@@ -143,6 +169,8 @@ class ElevenLabsNode(Node):
         super().__init__(label, data, args)
 
         self.text_input = self.add_input('text to speak', triggers_execution=True)
+        self.streamer = PcmStreamer()
+        self.streamer.chunk_listener = self._chunk_arrived
 
         try:
             self.client = ElevenLabs(api_key=api_key)
@@ -151,7 +179,6 @@ class ElevenLabsNode(Node):
             self.models = self.client.models.list()
             self.voice_name = 'David'
             self.active = False
-            self.streamer = Streamer()
             self.audio_stream = None
             if len(args) > 0:
                 voice_name = any_to_string(args[0])
@@ -201,8 +228,16 @@ class ElevenLabsNode(Node):
         self.stop_streaming_input = self.add_input('stop', widget_type='button', callback=self.stop_streaming)
         self.hard_stop_input = self.add_input('hard stop', widget_type='button', callback=self.hard_stop_streaming)
         self.accept_input = self.add_input('accept input', widget_type='checkbox', default_value=True)
+        self.play_input = self.add_input('play', widget_type='checkbox', default_value=True,
+                                         callback=self.play_settings_changed)
+        self.level_input = self.add_input('level', widget_type='drag_float', default_value=1.0,
+                                          min=0.0, max=2.0, callback=self.play_settings_changed)
         self.active_output = self.add_output('speaking')
         self.backlog_out = self.add_output('backlog')
+        # The speech itself, as float32 chunks at 24 kHz, for stream~, the
+        # speech analysis nodes, or recording.
+        self.audio_out = self.add_output('audio')
+        self.rate_out = self.add_output('sample_rate')
 
         self.voice_record = None
         self.previously_active = False
@@ -215,7 +250,7 @@ class ElevenLabsNode(Node):
     def custom_cleanup(self):
         # Stop any in-flight playback and drain the queue
         try:
-            self.streamer.do_stop()
+            self.streamer.close()
         except Exception:
             pass
         while not self.phrase_queue.empty():
@@ -225,6 +260,16 @@ class ElevenLabsNode(Node):
                 break
         if self in ElevenLabsNode.instances:
             ElevenLabsNode.instances.remove(self)
+
+    def play_settings_changed(self):
+        self.streamer.play = bool(self.play_input())
+        self.streamer.level = max(0.0, any_to_float(self.level_input()))
+
+    def update_parameters_from_widgets(self):
+        self.play_settings_changed()
+
+    def _chunk_arrived(self, samples):
+        self.audio_out.send(samples)
 
     def voice_changed(self):
         current_voice_name = self.voice_name_input()
@@ -292,20 +337,25 @@ class ElevenLabsNode(Node):
                         text=text,
                         model_id=model,
                         voice_settings=settings,
-                        optimize_streaming_latency=latency
+                        optimize_streaming_latency=latency,
+                        output_format='pcm_%d' % PcmStreamer.RATE,
                     )
                 except Exception as e:
                     print('ElevenLabs API error:', e)
                     return
 
                 try:
-                    audio = self.streamer.stream(self.audio_stream)
+                    self.rate_out.send(PcmStreamer.RATE)
+                    self.streamer.stream(self.audio_stream)
                 except Exception as e:
-                    print(e)
+                    print('ElevenLabs stream error:', e)
             finally:
                 self.active = False
 
     def frame_task(self):
-        if self.active != self.previously_active:
-            self.active_output.send(self.active)
-            self.previously_active = self.active
+        # 'speaking' covers the audible tail: the API can finish sending
+        # while the engine still has the end of the phrase to play.
+        speaking = self.active or self.streamer.speaking()
+        if speaking != self.previously_active:
+            self.active_output.send(speaking)
+            self.previously_active = speaking

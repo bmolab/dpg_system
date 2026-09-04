@@ -1051,6 +1051,11 @@ class SamplerEngine:
         # from the main thread as a whole object so the audio thread always
         # sees a consistent program; it is read once per callback.
         self.program = None
+        # Extra sources rendered straight into the mix -- streamed speech
+        # from eleven_labs, for one. Each has render_into(mix, frames). The
+        # list is replaced whole on every change, never mutated, so the
+        # audio thread reads a consistent snapshot without a lock.
+        self.renderers = []
 
     def start(self):
         try:
@@ -1183,6 +1188,13 @@ class SamplerEngine:
         if 0 <= voice_index < 128:
             self.voices[voice_index].set_grain_position(pos)
 
+    def add_renderer(self, renderer):
+        if renderer not in self.renderers:
+            self.renderers = self.renderers + [renderer]
+
+    def remove_renderer(self, renderer):
+        self.renderers = [r for r in self.renderers if r is not renderer]
+
     def stop_voice(self, voice_index):
         if 0 <= voice_index < 128:
             self.voices[voice_index].release()
@@ -1233,6 +1245,13 @@ class SamplerEngine:
             except Exception as e:
                 self.program = None
                 print(f"SamplerEngine: synth program exception, disabled ({e})")
+
+        for renderer in self.renderers:
+            try:
+                renderer.render_into(mix, frames)
+            except Exception as e:
+                self.remove_renderer(renderer)
+                print(f"SamplerEngine: renderer exception, removed ({e})")
 
         mix *= self.master_volume
 

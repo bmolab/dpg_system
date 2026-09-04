@@ -16029,9 +16029,13 @@ class StreamUnit(Unit):
     Chunks arrive in bursts at GUI rate or a device's callback rate, and
     the audio thread consumes evenly, so the reader holds `latency` seconds
     of audio in hand before it starts, and starts again the same way after
-    running dry (an underrun, counted). A backlog past MAX_BACKLOG_SECONDS
-    -- a stalled patch catching up -- is skipped rather than played late,
-    so the stream stays live; the samples let go are counted as dropped.
+    running dry (an underrun, counted). When it runs dry the tail shorter
+    than a block is played out rather than stranded, so a stream that
+    simply ended leaves no backlog behind. A backlog past `max_backlog`
+    seconds -- a stalled patch catching up -- is skipped rather than played
+    late, so a live stream stays live; the samples let go are counted as
+    dropped. Set `max_backlog` to None for material that arrives faster
+    than real time and must all be heard, such as streamed speech.
     """
 
     CAPACITY = 1 << 17            # per channel; ~3 s at 44.1 kHz
@@ -16048,6 +16052,7 @@ class StreamUnit(Unit):
         self._read = 0.0          # read cursor, in source samples
         self.source_rate = float(sample_rate)
         self.latency = 0.05       # seconds held before starting or restarting
+        self.max_backlog = StreamUnit.MAX_BACKLOG_SECONDS   # None: never skip
         self._waiting = True
         self.stereo = False
         self.underruns = 0
@@ -16119,6 +16124,39 @@ class StreamUnit(Unit):
         self.underruns = 0
         self.dropped = 0
 
+    def _gather(self, count, frames):
+        """Interpolate `count` output frames from the cursor; zero the rest."""
+        capacity = self.capacity
+        ratio = self.source_rate / self.sample_rate
+        pos = self._pos[:count]
+        np.subtract(_INDEX_RAMP[:count], 1.0, out=pos)
+        pos *= ratio
+        pos += self._read
+        idx = self._idx[:count]
+        np.floor(pos, out=self._pos[:count])
+        idx[:] = self._pos[:count]
+        frac = self._frac[:count]
+        np.subtract(_INDEX_RAMP[:count], 1.0, out=pos)
+        pos *= ratio
+        pos += self._read
+        np.subtract(pos, idx, out=frac, casting='unsafe')
+        i0 = idx % capacity
+        i1 = (idx + 1) % capacity
+        ring = self._ring
+        for channel, signal in ((0, self.out), (1, self.right)):
+            buffer = signal.data[:frames]
+            if channel == 1 and not self.stereo:
+                buffer[:] = self.out.data[:frames]
+            else:
+                a = ring[channel, i0]
+                b = ring[channel, i1]
+                np.subtract(b, a, out=b)
+                b *= frac
+                np.add(a, b, out=buffer[:count])
+                if count < frames:
+                    buffer[count:] = 0.0
+            signal.constant = False
+
     def render(self, frames):
         level = self.level_in.eval(frames)
         written = self._write
@@ -16132,48 +16170,33 @@ class StreamUnit(Unit):
                 return
             self._waiting = False
         elif available < need:
+            # Ran dry. Play out whatever tail is left -- a stream that just
+            # ended owes the listener its last few milliseconds -- then hold
+            # until `latency` worth has built up again.
             self._waiting = True
             self.underruns += 1
-            self._silence()
+            count = int((available - 1.0) / ratio) if available > 1.0 else 0
+            if count <= 0:
+                self._read = float(written)
+                self._silence()
+                return
+            self._gather(min(count, frames), frames)
+            self._read = float(written)
+            self._apply_level(level, frames)
             return
 
-        limit = need + StreamUnit.MAX_BACKLOG_SECONDS * self.source_rate
-        if available > limit:
-            skip = available - (self.latency * self.source_rate + need)
-            self._read += skip
-            self.dropped += int(skip)
+        if self.max_backlog is not None:
+            limit = need + self.max_backlog * self.source_rate
+            if available > limit:
+                skip = available - (self.latency * self.source_rate + need)
+                self._read += skip
+                self.dropped += int(skip)
 
-        capacity = self.capacity
-        pos = self._pos[:frames]
-        np.subtract(_INDEX_RAMP[:frames], 1.0, out=pos)
-        pos *= ratio
-        pos += self._read
-        idx = self._idx[:frames]
-        np.floor(pos, out=pos)
-        idx[:] = pos
-        frac = self._frac[:frames]
-        # pos now holds floor(pos); rebuild the fraction from the cursor.
-        np.subtract(_INDEX_RAMP[:frames], 1.0, out=pos)
-        pos *= ratio
-        pos += self._read
-        np.subtract(pos, idx, out=frac, casting='unsafe')
-        i0 = idx % capacity
-        i1 = (idx + 1) % capacity
-
-        ring = self._ring
-        for channel, signal in ((0, self.out), (1, self.right)):
-            buffer = signal.data[:frames]
-            if channel == 1 and not self.stereo:
-                buffer[:] = self.out.data[:frames]
-            else:
-                a = ring[channel, i0]
-                b = ring[channel, i1]
-                np.subtract(b, a, out=b)
-                b *= frac
-                np.add(a, b, out=buffer)
-            signal.constant = False
+        self._gather(frames, frames)
         self._read += frames * ratio
+        self._apply_level(level, frames)
 
+    def _apply_level(self, level, frames):
         # Output level, glided when it is a knob, as-is when it is a signal.
         if level.constant:
             target = min(2.0, max(0.0, level.value))
