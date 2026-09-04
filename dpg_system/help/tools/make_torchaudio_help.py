@@ -84,6 +84,11 @@ The rate the stream is really running at, sent when it starts or changes. Patch
 it into speech_pitch, stream~ or whisper's rate inlet so they agree with the 
 source instead of assuming.
 
+dropped (t.audio_source):
+Blocks are handed on from the main thread, one frame behind the device, so 
+nothing downstream runs on the audio thread. If the patch stalls and blocks 
+pile up past a few seconds, the newest are dropped and counted here.
+
 audio data out / sample_rate (t.audio.file):
 The whole file, and the rate it was recorded at.
 

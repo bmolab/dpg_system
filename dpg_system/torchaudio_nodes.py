@@ -5,6 +5,7 @@ from dpg_system.node import LoadDialog
 
 import time
 import os
+import queue
 
 # Input streams and rate conversion are shared with whisper via audio_io;
 # the only output stream is the sampler engine's (see MixerBridge below).
@@ -63,6 +64,17 @@ class TorchAudioSourceNode(TorchNode):
         self.output = self.add_output('audio tensors')
         # The rate the stream really opened at; patch into whatever analyses it.
         self.rate_output = self.add_output('sample_rate')
+        self.dropped_output = self.add_output('dropped')
+
+        # Blocks cross from PortAudio's thread to the main thread through
+        # this queue: the callback only copies and enqueues, and frame_task
+        # sends. Running the downstream graph on the audio thread meant any
+        # heavy node dropped device buffers and any widget-touching node
+        # was on the wrong thread.
+        self._chunks = queue.SimpleQueue()
+        self._dropped = 0
+        self._reported_dropped = 0
+        self.add_frame_task()
 
     def source_params_changed(self):
         changed = False
@@ -119,18 +131,37 @@ class TorchAudioSourceNode(TorchNode):
         if changed or source_changed:
             self.rate_output.send(int(self.source.samplerate))
 
+    # A stalled patch must not grow the queue without bound: past this many
+    # waiting blocks (about 4 s at the default 1024 @ 16 kHz) new ones are
+    # dropped and counted. And one frame must not dump an unbounded burst.
+    MAX_QUEUED = 64
+    MAX_PER_FRAME = 16
+
     def audio_callback(self, indata, frame_count, time_info, flag):
-        # This runs on the sounddevice PortAudio thread. An uncaught
-        # exception here can silently kill the input stream — catch it
-        # broadly so the next callback still fires and the user sees the
-        # diagnostic instead of a stream that just stopped working.
+        # PortAudio's thread: copy and queue, nothing else. The buffer is
+        # PortAudio's and is reused, so the copy is not optional. An uncaught
+        # exception here silently kills the stream, hence the broad catch.
         try:
-            torch_ready_numpy = indata.T
-            torch_audio_data = torch.from_numpy(torch_ready_numpy)
-            self.output.send(torch_audio_data)
+            if self._chunks.qsize() >= TorchAudioSourceNode.MAX_QUEUED:
+                self._dropped += 1
+                return
+            self._chunks.put(indata.T.copy())
         except Exception as e:
             print(f'{self.label}: audio_callback: {type(e).__name__}: {e}')
             traceback.print_exc()
+
+    def frame_task(self):
+        sent = 0
+        while sent < TorchAudioSourceNode.MAX_PER_FRAME:
+            try:
+                chunk = self._chunks.get_nowait()
+            except queue.Empty:
+                break
+            self.output.send(torch.from_numpy(chunk))
+            sent += 1
+        if self._dropped != self._reported_dropped:
+            self._reported_dropped = self._dropped
+            self.dropped_output.send(self._dropped)
 
     def stream_on_off(self):
         if self.stream_input():
@@ -145,6 +176,7 @@ class TorchAudioSourceNode(TorchNode):
                     self.streaming = False
 
     def custom_cleanup(self):
+        self.remove_frame_tasks()
         if self.streaming:
             self.source.stop()
             self.source = None
