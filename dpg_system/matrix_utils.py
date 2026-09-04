@@ -26,6 +26,26 @@ def perspective(fov, aspect, near, far):
 
     return m
 
+def orthographic(half_width, half_height, near, far):
+    """
+    Creates a symmetric orthographic projection matrix in the same
+    (transposed) storage convention as perspective(). Returns identity
+    (with a log line) on bad input.
+    """
+    if half_width <= 0 or half_height <= 0 or near == far:
+        print(f'orthographic: invalid input half_width={half_width} '
+              f'half_height={half_height} near={near} far={far}, returning identity')
+        return np.identity(4, dtype=np.float32)
+
+    m = np.zeros((4, 4), dtype=np.float32)
+    m[0, 0] = 1.0 / half_width
+    m[1, 1] = 1.0 / half_height
+    m[2, 2] = -2.0 / (far - near)
+    m[3, 2] = -(far + near) / (far - near)
+    m[3, 3] = 1.0
+    return m
+
+
 def look_at(eye, target, up):
     """
     Creates a view matrix (LookAt). Returns the identity matrix (with a

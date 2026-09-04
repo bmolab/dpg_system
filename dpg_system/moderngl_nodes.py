@@ -1662,6 +1662,12 @@ class MGLShapeNode(MGLNode):
     def handle_shape_params(self):
         pass
 
+    def get_point_size(self):
+        """Point-sprite size in pixels (pre perspective divide — the shader
+        divides by gl_Position.w). Subclasses may derive it from world-space
+        data instead of the widget."""
+        return self.point_size_input()
+
     def _update_internal_texture(self, data):
         """Convert a numpy array (or torch tensor) to an internal moderngl.Texture."""
         if self.ctx is None:
@@ -1773,7 +1779,7 @@ class MGLShapeNode(MGLNode):
                 inner_ctx.wireframe = False
             elif mode == 'points':
                 if 'point_size' in self.prog:
-                    self.prog['point_size'].value = self.point_size_input()
+                    self.prog['point_size'].value = self.get_point_size()
                 if getattr(self, '_points_additive', False):
                     # Order-independent additive accumulation: depth writes off
                     # (test stays on, so solid geometry still occludes) and
@@ -2503,9 +2509,14 @@ class MGLPointCloudNode(MGLShapeNode):
         self.blend_input = self.add_input('blend', widget_type='combo',
                                           default_value='additive')
         self.blend_input.widget.combo_items = ['normal', 'additive']
+        # When the frame carries a voxel size (attached by pc_voxel), draw
+        # each point at that world size instead of the point_size widget.
+        self.voxel_size_draw_input = self.add_input('draw at voxel size', widget_type='checkbox',
+                                                    default_value=True)
         self.end_initialization()
         self.points_data = None
         self.weights_data = None
+        self.voxel_size_m = None
         self.dirty = False
 
     def custom_create(self, from_file):
@@ -2517,10 +2528,13 @@ class MGLPointCloudNode(MGLShapeNode):
         if self.points_input.fresh_input:
             data = self.points_input()
             weights = None
+            voxel_size = None
             if isinstance(data, dict):
                 # cloud-frame convention (point_cloud_nodes): per-point 0..1
-                # weights (e.g. pc_voxel occupancy) ride alongside the points
+                # weights (e.g. pc_voxel occupancy) and the voxel size (metres,
+                # float or (x, y, z)) ride alongside the points
                 weights = data.get('weights')
+                voxel_size = data.get('voxel_size')
                 data = data.get('point_cloud')
             if data is not None:
                 # Convert to numpy float32
@@ -2542,6 +2556,16 @@ class MGLPointCloudNode(MGLShapeNode):
                          w = np.asarray(weights, dtype=np.float32).reshape(-1)
                          if w.size == data.shape[0]:
                              self.weights_data = np.clip(w, 0.0, 1.0)
+                     self.voxel_size_m = None
+                     if voxel_size is not None:
+                         try:
+                             v = np.asarray(voxel_size, dtype=np.float32).reshape(-1)
+                             if v.size in (1, 3) and np.all(v > 0):
+                                 # sprites are square, so anisotropic voxels
+                                 # draw at the mean of their axes
+                                 self.voxel_size_m = float(v.mean())
+                         except (TypeError, ValueError):
+                             pass
                      self.dirty = True
 
         super().execute()
@@ -2571,6 +2595,19 @@ class MGLPointCloudNode(MGLShapeNode):
                                     if self.weights_data is not None else 0)
         self._points_additive = self.blend_input() == 'additive'
         super().draw()
+
+    def get_point_size(self):
+        if (self.voxel_size_m is not None and self.voxel_size_draw_input()
+                and self.ctx is not None):
+            target = self.ctx.active_target or self.ctx.default_target
+            height = getattr(target, 'height', 0)
+            if height:
+                # world size -> pixels before the shader's divide by
+                # gl_Position.w: P[1,1] is the vertical focal scale
+                # (1/tan(fov/2)), height/2 maps NDC to pixels.
+                return float(self.voxel_size_m
+                             * self.ctx.projection_matrix[1, 1] * height * 0.5)
+        return self.point_size_input()
 
     def create_geometry(self):
         # Fallback if draw called without data
@@ -4438,11 +4475,27 @@ class MGLOrbitCameraNode(MGLNode):
         self.elevation = self.add_input('elevation', widget_type='drag_float', widget_width=50, default_value=20.0)
         # wire mgl_context's ui output here: left-drag orbits, scroll zooms
         self.ui_input = self.add_input('ui', callback=self.ui_event_in)
+        # In orthographic mode the view volume's half-height is
+        # distance * tan(fov/2), so zoom (distance) and fov keep working
+        # and toggling projections preserves apparent scale at the target.
+        self.projection_option = self.add_option('projection', widget_type='combo',
+                                                 default_value='perspective')
+        self.projection_option.widget.combo_items = ['perspective', 'orthographic']
         self.near = self.add_option('near', widget_type='drag_float', default_value=0.1)
         self.far = self.add_option('far', widget_type='drag_float', default_value=100.0)
         self.drag_speed = self.add_option('drag_speed', widget_type='drag_float', default_value=0.3)
         self.zoom_speed = self.add_option('zoom_speed', widget_type='drag_float', default_value=1.0)
         self._drag_last = None
+        # canonical views: message 'top' / 'front' / 'side' into any input
+        # snaps yaw/elevation (target and distance stay put)
+        self._view_presets = {'top': (0.0, 90.0), 'front': (180.0, 0.0), 'side': (90.0, 0.0)}
+        for view in self._view_presets:
+            self.message_handlers[view] = self._view_message
+
+    def _view_message(self, message='', args=None):
+        yaw, elevation = self._view_presets[message]
+        self.yaw.set(yaw)
+        self.elevation.set(elevation)
 
     def custom_create(self, from_file):
         dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
@@ -4503,18 +4556,27 @@ class MGLOrbitCameraNode(MGLNode):
         elev_rad = math.radians(elev_deg)
         cos_elev = math.cos(elev_rad)
 
+        sin_elev = math.sin(elev_rad)
+
         eye_x = tgt[0] + dist * cos_elev * math.sin(yaw_rad)
-        eye_y = tgt[1] + dist * math.sin(elev_rad)
+        eye_y = tgt[1] + dist * sin_elev
         eye_z = tgt[2] + dist * cos_elev * math.cos(yaw_rad)
 
         eye = [eye_x, eye_y, eye_z]
-        up = [0.0, 1.0, 0.0]
+        # The orthonormalized up for a [0,1,0] hint, in closed form. Identical
+        # view to the plain hint away from the poles, but stays defined at
+        # elevation +/-90 so the 'top' view message can be an exact 90.
+        up = [-sin_elev * math.sin(yaw_rad), cos_elev, -sin_elev * math.cos(yaw_rad)]
 
         # Projection
         aspect = self.ctx.width / self.ctx.height
         if aspect == 0:
             aspect = 1.0
-        p = perspective(fov_val, aspect, self.near(), self.far())
+        if self.projection_option() == 'orthographic':
+            half_h = dist * math.tan(math.radians(max(1.0, min(179.0, fov_val))) * 0.5)
+            p = orthographic(half_h * aspect, half_h, self.near(), self.far())
+        else:
+            p = perspective(fov_val, aspect, self.near(), self.far())
         self.ctx.set_projection_matrix(p)
 
         # View

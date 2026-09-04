@@ -4236,16 +4236,49 @@ class _LinuxDialogServer:
     _proc = None
     _lock = threading.Lock()
     _SERVER_SCRIPT = os.path.join(os.path.dirname(__file__), '_dialog_server.py')
+    _python = None
+    _unavailable = False
+
+    @classmethod
+    def _find_python(cls):
+        """Find an interpreter that can import gi (PyGObject).
+
+        Conda/venv pythons often lack PyGObject while the system python has it,
+        so probe sys.executable first, then common system interpreters. The
+        result (including total failure) is cached so dialogs after the first
+        never pay the probe cost.
+        """
+        import subprocess
+        import shutil
+        candidates = [sys.executable, '/usr/bin/python3', shutil.which('python3')]
+        seen = set()
+        for python in candidates:
+            if not python or python in seen or not os.path.exists(python):
+                continue
+            seen.add(python)
+            try:
+                probe = subprocess.run(
+                    [python, '-c', 'import gi'],
+                    capture_output=True, timeout=10,
+                )
+                if probe.returncode == 0:
+                    return python
+            except Exception:
+                pass
+        return None
 
     @classmethod
     def _start(cls):
         import subprocess
-        # sys.executable works in venvs, conda, NixOS, and system installs alike;
-        # the previous hard-coded /usr/bin/python3 broke on those.
-        # _linux_file_dialog falls back to zenity/kdialog if gi isn't importable
-        # by sys.executable, so a missing PyGObject in a venv is recoverable.
+        if cls._unavailable:
+            raise RuntimeError("no python with PyGObject (gi) available")
+        if cls._python is None:
+            cls._python = cls._find_python()
+            if cls._python is None:
+                cls._unavailable = True
+                raise RuntimeError("no python with PyGObject (gi) available")
         cls._proc = subprocess.Popen(
-            [sys.executable, cls._SERVER_SCRIPT],
+            [cls._python, cls._SERVER_SCRIPT],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,

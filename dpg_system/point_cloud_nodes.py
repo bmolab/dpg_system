@@ -24,8 +24,10 @@ Cloud-frame convention: a frame on the wire is either a raw (N, 3) array or a
 dict {'point_cloud': pts, 'crop': (min, max), ...}. pc_crop attaches its crop
 spec; every grid-based node downstream uses the carried crop as its volume
 bounds (its own min/max widgets are only the fallback for raw input), and all
-nodes pass the metadata through. Renderers unwrap the 'point_cloud' key, so
-either form draws directly.
+nodes pass the metadata through. pc_voxel likewise attaches its voxel size
+(metres; float when cubic, (x, y, z) otherwise), and grid nodes downstream
+adopt it the same way, so a chain shares one grid geometry. Renderers unwrap
+the 'point_cloud' key, so either form draws directly.
 """
 
 import numpy as np
@@ -34,6 +36,7 @@ from dpg_system.conversion_utils import any_to_array
 
 CLOUD_KEY = 'point_cloud'
 CROP_KEY = 'crop'
+VOXEL_SIZE_KEY = 'voxel_size'
 
 
 def unwrap_cloud(data):
@@ -51,6 +54,12 @@ def unwrap_cloud(data):
 # for gigabytes. At/above the cap the node passes its input through untouched
 # and warns once — the fix is a coarser voxel size or tighter bounds.
 MAX_VOXEL_CELLS = 40_000_000
+
+# Fixed normalisation for pc_voxel's output weights: weight =
+# count * (d * sense)^k / this (k = distance compensation power), so 'sense'
+# — the analogue of the C++ VOXEL SENSE slider — is the only user-facing gain.
+# 100 makes sense=1 match the node's previous default ('weight scale' 100).
+VOXEL_WEIGHT_NORM = 100.0
 
 
 def register_point_cloud_nodes():
@@ -71,20 +80,25 @@ class _VoxelGrid:
     def __init__(self):
         self.lo = np.zeros(3, dtype=np.float32)
         self.dims = np.ones(3, dtype=np.int64)   # (nx, ny, nz)
-        self.inv = 1.0
+        self.inv = np.ones(3, dtype=np.float32)
+        self.voxel_size = np.ones(3, dtype=np.float32)
         self.ncells = 1
         self._key = None
 
     def configure(self, lo, hi, voxel_size):
         """(Re)build the grid. Returns True if the geometry changed. Raises
-        ValueError if the resulting grid would exceed MAX_VOXEL_CELLS."""
+        ValueError if the resulting grid would exceed MAX_VOXEL_CELLS.
+
+        ``voxel_size`` is a scalar for cubic voxels or a length-3 (x, y, z)
+        for anisotropic ones; it is stored as a (3,) float32 either way."""
         lo = np.asarray(lo, dtype=np.float32)
         hi = np.asarray(hi, dtype=np.float32)
         lo, hi = np.minimum(lo, hi), np.maximum(lo, hi)
-        voxel_size = float(voxel_size)
-        if voxel_size <= 1e-6:
-            voxel_size = 1e-6
-        key = (tuple(lo.tolist()), tuple(hi.tolist()), voxel_size)
+        voxel_size = np.asarray(voxel_size, dtype=np.float32).reshape(-1)
+        if voxel_size.size == 1:
+            voxel_size = np.repeat(voxel_size, 3)
+        voxel_size = np.maximum(voxel_size[:3], 1e-6)
+        key = (tuple(lo.tolist()), tuple(hi.tolist()), tuple(voxel_size.tolist()))
         if key == self._key:
             return False
         dims = np.ceil((hi - lo) / voxel_size).astype(np.int64)
@@ -96,11 +110,18 @@ class _VoxelGrid:
                 f'(> {MAX_VOXEL_CELLS:,}); use a coarser voxel size or tighter bounds')
         self.lo = lo
         self.dims = dims
-        self.inv = 1.0 / voxel_size
+        self.inv = (1.0 / voxel_size).astype(np.float32)
         self.voxel_size = voxel_size
         self.ncells = ncells
         self._key = key
         return True
+
+    def voxel_size_meta(self):
+        """Metadata form of the voxel size: a float when cubic, else (x, y, z)."""
+        vs = self.voxel_size
+        if vs[0] == vs[1] == vs[2]:
+            return float(vs[0])
+        return [float(v) for v in vs]
 
     def index(self, pts):
         """Return (lin, valid): lin is the (N,) int64 linear voxel index (only
@@ -175,6 +196,21 @@ class PointCloudNode(Node):
         return (self._vec3(self.min_option, fallback_lo),
                 self._vec3(self.max_option, fallback_hi))
 
+    def _carried_voxel_size(self):
+        """Voxel size riding in on the frame (attached by an upstream
+        pc_voxel), in metres — float or (x, y, z) — or None. Grid nodes prefer
+        it over their own widget, mirroring how _bounds() treats the crop."""
+        vs = self.in_meta.get(VOXEL_SIZE_KEY)
+        if vs is None:
+            return None
+        try:
+            v = np.asarray(vs, dtype=np.float32).reshape(-1)
+        except (TypeError, ValueError):
+            return None
+        if v.size not in (1, 3) or not np.all(v > 0):
+            return None
+        return v
+
     def _add_bounds_options(self, lo_default, hi_default):
         """Fallback volume bounds, used only when no crop spec rides in on the
         frame — tucked into options to keep the node body clean."""
@@ -242,11 +278,13 @@ class PointCloudVoxelNode(PointCloudNode):
     centre or the centroid of the points it holds). ``min points`` doubles as a
     density floor, dropping sparse speckle voxels.
 
-    The output frame carries per-voxel ``weights`` (count / ``weight scale``,
-    clamped to 0..1) for count-reflecting rendering in ``mgl_point_cloud``.
-    ``distance compensation`` multiplies the count by the voxel's distance from
-    the sensor (linear) or its square (squared, matching the physics: a voxel
-    at 2x distance subtends 1/4 the depth pixels) before scaling — radial
+    The output frame carries per-voxel ``weights`` — count * (d * sense)^k /
+    VOXEL_WEIGHT_NORM, clamped to 0..1 — for count-reflecting rendering in
+    ``mgl_point_cloud``. ``distance compensation`` picks k: the voxel's
+    distance from the sensor (linear) or its square (squared, matching the
+    physics: a voxel at 2x distance subtends 1/4 the depth pixels); ``sense``
+    is the C++ VOXEL SENSE gain, applied inside the compensation exactly as
+    there ((d*sense)^2 / d*sense / sense for squared / linear / none). Radial
     distance is used rather than the C++ code's z so it survives leveling/yaw
     rotations, which preserve |p| but not z."""
 
@@ -259,25 +297,41 @@ class PointCloudVoxelNode(PointCloudNode):
         self.grid = _VoxelGrid()
         self._warned_large = False
         self.input = self.add_input('point cloud', triggers_execution=True)
-        self.voxel_input = self.add_input('voxel size (m)', widget_type='drag_float',
-                                          default_value=0.05, min=1e-4)
-        self.reduce_input = self.add_input('reduce', widget_type='combo', default_value='center')
-        self.reduce_input.widget.combo_items = ['center', 'centroid']
-        self.min_points_input = self.add_input('min points', widget_type='drag_int',
-                                               default_value=1, min=1)
+        self.voxel_input = self.add_input('voxel size (cm)', widget_type='drag_float',
+                                          default_value=5.0, min=0.01)
+        self.distcomp_property = self.add_property('distance compensation', widget_type='combo',
+                                                   default_value='squared')
+        self.distcomp_property.widget.combo_items = ['none', 'linear', 'squared']
+        # VOXEL SENSE analogue from the C++ voxels app: weight gain applied
+        # inside the distance compensation — doubling it brightens 4x in
+        # 'squared' mode, 2x in 'linear'/'none'.
+        self.sense_property = self.add_property('sense', widget_type='drag_float',
+                                                default_value=1.0, min=0.0, max=4.0)
+        self.sense_property.widget.speed = 0.01
         self.output = self.add_output('voxel cloud')
         self.count_output = self.add_output('counts')
+        self.reduce_option = self.add_option('reduce', widget_type='combo', default_value='center')
+        self.reduce_option.widget.combo_items = ['center', 'centroid']
+        self.min_points_option = self.add_option('min points', widget_type='drag_int',
+                                                 default_value=1, min=1)
         self._add_bounds_options([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
-        self.distcomp_option = self.add_option('distance compensation', widget_type='combo',
-                                               default_value='squared')
-        self.distcomp_option.widget.combo_items = ['none', 'linear', 'squared']
-        self.weight_scale_option = self.add_option('weight scale', widget_type='drag_float',
-                                                   default_value=100.0, min=1e-3)
+        # Voxels are cubes ('voxel size (cm)') unless 'cubic voxels' is off, in
+        # which case width/height/depth come from 'voxel size x,y,z (cm)' —
+        # matching the C++ voxels app. UI is in cm; the cloud itself is metres.
+        self.cubic_option = self.add_option('cubic voxels', widget_type='checkbox',
+                                            default_value=True)
+        self.voxel_xyz_option = self.add_option('voxel size x,y,z (cm)', widget_type='drag_float_n',
+                                                default_value=[5.0, 5.0, 5.0],
+                                                columns=3, widget_width=60)
 
     def _ensure_grid(self):
         lo, hi = self._bounds([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
+        if self.cubic_option():
+            size = float(self.voxel_input()) * 0.01        # cm -> m
+        else:
+            size = self._vec3(self.voxel_xyz_option, [5.0, 5.0, 5.0]) * 0.01
         try:
-            self.grid.configure(lo, hi, self.voxel_input())
+            self.grid.configure(lo, hi, size)
             self._warned_large = False
             return True
         except ValueError as e:
@@ -300,14 +354,14 @@ class PointCloudVoxelNode(PointCloudNode):
             self.count_output.send(np.empty((0,), dtype=np.int64))
             return
         counts = np.bincount(lin_v, minlength=self.grid.ncells)
-        min_points = max(1, int(self.min_points_input()))
+        min_points = max(1, int(self.min_points_option()))
         occupied = np.nonzero(counts >= min_points)[0]
         if occupied.size == 0:
             self._send(self.output, np.empty((0, 3), dtype=np.float32))
             self.count_output.send(np.empty((0,), dtype=np.int64))
             return
 
-        if self.reduce_input() == 'centroid':
+        if self.reduce_option() == 'centroid':
             pts_v = pts[valid]
             sx = np.bincount(lin_v, weights=pts_v[:, 0], minlength=self.grid.ncells)
             sy = np.bincount(lin_v, weights=pts_v[:, 1], minlength=self.grid.ncells)
@@ -321,14 +375,18 @@ class PointCloudVoxelNode(PointCloudNode):
         self.count_output.send(counts[occupied].astype(np.int64))
 
         weights = counts[occupied].astype(np.float32)
-        distcomp = self.distcomp_option()
+        distcomp = self.distcomp_property()
+        sense = max(0.0, float(self.sense_property()))
         if distcomp != 'none':
             d = np.sqrt(out[:, 0] ** 2 + out[:, 1] ** 2 + out[:, 2] ** 2)
+            d *= sense
             weights *= d if distcomp == 'linear' else d * d
-        weights = np.clip(weights / max(1e-3, float(self.weight_scale_option())), 0.0, 1.0)
+        else:
+            weights *= sense
+        weights = np.clip(weights / VOXEL_WEIGHT_NORM, 0.0, 1.0)
 
         self._send(self.output, np.ascontiguousarray(out),
-                   voxel_size=float(self.grid.voxel_size), weights=weights)
+                   voxel_size=self.grid.voxel_size_meta(), weights=weights)
 
 
 class PointCloudBackgroundNode(PointCloudNode):
@@ -351,8 +409,8 @@ class PointCloudBackgroundNode(PointCloudNode):
         self.learn_total = 0
 
         self.input = self.add_input('point cloud', triggers_execution=True)
-        self.voxel_input = self.add_input('voxel size (m)', widget_type='drag_float',
-                                          default_value=0.05, min=1e-4)
+        self.voxel_input = self.add_input('voxel size (cm)', widget_type='drag_float',
+                                          default_value=5.0, min=0.01)
         self.learn_input = self.add_input('learn', widget_type='button', callback=self.start_learning)
         self.frames_input = self.add_input('frames', widget_type='drag_int', default_value=60, min=1)
         self.min_hits_input = self.add_input('min hits', widget_type='drag_int', default_value=20, min=1)
@@ -364,8 +422,11 @@ class PointCloudBackgroundNode(PointCloudNode):
 
     def _ensure_grid(self):
         lo, hi = self._bounds([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
+        size = self._carried_voxel_size()
+        if size is None:
+            size = float(self.voxel_input()) * 0.01   # cm -> m
         try:
-            changed = self.grid.configure(lo, hi, self.voxel_input())
+            changed = self.grid.configure(lo, hi, size)
             self._warned_large = False
         except ValueError as e:
             if not self._warned_large:
@@ -484,8 +545,8 @@ class PointCloudDenoiseNode(PointCloudNode):
         self.persist = None         # (ncells,) float32 EMA occupancy
 
         self.input = self.add_input('point cloud', triggers_execution=True)
-        self.voxel_input = self.add_input('voxel size (m)', widget_type='drag_float',
-                                          default_value=0.04, min=1e-4)
+        self.voxel_input = self.add_input('voxel size (cm)', widget_type='drag_float',
+                                          default_value=4.0, min=0.01)
         self.min_points_input = self.add_input('min points', widget_type='drag_int',
                                                default_value=2, min=1)
         self.persistence_input = self.add_input('persistence', widget_type='drag_float',
@@ -497,8 +558,11 @@ class PointCloudDenoiseNode(PointCloudNode):
 
     def _ensure_grid(self):
         lo, hi = self._bounds([-5.0, -5.0, -1.0], [5.0, 5.0, 10.0])
+        size = self._carried_voxel_size()
+        if size is None:
+            size = float(self.voxel_input()) * 0.01   # cm -> m
         try:
-            changed = self.grid.configure(lo, hi, self.voxel_input())
+            changed = self.grid.configure(lo, hi, size)
             self._warned_large = False
         except ValueError as e:
             if not self._warned_large:

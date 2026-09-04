@@ -137,11 +137,13 @@ class OrbbecFemtoNode(Node):
                       inverse Brown-Conrady depth distortion, matching the SDK
                       cloud). Only the chosen path is computed.
 
-    Depth-image-domain cleanup (same order as the C++ AzureKinectVoxelsApp):
-    temporal hole fill -> 3x3 median -> guard-space background removal, all on
-    the (H, W) frame before any cloud is built. 'remove background' snapshots
-    the scene on toggle-on (min depth over N frames, minus a guard) and then
-    removes any pixel at or beyond its per-pixel threshold.
+    Depth-image-domain cleanup (hole fill / median / background keep the C++
+    AzureKinectVoxelsApp's relative order): flying-pixel removal -> temporal
+    hole fill (age-limited) -> 3x3 median -> One Euro temporal smoothing ->
+    guard-space background removal, all on the (H, W) frame before any cloud
+    is built. 'remove background' snapshots the scene on toggle-on (min depth
+    over N frames, minus a guard) and then removes any pixel at or beyond its
+    per-pixel threshold.
 
     Capture happens on the worker thread; only frame_task() (main thread)
     touches the output pins, keeping all DPG access single-threaded.
@@ -213,10 +215,39 @@ class OrbbecFemtoNode(Node):
                                              default_value=False, callback=self.filters_changed)
         self.fill_holes_option = self.add_option('fill holes', widget_type='checkbox',
                                                  default_value=False, callback=self.filters_changed)
+        # Max frames a hole is served its last-known depth before it is allowed
+        # to be a hole (0 = hold forever, the old behaviour). Small values stop
+        # moving bodies leaving ghost trails behind them.
+        self.hole_frames_option = self.add_option('hole fill frames', widget_type='drag_int',
+                                                  default_value=5, min=0, callback=self.filters_changed)
+        # ToF edge artifacts: points smeared between foreground and background
+        # along depth discontinuities. A pixel needs >= 2 of its 8 neighbours
+        # within the threshold or it is invalidated.
+        self.flying_option = self.add_option('remove flying pixels', widget_type='checkbox',
+                                             default_value=False, callback=self.filters_changed)
+        self.flying_thresh_option = self.add_option('flying pixel threshold (mm)',
+                                                    widget_type='drag_float', default_value=60.0,
+                                                    min=1.0, callback=self.filters_changed)
+        # One Euro temporal smoothing (per pixel): quiet at rest, releases with
+        # speed. 'min cutoff' sets how still static regions are (lower =
+        # smoother, more lag on slow drift); 'beta' how fast smoothing releases
+        # as depth changes (higher = snappier motion).
+        self.one_euro_option = self.add_option('temporal smooth (one euro)', widget_type='checkbox',
+                                               default_value=False, callback=self.filters_changed)
+        self.oe_cutoff_option = self.add_option('smooth min cutoff (hz)', widget_type='drag_float',
+                                                default_value=1.0, min=0.01, callback=self.filters_changed)
+        self.oe_beta_option = self.add_option('smooth beta', widget_type='drag_float',
+                                              default_value=0.05, min=0.0, callback=self.filters_changed)
         self.bg_frames_option = self.add_option('background frames', widget_type='drag_int',
                                                 default_value=30, min=1, callback=self.filters_changed)
         self.bg_guard_option = self.add_option('background guard (mm)', widget_type='drag_float',
                                                default_value=50.0, min=0.0, callback=self.filters_changed)
+        # Serve the most recent frame (k4a-style latency minimization): after
+        # receiving a frameset, drain anything the SDK queued behind it and
+        # process only the newest. Off = process every frameset in order, at
+        # the cost of up to a full queue of latency when the host falls behind.
+        self.min_latency_option = self.add_option('minimize latency', widget_type='checkbox',
+                                                  default_value=True, callback=self.filters_changed)
         # Prints capture-thread and output gaps > 80ms with a thread tag, to
         # tell SDK-side stalls from main-thread (render loop) stalls.
         self.report_gaps_option = self.add_option('report frame gaps', widget_type='checkbox',
@@ -259,7 +290,14 @@ class OrbbecFemtoNode(Node):
         # the widgets, read on the capture thread (same pattern as imu_enabled).
         self.median_enabled = False
         self.fill_holes_enabled = False
+        self.hole_fill_frames = 5       # 0 = hold forever
+        self.flying_enabled = False
+        self.flying_thresh_mm = 60.0
+        self.one_euro_enabled = False
+        self.oe_min_cutoff = 1.0
+        self.oe_beta = 0.05
         self.undistort_enabled = True
+        self.low_latency = True
         self.report_gaps = False
         self._last_capture_t = None     # capture-thread frame arrival times
         self._last_output_t = None      # main-thread send times
@@ -279,6 +317,10 @@ class OrbbecFemtoNode(Node):
         self.bg_min = None              # (H, W) min-depth accumulator during snapshot
         self.bg_threshold = None        # (H, W) float32 mm; >= here means background
         self.held_depth = None          # (H, W) last known depth per pixel (hole fill)
+        self.held_age = None            # (H, W) int32 frames since that depth was fresh
+        self.oe_x = None                # (H, W) One Euro filtered depth (0 = no state)
+        self.oe_dx = None               # (H, W) One Euro smoothed derivative (mm/s)
+        self._oe_last_t = None          # capture-thread time of the last smoothed frame
         self._bg_removed = None         # (H, W) bool, this frame's removals (capture thread)
 
         # cached xy-table for the reprojection path, rebuilt whenever the depth
@@ -323,8 +365,15 @@ class OrbbecFemtoNode(Node):
     def filters_changed(self):
         self.median_enabled = bool(self.median_option())
         self.fill_holes_enabled = bool(self.fill_holes_option())
+        self.hole_fill_frames = max(0, int(self.hole_frames_option()))
+        self.flying_enabled = bool(self.flying_option())
+        self.flying_thresh_mm = max(1.0, float(self.flying_thresh_option()))
+        self.one_euro_enabled = bool(self.one_euro_option())
+        self.oe_min_cutoff = max(0.01, float(self.oe_cutoff_option()))
+        self.oe_beta = max(0.0, float(self.oe_beta_option()))
         self.bg_guard_mm = float(self.bg_guard_option())
         self.bg_capture_frames = max(1, int(self.bg_frames_option()))
+        self.low_latency = bool(self.min_latency_option())
         self.report_gaps = bool(self.report_gaps_option())
         self.auto_reset_enabled = bool(self.auto_reset_option())
         undistort = bool(self.undistort_option())
@@ -513,20 +562,22 @@ class OrbbecFemtoNode(Node):
                 frames = self.pipeline.wait_for_frames(200)
                 if frames is None:
                     continue
+                self._note_frame_arrival()
+                if self.low_latency:
+                    # Drain to the newest queued frameset so a host that fell
+                    # behind serves the live frame, not the back of a queue.
+                    # 1ms (not 0) in case the binding treats 0 as 'wait forever'.
+                    # Drained framesets still feed the gap stats: the burst
+                    # detector needs the delivery cadence, not what we process.
+                    while True:
+                        newer = self.pipeline.wait_for_frames(1)
+                        if newer is None:
+                            break
+                        frames = newer
+                        self._note_frame_arrival()
                 depth_frame = frames.get_depth_frame()
                 if depth_frame is None:
                     continue
-                now = time.perf_counter()
-                if self._last_capture_t is not None:
-                    gap = now - self._last_capture_t
-                    if self.report_gaps and gap > 0.08:
-                        print(f'{self.label}: capture gap {gap * 1000:.0f}ms (SDK side)')
-                    self._gap_window.append(gap)
-                    self._gap_frames += 1
-                    if self._gap_frames >= 120:
-                        self._gap_frames = 0
-                        self._check_burst_state()
-                self._last_capture_t = now
                 self._process_frames(frames, depth_frame)
             except Exception as e:
                 if self.keep_running:
@@ -565,6 +616,22 @@ class OrbbecFemtoNode(Node):
             self.latest_depth = depth_out
             self.latest_pc = pc
             self.new_data = True
+
+    def _note_frame_arrival(self):
+        """Record the inter-frameset gap for the burst detector (capture
+        thread). Called once per frameset pulled from the SDK, including
+        stale ones consumed by the minimize-latency drain."""
+        now = time.perf_counter()
+        if self._last_capture_t is not None:
+            gap = now - self._last_capture_t
+            if self.report_gaps and gap > 0.08:
+                print(f'{self.label}: capture gap {gap * 1000:.0f}ms (SDK side)')
+            self._gap_window.append(gap)
+            self._gap_frames += 1
+            if self._gap_frames >= 120:
+                self._gap_frames = 0
+                self._check_burst_state()
+        self._last_capture_t = now
 
     # ------------------------------------------------------ bursty-USB recovery
 
@@ -661,23 +728,46 @@ class OrbbecFemtoNode(Node):
         return win[4]
 
     def _filter_depth(self, depth_mm):
-        """Depth-image-domain cleanup on the capture thread, in the same order
-        as the C++ app: temporal hole fill -> 3x3 median -> guard-space
-        background removal (removed pixels are zeroed, so they drop out of both
-        the depth output and the reprojection's validity mask)."""
+        """Depth-image-domain cleanup on the capture thread: flying-pixel
+        removal -> temporal hole fill (age-limited) -> 3x3 median -> One Euro
+        temporal smoothing -> guard-space background removal (removed pixels
+        are zeroed, so they drop out of both the depth output and the
+        reprojection's validity mask). Hole fill / median / background keep the
+        C++ app's relative order; flying pixels are removed first so edge
+        artifacts never enter the hole-fill's held depth."""
         self._bg_removed = None
+
+        if self.flying_enabled:
+            self._remove_flying_pixels(depth_mm)
 
         if self.fill_holes_enabled:
             if self.held_depth is None or self.held_depth.shape != depth_mm.shape:
                 self.held_depth = depth_mm.copy()
+                self.held_age = np.zeros(depth_mm.shape, dtype=np.int32)
             holes = depth_mm == 0.0
-            depth_mm[holes] = self.held_depth[holes]
+            # age = frames since the pixel last returned fresh depth
+            self.held_age = np.where(holes, self.held_age + 1, 0)
+            if self.hole_fill_frames > 0:
+                serve = holes & (self.held_age <= self.hole_fill_frames)
+            else:
+                serve = holes   # 0 = hold forever (original behaviour)
+            depth_mm[serve] = self.held_depth[serve]
+            # expired holes write 0 back into held_depth, so they stay holes
+            # until the sensor actually returns depth there again
             np.copyto(self.held_depth, depth_mm)
         else:
             self.held_depth = None
+            self.held_age = None
 
         if self.median_enabled:
             depth_mm = self._median3x3(depth_mm)
+
+        if self.one_euro_enabled:
+            depth_mm = self._one_euro(depth_mm)
+        else:
+            self.oe_x = None
+            self.oe_dx = None
+            self._oe_last_t = None
 
         if self.bg_capture_remaining > 0:
             self._accumulate_background(depth_mm)
@@ -687,6 +777,56 @@ class OrbbecFemtoNode(Node):
             depth_mm[removed] = 0.0
             self._bg_removed = removed
         return depth_mm
+
+    def _remove_flying_pixels(self, depth_mm):
+        """Invalidate ToF edge artifacts in place: pixels smeared between
+        foreground and background at depth discontinuities. A valid pixel
+        survives only if at least 2 of its 8 neighbours are valid and within
+        the threshold of its own depth — isolated speckle (0 support) and
+        mid-air edge points (1 chance neighbour) both go."""
+        h, w = depth_mm.shape
+        thresh = np.float32(self.flying_thresh_mm)
+        p = np.pad(depth_mm, 1, mode='edge')
+        support = np.zeros((h, w), dtype=np.int8)
+        for dy in range(3):
+            for dx in range(3):
+                if dy == 1 and dx == 1:
+                    continue
+                n = p[dy:dy + h, dx:dx + w]
+                support += (n > 0.0) & (np.abs(depth_mm - n) <= thresh)
+        drop = (depth_mm > 0.0) & (support < 2)
+        depth_mm[drop] = 0.0
+
+    def _one_euro(self, depth_mm):
+        """Per-pixel One Euro temporal smoothing: an EMA whose cutoff rises
+        with the (low-passed) rate of depth change, so static regions stop
+        shimmering while motion tracks with minimal lag. State resets per
+        pixel on invalid, so a pixel reappearing after occlusion seeds fresh
+        instead of blending against pre-occlusion depth."""
+        now = time.perf_counter()
+        dt = (1.0 / 30.0 if self._oe_last_t is None
+              else min(max(now - self._oe_last_t, 1.0 / 60.0), 0.2))
+        self._oe_last_t = now
+
+        valid = depth_mm > 0.0
+        if self.oe_x is None or self.oe_x.shape != depth_mm.shape:
+            self.oe_x = np.where(valid, depth_mm, 0.0).astype(np.float32)
+            self.oe_dx = np.zeros(depth_mm.shape, dtype=np.float32)
+            return depth_mm
+
+        both = valid & (self.oe_x > 0.0)   # has state AND fresh depth
+        # derivative (mm/s), smoothed at a fixed 1 Hz cutoff
+        a_d = dt / (dt + 1.0 / (2.0 * np.pi))
+        dx = np.where(both, (depth_mm - self.oe_x) / dt, 0.0)
+        self.oe_dx = np.where(both, self.oe_dx + a_d * (dx - self.oe_dx), 0.0)
+        # speed-adaptive cutoff -> per-pixel alpha
+        fc = self.oe_min_cutoff + self.oe_beta * np.abs(self.oe_dx)
+        a = dt / (dt + 1.0 / (2.0 * np.pi * fc))
+        out = np.where(both, self.oe_x + a * (depth_mm - self.oe_x), depth_mm)
+        out = out.astype(np.float32)
+        # newly valid pixels seed with their raw depth; invalid clears state
+        self.oe_x = np.where(valid, out, 0.0)
+        return out
 
     def _accumulate_background(self, depth_mm):
         """Min-depth snapshot: over N frames keep the closest valid reading per
