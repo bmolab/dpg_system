@@ -117,12 +117,14 @@ THE NODES:
 
 t.audio.play         play one sound
 t.audio.multiplayer  hold several sounds and play them by name
-audio_mixer          the output device and format for all of them
+audio_mixer          which device, and which engine voices, they play through
 
-audio_mixer IS GLOBAL, AND THERE SHOULD BE ONE:
-It sets the output device, the sample rate and the channel count for this whole 
-system. More than one in a patch means two nodes claiming the same settings, so 
-put a single one somewhere and leave it.
+audio_mixer IS OPTIONAL, AND THERE SHOULD BE AT MOST ONE:
+These players sound through the same audio engine as the sampler and the synth 
+- one stream, one device - on a pool of engine voices reserved for them (112 to 
+127 by default, clear of polyphonic_sampler's range). audio_mixer chooses the 
+output device, which is engine-wide (the same choice audio_out~ offers), and 
+moves the voice pool. Without one, the players use those defaults.
 
 Its 'stop all' is the panic button - everything playing stops at once. Worth 
 wiring to a key or a foot button when you are working with long sounds.
@@ -160,6 +162,11 @@ Play it.
 audio tensor in:
 Play a tensor directly, rather than a loaded file.
 
+sample_rate:
+The rate of a tensor arriving on 'audio tensor in'; a file carries its own. 
+Playback is varispeed through the engine, so a 16 kHz tensor and a 48 kHz file 
+both play at the right speed.
+
 path in / load file:
 The sound.
 
@@ -169,17 +176,17 @@ Manage the loaded set.
 stop / stop all:
 Stop this sound, or everything.
 
-output device / sample rate / channels (audio_mixer):
-The output format for the whole system.
+output device / first voice / voice count (audio_mixer):
+The engine's output device, and which engine voices these players draw on.
 
 OUTPUTS: 
 
 None - these are endpoints.
 
 RELATED:
-audio_out~ is the synth system's output, and is a different device path. 
-Running both at once means two things claiming the audio hardware; if one goes 
-silent when the other starts, that is why."""
+audio_out~ is the synth system's output. It is the same engine and the same 
+stream these players use, so both run at once, and a device chosen on either 
+applies to both."""
 
 demo = [
     {'key': 'am', 'init': 'audio_mixer', 'pos': (30, 62), 'w': 280, 'h': 200},
@@ -318,6 +325,11 @@ produces confident nonsense in exactly the gaps between the notes.
 
 Gate on the confidence: hold the last pitch, or output nothing, when it falls. 
 That single step is the difference between a usable pitch stream and a jumpy one.
+
+NOTE ON AVAILABILITY:
+t.audio.kaldi_pitch depends on a function torchaudio removed in version 2.1. On a 
+newer torchaudio the node still loads, reports this once, and sends nothing. Use 
+speech_pitch (parselmouth or pyin backend) for pitch tracking there.
 
 SAMPLE RATE MUST BE RIGHT:
 Both nodes take a 'sample_rate' setting, and neither can detect it from the 

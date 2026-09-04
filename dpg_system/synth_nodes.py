@@ -30,7 +30,7 @@ from dpg_system.synth_core import (
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit, VuUnit,
     SnapshotUnit, ScalerUnit,
-    CaptureUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
+    CaptureUnit, StreamUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, BlowUnit, FaderUnit,
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
@@ -95,7 +95,6 @@ def register_synth_nodes():
     Node.app.register_node('shape_modes', ShapeModesNode.factory)
     Node.app.register_node('strike~', StrikeNode.factory)
     Node.app.register_node('fader_out~', FaderOutNode.factory)
-    Node.app.register_node('fader_out~', FaderOutNode.factory)
     Node.app.register_node('vessel~', VesselNode.factory)
     Node.app.register_node('wind~', WindNode.factory)
     Node.app.register_node('reed~', WindNode.factory)
@@ -132,6 +131,8 @@ def register_synth_nodes():
     Node.app.register_node('rain~', ShakerNode.factory)
     Node.app.register_node('capture~', CaptureNode.factory)
     Node.app.register_node('array~', CaptureNode.factory)
+    Node.app.register_node('stream~', StreamNode.factory)
+    Node.app.register_node('audio_in~', StreamNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
     if plugin_hosting_available():
         Node.app.register_node('vst~', VstNode.factory)
@@ -8000,6 +8001,101 @@ class CaptureNode(SynthNode):
             self._last_read = self.unit.written
             return
         self._emit()
+
+
+# ----------------------------------------------------------------------------
+# stream~
+# ----------------------------------------------------------------------------
+
+class StreamNode(SynthNode):
+    """Audio from the node world into the graph. The reverse of capture~.
+
+    Patch a microphone (t.audio_source), a file streamer (t.audio.file_stream),
+    a capture~ from another part of the graph, or any numpy / torch chain
+    into 'audio in', and the audio comes out as a signal for vocoder~,
+    string~, vst~ or anything else that takes one. Chunks may be 1-D,
+    (channels, frames) or (frames, channels); a stereo chunk fills both
+    outlets, a mono one both alike.
+
+    'rate' is the rate the chunks were made at, in Hz. It is an inlet so a
+    streamer's sample_rate outlet can drive it; there is no way to read it
+    off the numbers themselves. 'latency' is how much audio, in ms, to hold
+    before starting: too little and a bursty source runs dry (counted on
+    'underruns'), too much and the sound lags. A backlog beyond a quarter
+    second is skipped to keep the stream live, counted on 'dropped'.
+
+    Arguments: stream~ <rate> <latency ms>. Also registered as audio_in~.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return StreamNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = StreamUnit(synth_graph.sample_rate)
+
+        rate = int(synth_graph.sample_rate)
+        latency_ms = 50.0
+        numbers = []
+        if args is not None:
+            for arg in args:
+                value, arg_type = decode_arg([arg], 0)
+                if arg_type in (float, int):
+                    numbers.append(float(value))
+        if len(numbers) > 0:
+            rate = int(numbers[0])
+        if len(numbers) > 1:
+            latency_ms = numbers[1]
+
+        self.audio_input = self.add_input('audio in', triggers_execution=True)
+        self.rate_input = self.add_input('rate', widget_type='drag_int',
+                                         default_value=rate, min=1000, max=384000,
+                                         callback=self.settings_changed)
+        self.latency_input = self.add_input('latency', widget_type='drag_float',
+                                            default_value=latency_ms, min=0.0,
+                                            max=2000.0, callback=self.settings_changed)
+        self.add_modulation_input('level', self.unit.level_in, default_value=1.0,
+                                  minimum=0.0, maximum=2.0)
+
+        self.left_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
+        self.underruns_output = self.add_output('underruns')
+        self.dropped_output = self.add_output('dropped')
+        self._reported = (0, 0)
+
+        self.add_switch()
+        self.finish_synth_node()
+        self.settings_changed()
+
+    def settings_changed(self):
+        self.unit.source_rate = float(max(1000, any_to_int(self.rate_input())))
+        self.unit.latency = max(0.0, any_to_float(self.latency_input())) / 1000.0
+
+    def update_parameters_from_widgets(self):
+        super().update_parameters_from_widgets()
+        self.settings_changed()
+
+    def execute(self):
+        data = self.audio_input()
+        if data is None:
+            return
+        if hasattr(data, 'detach'):
+            data = data.detach().cpu().numpy()
+        elif not isinstance(data, np.ndarray):
+            data = any_to_array(data)
+        if data is None or data.size == 0:
+            return
+        self.unit.push(data)
+
+    def synth_frame_task(self):
+        counts = (self.unit.underruns, self.unit.dropped)
+        if counts != self._reported:
+            if counts[1] != self._reported[1]:
+                self.dropped_output.send(counts[1])
+            if counts[0] != self._reported[0]:
+                self.underruns_output.send(counts[0])
+            self._reported = counts
 
 
 # ----------------------------------------------------------------------------

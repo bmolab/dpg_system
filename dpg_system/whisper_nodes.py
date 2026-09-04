@@ -18,6 +18,7 @@ from typing import List, Optional, Callable, Tuple
 
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
+from dpg_system.audio_io import AudioSource, RateConverter, input_devices, to_mono
 from dpg_system.conversion_utils import *
 
 WHISPER_SAMPLE_RATE = 16000
@@ -370,40 +371,27 @@ class AudioCapture:
         # Previous audio chunk (for prepending on speech onset)
         self.last_audio: Optional[np.ndarray] = None
 
-        # Device info
-        self.stream = None
+        # Device info. The stream itself is an audio_io.AudioSource, shared
+        # plumbing with t.audio_source; rate conversion to 16 kHz is a
+        # stateful, anti-aliased RateConverter rather than decimation.
+        self.source: Optional[AudioSource] = None
         self.devices: List[dict] = []
         self.current_device = 0
         self.device_sample_rate = 16000
-        self.downsampling = 1
         self.channels = 1
-        self.next_buffer_start_frame = 0
+        self._mic_converter: Optional[RateConverter] = None
+        self._external_converter: Optional[RateConverter] = None
+        self._external_rate = 0
 
         self.mutex = threading.Lock()
 
     def get_device_list(self) -> List[str]:
         """Return list of available input device names."""
-        try:
-            import sounddevice as sd
-            all_devices = sd.query_devices()
-            self.devices = []
-            for i, dev in enumerate(all_devices):
-                if dev['max_input_channels'] > 0:
-                    self.devices.append({
-                        'name': dev['name'],
-                        'index': i,
-                        'channels': dev['max_input_channels'],
-                        'default_samplerate': dev['default_samplerate'],
-                    })
-            return [d['name'] for d in self.devices]
-        except Exception as e:
-            print(f"Error listing audio devices: {e}")
-            return []
+        self.devices = input_devices()
+        return [d['name'] for d in self.devices]
 
     def init(self, device_index: int = 0) -> bool:
         """Initialize audio capture for the given device."""
-        import sounddevice as sd
-
         if not self.devices:
             self.get_device_list()
         if not self.devices:
@@ -415,36 +403,27 @@ class AudioCapture:
         self.current_device = device_index
         device = self.devices[device_index]
 
-        # Choose sample rate: prefer lowest multiple of 16000
+        # Open at the device's own rate and convert; asking PortAudio for
+        # 16 kHz directly is refused by many interfaces.
         sr = int(device['default_samplerate'])
-        for candidate in [16000, 32000, 48000]:
-            # sounddevice will resample if needed; just use the default
-            pass
         self.device_sample_rate = sr
-        self.downsampling = max(1, sr // 16000)
         self.channels = min(device['channels'], 2)
+        self._mic_converter = RateConverter(sr, WHISPER_SAMPLE_RATE)
 
         # Reset buffer
         self.audio_buffer = np.zeros(self.buffer_size, dtype=np.float32)
         self.audio_pos = 0
         self.audio_start = 0
         self.silence_count = 0
-        self.next_buffer_start_frame = 0
         self.last_audio = None
 
         try:
-            if self.stream is not None:
-                self.stream.stop()
-                self.stream.close()
-
-            self.stream = sd.InputStream(
-                device=device['index'],
-                channels=self.channels,
-                samplerate=self.device_sample_rate,
-                blocksize=1024 * self.downsampling,
-                dtype='float32',
-                callback=self._audio_callback,
-            )
+            if self.source is not None:
+                self.source.stop()
+            self.source = AudioSource(channels=self.channels, rate=sr,
+                                      chunk=1024, dtype='float32')
+            self.source.device_index = device['index']
+            self.source.set_callback(self._audio_callback)
             self.audio_ready = True
             return True
         except Exception as e:
@@ -464,50 +443,29 @@ class AudioCapture:
         return success
 
     def resume(self):
-        if self.stream is not None and self.audio_ready:
-            self.stream.start()
-            self.running = True
+        if self.source is not None and self.audio_ready:
+            if self._mic_converter is not None:
+                self._mic_converter.reset()
+            self.running = self.source.start()
 
     def pause(self):
-        if self.stream is not None:
-            try:
-                self.stream.stop()
-            except Exception:
-                pass
+        if self.source is not None:
+            self.source.stop()
         self.running = False
 
     def close(self):
         self.pause()
-        if self.stream is not None:
-            try:
-                self.stream.close()
-            except Exception:
-                pass
-            self.stream = None
+        self.source = None
 
     def _audio_callback(self, indata, frames, time_info, status):
         """sounddevice callback — runs on audio thread."""
         if not self.running:
             return
 
-        # Downsample and mix channels to mono at 16kHz
-        if self.channels >= 2:
-            mono = np.mean(indata[:, :self.channels], axis=1)
-        else:
-            mono = indata[:, 0]
-
-        # Downsample
-        if self.downsampling > 1:
-            mono = mono[self.next_buffer_start_frame::self.downsampling]
-            leftover = frames - (self.next_buffer_start_frame +
-                                 (len(mono)) * self.downsampling)
-            if leftover < 0:
-                leftover = 0
-            self.next_buffer_start_frame = self.downsampling - leftover
-            if self.next_buffer_start_frame < 0:
-                self.next_buffer_start_frame = 0
-        else:
-            self.next_buffer_start_frame = 0
+        # Mix to mono and convert to 16 kHz, both stateful across blocks.
+        mono = to_mono(indata[:, :self.channels])
+        if self._mic_converter is not None:
+            mono = self._mic_converter.process(mono)
 
         # Apply gain
         audio_new = mono * self.gain
@@ -594,23 +552,14 @@ class AudioCapture:
             self.external_mode = True
             self.audio_ready = True
 
-        # Convert to mono float32 if needed
-        if audio.ndim > 1:
-            if audio.shape[0] <= audio.shape[-1]:
-                # (channels, samples) — take first channel
-                audio = audio[0]
-            else:
-                # (samples, channels) — take first channel
-                audio = audio[:, 0]
-        audio = audio.flatten().astype(np.float32)
-
-        # Downsample to 16kHz if needed
-        if sample_rate != WHISPER_SAMPLE_RATE and sample_rate > 0:
-            ratio = sample_rate / WHISPER_SAMPLE_RATE
-            if ratio > 1:
-                indices = np.arange(0, len(audio), ratio).astype(int)
-                indices = indices[indices < len(audio)]
-                audio = audio[indices]
+        # Mono, then to 16 kHz in either direction. Same converter as the
+        # mic path, so external and live audio are treated alike.
+        audio = to_mono(audio)
+        if sample_rate > 0 and sample_rate != WHISPER_SAMPLE_RATE:
+            if self._external_converter is None or self._external_rate != sample_rate:
+                self._external_converter = RateConverter(sample_rate, WHISPER_SAMPLE_RATE)
+                self._external_rate = sample_rate
+            audio = self._external_converter.process(audio)
 
         # Apply gain
         audio = audio * self.gain
@@ -1656,9 +1605,14 @@ class WhisperNode(Node):
     # ── Callbacks ──
 
     def execute(self):
-        # Check if this was triggered by audio_in
-        audio_data = self.audio_input()
-        if audio_data is not None and self.processor is not None:
+        # Only treat this as an audio_in trigger when audio actually just
+        # arrived. NodeInput() returns the cached last value when not fresh,
+        # so testing the value alone made the on/off branch below unreachable
+        # once any audio had ever been received.
+        if self.audio_input.fresh_input:
+            audio_data = self.audio_input()
+            if self.processor is None:
+                return
             # Feed external audio into the capture buffer
             try:
                 if hasattr(audio_data, 'detach'):

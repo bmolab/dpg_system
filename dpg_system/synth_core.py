@@ -3456,6 +3456,60 @@ def _warm_up_filter():
         _svf_ready.set()
     except Exception as error:
         print('synth_core: filter kernel warm-up failed (' + str(error) + ')')
+        return
+    _warm_up_physical_units()
+
+
+def _warm_up_physical_units():
+    """Compile the kernels the argument-list warm-up above does not reach.
+
+    blow~, rattle~ and spin~ have kernels with long, changeable argument
+    lists, so rather than mirror them here they are warmed by rendering a
+    real unit of each kind for a few blocks, exactly as the graph would.
+    Each is its own try so a failure here cannot undo _svf_ready. Must run
+    after _svf_ready is set: blow~ passes silence until then.
+    """
+    if not _HAVE_NUMBA:
+        return
+
+    def drive(unit, frames=64, blocks=4):
+        for _ in range(blocks):
+            unit.render(frames)
+
+    def build(cls):
+        # Several units seed themselves from a per-class construction
+        # counter (`_seeded`), so that two of a kind never share a random
+        # stream. A warm-up unit must not shift those seeds for the units
+        # the patch builds afterwards -- the physical-model tests depend on
+        # the exact sequence -- so the counter is put back as found.
+        counter = getattr(cls, '_seeded', None)
+        unit = cls()
+        if counter is not None:
+            cls._seeded = counter
+        return unit
+
+    try:
+        unit = build(BlowUnit)
+        unit.pressure_in.base = 0.6  # above IDLE_PRESSURE, else render skips
+        drive(unit)
+    except Exception as error:
+        print('synth_core: blow~ kernel warm-up failed (' + str(error) + ')')
+    try:
+        unit = build(RattleUnit)
+        unit.shake_x_in.base = 20.0
+        unit.shake_z_in.base = 20.0
+        drive(unit)
+    except Exception as error:
+        print('synth_core: rattle~ kernel warm-up failed (' + str(error) + ')')
+    for model in range(len(SpinUnit.MODELS)):
+        try:
+            unit = build(SpinUnit)
+            unit.model = model
+            unit.spin_in.base = 1.0
+            drive(unit)
+        except Exception as error:
+            print('synth_core: spin~ kernel warm-up failed, model '
+                  + SpinUnit.MODELS[model] + ' (' + str(error) + ')')
 
 
 _warm_up_started = False
@@ -15953,6 +16007,194 @@ class CaptureUnit(Unit):
         if size <= 0 or available < size:
             return None, last_read, dropped
         return self._extract(last_read, size), last_read + size, dropped
+
+
+class StreamUnit(Unit):
+    """Audio handed in from the node world, played as a signal.
+
+    The reverse of capture~: capture~ takes the graph's audio out to numpy;
+    this takes numpy (or a tensor) from a microphone node, a file streamer
+    or any analysis chain and gives the graph a signal, so a voice can be
+    vocoded, a string excited by a recording, or a plugin fed live input --
+    none of which had a path before, since the synth could emit audio but
+    never accept it.
+
+    The node side pushes chunks at whatever rate they were made; the audio
+    thread reads with a fractional cursor advancing by source rate over
+    engine rate, interpolating, so a 16 kHz microphone and a 48 kHz file
+    both play at the right speed. The ring is single-producer /
+    single-consumer with no lock: the writer publishes its index only after
+    the samples are in place, and the reader never crosses it.
+
+    Chunks arrive in bursts at GUI rate or a device's callback rate, and
+    the audio thread consumes evenly, so the reader holds `latency` seconds
+    of audio in hand before it starts, and starts again the same way after
+    running dry (an underrun, counted). A backlog past MAX_BACKLOG_SECONDS
+    -- a stalled patch catching up -- is skipped rather than played late,
+    so the stream stays live; the samples let go are counted as dropped.
+    """
+
+    CAPACITY = 1 << 17            # per channel; ~3 s at 44.1 kHz
+    MAX_BACKLOG_SECONDS = 0.25
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.level_in = self.new_inlet(base=1.0, minimum=0.0, maximum=2.0)
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+        self.capacity = StreamUnit.CAPACITY
+        self._ring = np.zeros((2, self.capacity), dtype=np.float32)
+        self._write = 0           # source samples pushed so far; published last
+        self._read = 0.0          # read cursor, in source samples
+        self.source_rate = float(sample_rate)
+        self.latency = 0.05       # seconds held before starting or restarting
+        self._waiting = True
+        self.stereo = False
+        self.underruns = 0
+        self.dropped = 0
+        self._pos = np.zeros(MAX_BLOCK, dtype=np.float64)
+        self._idx = np.zeros(MAX_BLOCK, dtype=np.int64)
+        self._frac = np.zeros(MAX_BLOCK, dtype=np.float32)
+
+    # -- node side ---------------------------------------------------------
+
+    def push(self, block, source_rate=None):
+        """Append a chunk: 1-D, (channels, frames) or (frames, channels)."""
+        data = np.asarray(block, dtype=np.float32)
+        if data.ndim == 1:
+            data = data[np.newaxis, :]
+        elif data.ndim == 2:
+            if data.shape[0] > data.shape[1]:
+                data = data.T
+        else:
+            return
+        frames = data.shape[1]
+        if frames == 0:
+            return
+        if source_rate:
+            self.source_rate = float(source_rate)
+        half = self.capacity // 2
+        if frames > half:
+            data = data[:, -half:]
+            frames = half
+        self.stereo = data.shape[0] >= 2
+        left = data[0]
+        right = data[1] if self.stereo else data[0]
+        capacity = self.capacity
+        ring = self._ring
+        write = self._write
+        start = write % capacity
+        end = start + frames
+        if end <= capacity:
+            ring[0, start:end] = left
+            ring[1, start:end] = right
+        else:
+            first = capacity - start
+            ring[0, start:] = left[:first]
+            ring[1, start:] = right[:first]
+            ring[0, :frames - first] = left[first:]
+            ring[1, :frames - first] = right[first:]
+        # Publish last: everything below the new index is complete.
+        self._write = write + frames
+
+    @property
+    def backlog(self):
+        """Source samples pushed but not yet played."""
+        return self._write - self._read
+
+    # -- audio side --------------------------------------------------------
+
+    def _silence(self):
+        self.out.set_constant(0.0)
+        self.right.set_constant(0.0)
+
+    def deactivate(self):
+        # Switched off: whatever was queued is stale by the time it is
+        # switched on again, so the cursor rejoins the head.
+        self._read = float(self._write)
+        self._waiting = True
+
+    def reset(self):
+        self.deactivate()
+        self.underruns = 0
+        self.dropped = 0
+
+    def render(self, frames):
+        level = self.level_in.eval(frames)
+        written = self._write
+        ratio = self.source_rate / self.sample_rate
+        need = frames * ratio + 2.0
+        available = written - self._read
+
+        if self._waiting:
+            if available < max(need, self.latency * self.source_rate):
+                self._silence()
+                return
+            self._waiting = False
+        elif available < need:
+            self._waiting = True
+            self.underruns += 1
+            self._silence()
+            return
+
+        limit = need + StreamUnit.MAX_BACKLOG_SECONDS * self.source_rate
+        if available > limit:
+            skip = available - (self.latency * self.source_rate + need)
+            self._read += skip
+            self.dropped += int(skip)
+
+        capacity = self.capacity
+        pos = self._pos[:frames]
+        np.subtract(_INDEX_RAMP[:frames], 1.0, out=pos)
+        pos *= ratio
+        pos += self._read
+        idx = self._idx[:frames]
+        np.floor(pos, out=pos)
+        idx[:] = pos
+        frac = self._frac[:frames]
+        # pos now holds floor(pos); rebuild the fraction from the cursor.
+        np.subtract(_INDEX_RAMP[:frames], 1.0, out=pos)
+        pos *= ratio
+        pos += self._read
+        np.subtract(pos, idx, out=frac, casting='unsafe')
+        i0 = idx % capacity
+        i1 = (idx + 1) % capacity
+
+        ring = self._ring
+        for channel, signal in ((0, self.out), (1, self.right)):
+            buffer = signal.data[:frames]
+            if channel == 1 and not self.stereo:
+                buffer[:] = self.out.data[:frames]
+            else:
+                a = ring[channel, i0]
+                b = ring[channel, i1]
+                np.subtract(b, a, out=b)
+                b *= frac
+                np.add(a, b, out=buffer)
+            signal.constant = False
+        self._read += frames * ratio
+
+        # Output level, glided when it is a knob, as-is when it is a signal.
+        if level.constant:
+            target = min(2.0, max(0.0, level.value))
+            start = self._level_glide
+            landing = start + (target - start) * 0.35
+            if abs(landing - target) < 1.0e-6:
+                landing = target
+            self._level_glide = landing
+            if start == landing:
+                if landing != 1.0:
+                    self.out.data[:frames] *= landing
+                    self.right.data[:frames] *= landing
+                return
+            ramp = self._level_ramp[:frames]
+            np.multiply(_INDEX_RAMP[:frames], (landing - start) / frames, out=ramp)
+            ramp += start
+            self.out.data[:frames] *= ramp
+            self.right.data[:frames] *= ramp
+        else:
+            self.out.data[:frames] *= level.data[:frames]
+            self.right.data[:frames] *= level.data[:frames]
 
 
 class SnapshotUnit(Unit):

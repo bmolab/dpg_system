@@ -75,14 +75,13 @@ class SamplerEngineNode(Node):
                 SamplerEngineNode.engine.set_master_volume(self.master_vol_input())
 
     def custom_cleanup(self):
-        # We generally don't want to kill the static engine just because one node is deleted,
-        # unless it is the last node?
-        # For now, let's leave it running or rely on app shutdown?
-        # User snippet had strict cleanup.
-        if SamplerEngineNode.engine:
+        # The engine is shared by every sampler node and by the modular synth
+        # graph, so deleting one sampler_engine node must not silence them.
+        # Only app shutdown (do_exit set) closes the stream.
+        if SamplerEngineNode.engine and getattr(Node.app, 'do_exit', False):
             SamplerEngineNode.engine.stop()
             SamplerEngineNode.engine = None
-        print("SamplerEngineNode cleaned up.")
+            print("SamplerEngineNode cleaned up.")
 
 
 class SamplerVoiceNode(Node):
@@ -210,8 +209,10 @@ class SamplerVoiceNode(Node):
              self.load_file_with_path(path)
              
     def save_custom(self, container):
-        if hasattr(self, 'sample') and self.sample and self.sample.path:
-            container['path'] = self.sample.path
+        # Sample carries no path; the node's path property is the record.
+        path = self.path_input()
+        if path:
+            container['path'] = path
 
     def load_custom(self, container):
         if 'path' in container:
@@ -2517,6 +2518,8 @@ class GranularSamplerNode(PolyphonicSamplerNode):
         if len(data) > 2: vol_mult = float(data[2])
         
         # Allocate
+        if self.mono_mode_input():
+            self._stop_all_voices()
         idx = self.find_free_voice()
         if idx is not None:
              vp = snd.params
@@ -2750,6 +2753,8 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
         vol_mult = 1.0
         if len(data) > 2: vol_mult = float(data[2])
         
+        if self.mono_mode_input():
+            self._stop_all_voices()
         idx = self.find_free_voice()
         if idx is not None:
              vp = snd.params

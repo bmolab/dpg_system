@@ -1012,10 +1012,12 @@
   ],
   "snapshot~": [
     "array~",
+    "audio_in~",
     "capture~",
     "place~",
     "scope~",
-    "snapshot~"
+    "snapshot~",
+    "stream~"
   ],
   "vca~": [
     "fader_out~",

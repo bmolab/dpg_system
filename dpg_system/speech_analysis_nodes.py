@@ -32,10 +32,13 @@ try:
 except ImportError:
     pass
 
+# The kaldi backend needs torchaudio.functional.compute_kaldi_pitch, which
+# torchaudio removed in 2.1. Only offer it where the function still exists.
 _torchaudio_available = False
 try:
     import torchaudio
-    _torchaudio_available = True
+    import torchaudio.functional
+    _torchaudio_available = hasattr(torchaudio.functional, 'compute_kaldi_pitch')
 except ImportError:
     pass
 
@@ -1040,7 +1043,7 @@ class SpeechSpectralNode(TorchNode):
         if _librosa_available:
             self._analyse_librosa(audio, sr, n_fft, hop, rolloff_pct, n_mfcc, mode)
         else:
-            self._analyse_numpy(audio, sr, n_fft, hop, rolloff_pct, mode)
+            self._analyse_numpy(audio, sr, n_fft, hop, rolloff_pct, n_mfcc, mode)
 
     def _analyse_librosa(self, audio, sr, n_fft, hop, rolloff_pct, n_mfcc, mode):
         """Full spectral analysis using librosa."""
@@ -1075,7 +1078,7 @@ class SpeechSpectralNode(TorchNode):
             print(f'speech_spectral librosa error: {e}')
             traceback.print_exc()
 
-    def _analyse_numpy(self, audio, sr, n_fft, hop, rolloff_pct, mode):
+    def _analyse_numpy(self, audio, sr, n_fft, hop, rolloff_pct, n_mfcc, mode):
         """Fallback spectral analysis using only numpy (no librosa)."""
         try:
             # Manual STFT
@@ -1115,20 +1118,25 @@ class SpeechSpectralNode(TorchNode):
                 arith_mean = np.mean(mag) + 1e-10
                 flatnesses[i] = geo_mean / arith_mean
 
+            # Contrast and MFCC are not computed on this path; send zero
+            # arrays of the shapes the librosa path produces (7 contrast
+            # bands = librosa's default n_bands + 1) so downstream nodes
+            # always see an array, never a bare float.
+            n_contrast = 7
             if mode == 'summary':
                 self.centroid_output.send(float(np.mean(centroids)))
                 self.bandwidth_output.send(float(np.mean(bandwidths)))
                 self.rolloff_output.send(float(np.mean(rolloffs)))
                 self.flatness_output.send(float(np.mean(flatnesses)))
-                self.contrast_output.send(0.0)
-                self.mfcc_output.send(0.0)
+                self.contrast_output.send(np.zeros(n_contrast, dtype=np.float32))
+                self.mfcc_output.send(np.zeros(n_mfcc, dtype=np.float32))
             else:
                 self.centroid_output.send(centroids)
                 self.bandwidth_output.send(bandwidths)
                 self.rolloff_output.send(rolloffs)
                 self.flatness_output.send(flatnesses)
-                self.contrast_output.send(0.0)
-                self.mfcc_output.send(0.0)
+                self.contrast_output.send(np.zeros((n_contrast, n_frames), dtype=np.float32))
+                self.mfcc_output.send(np.zeros((n_mfcc, n_frames), dtype=np.float32))
         except Exception as e:
             print(f'speech_spectral numpy error: {e}')
             traceback.print_exc()

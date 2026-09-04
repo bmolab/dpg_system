@@ -98,6 +98,8 @@ THE NODES:
 snapshot~  one value per frame, as an ordinary float
 capture~   every sample, as a numpy array
 array~     the same node
+stream~    the other way: an array from the patch, played as a signal
+audio_in~  the same node
 scope~     every sample, drawn
 place~     not a bridge - a spatializer, included here because it is the last 
            stage before the output
@@ -119,6 +121,15 @@ plot, spectrum, numpy and torch nodes can work on the actual waveform.
 scope~ draws it directly, with a trigger, which is what you want when the 
 question is "what does this look like" rather than "what is this value".
 
+stream~ GOES THE OTHER WAY:
+An array or tensor arriving on 'audio in' - from t.audio_source, 
+t.audio.file_stream, a capture~ elsewhere, any numpy or torch chain - comes out 
+as a signal, so a microphone can drive vocoder~, a recording excite string~, or 
+live input reach a vst~. Set 'rate' to the rate the chunks were made at; 
+file_stream's sample_rate outlet can drive it. 'latency' is how much to hold 
+before starting: too little and a bursty source runs dry, counted on 
+'underruns'; a backlog past a quarter second is skipped, counted on 'dropped'.
+
 place~ PUTS IT SOMEWHERE:
 One outlet per speaker, patched onward to audio_out~'s inputs. Several place~ 
 into one output sum at its inlets, which is how each source gets its own 
@@ -128,6 +139,7 @@ and the pair is held apart by 'width'.
 SYNTAX:
 snapshot~
 capture~
+stream~ <rate> <latency ms>
 scope~
 
 EXAMPLE:
@@ -158,7 +170,10 @@ array (capture~, scope~):
 The samples.
 
 dropped (capture~):
-How many blocks were missed, so you know whether the patch is keeping up."""
+How many blocks were missed, so you know whether the patch is keeping up.
+
+left out / right out, underruns / dropped (stream~):
+The signal, and how often it ran dry or had to skip ahead."""
 
 demo = [
     {'key': 'lfo', 'init': 'lfo~ 0.5', 'pos': (30, 62), 'w': 200, 'h': 160},
