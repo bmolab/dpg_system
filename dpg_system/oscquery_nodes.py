@@ -1067,7 +1067,7 @@ class OSCQueryBrowseNode(Node, OSCBase):
                 if not self._path_matches_channels(child_path, base_path, channels):
                     continue
 
-            if 'TYPE' in child_node:
+            if 'TYPE' in child_node and not child_node.get('CONTENTS'):
                 # Direct leaf — add as a single-element group
                 node = self._create_widget_at_pos(
                     service_name, child_path, child_node, [start_x, start_y]

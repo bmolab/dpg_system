@@ -7,7 +7,10 @@ lighting network and:
 1. Connects to the console over TCP (port 3032) and enumerates the show's
    contents via the Eos "OSC Get" API (/eos/get/<type>/count + index queries):
    patched channels, cue lists, cues, groups, submasters, macros, presets,
-   palettes and snapshots — each with its console label.
+   palettes and snapshots — each with its console label. It also discovers
+   the parameter list of every fixture type (selecting one channel per type
+   on a dedicated OSC user and reading the encoder-wheel feedback, then
+   subscribing to each parameter for its native range).
 2. Builds an OSCQuery JSON tree of real Eos control addresses from that data
    and serves it over HTTP, advertised via mDNS as _oscjson._tcp — exactly the
    contract dpg_system's OSCQueryBrowser / oscq_browse expects. Any branch of
@@ -316,6 +319,156 @@ SIMPLE_FIRE_TYPES = [
 ]
 
 
+# Eos parameter categories (second argument of /eos/out/active/wheel/<n>)
+PARAM_CATEGORIES = {1: 'intensity', 2: 'focus', 3: 'color', 4: 'image',
+                    5: 'form', 6: 'shutter'}
+WHEEL_RE = re.compile(r'^(.*?)\s+\[')
+
+
+def param_osc_name(name):
+    """Eos parameter name -> the form Eos accepts in OSC addresses
+    (/eos/chan/<n>/param/<name>): lower case, spaces as underscores.
+    Names containing '/' (e.g. 'Gobo Index/Speed') are not addressable — the
+    console reads the slash as a path separator — so they map to None."""
+    if '/' in name:
+        return None
+    return re.sub(r'\s+', '_', name.strip()).lower()
+
+
+class EosParamProbe:
+    """Discovers a fixture's parameters by selecting a channel on a dedicated
+    OSC user (its own command line — the operator's is untouched) and reading
+    the encoder-wheel feedback, then subscribing to each parameter to learn
+    its native range. Uses its own TCP connection so the main link's OSC user
+    and feedback stream are unaffected. Selecting never changes output levels.
+    """
+
+    def __init__(self, ip, port, slip, user, timeout=5.0):
+        self.user = user
+        self.timeout = timeout
+        self.link = EosTCPLink(ip, port, slip=slip, on_message=self._on_message)
+        self._lock = threading.Lock()
+        self._wheels = {}       # wheel number -> (name, category)
+        self._params = {}       # osc name -> (value, min, max)
+        self._replied = set()   # osc names the console answered for, valued or not
+        self._active_chan = None
+        self._activity = threading.Event()
+
+    def open(self):
+        self.link.start()
+        if not self.link.connected.wait(self.timeout):
+            self.link.stop()
+            return False
+        self.link.send('/eos/user', [self.user])
+        time.sleep(0.3)
+        return True
+
+    def close(self):
+        self.link.send('/eos/key/clear_cmdline')
+        time.sleep(0.3)
+        self.link.stop()
+
+    def _on_message(self, address, args):
+        with self._lock:
+            if address.startswith('/eos/out/active/wheel/'):
+                if not args or not isinstance(args[0], str):
+                    return
+                m = WHEEL_RE.match(args[0])
+                name = m.group(1) if m else args[0].strip()
+                category = args[1] if len(args) > 1 and isinstance(args[1], int) else 0
+                self._wheels[int(address.rsplit('/', 1)[1])] = (name, category)
+            elif address == '/eos/out/active/chan':
+                text = args[0] if args and isinstance(args[0], str) else ''
+                m = re.match(r'^\s*(\d+)', text)
+                self._active_chan = int(m.group(1)) if m else None
+            elif address.startswith('/eos/out/param/'):
+                # [value, min, max] for a recognised parameter; [] otherwise
+                name = address[len('/eos/out/param/'):]
+                self._replied.add(name)
+                if len(args) >= 3:
+                    self._params[name] = tuple(args[:3])
+            else:
+                return
+        self._activity.set()
+
+    def _wait_quiet(self, done, quiet=0.4):
+        """Wait until done() holds and no feedback has arrived for `quiet` s."""
+        deadline = time.time() + self.timeout
+        while time.time() < deadline:
+            self._activity.clear()
+            if self._activity.wait(quiet):
+                continue
+            with self._lock:
+                if done():
+                    return True
+        with self._lock:
+            return done()
+
+    def _wait_for_ranges(self, wanted, settle=2.0):
+        """After subscribing: the console first acknowledges every name with
+        an empty reply, then sends [value, min, max] for the ones it knows.
+        Return once all wanted names have values, or — when some are unknown
+        — once every name has been acknowledged and no new value has arrived
+        for `settle` seconds."""
+        deadline = time.time() + self.timeout
+        last_progress = time.time()
+        seen = 0
+        while time.time() < deadline:
+            self._activity.clear()
+            self._activity.wait(0.4)
+            with self._lock:
+                have = set(self._params)
+                if len(have) != seen:
+                    seen = len(have)
+                    last_progress = time.time()
+                if wanted <= have:
+                    return
+                if wanted <= self._replied and time.time() - last_progress > settle:
+                    return
+
+    def _subscribe(self, names, state):
+        # every path segment after /param/ is read as a parameter name
+        for start in range(0, len(names), 8):
+            self.link.send('/eos/subscribe/param/' + '/'.join(names[start:start + 8]),
+                           [state])
+
+    def probe_channel(self, chan):
+        """Return the parameter list of the fixture patched at `chan` as
+        [{'name', 'osc', 'category', 'min', 'max'}], or None on failure.
+        'osc' is None for parameters the console will not address by name."""
+        chan = int(chan)
+        self.link.send('/eos/key/clear_cmdline')
+        time.sleep(0.3)
+        with self._lock:
+            self._wheels.clear()
+            self._params.clear()
+            self._replied.clear()
+            self._active_chan = None
+        self.link.send('/eos/newcmd', [f'Chan {chan}#'])
+        if not self._wait_quiet(lambda: self._active_chan == chan and self._wheels):
+            print(f"EosParamProbe: channel {chan} did not report its parameters")
+            return None
+        with self._lock:
+            wheels = [self._wheels[n] for n in sorted(self._wheels)]
+        params = [{'name': name, 'osc': param_osc_name(name), 'category': category,
+                   'min': None, 'max': None}
+                  for name, category in wheels if name]   # skip blank wheel slots
+
+        names = [p['osc'] for p in params if p['osc']]
+        self._subscribe(names, 1)
+        self._wait_for_ranges(set(names))
+        self._subscribe(names, 0)
+        with self._lock:
+            ranges = dict(self._params)
+        for p in params:
+            r = ranges.get(p['osc']) if p['osc'] else None
+            if r is None:
+                p['osc'] = None     # console did not recognise the name
+            else:
+                p['min'], p['max'] = float(r[1]), float(r[2])
+        return params
+
+
 def numeric_sort_key(value):
     try:
         return float(value)
@@ -335,6 +488,9 @@ class EosProxy:
         self.show = {}
         self.cues = {}
         self.show_name = ''
+        self.fixture_types = {}    # channel(str) -> "Manufacturer Model"
+        self.params = {}           # fixture type -> parameter list (see EosParamProbe)
+        self.param_user = 0        # OSC user for parameter discovery; 0 = off
 
         # enumeration plumbing
         self._count_events = {}    # request path -> (Event, [count])
@@ -418,6 +574,10 @@ class EosProxy:
                 key = numbers[0]
             if key not in collect['items']:
                 collect['items'][key] = label
+                if type_name == 'patch':
+                    # args[3], args[4] = fixture manufacturer, model
+                    collect['fixtures'][key] = ' '.join(
+                        a for a in args[3:5] if isinstance(a, str) and a).strip()
                 if len(collect['items']) >= collect['expected']:
                     collect['done'].set()
 
@@ -464,6 +624,7 @@ class EosProxy:
             'type': type_name,
             'cuelist': cuelist,
             'items': {},
+            'fixtures': {},
             'expected': count,
             'done': threading.Event(),
         }
@@ -479,6 +640,8 @@ class EosProxy:
         got = len(collect['items'])
         if got < count:
             print(f"EosProxy: {get_path}: got {got}/{count} items before timeout")
+        if type_name == 'patch':
+            self.fixture_types = collect['fixtures']
         return collect['items']
 
     def enumerate_type(self, type_name):
@@ -487,6 +650,7 @@ class EosProxy:
             items = self._enumerate_target('/eos/get/patch', 'patch')
             if items is not None:
                 self.show['patch'] = items
+                self.enumerate_params()
         elif type_name in ('cue', 'cuelist'):
             lists = self._enumerate_target('/eos/get/cuelist', 'cuelist')
             if lists is None:
@@ -502,6 +666,37 @@ class EosProxy:
             if items is not None:
                 self.show[type_name] = items
 
+    def enumerate_params(self):
+        """Discover the parameter list of every fixture type in the patch by
+        probing one channel per type. Types already in self.params are
+        skipped, so a patch-change notify only probes what is new."""
+        if self.link is None or not self.param_user:
+            return
+        pending = {}
+        for chan in sorted(self.fixture_types, key=numeric_sort_key):
+            fixture = self.fixture_types[chan]
+            if fixture and fixture not in self.params and fixture not in pending:
+                pending[fixture] = chan
+        if not pending:
+            return
+        probe = EosParamProbe(self.link.ip, self.link.port, self.link.slip,
+                              self.param_user, timeout=self.enum_timeout)
+        if not probe.open():
+            print("EosProxy: could not open the parameter probe connection")
+            return
+        try:
+            for fixture, chan in pending.items():
+                params = probe.probe_channel(chan)
+                if params is None:
+                    continue
+                self.params[fixture] = params
+                skipped = [p['name'] for p in params if not p['osc']]
+                print(f"EosProxy: '{fixture}' (probed via chan {chan}): "
+                      f"{len(params)} parameters"
+                      + (f", not addressable by name: {skipped}" if skipped else ''))
+        finally:
+            probe.close()
+
     def enumerate_and_build(self, type_name):
         with self._enum_lock:
             self.enumerate_type(type_name)
@@ -513,10 +708,12 @@ class EosProxy:
         types = ['patch', 'group', 'sub', 'cue'] + [t[0] for t in SIMPLE_FIRE_TYPES]
         print("EosProxy: enumerating show data from console...")
         started = time.time()
+        self.params = {}   # full enumeration re-probes every fixture type
         for type_name in types:
             self.enumerate_and_build(type_name)
         counts = {k: len(v) for k, v in self.show.items()}
         counts['cues'] = sum(len(c) for c in self.cues.values())
+        counts['fixture_types'] = len(self.params)
         print(f"EosProxy: enumeration complete in {time.time() - started:.1f}s — {counts}")
         self.save_cache()
 
@@ -557,8 +754,26 @@ class EosProxy:
             reg.ensure_container('/eos/chan', f'Channels ({len(channels)} patched)')
             for number in sorted(channels, key=numeric_sort_key):
                 label = channels[number] or f'channel {number}'
+                fixture = self.fixture_types.get(number, '')
+                description = f'{label} ({fixture})' if fixture else label
                 reg.add_param(f'/eos/chan/{number}', 'f', access=3, value=[0.0],
-                              range_=[{'MIN': 0.0, 'MAX': 100.0}], description=label)
+                              range_=[{'MIN': 0.0, 'MAX': 100.0}], description=description)
+                # fixture parameters: /eos/chan/<n>/param/<name> is the real
+                # Eos address, so they nest under the channel's level node
+                params = self.params.get(fixture) if fixture else None
+                if not params:
+                    continue
+                reg.ensure_container(f'/eos/chan/{number}/param',
+                                     f'{fixture} parameters')
+                for p in params:
+                    if not p['osc']:
+                        continue
+                    lo, hi = p['min'], p['max']
+                    category = PARAM_CATEGORIES.get(p['category'], 'other')
+                    range_ = [{'MIN': lo, 'MAX': hi}] if lo < hi else None
+                    reg.add_param(f'/eos/chan/{number}/param/{p["osc"]}', 'f', access=3,
+                                  value=[min(max(0.0, lo), hi)], range_=range_,
+                                  description=f'{p["name"]} ({category})')
 
         elif type_name == 'group':
             groups = self.show.get('group', {})
@@ -618,7 +833,9 @@ class EosProxy:
         try:
             with open(self.cache_path, 'w') as f:
                 json.dump({'show_name': self.show_name, 'saved': time.time(),
-                           'show': self.show, 'cues': self.cues}, f, indent=1)
+                           'show': self.show, 'cues': self.cues,
+                           'fixture_types': self.fixture_types, 'params': self.params},
+                          f, indent=1)
         except OSError as e:
             print(f"EosProxy: could not save cache: {e}")
 
@@ -630,6 +847,8 @@ class EosProxy:
                 data = json.load(f)
             self.show = data.get('show', {})
             self.cues = data.get('cues', {})
+            self.fixture_types = data.get('fixture_types', {})
+            self.params = data.get('params', {})
             self.show_name = data.get('show_name', '')
             self.build_all_branches()
             print(f"EosProxy: pre-loaded tree from cache "
@@ -648,6 +867,23 @@ class EosProxy:
                        'spot 1', 'spot 2', 'blinders', 'movers downstage']
         self.show['patch'] = {str(i + 1): (chan_labels[i] if i < len(chan_labels) else '')
                               for i in range(24)}
+        self.fixture_types = {str(i + 1): 'ETC Source Four LED' for i in range(6)}
+        self.fixture_types['8'] = 'Robe Spiider'
+        self.params = {
+            'ETC Source Four LED': [
+                {'name': 'Intens', 'osc': 'intens', 'category': 1, 'min': 0.0, 'max': 100.0},
+                {'name': 'Red', 'osc': 'red', 'category': 3, 'min': 0.0, 'max': 100.0},
+                {'name': 'Green', 'osc': 'green', 'category': 3, 'min': 0.0, 'max': 100.0},
+                {'name': 'Blue', 'osc': 'blue', 'category': 3, 'min': 0.0, 'max': 100.0},
+            ],
+            'Robe Spiider': [
+                {'name': 'Intens', 'osc': 'intens', 'category': 1, 'min': 0.0, 'max': 100.0},
+                {'name': 'Pan', 'osc': 'pan', 'category': 2, 'min': -270.0, 'max': 270.0},
+                {'name': 'Tilt', 'osc': 'tilt', 'category': 2, 'min': -135.0, 'max': 135.0},
+                {'name': 'Zoom', 'osc': 'zoom', 'category': 5, 'min': 4.0, 'max': 50.0},
+                {'name': 'Gobo Index/Speed', 'osc': None, 'category': 4, 'min': None, 'max': None},
+            ],
+        }
         self.show['group'] = {'1': 'all warm', '2': 'cyc', '5': 'movers'}
         self.show['sub'] = {str(i + 1): label for i, label in
                             enumerate(['warms', 'cyc', 'specials', 'fx bumps'])}
@@ -726,6 +962,10 @@ def main():
                         help='mDNS service name to advertise (default "eos")')
     parser.add_argument('--cache', default='eos_proxy_cache.json',
                         help='enumeration cache file ("" to disable)')
+    parser.add_argument('--param-user', type=int, default=7,
+                        help='OSC user the proxy selects channels on while discovering '
+                             'fixture parameters — pick one no operator uses '
+                             '(default 7; 0 disables parameter discovery)')
     parser.add_argument('--mock', action='store_true',
                         help='serve a fake show without connecting to a console')
     args = parser.parse_args()
@@ -735,6 +975,7 @@ def main():
 
     registry = EosRegistry()
     proxy = EosProxy(registry, cache_path=args.cache or None)
+    proxy.param_user = args.param_user
     proxy.build_static_tree()
 
     if args.mock:
