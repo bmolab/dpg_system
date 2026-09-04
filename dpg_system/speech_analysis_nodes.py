@@ -13,6 +13,7 @@ import time
 import traceback
 
 from dpg_system.torch_base_nodes import *
+from dpg_system.audio_io import to_mono
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Optional backend availability
@@ -206,6 +207,27 @@ class F0RingBuffer:
 # Node registration
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _incoming_mono(port):
+    """Whatever arrived on an audio input, as 1-D float32 mono.
+
+    Tensors from t.audio_source / t.audio.file_stream, numpy arrays from
+    capture~ (so synth audio can be analysed too), or plain lists. Channels
+    are averaged, the same downmix whisper uses.
+    """
+    data = port()
+    if data is None:
+        return None
+    if hasattr(data, 'detach'):
+        data = data.detach().cpu().numpy()
+    elif not isinstance(data, np.ndarray):
+        data = any_to_array(data, validate=True)
+        if data is None:
+            return None
+    if data.size == 0:
+        return None
+    return np.ascontiguousarray(to_mono(data), dtype=np.float32)
+
+
 def register_speech_analysis_nodes():
     Node.app.register_node('speech_pitch', SpeechPitchNode.factory)
     Node.app.register_node('speech_prosody', SpeechProsodyNode.factory)
@@ -253,8 +275,11 @@ class SpeechPitchNode(TorchNode):
         self.input = self.add_input('audio tensor in', triggers_execution=True)
 
         # Properties
-        self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
-                                                   default_value=16000)
+        # An input rather than a property so a source's rate outlet
+        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
+                                               default_value=16000, min=1000, max=384000,
+                                               callback=self._rate_changed)
         self.buffer_sec_prop = self.add_input('buffer_sec', widget_type='drag_float',
                                                default_value=0.14,
                                                callback=self._buffer_size_changed)
@@ -304,6 +329,13 @@ class SpeechPitchNode(TorchNode):
         new_size = max(int(buf_sec * sr), sr)  # at least 1 second
         self._ring.resize(new_size)
 
+    def _rate_changed(self):
+        # Frames stay 10 ms apart whatever the rate, which is what
+        # speech_prosody's hop_time_ms assumes downstream.
+        sr = int(self.sample_rate_prop())
+        self._hop_length = max(16, int(round(sr * 0.01)))
+        self._buffer_size_changed()
+
     def _backend_changed(self):
         requested = self.backend_prop()
         if requested in self._available_backends and requested != 'none':
@@ -315,19 +347,9 @@ class SpeechPitchNode(TorchNode):
             self.status_label.set(f'backend: {fallback} (fallback)')
 
     def execute(self):
-        data = self.input_to_tensor()
-        if data is None:
+        audio_np = _incoming_mono(self.input)
+        if audio_np is None:
             return
-
-        # Convert tensor to mono float32 numpy
-        audio_np = data.detach().cpu().numpy().astype(np.float32)
-        if audio_np.ndim > 1:
-            # Take first channel or average
-            if audio_np.shape[0] <= audio_np.shape[-1]:
-                audio_np = audio_np[0]  # (channels, samples) → first channel
-            else:
-                audio_np = audio_np[:, 0]  # (samples, channels) → first channel
-        audio_np = audio_np.flatten()
 
         # Push into ring buffer (sliding window — always accumulate)
         self._ring.push(audio_np)
@@ -468,9 +490,10 @@ class SpeechPitchNode(TorchNode):
         """PYIN pitch tracking via librosa."""
         try:
             hop = self._hop_length
+            frame_length = max(512, int(round(0.128 * sr)))   # 2048 at 16 kHz
             f0, voiced_flag, voiced_prob = librosa.pyin(
                 audio, fmin=fmin, fmax=fmax, sr=sr,
-                frame_length=2048, hop_length=hop,
+                frame_length=frame_length, hop_length=hop,
                 fill_na=0.0
             )
             # voiced_flag: bool array, voiced_prob: float array
@@ -796,8 +819,11 @@ class SpeechEnvelopeNode(TorchNode):
         self.input = self.add_input('audio tensor in', triggers_execution=True)
 
         # Properties
-        self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
-                                                   default_value=16000)
+        # An input rather than a property so a source's rate outlet
+        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
+                                               default_value=16000, min=1000, max=384000,
+                                               callback=self._rate_changed)
         self.frame_hop_prop = self.add_input('frame_hop', widget_type='drag_int',
                                               default_value=256)  # samples per frame
         self.env_min_cutoff_prop = self.add_input('env_min_cutoff', widget_type='drag_float',
@@ -834,19 +860,13 @@ class SpeechEnvelopeNode(TorchNode):
         self._onset_armed = True
         self._prev_time = None
 
-    def execute(self):
-        data = self.input_to_tensor()
-        if data is None:
-            return
+    def _rate_changed(self):
+        self._leftover = np.zeros(0, dtype=np.float32)
 
-        # Convert tensor to mono float32 numpy
-        audio_np = data.detach().cpu().numpy().astype(np.float32)
-        if audio_np.ndim > 1:
-            if audio_np.shape[0] <= audio_np.shape[-1]:
-                audio_np = audio_np[0]
-            else:
-                audio_np = audio_np[:, 0]
-        audio_np = audio_np.flatten()
+    def execute(self):
+        audio_np = _incoming_mono(self.input)
+        if audio_np is None:
+            return
 
         if len(audio_np) == 0:
             return
@@ -967,8 +987,11 @@ class SpeechSpectralNode(TorchNode):
         self.input = self.add_input('audio tensor in', triggers_execution=True)
 
         # Properties
-        self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
-                                                   default_value=16000)
+        # An input rather than a property so a source's rate outlet
+        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
+                                               default_value=16000, min=1000, max=384000,
+                                               callback=self._rate_changed)
         self.buffer_sec_prop = self.add_input('buffer_sec', widget_type='drag_float',
                                                default_value=0.5,
                                                callback=self._buffer_size_changed)
@@ -1004,19 +1027,13 @@ class SpeechSpectralNode(TorchNode):
         new_size = max(int(buf_sec * sr), 4096)
         self._ring.resize(new_size)
 
-    def execute(self):
-        data = self.input_to_tensor()
-        if data is None:
-            return
+    def _rate_changed(self):
+        self._buffer_size_changed()
 
-        # Convert to mono float32 numpy
-        audio_np = data.detach().cpu().numpy().astype(np.float32)
-        if audio_np.ndim > 1:
-            if audio_np.shape[0] <= audio_np.shape[-1]:
-                audio_np = audio_np[0]
-            else:
-                audio_np = audio_np[:, 0]
-        audio_np = audio_np.flatten()
+    def execute(self):
+        audio_np = _incoming_mono(self.input)
+        if audio_np is None:
+            return
 
         self._ring.push(audio_np)
 
@@ -1171,8 +1188,11 @@ class SpeechVoiceQualityNode(TorchNode):
         self.input = self.add_input('audio tensor in', triggers_execution=True)
 
         # Properties
-        self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
-                                                   default_value=16000)
+        # An input rather than a property so a source's rate outlet
+        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
+                                               default_value=16000, min=1000, max=384000,
+                                               callback=self._rate_changed)
         self.buffer_sec_prop = self.add_input('buffer_sec', widget_type='drag_float',
                                                default_value=1.0,
                                                callback=self._buffer_size_changed)
@@ -1207,18 +1227,13 @@ class SpeechVoiceQualityNode(TorchNode):
         buf_sec = float(self.buffer_sec_prop())
         self._ring.resize(max(int(buf_sec * sr), sr))
 
-    def execute(self):
-        data = self.input_to_tensor()
-        if data is None:
-            return
+    def _rate_changed(self):
+        self._buffer_size_changed()
 
-        audio_np = data.detach().cpu().numpy().astype(np.float32)
-        if audio_np.ndim > 1:
-            if audio_np.shape[0] <= audio_np.shape[-1]:
-                audio_np = audio_np[0]
-            else:
-                audio_np = audio_np[:, 0]
-        audio_np = audio_np.flatten()
+    def execute(self):
+        audio_np = _incoming_mono(self.input)
+        if audio_np is None:
+            return
 
         self._ring.push(audio_np)
 

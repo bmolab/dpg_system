@@ -7948,6 +7948,7 @@ class CaptureNode(SynthNode):
         # Start where the signal is now, so continuous mode does not open by
         # dumping a buffer of silence recorded before the node existed.
         self._last_read = self.unit.written
+        self._rate_sent = False
 
         self.add_signal_input('in', self.unit.signal_in)
         self.bang_input = self.add_input('bang', widget_type='button',
@@ -7955,6 +7956,9 @@ class CaptureNode(SynthNode):
 
         self.array_output = self.add_array_output('array')
         self.dropped_output = self.add_output('dropped')
+        # The engine rate, sent once, so a speech node or stream~ fed from
+        # this array can be told what it is.
+        self.rate_output = self.add_output('rate')
 
         self.size_option = self.add_option('size', widget_type='drag_int',
                                            default_value=size, min=16,
@@ -7995,6 +7999,9 @@ class CaptureNode(SynthNode):
         self._emit()
 
     def synth_frame_task(self):
+        if not self._rate_sent:
+            self._rate_sent = True
+            self.rate_output.send(int(self.unit.sample_rate))
         if any_to_string(self.send_option()) == 'on bang':
             # Keep the read cursor current so switching back to streaming does
             # not immediately dump a large backlog.

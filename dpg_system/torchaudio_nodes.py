@@ -61,6 +61,8 @@ class TorchAudioSourceNode(TorchNode):
         self.format.widget.combo_items = ['float', 'int32', 'int16']
         self.chunk_size = self.add_input('chunk_size', widget_type='drag_int', default_value=1024, callback=self.source_params_changed)
         self.output = self.add_output('audio tensors')
+        # The rate the stream really opened at; patch into whatever analyses it.
+        self.rate_output = self.add_output('sample_rate')
 
     def source_params_changed(self):
         changed = False
@@ -114,6 +116,9 @@ class TorchAudioSourceNode(TorchNode):
                 else:
                     print('Audio Source format invalid: channels =', channels, 'rate =', sample_rate, 'format =', dtype_str)
 
+        if changed or source_changed:
+            self.rate_output.send(int(self.source.samplerate))
+
     def audio_callback(self, indata, frame_count, time_info, flag):
         # This runs on the sounddevice PortAudio thread. An uncaught
         # exception here can silently kill the input stream — catch it
@@ -131,6 +136,8 @@ class TorchAudioSourceNode(TorchNode):
         if self.stream_input():
             if not self.streaming:
                 self.streaming = self.source.start()
+                if self.streaming:
+                    self.rate_output.send(int(self.source.samplerate))
         else:
             if self.streaming:
                 is_stopped = self.source.stop()

@@ -79,6 +79,11 @@ OUTPUTS:
 audio tensors:
 Blocks of shape (channels, chunk_size).
 
+sample_rate (t.audio_source, t.audio.file_stream):
+The rate the stream is really running at, sent when it starts or changes. Patch 
+it into speech_pitch, stream~ or whisper's rate inlet so they agree with the 
+source instead of assuming.
+
 audio data out / sample_rate (t.audio.file):
 The whole file, and the rate it was recorded at.
 

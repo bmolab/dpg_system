@@ -172,6 +172,9 @@ The samples.
 dropped (capture~):
 How many blocks were missed, so you know whether the patch is keeping up.
 
+rate (capture~):
+The engine's sample rate, sent once, for whatever the array is patched into.
+
 left out / right out, underruns / dropped (stream~):
 The signal, and how often it ran dry or had to skip ahead."""
 
