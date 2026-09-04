@@ -590,7 +590,6 @@ class MGLContextNode(Node):
             on_resize=self._on_node_resize_drag,
         )
         dpg.set_item_user_data(btn, handle)
-        dpg.bind_item_handler_registry(btn, "resize handle handler")
         dpg.bind_item_theme(btn, _get_resize_handle_theme())
         self.node_resize_handle = handle
 

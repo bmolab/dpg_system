@@ -2996,7 +2996,6 @@ class Node:
         handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option,
                               extra_target_uuids=extra_uuids, on_resize=on_resize)
         dpg.set_item_user_data(btn_uuid, handle)
-        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         return handle
 

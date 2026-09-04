@@ -162,13 +162,6 @@ if _line_started:
 for msg in _skipped:
     print(msg)
 
-def widget_active(source, data, user_data):
-    pass
-
-def widget_hovered(source, data, user_data):
-    if dpg.does_item_exist(data):
-        Node.app.hovered_item = dpg.get_item_user_data(data)
-
 def widget_activated(source, data, user_data):
     if dpg.does_item_exist(data):
         item_type = dpg.get_item_type(data)
@@ -391,7 +384,6 @@ class App:
         # self.borderless_child_theme = None
         self.active_widget = -1
         self.focussed_widget = -1
-        self.hovered_item = None
         self.return_pressed = False
         self.frame_time_variable = self.add_variable(variable_name='frame_time')
         self.frame_number = 0
@@ -418,19 +410,22 @@ class App:
         self.currently_loading_node_name = ''
 
         self.register_patchers()
+        # No hover or active handler here, deliberately: those two fire every
+        # frame, and a DearPyGui 2.1.0 item handler queues its callback with a
+        # raw pointer into the item that it dereferences later on the callback
+        # thread. A widget deleted with such a callback still queued -- the
+        # node under the mouse when a patch is replaced -- segfaulted in
+        # mvHoverHandler. The hovered item is found on demand instead (see
+        # the hovered_item property). The remaining handlers fire once per
+        # event, so the same race needs a deletion inside the same frame.
         self.handler = dpg.item_handler_registry(tag="widget handler")
         with self.handler:
-            dpg.add_item_active_handler(callback=widget_active)
             dpg.add_item_activated_handler(callback=widget_activated)
             dpg.add_item_deactivated_handler(callback=widget_deactive)
             dpg.add_item_deactivated_after_edit_handler(callback=widget_deactive_after_edit)
             dpg.add_item_edited_handler(callback=widget_edited)
             dpg.add_item_focus_handler(callback=widget_focus)
             dpg.add_item_clicked_handler(callback=widget_clicked)
-            dpg.add_item_hover_handler(callback=widget_hovered)
-        self.resize_handle_handler = dpg.item_handler_registry(tag="resize handle handler")
-        with self.resize_handle_handler:
-            dpg.add_item_hover_handler(callback=widget_hovered)
         self.action = self.add_action('do_it', self.reset_frame_count)
         self.window_context = None
         self.fresh_patcher = True
@@ -457,7 +452,6 @@ class App:
     def clear_remembered_ids(self):
         self.active_widget = -1
         self.focussed_widget = -1
-        self.hovered_item = None
         self.return_pressed = False
 
     def reset_frame_count(self):
@@ -642,6 +636,65 @@ class App:
         for editor in self.node_editors:
             if editor.patch_name == editor_name:
                 return editor
+        return None
+
+    # Widget kinds that hover never tracked: nothing to step with the arrow
+    # keys and no resize to start, so they are not offered as the hovered item.
+    untracked_widget_kinds = ('checkbox', 'button', 'label', 'table', 'spacer')
+
+    @property
+    def hovered_item(self):
+        """The widget or resize handle under the mouse, found when asked for.
+
+        The node editor marks the one node the mouse is over, so only that
+        node's subtree is walked, and only when a mouse or key event needs
+        the answer. There is no per-widget hover handler behind this (see
+        the handler registry in __init__ for why).
+        """
+        editor = self.get_current_editor()
+        if editor is None:
+            return None
+        uuids = []
+        for node in list(editor._nodes):
+            uuid = getattr(node, 'uuid', -1)
+            if uuid is not None and uuid != -1 and dpg.does_item_exist(uuid):
+                uuids.append(uuid)
+        for uuid in uuids:
+            if self._is_hovered(uuid):
+                return self._hovered_descendant(uuid)
+        # imnodes stops reporting a hovered node the moment a click
+        # interaction begins, and a mouse click handler runs a frame after
+        # the click, so at mouse-down no node is hovered any more. The node's
+        # screen rectangle is refreshed every frame regardless; use that.
+        x, y = dpg.get_mouse_pos(local=False)
+        for uuid in uuids:
+            left, top = dpg.get_item_rect_min(uuid)
+            right, bottom = dpg.get_item_rect_max(uuid)
+            if left <= x <= right and top <= y <= bottom:
+                return self._hovered_descendant(uuid)
+        return None
+
+    @staticmethod
+    def _is_hovered(uuid):
+        # Not every item keeps hover state (plot series, themes, handlers
+        # among them), and dpg.is_item_hovered raises KeyError on those.
+        return dpg.get_item_state(uuid).get('hovered', False)
+
+    @classmethod
+    def _hovered_descendant(cls, uuid):
+        from dpg_system.node import ResizeHandle, BasePropertyWidget
+        for children in dpg.get_item_children(uuid).values():
+            for child in children:
+                if cls._is_hovered(child):
+                    item = dpg.get_item_user_data(child)
+                    if isinstance(item, ResizeHandle):
+                        return item
+                    if (isinstance(item, BasePropertyWidget)
+                            and getattr(item, 'widget', None) not in cls.untracked_widget_kinds):
+                        return item
+                found = cls._hovered_descendant(child)
+                if found is not None:
+                    return found
         return None
 
     def get_current_editor(self):
@@ -1544,8 +1597,9 @@ class App:
 
     def mouse_down_handler(self):
         from dpg_system.node import ResizeHandle, _get_resize_handle_dragging_theme
-        if isinstance(self.hovered_item, ResizeHandle):
-            rh = self.hovered_item
+        hovered = self.hovered_item
+        if isinstance(hovered, ResizeHandle):
+            rh = hovered
             if dpg.does_item_exist(rh.uuid) and dpg.is_item_hovered(rh.uuid) and dpg.does_item_exist(rh.target_uuid):
                 self.resize_drag = rh
                 self.resize_start_mouse = dpg.get_mouse_pos(local=False)
@@ -1566,7 +1620,6 @@ class App:
                     # the switch — the mouse travels to the help-tab close
                     # button, and when the user returns to the original
                     # editor, DPG snaps the node to the far-away cursor.
-                    hovered = self.hovered_item
                     target = getattr(hovered, 'node', hovered)
                     if target is None or not hasattr(target, 'get_help'):
                         selected = dpg.get_selected_nodes(editor.uuid)
@@ -1725,14 +1778,15 @@ class App:
                 editor.pan_nodes(0, self.pan_step)
                 return
         handled = False
-        if self.hovered_item is not None:
-            uuid = self.hovered_item.uuid
+        hovered = self.hovered_item
+        if hovered is not None:
+            uuid = hovered.uuid
             if dpg.does_item_exist(uuid):
                 if dpg.is_item_hovered(uuid):
                     handled = True
-                    self.hovered_item.node.increment_widget(self.hovered_item)
-                    if self.hovered_item.callback is not None:
-                        self.hovered_item.callback_because_edit()
+                    hovered.node.increment_widget(hovered)
+                    if hovered.callback is not None:
+                        hovered.callback_because_edit()
         if not handled:
             if not self.not_focussed_on_widget():
                 if dpg.does_item_exist(self.active_widget):
@@ -1753,14 +1807,15 @@ class App:
                 editor.pan_nodes(0, -self.pan_step)
                 return
         handled = False
-        if self.hovered_item is not None:
-            uuid = self.hovered_item.uuid
+        hovered = self.hovered_item
+        if hovered is not None:
+            uuid = hovered.uuid
             if dpg.does_item_exist(uuid):
                 if dpg.is_item_hovered(uuid):
                     handled = True
-                    self.hovered_item.node.decrement_widget(self.hovered_item)
-                    if self.hovered_item.callback is not None:
-                        self.hovered_item.callback_because_edit()
+                    hovered.node.decrement_widget(hovered)
+                    if hovered.callback is not None:
+                        hovered.callback_because_edit()
         if not handled:
             if not self.not_focussed_on_widget():
                 if dpg.does_item_exist(self.active_widget):

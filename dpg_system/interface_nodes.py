@@ -3245,7 +3245,6 @@ class XYPadNode(Node):
             sync_width=True, sync_height=False
         )
         dpg.set_item_user_data(btn_uuid, handle)
-        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
 
@@ -3537,7 +3536,6 @@ class BreakpointEditor:
             on_resize=self.handle_resized
         )
         dpg.set_item_user_data(btn_uuid, handle)
-        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
 
@@ -4028,7 +4026,6 @@ class BarEditor:
             on_resize=self.handle_resized
         )
         dpg.set_item_user_data(btn_uuid, handle)
-        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
 
@@ -4294,7 +4291,6 @@ class ModeEditor:
             on_resize=self.handle_resized
         )
         dpg.set_item_user_data(btn_uuid, handle)
-        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
 
