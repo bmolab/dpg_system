@@ -1,11 +1,11 @@
 {
-    "height": 904,
-    "width": 1658,
+    "height": 901,
+    "width": 1660,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 755,
     "name": "t.zeros_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.zeros_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 800,
+            "position_x": 802,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 200,
-            "height": 200,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +123,7 @@
             "position_x": 270,
             "position_y": 120,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -176,7 +176,7 @@
             "id": 459,
             "position_x": 504,
             "position_y": 330,
-            "width": 210,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -200,8 +200,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 375,
-            "width": 200,
-            "height": 180,
+            "width": 163,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -214,7 +214,7 @@
             "position_x": 270,
             "position_y": 375,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -267,7 +267,7 @@
             "id": 570,
             "position_x": 504,
             "position_y": 565,
-            "width": 252,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -291,8 +291,8 @@
             "id": 607,
             "position_x": 30,
             "position_y": 610,
-            "width": 200,
-            "height": 160,
+            "width": 163,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -304,7 +304,7 @@
             "position_x": 270,
             "position_y": 610,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -352,60 +352,50 @@
             }
         },
         "12": {
-            "init": "comment shape taken from the tensor, not typed",
-            "name": "comment",
+            "name": "text_block",
             "id": 681,
+            "annotation": true,
             "position_x": 504,
             "position_y": 780,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "shape taken from the tensor, not typed",
+                    "name": "block",
+                    "value": "shape taken from the tensor, not typed\nso it follows if the data changes size",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "shape taken from the tensor, not typed"
+            "text": "shape taken from the tensor, not typed\nso it follows if the data changes size"
         },
         "13": {
-            "init": "comment so it follows if the data changes size",
-            "name": "comment",
-            "id": 718,
-            "position_x": 504,
-            "position_y": 810,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "so it follows if the data changes size",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "so it follows if the data changes size"
-        },
-        "14": {
             "name": "close",
-            "id": 755,
+            "id": 718,
             "position_x": 24,
-            "position_y": 800,
+            "position_y": 790,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

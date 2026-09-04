@@ -1,11 +1,11 @@
 {
     "height": 861,
-    "width": 1641,
+    "width": 1631,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "random_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/random_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 492,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 763,
+            "position_x": 753,
             "position_y": 45,
             "width": 838,
             "height": 756,
@@ -145,7 +145,7 @@
             "id": 422,
             "position_x": 474,
             "position_y": 116,
-            "width": 105,
+            "width": 101,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -169,8 +169,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 188,
-            "width": 175,
-            "height": 100,
+            "width": 117,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -183,7 +183,7 @@
             "position_x": 240,
             "position_y": 170,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -246,7 +246,7 @@
             "id": 533,
             "position_x": 474,
             "position_y": 298,
-            "width": 259,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -270,8 +270,8 @@
             "id": 570,
             "position_x": 30,
             "position_y": 345,
-            "width": 140,
-            "height": 80,
+            "width": 123,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -295,7 +295,7 @@
             "position_x": 240,
             "position_y": 365,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -353,60 +353,50 @@
             }
         },
         "11": {
-            "init": "comment plain random: no value preferred",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
+            "annotation": true,
             "position_x": 474,
             "position_y": 435,
-            "width": 224,
-            "height": 30,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "plain random: no value preferred",
+                    "name": "block",
+                    "value": "plain random: no value preferred\ndrag mean and dev on the node above",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "plain random: no value preferred"
+            "text": "plain random: no value preferred\ndrag mean and dev on the node above"
         },
         "12": {
-            "init": "comment drag mean and dev on the node above",
-            "name": "comment",
-            "id": 681,
-            "position_x": 474,
-            "position_y": 465,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "drag mean and dev on the node above",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "drag mean and dev on the node above"
-        },
-        "13": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 571,
+            "position_y": 573,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -1,11 +1,11 @@
 {
-    "height": 975,
-    "width": 1947,
+    "height": 881,
+    "width": 1936,
     "position": [
         100,
         100
     ],
-    "id": 1014,
+    "id": 718,
     "name": "pjlink_projector_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/pjlink_projector_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1089,
+            "position_x": 1078,
             "position_y": 45,
             "width": 818,
             "height": 776,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 340,
-            "height": 320,
+            "width": 174,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -106,87 +106,52 @@
             "init": "pjlink_projector 10.1.1.141"
         },
         "4": {
-            "init": "comment set ip and password in the options,",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 786,
+            "annotation": true,
+            "position_x": 780,
             "position_y": 400,
-            "width": 245,
-            "height": 30,
+            "width": 268,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "set ip and password in the options,",
+                    "name": "block",
+                    "value": "set ip and password in the options,\nTHEN connect. Watch status - an\nunconnected projector just ignores you",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "set ip and password in the options,"
+            "text": "set ip and password in the options,\nTHEN connect. Watch status - an\nunconnected projector just ignores you"
         },
         "5": {
-            "init": "comment THEN connect. Watch status - an",
-            "name": "comment",
-            "id": 422,
-            "position_x": 786,
-            "position_y": 430,
-            "width": 217,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "THEN connect. Watch status - an",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "THEN connect. Watch status - an"
-        },
-        "6": {
-            "init": "comment unconnected projector just ignores you",
-            "name": "comment",
-            "id": 459,
-            "position_x": 786,
-            "position_y": 460,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "unconnected projector just ignores you",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "unconnected projector just ignores you"
-        },
-        "7": {
             "name": "text_display",
-            "id": 496,
+            "id": 422,
             "position_x": 420,
             "position_y": 62,
-            "width": 340,
-            "height": 220,
+            "width": 334,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -223,13 +188,13 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "init": "comment what it says back - queries answer here",
             "name": "comment",
-            "id": 533,
-            "position_x": 786,
+            "id": 459,
+            "position_x": 780,
             "position_y": 295,
-            "width": 273,
+            "width": 248,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -248,9 +213,9 @@
             },
             "comment": "what it says back - queries answer here"
         },
-        "9": {
+        "7": {
             "name": "toggle",
-            "id": 570,
+            "id": 496,
             "position_x": 30,
             "position_y": 510,
             "width": 45,
@@ -260,59 +225,49 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
-            "init": "comment shutter: instant, reversible, free.",
-            "name": "comment",
-            "id": 607,
-            "position_x": 786,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 780,
             "position_y": 510,
-            "width": 245,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "shutter: instant, reversible, free.",
+                    "name": "block",
+                    "value": "shutter: instant, reversible, free.\nThis is the one to use in performance",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "shutter: instant, reversible, free."
+            "text": "shutter: instant, reversible, free.\nThis is the one to use in performance"
         },
-        "11": {
-            "init": "comment This is the one to use in performance",
-            "name": "comment",
-            "id": 644,
-            "position_x": 786,
-            "position_y": 540,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "This is the one to use in performance",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "This is the one to use in performance"
-        },
-        "12": {
+        "9": {
             "name": "metro",
-            "id": 681,
+            "id": 570,
             "position_x": 30,
             "position_y": 590,
             "width": 129,
@@ -339,12 +294,12 @@
             },
             "init": "metro 2000"
         },
-        "13": {
+        "10": {
             "name": "string",
-            "id": 718,
+            "id": 607,
             "position_x": 30,
             "position_y": 675,
-            "width": 260,
+            "width": 250,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -367,159 +322,49 @@
                 }
             }
         },
-        "14": {
-            "init": "comment a raw query, sent as typed - this is",
-            "name": "comment",
-            "id": 755,
-            "position_x": 786,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 780,
             "position_y": 725,
-            "width": 252,
-            "height": 30,
+            "width": 261,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a raw query, sent as typed - this is",
+                    "name": "block",
+                    "value": "a raw query, sent as typed - this is\nhow you ask about lamp hours, errors,\nor which model it actually is\nleave POWER alone in performance - it\ntakes tens of seconds and ignores you\nentirely while it cools",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a raw query, sent as typed - this is"
+            "text": "a raw query, sent as typed - this is\nhow you ask about lamp hours, errors,\nor which model it actually is\nleave POWER alone in performance - it\ntakes tens of seconds and ignores you\nentirely while it cools"
         },
-        "15": {
-            "init": "comment how you ask about lamp hours, errors,",
-            "name": "comment",
-            "id": 792,
-            "position_x": 786,
-            "position_y": 755,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "how you ask about lamp hours, errors,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "how you ask about lamp hours, errors,"
-        },
-        "16": {
-            "init": "comment or which model it actually is",
-            "name": "comment",
-            "id": 829,
-            "position_x": 786,
-            "position_y": 785,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "or which model it actually is",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "or which model it actually is"
-        },
-        "17": {
-            "init": "comment leave POWER alone in performance - it",
-            "name": "comment",
-            "id": 866,
-            "position_x": 786,
-            "position_y": 825,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "leave POWER alone in performance - it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "leave POWER alone in performance - it"
-        },
-        "18": {
-            "init": "comment takes tens of seconds and ignores you",
-            "name": "comment",
-            "id": 903,
-            "position_x": 786,
-            "position_y": 855,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "takes tens of seconds and ignores you",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "takes tens of seconds and ignores you"
-        },
-        "19": {
-            "init": "comment entirely while it cools",
-            "name": "comment",
-            "id": 940,
-            "position_x": 786,
-            "position_y": 885,
-            "width": 161,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "entirely while it cools",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "entirely while it cools"
-        },
-        "20": {
+        "12": {
             "name": "close",
-            "id": 977,
+            "id": 681,
             "position_x": 24,
             "position_y": 747,
             "width": 88,
@@ -542,13 +387,13 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "response",
-            "dest_node": 496,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "1": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
@@ -558,11 +403,11 @@
             "dest_input_name": "shutter_mute"
         },
         "2": {
-            "source_node": 681,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 718,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"

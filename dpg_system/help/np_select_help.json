@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1594,
+    "width": 1597,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "np_select_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/np_select_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 456,
+            "width": 475,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 746,
+            "position_x": 749,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 140,
-            "height": 130,
+            "width": 123,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -149,7 +149,7 @@
             "position_x": 230,
             "position_y": 120,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -201,8 +201,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 275,
-            "width": 130,
-            "height": 70,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -221,7 +221,7 @@
             "id": 496,
             "position_x": 464,
             "position_y": 355,
-            "width": 252,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -245,8 +245,8 @@
             "id": 533,
             "position_x": 210,
             "position_y": 275,
-            "width": 45,
-            "height": 46,
+            "width": 27,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -258,8 +258,8 @@
             "id": 570,
             "position_x": 30,
             "position_y": 395,
-            "width": 160,
-            "height": 100,
+            "width": 64,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -271,7 +271,7 @@
             "position_x": 230,
             "position_y": 395,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -319,60 +319,50 @@
             }
         },
         "11": {
-            "init": "comment high values kept, the rest zeroed",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
+            "annotation": true,
             "position_x": 464,
             "position_y": 510,
-            "width": 231,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "high values kept, the rest zeroed",
+                    "name": "block",
+                    "value": "high values kept, the rest zeroed\none operation across the whole array",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "high values kept, the rest zeroed"
+            "text": "high values kept, the rest zeroed\none operation across the whole array"
         },
         "12": {
-            "init": "comment one operation across the whole array",
-            "name": "comment",
-            "id": 681,
-            "position_x": 464,
-            "position_y": 540,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "one operation across the whole array",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "one operation across the whole array"
-        },
-        "13": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 573,
+            "position_y": 575,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

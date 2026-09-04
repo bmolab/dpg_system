@@ -1,11 +1,11 @@
 {
-    "height": 1070,
-    "width": 1827,
+    "height": 1050,
+    "width": 1736,
     "position": [
         100,
         100
     ],
-    "id": 1014,
+    "id": 903,
     "name": "speech_pitch_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/speech_pitch_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 528,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 969,
+            "position_x": 878,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 180,
+            "width": 229,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 270,
-            "width": 280,
-            "height": 300,
+            "width": 179,
+            "height": 224,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,7 +121,7 @@
             "id": 422,
             "position_x": 340,
             "position_y": 270,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -148,9 +148,9 @@
             "init": "comment f0 in Hz - but check voiced first",
             "name": "comment",
             "id": 459,
-            "position_x": 666,
+            "position_x": 574,
             "position_y": 320,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -174,7 +174,7 @@
             "id": 496,
             "position_x": 340,
             "position_y": 365,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -201,9 +201,9 @@
             "init": "comment voiced: 0 through s, f, t and silence",
             "name": "comment",
             "id": 533,
-            "position_x": 666,
+            "position_x": 574,
             "position_y": 415,
-            "width": 259,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -227,8 +227,8 @@
             "id": 570,
             "position_x": 340,
             "position_y": 460,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -286,123 +286,103 @@
             }
         },
         "10": {
-            "init": "comment narrow min_freq/max_freq to the actual",
-            "name": "comment",
+            "name": "text_block",
             "id": 607,
-            "position_x": 666,
+            "annotation": true,
+            "position_x": 574,
             "position_y": 600,
-            "width": 266,
-            "height": 30,
+            "width": 274,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "narrow min_freq/max_freq to the actual",
+                    "name": "block",
+                    "value": "narrow min_freq/max_freq to the actual\nspeaker - it removes most octave errors",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "narrow min_freq/max_freq to the actual"
+            "text": "narrow min_freq/max_freq to the actual\nspeaker - it removes most octave errors"
         },
         "11": {
-            "init": "comment speaker - it removes most octave errors",
-            "name": "comment",
-            "id": 644,
-            "position_x": 666,
-            "position_y": 630,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "speaker - it removes most octave errors",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "speaker - it removes most octave errors"
-        },
-        "12": {
             "name": "speech_prosody",
-            "id": 681,
+            "id": 644,
             "position_x": 30,
             "position_y": 680,
-            "width": 280,
-            "height": 240,
+            "width": 160,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
-            "init": "comment fed from f0_raw, the CONTOUR - prosody",
-            "name": "comment",
-            "id": 718,
-            "position_x": 666,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 574,
             "position_y": 950,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "fed from f0_raw, the CONTOUR - prosody",
+                    "name": "block",
+                    "value": "fed from f0_raw, the CONTOUR - prosody\nis about what the pitch has been doing",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "fed from f0_raw, the CONTOUR - prosody"
+            "text": "fed from f0_raw, the CONTOUR - prosody\nis about what the pitch has been doing"
         },
-        "14": {
-            "init": "comment is about what the pitch has been doing",
-            "name": "comment",
-            "id": 755,
-            "position_x": 666,
-            "position_y": 980,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "is about what the pitch has been doing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "is about what the pitch has been doing"
-        },
-        "15": {
+        "13": {
             "name": "float",
-            "id": 792,
+            "id": 718,
             "position_x": 350,
             "position_y": 680,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -425,13 +405,13 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "init": "comment slope, Hz per second",
             "name": "comment",
-            "id": 829,
-            "position_x": 666,
+            "id": 755,
+            "position_x": 574,
             "position_y": 730,
-            "width": 140,
+            "width": 131,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -450,12 +430,12 @@
             },
             "comment": "slope, Hz per second"
         },
-        "17": {
+        "15": {
             "name": "list",
-            "id": 866,
+            "id": 792,
             "position_x": 350,
             "position_y": 775,
-            "width": 260,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -473,61 +453,51 @@
                 }
             }
         },
-        "18": {
-            "init": "comment intonation is a WORD: rising, falling,",
-            "name": "comment",
-            "id": 903,
-            "position_x": 666,
+        "16": {
+            "name": "text_block",
+            "id": 829,
+            "annotation": true,
+            "position_x": 574,
             "position_y": 825,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "intonation is a WORD: rising, falling,",
+                    "name": "block",
+                    "value": "intonation is a WORD: rising, falling,\nflat or unvoiced",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "intonation is a WORD: rising, falling,"
+            "text": "intonation is a WORD: rising, falling,\nflat or unvoiced"
         },
-        "19": {
-            "init": "comment flat or unvoiced",
-            "name": "comment",
-            "id": 940,
-            "position_x": 666,
-            "position_y": 855,
-            "width": 112,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "flat or unvoiced",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "flat or unvoiced"
-        },
-        "20": {
+        "17": {
             "name": "close",
-            "id": 977,
+            "id": 866,
             "position_x": 24,
-            "position_y": 950,
+            "position_y": 864,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -588,27 +558,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "f0_raw",
-            "dest_node": 681,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "f0_in"
         },
         "5": {
-            "source_node": 681,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "pitch_slope",
-            "dest_node": 792,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "6": {
-            "source_node": 681,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "intonation",
-            "dest_node": 866,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

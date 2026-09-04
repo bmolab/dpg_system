@@ -1,11 +1,11 @@
 {
-    "height": 1330,
-    "width": 2274,
+    "height": 1128,
+    "width": 2182,
     "position": [
         100,
         100
     ],
-    "id": 1532,
+    "id": 940,
     "name": "vive_tracker_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vive_tracker_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1416,
+            "position_x": 1324,
             "position_y": 45,
             "width": 818,
             "height": 806,
@@ -105,83 +105,48 @@
             "properties": {}
         },
         "4": {
-            "init": "comment LINUX ONLY - needs OpenVR and SteamVR.",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 1106,
+            "annotation": true,
+            "position_x": 1014,
             "position_y": 62,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "LINUX ONLY - needs OpenVR and SteamVR.",
+                    "name": "block",
+                    "value": "LINUX ONLY - needs OpenVR and SteamVR.\nOn other platforms these nodes do not\nexist at all, and the console says so",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "LINUX ONLY - needs OpenVR and SteamVR."
+            "text": "LINUX ONLY - needs OpenVR and SteamVR.\nOn other platforms these nodes do not\nexist at all, and the console says so"
         },
         "5": {
-            "init": "comment On other platforms these nodes do not",
-            "name": "comment",
-            "id": 422,
-            "position_x": 1106,
-            "position_y": 92,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "On other platforms these nodes do not",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "On other platforms these nodes do not"
-        },
-        "6": {
-            "init": "comment exist at all, and the console says so",
-            "name": "comment",
-            "id": 459,
-            "position_x": 1106,
-            "position_y": 122,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "exist at all, and the console says so",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "exist at all, and the console says so"
-        },
-        "7": {
             "name": "vive_tracker",
-            "id": 496,
+            "id": 422,
             "position_x": 30,
             "position_y": 170,
             "width": 340,
@@ -191,199 +156,104 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
-            "init": "comment walk the tracker to each corner of the",
-            "name": "comment",
-            "id": 533,
-            "position_x": 1106,
-            "position_y": 760,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "walk the tracker to each corner of the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "walk the tracker to each corner of the"
-        },
-        "9": {
-            "init": "comment floor, capture in order FL FR BR BL,",
-            "name": "comment",
-            "id": 570,
-            "position_x": 1106,
-            "position_y": 800,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "floor, capture in order FL FR BR BL,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "floor, capture in order FL FR BR BL,"
-        },
-        "10": {
-            "init": "comment then compute_from_corners - it works out",
-            "name": "comment",
-            "id": 607,
-            "position_x": 1106,
-            "position_y": 840,
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 1014,
+            "position_y": 745,
             "width": 280,
-            "height": 30,
+            "height": 76,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "then compute_from_corners - it works out",
+                    "name": "block",
+                    "value": "walk the tracker to each corner of the\nfloor, capture in order FL FR BR BL,\nthen compute_from_corners - it works out\ncentre, size, yaw and floor height at\nonce, and fills the fields in",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "then compute_from_corners - it works out"
+            "text": "walk the tracker to each corner of the\nfloor, capture in order FL FR BR BL,\nthen compute_from_corners - it works out\ncentre, size, yaw and floor height at\nonce, and fills the fields in"
         },
-        "11": {
-            "init": "comment centre, size, yaw and floor height at",
-            "name": "comment",
-            "id": 644,
-            "position_x": 1106,
-            "position_y": 880,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "centre, size, yaw and floor height at",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "centre, size, yaw and floor height at"
-        },
-        "12": {
-            "init": "comment once, and fills the fields in",
-            "name": "comment",
-            "id": 681,
-            "position_x": 1106,
-            "position_y": 920,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "once, and fills the fields in",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "once, and fills the fields in"
-        },
-        "13": {
+        "7": {
             "name": "info",
-            "id": 718,
+            "id": 496,
             "position_x": 420,
             "position_y": 170,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "14": {
-            "init": "comment position, in metres from the middle of",
-            "name": "comment",
-            "id": 755,
-            "position_x": 1106,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 1014,
             "position_y": 265,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "position, in metres from the middle of",
+                    "name": "block",
+                    "value": "position, in metres from the middle of\nthe floor - not raw tracker space",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "position, in metres from the middle of"
+            "text": "position, in metres from the middle of\nthe floor - not raw tracker space"
         },
-        "15": {
-            "init": "comment the floor - not raw tracker space",
-            "name": "comment",
-            "id": 792,
-            "position_x": 1106,
-            "position_y": 295,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the floor - not raw tracker space",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the floor - not raw tracker space"
-        },
-        "16": {
+        "9": {
             "name": "list",
-            "id": 829,
+            "id": 570,
             "position_x": 420,
             "position_y": 340,
-            "width": 300,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -401,84 +271,49 @@
                 }
             }
         },
-        "17": {
-            "init": "comment orientation - quaternion by default,",
-            "name": "comment",
-            "id": 866,
-            "position_x": 1106,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 1014,
             "position_y": 390,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "orientation - quaternion by default,",
+                    "name": "block",
+                    "value": "orientation - quaternion by default,\nwhich is what to prefer for anything\ncombined, filtered or interpolated",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "orientation - quaternion by default,"
+            "text": "orientation - quaternion by default,\nwhich is what to prefer for anything\ncombined, filtered or interpolated"
         },
-        "18": {
-            "init": "comment which is what to prefer for anything",
-            "name": "comment",
-            "id": 903,
-            "position_x": 1106,
-            "position_y": 420,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "which is what to prefer for anything",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "which is what to prefer for anything"
-        },
-        "19": {
-            "init": "comment combined, filtered or interpolated",
-            "name": "comment",
-            "id": 940,
-            "position_x": 1106,
-            "position_y": 450,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "combined, filtered or interpolated",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "combined, filtered or interpolated"
-        },
-        "20": {
+        "11": {
             "name": "vive_base_stations",
-            "id": 977,
+            "id": 644,
             "position_x": 420,
             "position_y": 500,
             "width": 320,
@@ -488,13 +323,13 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "21": {
+        "12": {
             "name": "plot",
-            "id": 1014,
+            "id": 681,
             "position_x": 780,
             "position_y": 500,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -551,63 +386,53 @@
                 }
             }
         },
-        "22": {
-            "init": "comment JITTER: wobble about its own average -",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 1106,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 1014,
             "position_y": 690,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "JITTER: wobble about its own average -",
+                    "name": "block",
+                    "value": "JITTER: wobble about its own average -\nreflections, a blocked view, sunlight",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "JITTER: wobble about its own average -"
+            "text": "JITTER: wobble about its own average -\nreflections, a blocked view, sunlight"
         },
-        "23": {
-            "init": "comment reflections, a blocked view, sunlight",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 1106,
-            "position_y": 720,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "reflections, a blocked view, sunlight",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "reflections, a blocked view, sunlight"
-        },
-        "24": {
+        "14": {
             "name": "plot",
-            "id": 1125,
+            "id": 755,
             "position_x": 780,
             "position_y": 765,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -664,134 +489,49 @@
                 }
             }
         },
-        "25": {
-            "init": "comment DRIFT: how far that average has moved",
-            "name": "comment",
-            "id": 1162,
-            "position_x": 1106,
-            "position_y": 1000,
-            "width": 259,
-            "height": 30,
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 1014,
+            "position_y": 992,
+            "width": 274,
+            "height": 76,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "DRIFT: how far that average has moved",
+                    "name": "block",
+                    "value": "DRIFT: how far that average has moved\nsince you set the baseline - a bumped\nstand, a flexing truss, a warm building\njitter is an environment problem,\ndrift is a screwdriver problem",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "DRIFT: how far that average has moved"
+            "text": "DRIFT: how far that average has moved\nsince you set the baseline - a bumped\nstand, a flexing truss, a warm building\njitter is an environment problem,\ndrift is a screwdriver problem"
         },
-        "26": {
-            "init": "comment since you set the baseline - a bumped",
-            "name": "comment",
-            "id": 1199,
-            "position_x": 1106,
-            "position_y": 1080,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "since you set the baseline - a bumped",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "since you set the baseline - a bumped"
-        },
-        "27": {
-            "init": "comment stand, a flexing truss, a warm building",
-            "name": "comment",
-            "id": 1236,
-            "position_x": 1106,
-            "position_y": 1160,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "stand, a flexing truss, a warm building",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "stand, a flexing truss, a warm building"
-        },
-        "28": {
-            "init": "comment jitter is an environment problem,",
-            "name": "comment",
-            "id": 1273,
-            "position_x": 1106,
-            "position_y": 1200,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "jitter is an environment problem,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "jitter is an environment problem,"
-        },
-        "29": {
-            "init": "comment drift is a screwdriver problem",
-            "name": "comment",
-            "id": 1310,
-            "position_x": 1106,
-            "position_y": 1240,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "drift is a screwdriver problem",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "drift is a screwdriver problem"
-        },
-        "30": {
+        "16": {
             "name": "toggle",
-            "id": 1347,
+            "id": 829,
             "position_x": 420,
             "position_y": 930,
             "width": 45,
@@ -801,84 +541,49 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "31": {
-            "init": "comment all_stable - wire this to a warning",
-            "name": "comment",
-            "id": 1384,
-            "position_x": 1106,
-            "position_y": 960,
-            "width": 245,
-            "height": 30,
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 1014,
+            "position_y": 930,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "all_stable - wire this to a warning",
+                    "name": "block",
+                    "value": "all_stable - wire this to a warning\nlight and set the baseline once when\neverything is right",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "all_stable - wire this to a warning"
+            "text": "all_stable - wire this to a warning\nlight and set the baseline once when\neverything is right"
         },
-        "32": {
-            "init": "comment light and set the baseline once when",
-            "name": "comment",
-            "id": 1421,
-            "position_x": 1106,
-            "position_y": 1040,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "light and set the baseline once when",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "light and set the baseline once when"
-        },
-        "33": {
-            "init": "comment everything is right",
-            "name": "comment",
-            "id": 1458,
-            "position_x": 1106,
-            "position_y": 1120,
-            "width": 133,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "everything is right",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "everything is right"
-        },
-        "34": {
+        "18": {
             "name": "close",
-            "id": 1495,
+            "id": 903,
             "position_x": 24,
             "position_y": 1002,
             "width": 88,
@@ -901,57 +606,57 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 496,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "enable_in"
         },
         "1": {
-            "source_node": 496,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "position",
-            "dest_node": 718,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "orientation",
-            "dest_node": 829,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "3": {
-            "source_node": 977,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "jitter_mm",
-            "dest_node": 1014,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "4": {
-            "source_node": 977,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "drift_mm",
-            "dest_node": 1125,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "5": {
-            "source_node": 977,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "all_stable",
-            "dest_node": 1347,
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

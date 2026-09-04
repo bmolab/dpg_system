@@ -1,11 +1,11 @@
 {
     "height": 641,
-    "width": 1376,
+    "width": 1341,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 607,
     "name": "present_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/present_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 528,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 548,
+            "position_x": 513,
             "position_y": 45,
             "width": 788,
             "height": 536,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 190,
-            "height": 60,
+            "width": 147,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,9 +108,9 @@
             "init": "comment tick to open this patch presented",
             "name": "comment",
             "id": 385,
-            "position_x": 266,
+            "position_x": 228,
             "position_y": 130,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,8 +134,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 175,
-            "width": 190,
-            "height": 60,
+            "width": 172,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -145,9 +145,9 @@
             "init": "comment shows what the mouse is over",
             "name": "comment",
             "id": 459,
-            "position_x": 266,
+            "position_x": 228,
             "position_y": 245,
-            "width": 196,
+            "width": 181,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -171,68 +171,58 @@
             "id": 496,
             "position_x": 30,
             "position_y": 290,
-            "width": 210,
-            "height": 140,
+            "width": 138,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "init": "comment send numbers here to move the window",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 266,
+            "annotation": true,
+            "position_x": 228,
             "position_y": 440,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "send numbers here to move the window",
+                    "name": "block",
+                    "value": "send numbers here to move the window\nset a node to hidden to leave it out",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "send numbers here to move the window"
+            "text": "send numbers here to move the window\nset a node to hidden to leave it out"
         },
         "9": {
-            "init": "comment set a node to hidden to leave it out",
-            "name": "comment",
-            "id": 570,
-            "position_x": 266,
-            "position_y": 470,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "set a node to hidden to leave it out",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "set a node to hidden to leave it out"
-        },
-        "10": {
             "name": "close",
-            "id": 607,
+            "id": 570,
             "position_x": 24,
-            "position_y": 460,
+            "position_y": 390,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

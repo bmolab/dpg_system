@@ -1,11 +1,11 @@
 {
-    "height": 1585,
-    "width": 1761,
+    "height": 1565,
+    "width": 1680,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 755,
     "name": "mgl_body_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_body_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 893,
+            "position_x": 812,
             "position_y": 45,
             "width": 828,
             "height": 836,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 220,
-            "height": 120,
+            "width": 92,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -115,8 +115,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 200,
-            "width": 240,
-            "height": 220,
+            "width": 188,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -127,8 +127,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 435,
-            "width": 220,
-            "height": 200,
+            "width": 201,
+            "height": 220,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -139,8 +139,8 @@
             "id": 459,
             "position_x": 330,
             "position_y": 200,
-            "width": 220,
-            "height": 160,
+            "width": 129,
+            "height": 72,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -151,69 +151,59 @@
             "id": 496,
             "position_x": 30,
             "position_y": 660,
-            "width": 260,
-            "height": 400,
+            "width": 179,
+            "height": 288,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "init": "comment patch a stream of quaternions into pose",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 576,
+            "annotation": true,
+            "position_x": 496,
             "position_y": 1075,
-            "width": 273,
-            "height": 30,
+            "width": 286,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "patch a stream of quaternions into pose",
+                    "name": "block",
+                    "value": "patch a stream of quaternions into pose\ntick enable_callbacks, then click a joint",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "patch a stream of quaternions into pose"
+            "text": "patch a stream of quaternions into pose\ntick enable_callbacks, then click a joint"
         },
         "9": {
-            "init": "comment tick enable_callbacks, then click a joint",
-            "name": "comment",
-            "id": 570,
-            "position_x": 576,
-            "position_y": 1105,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "tick enable_callbacks, then click a joint",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "tick enable_callbacks, then click a joint"
-        },
-        "10": {
             "name": "int",
-            "id": 607,
+            "id": 570,
             "position_x": 340,
             "position_y": 660,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -236,13 +226,13 @@
                 }
             }
         },
-        "11": {
+        "10": {
             "init": "comment which joint was clicked",
             "name": "comment",
-            "id": 644,
-            "position_x": 576,
+            "id": 607,
+            "position_x": 496,
             "position_y": 710,
-            "width": 161,
+            "width": 150,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -261,73 +251,63 @@
             },
             "comment": "which joint was clicked"
         },
-        "12": {
+        "11": {
             "name": "mgl_contact_disks",
-            "id": 681,
+            "id": 644,
             "position_x": 30,
             "position_y": 1150,
-            "width": 260,
-            "height": 300,
+            "width": 152,
+            "height": 196,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
-            "init": "comment contacts drawn where they happen,",
-            "name": "comment",
-            "id": 718,
-            "position_x": 576,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 496,
             "position_y": 1465,
-            "width": 231,
-            "height": 30,
+            "width": 237,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "contacts drawn where they happen,",
+                    "name": "block",
+                    "value": "contacts drawn where they happen,\neach disk sized by its area",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "contacts drawn where they happen,"
+            "text": "contacts drawn where they happen,\neach disk sized by its area"
         },
-        "14": {
-            "init": "comment each disk sized by its area",
-            "name": "comment",
-            "id": 755,
-            "position_x": 576,
-            "position_y": 1495,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "each disk sized by its area",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "each disk sized by its area"
-        },
-        "15": {
+        "13": {
             "name": "close",
-            "id": 792,
+            "id": 718,
             "position_x": 24,
-            "position_y": 1480,
+            "position_y": 1376,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -398,7 +378,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "joint_id",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -408,7 +388,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",
-            "dest_node": 681,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"

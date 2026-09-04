@@ -1,11 +1,11 @@
 {
     "height": 896,
-    "width": 1708,
+    "width": 1710,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 792,
     "name": "t.buffer_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.buffer_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 860,
+            "position_x": 862,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -138,8 +138,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 192,
-            "width": 140,
-            "height": 80,
+            "width": 123,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -163,7 +163,7 @@
             "id": 459,
             "position_x": 564,
             "position_y": 280,
-            "width": 133,
+            "width": 125,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -187,8 +187,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 320,
-            "width": 260,
-            "height": 200,
+            "width": 163,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -196,73 +196,63 @@
             "init": "t.rolling_buffer 64"
         },
         "8": {
-            "init": "comment at 30ms a frame, 64 is about 2 seconds",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
+            "annotation": true,
             "position_x": 564,
             "position_y": 535,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "at 30ms a frame, 64 is about 2 seconds",
+                    "name": "block",
+                    "value": "at 30ms a frame, 64 is about 2 seconds\nthink in seconds, not samples",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "at 30ms a frame, 64 is about 2 seconds"
+            "text": "at 30ms a frame, 64 is about 2 seconds\nthink in seconds, not samples"
         },
         "9": {
-            "init": "comment think in seconds, not samples",
-            "name": "comment",
-            "id": 570,
-            "position_x": 564,
-            "position_y": 565,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "think in seconds, not samples",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "think in seconds, not samples"
-        },
-        "10": {
             "name": "t.mean",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 605,
-            "width": 180,
-            "height": 100,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "name": "float",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
             "position_y": 720,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -285,13 +275,13 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment now the stream can be averaged",
             "name": "comment",
-            "id": 681,
+            "id": 644,
             "position_x": 564,
             "position_y": 805,
-            "width": 210,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -310,13 +300,13 @@
             },
             "comment": "now the stream can be averaged"
         },
-        "13": {
+        "12": {
             "name": "heat_map",
-            "id": 718,
+            "id": 681,
             "position_x": 330,
             "position_y": 605,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -363,13 +353,13 @@
                 }
             }
         },
-        "14": {
+        "13": {
             "init": "comment the recent past, as one tensor",
             "name": "comment",
-            "id": 755,
+            "id": 718,
             "position_x": 564,
             "position_y": 765,
-            "width": 210,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -388,9 +378,9 @@
             },
             "comment": "the recent past, as one tensor"
         },
-        "15": {
+        "14": {
             "name": "close",
-            "id": 792,
+            "id": 755,
             "position_x": 24,
             "position_y": 792,
             "width": 88,
@@ -443,17 +433,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 607,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -463,7 +453,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 718,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

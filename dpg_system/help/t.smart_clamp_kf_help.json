@@ -1,11 +1,11 @@
 {
-    "height": 1095,
-    "width": 1586,
+    "height": 1097,
+    "width": 1539,
     "position": [
         100,
         100
     ],
-    "id": 866,
+    "id": 829,
     "name": "t.smart_clamp_kf_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.smart_clamp_kf_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 516,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 718,
+            "position_x": 671,
             "position_y": 45,
             "width": 828,
             "height": 836,
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 88,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,7 +110,7 @@
             "position_x": 150,
             "position_y": 66,
             "width": 22,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +123,7 @@
             "position_x": 30,
             "position_y": 132,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -213,8 +213,8 @@
             "id": 533,
             "position_x": 200,
             "position_y": 190,
-            "width": 175,
-            "height": 100,
+            "width": 117,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -226,8 +226,8 @@
             "id": 570,
             "position_x": 30,
             "position_y": 232,
-            "width": 120,
-            "height": 70,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -244,9 +244,9 @@
             "init": "comment a clean wave with occasional spikes",
             "name": "comment",
             "id": 607,
-            "position_x": 401,
+            "position_x": 355,
             "position_y": 310,
-            "width": 245,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -271,7 +271,7 @@
             "position_x": 30,
             "position_y": 350,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -333,8 +333,8 @@
             "id": 681,
             "position_x": 30,
             "position_y": 545,
-            "width": 280,
-            "height": 220,
+            "width": 209,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -346,7 +346,7 @@
             "position_x": 30,
             "position_y": 785,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -404,60 +404,50 @@
             }
         },
         "14": {
-            "init": "comment the spike cannot move it far in one frame",
-            "name": "comment",
+            "name": "text_block",
             "id": 755,
-            "position_x": 401,
+            "annotation": true,
+            "position_x": 355,
             "position_y": 970,
-            "width": 287,
-            "height": 30,
+            "width": 286,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the spike cannot move it far in one frame",
+                    "name": "block",
+                    "value": "the spike cannot move it far in one frame\nbut a run of large steps still tracks",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the spike cannot move it far in one frame"
+            "text": "the spike cannot move it far in one frame\nbut a run of large steps still tracks"
         },
         "15": {
-            "init": "comment but a run of large steps still tracks",
-            "name": "comment",
-            "id": 792,
-            "position_x": 401,
-            "position_y": 1000,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "but a run of large steps still tracks",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "but a run of large steps still tracks"
-        },
-        "16": {
             "name": "close",
-            "id": 829,
+            "id": 792,
             "position_x": 24,
-            "position_y": 991,
+            "position_y": 993,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

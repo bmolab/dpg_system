@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1823,
+    "width": 1774,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 644,
     "name": "t.audio_source_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.audio_source_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 456,
+            "width": 475,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 975,
+            "position_x": 926,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -97,107 +97,72 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 300,
-            "height": 300,
+            "width": 160,
+            "height": 238,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment load a file, then click play",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 635,
             "position_y": 375,
-            "width": 196,
-            "height": 30,
+            "width": 261,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "load a file, then click play",
+                    "name": "block",
+                    "value": "load a file, then click play\nsame output shape as the live source,\nso they are interchangeable",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "load a file, then click play"
+            "text": "load a file, then click play\nsame output shape as the live source,\nso they are interchangeable"
         },
         "5": {
-            "init": "comment same output shape as the live source,",
-            "name": "comment",
-            "id": 422,
-            "position_x": 686,
-            "position_y": 405,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "same output shape as the live source,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "same output shape as the live source,"
-        },
-        "6": {
-            "init": "comment so they are interchangeable",
-            "name": "comment",
-            "id": 459,
-            "position_x": 686,
-            "position_y": 435,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "so they are interchangeable",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "so they are interchangeable"
-        },
-        "7": {
             "name": "t.audio_source",
-            "id": 496,
+            "id": 422,
             "position_x": 380,
             "position_y": 62,
-            "width": 280,
-            "height": 240,
+            "width": 229,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
+        "6": {
             "init": "comment the live input, same tensors out",
             "name": "comment",
-            "id": 533,
-            "position_x": 686,
+            "id": 459,
+            "position_x": 635,
             "position_y": 315,
-            "width": 224,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -216,24 +181,24 @@
             },
             "comment": "the live input, same tensors out"
         },
-        "9": {
+        "7": {
             "name": "t.audio.loudness",
-            "id": 570,
+            "id": 496,
             "position_x": 30,
             "position_y": 480,
-            "width": 240,
-            "height": 120,
+            "width": 160,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "8": {
             "name": "float",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
             "position_y": 615,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -256,13 +221,13 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "init": "comment check the sample rates agree",
             "name": "comment",
-            "id": 644,
-            "position_x": 686,
+            "id": 570,
+            "position_x": 635,
             "position_y": 665,
-            "width": 196,
+            "width": 181,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -281,9 +246,9 @@
             },
             "comment": "check the sample rates agree"
         },
-        "12": {
+        "10": {
             "name": "close",
-            "id": 681,
+            "id": 607,
             "position_x": 24,
             "position_y": 687,
             "width": 88,
@@ -306,17 +271,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "audio tensors",
-            "dest_node": 570,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "audio tensor in"
         },
         "1": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "loudness out",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

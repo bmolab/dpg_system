@@ -97,10 +97,8 @@ demo = starter() + [
      'props': {'color': 'viridis', 'width': 200, 'height': 100, 'sample count': 3,
                'min y': 0.0, 'max y': 1.0, 'update_mode': 'heat_map',
                'number format': '%.2f'}},
-    {'key': 'c2', 'comment': True, 'text': 'red, green and blue rise and fall in turn',
+    {'key': 'c2', 'comment': True, 'text': 'red, green and blue rise and fall in turn\nset out scale to 0-255 for byte values',
      'pos': (30, 725)},
-    {'key': 'c3', 'comment': True, 'text': 'set out scale to 0-255 for byte values',
-     'pos': (30, 755)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('lb', 'out', 't2', ''), ('t2', '0.8', 'pk', 'in 2'),
@@ -375,10 +373,8 @@ demo = [
      'props': {'find': 'left_hand', 'replace': 'LeftHand'}},
     {'key': 'l1', 'init': 'list', 'pos': (30, 320), 'w': 280, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'only the matching name changes',
+    {'key': 'c1', 'comment': True, 'text': 'only the matching name changes\nedit find and replace and click again',
      'pos': (30, 370)},
-    {'key': 'c2', 'comment': True, 'text': 'edit find and replace and click again',
-     'pos': (30, 400)},
 ]
 links = [('btn', '', 'm1', ''), ('m1', 'message out', 'rp', 'int in'),
          ('rp', 'out', 'l1', '')]

@@ -69,9 +69,7 @@ demo = starter() + [
      'props': {'operand': 0.5}},
     {'key': 'p1', 'init': 'plot', 'pos': (210, 205), 'w': 208, 'h': 176,
      'props': PLOT()},
-    {'key': 'c1', 'comment': True, 'text': 'a sine wave, halved', 'pos': (30, 310)},
-    {'key': 'c2', 'comment': True, 'text': 'drag the operand and watch it change',
-     'pos': (30, 340)},
+    {'key': 'c1', 'comment': True, 'text': 'a sine wave, halved\ndrag the operand and watch it change', 'pos': (30, 310)},
     {'key': 'i1', 'init': 'int', 'pos': (30, 405), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'add', 'init': '+ 100', 'pos': (30, 462), 'w': 120, 'h': 70,
      'props': {'operand': 100}},
@@ -289,10 +287,8 @@ demo = starter() + [
      'pos': (30, 315)},
     {'key': 'p1', 'init': 'plot', 'pos': (215, 205), 'w': 208, 'h': 176,
      'props': PLOT(-0.2, 1.2)},
-    {'key': 'c1', 'comment': True, 'text': 'a sine wave becomes a square wave',
+    {'key': 'c1', 'comment': True, 'text': 'a sine wave becomes a square wave\ndrag the operand to move the threshold',
      'pos': (30, 345)},
-    {'key': 'c2', 'comment': True, 'text': 'drag the operand to move the threshold',
-     'pos': (30, 375)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('sig', '', 'gt', 'in'), ('gt', 'result', 'p1', 'y')]
@@ -569,8 +565,7 @@ demo = starter() + [
     {'key': 'cr', 'init': 'continuous_rotation', 'pos': (30, 320), 'w': 190, 'h': 70},
     {'key': 'p1', 'init': 'plot', 'pos': (30, 430), 'w': 208, 'h': 176,
      'props': PLOT(0.0, 2000.0)},
-    {'key': 'c1', 'comment': True, 'text': 'the same angle, unwrapped:', 'pos': (30, 430)},
-    {'key': 'c2', 'comment': True, 'text': 'it just keeps climbing', 'pos': (30, 460)},
+    {'key': 'c1', 'comment': True, 'text': 'the same angle, unwrapped:\nit just keeps climbing', 'pos': (30, 430)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('sig', '', 'p0', 'y'),

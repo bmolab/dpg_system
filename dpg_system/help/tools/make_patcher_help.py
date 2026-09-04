@@ -101,25 +101,18 @@ demo = [
      'pos': (30, 155)},
 
     {'key': 'pp', 'init': 'p scale_and_offset', 'pos': (30, 200), 'w': 220, 'h': 70},
-    {'key': 'c1', 'comment': True, 'text': 'CLICK THE BUTTON to open the subpatch',
+    {'key': 'c1', 'comment': True, 'text': 'CLICK THE BUTTON to open the subpatch\nthe two ports on this node were made by\nthe in and out nodes inside it',
      'pos': (30, 285)},
-    {'key': 'c2', 'comment': True, 'text': 'the two ports on this node were made by',
-     'pos': (30, 315)},
-    {'key': 'c3', 'comment': True, 'text': 'the in and out nodes inside it',
-     'pos': (30, 345)},
 
     {'key': 'pl', 'init': 'plot', 'pos': (30, 400), 'w': 300, 'h': 180,
      'props': PLOT(-1.0, 2.0, 200)},
-    {'key': 'c4', 'comment': True, 'text': 'half the size, shifted up by half -',
+    {'key': 'c4', 'comment': True, 'text': 'half the size, shifted up by half -\nnow running 0 to 1',
      'pos': (30, 590)},
-    {'key': 'c5', 'comment': True, 'text': 'now running 0 to 1',
-     'pos': (30, 620)},
 
     {'key': 'pl0', 'init': 'plot', 'pos': (380, 62), 'w': 300, 'h': 180,
      'props': PLOT(-1.0, 2.0, 200)},
-    {'key': 'c6', 'comment': True, 'text': 'the same signal before it goes in,',
+    {'key': 'c6', 'comment': True, 'text': 'the same signal before it goes in,\nfor comparison',
      'pos': (380, 252)},
-    {'key': 'c7', 'comment': True, 'text': 'for comparison', 'pos': (380, 282)},
 ]
 links = [('sig', '', 'pp', 'signal'),
          ('pp', 'scaled', 'pl', 'y'),

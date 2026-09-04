@@ -1,11 +1,11 @@
 {
     "height": 781,
-    "width": 1281,
+    "width": 1278,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "stream_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/stream_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 600,
+            "width": 623,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 443,
+            "position_x": 440,
             "position_y": 45,
             "width": 798,
             "height": 676,
@@ -161,9 +161,9 @@
             "init": "comment a fast counter",
             "name": "comment",
             "id": 459,
-            "position_x": 196,
+            "position_x": 186,
             "position_y": 285,
-            "width": 98,
+            "width": 95,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -187,7 +187,7 @@
             "id": 496,
             "position_x": 30,
             "position_y": 320,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -215,8 +215,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 380,
-            "width": 140,
-            "height": 70,
+            "width": 117,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -234,7 +234,7 @@
             "id": 570,
             "position_x": 30,
             "position_y": 465,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -258,58 +258,48 @@
             }
         },
         "10": {
-            "init": "comment one value in ten gets through",
-            "name": "comment",
+            "name": "text_block",
             "id": 607,
-            "position_x": 196,
+            "annotation": true,
+            "position_x": 186,
             "position_y": 515,
-            "width": 203,
-            "height": 30,
+            "width": 224,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "one value in ten gets through",
+                    "name": "block",
+                    "value": "one value in ten gets through\ndrag rate and watch it thin out",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "one value in ten gets through"
+            "text": "one value in ten gets through\ndrag rate and watch it thin out"
         },
         "11": {
-            "init": "comment drag rate and watch it thin out",
-            "name": "comment",
-            "id": 644,
-            "position_x": 196,
-            "position_y": 545,
-            "width": 217,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "drag rate and watch it thin out",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "drag rate and watch it thin out"
-        },
-        "12": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
             "position_y": 537,
             "width": 88,

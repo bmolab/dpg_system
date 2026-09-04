@@ -1,6 +1,6 @@
 {
     "height": 643,
-    "width": 1353,
+    "width": 1356,
     "position": [
         268,
         516
@@ -84,7 +84,7 @@
         "3": {
             "name": "text_block",
             "id": 1626,
-            "position_x": 515,
+            "position_x": 518,
             "position_y": 3,
             "width": 798,
             "height": 580,
@@ -148,7 +148,7 @@
             "id": 1752,
             "position_x": 332,
             "position_y": 221,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,

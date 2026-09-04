@@ -1,11 +1,11 @@
 {
-    "height": 994,
-    "width": 1868,
+    "height": 1082,
+    "width": 1914,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "shaper~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/shaper~_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1010,
+            "position_x": 1056,
             "position_y": 45,
             "width": 818,
             "height": 756,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 200,
-            "height": 160,
+            "width": 180,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,9 +109,9 @@
             "init": "comment a slow triangle, -1 to 1",
             "name": "comment",
             "id": 385,
-            "position_x": 686,
+            "position_x": 734,
             "position_y": 232,
-            "width": 168,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -135,108 +135,98 @@
             "id": 422,
             "position_x": 30,
             "position_y": 275,
-            "width": 320,
-            "height": 280,
+            "width": 208,
+            "height": 234,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment drag the points to change the response",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 734,
             "position_y": 565,
-            "width": 266,
-            "height": 30,
+            "width": 292,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "drag the points to change the response",
+                    "name": "block",
+                    "value": "drag the points to change the response\nright-click to add one, shift-drag to bend",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "drag the points to change the response"
+            "text": "drag the points to change the response\nright-click to add one, shift-drag to bend"
         },
         "7": {
-            "init": "comment right-click to add one, shift-drag to bend",
-            "name": "comment",
-            "id": 496,
-            "position_x": 686,
-            "position_y": 595,
-            "width": 294,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "right-click to add one, shift-drag to bend",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "right-click to add one, shift-drag to bend"
-        },
-        "8": {
             "name": "vco~",
-            "id": 533,
+            "id": 496,
             "position_x": 400,
             "position_y": 275,
-            "width": 220,
-            "height": 200,
+            "width": 199,
+            "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "vco~ 220"
         },
-        "9": {
+        "8": {
             "name": "scope~",
-            "id": 570,
+            "id": 533,
             "position_x": 400,
             "position_y": 500,
-            "width": 260,
-            "height": 220,
+            "width": 308,
+            "height": 248,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "fader_out~",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 640,
-            "width": 220,
-            "height": 220,
+            "width": 70,
+            "height": 308,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "fader_out~ 1 2"
         },
-        "11": {
+        "10": {
             "init": "comment the curve now drives the pitch",
             "name": "comment",
-            "id": 644,
-            "position_x": 686,
+            "id": 607,
+            "position_x": 734,
             "position_y": 875,
-            "width": 210,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -255,11 +245,11 @@
             },
             "comment": "the curve now drives the pitch"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 890,
+            "position_y": 978,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -290,27 +280,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "signal",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pitch"
         },
         "2": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"

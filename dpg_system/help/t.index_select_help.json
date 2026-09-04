@@ -1,11 +1,11 @@
 {
     "height": 921,
-    "width": 1659,
+    "width": 1658,
     "position": [
         100,
         100
     ],
-    "id": 866,
+    "id": 792,
     "name": "t.index_select_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.index_select_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 588,
+            "width": 611,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 801,
+            "position_x": 800,
             "position_y": 45,
             "width": 818,
             "height": 816,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 180,
-            "height": 180,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +123,7 @@
             "position_x": 250,
             "position_y": 120,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -176,7 +176,7 @@
             "id": 459,
             "position_x": 484,
             "position_y": 310,
-            "width": 105,
+            "width": 101,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -200,8 +200,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 350,
-            "width": 180,
-            "height": 110,
+            "width": 123,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -214,7 +214,7 @@
             "position_x": 250,
             "position_y": 350,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -267,7 +267,7 @@
             "id": 570,
             "position_x": 484,
             "position_y": 475,
-            "width": 203,
+            "width": 187,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -291,8 +291,8 @@
             "id": 607,
             "position_x": 30,
             "position_y": 520,
-            "width": 130,
-            "height": 70,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -310,8 +310,8 @@
             "id": 644,
             "position_x": 30,
             "position_y": 605,
-            "width": 220,
-            "height": 90,
+            "width": 107,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -322,7 +322,7 @@
             "id": 681,
             "position_x": 30,
             "position_y": 715,
-            "width": 300,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -341,83 +341,48 @@
             }
         },
         "13": {
-            "init": "comment everything above 0.5, as a flat tensor",
-            "name": "comment",
+            "name": "text_block",
             "id": 718,
+            "annotation": true,
             "position_x": 484,
             "position_y": 765,
-            "width": 266,
-            "height": 30,
+            "width": 286,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "everything above 0.5, as a flat tensor",
+                    "name": "block",
+                    "value": "everything above 0.5, as a flat tensor\nthe shape cannot survive: how many passed\nis not known in advance",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "everything above 0.5, as a flat tensor"
+            "text": "everything above 0.5, as a flat tensor\nthe shape cannot survive: how many passed\nis not known in advance"
         },
         "14": {
-            "init": "comment the shape cannot survive: how many passed",
-            "name": "comment",
-            "id": 755,
-            "position_x": 484,
-            "position_y": 795,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the shape cannot survive: how many passed",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the shape cannot survive: how many passed"
-        },
-        "15": {
-            "init": "comment is not known in advance",
-            "name": "comment",
-            "id": 792,
-            "position_x": 484,
-            "position_y": 825,
-            "width": 161,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "is not known in advance",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "is not known in advance"
-        },
-        "16": {
             "name": "close",
-            "id": 829,
+            "id": 755,
             "position_x": 24,
             "position_y": 787,
             "width": 88,

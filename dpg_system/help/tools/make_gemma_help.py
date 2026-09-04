@@ -156,10 +156,8 @@ vision_describe if the thing you want described is a picture."""
 
 demo = [
     {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
-    {'key': 'c0', 'comment': True, 'text': 'switch on and WAIT - the model is loaded',
+    {'key': 'c0', 'comment': True, 'text': 'switch on and WAIT - the model is loaded\nhere, and downloaded the first time',
      'pos': (90, 62)},
-    {'key': 'c1', 'comment': True, 'text': 'here, and downloaded the first time',
-     'pos': (90, 92)},
 
     {'key': 'sys', 'init': 'string', 'pos': (30, 130), 'w': 560, 'h': 42,
      'props': {'text in': 'You are a terse, concrete writer.', 'font size': '24',
@@ -170,14 +168,8 @@ demo = [
 
     {'key': 'gm', 'init': 'gemma_4', 'pos': (30, 250), 'w': 380, 'h': 620,
      'props': {'n_ctx': 8192}},
-    {'key': 'c2', 'comment': True, 'text': 'target_length nudges it towards a size',
+    {'key': 'c2', 'comment': True, 'text': 'target_length nudges it towards a size\nby making the ending more likely - it\ndoes not cut. max_tokens does cut\nslowdown paces it for reading',
      'pos': (30, 885)},
-    {'key': 'c3', 'comment': True, 'text': 'by making the ending more likely - it',
-     'pos': (30, 915)},
-    {'key': 'c4', 'comment': True, 'text': 'does not cut. max_tokens does cut',
-     'pos': (30, 945)},
-    {'key': 'c5', 'comment': True, 'text': 'slowdown paces it for reading',
-     'pos': (30, 985)},
 
     {'key': 'td', 'init': 'text_display', 'pos': (460, 250), 'w': 360, 'h': 260,
      'props': {'width': 340, 'height': 220, 'wrap': True, 'max_lines': 200,
@@ -188,12 +180,8 @@ demo = [
     {'key': 'th', 'init': 'text_display', 'pos': (460, 570), 'w': 360, 'h': 220,
      'props': {'width': 340, 'height': 180, 'wrap': True, 'max_lines': 200,
                'autoscroll': True, 'font size': '24'}},
-    {'key': 'c7', 'comment': True, 'text': 'thinking is a SEPARATE channel - often',
+    {'key': 'c7', 'comment': True, 'text': 'thinking is a SEPARATE channel - often\nthe interesting part, and almost never\nwhat an audience should read',
      'pos': (460, 805)},
-    {'key': 'c8', 'comment': True, 'text': 'the interesting part, and almost never',
-     'pos': (460, 835)},
-    {'key': 'c9', 'comment': True, 'text': 'what an audience should read',
-     'pos': (460, 865)},
 
     {'key': 'act', 'init': 'toggle', 'pos': (460, 910), 'w': 45, 'h': 42},
     {'key': 'c10', 'comment': True, 'text': 'lit while it is generating',
@@ -201,12 +189,8 @@ demo = [
 
     {'key': 'pl', 'init': 'plot', 'pos': (460, 970), 'w': 300, 'h': 180,
      'props': PLOT(-8.0, 0.0, 200)},
-    {'key': 'c11', 'comment': True, 'text': 'with score_incoming_text on, this is how',
+    {'key': 'c11', 'comment': True, 'text': 'with score_incoming_text on, this is how\nPREDICTABLE your text was to it - low\nmeans unusual, and no generating needed',
      'pos': (460, 1160)},
-    {'key': 'c12', 'comment': True, 'text': 'PREDICTABLE your text was to it - low',
-     'pos': (460, 1190)},
-    {'key': 'c13', 'comment': True, 'text': 'means unusual, and no generating needed',
-     'pos': (460, 1220)},
 ]
 links = [('tog', '', 'gm', 'on / off'),
          ('sys', 'string out', 'gm', 'system_prompt'),

@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1796,
+    "width": 1824,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 607,
     "name": "smpl_pose_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_pose_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 948,
+            "position_x": 976,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -97,106 +97,96 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 300,
-            "height": 340,
+            "width": 229,
+            "height": 322,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment tune by eye against the person",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 666,
+            "annotation": true,
+            "position_x": 691,
             "position_y": 415,
-            "width": 210,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "tune by eye against the person",
+                    "name": "block",
+                    "value": "tune by eye against the person\nconfig is what everything else wants",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "tune by eye against the person"
+            "text": "tune by eye against the person\nconfig is what everything else wants"
         },
         "5": {
-            "init": "comment config is what everything else wants",
-            "name": "comment",
+            "name": "smpl_body",
             "id": 422,
-            "position_x": 666,
-            "position_y": 445,
-            "width": 252,
-            "height": 30,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 88,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "config is what everything else wants",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "config is what everything else wants"
+            "properties": {}
         },
         "6": {
-            "name": "smpl_body",
+            "name": "smpl_take",
             "id": 459,
-            "position_x": 30,
-            "position_y": 490,
-            "width": 240,
-            "height": 120,
+            "position_x": 380,
+            "position_y": 62,
+            "width": 123,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "7": {
-            "name": "smpl_take",
+            "name": "smpl_pose",
             "id": 496,
             "position_x": 380,
-            "position_y": 62,
-            "width": 260,
-            "height": 200,
+            "position_y": 285,
+            "width": 285,
+            "height": 378,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "name": "smpl_pose",
-            "id": 533,
-            "position_x": 380,
-            "position_y": 285,
-            "width": 260,
-            "height": 200,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
             "init": "comment a recorded take driving a pose",
             "name": "comment",
-            "id": 570,
-            "position_x": 666,
+            "id": 533,
+            "position_x": 691,
             "position_y": 500,
-            "width": 210,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -215,11 +205,11 @@
             },
             "comment": "a recorded take driving a pose"
         },
-        "10": {
+        "9": {
             "name": "close",
-            "id": 607,
+            "id": 570,
             "position_x": 24,
-            "position_y": 640,
+            "position_y": 693,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -240,17 +230,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "betas",
-            "dest_node": 459,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "betas"
         },
         "1": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "joint_data",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

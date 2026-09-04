@@ -1,11 +1,11 @@
 {
     "height": 781,
-    "width": 1783,
+    "width": 1767,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 681,
     "name": "mpd218_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mpd218_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 600,
+            "width": 623,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 945,
+            "position_x": 929,
             "position_y": 45,
             "width": 798,
             "height": 676,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 300,
+            "width": 262,
+            "height": 255,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,9 +108,9 @@
             "init": "comment set each button momentary or latching",
             "name": "comment",
             "id": 385,
-            "position_x": 656,
+            "position_x": 638,
             "position_y": 375,
-            "width": 259,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,7 +134,7 @@
             "id": 422,
             "position_x": 30,
             "position_y": 415,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -170,73 +170,63 @@
             "properties": {}
         },
         "7": {
-            "init": "comment the LED tells you a state you cannot",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 656,
-            "position_y": 495,
-            "width": 252,
-            "height": 30,
+            "annotation": true,
+            "position_x": 638,
+            "position_y": 470,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the LED tells you a state you cannot",
+                    "name": "block",
+                    "value": "the LED tells you a state you cannot\nsee, because you are not looking",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the LED tells you a state you cannot"
+            "text": "the LED tells you a state you cannot\nsee, because you are not looking"
         },
         "8": {
-            "init": "comment see, because you are not looking",
-            "name": "comment",
-            "id": 533,
-            "position_x": 656,
-            "position_y": 535,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "see, because you are not looking",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "see, because you are not looking"
-        },
-        "9": {
             "name": "mpd218",
-            "id": 570,
+            "id": 533,
             "position_x": 350,
             "position_y": 62,
-            "width": 280,
-            "height": 240,
+            "width": 262,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "int",
-            "id": 607,
+            "id": 570,
             "position_x": 350,
             "position_y": 320,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -259,59 +249,49 @@
                 }
             }
         },
-        "11": {
-            "init": "comment pad numbering built in, so you do not",
-            "name": "comment",
-            "id": 644,
-            "position_x": 656,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 638,
             "position_y": 415,
-            "width": 259,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "pad numbering built in, so you do not",
+                    "name": "block",
+                    "value": "pad numbering built in, so you do not\nkeep a list of note numbers anywhere",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "pad numbering built in, so you do not"
+            "text": "pad numbering built in, so you do not\nkeep a list of note numbers anywhere"
         },
-        "12": {
-            "init": "comment keep a list of note numbers anywhere",
-            "name": "comment",
-            "id": 681,
-            "position_x": 656,
-            "position_y": 455,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "keep a list of note numbers anywhere",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "keep a list of note numbers anywhere"
-        },
-        "13": {
+        "11": {
             "name": "close",
-            "id": 718,
+            "id": 644,
             "position_x": 24,
             "position_y": 487,
             "width": 88,
@@ -350,11 +330,11 @@
             "dest_input_name": "LED"
         },
         "2": {
-            "source_node": 570,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "pad",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

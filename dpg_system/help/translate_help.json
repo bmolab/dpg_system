@@ -1,11 +1,11 @@
 {
-    "height": 965,
-    "width": 1917,
+    "height": 861,
+    "width": 1912,
     "position": [
         100,
         100
     ],
-    "id": 1051,
+    "id": 644,
     "name": "translate_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/translate_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 432,
+            "width": 451,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1069,
+            "position_x": 1064,
             "position_y": 45,
             "width": 808,
             "height": 756,
@@ -97,7 +97,7 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 520,
+            "width": 510,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -124,9 +124,9 @@
             "init": "comment click to translate",
             "name": "comment",
             "id": 385,
-            "position_x": 766,
+            "position_x": 760,
             "position_y": 112,
-            "width": 126,
+            "width": 119,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -150,70 +150,60 @@
             "id": 422,
             "position_x": 30,
             "position_y": 160,
-            "width": 320,
-            "height": 260,
+            "width": 185,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment no account, no key - it asks the same",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 766,
+            "annotation": true,
+            "position_x": 760,
             "position_y": 435,
-            "width": 259,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "no account, no key - it asks the same",
+                    "name": "block",
+                    "value": "no account, no key - it asks the same\npage a browser would. About 0.7s",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "no account, no key - it asks the same"
+            "text": "no account, no key - it asks the same\npage a browser would. About 0.7s"
         },
         "7": {
-            "init": "comment page a browser would. About 0.7s",
-            "name": "comment",
-            "id": 496,
-            "position_x": 766,
-            "position_y": 515,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "page a browser would. About 0.7s",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "page a browser would. About 0.7s"
-        },
-        "8": {
             "name": "text_display",
-            "id": 533,
+            "id": 496,
             "position_x": 400,
             "position_y": 160,
-            "width": 340,
-            "height": 200,
+            "width": 334,
+            "height": 190,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -250,311 +240,91 @@
                 }
             }
         },
-        "9": {
-            "init": "comment the answer arrives LATER, not on the",
-            "name": "comment",
-            "id": 570,
-            "position_x": 766,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 760,
             "position_y": 375,
-            "width": 252,
-            "height": 30,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the answer arrives LATER, not on the",
+                    "name": "block",
+                    "value": "the answer arrives LATER, not on the\nsame frame it went out - drive what\ncomes next from this, not from the send",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the answer arrives LATER, not on the"
+            "text": "the answer arrives LATER, not on the\nsame frame it went out - drive what\ncomes next from this, not from the send"
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 760,
+            "position_y": 510,
+            "width": 274,
+            "height": 124,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "leave use queue ON: with it off, a\nrequest arriving while another is in\nflight is simply lost\ntranslate_api is the paid, supported\nroute. It only appears if the Google\nCloud SDK is installed - and then needs\nGOOGLE_APPLICATION_CREDENTIALS set\nBOTH send your text to Google. Nothing\nprivate should go through either",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 108,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "leave use queue ON: with it off, a\nrequest arriving while another is in\nflight is simply lost\ntranslate_api is the paid, supported\nroute. It only appears if the Google\nCloud SDK is installed - and then needs\nGOOGLE_APPLICATION_CREDENTIALS set\nBOTH send your text to Google. Nothing\nprivate should go through either"
         },
         "10": {
-            "init": "comment same frame it went out - drive what",
-            "name": "comment",
-            "id": 607,
-            "position_x": 766,
-            "position_y": 405,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "same frame it went out - drive what",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "same frame it went out - drive what"
-        },
-        "11": {
-            "init": "comment comes next from this, not from the send",
-            "name": "comment",
-            "id": 644,
-            "position_x": 766,
-            "position_y": 475,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "comes next from this, not from the send",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "comes next from this, not from the send"
-        },
-        "12": {
-            "init": "comment leave use queue ON: with it off, a",
-            "name": "comment",
-            "id": 681,
-            "position_x": 766,
-            "position_y": 555,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "leave use queue ON: with it off, a",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "leave use queue ON: with it off, a"
-        },
-        "13": {
-            "init": "comment request arriving while another is in",
-            "name": "comment",
-            "id": 718,
-            "position_x": 766,
-            "position_y": 595,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "request arriving while another is in",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "request arriving while another is in"
-        },
-        "14": {
-            "init": "comment flight is simply lost",
-            "name": "comment",
-            "id": 755,
-            "position_x": 766,
-            "position_y": 635,
-            "width": 147,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "flight is simply lost",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "flight is simply lost"
-        },
-        "15": {
-            "init": "comment translate_api is the paid, supported",
-            "name": "comment",
-            "id": 792,
-            "position_x": 766,
-            "position_y": 675,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "translate_api is the paid, supported",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "translate_api is the paid, supported"
-        },
-        "16": {
-            "init": "comment route. It only appears if the Google",
-            "name": "comment",
-            "id": 829,
-            "position_x": 766,
-            "position_y": 715,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "route. It only appears if the Google",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "route. It only appears if the Google"
-        },
-        "17": {
-            "init": "comment Cloud SDK is installed - and then needs",
-            "name": "comment",
-            "id": 866,
-            "position_x": 766,
-            "position_y": 755,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Cloud SDK is installed - and then needs",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Cloud SDK is installed - and then needs"
-        },
-        "18": {
-            "init": "comment GOOGLE_APPLICATION_CREDENTIALS set",
-            "name": "comment",
-            "id": 903,
-            "position_x": 766,
-            "position_y": 795,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "GOOGLE_APPLICATION_CREDENTIALS set",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "GOOGLE_APPLICATION_CREDENTIALS set"
-        },
-        "19": {
-            "init": "comment BOTH send your text to Google. Nothing",
-            "name": "comment",
-            "id": 940,
-            "position_x": 766,
-            "position_y": 835,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "BOTH send your text to Google. Nothing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "BOTH send your text to Google. Nothing"
-        },
-        "20": {
-            "init": "comment private should go through either",
-            "name": "comment",
-            "id": 977,
-            "position_x": 766,
-            "position_y": 875,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "private should go through either",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "private should go through either"
-        },
-        "21": {
             "name": "close",
-            "id": 1014,
+            "id": 607,
             "position_x": 24,
-            "position_y": 450,
+            "position_y": 380,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -585,7 +355,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "translation out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"

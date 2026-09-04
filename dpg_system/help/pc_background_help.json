@@ -1,11 +1,11 @@
 {
     "height": 1391,
-    "width": 1921,
+    "width": 1805,
     "position": [
         100,
         100
     ],
-    "id": 1014,
+    "id": 755,
     "name": "pc_background_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/pc_background_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 552,
+            "width": 574,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1063,
+            "position_x": 947,
             "position_y": 45,
             "width": 818,
             "height": 806,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 300,
+            "width": 154,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 375,
-            "width": 300,
-            "height": 200,
+            "width": 264,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -120,9 +120,9 @@
             "init": "comment crop first, always",
             "name": "comment",
             "id": 422,
-            "position_x": 746,
+            "position_x": 631,
             "position_y": 590,
-            "width": 126,
+            "width": 119,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -146,8 +146,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 635,
-            "width": 320,
-            "height": 300,
+            "width": 185,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -160,235 +160,115 @@
             }
         },
         "7": {
-            "init": "comment get the crop right, THEN press learn",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 746,
-            "position_y": 980,
-            "width": 252,
-            "height": 30,
+            "annotation": true,
+            "position_x": 631,
+            "position_y": 972,
+            "width": 286,
+            "height": 76,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "get the crop right, THEN press learn",
+                    "name": "block",
+                    "value": "get the crop right, THEN press learn\nwith nobody in the volume - changing\nthe volume abandons the run\ndilate 1 catches the jitter crust on\nlearned surfaces - almost always worth it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "get the crop right, THEN press learn"
+            "text": "get the crop right, THEN press learn\nwith nobody in the volume - changing\nthe volume abandons the run\ndilate 1 catches the jitter crust on\nlearned surfaces - almost always worth it"
         },
         "8": {
-            "init": "comment with nobody in the volume - changing",
-            "name": "comment",
-            "id": 533,
-            "position_x": 746,
-            "position_y": 1060,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "with nobody in the volume - changing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "with nobody in the volume - changing"
-        },
-        "9": {
-            "init": "comment the volume abandons the run",
-            "name": "comment",
-            "id": 570,
-            "position_x": 746,
-            "position_y": 1100,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the volume abandons the run",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the volume abandons the run"
-        },
-        "10": {
-            "init": "comment dilate 1 catches the jitter crust on",
-            "name": "comment",
-            "id": 607,
-            "position_x": 746,
-            "position_y": 1140,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "dilate 1 catches the jitter crust on",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "dilate 1 catches the jitter crust on"
-        },
-        "11": {
-            "init": "comment learned surfaces - almost always worth it",
-            "name": "comment",
-            "id": 644,
-            "position_x": 746,
-            "position_y": 1180,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "learned surfaces - almost always worth it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "learned surfaces - almost always worth it"
-        },
-        "12": {
             "name": "pc_denoise",
-            "id": 681,
+            "id": 533,
             "position_x": 420,
             "position_y": 635,
-            "width": 300,
-            "height": 260,
+            "width": 185,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
-            "init": "comment min points is a DENSITY: it means",
-            "name": "comment",
-            "id": 718,
-            "position_x": 746,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 631,
             "position_y": 910,
-            "width": 231,
-            "height": 30,
+            "width": 286,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "min points is a DENSITY: it means",
+                    "name": "block",
+                    "value": "min points is a DENSITY: it means\nnothing without the voxel size. At 0.04\nmin points 2 removes 7/8 of a real object",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "min points is a DENSITY: it means"
+            "text": "min points is a DENSITY: it means\nnothing without the voxel size. At 0.04\nmin points 2 removes 7/8 of a real object"
         },
-        "14": {
-            "init": "comment nothing without the voxel size. At 0.04",
-            "name": "comment",
-            "id": 755,
-            "position_x": 746,
-            "position_y": 940,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "nothing without the voxel size. At 0.04",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "nothing without the voxel size. At 0.04"
-        },
-        "15": {
-            "init": "comment min points 2 removes 7/8 of a real object",
-            "name": "comment",
-            "id": 792,
-            "position_x": 746,
-            "position_y": 1020,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "min points 2 removes 7/8 of a real object",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "min points 2 removes 7/8 of a real object"
-        },
-        "16": {
+        "10": {
             "name": "pc_info",
-            "id": 829,
+            "id": 607,
             "position_x": 420,
             "position_y": 1020,
-            "width": 240,
-            "height": 180,
+            "width": 76,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
+        "11": {
             "name": "int",
-            "id": 866,
+            "id": 644,
             "position_x": 420,
             "position_y": 1215,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -411,59 +291,49 @@
                 }
             }
         },
-        "18": {
-            "init": "comment watch the count while you tune - it is",
-            "name": "comment",
-            "id": 903,
-            "position_x": 746,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 631,
             "position_y": 1265,
-            "width": 266,
-            "height": 30,
+            "width": 286,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "watch the count while you tune - it is",
+                    "name": "block",
+                    "value": "watch the count while you tune - it is\nhow you catch a filter eating the subject",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "watch the count while you tune - it is"
+            "text": "watch the count while you tune - it is\nhow you catch a filter eating the subject"
         },
-        "19": {
-            "init": "comment how you catch a filter eating the subject",
-            "name": "comment",
-            "id": 940,
-            "position_x": 746,
-            "position_y": 1295,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "how you catch a filter eating the subject",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "how you catch a filter eating the subject"
-        },
-        "20": {
+        "13": {
             "name": "close",
-            "id": 977,
+            "id": 718,
             "position_x": 24,
             "position_y": 1287,
             "width": 88,
@@ -506,27 +376,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "foreground",
-            "dest_node": 681,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "point cloud"
         },
         "3": {
-            "source_node": 681,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "denoised",
-            "dest_node": 829,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "point cloud"
         },
         "4": {
-            "source_node": 829,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "count",
-            "dest_node": 866,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

@@ -1,11 +1,11 @@
 {
-    "height": 1284,
-    "width": 1744,
+    "height": 1291,
+    "width": 1626,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "gl_line_array_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_line_array_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 528,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 896,
+            "position_x": 778,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 240,
-            "height": 120,
+            "width": 70,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 202,
-            "width": 240,
-            "height": 240,
+            "width": 222,
+            "height": 294,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -120,83 +120,73 @@
             "name": "gl_line_array",
             "id": 422,
             "position_x": 30,
-            "position_y": 480,
-            "width": 260,
-            "height": 300,
+            "position_y": 516,
+            "width": 185,
+            "height": 220,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment patch an array of line points in",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 586,
-            "position_y": 795,
-            "width": 224,
-            "height": 30,
+            "annotation": true,
+            "position_x": 494,
+            "position_y": 831,
+            "width": 231,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "patch an array of line points in",
+                    "name": "block",
+                    "value": "patch an array of line points in\nraise accent_motion to see speed",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "patch an array of line points in"
+            "text": "patch an array of line points in\nraise accent_motion to see speed"
         },
         "7": {
-            "init": "comment raise accent_motion to see speed",
-            "name": "comment",
-            "id": 496,
-            "position_x": 586,
-            "position_y": 825,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "raise accent_motion to see speed",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "raise accent_motion to see speed"
-        },
-        "8": {
             "name": "gl_orientation_disks",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 870,
-            "width": 260,
-            "height": 280,
+            "position_y": 906,
+            "width": 154,
+            "height": 224,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "init": "comment a disk per joint: a twist looks like one",
             "name": "comment",
-            "id": 570,
-            "position_x": 586,
-            "position_y": 1165,
-            "width": 280,
+            "id": 533,
+            "position_x": 494,
+            "position_y": 1201,
+            "width": 254,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -215,25 +205,25 @@
             },
             "comment": "a disk per joint: a twist looks like one"
         },
-        "10": {
+        "9": {
             "name": "gl_vertex_buffer",
-            "id": 607,
+            "id": 570,
             "position_x": 320,
-            "position_y": 480,
-            "width": 240,
-            "height": 180,
+            "position_y": 516,
+            "width": 148,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "init": "comment raw vertices, when nothing else fits",
             "name": "comment",
-            "id": 644,
-            "position_x": 586,
-            "position_y": 675,
-            "width": 252,
+            "id": 607,
+            "position_x": 494,
+            "position_y": 711,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -252,11 +242,11 @@
             },
             "comment": "raw vertices, when nothing else fits"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1180,
+            "position_y": 1160,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -297,7 +287,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"

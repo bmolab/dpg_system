@@ -1,11 +1,11 @@
 {
-    "height": 909,
-    "width": 1729,
+    "height": 961,
+    "width": 1624,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "body_to_joints_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/body_to_joints_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 881,
+            "position_x": 776,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 400,
-            "width": 220,
-            "height": 90,
+            "width": 144,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,82 +121,72 @@
             "id": 422,
             "position_x": 30,
             "position_y": 505,
-            "width": 260,
-            "height": 90,
+            "width": 131,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment world-space: where each bone points",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 606,
+            "annotation": true,
+            "position_x": 497,
             "position_y": 610,
-            "width": 245,
-            "height": 30,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "world-space: where each bone points",
+                    "name": "block",
+                    "value": "world-space: where each bone points\nmeasure in global, edit in local",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "world-space: where each bone points"
+            "text": "world-space: where each bone points\nmeasure in global, edit in local"
         },
         "7": {
-            "init": "comment measure in global, edit in local",
-            "name": "comment",
-            "id": 496,
-            "position_x": 606,
-            "position_y": 640,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "measure in global, edit in local",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "measure in global, edit in local"
-        },
-        "8": {
             "name": "global_to_local_body",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
             "position_y": 685,
-            "width": 260,
-            "height": 90,
+            "width": 131,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "init": "comment and back again",
             "name": "comment",
-            "id": 570,
-            "position_x": 606,
+            "id": 533,
+            "position_x": 497,
             "position_y": 790,
-            "width": 98,
+            "width": 95,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -215,25 +205,25 @@
             },
             "comment": "and back again"
         },
-        "10": {
+        "9": {
             "name": "body_to_joints",
-            "id": 607,
+            "id": 570,
             "position_x": 340,
             "position_y": 505,
-            "width": 240,
-            "height": 200,
+            "width": 131,
+            "height": 322,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "init": "comment one outlet per joint",
             "name": "comment",
-            "id": 644,
-            "position_x": 606,
+            "id": 607,
+            "position_x": 497,
             "position_y": 720,
-            "width": 140,
+            "width": 131,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -252,11 +242,11 @@
             },
             "comment": "one outlet per joint"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 805,
+            "position_y": 857,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -297,7 +287,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "absolute pose out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "absolute pose in"
@@ -307,7 +297,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "active joint quats out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pose in"

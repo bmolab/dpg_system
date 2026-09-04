@@ -347,12 +347,8 @@ demo = [
     {'key': 'sv', 'init': 't.linalg.svd', 'pos': (30, 350), 'w': 200, 'h': 130},
     {'key': 'hm2', 'init': 'heat_map', 'pos': (30, 500), 'w': 208, 'h': 148,
      'props': HM(6, 0.0, 4.0)},
-    {'key': 'c1', 'comment': True, 'text': 'the singular values, descending',
+    {'key': 'c1', 'comment': True, 'text': 'the singular values, descending\nhow fast they fall is how few\ndimensions the data really has',
      'pos': (30, 660)},
-    {'key': 'c2', 'comment': True, 'text': 'how fast they fall is how few',
-     'pos': (30, 690)},
-    {'key': 'c3', 'comment': True, 'text': 'dimensions the data really has',
-     'pos': (30, 720)},
 ]
 links = [('btn', '', 'rnd', '###input'),
          ('rnd', 'random tensor', 'hm', 'y'),

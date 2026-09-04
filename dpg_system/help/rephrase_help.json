@@ -1,11 +1,11 @@
 {
-    "height": 950,
-    "width": 2068,
+    "height": 881,
+    "width": 1911,
     "position": [
         100,
         100
     ],
-    "id": 1088,
+    "id": 866,
     "name": "rephrase_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/rephrase_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 492,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1220,
+            "position_x": 1063,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -97,7 +97,7 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 380,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -120,8 +120,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 180,
-            "height": 80,
+            "width": 70,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -132,7 +132,7 @@
             "id": 422,
             "position_x": 30,
             "position_y": 215,
-            "width": 380,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -151,86 +151,51 @@
             }
         },
         "6": {
-            "init": "comment geese -> goose, were -> be, running -> run",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 896,
+            "annotation": true,
+            "position_x": 741,
             "position_y": 265,
-            "width": 294,
-            "height": 30,
+            "width": 292,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "geese -> goose, were -> be, running -> run",
+                    "name": "block",
+                    "value": "geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "geese -> goose, were -> be, running -> run"
+            "text": "geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings"
         },
         "7": {
-            "init": "comment it knows the irregular forms - it has",
-            "name": "comment",
-            "id": 496,
-            "position_x": 896,
-            "position_y": 295,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "it knows the irregular forms - it has",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "it knows the irregular forms - it has"
-        },
-        "8": {
-            "init": "comment parsed the sentence, not chopped endings",
-            "name": "comment",
-            "id": 533,
-            "position_x": 896,
-            "position_y": 325,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "parsed the sentence, not chopped endings",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "parsed the sentence, not chopped endings"
-        },
-        "9": {
             "name": "message",
-            "id": 570,
+            "id": 496,
             "position_x": 30,
             "position_y": 400,
-            "width": 180,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -248,12 +213,12 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "name": "message",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
             "position_y": 455,
-            "width": 220,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -271,12 +236,12 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "message",
-            "id": 644,
+            "id": 570,
             "position_x": 30,
             "position_y": 510,
-            "width": 220,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -294,12 +259,12 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "name": "message",
-            "id": 681,
+            "id": 607,
             "position_x": 30,
             "position_y": 565,
-            "width": 240,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -317,12 +282,12 @@
                 }
             }
         },
-        "13": {
+        "11": {
             "name": "message",
-            "id": 718,
+            "id": 644,
             "position_x": 30,
             "position_y": 620,
-            "width": 140,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -340,74 +305,64 @@
                 }
             }
         },
-        "14": {
-            "init": "comment click these in order, one at a time",
-            "name": "comment",
-            "id": 755,
-            "position_x": 896,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 741,
             "position_y": 670,
-            "width": 245,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "click these in order, one at a time",
+                    "name": "block",
+                    "value": "click these in order, one at a time\n'no' steps back to the previous phrase",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "click these in order, one at a time"
+            "text": "click these in order, one at a time\n'no' steps back to the previous phrase"
         },
-        "15": {
-            "init": "comment 'no' steps back to the previous phrase",
-            "name": "comment",
-            "id": 792,
-            "position_x": 896,
-            "position_y": 700,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "'no' steps back to the previous phrase",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "'no' steps back to the previous phrase"
-        },
-        "16": {
+        "13": {
             "name": "rephrase",
-            "id": 829,
+            "id": 718,
             "position_x": 450,
             "position_y": 400,
-            "width": 300,
-            "height": 260,
+            "width": 265,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
+        "14": {
             "name": "list",
-            "id": 866,
+            "id": 755,
             "position_x": 450,
             "position_y": 675,
-            "width": 420,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -425,109 +380,49 @@
                 }
             }
         },
-        "18": {
-            "init": "comment each fragment is folded into the phrase",
-            "name": "comment",
-            "id": 903,
-            "position_x": 896,
-            "position_y": 740,
-            "width": 273,
-            "height": 30,
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 741,
+            "position_y": 725,
+            "width": 286,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "each fragment is folded into the phrase",
+                    "name": "block",
+                    "value": "each fragment is folded into the phrase\nbuilt so far, not appended to it\ncomplexity above the threshold is passed\nthrough untouched - it works on fragments",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "each fragment is folded into the phrase"
+            "text": "each fragment is folded into the phrase\nbuilt so far, not appended to it\ncomplexity above the threshold is passed\nthrough untouched - it works on fragments"
         },
-        "19": {
-            "init": "comment built so far, not appended to it",
-            "name": "comment",
-            "id": 940,
-            "position_x": 896,
-            "position_y": 780,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "built so far, not appended to it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "built so far, not appended to it"
-        },
-        "20": {
-            "init": "comment complexity above the threshold is passed",
-            "name": "comment",
-            "id": 977,
-            "position_x": 896,
-            "position_y": 820,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "complexity above the threshold is passed",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "complexity above the threshold is passed"
-        },
-        "21": {
-            "init": "comment through untouched - it works on fragments",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 896,
-            "position_y": 860,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "through untouched - it works on fragments",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "through untouched - it works on fragments"
-        },
-        "22": {
+        "16": {
             "name": "close",
-            "id": 1051,
+            "id": 829,
             "position_x": 24,
             "position_y": 747,
             "width": 88,
@@ -566,61 +461,61 @@
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 829,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "3": {
-            "source_node": 607,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 829,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "4": {
-            "source_node": 644,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 829,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "5": {
-            "source_node": 681,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 829,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "6": {
-            "source_node": 718,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 829,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "7": {
-            "source_node": 829,
+            "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "results",
-            "dest_node": 866,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

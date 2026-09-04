@@ -1,11 +1,11 @@
 {
-    "height": 975,
-    "width": 1837,
+    "height": 841,
+    "width": 1813,
     "position": [
         100,
         100
     ],
-    "id": 1051,
+    "id": 718,
     "name": "ndi_receiver_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/ndi_receiver_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 576,
+            "width": 598,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 989,
+            "position_x": 965,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -109,107 +109,72 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 320,
-            "height": 220,
+            "width": 160,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "5": {
-            "init": "comment 'refresh sources' after switching a",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 661,
             "position_y": 355,
-            "width": 245,
-            "height": 30,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "'refresh sources' after switching a",
+                    "name": "block",
+                    "value": "'refresh sources' after switching a\nsender on. Take the PROXY for analysis,\nthe full stream only for projection",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "'refresh sources' after switching a"
+            "text": "'refresh sources' after switching a\nsender on. Take the PROXY for analysis,\nthe full stream only for projection"
         },
         "6": {
-            "init": "comment sender on. Take the PROXY for analysis,",
-            "name": "comment",
-            "id": 459,
-            "position_x": 686,
-            "position_y": 385,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "sender on. Take the PROXY for analysis,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "sender on. Take the PROXY for analysis,"
-        },
-        "7": {
-            "init": "comment the full stream only for projection",
-            "name": "comment",
-            "id": 496,
-            "position_x": 686,
-            "position_y": 415,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the full stream only for projection",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the full stream only for projection"
-        },
-        "8": {
             "name": "info",
-            "id": 533,
+            "id": 459,
             "position_x": 400,
             "position_y": 120,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "7": {
             "init": "comment frames arrive as arrays, like a camera",
             "name": "comment",
-            "id": 570,
-            "position_x": 686,
+            "id": 496,
+            "position_x": 661,
             "position_y": 215,
-            "width": 266,
+            "width": 242,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -228,9 +193,9 @@
             },
             "comment": "frames arrive as arrays, like a camera"
         },
-        "10": {
+        "8": {
             "name": "depth_anything",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
             "position_y": 470,
             "width": 280,
@@ -240,246 +205,101 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "name": "info",
-            "id": 644,
+            "id": 570,
             "position_x": 400,
             "position_y": 470,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
-            "init": "comment depth from an ordinary picture - no",
-            "name": "comment",
-            "id": 681,
-            "position_x": 686,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 661,
             "position_y": 565,
-            "width": 245,
-            "height": 30,
+            "width": 274,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "depth from an ordinary picture - no",
+                    "name": "block",
+                    "value": "depth from an ordinary picture - no\ndepth camera, no stereo, no calibration",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "depth from an ordinary picture - no"
+            "text": "depth from an ordinary picture - no\ndepth camera, no stereo, no calibration"
         },
-        "13": {
-            "init": "comment depth camera, no stereo, no calibration",
-            "name": "comment",
-            "id": 718,
-            "position_x": 686,
-            "position_y": 645,
-            "width": 273,
-            "height": 30,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 661,
+            "position_y": 615,
+            "width": 274,
+            "height": 100,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "depth camera, no stereo, no calibration",
+                    "name": "block",
+                    "value": "but it is RELATIVE: nearer and further,\nnot metres, and the scale can shift\nbetween frames. Good for masking and\ndepth-order, not for measuring\nno memory between frames, so a still\nobject can shimmer slightly - smooth it\nif that matters",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 84,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "depth camera, no stereo, no calibration"
+            "text": "but it is RELATIVE: nearer and further,\nnot metres, and the scale can shift\nbetween frames. Good for masking and\ndepth-order, not for measuring\nno memory between frames, so a still\nobject can shimmer slightly - smooth it\nif that matters"
         },
-        "14": {
-            "init": "comment but it is RELATIVE: nearer and further,",
-            "name": "comment",
-            "id": 755,
-            "position_x": 686,
-            "position_y": 605,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "but it is RELATIVE: nearer and further,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "but it is RELATIVE: nearer and further,"
-        },
-        "15": {
-            "init": "comment not metres, and the scale can shift",
-            "name": "comment",
-            "id": 792,
-            "position_x": 686,
-            "position_y": 685,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "not metres, and the scale can shift",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "not metres, and the scale can shift"
-        },
-        "16": {
-            "init": "comment between frames. Good for masking and",
-            "name": "comment",
-            "id": 829,
-            "position_x": 686,
-            "position_y": 725,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "between frames. Good for masking and",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "between frames. Good for masking and"
-        },
-        "17": {
-            "init": "comment depth-order, not for measuring",
-            "name": "comment",
-            "id": 866,
-            "position_x": 686,
-            "position_y": 765,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "depth-order, not for measuring",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "depth-order, not for measuring"
-        },
-        "18": {
-            "init": "comment no memory between frames, so a still",
-            "name": "comment",
-            "id": 903,
-            "position_x": 686,
-            "position_y": 805,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "no memory between frames, so a still",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "no memory between frames, so a still"
-        },
-        "19": {
-            "init": "comment object can shimmer slightly - smooth it",
-            "name": "comment",
-            "id": 940,
-            "position_x": 686,
-            "position_y": 845,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "object can shimmer slightly - smooth it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "object can shimmer slightly - smooth it"
-        },
-        "20": {
-            "init": "comment if that matters",
-            "name": "comment",
-            "id": 977,
-            "position_x": 686,
-            "position_y": 885,
-            "width": 105,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "if that matters",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "if that matters"
-        },
-        "21": {
+        "12": {
             "name": "close",
-            "id": 1014,
+            "id": 681,
             "position_x": 24,
             "position_y": 580,
             "width": 88,
@@ -512,7 +332,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "image",
-            "dest_node": 533,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
@@ -522,17 +342,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "image",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input_image"
         },
         "3": {
-            "source_node": 607,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "depth_image",
-            "dest_node": 644,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

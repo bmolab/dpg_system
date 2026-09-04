@@ -10,7 +10,7 @@ Run it in the project's conda env, from the repo root:
 
     python3 dpg_system/help/tools/relayout.py dpg_system/help/*.json
 """
-import sys, os, json
+import sys, os, json, faulthandler
 
 REPO = '/Users/drokeby/dpg_system'
 GUTTER = 26        # gap between the demo column and the comment gutter
@@ -21,32 +21,27 @@ TITLE_Y = 40       # a comment above this y is the patch title, left alone
 
 
 def _start_watchdog(seconds=180):
-    """Force-exit if a load blocks.
+    """Force-exit if a load blocks, and say where it stopped.
 
     Some nodes open a NATIVE modal dialog (gl_text's font property is one), and
-    a headless run then waits on it forever with no output. Nothing here can
-    dismiss that dialog, so the only safe behaviour is to die loudly rather
-    than hang a build.
+    a headless run then waits on it forever with no output.
+
+    This uses faulthandler, NOT a threading.Timer, and the difference matters.
+    A Timer callback is Python: it needs the GIL to run. A C extension that
+    blocks WITHOUT releasing the GIL therefore freezes the watchdog along with
+    everything else -- exactly what NDIlib_find_destroy did here, wedging a run
+    for fifty minutes with the timer never firing. faulthandler's countdown
+    lives in a C thread that needs no GIL, so it still fires, and it dumps a
+    Python traceback for every thread on the way out, which names the blocking
+    call instead of leaving you guessing.
     """
-    import threading, os as _os
-
-    def _bark():
-        print(f"\n  WATCHDOG: no progress for {seconds}s -- a patch is probably "
-              f"blocking on a modal dialog. Aborting.", flush=True)
-        _os._exit(2)
-
-    t = threading.Timer(seconds, _bark)
-    t.daemon = True
-    t.start()
-    return t
+    faulthandler.dump_traceback_later(seconds, exit=True)
+    return seconds
 
 
 def _pet(timer, seconds=180):
     """Restart the watchdog after each patch."""
-    try:
-        timer.cancel()
-    except Exception:
-        pass
+    faulthandler.cancel_dump_traceback_later()
     return _start_watchdog(seconds)
 
 
@@ -73,13 +68,36 @@ def measure(paths):
         print(f'  [{n}/{len(paths)}] {os.path.basename(path)}', flush=True)
         app.fresh_patcher = True
         app.load_from_file(os.path.abspath(path))
-        for _ in range(8):
-            dpg.render_dearpygui_frame()
-        editor = app.get_current_editor()
+        # Render until the sizes STOP CHANGING, rather than for a fixed count.
+        # Some nodes are not their final size after a few frames -- fader_out~
+        # measured 220x220 early and 70x308 once settled -- and a close button
+        # placed against the transient lands on top of the node it was meant to
+        # sit below. Snapshot, render more, compare; give up after a while and
+        # take what we have.
+        _prev = None
+        for _ in range(12):
+            for _ in range(6):
+                dpg.render_dearpygui_frame()
+            snap = {}
+            for _id, _n in app.created_nodes.items():
+                if _n is None:
+                    continue
+                try:
+                    snap[_id] = dpg.get_item_rect_size(_n.uuid)
+                except Exception:
+                    pass
+            if snap and snap == _prev:
+                break
+            _prev = snap
+        # app.created_nodes maps the id SAVED IN THE FILE to the node it
+        # built, and survives the load. node.loaded_uuid does not: paste()
+        # ends with clear_loaded_uuids(), which sets every one of them to -1.
+        # Reading it here collapsed all the measurements onto the key -1, so
+        # nothing ever matched a node id and no size was written back -- the
+        # measure pass silently did nothing.
         sizes = {}
-        for n in editor._nodes:
-            loaded = getattr(n, 'loaded_uuid', None)
-            if loaded is None:
+        for loaded, n in app.created_nodes.items():
+            if n is None:
                 continue
             try:
                 w, h = dpg.get_item_rect_size(n.uuid)
@@ -96,10 +114,7 @@ def measure(paths):
             app.close_current_node_editor()
         except Exception as e:
             print('   could not close patch:', e)
-    try:
-        dog.cancel()
-    except Exception:
-        pass
+    faulthandler.cancel_dump_traceback_later()
     return out
 
 
@@ -193,6 +208,13 @@ def relayout(path, sizes, minimal=False, dry=False):
         if nm == '':
             continue                      # origin
         if nm == 'text_block':
+            # A multi-line annotation is a locked text_block, not a comment
+            # node, and belongs in the gutter with the other annotations.
+            # build_help marks those; anything unmarked is either the prose
+            # block or a demo of the node itself.
+            if nc.get('annotation'):
+                comments.append(nc)
+                continue
             # A patch may contain more than one (text_block_help demonstrates
             # the node itself). The documentation block is the largest; the
             # rest are part of the demo and may be moved.

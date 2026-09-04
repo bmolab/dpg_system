@@ -1,11 +1,11 @@
 {
-    "height": 939,
-    "width": 1773,
+    "height": 847,
+    "width": 1681,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 644,
     "name": "osc_source_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/osc_source_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 516,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 925,
+            "position_x": 833,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 220,
+            "width": 117,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -106,125 +106,105 @@
             "init": "osc_target console 127.0.0.1 8000"
         },
         "4": {
-            "init": "comment named once; everything else refers to",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 636,
+            "annotation": true,
+            "position_x": 542,
             "position_y": 300,
-            "width": 259,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "named once; everything else refers to",
+                    "name": "block",
+                    "value": "named once; everything else refers to\nit by name, not by address",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "named once; everything else refers to"
+            "text": "named once; everything else refers to\nit by name, not by address"
         },
         "5": {
-            "init": "comment it by name, not by address",
-            "name": "comment",
-            "id": 422,
-            "position_x": 636,
-            "position_y": 330,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "it by name, not by address",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "it by name, not by address"
-        },
-        "6": {
             "name": "osc_source",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
             "position_y": 375,
-            "width": 280,
-            "height": 220,
+            "width": 117,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "osc_source listener 8001"
         },
-        "7": {
-            "init": "comment tick use_queue if OSC drives anything",
-            "name": "comment",
-            "id": 496,
-            "position_x": 636,
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 542,
             "position_y": 630,
-            "width": 259,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "tick use_queue if OSC drives anything",
+                    "name": "block",
+                    "value": "tick use_queue if OSC drives anything\nthat draws or touches widgets",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "tick use_queue if OSC drives anything"
+            "text": "tick use_queue if OSC drives anything\nthat draws or touches widgets"
         },
-        "8": {
-            "init": "comment that draws or touches widgets",
-            "name": "comment",
-            "id": 533,
-            "position_x": 636,
-            "position_y": 670,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "that draws or touches widgets",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "that draws or touches widgets"
-        },
-        "9": {
+        "7": {
             "name": "print",
-            "id": 570,
+            "id": 496,
             "position_x": 30,
             "position_y": 685,
-            "width": 180,
-            "height": 120,
+            "width": 39,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -242,25 +222,25 @@
             },
             "init": "print osc"
         },
-        "10": {
+        "8": {
             "name": "osc_manager",
-            "id": 607,
+            "id": 533,
             "position_x": 350,
             "position_y": 375,
-            "width": 260,
-            "height": 200,
+            "width": 166,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "init": "comment what sources and targets exist",
             "name": "comment",
-            "id": 644,
-            "position_x": 636,
+            "id": 570,
+            "position_x": 542,
             "position_y": 590,
-            "width": 210,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -279,11 +259,11 @@
             },
             "comment": "what sources and targets exist"
         },
-        "12": {
+        "10": {
             "name": "close",
-            "id": 681,
+            "id": 607,
             "position_x": 24,
-            "position_y": 835,
+            "position_y": 743,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -300,11 +280,11 @@
     },
     "links": {
         "0": {
-            "source_node": 459,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "osc received",
-            "dest_node": 570,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

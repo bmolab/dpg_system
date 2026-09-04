@@ -1,11 +1,11 @@
 {
     "height": 741,
-    "width": 1479,
+    "width": 1477,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 607,
     "name": "text_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/text_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 588,
+            "width": 611,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 651,
+            "position_x": 649,
             "position_y": 45,
             "width": 788,
             "height": 636,
@@ -156,8 +156,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 290,
-            "width": 150,
-            "height": 60,
+            "width": 129,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -169,8 +169,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 370,
-            "width": 320,
-            "height": 220,
+            "width": 314,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -208,60 +208,50 @@
             }
         },
         "8": {
-            "init": "comment switch on: lines pile up and scroll",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 376,
+            "annotation": true,
+            "position_x": 370,
             "position_y": 605,
-            "width": 245,
-            "height": 30,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "switch on: lines pile up and scroll",
+                    "name": "block",
+                    "value": "switch on: lines pile up and scroll\nuntick autoscroll to read back",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "switch on: lines pile up and scroll"
+            "text": "switch on: lines pile up and scroll\nuntick autoscroll to read back"
         },
         "9": {
-            "init": "comment untick autoscroll to read back",
-            "name": "comment",
-            "id": 570,
-            "position_x": 376,
-            "position_y": 635,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "untick autoscroll to read back",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "untick autoscroll to read back"
-        },
-        "10": {
             "name": "close",
-            "id": 607,
+            "id": 570,
             "position_x": 24,
-            "position_y": 620,
+            "position_y": 610,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -1,11 +1,11 @@
 {
-    "height": 1240,
-    "width": 1847,
+    "height": 1216,
+    "width": 1756,
     "position": [
         100,
         100
     ],
-    "id": 1088,
+    "id": 866,
     "name": "speech_envelope_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/speech_envelope_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 989,
+            "position_x": 898,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 180,
+            "width": 229,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 270,
-            "width": 290,
-            "height": 300,
+            "width": 203,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 360,
             "position_y": 270,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -183,9 +183,9 @@
             "init": "comment the fast one: syllables",
             "name": "comment",
             "id": 459,
-            "position_x": 686,
+            "position_x": 594,
             "position_y": 460,
-            "width": 161,
+            "width": 150,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -209,8 +209,8 @@
             "id": 496,
             "position_x": 360,
             "position_y": 505,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -268,61 +268,51 @@
             }
         },
         "8": {
-            "init": "comment the slow one: the room. It should sit",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 686,
-            "position_y": 730,
-            "width": 259,
-            "height": 30,
+            "annotation": true,
+            "position_x": 594,
+            "position_y": 710,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the slow one: the room. It should sit",
+                    "name": "block",
+                    "value": "the slow one: the room. It should sit\nstill while someone is talking",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the slow one: the room. It should sit"
+            "text": "the slow one: the room. It should sit\nstill while someone is talking"
         },
         "9": {
-            "init": "comment still while someone is talking",
-            "name": "comment",
-            "id": 570,
-            "position_x": 686,
-            "position_y": 770,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "still while someone is talking",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "still while someone is talking"
-        },
-        "10": {
             "name": "float",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 610,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -345,63 +335,53 @@
                 }
             }
         },
-        "11": {
-            "init": "comment crest factor: sine 1.41, voice 1.77,",
-            "name": "comment",
-            "id": 644,
-            "position_x": 686,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 594,
             "position_y": 660,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "crest factor: sine 1.41, voice 1.77,",
+                    "name": "block",
+                    "value": "crest factor: sine 1.41, voice 1.77,\nwhite noise 3.45 - how peaky it is",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "crest factor: sine 1.41, voice 1.77,"
+            "text": "crest factor: sine 1.41, voice 1.77,\nwhite noise 3.45 - how peaky it is"
         },
-        "12": {
-            "init": "comment white noise 3.45 - how peaky it is",
-            "name": "comment",
-            "id": 681,
-            "position_x": 686,
-            "position_y": 690,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "white noise 3.45 - how peaky it is",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "white noise 3.45 - how peaky it is"
-        },
-        "13": {
+        "11": {
             "name": "trigger",
-            "id": 718,
+            "id": 644,
             "position_x": 30,
             "position_y": 740,
-            "width": 200,
-            "height": 160,
+            "width": 197,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -423,24 +403,24 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "name": "counter",
-            "id": 755,
+            "id": 681,
             "position_x": 30,
             "position_y": 915,
-            "width": 180,
-            "height": 110,
+            "width": 123,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "15": {
+        "13": {
             "name": "int",
-            "id": 792,
+            "id": 718,
             "position_x": 30,
             "position_y": 1040,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -463,159 +443,89 @@
                 }
             }
         },
-        "16": {
-            "init": "comment onset is a continuous 0/1 stream, not a",
-            "name": "comment",
-            "id": 829,
-            "position_x": 686,
-            "position_y": 810,
-            "width": 273,
-            "height": 30,
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 594,
+            "position_y": 760,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "onset is a continuous 0/1 stream, not a",
+                    "name": "block",
+                    "value": "onset is a continuous 0/1 stream, not a\nbang - a trigger in output bang mode\nturns it into one count per onset",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "onset is a continuous 0/1 stream, not a"
+            "text": "onset is a continuous 0/1 stream, not a\nbang - a trigger in output bang mode\nturns it into one count per onset"
         },
-        "17": {
-            "init": "comment bang - a trigger in output bang mode",
-            "name": "comment",
-            "id": 866,
-            "position_x": 686,
-            "position_y": 850,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "bang - a trigger in output bang mode",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "bang - a trigger in output bang mode"
-        },
-        "18": {
-            "init": "comment turns it into one count per onset",
-            "name": "comment",
-            "id": 903,
-            "position_x": 686,
-            "position_y": 890,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "turns it into one count per onset",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "turns it into one count per onset"
-        },
-        "19": {
-            "init": "comment onset fires when the fast one gets 6 dB",
-            "name": "comment",
-            "id": 940,
-            "position_x": 686,
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 594,
             "position_y": 1090,
-            "width": 273,
-            "height": 30,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "onset fires when the fast one gets 6 dB",
+                    "name": "block",
+                    "value": "onset fires when the fast one gets 6 dB\nclear of the slow one - so it adapts to\nthe room instead of a fixed threshold",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "onset fires when the fast one gets 6 dB"
+            "text": "onset fires when the fast one gets 6 dB\nclear of the slow one - so it adapts to\nthe room instead of a fixed threshold"
         },
-        "20": {
-            "init": "comment clear of the slow one - so it adapts to",
-            "name": "comment",
-            "id": 977,
-            "position_x": 686,
-            "position_y": 1120,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "clear of the slow one - so it adapts to",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "clear of the slow one - so it adapts to"
-        },
-        "21": {
-            "init": "comment the room instead of a fixed threshold",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 686,
-            "position_y": 1150,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the room instead of a fixed threshold",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the room instead of a fixed threshold"
-        },
-        "22": {
+        "16": {
             "name": "close",
-            "id": 1051,
+            "id": 829,
             "position_x": 24,
             "position_y": 1112,
             "width": 88,
@@ -668,7 +578,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "crest_factor",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -678,27 +588,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "onset",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "5": {
-            "source_node": 718,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 755,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "6": {
-            "source_node": 755,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 792,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

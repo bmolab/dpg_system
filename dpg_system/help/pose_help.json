@@ -1,11 +1,11 @@
 {
-    "height": 1095,
-    "width": 1753,
+    "height": 1359,
+    "width": 1676,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "pose_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/pose_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 528,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 895,
+            "position_x": 818,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 400,
-            "width": 220,
-            "height": 90,
+            "width": 144,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 505,
-            "width": 260,
-            "height": 200,
+            "width": 321,
+            "height": 350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -132,9 +132,9 @@
             "init": "comment see and set each of the 20 joints",
             "name": "comment",
             "id": 459,
-            "position_x": 606,
+            "position_x": 527,
             "position_y": 750,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -157,82 +157,72 @@
             "name": "pose_adjust",
             "id": 496,
             "position_x": 30,
-            "position_y": 760,
+            "position_y": 875,
             "width": 260,
-            "height": 200,
+            "height": 350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "init": "comment child frame changes which frame the",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 606,
-            "position_y": 975,
-            "width": 245,
-            "height": 30,
+            "annotation": true,
+            "position_x": 527,
+            "position_y": 1090,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "child frame changes which frame the",
+                    "name": "block",
+                    "value": "child frame changes which frame the\ncorrection is applied in - it matters",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "child frame changes which frame the"
+            "text": "child frame changes which frame the\ncorrection is applied in - it matters"
         },
         "9": {
-            "init": "comment correction is applied in - it matters",
-            "name": "comment",
-            "id": 570,
-            "position_x": 606,
-            "position_y": 1005,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "correction is applied in - it matters",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "correction is applied in - it matters"
-        },
-        "10": {
             "name": "target_pose",
-            "id": 607,
-            "position_x": 340,
+            "id": 570,
+            "position_x": 371,
             "position_y": 505,
-            "width": 240,
-            "height": 140,
+            "width": 119,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "name": "float",
-            "id": 644,
-            "position_x": 340,
+            "id": 607,
+            "position_x": 371,
             "position_y": 660,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -255,13 +245,13 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment how close to the captured target",
             "name": "comment",
-            "id": 681,
-            "position_x": 606,
+            "id": 644,
+            "position_x": 527,
             "position_y": 710,
-            "width": 224,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -280,11 +270,11 @@
             },
             "comment": "how close to the captured target"
         },
-        "13": {
+        "12": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 990,
+            "position_y": 1255,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -335,17 +325,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "active joint quats out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pose in"
         },
         "4": {
-            "source_node": 607,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "score out",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

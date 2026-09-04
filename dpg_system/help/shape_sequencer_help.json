@@ -1,11 +1,11 @@
 {
-    "height": 945,
-    "width": 1664,
+    "height": 947,
+    "width": 1649,
     "position": [
         100,
         100
     ],
-    "id": 866,
+    "id": 829,
     "name": "shape_sequencer_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/shape_sequencer_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 600,
+            "width": 623,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 816,
+            "position_x": 801,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -139,7 +139,7 @@
             "id": 422,
             "position_x": 534,
             "position_y": 190,
-            "width": 126,
+            "width": 119,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -164,7 +164,7 @@
             "position_x": 250,
             "position_y": 62,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -208,7 +208,7 @@
             "id": 496,
             "position_x": 534,
             "position_y": 150,
-            "width": 252,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -233,7 +233,7 @@
             "position_x": 420,
             "position_y": 62,
             "width": 88,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -244,8 +244,8 @@
             "id": 570,
             "position_x": 420,
             "position_y": 120,
-            "width": 40,
-            "height": 46,
+            "width": 22,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -257,8 +257,8 @@
             "id": 607,
             "position_x": 30,
             "position_y": 230,
-            "width": 360,
-            "height": 320,
+            "width": 208,
+            "height": 344,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -266,62 +266,52 @@
             "init": "shape_seq 8"
         },
         "11": {
-            "init": "comment each step holds its own curve",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
+            "annotation": true,
             "position_x": 534,
             "position_y": 565,
-            "width": 203,
-            "height": 30,
+            "width": 237,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "each step holds its own curve",
+                    "name": "block",
+                    "value": "each step holds its own curve\ntick follow play to watch it move",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "each step holds its own curve"
+            "text": "each step holds its own curve\ntick follow play to watch it move"
         },
         "12": {
-            "init": "comment tick follow play to watch it move",
-            "name": "comment",
-            "id": 681,
-            "position_x": 534,
-            "position_y": 595,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "tick follow play to watch it move",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "tick follow play to watch it move"
-        },
-        "13": {
             "name": "plot",
-            "id": 718,
+            "id": 681,
             "position_x": 30,
             "position_y": 635,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -378,12 +368,12 @@
                 }
             }
         },
-        "14": {
+        "13": {
             "name": "int",
-            "id": 755,
+            "id": 718,
             "position_x": 270,
             "position_y": 635,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -406,13 +396,13 @@
                 }
             }
         },
-        "15": {
+        "14": {
             "init": "comment the step now playing",
             "name": "comment",
-            "id": 792,
+            "id": 755,
             "position_x": 534,
             "position_y": 685,
-            "width": 140,
+            "width": 131,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -431,11 +421,11 @@
             },
             "comment": "the step now playing"
         },
-        "16": {
+        "15": {
             "name": "close",
-            "id": 829,
+            "id": 792,
             "position_x": 24,
-            "position_y": 841,
+            "position_y": 843,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -506,7 +496,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "value out",
-            "dest_node": 718,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
@@ -516,7 +506,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "step out",
-            "dest_node": 755,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

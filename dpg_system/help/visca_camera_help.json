@@ -1,11 +1,11 @@
 {
-    "height": 1025,
-    "width": 1780,
+    "height": 881,
+    "width": 1774,
     "position": [
         100,
         100
     ],
-    "id": 1199,
+    "id": 718,
     "name": "visca_camera_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/visca_camera_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 396,
+            "width": 414,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 922,
+            "position_x": 916,
             "position_y": 45,
             "width": 818,
             "height": 776,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 360,
-            "height": 480,
+            "width": 185,
+            "height": 294,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -106,87 +106,52 @@
             "init": "visca_camera 10.1.1.160"
         },
         "4": {
-            "init": "comment pan and tilt are SPEEDS. Set one and the",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 605,
+            "annotation": true,
+            "position_x": 606,
             "position_y": 560,
             "width": 280,
-            "height": 30,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "pan and tilt are SPEEDS. Set one and the",
+                    "name": "block",
+                    "value": "pan and tilt are SPEEDS. Set one and the\ncamera keeps moving until you set it\nback to zero or press stop",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "pan and tilt are SPEEDS. Set one and the"
+            "text": "pan and tilt are SPEEDS. Set one and the\ncamera keeps moving until you set it\nback to zero or press stop"
         },
         "5": {
-            "init": "comment camera keeps moving until you set it",
-            "name": "comment",
-            "id": 422,
-            "position_x": 605,
-            "position_y": 590,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "camera keeps moving until you set it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "camera keeps moving until you set it"
-        },
-        "6": {
-            "init": "comment back to zero or press stop",
-            "name": "comment",
-            "id": 459,
-            "position_x": 605,
-            "position_y": 620,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "back to zero or press stop",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "back to zero or press stop"
-        },
-        "7": {
             "name": "signal",
-            "id": 496,
+            "id": 422,
             "position_x": 450,
             "position_y": 62,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -223,200 +188,65 @@
                 }
             }
         },
-        "8": {
-            "init": "comment NOTHING HERE IS CONNECTED, on purpose:",
-            "name": "comment",
-            "id": 533,
-            "position_x": 605,
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 606,
             "position_y": 155,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 100,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "NOTHING HERE IS CONNECTED, on purpose:",
+                    "name": "block",
+                    "value": "NOTHING HERE IS CONNECTED, on purpose:\nthis node sends as soon as a value\narrives, and a help file should not\nstart moving your camera. Set the ip,\nthen connect these yourself\nsine -> pan sweeps back and forth, and\nworks because it returns to zero",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 84,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "NOTHING HERE IS CONNECTED, on purpose:"
+            "text": "NOTHING HERE IS CONNECTED, on purpose:\nthis node sends as soon as a value\narrives, and a help file should not\nstart moving your camera. Set the ip,\nthen connect these yourself\nsine -> pan sweeps back and forth, and\nworks because it returns to zero"
         },
-        "9": {
-            "init": "comment this node sends as soon as a value",
-            "name": "comment",
-            "id": 570,
-            "position_x": 605,
-            "position_y": 185,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "this node sends as soon as a value",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "this node sends as soon as a value"
-        },
-        "10": {
-            "init": "comment arrives, and a help file should not",
-            "name": "comment",
-            "id": 607,
-            "position_x": 605,
-            "position_y": 215,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "arrives, and a help file should not",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "arrives, and a help file should not"
-        },
-        "11": {
-            "init": "comment start moving your camera. Set the ip,",
-            "name": "comment",
-            "id": 644,
-            "position_x": 605,
-            "position_y": 245,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "start moving your camera. Set the ip,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "start moving your camera. Set the ip,"
-        },
-        "12": {
-            "init": "comment then connect these yourself",
-            "name": "comment",
-            "id": 681,
-            "position_x": 605,
-            "position_y": 275,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "then connect these yourself",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "then connect these yourself"
-        },
-        "13": {
-            "init": "comment sine -> pan sweeps back and forth, and",
-            "name": "comment",
-            "id": 718,
-            "position_x": 605,
-            "position_y": 315,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "sine -> pan sweeps back and forth, and",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "sine -> pan sweeps back and forth, and"
-        },
-        "14": {
-            "init": "comment works because it returns to zero",
-            "name": "comment",
-            "id": 755,
-            "position_x": 605,
-            "position_y": 345,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "works because it returns to zero",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "works because it returns to zero"
-        },
-        "15": {
+        "7": {
             "name": "button",
-            "id": 792,
+            "id": 496,
             "position_x": 450,
             "position_y": 385,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "16": {
+        "8": {
             "init": "comment wire this to stop - something you can hit",
             "name": "comment",
-            "id": 829,
-            "position_x": 605,
+            "id": 533,
+            "position_x": 606,
             "position_y": 655,
-            "width": 287,
+            "width": 260,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -435,12 +265,12 @@
             },
             "comment": "wire this to stop - something you can hit"
         },
-        "17": {
+        "9": {
             "name": "int",
-            "id": 866,
+            "id": 570,
             "position_x": 450,
             "position_y": 490,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -463,186 +293,91 @@
                 }
             }
         },
-        "18": {
-            "init": "comment presets are how to work: frame the shots",
-            "name": "comment",
-            "id": 903,
-            "position_x": 605,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 606,
             "position_y": 695,
             "width": 280,
-            "height": 30,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "presets are how to work: frame the shots",
+                    "name": "block",
+                    "value": "presets are how to work: frame the shots\nby hand once, store them, then the patch\nonly ever recalls numbers",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "presets are how to work: frame the shots"
+            "text": "presets are how to work: frame the shots\nby hand once, store them, then the patch\nonly ever recalls numbers"
         },
-        "19": {
-            "init": "comment by hand once, store them, then the patch",
-            "name": "comment",
-            "id": 940,
-            "position_x": 605,
-            "position_y": 775,
-            "width": 280,
-            "height": 30,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 606,
+            "position_y": 757,
+            "width": 274,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "by hand once, store them, then the patch",
+                    "name": "block",
+                    "value": "IF THE CAMERA STOPS RESPONDING with no\nerror at all, press reset_sequence -\nthe packet count has got out of step,\nand it ignores you silently until reset",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "by hand once, store them, then the patch"
+            "text": "IF THE CAMERA STOPS RESPONDING with no\nerror at all, press reset_sequence -\nthe packet count has got out of step,\nand it ignores you silently until reset"
         },
-        "20": {
-            "init": "comment only ever recalls numbers",
-            "name": "comment",
-            "id": 977,
-            "position_x": 605,
-            "position_y": 855,
-            "width": 175,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "only ever recalls numbers",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "only ever recalls numbers"
-        },
-        "21": {
-            "init": "comment IF THE CAMERA STOPS RESPONDING with no",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 605,
-            "position_y": 735,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "IF THE CAMERA STOPS RESPONDING with no",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "IF THE CAMERA STOPS RESPONDING with no"
-        },
-        "22": {
-            "init": "comment error at all, press reset_sequence -",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 605,
-            "position_y": 815,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "error at all, press reset_sequence -",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "error at all, press reset_sequence -"
-        },
-        "23": {
-            "init": "comment the packet count has got out of step,",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 605,
-            "position_y": 895,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the packet count has got out of step,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the packet count has got out of step,"
-        },
-        "24": {
-            "init": "comment and it ignores you silently until reset",
-            "name": "comment",
-            "id": 1125,
-            "position_x": 605,
-            "position_y": 935,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "and it ignores you silently until reset",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "and it ignores you silently until reset"
-        },
-        "25": {
+        "12": {
             "name": "close",
-            "id": 1162,
+            "id": 681,
             "position_x": 24,
-            "position_y": 572,
+            "position_y": 562,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

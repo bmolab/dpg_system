@@ -1,11 +1,11 @@
 {
-    "height": 950,
-    "width": 1740,
+    "height": 987,
+    "width": 1777,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "audio_out~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/audio_out~_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 492,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 872,
+            "position_x": 909,
             "position_y": 45,
             "width": 828,
             "height": 816,
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 200,
-            "height": 160,
+            "width": 180,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -120,9 +120,9 @@
             "init": "comment a slow wobble to hear something moving",
             "name": "comment",
             "id": 422,
-            "position_x": 576,
+            "position_x": 624,
             "position_y": 290,
-            "width": 266,
+            "width": 242,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -146,8 +146,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 330,
-            "width": 220,
-            "height": 200,
+            "width": 199,
+            "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -159,8 +159,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 545,
-            "width": 220,
-            "height": 220,
+            "width": 70,
+            "height": 308,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -168,74 +168,64 @@
             "init": "fader_out~ 1 2"
         },
         "8": {
-            "init": "comment fader_out~ is a fader and the socket",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 576,
+            "annotation": true,
+            "position_x": 624,
             "position_y": 780,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "fader_out~ is a fader and the socket",
+                    "name": "block",
+                    "value": "fader_out~ is a fader and the socket\nraise its fader to hear it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "fader_out~ is a fader and the socket"
+            "text": "fader_out~ is a fader and the socket\nraise its fader to hear it"
         },
         "9": {
-            "init": "comment raise its fader to hear it",
-            "name": "comment",
-            "id": 570,
-            "position_x": 576,
-            "position_y": 860,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "raise its fader to hear it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "raise its fader to hear it"
-        },
-        "10": {
             "name": "scope~",
-            "id": 607,
+            "id": 570,
             "position_x": 290,
             "position_y": 545,
-            "width": 260,
-            "height": 220,
+            "width": 308,
+            "height": 248,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "init": "comment the actual waveform, at audio rate",
             "name": "comment",
-            "id": 644,
-            "position_x": 576,
-            "position_y": 820,
-            "width": 238,
+            "id": 607,
+            "position_x": 624,
+            "position_y": 830,
+            "width": 217,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -254,11 +244,11 @@
             },
             "comment": "the actual waveform, at audio rate"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 795,
+            "position_y": 883,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -299,7 +289,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

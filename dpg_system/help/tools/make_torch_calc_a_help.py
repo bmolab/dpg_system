@@ -93,10 +93,8 @@ demo = [
      'props': {'dtype': 'float32'}},
     {'key': 'mn', 'init': 't.mean', 'pos': (280, 615), 'w': 160, 'h': 100},
     {'key': 'f1', 'init': 'float', 'pos': (280, 730), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c3', 'comment': True, 'text': 'cast to float, then the mean is the',
+    {'key': 'c3', 'comment': True, 'text': 'cast to float, then the mean is the\nproportion that passed the test',
      'pos': (280, 780)},
-    {'key': 'c4', 'comment': True, 'text': 'proportion that passed the test',
-     'pos': (280, 810)},
 ]
 links = [('btn', '', 'rnd', '###input'), ('btn', '', 'm1', ''),
          ('rnd', 'random tensor', 'hm', 'y'),
@@ -273,8 +271,7 @@ demo = [
     {'key': 'tr', 'init': 't.trunc', 'pos': (30, 475), 'w': 160, 'h': 70},
     {'key': 'hm3', 'init': 'heat_map', 'pos': (250, 530), 'w': 208, 'h': 148,
      'props': HM(8, -3.0, 3.0, '%.0f')},
-    {'key': 'c2', 'comment': True, 'text': 'trunc: always towards zero', 'pos': (30, 555)},
-    {'key': 'c3', 'comment': True, 'text': 'compare the negative values', 'pos': (30, 585)},
+    {'key': 'c2', 'comment': True, 'text': 'trunc: always towards zero\ncompare the negative values', 'pos': (30, 555)},
 ]
 links = [('btn', '', 'rnd', '###input'),
          ('rnd', 'random tensor', 'hm', 'y'),
@@ -343,10 +340,8 @@ demo = starter() + [
      'props': {'min': -0.4, 'max': 0.4}},
     {'key': 'p1', 'init': 'plot', 'pos': (30, 380), 'w': 208, 'h': 176,
      'props': PLOT(-1.2, 1.2)},
-    {'key': 'c0', 'comment': True, 'text': 'the peaks are held at the limits',
+    {'key': 'c0', 'comment': True, 'text': 'the peaks are held at the limits\ndrag min and max to move them',
      'pos': (30, 645)},
-    {'key': 'c1', 'comment': True, 'text': 'drag min and max to move them',
-     'pos': (30, 675)},
 ]
 # the torch nodes convert whatever arrives, so a plain float stream is fine
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),

@@ -304,10 +304,8 @@ demo = [
      'props': {'color': 'viridis', 'width': 200, 'height': 100, 'sample count': 4,
                'min y': 0.0, 'max y': 1.0, 'update_mode': 'heat_map',
                'number format': '%.2f'}},
-    {'key': 'c1', 'comment': True, 'text': 'high values kept, the rest zeroed',
+    {'key': 'c1', 'comment': True, 'text': 'high values kept, the rest zeroed\none operation across the whole array',
      'pos': (30, 510)},
-    {'key': 'c2', 'comment': True, 'text': 'one operation across the whole array',
-     'pos': (30, 540)},
 ]
 # 'if false' must be fed as well -- np.where sends nothing until it has both
 links = [('btn', '', 'rnd', ''), ('rnd', '', 'hm', 'y', 0),
@@ -372,10 +370,8 @@ demo = starter() + [
      'props': {'min': -0.4, 'max': 0.4}},
     {'key': 'p1', 'init': 'plot', 'pos': (30, 350), 'w': 208, 'h': 176,
      'props': PLOT(-1.2, 1.2)},
-    {'key': 'c0', 'comment': True, 'text': 'the peaks are flattened off',
+    {'key': 'c0', 'comment': True, 'text': 'the peaks are flattened off\ndrag min and max to see it change',
      'pos': (30, 535)},
-    {'key': 'c1', 'comment': True, 'text': 'drag min and max to see it change',
-     'pos': (30, 565)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('sig', '', 'cl', 'input'), ('cl', 'out array', 'p1', 'y')]

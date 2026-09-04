@@ -249,10 +249,8 @@ demo = [
      'pos': (30, 520)},
     {'key': 'fm', 'init': 'fuzzy_match', 'pos': (400, 375), 'w': 240, 'h': 180},
     {'key': 'f1', 'init': 'float', 'pos': (400, 570), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c2', 'comment': True, 'text': 'watch the score before setting',
+    {'key': 'c2', 'comment': True, 'text': 'watch the score before setting\na threshold - guessing it rarely works',
      'pos': (400, 620)},
-    {'key': 'c3', 'comment': True, 'text': 'a threshold - guessing it rarely works',
-     'pos': (400, 650)},
 ]
 links = [('btn', '', 'm1', ''),
          ('m1', 'message out', 'wt', 'string in'),
@@ -359,9 +357,8 @@ demo = [
     {'key': 'tc', 'init': 'text_change', 'pos': (400, 465), 'w': 260, 'h': 180},
     {'key': 's3', 'init': 'string', 'pos': (400, 660), 'w': 260, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'click twice: the second time',
+    {'key': 'c2', 'comment': True, 'text': 'click twice: the second time\nnothing is new',
      'pos': (400, 710)},
-    {'key': 'c3', 'comment': True, 'text': 'nothing is new', 'pos': (400, 740)},
 ]
 links = [('btn', '', 'm1', ''),
          ('m1', 'message out', 'gs', 'string in'),
@@ -439,10 +436,8 @@ demo = [
     {'key': 'ch', 'init': 'char', 'pos': (30, 440), 'w': 160, 'h': 70},
     {'key': 's1', 'init': 'string', 'pos': (30, 525), 'w': 160, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'add 32 and it becomes lower case',
+    {'key': 'c1', 'comment': True, 'text': 'add 32 and it becomes lower case\ntrue for plain Latin letters only',
      'pos': (30, 575)},
-    {'key': 'c2', 'comment': True, 'text': 'true for plain Latin letters only',
-     'pos': (30, 605)},
 ]
 links = [('btn', '', 'm1', ''),
          ('m1', 'message out', 'as', 'character in'), ('as', 'ascii out', 'i1', ''),
@@ -522,20 +517,16 @@ text_display is for output that scrolls."""
 
 demo = [
     {'key': 'te', 'init': 'text_editor', 'pos': (30, 62), 'w': 340, 'h': 280},
-    {'key': 'c0', 'comment': True, 'text': 'type into it; the text is saved with',
+    {'key': 'c0', 'comment': True, 'text': 'type into it; the text is saved with\nthe patch, so it travels with it',
      'pos': (30, 355)},
-    {'key': 'c1', 'comment': True, 'text': 'the patch, so it travels with it',
-     'pos': (30, 385)},
     {'key': 's1', 'init': 'string', 'pos': (30, 425), 'w': 340, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
     {'key': 'c2', 'comment': True, 'text': 'click send: out gives the whole thing',
      'pos': (30, 475)},
     {'key': 'pr', 'init': 'print line', 'pos': (30, 515), 'w': 200, 'h': 120,
      'props': {'identifier': 'line', 'precision': 3}},
-    {'key': 'c3', 'comment': True, 'text': 'messages gives it a line at a time -',
+    {'key': 'c3', 'comment': True, 'text': 'messages gives it a line at a time -\nthe editor as a little script',
      'pos': (30, 650)},
-    {'key': 'c4', 'comment': True, 'text': 'the editor as a little script',
-     'pos': (30, 680)},
 ]
 links = [('te', 'out', 's1', ''), ('te', 'messages', 'pr', 'in')]
 print(build('text_file', 'text_editor - a body of text in the patch', body, demo,

@@ -1,11 +1,11 @@
 {
-    "height": 1529,
-    "width": 1751,
+    "height": 1500,
+    "width": 1659,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "mgl_mesh_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_mesh_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 456,
+            "width": 475,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 893,
+            "position_x": 801,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 220,
-            "height": 120,
+            "width": 92,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -115,8 +115,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 200,
-            "width": 240,
-            "height": 220,
+            "width": 188,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -127,8 +127,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 435,
-            "width": 220,
-            "height": 200,
+            "width": 201,
+            "height": 220,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -139,8 +139,8 @@
             "id": 459,
             "position_x": 330,
             "position_y": 200,
-            "width": 220,
-            "height": 160,
+            "width": 129,
+            "height": 72,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -151,82 +151,72 @@
             "id": 496,
             "position_x": 30,
             "position_y": 660,
-            "width": 260,
-            "height": 380,
+            "width": 179,
+            "height": 360,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "init": "comment patch an array of line points in",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 576,
+            "annotation": true,
+            "position_x": 485,
             "position_y": 1055,
-            "width": 224,
-            "height": 30,
+            "width": 286,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "patch an array of line points in",
+                    "name": "block",
+                    "value": "patch an array of line points in\nraise accent_motion to make speed visible",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "patch an array of line points in"
+            "text": "patch an array of line points in\nraise accent_motion to make speed visible"
         },
         "9": {
-            "init": "comment raise accent_motion to make speed visible",
-            "name": "comment",
-            "id": 570,
-            "position_x": 576,
-            "position_y": 1085,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "raise accent_motion to make speed visible",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "raise accent_motion to make speed visible"
-        },
-        "10": {
             "name": "mgl_billboard",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 1130,
-            "width": 220,
-            "height": 90,
+            "width": 88,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "name": "mgl_text",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
             "position_y": 1235,
-            "width": 220,
-            "height": 160,
+            "width": 93,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -238,13 +228,13 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment the billboard keeps the text readable",
             "name": "comment",
-            "id": 681,
-            "position_x": 576,
+            "id": 644,
+            "position_x": 485,
             "position_y": 1410,
-            "width": 259,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -263,11 +253,11 @@
             },
             "comment": "the billboard keeps the text readable"
         },
-        "13": {
+        "12": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 1425,
+            "position_y": 1335,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -338,17 +328,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
         },
         "6": {
-            "source_node": 607,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"

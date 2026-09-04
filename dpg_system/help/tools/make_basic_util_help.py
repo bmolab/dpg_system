@@ -416,10 +416,8 @@ demo = [
     {'key': 'c1', 'comment': True, 'text': 'shows what the mouse is over',
      'pos': (30, 245)},
     {'key': 'pw', 'init': 'patch_window_position', 'pos': (30, 290), 'w': 210, 'h': 140},
-    {'key': 'c2', 'comment': True, 'text': 'send numbers here to move the window',
+    {'key': 'c2', 'comment': True, 'text': 'send numbers here to move the window\nset a node to hidden to leave it out',
      'pos': (30, 440)},
-    {'key': 'c3', 'comment': True, 'text': 'set a node to hidden to leave it out',
-     'pos': (30, 470)},
 ]
 print(build('present', 'present - arrange the patch for someone else', body,
             demo, [], demo_width=420, text_width=780, text_height=520))

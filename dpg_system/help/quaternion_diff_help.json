@@ -1,11 +1,11 @@
 {
     "height": 1041,
-    "width": 1496,
+    "width": 1341,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 792,
     "name": "quaternion_diff_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/quaternion_diff_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 624,
+            "width": 647,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 638,
+            "position_x": 483,
             "position_y": 45,
             "width": 818,
             "height": 776,
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 88,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,7 +110,7 @@
             "position_x": 150,
             "position_y": 66,
             "width": 22,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +123,7 @@
             "position_x": 30,
             "position_y": 132,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -166,8 +166,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 232,
-            "width": 140,
-            "height": 100,
+            "width": 33,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -179,8 +179,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 350,
-            "width": 260,
-            "height": 120,
+            "width": 125,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -197,8 +197,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 490,
-            "width": 240,
-            "height": 90,
+            "width": 138,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -209,7 +209,7 @@
             "id": 570,
             "position_x": 30,
             "position_y": 595,
-            "width": 300,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -231,9 +231,9 @@
             "init": "comment how much it turned this frame",
             "name": "comment",
             "id": 607,
-            "position_x": 356,
+            "position_x": 198,
             "position_y": 645,
-            "width": 203,
+            "width": 187,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -257,8 +257,8 @@
             "id": 644,
             "position_x": 30,
             "position_y": 690,
-            "width": 260,
-            "height": 160,
+            "width": 125,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -269,7 +269,7 @@
             "id": 681,
             "position_x": 30,
             "position_y": 865,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -293,58 +293,48 @@
             }
         },
         "13": {
-            "init": "comment click freeze ref to capture a target",
-            "name": "comment",
+            "name": "text_block",
             "id": 718,
-            "position_x": 356,
+            "annotation": true,
+            "position_x": 198,
             "position_y": 915,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "click freeze ref to capture a target",
+                    "name": "block",
+                    "value": "click freeze ref to capture a target\nthen watch the distance from it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "click freeze ref to capture a target"
+            "text": "click freeze ref to capture a target\nthen watch the distance from it"
         },
         "14": {
-            "init": "comment then watch the distance from it",
-            "name": "comment",
-            "id": 755,
-            "position_x": 356,
-            "position_y": 945,
-            "width": 217,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "then watch the distance from it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "then watch the distance from it"
-        },
-        "15": {
             "name": "close",
-            "id": 792,
+            "id": 755,
             "position_x": 24,
             "position_y": 937,
             "width": 88,

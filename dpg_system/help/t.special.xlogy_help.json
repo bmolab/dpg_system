@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1555,
+    "width": 1345,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "t.special.xlogy_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.xlogy_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 707,
+            "position_x": 497,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,7 +109,7 @@
             "id": 385,
             "position_x": 30,
             "position_y": 118,
-            "width": 260,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -131,9 +131,9 @@
             "init": "comment note the zero at the start",
             "name": "comment",
             "id": 422,
-            "position_x": 376,
+            "position_x": 194,
             "position_y": 168,
-            "width": 182,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -157,8 +157,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 205,
-            "width": 240,
-            "height": 90,
+            "width": 138,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -169,7 +169,7 @@
             "id": 496,
             "position_x": 30,
             "position_y": 310,
-            "width": 320,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -188,73 +188,63 @@
             }
         },
         "8": {
-            "init": "comment x times log y, with 0 log 0 giving 0",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 376,
+            "annotation": true,
+            "position_x": 194,
             "position_y": 360,
-            "width": 252,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "x times log y, with 0 log 0 giving 0",
+                    "name": "block",
+                    "value": "x times log y, with 0 log 0 giving 0\ndoing it by hand would give NaN there",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "x times log y, with 0 log 0 giving 0"
+            "text": "x times log y, with 0 log 0 giving 0\ndoing it by hand would give NaN there"
         },
         "9": {
-            "init": "comment doing it by hand would give NaN there",
-            "name": "comment",
-            "id": 570,
-            "position_x": 376,
-            "position_y": 390,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "doing it by hand would give NaN there",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "doing it by hand would give NaN there"
-        },
-        "10": {
             "name": "t.special.logits",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 435,
-            "width": 220,
-            "height": 90,
+            "width": 111,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "name": "list",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
             "position_y": 540,
-            "width": 320,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -272,13 +262,13 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment a sigmoid undone; eps keeps the ends finite",
             "name": "comment",
-            "id": 681,
-            "position_x": 376,
+            "id": 644,
+            "position_x": 194,
             "position_y": 590,
-            "width": 301,
+            "width": 273,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -297,9 +287,9 @@
             },
             "comment": "a sigmoid undone; eps keeps the ends finite"
         },
-        "13": {
+        "12": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
             "position_y": 612,
             "width": 88,
@@ -362,17 +352,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "5": {
-            "source_node": 607,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

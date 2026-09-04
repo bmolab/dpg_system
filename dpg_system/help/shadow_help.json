@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1760,
+    "width": 1742,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 644,
     "name": "shadow_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 384,
+            "width": 402,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 912,
+            "position_x": 894,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -97,82 +97,72 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment quaternions are the measurement",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 616,
+            "annotation": true,
+            "position_x": 622,
             "position_y": 395,
-            "width": 217,
-            "height": 30,
+            "width": 231,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "quaternions are the measurement",
+                    "name": "block",
+                    "value": "quaternions are the measurement\npositions are inferred from them",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "quaternions are the measurement"
+            "text": "quaternions are the measurement\npositions are inferred from them"
         },
         "5": {
-            "init": "comment positions are inferred from them",
-            "name": "comment",
-            "id": 422,
-            "position_x": 616,
-            "position_y": 425,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "positions are inferred from them",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "positions are inferred from them"
-        },
-        "6": {
             "name": "active_joints",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
             "position_y": 470,
-            "width": 220,
-            "height": 90,
+            "width": 144,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "6": {
             "init": "comment the 20 joints most patches want",
             "name": "comment",
-            "id": 496,
-            "position_x": 616,
+            "id": 459,
+            "position_x": 622,
             "position_y": 575,
-            "width": 217,
+            "width": 199,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -191,37 +181,37 @@
             },
             "comment": "the 20 joints most patches want"
         },
-        "8": {
+        "7": {
             "name": "shadow_sensor",
-            "id": 533,
+            "id": 496,
             "position_x": 350,
             "position_y": 62,
-            "width": 240,
-            "height": 180,
+            "width": 129,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "mag_offset",
+            "id": 533,
+            "position_x": 350,
+            "position_y": 260,
+            "width": 246,
+            "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "9": {
-            "name": "mag_offset",
-            "id": 570,
-            "position_x": 350,
-            "position_y": 260,
-            "width": 240,
-            "height": 220,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
             "init": "comment raw field, for diagnosing a bad sensor",
             "name": "comment",
-            "id": 607,
-            "position_x": 616,
+            "id": 570,
+            "position_x": 622,
             "position_y": 495,
-            "width": 266,
+            "width": 242,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -240,11 +230,11 @@
             },
             "comment": "raw field, for diagnosing a bad sensor"
         },
-        "11": {
+        "10": {
             "name": "close",
-            "id": 644,
+            "id": 607,
             "position_x": 24,
-            "position_y": 590,
+            "position_y": 542,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -265,17 +255,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "body 1 quaternions",
-            "dest_node": 459,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "full pose quats in"
         },
         "1": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "magnetometer",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "magnetometer"

@@ -54,7 +54,15 @@ class DepthAnythingNode(Node):
         self.input_size = 518
         self.DEVICE = _select_device()
 
-        self.model = self._get_or_load_model(self.model_mode, self.model_name)
+        # The model is built on FIRST USE, not here. Constructing
+        # DepthAnythingV2 allocates the whole ViT-L network -- over a gigabyte,
+        # and seconds of wall clock -- so doing it in __init__ meant that
+        # merely opening a patch containing this node, its help page included,
+        # stalled the app and could get a headless load killed outright. There
+        # is no checkpoint in the tree, so that work could not even produce a
+        # usable model.
+        self.model = None
+        self._model_tried = False
 
         self.image_input = self.add_input('input_image', triggers_execution=True)
         self.depth_out = self.add_output('depth_image')
@@ -100,8 +108,17 @@ class DepthAnythingNode(Node):
         cls._models[mode] = model
         return model
 
+    def _ensure_model(self):
+        """Build the model once, on demand. A failure is remembered: without
+        that, a missing checkpoint would rebuild the whole network on every
+        frame that arrives."""
+        if not self._model_tried:
+            self._model_tried = True
+            self.model = self._get_or_load_model(self.model_mode, self.model_name)
+        return self.model
+
     def infer_depth(self, raw_image):
-        if self.model is None or raw_image is None:
+        if raw_image is None or self._ensure_model() is None:
             return None
         try:
             return self.model.infer_image(raw_image, self.input_size)

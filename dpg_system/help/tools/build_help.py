@@ -12,6 +12,36 @@ TEXT_X_PAD = 22          # gap between demo column and text block
 TEXT_SIZE = '30'
 TITLE_SIZE = '48'
 
+# On-screen metrics of the app's font, measured in the running app: macOS loads
+# Inconsolata-g at 24pt with global_font_scale 0.5, so a '24' line is 12px high
+# and one glyph advances 6.16px. Needed because a text_block is a FIXED box --
+# too narrow and TextEditor re-wraps the text, too short and it scrolls.
+#
+# '24' is the odd one out and has to stay first in the table: it is the
+# text_size option's default, so restoring it is a no-op and the font callback
+# never fires (see the load-callback trap), leaving the widget on the app's
+# bound font -- which is Inconsolata 24 at scale 0.5 anyway, so the numbers
+# agree. The other sizes get their font applied for real.
+LINE_H = {'24': 12, '30': 15, '36': 18, '48': 24}
+GLYPH_W = {'24': 6.16, '30': 7.68, '36': 9.22, '48': 12.29}
+BLOCK_PAD_W = 26         # what TextEditor._wrap_columns reserves for frame
+                         # padding and scrollbar, plus a couple of pixels
+
+
+def annotation_box(text, size='24'):
+    """Widget width and height that fit a multi-line annotation exactly.
+
+    The font is monospace, so this is arithmetic rather than a guess: the box
+    is as wide as the longest line and as tall as the line count. Measured in
+    the app -- three 12px lines need exactly 36px of height, with no padding
+    to add.
+    """
+    lines = text.split('\n')
+    glyph = GLYPH_W.get(size, GLYPH_W['24'])
+    line_h = LINE_H.get(size, LINE_H['24'])
+    width = int(max(len(l) for l in lines) * glyph) + BLOCK_PAD_W
+    return width, len(lines) * line_h
+
 
 def _props(d):
     """dict -> the numbered properties container the loader expects."""
@@ -82,11 +112,31 @@ def build(name, title, body, demo, links, demo_width=520,
         ids[d['key']] = i
         if d.get('comment'):
             txt = d['text']
+            size = d.get('size', '24')
+            if '\n' in txt:
+                # A paragraph goes in ONE locked text_block, not a stack of
+                # comment nodes. A comment holds a single line -- its text
+                # lives in a single-line input_text option that strips returns
+                # on the way in -- so a stack was the only way to get a second
+                # line, and each node then paid for its own title bar and
+                # padding: 30px of node for a 12px line. A text_block keeps the
+                # returns, draws just as transparently, and spaces the lines at
+                # the font's own line height.
+                w, h = annotation_box(txt, size)
+                add({'name': 'text_block', 'id': i, 'annotation': True,
+                     'position_x': d['pos'][0], 'position_y': d['pos'][1],
+                     'width': w + 8, 'height': h + 16, 'visibility': 'show_all',
+                     'draggable': True, 'presentation_state': 'show_all',
+                     'properties': _props({'block': txt, 'lock': True,
+                                           'width': w, 'height': h,
+                                           'text_size': size}),
+                     'text': txt})
+                continue
             add({'init': 'comment ' + txt, 'name': 'comment', 'id': i,
                  'position_x': d['pos'][0], 'position_y': d['pos'][1],
                  'width': 7 * len(txt), 'height': 30, 'visibility': 'show_all',
                  'draggable': True, 'presentation_state': 'show_all',
-                 'properties': _props({'text': txt, 'font size': d.get('size', '24')}),
+                 'properties': _props({'text': txt, 'font size': size}),
                  'comment': txt})
             continue
         init = d['init']

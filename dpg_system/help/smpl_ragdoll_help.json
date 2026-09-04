@@ -1,11 +1,11 @@
 {
-    "height": 1095,
-    "width": 1837,
+    "height": 1100,
+    "width": 1767,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 718,
     "name": "smpl_ragdoll_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_ragdoll_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 979,
+            "position_x": 909,
             "position_y": 45,
             "width": 818,
             "height": 816,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 350,
             "position_y": 62,
-            "width": 300,
-            "height": 340,
+            "width": 229,
+            "height": 322,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 400,
-            "width": 260,
-            "height": 140,
+            "width": 179,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -133,8 +133,8 @@
             "id": 459,
             "position_x": 350,
             "position_y": 420,
-            "width": 300,
-            "height": 300,
+            "width": 208,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -144,9 +144,9 @@
             "init": "comment one cord instead of twenty",
             "name": "comment",
             "id": 496,
-            "position_x": 676,
+            "position_x": 605,
             "position_y": 735,
-            "width": 182,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -170,69 +170,59 @@
             "id": 533,
             "position_x": 30,
             "position_y": 560,
-            "width": 300,
-            "height": 400,
+            "width": 185,
+            "height": 406,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "9": {
-            "init": "comment release a limb and it swings from a",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
-            "position_x": 676,
+            "annotation": true,
+            "position_x": 605,
             "position_y": 975,
-            "width": 245,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "release a limb and it swings from a",
+                    "name": "block",
+                    "value": "release a limb and it swings from a\nshoulder the performer is still moving",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "release a limb and it swings from a"
+            "text": "release a limb and it swings from a\nshoulder the performer is still moving"
         },
         "10": {
-            "init": "comment shoulder the performer is still moving",
-            "name": "comment",
-            "id": 607,
-            "position_x": 676,
-            "position_y": 1005,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "shoulder the performer is still moving",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "shoulder the performer is still moving"
-        },
-        "11": {
             "name": "float",
-            "id": 644,
+            "id": 607,
             "position_x": 350,
             "position_y": 780,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -255,61 +245,51 @@
                 }
             }
         },
-        "12": {
-            "init": "comment support falling is the body giving way,",
-            "name": "comment",
-            "id": 681,
-            "position_x": 676,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 605,
             "position_y": 830,
-            "width": 273,
-            "height": 30,
+            "width": 274,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "support falling is the body giving way,",
+                    "name": "block",
+                    "value": "support falling is the body giving way,\navailable before it visibly does",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "support falling is the body giving way,"
+            "text": "support falling is the body giving way,\navailable before it visibly does"
         },
-        "13": {
-            "init": "comment available before it visibly does",
-            "name": "comment",
-            "id": 718,
-            "position_x": 676,
-            "position_y": 860,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "available before it visibly does",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "available before it visibly does"
-        },
-        "14": {
+        "12": {
             "name": "close",
-            "id": 755,
+            "id": 681,
             "position_x": 24,
-            "position_y": 990,
+            "position_y": 996,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -400,7 +380,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "support",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

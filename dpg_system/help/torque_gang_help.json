@@ -1,11 +1,11 @@
 {
-    "height": 1632,
-    "width": 1874,
+    "height": 1994,
+    "width": 1782,
     "position": [
         100,
         100
     ],
-    "id": 1162,
+    "id": 977,
     "name": "torque_gang_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/torque_gang_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 408,
+            "width": 426,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1016,
+            "position_x": 924,
             "position_y": 45,
             "width": 818,
             "height": 816,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 240,
-            "height": 140,
+            "width": 285,
+            "height": 378,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,71 +108,61 @@
             "name": "smpl_torque",
             "id": 385,
             "position_x": 30,
-            "position_y": 220,
-            "width": 300,
-            "height": 300,
+            "position_y": 460,
+            "width": 228,
+            "height": 490,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "5": {
-            "init": "comment a pose stream, turned into torque -",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 706,
-            "position_y": 535,
-            "width": 245,
-            "height": 30,
+            "annotation": true,
+            "position_x": 614,
+            "position_y": 775,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a pose stream, turned into torque -",
+                    "name": "block",
+                    "value": "a pose stream, turned into torque -\nwhich the gangs then read",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a pose stream, turned into torque -"
+            "text": "a pose stream, turned into torque -\nwhich the gangs then read"
         },
         "6": {
-            "init": "comment which the gangs then read",
-            "name": "comment",
-            "id": 459,
-            "position_x": 706,
-            "position_y": 565,
-            "width": 175,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "which the gangs then read",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "which the gangs then read"
-        },
-        "7": {
             "name": "torque_gang",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
-            "position_y": 610,
-            "width": 300,
-            "height": 300,
+            "position_y": 970,
+            "width": 129,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -190,88 +180,53 @@
             },
             "init": "torque_gang spine_flex"
         },
-        "8": {
-            "init": "comment spine_flex on the dynamic stream is the",
-            "name": "comment",
-            "id": 533,
-            "position_x": 706,
-            "position_y": 925,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "spine_flex on the dynamic stream is the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "spine_flex on the dynamic stream is the"
-        },
-        "9": {
-            "init": "comment ACT of bending. Switch stream to gravity",
-            "name": "comment",
-            "id": 570,
-            "position_x": 706,
-            "position_y": 955,
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 614,
+            "position_y": 1285,
             "width": 280,
-            "height": 30,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "ACT of bending. Switch stream to gravity",
+                    "name": "block",
+                    "value": "spine_flex on the dynamic stream is the\nACT of bending. Switch stream to gravity\nand it becomes postural load instead",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "ACT of bending. Switch stream to gravity"
+            "text": "spine_flex on the dynamic stream is the\nACT of bending. Switch stream to gravity\nand it becomes postural load instead"
         },
-        "10": {
-            "init": "comment and it becomes postural load instead",
-            "name": "comment",
-            "id": 607,
-            "position_x": 706,
-            "position_y": 985,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "and it becomes postural load instead",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "and it becomes postural load instead"
-        },
-        "11": {
+        "8": {
             "name": "plot",
-            "id": 644,
+            "id": 533,
             "position_x": 380,
-            "position_y": 380,
-            "width": 300,
-            "height": 180,
+            "position_y": 620,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -328,13 +283,13 @@
                 }
             }
         },
-        "12": {
+        "9": {
             "init": "comment net: signed, so opposing efforts cancel",
             "name": "comment",
-            "id": 681,
-            "position_x": 706,
-            "position_y": 605,
-            "width": 273,
+            "id": 570,
+            "position_x": 614,
+            "position_y": 825,
+            "width": 248,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -353,13 +308,13 @@
             },
             "comment": "net: signed, so opposing efforts cancel"
         },
-        "13": {
+        "10": {
             "name": "plot",
-            "id": 718,
+            "id": 607,
             "position_x": 380,
-            "position_y": 615,
-            "width": 300,
-            "height": 180,
+            "position_y": 975,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -416,13 +371,13 @@
                 }
             }
         },
-        "14": {
+        "11": {
             "init": "comment total: nothing cancels",
             "name": "comment",
-            "id": 755,
-            "position_x": 706,
-            "position_y": 805,
-            "width": 154,
+            "id": 644,
+            "position_x": 614,
+            "position_y": 1165,
+            "width": 144,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -441,13 +396,13 @@
             },
             "comment": "total: nothing cancels"
         },
-        "15": {
+        "12": {
             "name": "plot",
-            "id": 792,
+            "id": 681,
             "position_x": 380,
-            "position_y": 850,
-            "width": 300,
-            "height": 180,
+            "position_y": 1210,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -504,62 +459,52 @@
                 }
             }
         },
-        "16": {
-            "init": "comment coherence: 1 is the spine hinging as one",
-            "name": "comment",
-            "id": 829,
-            "position_x": 706,
-            "position_y": 1040,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 614,
+            "position_y": 1400,
             "width": 280,
-            "height": 30,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "coherence: 1 is the spine hinging as one",
+                    "name": "block",
+                    "value": "coherence: 1 is the spine hinging as one\nthing, low is it working against itself",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "coherence: 1 is the spine hinging as one"
+            "text": "coherence: 1 is the spine hinging as one\nthing, low is it working against itself"
         },
-        "17": {
-            "init": "comment thing, low is it working against itself",
-            "name": "comment",
-            "id": 866,
-            "position_x": 706,
-            "position_y": 1070,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "thing, low is it working against itself",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "thing, low is it working against itself"
-        },
-        "18": {
+        "14": {
             "name": "float",
-            "id": 903,
+            "id": 755,
             "position_x": 30,
-            "position_y": 1035,
-            "width": 127,
+            "position_y": 1395,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -582,13 +527,13 @@
                 }
             }
         },
-        "19": {
+        "15": {
             "init": "comment surprise: unusual against 20M frames",
             "name": "comment",
-            "id": 940,
-            "position_x": 706,
-            "position_y": 1110,
-            "width": 252,
+            "id": 792,
+            "position_x": 614,
+            "position_y": 1445,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -607,25 +552,25 @@
             },
             "comment": "surprise: unusual against 20M frames"
         },
-        "20": {
+        "16": {
             "name": "torque_residual",
-            "id": 977,
+            "id": 829,
             "position_x": 30,
-            "position_y": 1135,
-            "width": 280,
-            "height": 200,
+            "position_y": 1495,
+            "width": 129,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "21": {
+        "17": {
             "name": "heat_map",
-            "id": 1014,
+            "id": 866,
             "position_x": 30,
-            "position_y": 1350,
+            "position_y": 1710,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -672,61 +617,51 @@
                 }
             }
         },
-        "22": {
-            "init": "comment what the gangs above did NOT account",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 706,
-            "position_y": 1510,
-            "width": 252,
-            "height": 30,
+        "18": {
+            "name": "text_block",
+            "id": 903,
+            "annotation": true,
+            "position_x": 614,
+            "position_y": 1870,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "what the gangs above did NOT account",
+                    "name": "block",
+                    "value": "what the gangs above did NOT account\nfor - one value per joint",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "what the gangs above did NOT account"
+            "text": "what the gangs above did NOT account\nfor - one value per joint"
         },
-        "23": {
-            "init": "comment for - one value per joint",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 706,
-            "position_y": 1540,
-            "width": 175,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "for - one value per joint",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "for - one value per joint"
-        },
-        "24": {
+        "19": {
             "name": "close",
-            "id": 1125,
+            "id": 940,
             "position_x": 24,
-            "position_y": 1528,
+            "position_y": 1890,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -757,7 +692,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "dynamic_torque_vectors",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "dynamic"
@@ -767,7 +702,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gravity_torque_vectors",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gravity"
@@ -777,7 +712,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "torque_vectors",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "torque"
@@ -787,57 +722,57 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "torque_vectors",
-            "dest_node": 977,
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "torque"
         },
         "5": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "net",
-            "dest_node": 644,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "6": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "total",
-            "dest_node": 718,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "7": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "coherence",
-            "dest_node": 792,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "8": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "surprise",
-            "dest_node": 903,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "9": {
-            "source_node": 977,
+            "source_node": 829,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "residual",
-            "dest_node": 1014,
+            "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

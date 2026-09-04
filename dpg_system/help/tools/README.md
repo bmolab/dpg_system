@@ -62,6 +62,16 @@ coverage. `extract_interface.py` records it through the class chain and
 already documented.
 
 ### relayout.py  (needs the conda env)
+
+**It matches nodes by `app.created_nodes`, not `node.loaded_uuid`.** The load
+path ends in `paste()` -> `clear_loaded_uuids()`, which sets every node's
+`loaded_uuid` to -1, so reading it after the load put every measurement under
+the key -1 and no size was ever written back -- the measure pass silently did
+nothing, and every patch kept the generator's guesses. `app.created_nodes` is
+keyed by the id saved in the file and survives the load. If the collision
+report ever goes quiet across the board, check this first: measuring nothing
+looks exactly like measuring a patch with no problems.
+
 Guessing node sizes does not work — a node's width depends on the widgets inside
 it, so a hand-placed comment ends up under a plot. This loads each patch for
 real, headlessly, reads the ACTUAL rendered size of every node, writes those
@@ -175,6 +185,21 @@ positions and properties, and a list of links given by port NAME rather than
 index. It writes the same JSON structure the app saves, so a generated patch and
 a hand-made one are interchangeable; you can open a generated one, rearrange it
 by hand, and save over it.
+
+**Annotations of more than one line are text_blocks, not stacked comments.** A
+comment node holds a single line: its text lives in a single-line `input_text`
+option whose setter strips returns, so a saved `\n` never reaches the label.
+Stacking one comment per line was the old way round that, and it cost a title
+bar and node padding per line -- 30px of node for a 12px line, and 40px between
+lines that should sit 12px apart. Put the returns in the `text` of ONE comment
+entry instead: `build_help` sees the `\n` and emits a locked, transparent
+`text_block` sized to the text by `annotation_box()`. It carries an
+`'annotation': True` marker so `relayout` flows it into the comment gutter
+rather than treating it as a demo node.
+
+The size arithmetic depends on the app's font being monospace at a known scale
+(`LINE_H` / `GLYPH_W`, measured in the running app on macOS). A `text_block` is
+a fixed box: too narrow and the text re-wraps, too short and it scrolls.
 
 `help_common.py` holds the shared demo pieces — the property blocks for `signal`
 and `plot`, and the `load_bang` → `t 1` pair that switches a signal node on when

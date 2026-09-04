@@ -59,12 +59,8 @@ demo = [
      'props': {'step': 1}},
     {'key': 'pr', 'init': 'print count', 'pos': (30, 290), 'w': 170, 'h': 120,
      'props': {'identifier': 'count', 'precision': 3, 'end': '\\n'}},
-    {'key': 'c0', 'comment': True, 'text': 'switch it on, then watch the console',
+    {'key': 'c0', 'comment': True, 'text': 'switch it on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier',
      'pos': (30, 425)},
-    {'key': 'c1', 'comment': True, 'text': 'nothing appears in the patch itself',
-     'pos': (30, 455)},
-    {'key': 'c2', 'comment': True, 'text': 'always give it an identifier',
-     'pos': (30, 485)},
 ]
 links = [('tog', '', 'met', 'on'), ('met', '', 'cnt', 'input'),
          ('cnt', 'count out', 'pr', 'in')]
@@ -131,10 +127,8 @@ demo = [
     {'key': 'td', 'init': 'text_display', 'pos': (30, 370), 'w': 320, 'h': 220,
      'props': {'width': 300, 'height': 180, 'wrap': True, 'max_lines': 100,
                'autoscroll': True, 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'switch on: lines pile up and scroll',
+    {'key': 'c0', 'comment': True, 'text': 'switch on: lines pile up and scroll\nuntick autoscroll to read back',
      'pos': (30, 605)},
-    {'key': 'c1', 'comment': True, 'text': 'untick autoscroll to read back',
-     'pos': (30, 635)},
 ]
 links = [('tog', '', 'met', 'on'), ('met', '', 'cnt', 'input'),
          ('cnt', 'count out', 'pp', 'in'), ('pp', 'out', 'td', '###text in')]
@@ -389,11 +383,7 @@ demo = [
      'props': {'title': 'right', 'h_offset': 400, 'v_offset': 0}},
     {'key': 'hv', 'init': 'home_view', 'pos': (30, 200), 'w': 170, 'h': 90,
      'props': {'title': 'home'}},
-    {'key': 'c0', 'comment': True, 'text': 'click these to move the view', 'pos': (30, 305)},
-    {'key': 'c1', 'comment': True, 'text': 'home brings it back to the origin',
-     'pos': (30, 335)},
-    {'key': 'c2', 'comment': True, 'text': 'tick hide_title_bar for a plain button',
-     'pos': (30, 365)},
+    {'key': 'c0', 'comment': True, 'text': 'click these to move the view\nhome brings it back to the origin\ntick hide_title_bar for a plain button', 'pos': (30, 305)},
 ]
 print(build('pan_view', 'pan_view - navigation the patch can offer', body, demo, [],
             demo_width=440, text_width=780, text_height=560))

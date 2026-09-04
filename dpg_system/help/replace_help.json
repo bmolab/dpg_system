@@ -1,11 +1,11 @@
 {
     "height": 681,
-    "width": 1463,
+    "width": 1321,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 607,
     "name": "replace_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/replace_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 625,
+            "position_x": 483,
             "position_y": 45,
             "width": 798,
             "height": 576,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,7 +109,7 @@
             "id": 385,
             "position_x": 30,
             "position_y": 118,
-            "width": 280,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -131,9 +131,9 @@
             "init": "comment a list of names",
             "name": "comment",
             "id": 422,
-            "position_x": 336,
+            "position_x": 192,
             "position_y": 168,
-            "width": 105,
+            "width": 101,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -157,8 +157,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 205,
-            "width": 210,
-            "height": 100,
+            "width": 136,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -181,7 +181,7 @@
             "id": 496,
             "position_x": 30,
             "position_y": 320,
-            "width": 280,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -200,58 +200,48 @@
             }
         },
         "8": {
-            "init": "comment only the matching name changes",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 336,
+            "annotation": true,
+            "position_x": 192,
             "position_y": 370,
-            "width": 210,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "only the matching name changes",
+                    "name": "block",
+                    "value": "only the matching name changes\nedit find and replace and click again",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "only the matching name changes"
+            "text": "only the matching name changes\nedit find and replace and click again"
         },
         "9": {
-            "init": "comment edit find and replace and click again",
-            "name": "comment",
-            "id": 570,
-            "position_x": 336,
-            "position_y": 400,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "edit find and replace and click again",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "edit find and replace and click again"
-        },
-        "10": {
             "name": "close",
-            "id": 607,
+            "id": 570,
             "position_x": 24,
             "position_y": 392,
             "width": 88,

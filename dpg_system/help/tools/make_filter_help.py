@@ -143,10 +143,8 @@ demo = starter() + [
     {'key': 'df', 'init': 'diff', 'pos': (30, 235), 'w': 110, 'h': 90},
     {'key': 'p2', 'init': 'plot', 'pos': (200, 325), 'w': 208, 'h': 176,
      'props': PLOT(-0.1, 0.1)},
-    {'key': 'c1', 'comment': True, 'text': 'change: fastest where the wave is steepest',
+    {'key': 'c1', 'comment': True, 'text': 'change: fastest where the wave is steepest\nzero at the peaks, where it turns around',
      'pos': (30, 345)},
-    {'key': 'c2', 'comment': True, 'text': 'zero at the peaks, where it turns around',
-     'pos': (30, 375)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('sig', '', 'p1', 'y'), ('sig', '', 'df', ''), ('df', '', 'p2', 'y')]

@@ -397,16 +397,22 @@ class NDIReceiver:
             except Exception as e:
                 print(f'NDIReceiver: recv_destroy failed: {e}')
             self.ndi_recv = None
-        if self.ndi_find:
-            try:
-                ndi.find_destroy(self.ndi_find)
-            except Exception as e:
-                print(f'NDIReceiver: find_destroy failed: {e}')
-            self.ndi_find = None
-        try:
-            ndi.destroy()
-        except Exception as e:
-            print(f'NDIReceiver: ndi.destroy() failed: {e}')
+        # The finder is deliberately NOT destroyed, and the library not shut
+        # down, when a receiver goes away.
+        #
+        # NDIlib_find_destroy can block forever: NDI's IP-camera plugin joins
+        # an ONVIF discovery thread that spins inside its XML parser when
+        # something on the network answers oddly (seen here as a 50-minute
+        # wedge, with the join and the spinning rapidxml call both visible in
+        # a sample). The NDIlib binding does NOT release the GIL around that
+        # call, so it freezes every thread in the process, not just its own --
+        # running it on a worker thread does not help, it only moves where the
+        # interpreter stops. Nothing inside the process can recover: a watchdog
+        # thread, a timer and a signal handler all need the GIL to run.
+        #
+        # So we leak one finder per receiver rather than risk the app. It costs
+        # a little memory until the process exits; calling it costs the app.
+        self.ndi_find = None
 
 
 def main():

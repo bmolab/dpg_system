@@ -1,11 +1,11 @@
 {
-    "height": 1320,
-    "width": 1875,
+    "height": 1300,
+    "width": 1780,
     "position": [
         100,
         100
     ],
-    "id": 1051,
+    "id": 866,
     "name": "speech_spectral_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/speech_spectral_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1017,
+            "position_x": 922,
             "position_y": 45,
             "width": 818,
             "height": 806,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 180,
+            "width": 229,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 270,
-            "width": 290,
-            "height": 280,
+            "width": 166,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 360,
             "position_y": 270,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -180,61 +180,51 @@
             }
         },
         "6": {
-            "init": "comment centroid: brightness. An s is bright,",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 594,
             "position_y": 460,
-            "width": 259,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "centroid: brightness. An s is bright,",
+                    "name": "block",
+                    "value": "centroid: brightness. An s is bright,\na vowel is dark",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "centroid: brightness. An s is bright,"
+            "text": "centroid: brightness. An s is bright,\na vowel is dark"
         },
         "7": {
-            "init": "comment a vowel is dark",
-            "name": "comment",
-            "id": 496,
-            "position_x": 686,
-            "position_y": 490,
-            "width": 105,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a vowel is dark",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a vowel is dark"
-        },
-        "8": {
             "name": "float",
-            "id": 533,
+            "id": 496,
             "position_x": 360,
             "position_y": 535,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -257,74 +247,132 @@
                 }
             }
         },
-        "9": {
-            "init": "comment flatness: 0 tonal. White noise reads",
-            "name": "comment",
-            "id": 570,
-            "position_x": 686,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 594,
             "position_y": 585,
-            "width": 252,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "flatness: 0 tonal. White noise reads",
+                    "name": "block",
+                    "value": "flatness: 0 tonal. White noise reads\nonly about 0.56, so read it relatively",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "flatness: 0 tonal. White noise reads"
+            "text": "flatness: 0 tonal. White noise reads\nonly about 0.56, so read it relatively"
         },
-        "10": {
-            "init": "comment only about 0.56, so read it relatively",
-            "name": "comment",
-            "id": 607,
-            "position_x": 686,
-            "position_y": 615,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "only about 0.56, so read it relatively",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "only about 0.56, so read it relatively"
-        },
-        "11": {
+        "9": {
             "name": "speech_voice_quality",
-            "id": 644,
+            "id": 570,
             "position_x": 30,
             "position_y": 590,
-            "width": 290,
-            "height": 240,
+            "width": 172,
+            "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 360,
+            "position_y": 680,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 594,
+            "position_y": 730,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "HNR in dB: real speech is about 10-25.\nWhite noise reads about -6",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "HNR in dB: real speech is about 10-25.\nWhite noise reads about -6"
+        },
         "12": {
             "name": "float",
             "id": 681,
             "position_x": 360,
-            "position_y": 680,
-            "width": 127,
+            "position_y": 805,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -348,200 +396,102 @@
             }
         },
         "13": {
-            "init": "comment HNR in dB: real speech is about 10-25.",
-            "name": "comment",
+            "name": "text_block",
             "id": 718,
-            "position_x": 686,
-            "position_y": 730,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "HNR in dB: real speech is about 10-25.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "HNR in dB: real speech is about 10-25."
-        },
-        "14": {
-            "init": "comment White noise reads about -6",
-            "name": "comment",
-            "id": 755,
-            "position_x": 686,
-            "position_y": 760,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "White noise reads about -6",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "White noise reads about -6"
-        },
-        "15": {
-            "name": "float",
-            "id": 792,
-            "position_x": 360,
-            "position_y": 805,
-            "width": 127,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "16": {
-            "init": "comment jitter - but a 0 here can mean NO VOICE,",
-            "name": "comment",
-            "id": 829,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 594,
             "position_y": 855,
             "width": 280,
-            "height": 30,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "jitter - but a 0 here can mean NO VOICE,",
+                    "name": "block",
+                    "value": "jitter - but a 0 here can mean NO VOICE,\nnot a perfect one. Gate on voiced.",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "jitter - but a 0 here can mean NO VOICE,"
+            "text": "jitter - but a 0 here can mean NO VOICE,\nnot a perfect one. Gate on voiced."
         },
-        "17": {
-            "init": "comment not a perfect one. Gate on voiced.",
-            "name": "comment",
-            "id": 866,
-            "position_x": 686,
-            "position_y": 885,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "not a perfect one. Gate on voiced.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "not a perfect one. Gate on voiced."
-        },
-        "18": {
+        "14": {
             "name": "speech_pitch",
-            "id": 903,
+            "id": 755,
             "position_x": 30,
             "position_y": 870,
-            "width": 280,
-            "height": 300,
+            "width": 179,
+            "height": 224,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "19": {
-            "init": "comment this is here for its 'voiced' outlet -",
-            "name": "comment",
-            "id": 940,
-            "position_x": 686,
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 594,
             "position_y": 1200,
-            "width": 266,
-            "height": 30,
+            "width": 298,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "this is here for its 'voiced' outlet -",
+                    "name": "block",
+                    "value": "this is here for its 'voiced' outlet -\nnothing above should be believed without it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "this is here for its 'voiced' outlet -"
+            "text": "this is here for its 'voiced' outlet -\nnothing above should be believed without it"
         },
-        "20": {
-            "init": "comment nothing above should be believed without it",
-            "name": "comment",
-            "id": 977,
-            "position_x": 686,
-            "position_y": 1230,
-            "width": 301,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "nothing above should be believed without it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "nothing above should be believed without it"
-        },
-        "21": {
+        "16": {
             "name": "close",
-            "id": 1014,
+            "id": 829,
             "position_x": 24,
-            "position_y": 1200,
+            "position_y": 1124,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -582,7 +532,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "flatness",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -592,27 +542,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "audio tensors",
-            "dest_node": 644,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "audio tensor in"
         },
         "4": {
-            "source_node": 644,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "hnr",
-            "dest_node": 681,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "5": {
-            "source_node": 644,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "jitter",
-            "dest_node": 792,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -622,7 +572,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "audio tensors",
-            "dest_node": 903,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "audio tensor in"

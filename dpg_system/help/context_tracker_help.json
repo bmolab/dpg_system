@@ -1,11 +1,11 @@
 {
-    "height": 1455,
-    "width": 1944,
+    "height": 1193,
+    "width": 1938,
     "position": [
         100,
         100
     ],
-    "id": 1125,
+    "id": 681,
     "name": "context_tracker_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/context_tracker_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 516,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1096,
+            "position_x": 1090,
             "position_y": 45,
             "width": 808,
             "height": 786,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 300,
-            "height": 260,
+            "width": 386,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,9 +108,9 @@
             "init": "comment phrases, as they settle",
             "name": "comment",
             "id": 385,
-            "position_x": 786,
+            "position_x": 780,
             "position_y": 340,
-            "width": 161,
+            "width": 150,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,195 +134,60 @@
             "id": 422,
             "position_x": 30,
             "position_y": 390,
-            "width": 340,
-            "height": 520,
+            "width": 209,
+            "height": 364,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment place and time are LADDERS - a room is",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 786,
+            "annotation": true,
+            "position_x": 780,
             "position_y": 925,
-            "width": 266,
-            "height": 30,
+            "width": 274,
+            "height": 100,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "place and time are LADDERS - a room is",
+                    "name": "block",
+                    "value": "place and time are LADDERS - a room is\nin a building is in a city. Saying\n\"the kitchen\" does not throw away\n\"in winter\"\nmoving place EJECTS PROPS: what someone\nwas carrying belongs to the scene, and\nthe actors persist but the cup does not",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 84,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "place and time are LADDERS - a room is"
+            "text": "place and time are LADDERS - a room is\nin a building is in a city. Saying\n\"the kitchen\" does not throw away\n\"in winter\"\nmoving place EJECTS PROPS: what someone\nwas carrying belongs to the scene, and\nthe actors persist but the cup does not"
         },
         "7": {
-            "init": "comment in a building is in a city. Saying",
-            "name": "comment",
-            "id": 496,
-            "position_x": 786,
-            "position_y": 955,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "in a building is in a city. Saying",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "in a building is in a city. Saying"
-        },
-        "8": {
-            "init": "comment \"the kitchen\" does not throw away",
-            "name": "comment",
-            "id": 533,
-            "position_x": 786,
-            "position_y": 985,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "\"the kitchen\" does not throw away",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "\"the kitchen\" does not throw away"
-        },
-        "9": {
-            "init": "comment \"in winter\"",
-            "name": "comment",
-            "id": 570,
-            "position_x": 786,
-            "position_y": 1015,
-            "width": 77,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "\"in winter\"",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "\"in winter\""
-        },
-        "10": {
-            "init": "comment moving place EJECTS PROPS: what someone",
-            "name": "comment",
-            "id": 607,
-            "position_x": 786,
-            "position_y": 1085,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "moving place EJECTS PROPS: what someone",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "moving place EJECTS PROPS: what someone"
-        },
-        "11": {
-            "init": "comment was carrying belongs to the scene, and",
-            "name": "comment",
-            "id": 644,
-            "position_x": 786,
-            "position_y": 1165,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "was carrying belongs to the scene, and",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "was carrying belongs to the scene, and"
-        },
-        "12": {
-            "init": "comment the actors persist but the cup does not",
-            "name": "comment",
-            "id": 681,
-            "position_x": 786,
-            "position_y": 1245,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the actors persist but the cup does not",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the actors persist but the cup does not"
-        },
-        "13": {
             "name": "text_display",
-            "id": 718,
+            "id": 496,
             "position_x": 420,
             "position_y": 390,
-            "width": 340,
-            "height": 200,
+            "width": 334,
+            "height": 190,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -359,223 +224,103 @@
                 }
             }
         },
-        "14": {
-            "init": "comment 'detected' - watch this to see it",
-            "name": "comment",
-            "id": 755,
-            "position_x": 786,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 780,
             "position_y": 605,
-            "width": 231,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "'detected' - watch this to see it",
+                    "name": "block",
+                    "value": "'detected' - watch this to see it\nworking, and to find out why it is not",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "'detected' - watch this to see it"
+            "text": "'detected' - watch this to see it\nworking, and to find out why it is not"
         },
-        "15": {
-            "init": "comment working, and to find out why it is not",
-            "name": "comment",
-            "id": 792,
-            "position_x": 786,
-            "position_y": 635,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "working, and to find out why it is not",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "working, and to find out why it is not"
-        },
-        "16": {
+        "9": {
             "name": "prompt_composer",
-            "id": 829,
+            "id": 570,
             "position_x": 420,
             "position_y": 690,
-            "width": 320,
-            "height": 340,
+            "width": 223,
+            "height": 224,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
-            "init": "comment 'context out' is shaped for this - the",
-            "name": "comment",
-            "id": 866,
-            "position_x": 786,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 780,
             "position_y": 1045,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "'context out' is shaped for this - the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "'context out' is shaped for this - the"
-        },
-        "18": {
-            "init": "comment enduring half of the prompt, against the",
-            "name": "comment",
-            "id": 903,
-            "position_x": 786,
-            "position_y": 1125,
             "width": 280,
-            "height": 30,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "enduring half of the prompt, against the",
+                    "name": "block",
+                    "value": "'context out' is shaped for this - the\nenduring half of the prompt, against the\nlive phrases as the other half\nthe weights do not change what is\ntracked - they change how strongly each\npart is asserted downstream",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "enduring half of the prompt, against the"
+            "text": "'context out' is shaped for this - the\nenduring half of the prompt, against the\nlive phrases as the other half\nthe weights do not change what is\ntracked - they change how strongly each\npart is asserted downstream"
         },
-        "19": {
-            "init": "comment live phrases as the other half",
-            "name": "comment",
-            "id": 940,
-            "position_x": 786,
-            "position_y": 1205,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "live phrases as the other half",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "live phrases as the other half"
-        },
-        "20": {
-            "init": "comment the weights do not change what is",
-            "name": "comment",
-            "id": 977,
-            "position_x": 786,
-            "position_y": 1285,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the weights do not change what is",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the weights do not change what is"
-        },
-        "21": {
-            "init": "comment tracked - they change how strongly each",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 786,
-            "position_y": 1325,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "tracked - they change how strongly each",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "tracked - they change how strongly each"
-        },
-        "22": {
-            "init": "comment part is asserted downstream",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 786,
-            "position_y": 1365,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "part is asserted downstream",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "part is asserted downstream"
-        },
-        "23": {
+        "11": {
             "name": "close",
-            "id": 1088,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1060,
+            "position_y": 944,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -606,7 +351,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "phrases",
-            "dest_node": 829,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "phrases"
@@ -616,7 +361,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "detected",
-            "dest_node": 718,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
@@ -626,7 +371,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "context out",
-            "dest_node": 829,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "context"

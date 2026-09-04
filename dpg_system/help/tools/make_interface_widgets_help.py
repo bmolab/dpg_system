@@ -80,10 +80,8 @@ demo = starter() + [
     {'key': 'mul', 'init': '* 100.0', 'pos': (30, 390), 'w': 130, 'h': 70,
      'props': {'operand': 100.0}},
     {'key': 'i1', 'init': 'int', 'pos': (30, 480), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c1', 'comment': True, 'text': 'as a control: drag the 0.5 box',
+    {'key': 'c1', 'comment': True, 'text': 'as a control: drag the 0.5 box\nint rounds whatever it is given',
      'pos': (30, 530)},
-    {'key': 'c2', 'comment': True, 'text': 'int rounds whatever it is given',
-     'pos': (30, 560)},
     {'key': 'btn', 'init': 'button', 'pos': (200, 330), 'w': 88, 'h': 46},
     {'key': 'c3', 'comment': True, 'text': 'bang it to re-send without changing',
      'pos': (200, 385)},
@@ -147,10 +145,8 @@ demo = starter() + [
     {'key': 'kn', 'init': 'knob 0.5', 'pos': (30, 300), 'w': 100, 'h': 110,
      'props': {'min': 0.0, 'max': 1.0, 'format': '%.3f'}},
     {'key': 'f2', 'init': 'float', 'pos': (30, 430), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c1', 'comment': True, 'text': 'a knob is a slider that takes less room',
+    {'key': 'c1', 'comment': True, 'text': 'a knob is a slider that takes less room\nraise power to stretch the low end',
      'pos': (30, 485)},
-    {'key': 'c2', 'comment': True, 'text': 'raise power to stretch the low end',
-     'pos': (30, 515)},
 ]
 links = [('lb', 'out', 'tt', ''), ('sl', 'float out', 'f1', ''),
          ('kn', 'float out', 'f2', '')]
@@ -220,10 +216,8 @@ demo = starter() + [
     {'key': 'pf', 'init': 'param_float threshold 0.25', 'pos': (30, 320), 'w': 160, 'h': 42,
      'props': {'parameter name': 'threshold', 'format': '%.3f', 'width': 120}},
     {'key': 'f2', 'init': 'float', 'pos': (30, 380), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c1', 'comment': True, 'text': 'open the options to see the names',
+    {'key': 'c1', 'comment': True, 'text': 'open the options to see the names\notherwise they are ordinary widgets',
      'pos': (30, 430)},
-    {'key': 'c2', 'comment': True, 'text': 'otherwise they are ordinary widgets',
-     'pos': (30, 460)},
 ]
 links = [('lb', 'out', 'tt', ''), ('ps', 'float out', 'f1', ''),
          ('pf', 'float out', 'f2', '')]

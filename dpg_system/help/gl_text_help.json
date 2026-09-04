@@ -1,11 +1,11 @@
 {
-    "height": 1420,
-    "width": 1771,
+    "height": 1436,
+    "width": 1664,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 755,
     "name": "gl_text_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_text_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 923,
+            "position_x": 816,
             "position_y": 45,
             "width": 808,
             "height": 756,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 240,
-            "height": 120,
+            "width": 70,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 202,
-            "width": 240,
-            "height": 240,
+            "width": 222,
+            "height": 294,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -120,9 +120,9 @@
             "name": "gl_text",
             "id": 422,
             "position_x": 30,
-            "position_y": 480,
-            "width": 260,
-            "height": 260,
+            "position_y": 516,
+            "width": 154,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -135,74 +135,64 @@
             }
         },
         "6": {
-            "init": "comment position_x and _y are SCREEN coordinates",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 606,
-            "position_y": 755,
+            "annotation": true,
+            "position_x": 500,
+            "position_y": 791,
             "width": 280,
-            "height": 30,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "position_x and _y are SCREEN coordinates",
+                    "name": "block",
+                    "value": "position_x and _y are SCREEN coordinates\nso it stays put as the camera moves",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "position_x and _y are SCREEN coordinates"
+            "text": "position_x and _y are SCREEN coordinates\nso it stays put as the camera moves"
         },
         "7": {
-            "init": "comment so it stays put as the camera moves",
-            "name": "comment",
-            "id": 496,
-            "position_x": 606,
-            "position_y": 785,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "so it stays put as the camera moves",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "so it stays put as the camera moves"
-        },
-        "8": {
             "name": "gl_billboard",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 830,
-            "width": 240,
-            "height": 180,
+            "position_y": 866,
+            "width": 129,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "name": "gl_text",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 1025,
-            "width": 260,
-            "height": 260,
+            "position_y": 1061,
+            "width": 154,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -214,74 +204,64 @@
                 }
             }
         },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 500,
+            "position_y": 1336,
+            "width": 286,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "behind a billboard instead: in the scene,\nbut always turned to face you",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "behind a billboard instead: in the scene,\nbut always turned to face you"
+        },
         "10": {
-            "init": "comment behind a billboard instead: in the scene,",
-            "name": "comment",
-            "id": 607,
-            "position_x": 606,
-            "position_y": 1300,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "behind a billboard instead: in the scene,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "behind a billboard instead: in the scene,"
-        },
-        "11": {
-            "init": "comment but always turned to face you",
-            "name": "comment",
-            "id": 644,
-            "position_x": 606,
-            "position_y": 1330,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "but always turned to face you",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "but always turned to face you"
-        },
-        "12": {
             "name": "gl_button_grid",
-            "id": 681,
+            "id": 607,
             "position_x": 320,
-            "position_y": 480,
-            "width": 260,
-            "height": 280,
+            "position_y": 516,
+            "width": 154,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
+        "11": {
             "name": "int",
-            "id": 718,
+            "id": 644,
             "position_x": 320,
-            "position_y": 775,
-            "width": 127,
+            "position_y": 811,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -304,13 +284,13 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "comment controls inside a fullscreen render",
             "name": "comment",
-            "id": 755,
-            "position_x": 606,
-            "position_y": 825,
-            "width": 245,
+            "id": 681,
+            "position_x": 500,
+            "position_y": 861,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -329,11 +309,11 @@
             },
             "comment": "controls inside a fullscreen render"
         },
-        "15": {
+        "13": {
             "name": "close",
-            "id": 792,
+            "id": 718,
             "position_x": 24,
-            "position_y": 1315,
+            "position_y": 1217,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -374,17 +354,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "3": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"

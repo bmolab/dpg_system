@@ -1,11 +1,11 @@
 {
-    "height": 770,
-    "width": 1523,
+    "height": 750,
+    "width": 1693,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 607,
     "name": "text_file_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/text_file_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 492,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 685,
+            "position_x": 855,
             "position_y": 45,
             "width": 798,
             "height": 636,
@@ -97,69 +97,59 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 340,
-            "height": 280,
+            "width": 514,
+            "height": 314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment type into it; the text is saved with",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 396,
+            "annotation": true,
+            "position_x": 570,
             "position_y": 355,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "type into it; the text is saved with",
+                    "name": "block",
+                    "value": "type into it; the text is saved with\nthe patch, so it travels with it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "type into it; the text is saved with"
+            "text": "type into it; the text is saved with\nthe patch, so it travels with it"
         },
         "5": {
-            "init": "comment the patch, so it travels with it",
-            "name": "comment",
-            "id": 422,
-            "position_x": 396,
-            "position_y": 385,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the patch, so it travels with it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the patch, so it travels with it"
-        },
-        "6": {
             "name": "string",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
             "position_y": 425,
-            "width": 340,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -177,13 +167,13 @@
                 }
             }
         },
-        "7": {
+        "6": {
             "init": "comment click send: out gives the whole thing",
             "name": "comment",
-            "id": 496,
-            "position_x": 396,
+            "id": 459,
+            "position_x": 570,
             "position_y": 475,
-            "width": 259,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -202,13 +192,13 @@
             },
             "comment": "click send: out gives the whole thing"
         },
-        "8": {
+        "7": {
             "name": "print",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
             "position_y": 515,
-            "width": 200,
-            "height": 120,
+            "width": 39,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -226,61 +216,51 @@
             },
             "init": "print line"
         },
-        "9": {
-            "init": "comment messages gives it a line at a time -",
-            "name": "comment",
-            "id": 570,
-            "position_x": 396,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 570,
             "position_y": 650,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "messages gives it a line at a time -",
+                    "name": "block",
+                    "value": "messages gives it a line at a time -\nthe editor as a little script",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "messages gives it a line at a time -"
+            "text": "messages gives it a line at a time -\nthe editor as a little script"
         },
-        "10": {
-            "init": "comment the editor as a little script",
-            "name": "comment",
-            "id": 607,
-            "position_x": 396,
-            "position_y": 680,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the editor as a little script",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the editor as a little script"
-        },
-        "11": {
+        "9": {
             "name": "close",
-            "id": 644,
+            "id": 570,
             "position_x": 24,
-            "position_y": 665,
+            "position_y": 573,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -301,7 +281,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 459,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -311,7 +291,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "messages",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

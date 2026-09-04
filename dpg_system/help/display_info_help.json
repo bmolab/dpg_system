@@ -1,11 +1,11 @@
 {
-    "height": 745,
-    "width": 1567,
+    "height": 741,
+    "width": 1488,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 533,
     "name": "display_info_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/display_info_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 432,
+            "width": 451,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 739,
+            "position_x": 660,
             "position_y": 45,
             "width": 788,
             "height": 636,
@@ -97,7 +97,7 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -137,7 +137,7 @@
             "id": 422,
             "position_x": 30,
             "position_y": 375,
-            "width": 380,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -156,208 +156,48 @@
             }
         },
         "6": {
-            "init": "comment send 0, 1, 2 to ask about each screen",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 436,
+            "annotation": true,
+            "position_x": 356,
             "position_y": 425,
-            "width": 259,
-            "height": 30,
+            "width": 274,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "send 0, 1, 2 to ask about each screen",
+                    "name": "block",
+                    "value": "send 0, 1, 2 to ask about each screen\nthe OFFSETS are the important part:\nscreens sit side by side in one big\ncoordinate space, so a second screen\nmay start at x 2560, not x 0\nLinux reads xrandr; macOS needs Quartz\nfrom pyobjc. Without it you get nothing\nand a printed reason - not no screens",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "send 0, 1, 2 to ask about each screen"
+            "text": "send 0, 1, 2 to ask about each screen\nthe OFFSETS are the important part:\nscreens sit side by side in one big\ncoordinate space, so a second screen\nmay start at x 2560, not x 0\nLinux reads xrandr; macOS needs Quartz\nfrom pyobjc. Without it you get nothing\nand a printed reason - not no screens"
         },
         "7": {
-            "init": "comment the OFFSETS are the important part:",
-            "name": "comment",
-            "id": 496,
-            "position_x": 436,
-            "position_y": 465,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the OFFSETS are the important part:",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the OFFSETS are the important part:"
-        },
-        "8": {
-            "init": "comment screens sit side by side in one big",
-            "name": "comment",
-            "id": 533,
-            "position_x": 436,
-            "position_y": 495,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "screens sit side by side in one big",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "screens sit side by side in one big"
-        },
-        "9": {
-            "init": "comment coordinate space, so a second screen",
-            "name": "comment",
-            "id": 570,
-            "position_x": 436,
-            "position_y": 525,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "coordinate space, so a second screen",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "coordinate space, so a second screen"
-        },
-        "10": {
-            "init": "comment may start at x 2560, not x 0",
-            "name": "comment",
-            "id": 607,
-            "position_x": 436,
-            "position_y": 555,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "may start at x 2560, not x 0",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "may start at x 2560, not x 0"
-        },
-        "11": {
-            "init": "comment Linux reads xrandr; macOS needs Quartz",
-            "name": "comment",
-            "id": 644,
-            "position_x": 436,
-            "position_y": 595,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Linux reads xrandr; macOS needs Quartz",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Linux reads xrandr; macOS needs Quartz"
-        },
-        "12": {
-            "init": "comment from pyobjc. Without it you get nothing",
-            "name": "comment",
-            "id": 681,
-            "position_x": 436,
-            "position_y": 625,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "from pyobjc. Without it you get nothing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "from pyobjc. Without it you get nothing"
-        },
-        "13": {
-            "init": "comment and a printed reason - not no screens",
-            "name": "comment",
-            "id": 718,
-            "position_x": 436,
-            "position_y": 655,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "and a printed reason - not no screens",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "and a printed reason - not no screens"
-        },
-        "14": {
             "name": "close",
-            "id": 755,
+            "id": 496,
             "position_x": 24,
             "position_y": 447,
             "width": 88,

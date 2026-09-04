@@ -1,11 +1,11 @@
 {
-    "height": 895,
-    "width": 1835,
+    "height": 1045,
+    "width": 1675,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 607,
     "name": "take_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/take_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 492,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 987,
+            "position_x": 827,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,81 +109,71 @@
             "id": 385,
             "position_x": 30,
             "position_y": 400,
-            "width": 280,
-            "height": 360,
+            "width": 140,
+            "height": 511,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "5": {
-            "init": "comment record, then play it back",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 656,
+            "annotation": true,
+            "position_x": 524,
             "position_y": 775,
-            "width": 175,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "record, then play it back",
+                    "name": "block",
+                    "value": "record, then play it back\nglobals are sent once, not per frame",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "record, then play it back"
+            "text": "record, then play it back\nglobals are sent once, not per frame"
         },
         "6": {
-            "init": "comment globals are sent once, not per frame",
-            "name": "comment",
-            "id": 459,
-            "position_x": 656,
-            "position_y": 805,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "globals are sent once, not per frame",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "globals are sent once, not per frame"
-        },
-        "7": {
             "name": "json_npz_frame_picker",
-            "id": 496,
+            "id": 459,
             "position_x": 350,
             "position_y": 400,
-            "width": 280,
-            "height": 220,
+            "width": 148,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
+        "7": {
             "name": "int",
-            "id": 533,
+            "id": 496,
             "position_x": 350,
             "position_y": 635,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -206,13 +196,13 @@
                 }
             }
         },
-        "9": {
+        "8": {
             "init": "comment step through the frames an analysis flagged",
             "name": "comment",
-            "id": 570,
-            "position_x": 656,
+            "id": 533,
+            "position_x": 524,
             "position_y": 685,
-            "width": 301,
+            "width": 273,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -231,11 +221,11 @@
             },
             "comment": "step through the frames an analysis flagged"
         },
-        "10": {
+        "9": {
             "name": "close",
-            "id": 607,
+            "id": 570,
             "position_x": 24,
-            "position_y": 790,
+            "position_y": 941,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -262,11 +252,11 @@
             "dest_input_name": "take data in"
         },
         "1": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "event frame",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

@@ -1,11 +1,11 @@
 {
     "height": 681,
-    "width": 1336,
+    "width": 1298,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 570,
     "name": "print_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/print_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 468,
+            "width": 488,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 508,
+            "position_x": 470,
             "position_y": 45,
             "width": 788,
             "height": 576,
@@ -156,8 +156,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 290,
-            "width": 170,
-            "height": 120,
+            "width": 39,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -181,85 +181,50 @@
             "init": "print count"
         },
         "7": {
-            "init": "comment switch it on, then watch the console",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 226,
+            "annotation": true,
+            "position_x": 185,
             "position_y": 425,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "switch it on, then watch the console",
+                    "name": "block",
+                    "value": "switch it on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "switch it on, then watch the console"
+            "text": "switch it on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier"
         },
         "8": {
-            "init": "comment nothing appears in the patch itself",
-            "name": "comment",
-            "id": 533,
-            "position_x": 226,
-            "position_y": 455,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "nothing appears in the patch itself",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "nothing appears in the patch itself"
-        },
-        "9": {
-            "init": "comment always give it an identifier",
-            "name": "comment",
-            "id": 570,
-            "position_x": 226,
-            "position_y": 485,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "always give it an identifier",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "always give it an identifier"
-        },
-        "10": {
             "name": "close",
-            "id": 607,
+            "id": 533,
             "position_x": 24,
-            "position_y": 440,
+            "position_y": 348,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

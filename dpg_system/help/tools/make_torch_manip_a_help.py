@@ -98,8 +98,7 @@ demo = [
     {'key': 'fl', 'init': 't.flatten', 'pos': (30, 475), 'w': 160, 'h': 70},
     {'key': 'hm3', 'init': 'heat_map', 'pos': (250, 530), 'w': 208, 'h': 148,
      'props': HM(12)},
-    {'key': 'c2', 'comment': True, 'text': 'flattened: twelve in a row', 'pos': (30, 555)},
-    {'key': 'c3', 'comment': True, 'text': 'the numbers never changed', 'pos': (30, 585)},
+    {'key': 'c2', 'comment': True, 'text': 'flattened: twelve in a row\nthe numbers never changed', 'pos': (30, 555)},
 ]
 links = [('btn', '', 'rnd', '###input'),
          ('rnd', 'random tensor', 'hm', 'y'),

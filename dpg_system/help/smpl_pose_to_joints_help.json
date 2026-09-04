@@ -1,11 +1,11 @@
 {
-    "height": 1095,
-    "width": 1845,
+    "height": 1140,
+    "width": 1771,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 607,
     "name": "smpl_pose_to_joints_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_pose_to_joints_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1007,
+            "position_x": 933,
             "position_y": 45,
             "width": 798,
             "height": 656,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 350,
             "position_y": 62,
-            "width": 300,
-            "height": 340,
+            "width": 229,
+            "height": 322,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 400,
-            "width": 260,
-            "height": 140,
+            "width": 179,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -133,8 +133,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 560,
-            "width": 240,
-            "height": 90,
+            "width": 156,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -145,93 +145,58 @@
             "id": 496,
             "position_x": 30,
             "position_y": 670,
-            "width": 280,
-            "height": 260,
+            "width": 131,
+            "height": 336,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "init": "comment outlets named for the joints",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 676,
+            "annotation": true,
+            "position_x": 605,
             "position_y": 945,
-            "width": 196,
-            "height": 30,
+            "width": 298,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "outlets named for the joints",
+                    "name": "block",
+                    "value": "outlets named for the joints\nuse these when joints are treated\ndifferently - not for the same thing to all",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "outlets named for the joints"
+            "text": "outlets named for the joints\nuse these when joints are treated\ndifferently - not for the same thing to all"
         },
         "9": {
-            "init": "comment use these when joints are treated",
-            "name": "comment",
-            "id": 570,
-            "position_x": 676,
-            "position_y": 975,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "use these when joints are treated",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "use these when joints are treated"
-        },
-        "10": {
-            "init": "comment differently - not for the same thing to all",
-            "name": "comment",
-            "id": 607,
-            "position_x": 676,
-            "position_y": 1005,
-            "width": 301,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "differently - not for the same thing to all",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "differently - not for the same thing to all"
-        },
-        "11": {
             "name": "close",
-            "id": 644,
+            "id": 570,
             "position_x": 24,
-            "position_y": 960,
+            "position_y": 1036,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

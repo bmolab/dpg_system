@@ -1,11 +1,11 @@
 {
     "height": 861,
-    "width": 2031,
+    "width": 1740,
     "position": [
         100,
         100
     ],
-    "id": 940,
+    "id": 681,
     "name": "noise_review_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/noise_review_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1183,
+            "position_x": 892,
             "position_y": 45,
             "width": 808,
             "height": 756,
@@ -97,169 +97,59 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 340,
-            "height": 520,
+            "width": 154,
+            "height": 252,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment review ONE category at a time - the",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 866,
+            "annotation": true,
+            "position_x": 576,
             "position_y": 600,
-            "width": 245,
-            "height": 30,
+            "width": 286,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "review ONE category at a time - the",
+                    "name": "block",
+                    "value": "review ONE category at a time - the\njudgement is different for each. A break\nis a fact, a spike is a suspicion, a lens\nflag is a statistical lean\nwalk 'clean sections' too - it is the\nonly way to find FALSE NEGATIVES",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "review ONE category at a time - the"
+            "text": "review ONE category at a time - the\njudgement is different for each. A break\nis a fact, a spike is a suspicion, a lens\nflag is a statistical lean\nwalk 'clean sections' too - it is the\nonly way to find FALSE NEGATIVES"
         },
         "5": {
-            "init": "comment judgement is different for each. A break",
-            "name": "comment",
-            "id": 422,
-            "position_x": 866,
-            "position_y": 630,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "judgement is different for each. A break",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "judgement is different for each. A break"
-        },
-        "6": {
-            "init": "comment is a fact, a spike is a suspicion, a lens",
-            "name": "comment",
-            "id": 459,
-            "position_x": 866,
-            "position_y": 660,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "is a fact, a spike is a suspicion, a lens",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "is a fact, a spike is a suspicion, a lens"
-        },
-        "7": {
-            "init": "comment flag is a statistical lean",
-            "name": "comment",
-            "id": 496,
-            "position_x": 866,
-            "position_y": 690,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "flag is a statistical lean",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "flag is a statistical lean"
-        },
-        "8": {
-            "init": "comment walk 'clean sections' too - it is the",
-            "name": "comment",
-            "id": 533,
-            "position_x": 866,
-            "position_y": 730,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "walk 'clean sections' too - it is the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "walk 'clean sections' too - it is the"
-        },
-        "9": {
-            "init": "comment only way to find FALSE NEGATIVES",
-            "name": "comment",
-            "id": 570,
-            "position_x": 866,
-            "position_y": 760,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "only way to find FALSE NEGATIVES",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "only way to find FALSE NEGATIVES"
-        },
-        "10": {
             "name": "list",
-            "id": 607,
+            "id": 422,
             "position_x": 420,
             "position_y": 62,
-            "width": 420,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -277,13 +167,13 @@
                 }
             }
         },
-        "11": {
+        "6": {
             "init": "comment the file this flag is in",
             "name": "comment",
-            "id": 644,
-            "position_x": 866,
+            "id": 459,
+            "position_x": 576,
             "position_y": 112,
-            "width": 168,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -302,12 +192,12 @@
             },
             "comment": "the file this flag is in"
         },
-        "12": {
+        "7": {
             "name": "int",
-            "id": 681,
+            "id": 496,
             "position_x": 420,
             "position_y": 160,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -330,13 +220,13 @@
                 }
             }
         },
-        "13": {
+        "8": {
             "init": "comment and the frame to jump to",
             "name": "comment",
-            "id": 718,
-            "position_x": 866,
+            "id": 533,
+            "position_x": 576,
             "position_y": 210,
-            "width": 168,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -355,98 +245,63 @@
             },
             "comment": "and the frame to jump to"
         },
-        "14": {
+        "9": {
             "name": "take",
-            "id": 755,
+            "id": 570,
             "position_x": 420,
             "position_y": 260,
-            "width": 320,
-            "height": 200,
+            "width": 123,
+            "height": 253,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "15": {
-            "init": "comment the take player loads it and goes",
-            "name": "comment",
-            "id": 792,
-            "position_x": 866,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 576,
             "position_y": 475,
-            "width": 231,
-            "height": 30,
+            "width": 243,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the take player loads it and goes",
+                    "name": "block",
+                    "value": "the take player loads it and goes\nstraight to the moment in question\nso the loop is: next, look, decide",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the take player loads it and goes"
+            "text": "the take player loads it and goes\nstraight to the moment in question\nso the loop is: next, look, decide"
         },
-        "16": {
-            "init": "comment straight to the moment in question",
-            "name": "comment",
-            "id": 829,
-            "position_x": 866,
-            "position_y": 505,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "straight to the moment in question",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "straight to the moment in question"
-        },
-        "17": {
-            "init": "comment so the loop is: next, look, decide",
-            "name": "comment",
-            "id": 866,
-            "position_x": 866,
-            "position_y": 545,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "so the loop is: next, look, decide",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "so the loop is: next, look, decide"
-        },
-        "18": {
+        "11": {
             "name": "close",
-            "id": 903,
+            "id": 644,
             "position_x": 24,
-            "position_y": 612,
+            "position_y": 543,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -467,7 +322,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "npz path",
-            "dest_node": 607,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -477,7 +332,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "frame",
-            "dest_node": 681,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

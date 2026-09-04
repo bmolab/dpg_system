@@ -1,11 +1,11 @@
 {
-    "height": 1109,
-    "width": 1830,
+    "height": 1408,
+    "width": 1754,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "smpl_pose_adjust_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_pose_adjust_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 528,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 972,
+            "position_x": 896,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 350,
             "position_y": 62,
-            "width": 300,
-            "height": 340,
+            "width": 229,
+            "height": 322,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 400,
-            "width": 260,
-            "height": 140,
+            "width": 179,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -133,8 +133,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 560,
-            "width": 280,
-            "height": 200,
+            "width": 238,
+            "height": 378,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -144,9 +144,9 @@
             "init": "comment child frame: which frame it applies in",
             "name": "comment",
             "id": 496,
-            "position_x": 676,
+            "position_x": 605,
             "position_y": 775,
-            "width": 266,
+            "width": 242,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -170,82 +170,72 @@
             "id": 533,
             "position_x": 350,
             "position_y": 560,
-            "width": 280,
-            "height": 220,
+            "width": 168,
+            "height": 714,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "9": {
-            "init": "comment global = drift in the room;",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
-            "position_x": 676,
+            "annotation": true,
+            "position_x": 605,
             "position_y": 815,
-            "width": 189,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "global = drift in the room;",
+                    "name": "block",
+                    "value": "global = drift in the room;\nlocal = calibration baked into T-pose",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "global = drift in the room;"
+            "text": "global = drift in the room;\nlocal = calibration baked into T-pose"
         },
         "10": {
-            "init": "comment local = calibration baked into T-pose",
-            "name": "comment",
-            "id": 607,
-            "position_x": 676,
-            "position_y": 855,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "local = calibration baked into T-pose",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "local = calibration baked into T-pose"
-        },
-        "11": {
             "name": "floor_zero",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
-            "position_y": 815,
-            "width": 260,
-            "height": 160,
+            "position_y": 958,
+            "width": 136,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
+        "11": {
             "init": "comment a CONSTANT offset, so jumps survive",
             "name": "comment",
-            "id": 681,
-            "position_x": 676,
-            "position_y": 990,
-            "width": 245,
+            "id": 644,
+            "position_x": 605,
+            "position_y": 1133,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -264,11 +254,11 @@
             },
             "comment": "a CONSTANT offset, so jumps survive"
         },
-        "13": {
+        "12": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 1005,
+            "position_y": 1304,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -339,7 +329,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "trans",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "trans"
@@ -349,7 +339,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "pose",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pose"
@@ -359,7 +349,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "config",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "config"

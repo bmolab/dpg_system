@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1816,
+    "width": 1687,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "t.audio.play_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.audio.play_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 384,
+            "width": 402,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 968,
+            "position_x": 839,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 200,
+            "width": 312,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,9 +108,9 @@
             "init": "comment one of these in a patch, not several",
             "name": "comment",
             "id": 385,
-            "position_x": 686,
+            "position_x": 566,
             "position_y": 275,
-            "width": 252,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,8 +134,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 320,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -146,94 +146,84 @@
             "id": 459,
             "position_x": 30,
             "position_y": 385,
-            "width": 300,
-            "height": 280,
+            "width": 160,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "7": {
-            "init": "comment load several, trigger them by name",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 566,
             "position_y": 680,
-            "width": 238,
-            "height": 30,
+            "width": 243,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "load several, trigger them by name",
+                    "name": "block",
+                    "value": "load several, trigger them by name\nadding a sound needs no rewiring",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "load several, trigger them by name"
+            "text": "load several, trigger them by name\nadding a sound needs no rewiring"
         },
         "8": {
-            "init": "comment adding a sound needs no rewiring",
-            "name": "comment",
+            "name": "button",
             "id": 533,
-            "position_x": 686,
-            "position_y": 710,
-            "width": 224,
-            "height": 30,
+            "position_x": 380,
+            "position_y": 320,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "adding a sound needs no rewiring",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "adding a sound needs no rewiring"
+            "properties": {}
         },
         "9": {
-            "name": "button",
+            "name": "t.audio.play",
             "id": 570,
             "position_x": 380,
-            "position_y": 320,
-            "width": 88,
-            "height": 46,
+            "position_y": 385,
+            "width": 160,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "10": {
-            "name": "t.audio.play",
-            "id": 607,
-            "position_x": 380,
-            "position_y": 385,
-            "width": 280,
-            "height": 240,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "11": {
             "init": "comment one sound, fired by an event",
             "name": "comment",
-            "id": 644,
-            "position_x": 686,
+            "id": 607,
+            "position_x": 566,
             "position_y": 640,
-            "width": 196,
+            "width": 181,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -252,11 +242,11 @@
             },
             "comment": "one sound, fired by an event"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 695,
+            "position_y": 555,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -283,11 +273,11 @@
             "dest_input_name": "trigger"
         },
         "1": {
-            "source_node": 570,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "trigger"

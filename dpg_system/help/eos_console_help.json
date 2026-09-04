@@ -1,11 +1,11 @@
 {
-    "height": 1135,
-    "width": 1914,
+    "height": 991,
+    "width": 1888,
     "position": [
         100,
         100
     ],
-    "id": 1014,
+    "id": 718,
     "name": "eos_console_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/eos_console_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 348,
+            "width": 365,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1056,
+            "position_x": 1030,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,120 +97,60 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 300,
-            "height": 240,
+            "width": 160,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment one of these, before anything else -",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 746,
+            "annotation": true,
+            "position_x": 720,
             "position_y": 315,
-            "width": 252,
-            "height": 30,
+            "width": 268,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "one of these, before anything else -",
+                    "name": "block",
+                    "value": "one of these, before anything else -\nthe senders find it by name\nset the ip to your desk. 1102 is where\nits replies come back",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "one of these, before anything else -"
+            "text": "one of these, before anything else -\nthe senders find it by name\nset the ip to your desk. 1102 is where\nits replies come back"
         },
         "5": {
-            "init": "comment the senders find it by name",
-            "name": "comment",
-            "id": 422,
-            "position_x": 746,
-            "position_y": 345,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the senders find it by name",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the senders find it by name"
-        },
-        "6": {
-            "init": "comment set the ip to your desk. 1102 is where",
-            "name": "comment",
-            "id": 459,
-            "position_x": 746,
-            "position_y": 385,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "set the ip to your desk. 1102 is where",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "set the ip to your desk. 1102 is where"
-        },
-        "7": {
-            "init": "comment its replies come back",
-            "name": "comment",
-            "id": 496,
-            "position_x": 746,
-            "position_y": 415,
-            "width": 147,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "its replies come back",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "its replies come back"
-        },
-        "8": {
             "name": "text_display",
-            "id": 533,
+            "id": 422,
             "position_x": 380,
             "position_y": 62,
-            "width": 320,
-            "height": 200,
+            "width": 314,
+            "height": 190,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -247,13 +187,13 @@
                 }
             }
         },
-        "9": {
+        "6": {
             "init": "comment what the desk says back",
             "name": "comment",
-            "id": 570,
-            "position_x": 746,
+            "id": 459,
+            "position_x": 720,
             "position_y": 275,
-            "width": 161,
+            "width": 150,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -272,126 +212,66 @@
             },
             "comment": "what the desk says back"
         },
-        "10": {
+        "7": {
             "name": "color_source",
-            "id": 607,
+            "id": 496,
             "position_x": 30,
             "position_y": 470,
-            "width": 320,
-            "height": 320,
+            "width": 188,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "color_source 7"
         },
-        "11": {
-            "init": "comment five sliders at channel 7 - each sends",
-            "name": "comment",
-            "id": 644,
-            "position_x": 746,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 720,
             "position_y": 805,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "five sliders at channel 7 - each sends",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "five sliders at channel 7 - each sends"
-        },
-        "12": {
-            "init": "comment only when it moves",
-            "name": "comment",
-            "id": 681,
-            "position_x": 746,
-            "position_y": 885,
-            "width": 126,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "only when it moves",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "only when it moves"
-        },
-        "13": {
-            "init": "comment lime is the fourth emitter on many LED",
-            "name": "comment",
-            "id": 718,
-            "position_x": 746,
-            "position_y": 965,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "lime is the fourth emitter on many LED",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "lime is the fourth emitter on many LED"
-        },
-        "14": {
-            "init": "comment fixtures - it is what makes a good white",
-            "name": "comment",
-            "id": 755,
-            "position_x": 746,
-            "position_y": 1045,
             "width": 280,
-            "height": 30,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "fixtures - it is what makes a good white",
+                    "name": "block",
+                    "value": "five sliders at channel 7 - each sends\nonly when it moves\nlime is the fourth emitter on many LED\nfixtures - it is what makes a good white",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "fixtures - it is what makes a good white"
+            "text": "five sliders at channel 7 - each sends\nonly when it moves\nlime is the fourth emitter on many LED\nfixtures - it is what makes a good white"
         },
-        "15": {
+        "9": {
             "name": "signal",
-            "id": 792,
+            "id": 570,
             "position_x": 420,
             "position_y": 470,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -428,13 +308,13 @@
                 }
             }
         },
-        "16": {
+        "10": {
             "name": "eos_send",
-            "id": 829,
+            "id": 607,
             "position_x": 420,
             "position_y": 570,
-            "width": 300,
-            "height": 240,
+            "width": 179,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -452,86 +332,51 @@
             },
             "init": "eos_send pan 7"
         },
-        "17": {
-            "init": "comment anything color_source does not cover:",
-            "name": "comment",
-            "id": 866,
-            "position_x": 746,
-            "position_y": 845,
-            "width": 259,
-            "height": 30,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 720,
+            "position_y": 879,
+            "width": 261,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "anything color_source does not cover:",
+                    "name": "block",
+                    "value": "anything color_source does not cover:\npan, tilt, zoom, gobo - named as Eos\nspells it, with min/max to suit",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "anything color_source does not cover:"
+            "text": "anything color_source does not cover:\npan, tilt, zoom, gobo - named as Eos\nspells it, with min/max to suit"
         },
-        "18": {
-            "init": "comment pan, tilt, zoom, gobo - named as Eos",
-            "name": "comment",
-            "id": 903,
-            "position_x": 746,
-            "position_y": 925,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "pan, tilt, zoom, gobo - named as Eos",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "pan, tilt, zoom, gobo - named as Eos"
-        },
-        "19": {
-            "init": "comment spells it, with min/max to suit",
-            "name": "comment",
-            "id": 940,
-            "position_x": 746,
-            "position_y": 1005,
-            "width": 217,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "spells it, with min/max to suit",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "spells it, with min/max to suit"
-        },
-        "20": {
+        "12": {
             "name": "close",
-            "id": 977,
+            "id": 681,
             "position_x": 24,
-            "position_y": 840,
+            "position_y": 656,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -552,17 +397,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "osc received",
-            "dest_node": 533,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "1": {
-            "source_node": 792,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 829,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "osc to send"

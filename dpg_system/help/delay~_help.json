@@ -1,11 +1,11 @@
 {
-    "height": 1354,
-    "width": 1676,
+    "height": 1442,
+    "width": 1658,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "delay~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/delay~_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 636,
+            "width": 660,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 828,
+            "position_x": 810,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 220,
-            "height": 200,
+            "width": 157,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,8 +110,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 280,
-            "width": 220,
-            "height": 220,
+            "width": 187,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -122,8 +122,8 @@
             "id": 422,
             "position_x": 300,
             "position_y": 62,
-            "width": 220,
-            "height": 200,
+            "width": 199,
+            "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -135,8 +135,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 520,
-            "width": 220,
-            "height": 160,
+            "width": 168,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -147,8 +147,8 @@
             "id": 496,
             "position_x": 300,
             "position_y": 280,
-            "width": 200,
-            "height": 160,
+            "width": 180,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -160,8 +160,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 700,
-            "width": 240,
-            "height": 220,
+            "width": 193,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -169,73 +169,63 @@
             "init": "delay~ 0.25"
         },
         "9": {
-            "init": "comment the lfo modulates the delay time",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
-            "position_x": 546,
+            "annotation": true,
+            "position_x": 525,
             "position_y": 930,
-            "width": 224,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the lfo modulates the delay time",
+                    "name": "block",
+                    "value": "the lfo modulates the delay time\nwhich bends the pitch of the repeats",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the lfo modulates the delay time"
+            "text": "the lfo modulates the delay time\nwhich bends the pitch of the repeats"
         },
         "10": {
-            "init": "comment which bends the pitch of the repeats",
-            "name": "comment",
-            "id": 607,
-            "position_x": 546,
-            "position_y": 960,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "which bends the pitch of the repeats",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "which bends the pitch of the repeats"
-        },
-        "11": {
             "name": "fader_out~",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
             "position_y": 1000,
-            "width": 220,
-            "height": 220,
+            "width": 70,
+            "height": 308,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "fader_out~ 1 2"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1250,
+            "position_y": 1338,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -306,7 +296,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"

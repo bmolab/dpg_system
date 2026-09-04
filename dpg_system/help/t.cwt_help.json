@@ -1,11 +1,11 @@
 {
-    "height": 1155,
-    "width": 1844,
+    "height": 1053,
+    "width": 1819,
     "position": [
         100,
         100
     ],
-    "id": 1162,
+    "id": 755,
     "name": "t.cwt_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cwt_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 480,
+            "width": 500,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 996,
+            "position_x": 971,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -140,8 +140,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 155,
-            "width": 300,
-            "height": 200,
+            "width": 95,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -160,273 +160,168 @@
             "init": "rolling_buffer 256"
         },
         "5": {
-            "init": "comment a window to transform - this node takes",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 661,
             "position_y": 370,
-            "width": 273,
-            "height": 30,
+            "width": 280,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a window to transform - this node takes",
+                    "name": "block",
+                    "value": "a window to transform - this node takes\nthe whole thing at once, unlike ultracwt",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a window to transform - this node takes"
+            "text": "a window to transform - this node takes\nthe whole thing at once, unlike ultracwt"
         },
         "6": {
-            "init": "comment the whole thing at once, unlike ultracwt",
-            "name": "comment",
-            "id": 459,
-            "position_x": 686,
-            "position_y": 400,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the whole thing at once, unlike ultracwt",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the whole thing at once, unlike ultracwt"
-        },
-        "7": {
             "name": "t.cwt",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
             "position_y": 445,
-            "width": 320,
-            "height": 260,
+            "width": 203,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 661,
+            "position_y": 720,
+            "width": 274,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "sample_scaling is dt - seconds per\nsample. It does not change the picture,\nonly what the rows MEAN in Hz - so a\nwrong value is wrong silently",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "sample_scaling is dt - seconds per\nsample. It does not change the picture,\nonly what the rows MEAN in Hz - so a\nwrong value is wrong silently"
         },
         "8": {
-            "init": "comment sample_scaling is dt - seconds per",
-            "name": "comment",
-            "id": 533,
-            "position_x": 686,
-            "position_y": 720,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "sample_scaling is dt - seconds per",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "sample_scaling is dt - seconds per"
-        },
-        "9": {
-            "init": "comment sample. It does not change the picture,",
-            "name": "comment",
-            "id": 570,
-            "position_x": 686,
-            "position_y": 750,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "sample. It does not change the picture,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "sample. It does not change the picture,"
-        },
-        "10": {
-            "init": "comment only what the rows MEAN in Hz - so a",
-            "name": "comment",
-            "id": 607,
-            "position_x": 686,
-            "position_y": 780,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "only what the rows MEAN in Hz - so a",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "only what the rows MEAN in Hz - so a"
-        },
-        "11": {
-            "init": "comment wrong value is wrong silently",
-            "name": "comment",
-            "id": 644,
-            "position_x": 686,
-            "position_y": 810,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "wrong value is wrong silently",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "wrong value is wrong silently"
-        },
-        "12": {
             "name": "info",
-            "id": 681,
+            "id": 533,
             "position_x": 400,
             "position_y": 445,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
-            "init": "comment note the leading 1: the answer is",
-            "name": "comment",
-            "id": 718,
-            "position_x": 686,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 661,
             "position_y": 540,
-            "width": 231,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "note the leading 1: the answer is",
+                    "name": "block",
+                    "value": "note the leading 1: the answer is\nbatch by scales by time, not a plain\nimage. Squeeze it before displaying",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "note the leading 1: the answer is"
+            "text": "note the leading 1: the answer is\nbatch by scales by time, not a plain\nimage. Squeeze it before displaying"
         },
-        "14": {
-            "init": "comment batch by scales by time, not a plain",
-            "name": "comment",
-            "id": 755,
-            "position_x": 686,
-            "position_y": 570,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "batch by scales by time, not a plain",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "batch by scales by time, not a plain"
-        },
-        "15": {
-            "init": "comment image. Squeeze it before displaying",
-            "name": "comment",
-            "id": 792,
-            "position_x": 686,
-            "position_y": 600,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "image. Squeeze it before displaying",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "image. Squeeze it before displaying"
-        },
-        "16": {
+        "10": {
             "name": "t.squeeze",
-            "id": 829,
+            "id": 607,
             "position_x": 400,
             "position_y": 650,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
+        "11": {
             "name": "heat_map",
-            "id": 866,
+            "id": 644,
             "position_x": 400,
             "position_y": 745,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -473,161 +368,51 @@
                 }
             }
         },
-        "18": {
-            "init": "comment scale_distribution sets the row count:",
-            "name": "comment",
-            "id": 903,
-            "position_x": 686,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 661,
             "position_y": 905,
-            "width": 266,
-            "height": 30,
+            "width": 274,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "scale_distribution sets the row count:",
+                    "name": "block",
+                    "value": "scale_distribution sets the row count:\n0.25 -> 33 rows, 0.125 -> 65, 0.0625\n-> 129. Halving it doubles the work\nwavelet_constant is w0 - 6 is standard.\nHigher is sharper in frequency and\nblurrier in time. You cannot have both",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "scale_distribution sets the row count:"
+            "text": "scale_distribution sets the row count:\n0.25 -> 33 rows, 0.125 -> 65, 0.0625\n-> 129. Halving it doubles the work\nwavelet_constant is w0 - 6 is standard.\nHigher is sharper in frequency and\nblurrier in time. You cannot have both"
         },
-        "19": {
-            "init": "comment 0.25 -> 33 rows, 0.125 -> 65, 0.0625",
-            "name": "comment",
-            "id": 940,
-            "position_x": 686,
-            "position_y": 935,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "0.25 -> 33 rows, 0.125 -> 65, 0.0625",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "0.25 -> 33 rows, 0.125 -> 65, 0.0625"
-        },
-        "20": {
-            "init": "comment -> 129. Halving it doubles the work",
-            "name": "comment",
-            "id": 977,
-            "position_x": 686,
-            "position_y": 965,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "-> 129. Halving it doubles the work",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "-> 129. Halving it doubles the work"
-        },
-        "21": {
-            "init": "comment wavelet_constant is w0 - 6 is standard.",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 686,
-            "position_y": 1005,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "wavelet_constant is w0 - 6 is standard.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "wavelet_constant is w0 - 6 is standard."
-        },
-        "22": {
-            "init": "comment Higher is sharper in frequency and",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 686,
-            "position_y": 1035,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Higher is sharper in frequency and",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Higher is sharper in frequency and"
-        },
-        "23": {
-            "init": "comment blurrier in time. You cannot have both",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 686,
-            "position_y": 1065,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "blurrier in time. You cannot have both",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "blurrier in time. You cannot have both"
-        },
-        "24": {
+        "13": {
             "name": "close",
-            "id": 1125,
+            "id": 718,
             "position_x": 24,
-            "position_y": 923,
+            "position_y": 925,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -658,37 +443,37 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "wavelets out",
-            "dest_node": 681,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "wavelets out",
-            "dest_node": 829,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 829,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 866,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

@@ -88,13 +88,13 @@ mgl_context is the current equivalent, and its help patch explains the same
 chain idea. gl_body draws a skeleton in this chain."""
 
 demo = chain() + [
-    {'key': 'rot', 'init': 'gl_rotate', 'pos': (30, 480), 'w': 240, 'h': 160},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 660), 'w': 240, 'h': 200},
+    {'key': 'rot', 'init': 'gl_rotate', 'pos': (30, 516), 'w': 240, 'h': 160},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 696), 'w': 240, 'h': 200},
     {'key': 'c0', 'comment': True, 'text': 'the rotate applies to everything after it',
-     'pos': (30, 875)},
-    {'key': 'en', 'init': 'gl_enable', 'pos': (310, 480), 'w': 240, 'h': 120},
+     'pos': (30, 911)},
+    {'key': 'en', 'init': 'gl_enable', 'pos': (310, 516), 'w': 240, 'h': 120},
     {'key': 'c1', 'comment': True, 'text': 'a flag, for the rest of this branch',
-     'pos': (310, 615)},
+     'pos': (310, 651)},
 ]
 links = CHAIN_LINKS + [('lgt', 'gl chain out', 'rot', 'gl chain in'),
                        ('rot', 'gl chain out', 'sph', 'gl chain in')]
@@ -167,16 +167,16 @@ gl chain out:
 The chain, with the transform in force downstream."""
 
 demo = chain() + [
-    {'key': 'tr1', 'init': 'gl_translate', 'pos': (30, 480), 'w': 240, 'h': 160},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 660), 'w': 240, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'moved by the first translate', 'pos': (30, 875)},
-    {'key': 'tr2', 'init': 'gl_translate', 'pos': (30, 915), 'w': 240, 'h': 160},
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 1095), 'w': 240, 'h': 220},
+    {'key': 'tr1', 'init': 'gl_translate', 'pos': (30, 516), 'w': 240, 'h': 160},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 696), 'w': 240, 'h': 200},
+    {'key': 'c0', 'comment': True, 'text': 'moved by the first translate', 'pos': (30, 911)},
+    {'key': 'tr2', 'init': 'gl_translate', 'pos': (30, 951), 'w': 240, 'h': 160},
+    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 1131), 'w': 240, 'h': 220},
     {'key': 'c1', 'comment': True, 'text': 'by BOTH: they accumulate down the chain',
-     'pos': (30, 1330)},
-    {'key': 'al', 'init': 'gl_align', 'pos': (310, 915), 'w': 240, 'h': 160},
+     'pos': (30, 1366)},
+    {'key': 'al', 'init': 'gl_align', 'pos': (310, 951), 'w': 240, 'h': 160},
     {'key': 'c2', 'comment': True, 'text': 'points what follows along a direction',
-     'pos': (310, 1090)},
+     'pos': (310, 1126)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'gl chain out', 'tr1', 'gl chain in'),
@@ -256,13 +256,13 @@ them. If something transparent is disappearing behind what it should reveal,
 that is the chain order rather than the alpha value."""
 
 demo = chain() + [
-    {'key': 'mat', 'init': 'gl_material', 'pos': (30, 480), 'w': 240, 'h': 240},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 740), 'w': 240, 'h': 200},
+    {'key': 'mat', 'init': 'gl_material', 'pos': (30, 516), 'w': 240, 'h': 240},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 776), 'w': 240, 'h': 200},
     {'key': 'c0', 'comment': True, 'text': 'material: it shows its curvature',
-     'pos': (30, 955)},
-    {'key': 'col', 'init': 'gl_color', 'pos': (310, 480), 'w': 240, 'h': 200},
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (310, 700), 'w': 240, 'h': 220},
-    {'key': 'c1', 'comment': True, 'text': 'colour: flat, no shading', 'pos': (310, 935)},
+     'pos': (30, 991)},
+    {'key': 'col', 'init': 'gl_color', 'pos': (310, 516), 'w': 240, 'h': 200},
+    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (310, 736), 'w': 240, 'h': 220},
+    {'key': 'c1', 'comment': True, 'text': 'colour: flat, no shading', 'pos': (310, 971)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'gl chain out', 'mat', 'gl chain in'),
@@ -348,16 +348,16 @@ gl chain out:
 The chain, continuing - shapes change no state for what follows."""
 
 demo = chain() + [
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 480), 'w': 240, 'h': 240},
+    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 516), 'w': 240, 'h': 240},
     {'key': 'c0', 'comment': True, 'text': 'set top radius to 0 for a cone',
-     'pos': (30, 735)},
-    {'key': 'tr', 'init': 'gl_translate', 'pos': (30, 775), 'w': 240, 'h': 160},
-    {'key': 'pd', 'init': 'gl_partial_disk', 'pos': (30, 955), 'w': 240, 'h': 280},
+     'pos': (30, 771)},
+    {'key': 'tr', 'init': 'gl_translate', 'pos': (30, 811), 'w': 240, 'h': 160},
+    {'key': 'pd', 'init': 'gl_partial_disk', 'pos': (30, 991), 'w': 240, 'h': 280},
     {'key': 'c1', 'comment': True, 'text': 'drag sweep angle: a value as an arc',
-     'pos': (30, 1250)},
-    {'key': 'ns', 'init': 'gl_nested_spheres', 'pos': (310, 775), 'w': 240, 'h': 220},
+     'pos': (30, 1286)},
+    {'key': 'ns', 'init': 'gl_nested_spheres', 'pos': (310, 811), 'w': 240, 'h': 220},
     {'key': 'c2', 'comment': True, 'text': 'a sphere at each size in the list',
-     'pos': (310, 1010)},
+     'pos': (310, 1046)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'gl chain out', 'cyl', 'gl chain in'),
@@ -443,17 +443,15 @@ mgl_line_array is the newer equivalent with more control over the accenting.
 The motion capture nodes produce the poses these draw."""
 
 demo = chain() + [
-    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 480), 'w': 260, 'h': 300},
-    {'key': 'c0', 'comment': True, 'text': 'patch an array of line points in',
-     'pos': (30, 795)},
-    {'key': 'c1', 'comment': True, 'text': 'raise accent_motion to see speed',
-     'pos': (30, 825)},
-    {'key': 'od', 'init': 'gl_orientation_disks', 'pos': (30, 870), 'w': 260, 'h': 280},
+    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 516), 'w': 260, 'h': 300},
+    {'key': 'c0', 'comment': True, 'text': 'patch an array of line points in\nraise accent_motion to see speed',
+     'pos': (30, 831)},
+    {'key': 'od', 'init': 'gl_orientation_disks', 'pos': (30, 906), 'w': 260, 'h': 280},
     {'key': 'c2', 'comment': True, 'text': 'a disk per joint: a twist looks like one',
-     'pos': (30, 1165)},
-    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (320, 480), 'w': 240, 'h': 180},
+     'pos': (30, 1201)},
+    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (320, 516), 'w': 240, 'h': 180},
     {'key': 'c3', 'comment': True, 'text': 'raw vertices, when nothing else fits',
-     'pos': (320, 675)},
+     'pos': (320, 711)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'gl chain out', 'la', 'gl chain in'),
@@ -528,22 +526,19 @@ demo = chain() + [
     # 'font' saved at its exact default: restore_properties skips a no-op, so
     # font_changed never fires -- it opens a native file dialog, which would
     # confront anyone opening this help patch with a file picker.
-    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 480), 'w': 260, 'h': 260,
+    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 516), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
-    {'key': 'c0', 'comment': True, 'text': 'position_x and _y are SCREEN coordinates',
-     'pos': (30, 755)},
-    {'key': 'c1', 'comment': True, 'text': 'so it stays put as the camera moves',
-     'pos': (30, 785)},
-    {'key': 'bb', 'init': 'gl_billboard', 'pos': (30, 830), 'w': 240, 'h': 180},
-    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 1025), 'w': 260, 'h': 260,
+    {'key': 'c0', 'comment': True, 'text': 'position_x and _y are SCREEN coordinates\nso it stays put as the camera moves',
+     'pos': (30, 791)},
+    {'key': 'bb', 'init': 'gl_billboard', 'pos': (30, 866), 'w': 240, 'h': 180},
+    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 1061), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
-    {'key': 'c2', 'comment': True, 'text': 'behind a billboard instead: in the scene,',
-     'pos': (30, 1300)},
-    {'key': 'c3', 'comment': True, 'text': 'but always turned to face you', 'pos': (30, 1330)},
-    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (320, 480), 'w': 260, 'h': 280},
-    {'key': 'i1', 'init': 'int', 'pos': (320, 775), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c2', 'comment': True, 'text': 'behind a billboard instead: in the scene,\nbut always turned to face you',
+     'pos': (30, 1336)},
+    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (320, 516), 'w': 260, 'h': 280},
+    {'key': 'i1', 'init': 'int', 'pos': (320, 811), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c4', 'comment': True, 'text': 'controls inside a fullscreen render',
-     'pos': (320, 825)},
+     'pos': (320, 861)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'gl chain out', 'tx', 'gl chain in'),

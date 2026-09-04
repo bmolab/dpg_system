@@ -1,11 +1,11 @@
 {
-    "height": 1245,
-    "width": 1479,
+    "height": 1219,
+    "width": 1391,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 644,
     "name": "t.filter_bank_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.filter_bank_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 516,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 631,
+            "position_x": 543,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 400,
-            "width": 220,
-            "height": 90,
+            "width": 144,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,82 +121,72 @@
             "id": 422,
             "position_x": 30,
             "position_y": 505,
-            "width": 300,
-            "height": 240,
+            "width": 191,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment set sample freq to match the source",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 356,
+            "annotation": true,
+            "position_x": 264,
             "position_y": 760,
-            "width": 245,
-            "height": 30,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "set sample freq to match the source",
+                    "name": "block",
+                    "value": "set sample freq to match the source\nout: [joints, bands, 3]",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "set sample freq to match the source"
+            "text": "set sample freq to match the source\nout: [joints, bands, 3]"
         },
         "7": {
-            "init": "comment out: [joints, bands, 3]",
-            "name": "comment",
-            "id": 496,
-            "position_x": 356,
-            "position_y": 790,
-            "width": 161,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "out: [joints, bands, 3]",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "out: [joints, bands, 3]"
-        },
-        "8": {
             "name": "np.linalg.norm",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
             "position_y": 830,
-            "width": 220,
-            "height": 90,
+            "width": 117,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "name": "heat_map",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
             "position_y": 935,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -243,86 +233,51 @@
                 }
             }
         },
-        "10": {
-            "init": "comment how much movement in each band -",
-            "name": "comment",
-            "id": 607,
-            "position_x": 356,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 264,
             "position_y": 1095,
-            "width": 224,
-            "height": 30,
+            "width": 249,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "how much movement in each band -",
+                    "name": "block",
+                    "value": "how much movement in each band -\nswaying and trembling become\ndifferent numbers, not the same one",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "how much movement in each band -"
+            "text": "how much movement in each band -\nswaying and trembling become\ndifferent numbers, not the same one"
         },
-        "11": {
-            "init": "comment swaying and trembling become",
-            "name": "comment",
-            "id": 644,
-            "position_x": 356,
-            "position_y": 1125,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "swaying and trembling become",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "swaying and trembling become"
-        },
-        "12": {
-            "init": "comment different numbers, not the same one",
-            "name": "comment",
-            "id": 681,
-            "position_x": 356,
-            "position_y": 1155,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "different numbers, not the same one",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "different numbers, not the same one"
-        },
-        "13": {
+        "10": {
             "name": "close",
-            "id": 718,
+            "id": 607,
             "position_x": 24,
-            "position_y": 1113,
+            "position_y": 1115,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -363,17 +318,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "banded rotation diffs",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "3": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "norm",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

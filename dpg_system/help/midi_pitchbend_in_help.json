@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1750,
+    "width": 1729,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 681,
     "name": "midi_pitchbend_in_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/midi_pitchbend_in_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 420,
+            "width": 439,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 912,
+            "position_x": 891,
             "position_y": 45,
             "width": 798,
             "height": 716,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 160,
+            "width": 237,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,7 +110,7 @@
             "position_x": 30,
             "position_y": 240,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -168,73 +168,63 @@
             }
         },
         "5": {
-            "init": "comment fourteen bits, centred at rest",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 616,
+            "annotation": true,
+            "position_x": 593,
             "position_y": 425,
-            "width": 210,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "fourteen bits, centred at rest",
+                    "name": "block",
+                    "value": "fourteen bits, centred at rest\nthe finest continuous channel MIDI has",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "fourteen bits, centred at rest"
+            "text": "fourteen bits, centred at rest\nthe finest continuous channel MIDI has"
         },
         "6": {
-            "init": "comment the finest continuous channel MIDI has",
-            "name": "comment",
-            "id": 459,
-            "position_x": 616,
-            "position_y": 455,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the finest continuous channel MIDI has",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the finest continuous channel MIDI has"
-        },
-        "7": {
             "name": "midi_aftertouch_in",
-            "id": 496,
+            "id": 459,
             "position_x": 330,
             "position_y": 62,
-            "width": 260,
-            "height": 160,
+            "width": 237,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
+        "7": {
             "name": "int",
-            "id": 533,
+            "id": 496,
             "position_x": 330,
             "position_y": 240,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -257,63 +247,53 @@
                 }
             }
         },
-        "9": {
-            "init": "comment one value for the whole channel,",
-            "name": "comment",
-            "id": 570,
-            "position_x": 616,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 593,
             "position_y": 295,
-            "width": 224,
-            "height": 30,
+            "width": 231,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "one value for the whole channel,",
+                    "name": "block",
+                    "value": "one value for the whole channel,\nnot per note",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "one value for the whole channel,"
+            "text": "one value for the whole channel,\nnot per note"
         },
-        "10": {
-            "init": "comment not per note",
-            "name": "comment",
-            "id": 607,
-            "position_x": 616,
-            "position_y": 325,
-            "width": 84,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "not per note",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "not per note"
-        },
-        "11": {
+        "9": {
             "name": "ranger",
-            "id": 644,
+            "id": 570,
             "position_x": 330,
             "position_y": 365,
-            "width": 240,
-            "height": 200,
+            "width": 154,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -351,61 +331,51 @@
             },
             "init": "ranger 20.0 100.0 0.0 1.0"
         },
-        "12": {
-            "init": "comment tick calibrate, press as hard as you",
-            "name": "comment",
-            "id": 681,
-            "position_x": 616,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 593,
             "position_y": 580,
-            "width": 252,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "tick calibrate, press as hard as you",
+                    "name": "block",
+                    "value": "tick calibrate, press as hard as you\nmean to, untick - it learns your range",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "tick calibrate, press as hard as you"
+            "text": "tick calibrate, press as hard as you\nmean to, untick - it learns your range"
         },
-        "13": {
-            "init": "comment mean to, untick - it learns your range",
-            "name": "comment",
-            "id": 718,
-            "position_x": 616,
-            "position_y": 610,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "mean to, untick - it learns your range",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "mean to, untick - it learns your range"
-        },
-        "14": {
+        "11": {
             "name": "close",
-            "id": 755,
+            "id": 644,
             "position_x": 24,
-            "position_y": 595,
+            "position_y": 521,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -432,21 +402,21 @@
             "dest_input_name": "y"
         },
         "1": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 644,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

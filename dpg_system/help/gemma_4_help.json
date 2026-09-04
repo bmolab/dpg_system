@@ -1,11 +1,11 @@
 {
-    "height": 1310,
-    "width": 2014,
+    "height": 1282,
+    "width": 2008,
     "position": [
         100,
         100
     ],
-    "id": 1199,
+    "id": 903,
     "name": "gemma_4_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gemma_4_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1156,
+            "position_x": 1150,
             "position_y": 45,
             "width": 818,
             "height": 816,
@@ -105,61 +105,51 @@
             "properties": {}
         },
         "4": {
-            "init": "comment switch on and WAIT - the model is loaded",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 846,
+            "annotation": true,
+            "position_x": 840,
             "position_y": 62,
             "width": 280,
-            "height": 30,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "switch on and WAIT - the model is loaded",
+                    "name": "block",
+                    "value": "switch on and WAIT - the model is loaded\nhere, and downloaded the first time",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "switch on and WAIT - the model is loaded"
+            "text": "switch on and WAIT - the model is loaded\nhere, and downloaded the first time"
         },
         "5": {
-            "init": "comment here, and downloaded the first time",
-            "name": "comment",
-            "id": 422,
-            "position_x": 846,
-            "position_y": 92,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "here, and downloaded the first time",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "here, and downloaded the first time"
-        },
-        "6": {
             "name": "string",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
             "position_y": 130,
-            "width": 560,
+            "width": 550,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -182,12 +172,12 @@
                 }
             }
         },
-        "7": {
+        "6": {
             "name": "string",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
             "position_y": 185,
-            "width": 560,
+            "width": 550,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -210,13 +200,13 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "name": "gemma_4",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
             "position_y": 250,
-            "width": 380,
-            "height": 620,
+            "width": 230,
+            "height": 546,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -228,113 +218,53 @@
                 }
             }
         },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 885,
+            "width": 268,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "target_length nudges it towards a size\nby making the ending more likely - it\ndoes not cut. max_tokens does cut\nslowdown paces it for reading",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "target_length nudges it towards a size\nby making the ending more likely - it\ndoes not cut. max_tokens does cut\nslowdown paces it for reading"
+        },
         "9": {
-            "init": "comment target_length nudges it towards a size",
-            "name": "comment",
-            "id": 570,
-            "position_x": 846,
-            "position_y": 905,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "target_length nudges it towards a size",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "target_length nudges it towards a size"
-        },
-        "10": {
-            "init": "comment by making the ending more likely - it",
-            "name": "comment",
-            "id": 607,
-            "position_x": 846,
-            "position_y": 985,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "by making the ending more likely - it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "by making the ending more likely - it"
-        },
-        "11": {
-            "init": "comment does not cut. max_tokens does cut",
-            "name": "comment",
-            "id": 644,
-            "position_x": 846,
-            "position_y": 1025,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "does not cut. max_tokens does cut",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "does not cut. max_tokens does cut"
-        },
-        "12": {
-            "init": "comment slowdown paces it for reading",
-            "name": "comment",
-            "id": 681,
-            "position_x": 846,
-            "position_y": 1065,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "slowdown paces it for reading",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "slowdown paces it for reading"
-        },
-        "13": {
             "name": "text_display",
-            "id": 718,
+            "id": 570,
             "position_x": 460,
             "position_y": 250,
-            "width": 360,
-            "height": 260,
+            "width": 354,
+            "height": 250,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -371,13 +301,13 @@
                 }
             }
         },
-        "14": {
+        "10": {
             "init": "comment the answer, arriving token by token",
             "name": "comment",
-            "id": 755,
-            "position_x": 846,
+            "id": 607,
+            "position_x": 840,
             "position_y": 525,
-            "width": 245,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -396,13 +326,13 @@
             },
             "comment": "the answer, arriving token by token"
         },
-        "15": {
+        "11": {
             "name": "text_display",
-            "id": 792,
+            "id": 644,
             "position_x": 460,
             "position_y": 570,
-            "width": 360,
-            "height": 220,
+            "width": 354,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -439,84 +369,49 @@
                 }
             }
         },
-        "16": {
-            "init": "comment thinking is a SEPARATE channel - often",
-            "name": "comment",
-            "id": 829,
-            "position_x": 846,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 840,
             "position_y": 805,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "thinking is a SEPARATE channel - often",
+                    "name": "block",
+                    "value": "thinking is a SEPARATE channel - often\nthe interesting part, and almost never\nwhat an audience should read",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "thinking is a SEPARATE channel - often"
+            "text": "thinking is a SEPARATE channel - often\nthe interesting part, and almost never\nwhat an audience should read"
         },
-        "17": {
-            "init": "comment the interesting part, and almost never",
-            "name": "comment",
-            "id": 866,
-            "position_x": 846,
-            "position_y": 835,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the interesting part, and almost never",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the interesting part, and almost never"
-        },
-        "18": {
-            "init": "comment what an audience should read",
-            "name": "comment",
-            "id": 903,
-            "position_x": 846,
-            "position_y": 865,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "what an audience should read",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "what an audience should read"
-        },
-        "19": {
+        "13": {
             "name": "toggle",
-            "id": 940,
+            "id": 718,
             "position_x": 460,
             "position_y": 910,
             "width": 45,
@@ -526,13 +421,13 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "20": {
+        "14": {
             "init": "comment lit while it is generating",
             "name": "comment",
-            "id": 977,
-            "position_x": 846,
-            "position_y": 945,
-            "width": 182,
+            "id": 755,
+            "position_x": 840,
+            "position_y": 959,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -551,13 +446,13 @@
             },
             "comment": "lit while it is generating"
         },
-        "21": {
+        "15": {
             "name": "plot",
-            "id": 1014,
+            "id": 792,
             "position_x": 460,
             "position_y": 970,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -614,86 +509,51 @@
                 }
             }
         },
-        "22": {
-            "init": "comment with score_incoming_text on, this is how",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 846,
+        "16": {
+            "name": "text_block",
+            "id": 829,
+            "annotation": true,
+            "position_x": 840,
             "position_y": 1160,
             "width": 280,
-            "height": 30,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "with score_incoming_text on, this is how",
+                    "name": "block",
+                    "value": "with score_incoming_text on, this is how\nPREDICTABLE your text was to it - low\nmeans unusual, and no generating needed",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "with score_incoming_text on, this is how"
+            "text": "with score_incoming_text on, this is how\nPREDICTABLE your text was to it - low\nmeans unusual, and no generating needed"
         },
-        "23": {
-            "init": "comment PREDICTABLE your text was to it - low",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 846,
-            "position_y": 1190,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "PREDICTABLE your text was to it - low",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "PREDICTABLE your text was to it - low"
-        },
-        "24": {
-            "init": "comment means unusual, and no generating needed",
-            "name": "comment",
-            "id": 1125,
-            "position_x": 846,
-            "position_y": 1220,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "means unusual, and no generating needed",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "means unusual, and no generating needed"
-        },
-        "25": {
+        "17": {
             "name": "close",
-            "id": 1162,
+            "id": 866,
             "position_x": 24,
-            "position_y": 1180,
+            "position_y": 1178,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -714,67 +574,67 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "on / off"
         },
         "1": {
-            "source_node": 459,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "system_prompt"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "prompt"
         },
         "3": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 718,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "4": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "thinking",
-            "dest_node": 792,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "5": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "active",
-            "dest_node": 940,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "6": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "input_token_score",
-            "dest_node": 1014,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

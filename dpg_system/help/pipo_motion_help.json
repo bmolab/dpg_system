@@ -1,11 +1,11 @@
 {
-    "height": 814,
-    "width": 1719,
+    "height": 801,
+    "width": 1693,
     "position": [
         100,
         100
     ],
-    "id": 866,
+    "id": 792,
     "name": "pipo_motion_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/pipo_motion_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 396,
+            "width": 414,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 881,
+            "position_x": 855,
             "position_y": 45,
             "width": 798,
             "height": 696,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 200,
+            "width": 117,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,7 +110,7 @@
             "id": 385,
             "position_x": 564,
             "position_y": 275,
-            "width": 217,
+            "width": 199,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,7 +134,7 @@
             "id": 422,
             "position_x": 30,
             "position_y": 315,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -162,7 +162,7 @@
             "id": 459,
             "position_x": 180,
             "position_y": 315,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -190,7 +190,7 @@
             "id": 496,
             "position_x": 330,
             "position_y": 315,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -214,75 +214,65 @@
             }
         },
         "8": {
-            "init": "comment yaw, pitch, roll - pitch and roll are",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
+            "annotation": true,
             "position_x": 564,
             "position_y": 370,
-            "width": 259,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "yaw, pitch, roll - pitch and roll are",
+                    "name": "block",
+                    "value": "yaw, pitch, roll - pitch and roll are\ndependable; yaw is the magnetic one",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "yaw, pitch, roll - pitch and roll are"
+            "text": "yaw, pitch, roll - pitch and roll are\ndependable; yaw is the magnetic one"
         },
         "9": {
-            "init": "comment dependable; yaw is the magnetic one",
-            "name": "comment",
-            "id": 570,
-            "position_x": 564,
-            "position_y": 400,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "dependable; yaw is the magnetic one",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "dependable; yaw is the magnetic one"
-        },
-        "10": {
             "name": "pack",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 445,
-            "width": 140,
-            "height": 100,
+            "width": 33,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "pack 3"
         },
-        "11": {
+        "10": {
             "name": "euler_to_quaternion",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
             "position_y": 560,
-            "width": 260,
-            "height": 120,
+            "width": 125,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -294,13 +284,13 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment convert before doing anything but showing",
             "name": "comment",
-            "id": 681,
+            "id": 644,
             "position_x": 564,
             "position_y": 695,
-            "width": 287,
+            "width": 260,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -319,13 +309,13 @@
             },
             "comment": "convert before doing anything but showing"
         },
-        "13": {
+        "12": {
             "name": "plot",
-            "id": 718,
+            "id": 681,
             "position_x": 330,
             "position_y": 445,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -382,61 +372,51 @@
                 }
             }
         },
-        "14": {
-            "init": "comment acceleration needs no heading,",
-            "name": "comment",
-            "id": 755,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
             "position_x": 564,
             "position_y": 630,
-            "width": 210,
-            "height": 30,
+            "width": 218,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "acceleration needs no heading,",
+                    "name": "block",
+                    "value": "acceleration needs no heading,\nso no magnetic error",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "acceleration needs no heading,"
+            "text": "acceleration needs no heading,\nso no magnetic error"
         },
-        "15": {
-            "init": "comment so no magnetic error",
-            "name": "comment",
-            "id": 792,
-            "position_x": 564,
-            "position_y": 660,
-            "width": 140,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "so no magnetic error",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "so no magnetic error"
-        },
-        "16": {
+        "14": {
             "name": "close",
-            "id": 829,
+            "id": 755,
             "position_x": 24,
-            "position_y": 710,
+            "position_y": 660,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -487,7 +467,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "yaw",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in 1"
@@ -497,7 +477,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "pitch",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in 2"
@@ -507,17 +487,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "roll",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in 3"
         },
         "6": {
-            "source_node": 607,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "xyz rotation"
@@ -527,7 +507,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "acc",
-            "dest_node": 718,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

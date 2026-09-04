@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1570,
+    "width": 1575,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 755,
     "name": "trigger_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/trigger_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 636,
+            "width": 660,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 722,
+            "position_x": 727,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 88,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,7 +110,7 @@
             "position_x": 150,
             "position_y": 66,
             "width": 22,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +123,7 @@
             "position_x": 30,
             "position_y": 132,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -165,9 +165,9 @@
             "init": "comment a slow rise and fall, 0 to 1",
             "name": "comment",
             "id": 459,
-            "position_x": 433,
+            "position_x": 436,
             "position_y": 215,
-            "width": 196,
+            "width": 181,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -191,8 +191,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 250,
-            "width": 150,
-            "height": 120,
+            "width": 197,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -221,62 +221,52 @@
             "init": "trigger 0.6 0.3"
         },
         "8": {
-            "init": "comment fires above 0.6, releases below 0.3",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 433,
+            "annotation": true,
+            "position_x": 436,
             "position_y": 380,
-            "width": 245,
-            "height": 30,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "fires above 0.6, releases below 0.3",
+                    "name": "block",
+                    "value": "fires above 0.6, releases below 0.3\nthe gap between them is the dead zone",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "fires above 0.6, releases below 0.3"
+            "text": "fires above 0.6, releases below 0.3\nthe gap between them is the dead zone"
         },
         "9": {
-            "init": "comment the gap between them is the dead zone",
-            "name": "comment",
-            "id": 570,
-            "position_x": 433,
-            "position_y": 410,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the gap between them is the dead zone",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the gap between them is the dead zone"
-        },
-        "10": {
             "name": "plot",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 450,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -333,9 +323,9 @@
                 }
             }
         },
-        "11": {
+        "10": {
             "name": "counter",
-            "id": 644,
+            "id": 607,
             "position_x": 280,
             "position_y": 450,
             "width": 123,
@@ -351,12 +341,12 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "name": "int",
-            "id": 681,
+            "id": 644,
             "position_x": 280,
             "position_y": 545,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -379,13 +369,13 @@
                 }
             }
         },
-        "13": {
+        "12": {
             "init": "comment counts releases",
             "name": "comment",
-            "id": 718,
-            "position_x": 433,
+            "id": 681,
+            "position_x": 436,
             "position_y": 600,
-            "width": 105,
+            "width": 101,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -404,11 +394,11 @@
             },
             "comment": "counts releases"
         },
-        "14": {
+        "13": {
             "name": "close",
-            "id": 755,
+            "id": 718,
             "position_x": 24,
-            "position_y": 656,
+            "position_y": 658,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -459,7 +449,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
@@ -469,17 +459,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "release",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "5": {
-            "source_node": 644,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 681,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

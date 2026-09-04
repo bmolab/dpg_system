@@ -1,11 +1,11 @@
 {
     "height": 801,
-    "width": 1740,
+    "width": 1744,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 607,
     "name": "midi_device_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/midi_device_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 902,
+            "position_x": 906,
             "position_y": 45,
             "width": 798,
             "height": 696,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 240,
-            "height": 120,
+            "width": 237,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 205,
-            "width": 200,
-            "height": 120,
+            "width": 39,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -129,74 +129,64 @@
             "init": "print midi"
         },
         "5": {
-            "init": "comment press things on the device and watch",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 606,
+            "annotation": true,
+            "position_x": 608,
             "position_y": 340,
-            "width": 252,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "press things on the device and watch",
+                    "name": "block",
+                    "value": "press things on the device and watch\nthe console - that is how you learn it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "press things on the device and watch"
+            "text": "press things on the device and watch\nthe console - that is how you learn it"
         },
         "6": {
-            "init": "comment the console - that is how you learn it",
-            "name": "comment",
-            "id": 459,
-            "position_x": 606,
-            "position_y": 370,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the console - that is how you learn it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the console - that is how you learn it"
-        },
-        "7": {
             "name": "midi_device",
-            "id": 496,
+            "id": 459,
             "position_x": 320,
             "position_y": 62,
-            "width": 260,
-            "height": 180,
+            "width": 262,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
+        "7": {
             "init": "comment for hardware with lights or motors",
             "name": "comment",
-            "id": 533,
-            "position_x": 606,
+            "id": 496,
+            "position_x": 608,
             "position_y": 255,
-            "width": 238,
+            "width": 217,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -215,23 +205,23 @@
             },
             "comment": "for hardware with lights or motors"
         },
-        "9": {
+        "8": {
             "name": "midi_out",
-            "id": 570,
+            "id": 533,
             "position_x": 320,
             "position_y": 300,
-            "width": 240,
-            "height": 120,
+            "width": 237,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "close",
-            "id": 607,
+            "id": 570,
             "position_x": 24,
-            "position_y": 450,
+            "position_y": 372,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

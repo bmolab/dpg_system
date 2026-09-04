@@ -1,11 +1,11 @@
 {
-    "height": 1275,
-    "width": 1648,
+    "height": 1678,
+    "width": 1625,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 755,
     "name": "mag_offset_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mag_offset_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 780,
+            "position_x": 757,
             "position_y": 45,
             "width": 828,
             "height": 836,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 240,
-            "height": 180,
+            "width": 129,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 260,
-            "width": 240,
-            "height": 240,
+            "width": 246,
+            "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -120,9 +120,9 @@
             "init": "comment turn the sensor through many orientations",
             "name": "comment",
             "id": 422,
-            "position_x": 463,
+            "position_x": 466,
             "position_y": 515,
-            "width": 287,
+            "width": 260,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -146,7 +146,7 @@
             "id": 459,
             "position_x": 310,
             "position_y": 260,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -174,7 +174,7 @@
             "id": 496,
             "position_x": 310,
             "position_y": 315,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -202,7 +202,7 @@
             "id": 533,
             "position_x": 310,
             "position_y": 370,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -226,134 +226,114 @@
             }
         },
         "9": {
-            "init": "comment centre, radius, residual",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
-            "position_x": 463,
+            "annotation": true,
+            "position_x": 466,
             "position_y": 420,
-            "width": 168,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "centre, radius, residual",
+                    "name": "block",
+                    "value": "centre, radius, residual\na clean sensor here reads about 54.6",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "centre, radius, residual"
+            "text": "centre, radius, residual\na clean sensor here reads about 54.6"
         },
         "10": {
-            "init": "comment a clean sensor here reads about 54.6",
-            "name": "comment",
+            "name": "shadow",
             "id": 607,
-            "position_x": 463,
-            "position_y": 450,
-            "width": 252,
-            "height": 30,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a clean sensor here reads about 54.6",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a clean sensor here reads about 54.6"
+            "properties": {}
         },
         "11": {
-            "name": "shadow",
+            "name": "mag_yaw_correct",
             "id": 644,
             "position_x": 30,
-            "position_y": 560,
-            "width": 280,
-            "height": 320,
+            "position_y": 900,
+            "width": 144,
+            "height": 644,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "12": {
-            "name": "mag_yaw_correct",
+            "name": "text_block",
             "id": 681,
-            "position_x": 30,
-            "position_y": 900,
-            "width": 280,
-            "height": 240,
+            "annotation": true,
+            "position_x": 466,
+            "position_y": 1155,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "global yaw: wrong heading in the room\nlocal yaw: sensor mounted rotated",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "global yaw: wrong heading in the room\nlocal yaw: sensor mounted rotated"
         },
         "13": {
-            "init": "comment global yaw: wrong heading in the room",
-            "name": "comment",
-            "id": 718,
-            "position_x": 463,
-            "position_y": 1155,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "global yaw: wrong heading in the room",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "global yaw: wrong heading in the room"
-        },
-        "14": {
-            "init": "comment local yaw: sensor mounted rotated",
-            "name": "comment",
-            "id": 755,
-            "position_x": 463,
-            "position_y": 1185,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "local yaw: sensor mounted rotated",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "local yaw: sensor mounted rotated"
-        },
-        "15": {
             "name": "close",
-            "id": 792,
+            "id": 718,
             "position_x": 24,
-            "position_y": 1170,
+            "position_y": 1574,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -410,11 +390,11 @@
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 644,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "body 1 quaternions",
-            "dest_node": 681,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pose in"

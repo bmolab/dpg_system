@@ -1,11 +1,11 @@
 {
-    "height": 1120,
-    "width": 1897,
+    "height": 1042,
+    "width": 1893,
     "position": [
         100,
         100
     ],
-    "id": 1236,
+    "id": 977,
     "name": "plot_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/plot_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 576,
+            "width": 598,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1049,
+            "position_x": 1045,
             "position_y": 45,
             "width": 808,
             "height": 786,
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -140,8 +140,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 155,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -202,9 +202,9 @@
             "init": "comment one value at a time, scrolling",
             "name": "comment",
             "id": 422,
-            "position_x": 746,
+            "position_x": 741,
             "position_y": 345,
-            "width": 210,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -228,8 +228,8 @@
             "id": 459,
             "position_x": 380,
             "position_y": 155,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -287,87 +287,77 @@
             }
         },
         "7": {
-            "init": "comment the same data as stem - easier to read",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 746,
+            "annotation": true,
+            "position_x": 741,
             "position_y": 385,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the same data as stem - easier to read",
+                    "name": "block",
+                    "value": "the same data as stem - easier to read\nfor anything sparse or event-like",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the same data as stem - easier to read"
+            "text": "the same data as stem - easier to read\nfor anything sparse or event-like"
         },
         "8": {
-            "init": "comment for anything sparse or event-like",
-            "name": "comment",
-            "id": 533,
-            "position_x": 746,
-            "position_y": 425,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "for anything sparse or event-like",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "for anything sparse or event-like"
-        },
-        "9": {
             "name": "button",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
             "position_y": 420,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "np.rand",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 480,
-            "width": 180,
-            "height": 180,
+            "width": 123,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "np.rand 32"
         },
-        "11": {
+        "10": {
             "name": "heat_map",
-            "id": 644,
+            "id": 607,
             "position_x": 250,
             "position_y": 480,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -414,63 +404,53 @@
                 }
             }
         },
-        "12": {
-            "init": "comment heat_map: the array IS the picture,",
-            "name": "comment",
-            "id": 681,
-            "position_x": 746,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 741,
             "position_y": 640,
-            "width": 245,
-            "height": 30,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "heat_map: the array IS the picture,",
+                    "name": "block",
+                    "value": "heat_map: the array IS the picture,\nreplaced whole each time",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "heat_map: the array IS the picture,"
+            "text": "heat_map: the array IS the picture,\nreplaced whole each time"
         },
-        "13": {
-            "init": "comment replaced whole each time",
-            "name": "comment",
-            "id": 718,
-            "position_x": 746,
-            "position_y": 720,
-            "width": 168,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "replaced whole each time",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "replaced whole each time"
-        },
-        "14": {
+        "12": {
             "name": "heat_scroll",
-            "id": 755,
+            "id": 681,
             "position_x": 30,
             "position_y": 720,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -517,63 +497,53 @@
                 }
             }
         },
-        "15": {
-            "init": "comment heat_scroll: each array is one column,",
-            "name": "comment",
-            "id": 792,
-            "position_x": 746,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 741,
             "position_y": 880,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "heat_scroll: each array is one column,",
+                    "name": "block",
+                    "value": "heat_scroll: each array is one column,\nand the past stays on screen",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "heat_scroll: each array is one column,"
+            "text": "heat_scroll: each array is one column,\nand the past stays on screen"
         },
-        "16": {
-            "init": "comment and the past stays on screen",
-            "name": "comment",
-            "id": 829,
-            "position_x": 746,
-            "position_y": 910,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "and the past stays on screen",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "and the past stays on screen"
-        },
-        "17": {
+        "14": {
             "name": "heat_map",
-            "id": 866,
+            "id": 755,
             "position_x": 480,
             "position_y": 480,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -620,87 +590,52 @@
                 }
             }
         },
-        "18": {
-            "init": "comment the SAME data with max y at 20 -",
-            "name": "comment",
-            "id": 903,
-            "position_x": 746,
-            "position_y": 680,
-            "width": 224,
-            "height": 30,
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 741,
+            "position_y": 690,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the SAME data with max y at 20 -",
+                    "name": "block",
+                    "value": "the SAME data with max y at 20 -\nnearly blank. If a display looks wrong,\ncheck min y and max y first",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the SAME data with max y at 20 -"
+            "text": "the SAME data with max y at 20 -\nnearly blank. If a display looks wrong,\ncheck min y and max y first"
         },
-        "19": {
-            "init": "comment nearly blank. If a display looks wrong,",
-            "name": "comment",
-            "id": 940,
-            "position_x": 746,
-            "position_y": 760,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "nearly blank. If a display looks wrong,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "nearly blank. If a display looks wrong,"
-        },
-        "20": {
-            "init": "comment check min y and max y first",
-            "name": "comment",
-            "id": 977,
-            "position_x": 746,
-            "position_y": 800,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "check min y and max y first",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "check min y and max y first"
-        },
-        "21": {
+        "16": {
             "name": "message",
-            "id": 1014,
+            "id": 829,
             "position_x": 480,
             "position_y": 760,
-            "width": 140,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -718,98 +653,63 @@
                 }
             }
         },
-        "22": {
+        "17": {
             "name": "info",
-            "id": 1051,
+            "id": 866,
             "position_x": 480,
             "position_y": 820,
-            "width": 240,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "23": {
-            "init": "comment click 'dump' and the plot hands back",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 746,
-            "position_y": 950,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "click 'dump' and the plot hands back",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "click 'dump' and the plot hands back"
-        },
-        "24": {
-            "init": "comment its whole buffer - a display becomes",
-            "name": "comment",
-            "id": 1125,
-            "position_x": 746,
-            "position_y": 990,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "its whole buffer - a display becomes",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "its whole buffer - a display becomes"
-        },
-        "25": {
-            "init": "comment a recorder",
-            "name": "comment",
-            "id": 1162,
-            "position_x": 746,
-            "position_y": 1030,
-            "width": 70,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a recorder",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a recorder"
-        },
-        "26": {
-            "name": "close",
-            "id": 1199,
-            "position_x": 24,
+        "18": {
+            "name": "text_block",
+            "id": 903,
+            "annotation": true,
+            "position_x": 741,
             "position_y": 930,
+            "width": 255,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click 'dump' and the plot hands back\nits whole buffer - a display becomes\na recorder",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click 'dump' and the plot hands back\nits whole buffer - a display becomes\na recorder"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 900,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -850,43 +750,43 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 755,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "3": {
-            "source_node": 570,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 607,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "5": {
-            "source_node": 607,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 866,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "6": {
-            "source_node": 1014,
+            "source_node": 829,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
@@ -900,7 +800,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 1051,
+            "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

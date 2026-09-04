@@ -1,11 +1,11 @@
 {
-    "height": 1029,
-    "width": 1830,
+    "height": 1000,
+    "width": 1787,
     "position": [
         100,
         100
     ],
-    "id": 866,
+    "id": 829,
     "name": "udp_numpy_send_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/udp_numpy_send_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 982,
+            "position_x": 939,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 400,
-            "width": 220,
-            "height": 90,
+            "width": 144,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 505,
-            "width": 160,
-            "height": 80,
+            "width": 117,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -136,100 +136,90 @@
             "init": "subsample 2"
         },
         "6": {
-            "init": "comment thin the stream: it costs nothing when",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 641,
             "position_y": 600,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "thin the stream: it costs nothing when",
+                    "name": "block",
+                    "value": "thin the stream: it costs nothing when\nstill, and leaves headroom when not",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "thin the stream: it costs nothing when"
+            "text": "thin the stream: it costs nothing when\nstill, and leaves headroom when not"
         },
         "7": {
-            "init": "comment still, and leaves headroom when not",
-            "name": "comment",
-            "id": 496,
-            "position_x": 686,
-            "position_y": 630,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "still, and leaves headroom when not",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "still, and leaves headroom when not"
-        },
-        "8": {
             "name": "udp_numpy_send",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
             "position_y": 675,
-            "width": 300,
-            "height": 160,
+            "width": 145,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "udp_numpy_send 127.0.0.1 9000"
         },
-        "9": {
+        "8": {
             "name": "udp_numpy_receive",
-            "id": 570,
+            "id": 533,
             "position_x": 380,
             "position_y": 675,
-            "width": 280,
-            "height": 120,
+            "width": 117,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "udp_numpy_receive 9000"
         },
-        "10": {
+        "9": {
             "name": "info",
-            "id": 607,
+            "id": 570,
             "position_x": 380,
             "position_y": 815,
-            "width": 240,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "init": "comment both ends must agree on the port",
             "name": "comment",
-            "id": 644,
-            "position_x": 686,
+            "id": 607,
+            "position_x": 641,
             "position_y": 910,
-            "width": 224,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -248,36 +238,36 @@
             },
             "comment": "both ends must agree on the port"
         },
-        "12": {
+        "11": {
             "name": "button",
-            "id": 681,
+            "id": 644,
             "position_x": 380,
             "position_y": 400,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "ip_address",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 455,
+            "width": 107,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "13": {
-            "name": "ip_address",
+            "name": "list",
             "id": 718,
             "position_x": 380,
-            "position_y": 455,
-            "width": 240,
-            "height": 120,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "14": {
-            "name": "list",
-            "id": 755,
-            "position_x": 380,
             "position_y": 590,
-            "width": 260,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -295,13 +285,13 @@
                 }
             }
         },
-        "15": {
+        "14": {
             "init": "comment what the other end should send to",
             "name": "comment",
-            "id": 792,
-            "position_x": 686,
-            "position_y": 670,
-            "width": 231,
+            "id": 755,
+            "position_x": 641,
+            "position_y": 640,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -320,11 +310,11 @@
             },
             "comment": "what the other end should send to"
         },
-        "16": {
+        "15": {
             "name": "close",
-            "id": 829,
+            "id": 792,
             "position_x": 24,
-            "position_y": 925,
+            "position_y": 887,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -341,11 +331,11 @@
     },
     "links": {
         "0": {
-            "source_node": 681,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 718,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "get_ip"
@@ -375,27 +365,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "data"
         },
         "4": {
-            "source_node": 570,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "received data",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "5": {
-            "source_node": 718,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "ip_addresses_out",
-            "dest_node": 755,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

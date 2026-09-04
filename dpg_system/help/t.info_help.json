@@ -1,11 +1,11 @@
 {
     "height": 1011,
-    "width": 1605,
+    "width": 1521,
     "position": [
         100,
         100
     ],
-    "id": 977,
+    "id": 940,
     "name": "t.info_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.info_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 408,
+            "width": 426,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 757,
+            "position_x": 673,
             "position_y": 45,
             "width": 808,
             "height": 756,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 180,
-            "height": 180,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -122,8 +122,8 @@
             "id": 422,
             "position_x": 250,
             "position_y": 120,
-            "width": 220,
-            "height": 90,
+            "width": 101,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -134,7 +134,7 @@
             "id": 459,
             "position_x": 250,
             "position_y": 225,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -161,9 +161,9 @@
             "init": "comment fresh from t.rand: contiguous",
             "name": "comment",
             "id": 496,
-            "position_x": 496,
+            "position_x": 406,
             "position_y": 280,
-            "width": 203,
+            "width": 187,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -187,8 +187,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 320,
-            "width": 140,
-            "height": 70,
+            "width": 70,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -199,8 +199,8 @@
             "id": 570,
             "position_x": 250,
             "position_y": 320,
-            "width": 220,
-            "height": 90,
+            "width": 101,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -211,7 +211,7 @@
             "id": 607,
             "position_x": 250,
             "position_y": 425,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -235,85 +235,75 @@
             }
         },
         "11": {
-            "init": "comment after a transpose: not contiguous",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
-            "position_x": 496,
+            "annotation": true,
+            "position_x": 406,
             "position_y": 480,
-            "width": 231,
-            "height": 30,
+            "width": 237,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "after a transpose: not contiguous",
+                    "name": "block",
+                    "value": "after a transpose: not contiguous\nthis is why t.view fails there",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "after a transpose: not contiguous"
+            "text": "after a transpose: not contiguous\nthis is why t.view fails there"
         },
         "12": {
-            "init": "comment this is why t.view fails there",
-            "name": "comment",
+            "name": "t.contiguous",
             "id": 681,
-            "position_x": 496,
-            "position_y": 510,
-            "width": 210,
-            "height": 30,
+            "position_x": 30,
+            "position_y": 550,
+            "width": 82,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "this is why t.view fails there",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "this is why t.view fails there"
+            "properties": {}
         },
         "13": {
-            "name": "t.contiguous",
+            "name": "t.is_contiguous",
             "id": 718,
-            "position_x": 30,
+            "position_x": 250,
             "position_y": 550,
-            "width": 200,
-            "height": 90,
+            "width": 101,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "14": {
-            "name": "t.is_contiguous",
+            "name": "int",
             "id": 755,
             "position_x": 250,
-            "position_y": 550,
-            "width": 220,
-            "height": 90,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "15": {
-            "name": "int",
-            "id": 792,
-            "position_x": 250,
             "position_y": 655,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -336,13 +326,13 @@
                 }
             }
         },
-        "16": {
+        "15": {
             "init": "comment and contiguous again after a copy",
             "name": "comment",
-            "id": 829,
-            "position_x": 496,
+            "id": 792,
+            "position_x": 406,
             "position_y": 710,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -361,24 +351,24 @@
             },
             "comment": "and contiguous again after a copy"
         },
-        "17": {
+        "16": {
             "name": "t.info",
-            "id": 866,
+            "id": 829,
             "position_x": 30,
             "position_y": 680,
-            "width": 200,
-            "height": 140,
+            "width": 45,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "18": {
+        "17": {
             "name": "string",
-            "id": 903,
+            "id": 866,
             "position_x": 30,
             "position_y": 835,
-            "width": 200,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -396,9 +386,9 @@
                 }
             }
         },
-        "19": {
+        "18": {
             "name": "close",
-            "id": 940,
+            "id": 903,
             "position_x": 24,
             "position_y": 907,
             "width": 88,
@@ -481,47 +471,47 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 718,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "7": {
-            "source_node": 718,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 755,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "8": {
-            "source_node": 755,
+            "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 792,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "9": {
-            "source_node": 718,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 866,
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "10": {
-            "source_node": 866,
+            "source_node": 829,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "shape",
-            "dest_node": 903,
+            "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

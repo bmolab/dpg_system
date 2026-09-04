@@ -1,11 +1,11 @@
 {
-    "height": 930,
-    "width": 1916,
+    "height": 904,
+    "width": 1767,
     "position": [
         100,
         100
     ],
-    "id": 1014,
+    "id": 792,
     "name": "cwt_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/cwt_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 552,
+            "width": 574,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1068,
+            "position_x": 919,
             "position_y": 45,
             "width": 808,
             "height": 786,
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -140,8 +140,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 155,
-            "width": 300,
-            "height": 200,
+            "width": 95,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -160,62 +160,52 @@
             "init": "rolling_buffer 256"
         },
         "5": {
-            "init": "comment cwt needs a WINDOW - a single sample",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 786,
+            "annotation": true,
+            "position_x": 634,
             "position_y": 370,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "cwt needs a WINDOW - a single sample",
+                    "name": "block",
+                    "value": "cwt needs a WINDOW - a single sample\nhas no time in it to analyse",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "cwt needs a WINDOW - a single sample"
+            "text": "cwt needs a WINDOW - a single sample\nhas no time in it to analyse"
         },
         "6": {
-            "init": "comment has no time in it to analyse",
-            "name": "comment",
-            "id": 459,
-            "position_x": 786,
-            "position_y": 400,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "has no time in it to analyse",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "has no time in it to analyse"
-        },
-        "7": {
             "name": "cwt",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
             "position_y": 445,
-            "width": 240,
-            "height": 160,
+            "width": 136,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -232,13 +222,13 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "name": "heat_map",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
             "position_y": 620,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -285,87 +275,52 @@
                 }
             }
         },
-        "9": {
-            "init": "comment frequency down, time across - an FFT",
-            "name": "comment",
-            "id": 570,
-            "position_x": 786,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 634,
             "position_y": 780,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "frequency down, time across - an FFT",
+                    "name": "block",
+                    "value": "frequency down, time across - an FFT\nwould tell you which frequencies but\nnot when they happened",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "frequency down, time across - an FFT"
+            "text": "frequency down, time across - an FFT\nwould tell you which frequencies but\nnot when they happened"
         },
-        "10": {
-            "init": "comment would tell you which frequencies but",
-            "name": "comment",
-            "id": 607,
-            "position_x": 786,
-            "position_y": 810,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "would tell you which frequencies but",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "would tell you which frequencies but"
-        },
-        "11": {
-            "init": "comment not when they happened",
-            "name": "comment",
-            "id": 644,
-            "position_x": 786,
-            "position_y": 840,
-            "width": 154,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "not when they happened",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "not when they happened"
-        },
-        "12": {
+        "9": {
             "name": "message",
-            "id": 681,
+            "id": 570,
             "position_x": 400,
             "position_y": 62,
-            "width": 300,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -383,12 +338,12 @@
                 }
             }
         },
-        "13": {
+        "10": {
             "name": "message",
-            "id": 718,
+            "id": 607,
             "position_x": 400,
             "position_y": 120,
-            "width": 360,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -406,25 +361,25 @@
                 }
             }
         },
-        "14": {
+        "11": {
             "name": "confusion",
-            "id": 755,
+            "id": 644,
             "position_x": 400,
             "position_y": 180,
-            "width": 220,
-            "height": 110,
+            "width": 64,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "15": {
+        "12": {
             "name": "heat_map",
-            "id": 792,
+            "id": 681,
             "position_x": 400,
             "position_y": 305,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -471,111 +426,51 @@
                 }
             }
         },
-        "16": {
-            "init": "comment EXACT matches only - apple hits two",
-            "name": "comment",
-            "id": 829,
-            "position_x": 786,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 634,
             "position_y": 465,
-            "width": 245,
-            "height": 30,
+            "width": 249,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "EXACT matches only - apple hits two",
+                    "name": "block",
+                    "value": "EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "EXACT matches only - apple hits two"
+            "text": "EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead"
         },
-        "17": {
-            "init": "comment columns, pear is an empty row",
-            "name": "comment",
-            "id": 866,
-            "position_x": 786,
-            "position_y": 495,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "columns, pear is an empty row",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "columns, pear is an empty row"
-        },
-        "18": {
-            "init": "comment spacy_confusion looks the same and",
-            "name": "comment",
-            "id": 903,
-            "position_x": 786,
-            "position_y": 540,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "spacy_confusion looks the same and",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "spacy_confusion looks the same and"
-        },
-        "19": {
-            "init": "comment compares meaning instead",
-            "name": "comment",
-            "id": 940,
-            "position_x": 786,
-            "position_y": 570,
-            "width": 168,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "compares meaning instead",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "compares meaning instead"
-        },
-        "20": {
+        "14": {
             "name": "close",
-            "id": 977,
+            "id": 755,
             "position_x": 24,
-            "position_y": 798,
+            "position_y": 800,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -606,47 +501,47 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "3": {
-            "source_node": 681,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 755,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input2"
         },
         "4": {
-            "source_node": 718,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 755,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "5": {
-            "source_node": 755,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 792,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

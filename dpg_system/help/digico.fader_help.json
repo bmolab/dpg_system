@@ -1,11 +1,11 @@
 {
-    "height": 1050,
-    "width": 2004,
+    "height": 861,
+    "width": 1744,
     "position": [
         100,
         100
     ],
-    "id": 1162,
+    "id": 644,
     "name": "digico.fader_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/digico.fader_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 420,
+            "width": 439,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1156,
+            "position_x": 896,
             "position_y": 45,
             "width": 808,
             "height": 756,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 320,
-            "height": 420,
+            "width": 136,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -106,111 +106,51 @@
             "init": "digico.fader desk 8"
         },
         "4": {
-            "init": "comment move a slider and the console moves.",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 846,
+            "annotation": true,
+            "position_x": 586,
             "position_y": 500,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "move a slider and the console moves.",
+                    "name": "block",
+                    "value": "move a slider and the console moves.\nMove the fader on the DESK and this\nfollows - it sends and receives the\nsame addresses",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "move a slider and the console moves."
+            "text": "move a slider and the console moves.\nMove the fader on the DESK and this\nfollows - it sends and receives the\nsame addresses"
         },
         "5": {
-            "init": "comment Move the fader on the DESK and this",
-            "name": "comment",
-            "id": 422,
-            "position_x": 846,
-            "position_y": 530,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Move the fader on the DESK and this",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Move the fader on the DESK and this"
-        },
-        "6": {
-            "init": "comment follows - it sends and receives the",
-            "name": "comment",
-            "id": 459,
-            "position_x": 846,
-            "position_y": 560,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "follows - it sends and receives the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "follows - it sends and receives the"
-        },
-        "7": {
-            "init": "comment same addresses",
-            "name": "comment",
-            "id": 496,
-            "position_x": 846,
-            "position_y": 680,
-            "width": 98,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "same addresses",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "same addresses"
-        },
-        "8": {
             "name": "message",
-            "id": 533,
+            "id": 422,
             "position_x": 400,
             "position_y": 62,
-            "width": 420,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -228,150 +168,65 @@
                 }
             }
         },
-        "9": {
-            "init": "comment a whole list into fader 1 sets them all",
-            "name": "comment",
-            "id": 570,
-            "position_x": 846,
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 586,
             "position_y": 112,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a whole list into fader 1 sets them all",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a whole list into fader 1 sets them all"
-        },
-        "10": {
-            "init": "comment in order - how to recall a stored mix",
-            "name": "comment",
-            "id": 607,
-            "position_x": 846,
-            "position_y": 142,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "in order - how to recall a stored mix",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "in order - how to recall a stored mix"
-        },
-        "11": {
-            "init": "comment without twenty separate cords",
-            "name": "comment",
-            "id": 644,
-            "position_x": 846,
-            "position_y": 172,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "without twenty separate cords",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "without twenty separate cords"
-        },
-        "12": {
-            "init": "comment a message node, NOT a string: this inlet",
-            "name": "comment",
-            "id": 681,
-            "position_x": 846,
-            "position_y": 202,
             "width": 280,
-            "height": 30,
+            "height": 76,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a message node, NOT a string: this inlet",
+                    "name": "block",
+                    "value": "a whole list into fader 1 sets them all\nin order - how to recall a stored mix\nwithout twenty separate cords\na message node, NOT a string: this inlet\nwants a list, and string sends one piece",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a message node, NOT a string: this inlet"
+            "text": "a whole list into fader 1 sets them all\nin order - how to recall a stored mix\nwithout twenty separate cords\na message node, NOT a string: this inlet\nwants a list, and string sends one piece"
         },
-        "13": {
-            "init": "comment wants a list, and string sends one piece",
-            "name": "comment",
-            "id": 718,
-            "position_x": 846,
-            "position_y": 232,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "wants a list, and string sends one piece",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "wants a list, and string sends one piece"
-        },
-        "14": {
+        "7": {
             "name": "osc_device",
-            "id": 755,
+            "id": 496,
             "position_x": 400,
             "position_y": 285,
-            "width": 320,
-            "height": 220,
+            "width": 160,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "15": {
+        "8": {
             "init": "comment 'target name' must match this device",
             "name": "comment",
-            "id": 792,
-            "position_x": 846,
-            "position_y": 600,
-            "width": 252,
+            "id": 533,
+            "position_x": 586,
+            "position_y": 575,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -390,211 +245,51 @@
             },
             "comment": "'target name' must match this device"
         },
-        "16": {
-            "init": "comment DiGiCo cannot be ASKED what it has -",
-            "name": "comment",
-            "id": 829,
-            "position_x": 846,
-            "position_y": 640,
-            "width": 252,
-            "height": 30,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 586,
+            "position_y": 615,
+            "width": 261,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "DiGiCo cannot be ASKED what it has -",
+                    "name": "block",
+                    "value": "DiGiCo cannot be ASKED what it has -\nthere is no query. Press 'Resend All'\non the console and it announces\neverything at once - that is how the\npatch learns the current state\nthe faders register themselves, so\noscq_browse can find them and a phone\ncan drive them with no extra work",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "DiGiCo cannot be ASKED what it has -"
+            "text": "DiGiCo cannot be ASKED what it has -\nthere is no query. Press 'Resend All'\non the console and it announces\neverything at once - that is how the\npatch learns the current state\nthe faders register themselves, so\noscq_browse can find them and a phone\ncan drive them with no extra work"
         },
-        "17": {
-            "init": "comment there is no query. Press 'Resend All'",
-            "name": "comment",
-            "id": 866,
-            "position_x": 846,
-            "position_y": 720,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "there is no query. Press 'Resend All'",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "there is no query. Press 'Resend All'"
-        },
-        "18": {
-            "init": "comment on the console and it announces",
-            "name": "comment",
-            "id": 903,
-            "position_x": 846,
-            "position_y": 760,
-            "width": 217,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "on the console and it announces",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "on the console and it announces"
-        },
-        "19": {
-            "init": "comment everything at once - that is how the",
-            "name": "comment",
-            "id": 940,
-            "position_x": 846,
-            "position_y": 800,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "everything at once - that is how the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "everything at once - that is how the"
-        },
-        "20": {
-            "init": "comment patch learns the current state",
-            "name": "comment",
-            "id": 977,
-            "position_x": 846,
-            "position_y": 840,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "patch learns the current state",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "patch learns the current state"
-        },
-        "21": {
-            "init": "comment the faders register themselves, so",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 846,
-            "position_y": 880,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the faders register themselves, so",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the faders register themselves, so"
-        },
-        "22": {
-            "init": "comment oscq_browse can find them and a phone",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 846,
-            "position_y": 920,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "oscq_browse can find them and a phone",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "oscq_browse can find them and a phone"
-        },
-        "23": {
-            "init": "comment can drive them with no extra work",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 846,
-            "position_y": 960,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "can drive them with no extra work",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "can drive them with no extra work"
-        },
-        "24": {
+        "10": {
             "name": "close",
-            "id": 1125,
+            "id": 607,
             "position_x": 24,
-            "position_y": 535,
+            "position_y": 413,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -611,7 +306,7 @@
     },
     "links": {
         "0": {
-            "source_node": 533,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",

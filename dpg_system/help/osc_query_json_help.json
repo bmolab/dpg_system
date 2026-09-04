@@ -1,11 +1,11 @@
 {
-    "height": 890,
-    "width": 1504,
+    "height": 870,
+    "width": 1364,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 607,
     "name": "osc_query_json_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/osc_query_json_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 588,
+            "width": 611,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 666,
+            "position_x": 526,
             "position_y": 45,
             "width": 798,
             "height": 716,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 300,
-            "height": 260,
+            "width": 160,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,69 +110,59 @@
             "id": 385,
             "position_x": 30,
             "position_y": 345,
-            "width": 260,
-            "height": 120,
+            "width": 95,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "5": {
-            "init": "comment prints the whole namespace of the device",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 356,
+            "annotation": true,
+            "position_x": 216,
             "position_y": 480,
             "width": 280,
-            "height": 30,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "prints the whole namespace of the device",
+                    "name": "block",
+                    "value": "prints the whole namespace of the device\nto the console, not into the patch",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "prints the whole namespace of the device"
+            "text": "prints the whole namespace of the device\nto the console, not into the patch"
         },
         "6": {
-            "init": "comment to the console, not into the patch",
-            "name": "comment",
-            "id": 459,
-            "position_x": 356,
-            "position_y": 510,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "to the console, not into the patch",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "to the console, not into the patch"
-        },
-        "7": {
             "name": "int",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
             "position_y": 555,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -195,73 +185,63 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "name": "osc_cue",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
             "position_y": 615,
-            "width": 260,
-            "height": 140,
+            "width": 160,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
-            "init": "comment the console holds the states;",
-            "name": "comment",
-            "id": 570,
-            "position_x": 356,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 216,
             "position_y": 770,
-            "width": 203,
-            "height": 30,
+            "width": 212,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the console holds the states;",
+                    "name": "block",
+                    "value": "the console holds the states;\nthe patch just says which one",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the console holds the states;"
+            "text": "the console holds the states;\nthe patch just says which one"
         },
-        "10": {
-            "init": "comment the patch just says which one",
-            "name": "comment",
-            "id": 607,
-            "position_x": 356,
-            "position_y": 800,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the patch just says which one",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the patch just says which one"
-        },
-        "11": {
+        "9": {
             "name": "close",
-            "id": 644,
+            "id": 570,
             "position_x": 24,
-            "position_y": 785,
+            "position_y": 687,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -278,11 +258,11 @@
     },
     "links": {
         "0": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "int out",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "cue # to send"

@@ -1,11 +1,11 @@
 {
-    "height": 969,
-    "width": 1714,
+    "height": 1057,
+    "width": 1770,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 644,
     "name": "vcf~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vcf~_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 324,
+            "width": 340,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 846,
+            "position_x": 902,
             "position_y": 45,
             "width": 828,
             "height": 776,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 220,
-            "height": 200,
+            "width": 199,
+            "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,9 +109,9 @@
             "init": "comment a bright source to filter",
             "name": "comment",
             "id": 385,
-            "position_x": 606,
+            "position_x": 654,
             "position_y": 272,
-            "width": 175,
+            "width": 162,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -135,8 +135,8 @@
             "id": 422,
             "position_x": 300,
             "position_y": 62,
-            "width": 200,
-            "height": 160,
+            "width": 180,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -148,8 +148,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 315,
-            "width": 240,
-            "height": 220,
+            "width": 199,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -157,85 +157,75 @@
             "init": "vcf~ 600"
         },
         "7": {
-            "init": "comment the lfo sweeps the cutoff",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 606,
+            "annotation": true,
+            "position_x": 654,
             "position_y": 545,
-            "width": 175,
-            "height": 30,
+            "width": 218,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the lfo sweeps the cutoff",
+                    "name": "block",
+                    "value": "the lfo sweeps the cutoff\nraise resonance until it rings",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the lfo sweeps the cutoff"
+            "text": "the lfo sweeps the cutoff\nraise resonance until it rings"
         },
         "8": {
-            "init": "comment raise resonance until it rings",
-            "name": "comment",
-            "id": 533,
-            "position_x": 606,
-            "position_y": 575,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "raise resonance until it rings",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "raise resonance until it rings"
-        },
-        "9": {
             "name": "scope~",
-            "id": 570,
+            "id": 533,
             "position_x": 320,
             "position_y": 315,
-            "width": 260,
-            "height": 220,
+            "width": 308,
+            "height": 248,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "fader_out~",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 615,
-            "width": 220,
-            "height": 220,
+            "width": 70,
+            "height": 308,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "fader_out~ 1 2"
         },
-        "11": {
+        "10": {
             "name": "close",
-            "id": 644,
+            "id": 607,
             "position_x": 24,
-            "position_y": 865,
+            "position_y": 953,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -276,7 +266,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
@@ -286,7 +276,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"

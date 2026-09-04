@@ -1,11 +1,11 @@
 {
-    "height": 900,
-    "width": 1822,
+    "height": 983,
+    "width": 1866,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 644,
     "name": "polyphonic_sampler_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/polyphonic_sampler_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 974,
+            "position_x": 1018,
             "position_y": 45,
             "width": 808,
             "height": 756,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 180,
+            "width": 172,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 260,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 325,
-            "width": 300,
-            "height": 320,
+            "width": 345,
+            "height": 462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -132,8 +132,8 @@
             "name": "int",
             "id": 459,
             "position_x": 30,
-            "position_y": 660,
-            "width": 127,
+            "position_y": 807,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -157,147 +157,102 @@
             }
         },
         "7": {
-            "init": "comment load a set, then trigger sound ids",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 706,
-            "position_y": 730,
-            "width": 238,
-            "height": 30,
+            "annotation": true,
+            "position_x": 745,
+            "position_y": 862,
+            "width": 243,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "load a set, then trigger sound ids",
+                    "name": "block",
+                    "value": "load a set, then trigger sound ids\nactive_voices at the limit means\nnew triggers are stealing old ones",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "load a set, then trigger sound ids"
+            "text": "load a set, then trigger sound ids\nactive_voices at the limit means\nnew triggers are stealing old ones"
         },
         "8": {
-            "init": "comment active_voices at the limit means",
-            "name": "comment",
-            "id": 533,
-            "position_x": 706,
-            "position_y": 770,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "active_voices at the limit means",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "active_voices at the limit means"
-        },
-        "9": {
-            "init": "comment new triggers are stealing old ones",
-            "name": "comment",
-            "id": 570,
-            "position_x": 706,
-            "position_y": 810,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "new triggers are stealing old ones",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "new triggers are stealing old ones"
-        },
-        "10": {
             "name": "granular_sampler",
-            "id": 607,
+            "id": 533,
             "position_x": 380,
             "position_y": 325,
-            "width": 300,
-            "height": 320,
+            "width": 339,
+            "height": 504,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
-            "init": "comment a short sample becomes a texture",
-            "name": "comment",
-            "id": 644,
-            "position_x": 706,
-            "position_y": 660,
-            "width": 224,
-            "height": 30,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 745,
+            "position_y": 807,
+            "width": 243,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a short sample becomes a texture",
+                    "name": "block",
+                    "value": "a short sample becomes a texture\nthat lasts as long as the movement",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a short sample becomes a texture"
+            "text": "a short sample becomes a texture\nthat lasts as long as the movement"
         },
-        "12": {
-            "init": "comment that lasts as long as the movement",
-            "name": "comment",
-            "id": 681,
-            "position_x": 706,
-            "position_y": 690,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "that lasts as long as the movement",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "that lasts as long as the movement"
-        },
-        "13": {
+        "10": {
             "name": "close",
-            "id": 718,
+            "id": 607,
             "position_x": 24,
-            "position_y": 732,
+            "position_y": 879,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

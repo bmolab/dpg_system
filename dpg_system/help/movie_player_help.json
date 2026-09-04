@@ -1,11 +1,11 @@
 {
-    "height": 1285,
-    "width": 1944,
+    "height": 1201,
+    "width": 1839,
     "position": [
         100,
         100
     ],
-    "id": 1162,
+    "id": 829,
     "name": "movie_player_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/movie_player_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 528,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1096,
+            "position_x": 991,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -97,7 +97,7 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 520,
+            "width": 510,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -124,9 +124,9 @@
             "init": "comment point this at a file and click it",
             "name": "comment",
             "id": 385,
-            "position_x": 786,
+            "position_x": 681,
             "position_y": 112,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -150,82 +150,72 @@
             "id": 422,
             "position_x": 30,
             "position_y": 160,
-            "width": 340,
-            "height": 400,
+            "width": 170,
+            "height": 248,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment set clip_start and clip_end, then",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 786,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 575,
-            "width": 231,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "set clip_start and clip_end, then",
+                    "name": "block",
+                    "value": "set clip_start and clip_end, then\n'save clip' sends them out as a spec",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "set clip_start and clip_end, then"
+            "text": "set clip_start and clip_end, then\n'save clip' sends them out as a spec"
         },
         "7": {
-            "init": "comment 'save clip' sends them out as a spec",
-            "name": "comment",
-            "id": 496,
-            "position_x": 786,
-            "position_y": 605,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "'save clip' sends them out as a spec",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "'save clip' sends them out as a spec"
-        },
-        "8": {
             "name": "info",
-            "id": 533,
+            "id": 496,
             "position_x": 420,
             "position_y": 160,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "init": "comment frames are arrays, like a camera",
             "name": "comment",
-            "id": 570,
-            "position_x": 786,
+            "id": 533,
+            "position_x": 681,
             "position_y": 255,
-            "width": 224,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -244,12 +234,12 @@
             },
             "comment": "frames are arrays, like a camera"
         },
-        "10": {
+        "9": {
             "name": "int",
-            "id": 607,
+            "id": 570,
             "position_x": 420,
             "position_y": 300,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -272,13 +262,13 @@
                 }
             }
         },
-        "11": {
+        "10": {
             "init": "comment where it has got to",
             "name": "comment",
-            "id": 644,
-            "position_x": 786,
+            "id": 607,
+            "position_x": 681,
             "position_y": 350,
-            "width": 133,
+            "width": 125,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -297,149 +287,64 @@
             },
             "comment": "where it has got to"
         },
-        "12": {
+        "11": {
             "name": "movie_clip_dict",
-            "id": 681,
+            "id": 644,
             "position_x": 30,
             "position_y": 650,
-            "width": 340,
-            "height": 400,
+            "width": 243,
+            "height": 347,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
-            "init": "comment type a name, press store. The list",
-            "name": "comment",
-            "id": 718,
-            "position_x": 786,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 1065,
-            "width": 238,
-            "height": 30,
+            "width": 261,
+            "height": 76,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "type a name, press store. The list",
+                    "name": "block",
+                    "value": "type a name, press store. The list\nbuilds up, and save/load keeps it\nBOTH cords matter: spec up, command\nback down. Without the second one the\nnames do nothing",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "type a name, press store. The list"
+            "text": "type a name, press store. The list\nbuilds up, and save/load keeps it\nBOTH cords matter: spec up, command\nback down. Without the second one the\nnames do nothing"
         },
-        "14": {
-            "init": "comment builds up, and save/load keeps it",
-            "name": "comment",
-            "id": 755,
-            "position_x": 786,
-            "position_y": 1095,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "builds up, and save/load keeps it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "builds up, and save/load keeps it"
-        },
-        "15": {
-            "init": "comment BOTH cords matter: spec up, command",
-            "name": "comment",
-            "id": 792,
-            "position_x": 786,
-            "position_y": 1135,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "BOTH cords matter: spec up, command",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "BOTH cords matter: spec up, command"
-        },
-        "16": {
-            "init": "comment back down. Without the second one the",
-            "name": "comment",
-            "id": 829,
-            "position_x": 786,
-            "position_y": 1165,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "back down. Without the second one the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "back down. Without the second one the"
-        },
-        "17": {
-            "init": "comment names do nothing",
-            "name": "comment",
-            "id": 866,
-            "position_x": 786,
-            "position_y": 1195,
-            "width": 112,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "names do nothing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "names do nothing"
-        },
-        "18": {
+        "13": {
             "name": "list",
-            "id": 903,
+            "id": 718,
             "position_x": 420,
             "position_y": 650,
-            "width": 340,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -457,136 +362,51 @@
                 }
             }
         },
-        "19": {
-            "init": "comment the command it sends: 'play 240 512 1.0'",
-            "name": "comment",
-            "id": 940,
-            "position_x": 786,
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 700,
             "width": 280,
-            "height": 30,
+            "height": 76,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the command it sends: 'play 240 512 1.0'",
+                    "name": "block",
+                    "value": "the command it sends: 'play 240 512 1.0'\nplain text, so anything else can send\nit too - a sequencer, a score, OSC\nwhole numbers are frames, a number with\na decimal point is the speed",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the command it sends: 'play 240 512 1.0'"
+            "text": "the command it sends: 'play 240 512 1.0'\nplain text, so anything else can send\nit too - a sequencer, a score, OSC\nwhole numbers are frames, a number with\na decimal point is the speed"
         },
-        "20": {
-            "init": "comment plain text, so anything else can send",
-            "name": "comment",
-            "id": 977,
-            "position_x": 786,
-            "position_y": 730,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "plain text, so anything else can send",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "plain text, so anything else can send"
-        },
-        "21": {
-            "init": "comment it too - a sequencer, a score, OSC",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 786,
-            "position_y": 760,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "it too - a sequencer, a score, OSC",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "it too - a sequencer, a score, OSC"
-        },
-        "22": {
-            "init": "comment whole numbers are frames, a number with",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 786,
-            "position_y": 800,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "whole numbers are frames, a number with",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "whole numbers are frames, a number with"
-        },
-        "23": {
-            "init": "comment a decimal point is the speed",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 786,
-            "position_y": 830,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a decimal point is the speed",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a decimal point is the speed"
-        },
-        "24": {
+        "15": {
             "name": "close",
-            "id": 1125,
+            "id": 792,
             "position_x": 24,
-            "position_y": 1080,
+            "position_y": 1027,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -617,7 +437,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "frame",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
@@ -627,7 +447,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "frame_num",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -637,13 +457,13 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "clip_spec",
-            "dest_node": 681,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "clip_spec in"
         },
         "4": {
-            "source_node": 681,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "command out",
@@ -653,11 +473,11 @@
             "dest_input_name": "input"
         },
         "5": {
-            "source_node": 681,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "command out",
-            "dest_node": 903,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

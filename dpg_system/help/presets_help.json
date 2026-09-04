@@ -1,11 +1,11 @@
 {
     "height": 761,
-    "width": 1579,
+    "width": 1593,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 644,
     "name": "presets_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/presets_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 480,
+            "width": 500,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 741,
+            "position_x": 755,
             "position_y": 45,
             "width": 798,
             "height": 656,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 130,
-            "height": 240,
+            "width": 52,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -106,87 +106,52 @@
             "init": "presets 8"
         },
         "4": {
-            "init": "comment move the sliders, tick remember,",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 466,
+            "annotation": true,
+            "position_x": 476,
             "position_y": 315,
-            "width": 224,
-            "height": 30,
+            "width": 249,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "move the sliders, tick remember,",
+                    "name": "block",
+                    "value": "move the sliders, tick remember,\nclick a slot to store the positions\nuntick, then click slots to recall",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "move the sliders, tick remember,"
+            "text": "move the sliders, tick remember,\nclick a slot to store the positions\nuntick, then click slots to recall"
         },
         "5": {
-            "init": "comment click a slot to store the positions",
-            "name": "comment",
-            "id": 422,
-            "position_x": 466,
-            "position_y": 345,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "click a slot to store the positions",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "click a slot to store the positions"
-        },
-        "6": {
-            "init": "comment untick, then click slots to recall",
-            "name": "comment",
-            "id": 459,
-            "position_x": 466,
-            "position_y": 375,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "untick, then click slots to recall",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "untick, then click slots to recall"
-        },
-        "7": {
             "name": "slider",
-            "id": 496,
+            "id": 422,
             "position_x": 220,
             "position_y": 62,
-            "width": 220,
-            "height": 60,
+            "width": 230,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -214,13 +179,13 @@
             },
             "init": "slider 0.5"
         },
-        "8": {
+        "6": {
             "name": "slider",
-            "id": 533,
+            "id": 459,
             "position_x": 220,
             "position_y": 135,
-            "width": 220,
-            "height": 60,
+            "width": 230,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -248,9 +213,9 @@
             },
             "init": "slider 0.5"
         },
-        "9": {
+        "7": {
             "name": "toggle",
-            "id": 570,
+            "id": 496,
             "position_x": 220,
             "position_y": 210,
             "width": 45,
@@ -260,12 +225,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "8": {
             "name": "int",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
             "position_y": 420,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -288,13 +253,13 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "init": "comment which preset was recalled",
             "name": "comment",
-            "id": 644,
-            "position_x": 466,
+            "id": 570,
+            "position_x": 476,
             "position_y": 470,
-            "width": 175,
+            "width": 162,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -313,9 +278,9 @@
             },
             "comment": "which preset was recalled"
         },
-        "12": {
+        "10": {
             "name": "close",
-            "id": 681,
+            "id": 607,
             "position_x": 24,
             "position_y": 492,
             "width": 88,
@@ -338,7 +303,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

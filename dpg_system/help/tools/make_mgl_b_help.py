@@ -183,10 +183,8 @@ simply means some frames are skipped, which is the right behaviour."""
 
 demo = chain() + [
     {'key': 'la', 'init': 'mgl_line_array', 'pos': (30, 660), 'w': 260, 'h': 380},
-    {'key': 'c0', 'comment': True, 'text': 'patch an array of line points in',
+    {'key': 'c0', 'comment': True, 'text': 'patch an array of line points in\nraise accent_motion to make speed visible',
      'pos': (30, 1055)},
-    {'key': 'c1', 'comment': True, 'text': 'raise accent_motion to make speed visible',
-     'pos': (30, 1085)},
     {'key': 'bb', 'init': 'mgl_billboard', 'pos': (30, 1130), 'w': 220, 'h': 90},
     # font pinned to its default, as on gl_text: restore_properties skips a
     # no-op, so font_changed never fires and no file dialog is raised
@@ -287,16 +285,13 @@ working on it before it is drawn."""
 
 demo = chain() + [
     {'key': 'bd', 'init': 'mgl_body', 'pos': (30, 660), 'w': 260, 'h': 400},
-    {'key': 'c0', 'comment': True, 'text': 'patch a stream of quaternions into pose',
+    {'key': 'c0', 'comment': True, 'text': 'patch a stream of quaternions into pose\ntick enable_callbacks, then click a joint',
      'pos': (30, 1075)},
-    {'key': 'c1', 'comment': True, 'text': 'tick enable_callbacks, then click a joint',
-     'pos': (30, 1105)},
     {'key': 'i1', 'init': 'int', 'pos': (340, 660), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c2', 'comment': True, 'text': 'which joint was clicked', 'pos': (340, 710)},
     {'key': 'cd', 'init': 'mgl_contact_disks', 'pos': (30, 1150), 'w': 260, 'h': 300},
-    {'key': 'c3', 'comment': True, 'text': 'contacts drawn where they happen,',
+    {'key': 'c3', 'comment': True, 'text': 'contacts drawn where they happen,\neach disk sized by its area',
      'pos': (30, 1465)},
-    {'key': 'c4', 'comment': True, 'text': 'each disk sized by its area', 'pos': (30, 1495)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'mgl chain out', 'bd', 'mgl chain in'),

@@ -1,11 +1,11 @@
 {
-    "height": 1077,
-    "width": 1803,
+    "height": 1079,
+    "width": 1720,
     "position": [
         100,
         100
     ],
-    "id": 1199,
+    "id": 940,
     "name": "cv_camera_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/cv_camera_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 432,
+            "width": 451,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 955,
+            "position_x": 872,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -109,182 +109,112 @@
             "id": 385,
             "position_x": 30,
             "position_y": 115,
-            "width": 240,
-            "height": 160,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "5": {
-            "init": "comment tick to start. Untick to release the",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 666,
+            "annotation": true,
+            "position_x": 581,
             "position_y": 290,
-            "width": 252,
-            "height": 30,
+            "width": 261,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "tick to start. Untick to release the",
+                    "name": "block",
+                    "value": "tick to start. Untick to release the\ncamera for something else to use\n'refresh' opens every camera index in\nturn to find them - it is not instant",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "tick to start. Untick to release the"
+            "text": "tick to start. Untick to release the\ncamera for something else to use\n'refresh' opens every camera index in\nturn to find them - it is not instant"
         },
         "6": {
-            "init": "comment camera for something else to use",
-            "name": "comment",
-            "id": 459,
-            "position_x": 666,
-            "position_y": 320,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "camera for something else to use",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "camera for something else to use"
-        },
-        "7": {
-            "init": "comment 'refresh' opens every camera index in",
-            "name": "comment",
-            "id": 496,
-            "position_x": 666,
-            "position_y": 360,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "'refresh' opens every camera index in",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "'refresh' opens every camera index in"
-        },
-        "8": {
-            "init": "comment turn to find them - it is not instant",
-            "name": "comment",
-            "id": 533,
-            "position_x": 666,
-            "position_y": 390,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "turn to find them - it is not instant",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "turn to find them - it is not instant"
-        },
-        "9": {
             "name": "info",
-            "id": 570,
+            "id": 459,
             "position_x": 320,
             "position_y": 115,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
-            "init": "comment height, width, 3 - rows first, and",
-            "name": "comment",
-            "id": 607,
-            "position_x": 666,
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 581,
             "position_y": 210,
-            "width": 238,
-            "height": 30,
+            "width": 243,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "height, width, 3 - rows first, and",
+                    "name": "block",
+                    "value": "height, width, 3 - rows first, and\nalready RGB, not OpenCV BGR",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "height, width, 3 - rows first, and"
+            "text": "height, width, 3 - rows first, and\nalready RGB, not OpenCV BGR"
         },
-        "11": {
-            "init": "comment already RGB, not OpenCV BGR",
-            "name": "comment",
-            "id": 644,
-            "position_x": 666,
-            "position_y": 240,
-            "width": 189,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "already RGB, not OpenCV BGR",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "already RGB, not OpenCV BGR"
-        },
-        "12": {
+        "8": {
             "name": "subsample",
-            "id": 681,
+            "id": 533,
             "position_x": 30,
             "position_y": 440,
-            "width": 170,
-            "height": 80,
+            "width": 117,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -297,87 +227,77 @@
             },
             "init": "subsample 10"
         },
-        "13": {
-            "init": "comment thin the stream before anything",
-            "name": "comment",
-            "id": 718,
-            "position_x": 666,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 581,
             "position_y": 530,
-            "width": 217,
-            "height": 30,
+            "width": 224,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "thin the stream before anything",
+                    "name": "block",
+                    "value": "thin the stream before anything\nexpensive downstream",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "thin the stream before anything"
+            "text": "thin the stream before anything\nexpensive downstream"
         },
-        "14": {
-            "init": "comment expensive downstream",
-            "name": "comment",
-            "id": 755,
-            "position_x": 666,
-            "position_y": 560,
-            "width": 140,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "expensive downstream",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "expensive downstream"
-        },
-        "15": {
+        "10": {
             "name": "tv.Grayscale",
-            "id": 792,
+            "id": 607,
             "position_x": 30,
             "position_y": 605,
-            "width": 200,
-            "height": 80,
+            "width": 82,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "16": {
+        "11": {
             "name": "t.squeeze",
-            "id": 829,
+            "id": 644,
             "position_x": 30,
             "position_y": 700,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
+        "12": {
             "name": "heat_map",
-            "id": 866,
+            "id": 681,
             "position_x": 30,
             "position_y": 795,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -424,13 +344,13 @@
                 }
             }
         },
-        "18": {
+        "13": {
             "init": "comment the camera, as one brightness channel",
             "name": "comment",
-            "id": 903,
-            "position_x": 666,
+            "id": 718,
+            "position_x": 581,
             "position_y": 955,
-            "width": 259,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -449,122 +369,87 @@
             },
             "comment": "the camera, as one brightness channel"
         },
-        "19": {
+        "14": {
             "name": "cv_image",
-            "id": 940,
+            "id": 755,
             "position_x": 320,
             "position_y": 440,
-            "width": 320,
-            "height": 120,
+            "width": 136,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "20": {
+        "15": {
             "name": "button",
-            "id": 977,
+            "id": 792,
             "position_x": 320,
             "position_y": 380,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "21": {
+        "16": {
             "name": "info",
-            "id": 1014,
+            "id": 829,
             "position_x": 320,
             "position_y": 580,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "22": {
-            "init": "comment a still, loaded when triggered - so",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 666,
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 581,
             "position_y": 675,
-            "width": 245,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a still, loaded when triggered - so",
+                    "name": "block",
+                    "value": "a still, loaded when triggered - so\nit can walk a directory if something\nelse supplies the paths",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a still, loaded when triggered - so"
+            "text": "a still, loaded when triggered - so\nit can walk a directory if something\nelse supplies the paths"
         },
-        "23": {
-            "init": "comment it can walk a directory if something",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 666,
-            "position_y": 705,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "it can walk a directory if something",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "it can walk a directory if something"
-        },
-        "24": {
-            "init": "comment else supplies the paths",
-            "name": "comment",
-            "id": 1125,
-            "position_x": 666,
-            "position_y": 735,
-            "width": 161,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "else supplies the paths",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "else supplies the paths"
-        },
-        "25": {
+        "18": {
             "name": "close",
-            "id": 1162,
+            "id": 903,
             "position_x": 24,
-            "position_y": 973,
+            "position_y": 975,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -595,7 +480,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 570,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
@@ -605,57 +490,57 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 681,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "3": {
-            "source_node": 681,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 792,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 792,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 829,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "5": {
-            "source_node": 829,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 866,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "6": {
-            "source_node": 977,
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 940,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "show image"
         },
         "7": {
-            "source_node": 940,
+            "source_node": 755,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 1014,
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

@@ -1,11 +1,11 @@
 {
-    "height": 1355,
-    "width": 1895,
+    "height": 1485,
+    "width": 1937,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 718,
     "name": "effort_fader_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/effort_fader_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 516,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1037,
+            "position_x": 1079,
             "position_y": 45,
             "width": 818,
             "height": 836,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 350,
             "position_y": 62,
-            "width": 300,
-            "height": 340,
+            "width": 229,
+            "height": 322,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 400,
-            "width": 260,
-            "height": 140,
+            "width": 179,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -133,8 +133,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 560,
-            "width": 300,
-            "height": 340,
+            "width": 228,
+            "height": 490,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -144,143 +144,123 @@
             "name": "effort_fader",
             "id": 496,
             "position_x": 30,
-            "position_y": 920,
-            "width": 280,
-            "height": 300,
+            "position_y": 1070,
+            "width": 172,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "init": "comment set threshold above what a still body gives",
-            "name": "comment",
+            "name": "text_block",
             "id": 533,
-            "position_x": 706,
-            "position_y": 1235,
-            "width": 301,
-            "height": 30,
+            "annotation": true,
+            "position_x": 751,
+            "position_y": 1385,
+            "width": 298,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "set threshold above what a still body gives",
+                    "name": "block",
+                    "value": "set threshold above what a still body gives\notherwise everything sounds, always",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "set threshold above what a still body gives"
+            "text": "set threshold above what a still body gives\notherwise everything sounds, always"
         },
         "9": {
-            "init": "comment otherwise everything sounds, always",
-            "name": "comment",
+            "name": "sampler_engine",
             "id": 570,
-            "position_x": 706,
-            "position_y": 1265,
-            "width": 245,
-            "height": 30,
+            "position_x": 380,
+            "position_y": 560,
+            "width": 172,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "otherwise everything sounds, always",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "otherwise everything sounds, always"
+            "properties": {}
         },
         "10": {
-            "name": "sampler_engine",
+            "name": "polyphonic_sampler",
             "id": 607,
             "position_x": 380,
-            "position_y": 560,
-            "width": 260,
-            "height": 180,
+            "position_y": 760,
+            "width": 345,
+            "height": 462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "11": {
-            "name": "polyphonic_sampler",
+            "name": "text_block",
             "id": 644,
-            "position_x": 380,
-            "position_y": 760,
-            "width": 300,
-            "height": 320,
+            "annotation": true,
+            "position_x": 751,
+            "position_y": 1245,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the fade list plays the whole texture\nin one message",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the fade list plays the whole texture\nin one message"
         },
         "12": {
-            "init": "comment the fade list plays the whole texture",
-            "name": "comment",
-            "id": 681,
-            "position_x": 706,
-            "position_y": 1095,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the fade list plays the whole texture",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the fade list plays the whole texture"
-        },
-        "13": {
-            "init": "comment in one message",
-            "name": "comment",
-            "id": 718,
-            "position_x": 706,
-            "position_y": 1125,
-            "width": 98,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "in one message",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "in one message"
-        },
-        "14": {
             "name": "close",
-            "id": 755,
+            "id": 681,
             "position_x": 24,
-            "position_y": 1250,
+            "position_y": 1254,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -371,7 +351,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "fade",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "fade"

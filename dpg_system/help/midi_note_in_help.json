@@ -1,11 +1,11 @@
 {
     "height": 821,
-    "width": 1770,
+    "width": 1729,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 718,
     "name": "midi_note_in_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/midi_note_in_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 468,
+            "width": 488,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 932,
+            "position_x": 891,
             "position_y": 45,
             "width": 798,
             "height": 716,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 240,
-            "height": 160,
+            "width": 237,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,7 +109,7 @@
             "id": 385,
             "position_x": 30,
             "position_y": 240,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -137,7 +137,7 @@
             "id": 422,
             "position_x": 180,
             "position_y": 240,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -161,87 +161,52 @@
             }
         },
         "6": {
-            "init": "comment note number and velocity",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 636,
+            "annotation": true,
+            "position_x": 593,
             "position_y": 295,
-            "width": 168,
-            "height": 30,
+            "width": 231,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "note number and velocity",
+                    "name": "block",
+                    "value": "note number and velocity\na note ENDING is velocity zero -\nnot a separate message",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "note number and velocity"
+            "text": "note number and velocity\na note ENDING is velocity zero -\nnot a separate message"
         },
         "7": {
-            "init": "comment a note ENDING is velocity zero -",
-            "name": "comment",
-            "id": 496,
-            "position_x": 636,
-            "position_y": 325,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a note ENDING is velocity zero -",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a note ENDING is velocity zero -"
-        },
-        "8": {
-            "init": "comment not a separate message",
-            "name": "comment",
-            "id": 533,
-            "position_x": 636,
-            "position_y": 355,
-            "width": 154,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "not a separate message",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "not a separate message"
-        },
-        "9": {
             "name": ">",
-            "id": 570,
+            "id": 496,
             "position_x": 30,
             "position_y": 395,
-            "width": 130,
-            "height": 70,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -254,12 +219,12 @@
             },
             "init": "> 0"
         },
-        "10": {
+        "8": {
             "name": "int",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
             "position_y": 480,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -282,13 +247,13 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "init": "comment so test velocity to tell them apart",
             "name": "comment",
-            "id": 644,
-            "position_x": 636,
+            "id": 570,
+            "position_x": 593,
             "position_y": 530,
-            "width": 245,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -307,73 +272,63 @@
             },
             "comment": "so test velocity to tell them apart"
         },
-        "12": {
+        "10": {
             "name": "midi_poly_pressure_in",
-            "id": 681,
+            "id": 607,
             "position_x": 330,
             "position_y": 395,
-            "width": 280,
-            "height": 160,
+            "width": 237,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
-            "init": "comment a separate value per held note -",
-            "name": "comment",
-            "id": 718,
-            "position_x": 636,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 593,
             "position_y": 570,
-            "width": 224,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a separate value per held note -",
+                    "name": "block",
+                    "value": "a separate value per held note -\nrare, and the most expressive MIDI has",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a separate value per held note -"
+            "text": "a separate value per held note -\nrare, and the most expressive MIDI has"
         },
-        "14": {
-            "init": "comment rare, and the most expressive MIDI has",
-            "name": "comment",
-            "id": 755,
-            "position_x": 636,
-            "position_y": 600,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "rare, and the most expressive MIDI has",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "rare, and the most expressive MIDI has"
-        },
-        "15": {
+        "12": {
             "name": "close",
-            "id": 792,
+            "id": 681,
             "position_x": 24,
-            "position_y": 585,
+            "position_y": 552,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -414,17 +369,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "velocity out",
-            "dest_node": 570,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

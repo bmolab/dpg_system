@@ -9,13 +9,13 @@
                 160,
                 160
             ],
-            "id": 1088,
+            "id": 792,
             "name": "my_controls",
-            "parent_node_uuid": 866,
+            "parent_node_uuid": 644,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 1125,
+                    "id": 829,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
@@ -35,7 +35,7 @@
                 "1": {
                     "name": "oscq_host",
                     "init": "oscq_host",
-                    "id": 1162,
+                    "id": 866,
                     "position_x": 40,
                     "position_y": 40,
                     "width": 260,
@@ -48,7 +48,7 @@
                 "2": {
                     "name": "slider",
                     "init": "slider",
-                    "id": 1199,
+                    "id": 903,
                     "position_x": 40,
                     "position_y": 230,
                     "width": 200,
@@ -61,7 +61,7 @@
                 "3": {
                     "name": "out",
                     "init": "out level",
-                    "id": 1236,
+                    "id": 940,
                     "position_x": 40,
                     "position_y": 320,
                     "width": 150,
@@ -74,11 +74,11 @@
             },
             "links": {
                 "0": {
-                    "source_node": 1199,
+                    "source_node": 903,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1236,
+                    "dest_node": 940,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "level"
@@ -86,13 +86,13 @@
             }
         },
         "1": {
-            "height": 1040,
-            "width": 1941,
+            "height": 938,
+            "width": 1914,
             "position": [
                 100,
                 100
             ],
-            "id": 1051,
+            "id": 755,
             "name": "oscq_service_help",
             "path": "/Users/drokeby/dpg_system/dpg_system/help/oscq_service_help.json",
             "nodes": {
@@ -121,7 +121,7 @@
                     "id": 274,
                     "position_x": 24,
                     "position_y": -4,
-                    "width": 432,
+                    "width": 451,
                     "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
@@ -143,7 +143,7 @@
                 "2": {
                     "name": "text_block",
                     "id": 311,
-                    "position_x": 1083,
+                    "position_x": 1056,
                     "position_y": 45,
                     "width": 818,
                     "height": 776,
@@ -184,70 +184,60 @@
                     "id": 348,
                     "position_x": 30,
                     "position_y": 62,
-                    "width": 300,
-                    "height": 200,
+                    "width": 203,
+                    "height": 98,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {}
                 },
                 "4": {
-                    "init": "comment name a service and it finds it, and",
-                    "name": "comment",
+                    "name": "text_block",
                     "id": 385,
-                    "position_x": 766,
+                    "annotation": true,
+                    "position_x": 740,
                     "position_y": 275,
-                    "width": 245,
-                    "height": 30,
+                    "width": 249,
+                    "height": 40,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "text",
-                            "value": "name a service and it finds it, and",
+                            "name": "block",
+                            "value": "name a service and it finds it, and\nmakes the osc_device for you",
                             "value_type": "str"
                         },
                         "1": {
-                            "name": "font size",
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 241,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
                             "value": "24",
                             "value_type": "str"
                         }
                     },
-                    "comment": "name a service and it finds it, and"
+                    "text": "name a service and it finds it, and\nmakes the osc_device for you"
                 },
                 "5": {
-                    "init": "comment makes the osc_device for you",
-                    "name": "comment",
-                    "id": 422,
-                    "position_x": 766,
-                    "position_y": 355,
-                    "width": 196,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "makes the osc_device for you",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "makes the osc_device for you"
-                },
-                "6": {
                     "name": "text_display",
-                    "id": 459,
+                    "id": 422,
                     "position_x": 380,
                     "position_y": 62,
-                    "width": 340,
-                    "height": 200,
+                    "width": 334,
+                    "height": 190,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -284,13 +274,13 @@
                         }
                     }
                 },
-                "7": {
+                "6": {
                     "init": "comment the whole namespace it published",
                     "name": "comment",
-                    "id": 496,
-                    "position_x": 766,
-                    "position_y": 315,
-                    "width": 224,
+                    "id": 459,
+                    "position_x": 740,
+                    "position_y": 325,
+                    "width": 205,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -309,174 +299,64 @@
                     },
                     "comment": "the whole namespace it published"
                 },
-                "8": {
+                "7": {
                     "name": "oscq_browse",
-                    "id": 533,
+                    "id": 496,
                     "position_x": 30,
                     "position_y": 355,
-                    "width": 360,
-                    "height": 420,
+                    "width": 288,
+                    "height": 327,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {}
                 },
-                "9": {
-                    "init": "comment search, drill in, then CREATE - it builds",
-                    "name": "comment",
-                    "id": 570,
-                    "position_x": 766,
+                "8": {
+                    "name": "text_block",
+                    "id": 533,
+                    "annotation": true,
+                    "position_x": 740,
                     "position_y": 790,
-                    "width": 287,
-                    "height": 30,
+                    "width": 286,
+                    "height": 88,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "text",
-                            "value": "search, drill in, then CREATE - it builds",
+                            "name": "block",
+                            "value": "search, drill in, then CREATE - it builds\nthe nodes, already the right type and\nrange, because the device said so\nput '1-8' in subset before 'create all'\non a desk with 64 channels, or you will\nget all 64",
                             "value_type": "str"
                         },
                         "1": {
-                            "name": "font size",
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 278,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 72,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
                             "value": "24",
                             "value_type": "str"
                         }
                     },
-                    "comment": "search, drill in, then CREATE - it builds"
+                    "text": "search, drill in, then CREATE - it builds\nthe nodes, already the right type and\nrange, because the device said so\nput '1-8' in subset before 'create all'\non a desk with 64 channels, or you will\nget all 64"
                 },
-                "10": {
-                    "init": "comment the nodes, already the right type and",
-                    "name": "comment",
-                    "id": 607,
-                    "position_x": 766,
-                    "position_y": 820,
-                    "width": 259,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "the nodes, already the right type and",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "the nodes, already the right type and"
-                },
-                "11": {
-                    "init": "comment range, because the device said so",
-                    "name": "comment",
-                    "id": 644,
-                    "position_x": 766,
-                    "position_y": 850,
-                    "width": 231,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "range, because the device said so",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "range, because the device said so"
-                },
-                "12": {
-                    "init": "comment put '1-8' in subset before 'create all'",
-                    "name": "comment",
-                    "id": 681,
-                    "position_x": 766,
-                    "position_y": 890,
-                    "width": 273,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "put '1-8' in subset before 'create all'",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "put '1-8' in subset before 'create all'"
-                },
-                "13": {
-                    "init": "comment on a desk with 64 channels, or you will",
-                    "name": "comment",
-                    "id": 718,
-                    "position_x": 766,
-                    "position_y": 920,
-                    "width": 273,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "on a desk with 64 channels, or you will",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "on a desk with 64 channels, or you will"
-                },
-                "14": {
-                    "init": "comment get all 64",
-                    "name": "comment",
-                    "id": 755,
-                    "position_x": 766,
-                    "position_y": 950,
-                    "width": 70,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "get all 64",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "get all 64"
-                },
-                "15": {
+                "9": {
                     "name": "list",
-                    "id": 792,
+                    "id": 570,
                     "position_x": 440,
                     "position_y": 355,
-                    "width": 300,
+                    "width": 130,
                     "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
@@ -494,13 +374,13 @@
                         }
                     }
                 },
-                "16": {
+                "10": {
                     "init": "comment the path currently selected",
                     "name": "comment",
-                    "id": 829,
-                    "position_x": 766,
+                    "id": 607,
+                    "position_x": 740,
                     "position_y": 405,
-                    "width": 189,
+                    "width": 174,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -519,100 +399,65 @@
                     },
                     "comment": "the path currently selected"
                 },
-                "17": {
+                "11": {
                     "name": "p",
-                    "id": 866,
+                    "id": 644,
                     "position_x": 440,
                     "position_y": 470,
-                    "width": 220,
-                    "height": 70,
+                    "width": 84,
+                    "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "p my_controls",
-                    "patcher id": 1088
+                    "patcher id": 792
                 },
-                "18": {
-                    "init": "comment an oscq_host inside a subpatcher",
-                    "name": "comment",
-                    "id": 903,
-                    "position_x": 766,
+                "12": {
+                    "name": "text_block",
+                    "id": 681,
+                    "annotation": true,
+                    "position_x": 740,
                     "position_y": 555,
-                    "width": 224,
-                    "height": 30,
+                    "width": 268,
+                    "height": 52,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "text",
-                            "value": "an oscq_host inside a subpatcher",
+                            "name": "block",
+                            "value": "an oscq_host inside a subpatcher\npublishes it as a service, named after\nthe patcher - so name it well",
                             "value_type": "str"
                         },
                         "1": {
-                            "name": "font size",
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 260,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 36,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
                             "value": "24",
                             "value_type": "str"
                         }
                     },
-                    "comment": "an oscq_host inside a subpatcher"
+                    "text": "an oscq_host inside a subpatcher\npublishes it as a service, named after\nthe patcher - so name it well"
                 },
-                "19": {
-                    "init": "comment publishes it as a service, named after",
-                    "name": "comment",
-                    "id": 940,
-                    "position_x": 766,
-                    "position_y": 585,
-                    "width": 266,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "publishes it as a service, named after",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "publishes it as a service, named after"
-                },
-                "20": {
-                    "init": "comment the patcher - so name it well",
-                    "name": "comment",
-                    "id": 977,
-                    "position_x": 766,
-                    "position_y": 615,
-                    "width": 203,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "the patcher - so name it well",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "the patcher - so name it well"
-                },
-                "21": {
+                "13": {
                     "name": "close",
-                    "id": 1014,
+                    "id": 718,
                     "position_x": 24,
-                    "position_y": 805,
+                    "position_y": 712,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",
@@ -633,17 +478,17 @@
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "address space",
-                    "dest_node": 459,
+                    "dest_node": 422,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "###text in"
                 },
                 "1": {
-                    "source_node": 533,
+                    "source_node": 496,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "selected path",
-                    "dest_node": 792,
+                    "dest_node": 570,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""

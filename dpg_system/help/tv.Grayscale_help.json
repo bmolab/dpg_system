@@ -1,11 +1,11 @@
 {
-    "height": 922,
-    "width": 1902,
+    "height": 924,
+    "width": 1885,
     "position": [
         100,
         100
     ],
-    "id": 1014,
+    "id": 940,
     "name": "tv.Grayscale_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/tv.Grayscale_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 576,
+            "width": 598,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1054,
+            "position_x": 1037,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 190,
-            "height": 180,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -122,8 +122,8 @@
             "id": 422,
             "position_x": 250,
             "position_y": 120,
-            "width": 200,
-            "height": 150,
+            "width": 45,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -134,7 +134,7 @@
             "id": 459,
             "position_x": 250,
             "position_y": 285,
-            "width": 200,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -156,9 +156,9 @@
             "init": "comment 3 channels in",
             "name": "comment",
             "id": 496,
-            "position_x": 786,
+            "position_x": 764,
             "position_y": 335,
-            "width": 91,
+            "width": 88,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -182,8 +182,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 380,
-            "width": 200,
-            "height": 80,
+            "width": 82,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -194,8 +194,8 @@
             "id": 570,
             "position_x": 250,
             "position_y": 380,
-            "width": 200,
-            "height": 150,
+            "width": 45,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -206,7 +206,7 @@
             "id": 607,
             "position_x": 250,
             "position_y": 545,
-            "width": 200,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -225,74 +225,64 @@
             }
         },
         "11": {
-            "init": "comment 1 channel out - a weighted sum,",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
-            "position_x": 786,
+            "annotation": true,
+            "position_x": 764,
             "position_y": 595,
-            "width": 217,
-            "height": 30,
+            "width": 224,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "1 channel out - a weighted sum,",
+                    "name": "block",
+                    "value": "1 channel out - a weighted sum,\nnot the average of the three",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "1 channel out - a weighted sum,"
+            "text": "1 channel out - a weighted sum,\nnot the average of the three"
         },
         "12": {
-            "init": "comment not the average of the three",
-            "name": "comment",
-            "id": 681,
-            "position_x": 786,
-            "position_y": 625,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "not the average of the three",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "not the average of the three"
-        },
-        "13": {
             "name": "t.squeeze",
-            "id": 718,
+            "id": 681,
             "position_x": 30,
             "position_y": 480,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "14": {
+        "13": {
             "name": "heat_map",
-            "id": 755,
+            "id": 718,
             "position_x": 30,
             "position_y": 575,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -339,13 +329,13 @@
                 }
             }
         },
-        "15": {
+        "14": {
             "name": "tv.gaussian_blur",
-            "id": 792,
+            "id": 755,
             "position_x": 530,
             "position_y": 380,
-            "width": 230,
-            "height": 150,
+            "width": 160,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -362,25 +352,25 @@
                 }
             }
         },
-        "16": {
+        "15": {
             "name": "t.squeeze",
-            "id": 829,
+            "id": 792,
             "position_x": 530,
             "position_y": 545,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
+        "16": {
             "name": "heat_map",
-            "id": 866,
+            "id": 829,
             "position_x": 530,
             "position_y": 640,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -427,61 +417,51 @@
                 }
             }
         },
-        "18": {
-            "init": "comment the same picture, smoothed - sigma",
-            "name": "comment",
-            "id": 903,
-            "position_x": 786,
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 764,
             "position_y": 800,
-            "width": 238,
-            "height": 30,
+            "width": 243,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the same picture, smoothed - sigma",
+                    "name": "block",
+                    "value": "the same picture, smoothed - sigma\ndecides what counts as detail",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the same picture, smoothed - sigma"
+            "text": "the same picture, smoothed - sigma\ndecides what counts as detail"
         },
-        "19": {
-            "init": "comment decides what counts as detail",
-            "name": "comment",
-            "id": 940,
-            "position_x": 786,
-            "position_y": 830,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "decides what counts as detail",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "decides what counts as detail"
-        },
-        "20": {
+        "18": {
             "name": "close",
-            "id": 977,
+            "id": 903,
             "position_x": 24,
-            "position_y": 818,
+            "position_y": 820,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -562,17 +542,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 718,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "7": {
-            "source_node": 718,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 755,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
@@ -582,27 +562,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 792,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "9": {
-            "source_node": 792,
+            "source_node": 755,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 829,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "10": {
-            "source_node": 829,
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 866,
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

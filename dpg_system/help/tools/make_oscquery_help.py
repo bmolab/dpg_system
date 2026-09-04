@@ -119,10 +119,8 @@ p / patcher, since oscq_host takes its service name from the patcher it is in.""
 
 demo = [
     {'key': 'svc', 'init': 'oscq_service', 'pos': (30, 62), 'w': 300, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'name a service and it finds it, and',
+    {'key': 'c0', 'comment': True, 'text': 'name a service and it finds it, and\nmakes the osc_device for you',
      'pos': (30, 275)},
-    {'key': 'c1', 'comment': True, 'text': 'makes the osc_device for you',
-     'pos': (30, 305)},
     {'key': 'td', 'init': 'text_display', 'pos': (380, 62), 'w': 340, 'h': 200,
      'props': {'width': 320, 'height': 160, 'wrap': True, 'max_lines': 60,
                'autoscroll': True, 'font size': '24'}},
@@ -130,17 +128,8 @@ demo = [
      'pos': (380, 275)},
 
     {'key': 'br', 'init': 'oscq_browse', 'pos': (30, 355), 'w': 360, 'h': 420},
-    {'key': 'c3', 'comment': True, 'text': 'search, drill in, then CREATE - it builds',
+    {'key': 'c3', 'comment': True, 'text': "search, drill in, then CREATE - it builds\nthe nodes, already the right type and\nrange, because the device said so\nput '1-8' in subset before 'create all'\non a desk with 64 channels, or you will\nget all 64",
      'pos': (30, 790)},
-    {'key': 'c4', 'comment': True, 'text': 'the nodes, already the right type and',
-     'pos': (30, 820)},
-    {'key': 'c5', 'comment': True, 'text': 'range, because the device said so',
-     'pos': (30, 850)},
-    {'key': 'c6', 'comment': True, 'text': "put '1-8' in subset before 'create all'",
-     'pos': (30, 890)},
-    {'key': 'c7', 'comment': True, 'text': 'on a desk with 64 channels, or you will',
-     'pos': (30, 920)},
-    {'key': 'c8', 'comment': True, 'text': 'get all 64', 'pos': (30, 950)},
 
     {'key': 'l1', 'init': 'list', 'pos': (440, 355), 'w': 300, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
@@ -148,12 +137,8 @@ demo = [
      'pos': (440, 405)},
 
     {'key': 'pp', 'init': 'p my_controls', 'pos': (440, 470), 'w': 220, 'h': 70},
-    {'key': 'c10', 'comment': True, 'text': 'an oscq_host inside a subpatcher',
+    {'key': 'c10', 'comment': True, 'text': 'an oscq_host inside a subpatcher\npublishes it as a service, named after\nthe patcher - so name it well',
      'pos': (440, 555)},
-    {'key': 'c11', 'comment': True, 'text': 'publishes it as a service, named after',
-     'pos': (440, 585)},
-    {'key': 'c12', 'comment': True, 'text': 'the patcher - so name it well',
-     'pos': (440, 615)},
 ]
 links = [('svc', 'address space', 'td', '###text in'),
          ('br', 'selected path', 'l1', '')]

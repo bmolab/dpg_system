@@ -1,11 +1,11 @@
 {
-    "height": 1095,
+    "height": 993,
     "width": 2084,
     "position": [
         100,
         100
     ],
-    "id": 1162,
+    "id": 681,
     "name": "gemma_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gemma_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 432,
+            "width": 451,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -97,7 +97,7 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 380,
+            "width": 370,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -137,7 +137,7 @@
             "id": 422,
             "position_x": 30,
             "position_y": 335,
-            "width": 480,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -156,158 +156,48 @@
             }
         },
         "6": {
-            "init": "comment describe what you want more of, and it",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
+            "annotation": true,
             "position_x": 926,
             "position_y": 385,
-            "width": 266,
-            "height": 30,
+            "width": 280,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "describe what you want more of, and it",
+                    "name": "block",
+                    "value": "describe what you want more of, and it\nreturns [index, description, votes].\nThe index is what gemma wants\nmodel and layer MUST match gemma - the\nsame number in another layer is a\ndifferent concept, and nothing warns you",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "describe what you want more of, and it"
+            "text": "describe what you want more of, and it\nreturns [index, description, votes].\nThe index is what gemma wants\nmodel and layer MUST match gemma - the\nsame number in another layer is a\ndifferent concept, and nothing warns you"
         },
         "7": {
-            "init": "comment returns [index, description, votes].",
-            "name": "comment",
-            "id": 496,
-            "position_x": 926,
-            "position_y": 415,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "returns [index, description, votes].",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "returns [index, description, votes]."
-        },
-        "8": {
-            "init": "comment The index is what gemma wants",
-            "name": "comment",
-            "id": 533,
-            "position_x": 926,
-            "position_y": 445,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "The index is what gemma wants",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "The index is what gemma wants"
-        },
-        "9": {
-            "init": "comment model and layer MUST match gemma - the",
-            "name": "comment",
-            "id": 570,
-            "position_x": 926,
-            "position_y": 485,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "model and layer MUST match gemma - the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "model and layer MUST match gemma - the"
-        },
-        "10": {
-            "init": "comment same number in another layer is a",
-            "name": "comment",
-            "id": 607,
-            "position_x": 926,
-            "position_y": 515,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "same number in another layer is a",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "same number in another layer is a"
-        },
-        "11": {
-            "init": "comment different concept, and nothing warns you",
-            "name": "comment",
-            "id": 644,
-            "position_x": 926,
-            "position_y": 545,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "different concept, and nothing warns you",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "different concept, and nothing warns you"
-        },
-        "12": {
             "name": "gemma",
-            "id": 681,
+            "id": 496,
             "position_x": 560,
             "position_y": 62,
             "width": 340,
@@ -317,13 +207,13 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
+        "8": {
             "name": "text_display",
-            "id": 718,
+            "id": 533,
             "position_x": 560,
             "position_y": 610,
-            "width": 340,
-            "height": 220,
+            "width": 334,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -360,261 +250,91 @@
                 }
             }
         },
-        "14": {
-            "init": "comment switch intervention_active on and off",
-            "name": "comment",
-            "id": 755,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
             "position_x": 926,
             "position_y": 845,
-            "width": 259,
-            "height": 30,
+            "width": 268,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "switch intervention_active on and off",
+                    "name": "block",
+                    "value": "switch intervention_active on and off\nagainst the same prompt to hear what\nthe feature is actually doing\npush GENTLY - a small strength colours\nthe writing, a large one makes it\nobsessive and then incoherent",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "switch intervention_active on and off"
+            "text": "switch intervention_active on and off\nagainst the same prompt to hear what\nthe feature is actually doing\npush GENTLY - a small strength colours\nthe writing, a large one makes it\nobsessive and then incoherent"
         },
-        "15": {
-            "init": "comment against the same prompt to hear what",
-            "name": "comment",
-            "id": 792,
-            "position_x": 926,
-            "position_y": 875,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "against the same prompt to hear what",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "against the same prompt to hear what"
-        },
-        "16": {
-            "init": "comment the feature is actually doing",
-            "name": "comment",
-            "id": 829,
-            "position_x": 926,
-            "position_y": 905,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the feature is actually doing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the feature is actually doing"
-        },
-        "17": {
-            "init": "comment push GENTLY - a small strength colours",
-            "name": "comment",
-            "id": 866,
-            "position_x": 926,
-            "position_y": 945,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "push GENTLY - a small strength colours",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "push GENTLY - a small strength colours"
-        },
-        "18": {
-            "init": "comment the writing, a large one makes it",
-            "name": "comment",
-            "id": 903,
-            "position_x": 926,
-            "position_y": 975,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the writing, a large one makes it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the writing, a large one makes it"
-        },
-        "19": {
-            "init": "comment obsessive and then incoherent",
-            "name": "comment",
-            "id": 940,
-            "position_x": 926,
-            "position_y": 1005,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "obsessive and then incoherent",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "obsessive and then incoherent"
-        },
-        "20": {
-            "init": "comment prompting asks it to write ABOUT",
-            "name": "comment",
-            "id": 977,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
             "position_x": 926,
             "position_y": 600,
-            "width": 224,
-            "height": 30,
+            "width": 268,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "prompting asks it to write ABOUT",
+                    "name": "block",
+                    "value": "prompting asks it to write ABOUT\nsomething. Steering changes what it is\nthinking about - the subject can stay\nput while the disposition shifts",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "prompting asks it to write ABOUT"
+            "text": "prompting asks it to write ABOUT\nsomething. Steering changes what it is\nthinking about - the subject can stay\nput while the disposition shifts"
         },
-        "21": {
-            "init": "comment something. Steering changes what it is",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 926,
-            "position_y": 630,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "something. Steering changes what it is",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "something. Steering changes what it is"
-        },
-        "22": {
-            "init": "comment thinking about - the subject can stay",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 926,
-            "position_y": 660,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "thinking about - the subject can stay",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "thinking about - the subject can stay"
-        },
-        "23": {
-            "init": "comment put while the disposition shifts",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 926,
-            "position_y": 690,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "put while the disposition shifts",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "put while the disposition shifts"
-        },
-        "24": {
+        "11": {
             "name": "close",
-            "id": 1125,
+            "id": 644,
             "position_x": 24,
-            "position_y": 860,
+            "position_y": 850,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -651,11 +371,11 @@
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 681,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "generated_text",
-            "dest_node": 718,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"

@@ -1,11 +1,11 @@
 {
     "height": 1376,
-    "width": 1860,
+    "width": 1712,
     "position": [
         100,
         100
     ],
-    "id": 1051,
+    "id": 903,
     "name": "pc_crop_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/pc_crop_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1002,
+            "position_x": 854,
             "position_y": 45,
             "width": 818,
             "height": 806,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 300,
+            "width": 154,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,9 +108,9 @@
             "init": "comment the sensor returns the whole room",
             "name": "comment",
             "id": 385,
-            "position_x": 706,
+            "position_x": 556,
             "position_y": 375,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,106 +134,71 @@
             "id": 422,
             "position_x": 30,
             "position_y": 420,
-            "width": 300,
-            "height": 200,
+            "width": 264,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "6": {
-            "init": "comment crop FIRST: it discards most of the",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 706,
+            "annotation": true,
+            "position_x": 556,
             "position_y": 635,
-            "width": 245,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "crop FIRST: it discards most of the",
+                    "name": "block",
+                    "value": "crop FIRST: it discards most of the\ndata and tells everything downstream\nwhat volume to build its grid over",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "crop FIRST: it discards most of the"
+            "text": "crop FIRST: it discards most of the\ndata and tells everything downstream\nwhat volume to build its grid over"
         },
         "7": {
-            "init": "comment data and tells everything downstream",
-            "name": "comment",
-            "id": 496,
-            "position_x": 706,
-            "position_y": 665,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "data and tells everything downstream",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "data and tells everything downstream"
-        },
-        "8": {
-            "init": "comment what volume to build its grid over",
-            "name": "comment",
-            "id": 533,
-            "position_x": 706,
-            "position_y": 745,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "what volume to build its grid over",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "what volume to build its grid over"
-        },
-        "9": {
             "name": "pc_info",
-            "id": 570,
+            "id": 496,
             "position_x": 400,
             "position_y": 420,
-            "width": 240,
-            "height": 180,
+            "width": 76,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "8": {
             "name": "int",
-            "id": 607,
+            "id": 533,
             "position_x": 400,
             "position_y": 615,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -256,13 +221,13 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "init": "comment how many points are left",
             "name": "comment",
-            "id": 644,
-            "position_x": 706,
-            "position_y": 705,
-            "width": 168,
+            "id": 570,
+            "position_x": 556,
+            "position_y": 697,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -281,12 +246,12 @@
             },
             "comment": "how many points are left"
         },
-        "12": {
+        "10": {
             "name": "list",
-            "id": 681,
+            "id": 607,
             "position_x": 400,
             "position_y": 710,
-            "width": 280,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -304,12 +269,12 @@
                 }
             }
         },
-        "13": {
+        "11": {
             "name": "list",
-            "id": 718,
+            "id": 644,
             "position_x": 400,
             "position_y": 765,
-            "width": 280,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -327,86 +292,76 @@
                 }
             }
         },
-        "14": {
-            "init": "comment min and max - these ARE the numbers",
-            "name": "comment",
-            "id": 755,
-            "position_x": 706,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 556,
             "position_y": 815,
-            "width": 245,
-            "height": 30,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "min and max - these ARE the numbers",
+                    "name": "block",
+                    "value": "min and max - these ARE the numbers\nto type into pc_crop above",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "min and max - these ARE the numbers"
+            "text": "min and max - these ARE the numbers\nto type into pc_crop above"
         },
-        "15": {
-            "init": "comment to type into pc_crop above",
-            "name": "comment",
-            "id": 792,
-            "position_x": 706,
-            "position_y": 845,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "to type into pc_crop above",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "to type into pc_crop above"
-        },
-        "16": {
+        "13": {
             "name": "pc_voxel",
-            "id": 829,
+            "id": 718,
             "position_x": 30,
             "position_y": 745,
-            "width": 300,
-            "height": 240,
+            "width": 222,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
+        "14": {
             "name": "pc_info",
-            "id": 866,
+            "id": 755,
             "position_x": 30,
             "position_y": 1005,
-            "width": 240,
-            "height": 180,
+            "width": 76,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "18": {
+        "15": {
             "name": "int",
-            "id": 903,
+            "id": 792,
             "position_x": 30,
             "position_y": 1200,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -429,59 +384,49 @@
                 }
             }
         },
-        "19": {
-            "init": "comment fewer points, and evenly spread -",
-            "name": "comment",
-            "id": 940,
-            "position_x": 706,
+        "16": {
+            "name": "text_block",
+            "id": 829,
+            "annotation": true,
+            "position_x": 556,
             "position_y": 1250,
-            "width": 231,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "fewer points, and evenly spread -",
+                    "name": "block",
+                    "value": "fewer points, and evenly spread -\nno longer denser wherever it is nearer",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "fewer points, and evenly spread -"
+            "text": "fewer points, and evenly spread -\nno longer denser wherever it is nearer"
         },
-        "20": {
-            "init": "comment no longer denser wherever it is nearer",
-            "name": "comment",
-            "id": 977,
-            "position_x": 706,
-            "position_y": 1280,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "no longer denser wherever it is nearer",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "no longer denser wherever it is nearer"
-        },
-        "21": {
+        "17": {
             "name": "close",
-            "id": 1014,
+            "id": 866,
             "position_x": 24,
             "position_y": 1272,
             "width": 88,
@@ -514,67 +459,67 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "cropped",
-            "dest_node": 570,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "point cloud"
         },
         "2": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "count",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "3": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "min",
-            "dest_node": 681,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "max",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "5": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "cloud out",
-            "dest_node": 829,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "point cloud"
         },
         "6": {
-            "source_node": 829,
+            "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "voxel cloud",
-            "dest_node": 866,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "point cloud"
         },
         "7": {
-            "source_node": 866,
+            "source_node": 755,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "count",
-            "dest_node": 903,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

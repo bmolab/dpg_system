@@ -1,11 +1,11 @@
 {
-    "height": 1284,
-    "width": 1832,
+    "height": 1372,
+    "width": 1877,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 644,
     "name": "bow~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/bow~_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 576,
+            "width": 598,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 954,
+            "position_x": 999,
             "position_y": 45,
             "width": 838,
             "height": 836,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 220,
-            "height": 200,
+            "width": 157,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,8 +110,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 280,
-            "width": 240,
-            "height": 260,
+            "width": 180,
+            "height": 224,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,9 +121,9 @@
             "init": "comment the bow arm: two coordinated signals",
             "name": "comment",
             "id": 422,
-            "position_x": 616,
+            "position_x": 664,
             "position_y": 550,
-            "width": 252,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -147,8 +147,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 590,
-            "width": 260,
-            "height": 260,
+            "width": 205,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -156,85 +156,75 @@
             "init": "bow~ 196"
         },
         "7": {
-            "init": "comment set its own velocity and force knobs to zero",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 616,
+            "annotation": true,
+            "position_x": 664,
             "position_y": 860,
-            "width": 308,
-            "height": 30,
+            "width": 305,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "set its own velocity and force knobs to zero",
+                    "name": "block",
+                    "value": "set its own velocity and force knobs to zero\nthe triad sums, so the arm drives it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "set its own velocity and force knobs to zero"
+            "text": "set its own velocity and force knobs to zero\nthe triad sums, so the arm drives it"
         },
         "8": {
-            "init": "comment the triad sums, so the arm drives it",
-            "name": "comment",
-            "id": 533,
-            "position_x": 616,
-            "position_y": 890,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the triad sums, so the arm drives it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the triad sums, so the arm drives it"
-        },
-        "9": {
             "name": "scope~",
-            "id": 570,
+            "id": 533,
             "position_x": 330,
             "position_y": 590,
-            "width": 260,
-            "height": 220,
+            "width": 308,
+            "height": 248,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "fader_out~",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
             "position_y": 930,
-            "width": 220,
-            "height": 220,
+            "width": 70,
+            "height": 308,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "fader_out~ 1 2"
         },
-        "11": {
+        "10": {
             "name": "close",
-            "id": 644,
+            "id": 607,
             "position_x": 24,
-            "position_y": 1180,
+            "position_y": 1268,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -285,7 +275,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
@@ -295,7 +285,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"

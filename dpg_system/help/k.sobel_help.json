@@ -1,11 +1,11 @@
 {
-    "height": 1077,
-    "width": 2207,
+    "height": 1079,
+    "width": 2156,
     "position": [
         100,
         100
     ],
-    "id": 1310,
+    "id": 1162,
     "name": "k.sobel_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/k.sobel_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 360,
+            "width": 377,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1359,
+            "position_x": 1308,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 190,
-            "height": 180,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -122,8 +122,8 @@
             "id": 422,
             "position_x": 250,
             "position_y": 120,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -135,7 +135,7 @@
             "position_x": 250,
             "position_y": 215,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -183,87 +183,52 @@
             }
         },
         "7": {
-            "init": "comment pure noise: every pixel unlike its",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 1056,
+            "annotation": true,
+            "position_x": 1004,
             "position_y": 310,
-            "width": 238,
-            "height": 30,
+            "width": 243,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "pure noise: every pixel unlike its",
+                    "name": "block",
+                    "value": "pure noise: every pixel unlike its\nneighbours - the worst case for an\nedge filter",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "pure noise: every pixel unlike its"
+            "text": "pure noise: every pixel unlike its\nneighbours - the worst case for an\nedge filter"
         },
         "8": {
-            "init": "comment neighbours - the worst case for an",
-            "name": "comment",
-            "id": 533,
-            "position_x": 1056,
-            "position_y": 340,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "neighbours - the worst case for an",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "neighbours - the worst case for an"
-        },
-        "9": {
-            "init": "comment edge filter",
-            "name": "comment",
-            "id": 570,
-            "position_x": 1056,
-            "position_y": 370,
-            "width": 77,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "edge filter",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "edge filter"
-        },
-        "10": {
             "name": "k.gaussian_blur",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
             "position_y": 415,
-            "width": 220,
-            "height": 150,
+            "width": 160,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -280,25 +245,25 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "t.squeeze",
-            "id": 644,
+            "id": 570,
             "position_x": 280,
             "position_y": 415,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
+        "10": {
             "name": "heat_map",
-            "id": 681,
+            "id": 607,
             "position_x": 280,
             "position_y": 510,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -345,87 +310,77 @@
                 }
             }
         },
-        "13": {
-            "init": "comment blur first - now there are blobs",
-            "name": "comment",
-            "id": 718,
-            "position_x": 1056,
-            "position_y": 610,
-            "width": 224,
-            "height": 30,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 1004,
+            "position_y": 580,
+            "width": 231,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "blur first - now there are blobs",
+                    "name": "block",
+                    "value": "blur first - now there are blobs\nbig enough to have edges",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "blur first - now there are blobs"
+            "text": "blur first - now there are blobs\nbig enough to have edges"
         },
-        "14": {
-            "init": "comment big enough to have edges",
-            "name": "comment",
-            "id": 755,
-            "position_x": 1056,
-            "position_y": 650,
-            "width": 168,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "big enough to have edges",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "big enough to have edges"
-        },
-        "15": {
+        "12": {
             "name": "k.sobel",
-            "id": 792,
+            "id": 681,
             "position_x": 30,
             "position_y": 655,
-            "width": 190,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "16": {
+        "13": {
             "name": "t.squeeze",
-            "id": 829,
+            "id": 718,
             "position_x": 250,
             "position_y": 700,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
+        "14": {
             "name": "heat_map",
-            "id": 866,
+            "id": 755,
             "position_x": 250,
             "position_y": 795,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -472,13 +427,13 @@
                 }
             }
         },
-        "18": {
+        "15": {
             "init": "comment sobel: a continuous steepness",
             "name": "comment",
-            "id": 903,
-            "position_x": 1056,
+            "id": 792,
+            "position_x": 1004,
             "position_y": 750,
-            "width": 203,
+            "width": 187,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -497,37 +452,37 @@
             },
             "comment": "sobel: a continuous steepness"
         },
-        "19": {
+        "16": {
             "name": "k.canny",
-            "id": 940,
+            "id": 829,
             "position_x": 520,
             "position_y": 415,
-            "width": 190,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "20": {
+        "17": {
             "name": "t.squeeze",
-            "id": 977,
+            "id": 866,
             "position_x": 520,
             "position_y": 510,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "21": {
+        "18": {
             "name": "heat_map",
-            "id": 1014,
+            "id": 903,
             "position_x": 520,
             "position_y": 605,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -574,13 +529,13 @@
                 }
             }
         },
-        "22": {
+        "19": {
             "init": "comment canny: a decision - edge or not",
             "name": "comment",
-            "id": 1051,
-            "position_x": 1056,
+            "id": 940,
+            "position_x": 1004,
             "position_y": 790,
-            "width": 217,
+            "width": 199,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -599,38 +554,38 @@
             },
             "comment": "canny: a decision - edge or not"
         },
-        "23": {
+        "20": {
             "name": "k.dog_response_single",
-            "id": 1088,
+            "id": 977,
             "position_x": 770,
             "position_y": 120,
-            "width": 260,
-            "height": 150,
+            "width": 138,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "k.dog_response_single 1.0 1.6"
         },
-        "24": {
+        "21": {
             "name": "t.squeeze",
-            "id": 1125,
+            "id": 1014,
             "position_x": 770,
             "position_y": 285,
-            "width": 160,
-            "height": 80,
+            "width": 64,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "25": {
+        "22": {
             "name": "heat_map",
-            "id": 1162,
+            "id": 1051,
             "position_x": 770,
             "position_y": 380,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -677,61 +632,51 @@
                 }
             }
         },
-        "26": {
-            "init": "comment the two sigmas are a band: detail",
-            "name": "comment",
-            "id": 1199,
-            "position_x": 1056,
+        "23": {
+            "name": "text_block",
+            "id": 1088,
+            "annotation": true,
+            "position_x": 1004,
             "position_y": 540,
-            "width": 231,
-            "height": 30,
+            "width": 274,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the two sigmas are a band: detail",
+                    "name": "block",
+                    "value": "the two sigmas are a band: detail\nbetween them survives, the rest cancels",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the two sigmas are a band: detail"
+            "text": "the two sigmas are a band: detail\nbetween them survives, the rest cancels"
         },
-        "27": {
-            "init": "comment between them survives, the rest cancels",
-            "name": "comment",
-            "id": 1236,
-            "position_x": 1056,
-            "position_y": 570,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "between them survives, the rest cancels",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "between them survives, the rest cancels"
-        },
-        "28": {
+        "24": {
             "name": "close",
-            "id": 1273,
+            "id": 1125,
             "position_x": 24,
-            "position_y": 973,
+            "position_y": 975,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -782,43 +727,63 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 607,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 644,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "5": {
-            "source_node": 644,
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
             "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "tensor in"
         },
-        "6": {
-            "source_node": 607,
+        "7": {
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 792,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "7": {
-            "source_node": 792,
+        "8": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
@@ -827,7 +792,7 @@
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "8": {
+        "10": {
             "source_node": 829,
             "source_node_name": "",
             "source_output_index": 0,
@@ -835,20 +800,20 @@
             "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "tensor in"
         },
-        "9": {
-            "source_node": 607,
+        "11": {
+            "source_node": 866,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 940,
+            "dest_node": 903,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
+            "dest_input_name": "y"
         },
-        "10": {
-            "source_node": 940,
+        "12": {
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
@@ -857,7 +822,7 @@
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "11": {
+        "13": {
             "source_node": 977,
             "source_node_name": "",
             "source_output_index": 0,
@@ -865,34 +830,14 @@
             "dest_node": 1014,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "12": {
-            "source_node": 607,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 1088,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "13": {
-            "source_node": 1088,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 1125,
-            "dest_node_name": "",
-            "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "14": {
-            "source_node": 1125,
+            "source_node": 1014,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 1162,
+            "dest_node": 1051,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

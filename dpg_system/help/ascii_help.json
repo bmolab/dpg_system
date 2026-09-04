@@ -1,11 +1,11 @@
 {
     "height": 721,
-    "width": 1305,
+    "width": 1281,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "ascii_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/ascii_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 456,
+            "width": 475,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 477,
+            "position_x": 453,
             "position_y": 45,
             "width": 788,
             "height": 616,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,7 +109,7 @@
             "id": 385,
             "position_x": 30,
             "position_y": 118,
-            "width": 120,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -132,8 +132,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 180,
-            "width": 160,
-            "height": 70,
+            "width": 82,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -144,7 +144,7 @@
             "id": 459,
             "position_x": 30,
             "position_y": 265,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -171,9 +171,9 @@
             "init": "comment capital A is 65",
             "name": "comment",
             "id": 496,
-            "position_x": 216,
+            "position_x": 186,
             "position_y": 315,
-            "width": 105,
+            "width": 101,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -197,8 +197,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 355,
-            "width": 130,
-            "height": 70,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -216,8 +216,8 @@
             "id": 570,
             "position_x": 30,
             "position_y": 440,
-            "width": 160,
-            "height": 70,
+            "width": 88,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -228,7 +228,7 @@
             "id": 607,
             "position_x": 30,
             "position_y": 525,
-            "width": 160,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -247,58 +247,48 @@
             }
         },
         "11": {
-            "init": "comment add 32 and it becomes lower case",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
-            "position_x": 216,
+            "annotation": true,
+            "position_x": 186,
             "position_y": 575,
-            "width": 224,
-            "height": 30,
+            "width": 237,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "add 32 and it becomes lower case",
+                    "name": "block",
+                    "value": "add 32 and it becomes lower case\ntrue for plain Latin letters only",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "add 32 and it becomes lower case"
+            "text": "add 32 and it becomes lower case\ntrue for plain Latin letters only"
         },
         "12": {
-            "init": "comment true for plain Latin letters only",
-            "name": "comment",
-            "id": 681,
-            "position_x": 216,
-            "position_y": 605,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "true for plain Latin letters only",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "true for plain Latin letters only"
-        },
-        "13": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
             "position_y": 597,
             "width": 88,

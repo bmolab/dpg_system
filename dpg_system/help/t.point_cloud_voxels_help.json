@@ -1,11 +1,11 @@
 {
-    "height": 1015,
-    "width": 1874,
+    "height": 977,
+    "width": 1849,
     "position": [
         100,
         100
     ],
-    "id": 1051,
+    "id": 755,
     "name": "t.point_cloud_voxels_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.point_cloud_voxels_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 480,
+            "width": 500,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1016,
+            "position_x": 991,
             "position_y": 45,
             "width": 818,
             "height": 786,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 200,
-            "height": 180,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -118,62 +118,52 @@
             "init": "t.rand 3000 3"
         },
         "5": {
-            "init": "comment a cloud of 3000 points, 0 to 1 in each",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 706,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 310,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a cloud of 3000 points, 0 to 1 in each",
+                    "name": "block",
+                    "value": "a cloud of 3000 points, 0 to 1 in each\naxis - a cube to carve up",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a cloud of 3000 points, 0 to 1 in each"
+            "text": "a cloud of 3000 points, 0 to 1 in each\naxis - a cube to carve up"
         },
         "6": {
-            "init": "comment axis - a cube to carve up",
-            "name": "comment",
-            "id": 459,
-            "position_x": 706,
-            "position_y": 340,
-            "width": 175,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "axis - a cube to carve up",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "axis - a cube to carve up"
-        },
-        "7": {
             "name": "t.point_cloud_voxels",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
             "position_y": 390,
-            "width": 340,
-            "height": 460,
+            "width": 179,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -225,310 +215,195 @@
                 }
             }
         },
-        "8": {
-            "init": "comment a 1 m box at 0.2 m voxels is 5 cells a",
-            "name": "comment",
-            "id": 533,
-            "position_x": 706,
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 865,
-            "width": 266,
-            "height": 30,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a 1 m box at 0.2 m voxels is 5 cells a",
+                    "name": "block",
+                    "value": "a 1 m box at 0.2 m voxels is 5 cells a\nside. Halve the voxel size and the grid\ngets EIGHT times bigger",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a 1 m box at 0.2 m voxels is 5 cells a"
+            "text": "a 1 m box at 0.2 m voxels is 5 cells a\nside. Halve the voxel size and the grid\ngets EIGHT times bigger"
         },
-        "9": {
-            "init": "comment side. Halve the voxel size and the grid",
-            "name": "comment",
-            "id": 570,
-            "position_x": 706,
-            "position_y": 895,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "side. Halve the voxel size and the grid",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "side. Halve the voxel size and the grid"
-        },
-        "10": {
-            "init": "comment gets EIGHT times bigger",
-            "name": "comment",
-            "id": 607,
-            "position_x": 706,
-            "position_y": 925,
-            "width": 161,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "gets EIGHT times bigger",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "gets EIGHT times bigger"
-        },
-        "11": {
+        "8": {
             "name": "info",
-            "id": 644,
+            "id": 533,
             "position_x": 420,
             "position_y": 390,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
-            "init": "comment the dense volume: depth by height by",
-            "name": "comment",
-            "id": 681,
-            "position_x": 706,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 485,
-            "width": 252,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the dense volume: depth by height by",
+                    "name": "block",
+                    "value": "the dense volume: depth by height by\nwidth. Not points - an actual array,\nwhich is what a 3D convolution wants",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the dense volume: depth by height by"
+            "text": "the dense volume: depth by height by\nwidth. Not points - an actual array,\nwhich is what a 3D convolution wants"
         },
-        "13": {
-            "init": "comment width. Not points - an actual array,",
-            "name": "comment",
-            "id": 718,
-            "position_x": 706,
-            "position_y": 515,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "width. Not points - an actual array,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "width. Not points - an actual array,"
-        },
-        "14": {
-            "init": "comment which is what a 3D convolution wants",
-            "name": "comment",
-            "id": 755,
-            "position_x": 706,
-            "position_y": 545,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "which is what a 3D convolution wants",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "which is what a 3D convolution wants"
-        },
-        "15": {
+        "10": {
             "name": "info",
-            "id": 792,
+            "id": 607,
             "position_x": 420,
             "position_y": 600,
-            "width": 260,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "16": {
-            "init": "comment and the same result as points - one per",
-            "name": "comment",
-            "id": 829,
-            "position_x": 706,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 695,
-            "width": 273,
-            "height": 30,
+            "width": 274,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "and the same result as points - one per",
+                    "name": "block",
+                    "value": "and the same result as points - one per\noccupied cell. Three views of one thing",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "and the same result as points - one per"
+            "text": "and the same result as points - one per\noccupied cell. Three views of one thing"
         },
-        "17": {
-            "init": "comment occupied cell. Three views of one thing",
-            "name": "comment",
-            "id": 866,
-            "position_x": 706,
-            "position_y": 725,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "occupied cell. Three views of one thing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "occupied cell. Three views of one thing"
-        },
-        "18": {
-            "init": "comment only the cloud output starts on. Each is",
-            "name": "comment",
-            "id": 903,
-            "position_x": 706,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 681,
             "position_y": 775,
             "width": 280,
-            "height": 30,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "only the cloud output starts on. Each is",
+                    "name": "block",
+                    "value": "only the cloud output starts on. Each is\nseparate work - do not pay for a volume\nyou are not going to look at",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "only the cloud output starts on. Each is"
+            "text": "only the cloud output starts on. Each is\nseparate work - do not pay for a volume\nyou are not going to look at"
         },
-        "19": {
-            "init": "comment separate work - do not pay for a volume",
-            "name": "comment",
-            "id": 940,
-            "position_x": 706,
-            "position_y": 805,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "separate work - do not pay for a volume",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "separate work - do not pay for a volume"
-        },
-        "20": {
-            "init": "comment you are not going to look at",
-            "name": "comment",
-            "id": 977,
-            "position_x": 706,
-            "position_y": 835,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "you are not going to look at",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "you are not going to look at"
-        },
-        "21": {
+        "13": {
             "name": "close",
-            "id": 1014,
+            "id": 718,
             "position_x": 24,
-            "position_y": 880,
+            "position_y": 672,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -559,27 +434,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "point cloud in"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "voxels out",
-            "dest_node": 644,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "voxels cloud out",
-            "dest_node": 792,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

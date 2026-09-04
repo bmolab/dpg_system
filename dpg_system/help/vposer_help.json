@@ -1,11 +1,11 @@
 {
-    "height": 1165,
-    "width": 1887,
+    "height": 1382,
+    "width": 1796,
     "position": [
         100,
         100
     ],
-    "id": 1051,
+    "id": 792,
     "name": "vposer_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vposer_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 408,
+            "width": 426,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1029,
+            "position_x": 938,
             "position_y": 45,
             "width": 818,
             "height": 806,
@@ -97,7 +97,7 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 560,
+            "width": 550,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -121,86 +121,76 @@
             }
         },
         "4": {
-            "init": "comment point this at your model directory and",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 726,
+            "annotation": true,
+            "position_x": 634,
             "position_y": 112,
-            "width": 266,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "point this at your model directory and",
+                    "name": "block",
+                    "value": "point this at your model directory and\nclick it - nothing works until you do",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "point this at your model directory and"
+            "text": "point this at your model directory and\nclick it - nothing works until you do"
         },
         "5": {
-            "init": "comment click it - nothing works until you do",
-            "name": "comment",
+            "name": "smpl_take",
             "id": 422,
-            "position_x": 726,
-            "position_y": 142,
-            "width": 259,
-            "height": 30,
+            "position_x": 30,
+            "position_y": 190,
+            "width": 123,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "click it - nothing works until you do",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "click it - nothing works until you do"
+            "properties": {}
         },
         "6": {
-            "name": "smpl_take",
+            "name": "vposer",
             "id": 459,
             "position_x": 30,
-            "position_y": 190,
-            "width": 300,
-            "height": 200,
+            "position_y": 410,
+            "width": 154,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "7": {
-            "name": "vposer",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 410,
-            "width": 320,
-            "height": 260,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
             "init": "comment a recorded pose in, 32 numbers out",
             "name": "comment",
-            "id": 533,
-            "position_x": 726,
-            "position_y": 700,
-            "width": 238,
+            "id": 496,
+            "position_x": 634,
+            "position_y": 685,
+            "width": 217,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -219,13 +209,13 @@
             },
             "comment": "a recorded pose in, 32 numbers out"
         },
-        "9": {
+        "8": {
             "name": "plot",
-            "id": 570,
+            "id": 533,
             "position_x": 400,
             "position_y": 410,
-            "width": 300,
-            "height": 180,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -282,261 +272,156 @@
                 }
             }
         },
-        "10": {
-            "init": "comment the 32 latents. This is the whole pose,",
-            "name": "comment",
-            "id": 607,
-            "position_x": 726,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 634,
             "position_y": 600,
-            "width": 273,
-            "height": 30,
+            "width": 274,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the 32 latents. This is the whole pose,",
+                    "name": "block",
+                    "value": "the 32 latents. This is the whole pose,\nand cross-fading these gives poses all\nthe way along - which cross-fading the\njoint angles does not",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the 32 latents. This is the whole pose,"
+            "text": "the 32 latents. This is the whole pose,\nand cross-fading these gives poses all\nthe way along - which cross-fading the\njoint angles does not"
         },
-        "11": {
-            "init": "comment and cross-fading these gives poses all",
-            "name": "comment",
-            "id": 644,
-            "position_x": 726,
-            "position_y": 630,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "and cross-fading these gives poses all",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "and cross-fading these gives poses all"
-        },
-        "12": {
-            "init": "comment the way along - which cross-fading the",
-            "name": "comment",
-            "id": 681,
-            "position_x": 726,
-            "position_y": 660,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the way along - which cross-fading the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the way along - which cross-fading the"
-        },
-        "13": {
-            "init": "comment joint angles does not",
-            "name": "comment",
-            "id": 718,
-            "position_x": 726,
-            "position_y": 740,
-            "width": 147,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "joint angles does not",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "joint angles does not"
-        },
-        "14": {
+        "10": {
             "name": "gl_body",
-            "id": 755,
+            "id": 607,
             "position_x": 30,
             "position_y": 730,
-            "width": 280,
-            "height": 220,
+            "width": 144,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "15": {
-            "init": "comment the decoded pose - the nearest one the",
-            "name": "comment",
-            "id": 792,
-            "position_x": 726,
-            "position_y": 995,
-            "width": 266,
-            "height": 30,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 634,
+            "position_y": 987,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the decoded pose - the nearest one the",
+                    "name": "block",
+                    "value": "the decoded pose - the nearest one the\nmodel thinks a body could hold",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the decoded pose - the nearest one the"
+            "text": "the decoded pose - the nearest one the\nmodel thinks a body could hold"
         },
-        "16": {
-            "init": "comment model thinks a body could hold",
-            "name": "comment",
-            "id": 829,
-            "position_x": 726,
-            "position_y": 1075,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "model thinks a body could hold",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "model thinks a body could hold"
-        },
-        "17": {
+        "12": {
             "name": "vector",
-            "id": 866,
+            "id": 681,
             "position_x": 400,
             "position_y": 730,
-            "width": 300,
-            "height": 180,
+            "width": 160,
+            "height": 518,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "vector 32"
         },
-        "18": {
-            "init": "comment or go the other way: 32 numbers you",
-            "name": "comment",
-            "id": 903,
-            "position_x": 726,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 634,
             "position_y": 925,
-            "width": 245,
-            "height": 30,
+            "width": 261,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "or go the other way: 32 numbers you",
+                    "name": "block",
+                    "value": "or go the other way: 32 numbers you\nchoose, decoded into a body. Anything\nyou send lands on a possible pose",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "or go the other way: 32 numbers you"
+            "text": "or go the other way: 32 numbers you\nchoose, decoded into a body. Anything\nyou send lands on a possible pose"
         },
-        "19": {
-            "init": "comment choose, decoded into a body. Anything",
-            "name": "comment",
-            "id": 940,
-            "position_x": 726,
-            "position_y": 955,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "choose, decoded into a body. Anything",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "choose, decoded into a body. Anything"
-        },
-        "20": {
-            "init": "comment you send lands on a possible pose",
-            "name": "comment",
-            "id": 977,
-            "position_x": 726,
-            "position_y": 1035,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "you send lands on a possible pose",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "you send lands on a possible pose"
-        },
-        "21": {
+        "14": {
             "name": "close",
-            "id": 1014,
+            "id": 755,
             "position_x": 24,
-            "position_y": 980,
+            "position_y": 1278,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -557,47 +442,47 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "model path"
         },
         "1": {
-            "source_node": 459,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "joint_data",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input in"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "latents out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "3": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "decoded out",
-            "dest_node": 755,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pose in"
         },
         "4": {
-            "source_node": 866,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "latent in"

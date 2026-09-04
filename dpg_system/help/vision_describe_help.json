@@ -1,11 +1,11 @@
 {
-    "height": 1015,
-    "width": 1954,
+    "height": 927,
+    "width": 1964,
     "position": [
         100,
         100
     ],
-    "id": 1051,
+    "id": 792,
     "name": "vision_describe_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vision_describe_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 492,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1096,
+            "position_x": 1106,
             "position_y": 45,
             "width": 818,
             "height": 816,
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 115,
-            "width": 220,
-            "height": 140,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -120,9 +120,9 @@
             "init": "comment any source of RGB frames will do",
             "name": "comment",
             "id": 422,
-            "position_x": 786,
+            "position_x": 796,
             "position_y": 270,
-            "width": 224,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -146,8 +146,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 315,
-            "width": 170,
-            "height": 80,
+            "width": 117,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -161,86 +161,51 @@
             "init": "subsample 30"
         },
         "7": {
-            "init": "comment not required - the node drops frames",
-            "name": "comment",
+            "name": "text_block",
             "id": 496,
-            "position_x": 786,
-            "position_y": 435,
-            "width": 252,
-            "height": 30,
+            "annotation": true,
+            "position_x": 796,
+            "position_y": 427,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "not required - the node drops frames",
+                    "name": "block",
+                    "value": "not required - the node drops frames\nby itself - but there is no point\nhanding it work it will only throw away",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "not required - the node drops frames"
+            "text": "not required - the node drops frames\nby itself - but there is no point\nhanding it work it will only throw away"
         },
         "8": {
-            "init": "comment by itself - but there is no point",
-            "name": "comment",
-            "id": 533,
-            "position_x": 786,
-            "position_y": 515,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "by itself - but there is no point",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "by itself - but there is no point"
-        },
-        "9": {
-            "init": "comment handing it work it will only throw away",
-            "name": "comment",
-            "id": 570,
-            "position_x": 786,
-            "position_y": 555,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "handing it work it will only throw away",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "handing it work it will only throw away"
-        },
-        "10": {
             "name": "string",
-            "id": 607,
+            "id": 533,
             "position_x": 300,
             "position_y": 315,
-            "width": 460,
+            "width": 470,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -263,88 +228,53 @@
                 }
             }
         },
-        "11": {
-            "init": "comment ask a QUESTION - a specific one gives a",
-            "name": "comment",
-            "id": 644,
-            "position_x": 786,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 796,
             "position_y": 365,
-            "width": 273,
-            "height": 30,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "ask a QUESTION - a specific one gives a",
+                    "name": "block",
+                    "value": "ask a QUESTION - a specific one gives a\nshort answer you can act on, where a\ngeneral caption gives you prose",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "ask a QUESTION - a specific one gives a"
+            "text": "ask a QUESTION - a specific one gives a\nshort answer you can act on, where a\ngeneral caption gives you prose"
         },
-        "12": {
-            "init": "comment short answer you can act on, where a",
-            "name": "comment",
-            "id": 681,
-            "position_x": 786,
-            "position_y": 395,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "short answer you can act on, where a",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "short answer you can act on, where a"
-        },
-        "13": {
-            "init": "comment general caption gives you prose",
-            "name": "comment",
-            "id": 718,
-            "position_x": 786,
-            "position_y": 475,
-            "width": 217,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "general caption gives you prose",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "general caption gives you prose"
-        },
-        "14": {
+        "10": {
             "name": "vision_describe_smol",
-            "id": 755,
+            "id": 607,
             "position_x": 30,
             "position_y": 510,
-            "width": 320,
-            "height": 260,
+            "width": 172,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -361,63 +291,53 @@
                 }
             }
         },
-        "15": {
-            "init": "comment the first frame is slow - the model is",
-            "name": "comment",
-            "id": 792,
-            "position_x": 786,
-            "position_y": 805,
-            "width": 266,
-            "height": 30,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 796,
+            "position_y": 827,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the first frame is slow - the model is",
+                    "name": "block",
+                    "value": "the first frame is slow - the model is\nloaded then, and may be downloaded",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the first frame is slow - the model is"
+            "text": "the first frame is slow - the model is\nloaded then, and may be downloaded"
         },
-        "16": {
-            "init": "comment loaded then, and may be downloaded",
-            "name": "comment",
-            "id": 829,
-            "position_x": 786,
-            "position_y": 885,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "loaded then, and may be downloaded",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "loaded then, and may be downloaded"
-        },
-        "17": {
+        "12": {
             "name": "text_display",
-            "id": 866,
+            "id": 681,
             "position_x": 400,
             "position_y": 510,
-            "width": 340,
-            "height": 240,
+            "width": 334,
+            "height": 230,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -454,86 +374,51 @@
                 }
             }
         },
-        "18": {
-            "init": "comment answers arrive when the model finishes,",
-            "name": "comment",
-            "id": 903,
-            "position_x": 786,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 796,
             "position_y": 765,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "answers arrive when the model finishes,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "answers arrive when the model finishes,"
-        },
-        "19": {
-            "init": "comment not once per frame - drive what comes",
-            "name": "comment",
-            "id": 940,
-            "position_x": 786,
-            "position_y": 845,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "not once per frame - drive what comes",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "not once per frame - drive what comes"
-        },
-        "20": {
-            "init": "comment next from the answer, not from the frame",
-            "name": "comment",
-            "id": 977,
-            "position_x": 786,
-            "position_y": 925,
             "width": 280,
-            "height": 30,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "next from the answer, not from the frame",
+                    "name": "block",
+                    "value": "answers arrive when the model finishes,\nnot once per frame - drive what comes\nnext from the answer, not from the frame",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "next from the answer, not from the frame"
+            "text": "answers arrive when the model finishes,\nnot once per frame - drive what comes\nnext from the answer, not from the frame"
         },
-        "21": {
+        "14": {
             "name": "close",
-            "id": 1014,
+            "id": 755,
             "position_x": 24,
-            "position_y": 800,
+            "position_y": 770,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -574,27 +459,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 755,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "image"
         },
         "3": {
-            "source_node": 607,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 755,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "prompt"
         },
         "4": {
-            "source_node": 755,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "description",
-            "dest_node": 866,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"

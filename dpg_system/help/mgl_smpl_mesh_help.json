@@ -1,11 +1,11 @@
 {
-    "height": 1345,
-    "width": 1921,
+    "height": 1224,
+    "width": 1754,
     "position": [
         100,
         100
     ],
-    "id": 1162,
+    "id": 792,
     "name": "mgl_smpl_mesh_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_smpl_mesh_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 492,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1063,
+            "position_x": 896,
             "position_y": 45,
             "width": 818,
             "height": 786,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 300,
-            "height": 200,
+            "width": 123,
+            "height": 112,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 285,
-            "width": 300,
-            "height": 300,
+            "width": 228,
+            "height": 490,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -120,9 +120,9 @@
             "init": "comment a pose, and the torque it implies",
             "name": "comment",
             "id": 422,
-            "position_x": 746,
+            "position_x": 580,
             "position_y": 600,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -146,8 +146,8 @@
             "id": 459,
             "position_x": 400,
             "position_y": 62,
-            "width": 300,
-            "height": 200,
+            "width": 92,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -158,8 +158,8 @@
             "id": 496,
             "position_x": 400,
             "position_y": 285,
-            "width": 300,
-            "height": 240,
+            "width": 154,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -169,9 +169,9 @@
             "init": "comment the solid body, first in the chain",
             "name": "comment",
             "id": 533,
-            "position_x": 746,
+            "position_x": 580,
             "position_y": 540,
-            "width": 238,
+            "width": 217,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -195,195 +195,100 @@
             "id": 570,
             "position_x": 400,
             "position_y": 590,
-            "width": 320,
-            "height": 460,
+            "width": 154,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "10": {
-            "init": "comment then the translucent overlay ON TOP -",
-            "name": "comment",
+            "name": "text_block",
             "id": 607,
-            "position_x": 746,
-            "position_y": 1095,
-            "width": 259,
-            "height": 30,
+            "annotation": true,
+            "position_x": 580,
+            "position_y": 1100,
+            "width": 286,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "then the translucent overlay ON TOP -",
+                    "name": "block",
+                    "value": "then the translucent overlay ON TOP -\nyou see the figure and the effort at once\nits ports say 'gl chain' but it is an\nmgl node - the name is a leftover",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "then the translucent overlay ON TOP -"
+            "text": "then the translucent overlay ON TOP -\nyou see the figure and the effort at once\nits ports say 'gl chain' but it is an\nmgl node - the name is a leftover"
         },
         "11": {
-            "init": "comment you see the figure and the effort at once",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
-            "position_x": 746,
-            "position_y": 1175,
-            "width": 287,
-            "height": 30,
+            "annotation": true,
+            "position_x": 580,
+            "position_y": 645,
+            "width": 274,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "you see the figure and the effort at once",
+                    "name": "block",
+                    "value": "set max torque from the torque you\nactually see. Wrong, and the body reads\nas entirely blue or entirely red",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "you see the figure and the effort at once"
+            "text": "set max torque from the torque you\nactually see. Wrong, and the body reads\nas entirely blue or entirely red"
         },
         "12": {
-            "init": "comment its ports say 'gl chain' but it is an",
-            "name": "comment",
-            "id": 681,
-            "position_x": 746,
-            "position_y": 1215,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "its ports say 'gl chain' but it is an",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "its ports say 'gl chain' but it is an"
-        },
-        "13": {
-            "init": "comment mgl node - the name is a leftover",
-            "name": "comment",
-            "id": 718,
-            "position_x": 746,
-            "position_y": 1255,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "mgl node - the name is a leftover",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "mgl node - the name is a leftover"
-        },
-        "14": {
-            "init": "comment set max torque from the torque you",
-            "name": "comment",
-            "id": 755,
-            "position_x": 746,
-            "position_y": 645,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "set max torque from the torque you",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "set max torque from the torque you"
-        },
-        "15": {
-            "init": "comment actually see. Wrong, and the body reads",
-            "name": "comment",
-            "id": 792,
-            "position_x": 746,
-            "position_y": 675,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "actually see. Wrong, and the body reads",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "actually see. Wrong, and the body reads"
-        },
-        "16": {
-            "init": "comment as entirely blue or entirely red",
-            "name": "comment",
-            "id": 829,
-            "position_x": 746,
-            "position_y": 705,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "as entirely blue or entirely red",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "as entirely blue or entirely red"
-        },
-        "17": {
             "name": "heat_map",
-            "id": 866,
+            "id": 681,
             "position_x": 30,
-            "position_y": 760,
+            "position_y": 795,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -430,161 +335,51 @@
                 }
             }
         },
-        "18": {
-            "init": "comment the muscle values come back out, so",
-            "name": "comment",
-            "id": 903,
-            "position_x": 746,
-            "position_y": 920,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the muscle values come back out, so",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the muscle values come back out, so"
-        },
-        "19": {
-            "init": "comment what is on screen can drive a sound",
-            "name": "comment",
-            "id": 940,
-            "position_x": 746,
-            "position_y": 950,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "what is on screen can drive a sound",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "what is on screen can drive a sound"
-        },
-        "20": {
-            "init": "comment without computing it twice",
-            "name": "comment",
-            "id": 977,
-            "position_x": 746,
-            "position_y": 980,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "without computing it twice",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "without computing it twice"
-        },
-        "21": {
-            "init": "comment the muscle weight modes are expressive,",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 746,
-            "position_y": 1025,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the muscle weight modes are expressive,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the muscle weight modes are expressive,"
-        },
-        "22": {
-            "init": "comment not anatomical - a fixed axis per muscle",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 746,
-            "position_y": 1055,
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 580,
+            "position_y": 955,
             "width": 280,
-            "height": 30,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "not anatomical - a fixed axis per muscle",
+                    "name": "block",
+                    "value": "the muscle values come back out, so\nwhat is on screen can drive a sound\nwithout computing it twice\nthe muscle weight modes are expressive,\nnot anatomical - a fixed axis per muscle\ncannot decompose arm elevation",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "not anatomical - a fixed axis per muscle"
+            "text": "the muscle values come back out, so\nwhat is on screen can drive a sound\nwithout computing it twice\nthe muscle weight modes are expressive,\nnot anatomical - a fixed axis per muscle\ncannot decompose arm elevation"
         },
-        "23": {
-            "init": "comment cannot decompose arm elevation",
-            "name": "comment",
-            "id": 1088,
-            "position_x": 746,
-            "position_y": 1135,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "cannot decompose arm elevation",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "cannot decompose arm elevation"
-        },
-        "24": {
+        "14": {
             "name": "close",
-            "id": 1125,
+            "id": 755,
             "position_x": 24,
-            "position_y": 1080,
+            "position_y": 975,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -665,7 +460,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "muscle activations",
-            "dest_node": 866,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

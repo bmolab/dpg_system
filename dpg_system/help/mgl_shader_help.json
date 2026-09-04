@@ -1,11 +1,11 @@
 {
-    "height": 1065,
-    "width": 1911,
+    "height": 857,
+    "width": 1720,
     "position": [
         100,
         100
     ],
-    "id": 1088,
+    "id": 681,
     "name": "mgl_shader_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_shader_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 312,
+            "width": 328,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1063,
+            "position_x": 872,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 300,
-            "height": 200,
+            "width": 92,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 285,
-            "width": 320,
-            "height": 300,
+            "width": 117,
+            "height": 196,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,111 +123,51 @@
             }
         },
         "5": {
-            "init": "comment point file at a .glsl and turn on",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 746,
-            "position_y": 615,
-            "width": 231,
-            "height": 30,
+            "annotation": true,
+            "position_x": 556,
+            "position_y": 649,
+            "width": 274,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "point file at a .glsl and turn on",
+                    "name": "block",
+                    "value": "point file at a .glsl and turn on\nauto_reload - then edit, save, look\nShaderToy code with mainImage in it is\nwrapped automatically and runs unedited",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "point file at a .glsl and turn on"
+            "text": "point file at a .glsl and turn on\nauto_reload - then edit, save, look\nShaderToy code with mainImage in it is\nwrapped automatically and runs unedited"
         },
         "6": {
-            "init": "comment auto_reload - then edit, save, look",
-            "name": "comment",
-            "id": 459,
-            "position_x": 746,
-            "position_y": 695,
-            "width": 245,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "auto_reload - then edit, save, look",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "auto_reload - then edit, save, look"
-        },
-        "7": {
-            "init": "comment ShaderToy code with mainImage in it is",
-            "name": "comment",
-            "id": 496,
-            "position_x": 746,
-            "position_y": 815,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "ShaderToy code with mainImage in it is",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "ShaderToy code with mainImage in it is"
-        },
-        "8": {
-            "init": "comment wrapped automatically and runs unedited",
-            "name": "comment",
-            "id": 533,
-            "position_x": 746,
-            "position_y": 855,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "wrapped automatically and runs unedited",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "wrapped automatically and runs unedited"
-        },
-        "9": {
             "name": "list",
-            "id": 570,
+            "id": 459,
             "position_x": 400,
             "position_y": 285,
-            "width": 320,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -245,113 +185,53 @@
                 }
             }
         },
-        "10": {
-            "init": "comment WATCH THIS. A shader that fails to",
-            "name": "comment",
-            "id": 607,
-            "position_x": 746,
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 556,
             "position_y": 335,
-            "width": 238,
-            "height": 30,
+            "width": 286,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "WATCH THIS. A shader that fails to",
+                    "name": "block",
+                    "value": "WATCH THIS. A shader that fails to\ncompile leaves the previous one running\nrather than going black - so a silent\nfailure looks like a shader doing nothing",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "WATCH THIS. A shader that fails to"
+            "text": "WATCH THIS. A shader that fails to\ncompile leaves the previous one running\nrather than going black - so a silent\nfailure looks like a shader doing nothing"
         },
-        "11": {
-            "init": "comment compile leaves the previous one running",
-            "name": "comment",
-            "id": 644,
-            "position_x": 746,
-            "position_y": 365,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "compile leaves the previous one running",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "compile leaves the previous one running"
-        },
-        "12": {
-            "init": "comment rather than going black - so a silent",
-            "name": "comment",
-            "id": 681,
-            "position_x": 746,
-            "position_y": 395,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "rather than going black - so a silent",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "rather than going black - so a silent"
-        },
-        "13": {
-            "init": "comment failure looks like a shader doing nothing",
-            "name": "comment",
-            "id": 718,
-            "position_x": 746,
-            "position_y": 425,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "failure looks like a shader doing nothing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "failure looks like a shader doing nothing"
-        },
-        "14": {
+        "8": {
             "name": "signal",
-            "id": 755,
+            "id": 533,
             "position_x": 400,
             "position_y": 480,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -388,186 +268,91 @@
                 }
             }
         },
-        "15": {
-            "init": "comment iTime is an INLET - drive it from a",
-            "name": "comment",
-            "id": 792,
-            "position_x": 746,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 556,
             "position_y": 575,
-            "width": 245,
-            "height": 30,
+            "width": 274,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "iTime is an INLET - drive it from a",
+                    "name": "block",
+                    "value": "iTime is an INLET - drive it from a\nsignal and the shader runs on your time\nrather than the clock: scrub, freeze,\nor run it from an audio envelope",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "iTime is an INLET - drive it from a"
+            "text": "iTime is an INLET - drive it from a\nsignal and the shader runs on your time\nrather than the clock: scrub, freeze,\nor run it from an audio envelope"
         },
-        "16": {
-            "init": "comment signal and the shader runs on your time",
-            "name": "comment",
-            "id": 829,
-            "position_x": 746,
-            "position_y": 655,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "signal and the shader runs on your time",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "signal and the shader runs on your time"
-        },
-        "17": {
-            "init": "comment rather than the clock: scrub, freeze,",
-            "name": "comment",
-            "id": 866,
-            "position_x": 746,
-            "position_y": 735,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "rather than the clock: scrub, freeze,",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "rather than the clock: scrub, freeze,"
-        },
-        "18": {
-            "init": "comment or run it from an audio envelope",
-            "name": "comment",
-            "id": 903,
-            "position_x": 746,
-            "position_y": 775,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "or run it from an audio envelope",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "or run it from an audio envelope"
-        },
-        "19": {
-            "init": "comment generator FIRST in a chain, post_process",
-            "name": "comment",
-            "id": 940,
-            "position_x": 746,
-            "position_y": 895,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 556,
+            "position_y": 745,
             "width": 280,
-            "height": 30,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "generator FIRST in a chain, post_process",
+                    "name": "block",
+                    "value": "generator FIRST in a chain, post_process\nLAST - a post_process with nothing\nbefore it has nothing to work on",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "generator FIRST in a chain, post_process"
+            "text": "generator FIRST in a chain, post_process\nLAST - a post_process with nothing\nbefore it has nothing to work on"
         },
-        "20": {
-            "init": "comment LAST - a post_process with nothing",
-            "name": "comment",
-            "id": 977,
-            "position_x": 746,
-            "position_y": 935,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "LAST - a post_process with nothing",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "LAST - a post_process with nothing"
-        },
-        "21": {
-            "init": "comment before it has nothing to work on",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 746,
-            "position_y": 975,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "before it has nothing to work on",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "before it has nothing to work on"
-        },
-        "22": {
+        "11": {
             "name": "close",
-            "id": 1051,
+            "id": 644,
             "position_x": 24,
-            "position_y": 615,
+            "position_y": 580,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -598,13 +383,13 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "status",
-            "dest_node": 570,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 755,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",

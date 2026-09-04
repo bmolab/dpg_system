@@ -1,11 +1,11 @@
 {
-    "height": 980,
-    "width": 1816,
+    "height": 920,
+    "width": 1899,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 681,
     "name": "sampler_engine_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/sampler_engine_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 504,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 968,
+            "position_x": 1051,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 180,
+            "width": 172,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,7 +109,7 @@
             "id": 385,
             "position_x": 30,
             "position_y": 260,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -133,196 +133,166 @@
             }
         },
         "5": {
-            "init": "comment one engine per patch",
-            "name": "comment",
+            "name": "text_block",
             "id": 422,
-            "position_x": 686,
+            "annotation": true,
+            "position_x": 766,
             "position_y": 315,
-            "width": 140,
-            "height": 30,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "one engine per patch",
+                    "name": "block",
+                    "value": "one engine per patch\noutput level: is anything happening?",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "one engine per patch"
+            "text": "one engine per patch\noutput level: is anything happening?"
         },
         "6": {
-            "init": "comment output level: is anything happening?",
-            "name": "comment",
+            "name": "button",
             "id": 459,
-            "position_x": 686,
-            "position_y": 345,
-            "width": 252,
-            "height": 30,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "output level: is anything happening?",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "output level: is anything happening?"
+            "properties": {}
         },
         "7": {
-            "name": "button",
+            "name": "sampler_voice",
             "id": 496,
             "position_x": 30,
-            "position_y": 390,
-            "width": 88,
-            "height": 46,
+            "position_y": 455,
+            "width": 345,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "name": "sampler_voice",
+            "name": "text_block",
             "id": 533,
-            "position_x": 30,
-            "position_y": 455,
-            "width": 280,
-            "height": 300,
+            "annotation": true,
+            "position_x": 766,
+            "position_y": 770,
+            "width": 237,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "load a file, then click play\none voice, held, with loop points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "load a file, then click play\none voice, held, with loop points"
         },
         "9": {
-            "init": "comment load a file, then click play",
-            "name": "comment",
-            "id": 570,
-            "position_x": 686,
-            "position_y": 770,
-            "width": 196,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "load a file, then click play",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "load a file, then click play"
-        },
-        "10": {
-            "init": "comment one voice, held, with loop points",
-            "name": "comment",
-            "id": 607,
-            "position_x": 686,
-            "position_y": 850,
-            "width": 231,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "one voice, held, with loop points",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "one voice, held, with loop points"
-        },
-        "11": {
             "name": "multi_voice_sampler",
-            "id": 644,
-            "position_x": 360,
+            "id": 570,
+            "position_x": 395,
             "position_y": 455,
-            "width": 300,
-            "height": 300,
+            "width": 345,
+            "height": 322,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
-            "init": "comment or every voice from one node,",
-            "name": "comment",
-            "id": 681,
-            "position_x": 686,
-            "position_y": 810,
-            "width": 203,
-            "height": 30,
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 766,
+            "position_y": 820,
+            "width": 212,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "or every voice from one node,",
+                    "name": "block",
+                    "value": "or every voice from one node,\none at a time via voice index",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "or every voice from one node,"
+            "text": "or every voice from one node,\none at a time via voice index"
         },
-        "13": {
-            "init": "comment one at a time via voice index",
-            "name": "comment",
-            "id": 718,
-            "position_x": 686,
-            "position_y": 890,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "one at a time via voice index",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "one at a time via voice index"
-        },
-        "14": {
+        "11": {
             "name": "close",
-            "id": 755,
+            "id": 644,
             "position_x": 24,
-            "position_y": 785,
+            "position_y": 807,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -349,11 +319,11 @@
             "dest_input_name": ""
         },
         "1": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "play"

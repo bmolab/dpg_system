@@ -1,11 +1,11 @@
 {
     "height": 741,
-    "width": 1583,
+    "width": 1585,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 644,
     "name": "comparison_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/comparison_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 564,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 745,
+            "position_x": 747,
             "position_y": 45,
             "width": 798,
             "height": 636,
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 88,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,7 +110,7 @@
             "position_x": 150,
             "position_y": 66,
             "width": 22,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +123,7 @@
             "position_x": 30,
             "position_y": 132,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -165,8 +165,8 @@
             "id": 459,
             "position_x": 30,
             "position_y": 235,
-            "width": 120,
-            "height": 70,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -185,7 +185,7 @@
             "id": 496,
             "position_x": 449,
             "position_y": 315,
-            "width": 245,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -210,7 +210,7 @@
             "position_x": 215,
             "position_y": 205,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -268,60 +268,50 @@
             }
         },
         "9": {
-            "init": "comment a sine wave becomes a square wave",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
+            "annotation": true,
             "position_x": 449,
             "position_y": 345,
-            "width": 231,
-            "height": 30,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a sine wave becomes a square wave",
+                    "name": "block",
+                    "value": "a sine wave becomes a square wave\ndrag the operand to move the threshold",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a sine wave becomes a square wave"
+            "text": "a sine wave becomes a square wave\ndrag the operand to move the threshold"
         },
         "10": {
-            "init": "comment drag the operand to move the threshold",
-            "name": "comment",
-            "id": 607,
-            "position_x": 449,
-            "position_y": 375,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "drag the operand to move the threshold",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "drag the operand to move the threshold"
-        },
-        "11": {
             "name": "close",
-            "id": 644,
+            "id": 607,
             "position_x": 24,
-            "position_y": 411,
+            "position_y": 413,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

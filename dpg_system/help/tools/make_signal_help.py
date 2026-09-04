@@ -183,10 +183,8 @@ demo = [
      'props': {'range': 1.0, 'bipolar': False}},
     {'key': 'p2', 'init': 'plot', 'pos': (240, 335), 'w': 208, 'h': 176,
      'props': PLOT(-0.2, 1.2)},
-    {'key': 'c2', 'comment': True, 'text': 'plain random: no value preferred',
+    {'key': 'c2', 'comment': True, 'text': 'plain random: no value preferred\ndrag mean and dev on the node above',
      'pos': (30, 405)},
-    {'key': 'c3', 'comment': True, 'text': 'drag mean and dev on the node above',
-     'pos': (30, 435)},
 ]
 links = [('tog', '', 'met', 'on'), ('met', '', 'rg', 'trigger'),
          ('met', '', 'rn', 'trigger'),

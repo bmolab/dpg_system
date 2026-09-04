@@ -1,11 +1,11 @@
 {
-    "height": 865,
-    "width": 1898,
+    "height": 861,
+    "width": 1726,
     "position": [
         100,
         100
     ],
-    "id": 1125,
+    "id": 607,
     "name": "nvx_kvm_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/nvx_kvm_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 252,
+            "width": 267,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1050,
+            "position_x": 878,
             "position_y": 45,
             "width": 808,
             "height": 756,
@@ -97,144 +97,59 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 320,
-            "height": 260,
+            "width": 88,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment one button per target, from the config",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 726,
-            "position_y": 335,
-            "width": 266,
-            "height": 30,
+            "annotation": true,
+            "position_x": 556,
+            "position_y": 386,
+            "width": 292,
+            "height": 76,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "one button per target, from the config",
+                    "name": "block",
+                    "value": "one button per target, from the config\nfile. The live one is marked.\nEDIT THE CONFIG and you must re-create\nthe node - its shape is fixed when it is\nmade, so reopening the patch is not enough",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "one button per target, from the config"
+            "text": "one button per target, from the config\nfile. The live one is marked.\nEDIT THE CONFIG and you must re-create\nthe node - its shape is fixed when it is\nmade, so reopening the patch is not enough"
         },
         "5": {
-            "init": "comment file. The live one is marked.",
-            "name": "comment",
-            "id": 422,
-            "position_x": 726,
-            "position_y": 415,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "file. The live one is marked.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "file. The live one is marked."
-        },
-        "6": {
-            "init": "comment EDIT THE CONFIG and you must re-create",
-            "name": "comment",
-            "id": 459,
-            "position_x": 726,
-            "position_y": 495,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "EDIT THE CONFIG and you must re-create",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "EDIT THE CONFIG and you must re-create"
-        },
-        "7": {
-            "init": "comment the node - its shape is fixed when it is",
-            "name": "comment",
-            "id": 496,
-            "position_x": 726,
-            "position_y": 575,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the node - its shape is fixed when it is",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the node - its shape is fixed when it is"
-        },
-        "8": {
-            "init": "comment made, so reopening the patch is not enough",
-            "name": "comment",
-            "id": 533,
-            "position_x": 726,
-            "position_y": 655,
-            "width": 294,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "made, so reopening the patch is not enough",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "made, so reopening the patch is not enough"
-        },
-        "9": {
             "name": "message",
-            "id": 570,
+            "id": 422,
             "position_x": 400,
             "position_y": 62,
-            "width": 140,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -252,62 +167,52 @@
                 }
             }
         },
-        "10": {
-            "init": "comment select takes a name or a number,",
-            "name": "comment",
-            "id": 607,
-            "position_x": 726,
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 556,
             "position_y": 112,
-            "width": 224,
-            "height": 30,
+            "width": 231,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "select takes a name or a number,",
+                    "name": "block",
+                    "value": "select takes a name or a number,\ncounting from 1",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "select takes a name or a number,"
+            "text": "select takes a name or a number,\ncounting from 1"
         },
-        "11": {
-            "init": "comment counting from 1",
-            "name": "comment",
-            "id": 644,
-            "position_x": 726,
-            "position_y": 142,
-            "width": 105,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "counting from 1",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "counting from 1"
-        },
-        "12": {
+        "7": {
             "name": "list",
-            "id": 681,
+            "id": 496,
             "position_x": 400,
             "position_y": 190,
-            "width": 300,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -325,261 +230,51 @@
                 }
             }
         },
-        "13": {
-            "init": "comment what is live NOW - it reports, rather",
-            "name": "comment",
-            "id": 718,
-            "position_x": 726,
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 556,
             "position_y": 240,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "what is live NOW - it reports, rather",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "what is live NOW - it reports, rather"
-        },
-        "14": {
-            "init": "comment than echoing what you asked for, so a",
-            "name": "comment",
-            "id": 755,
-            "position_x": 726,
-            "position_y": 270,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "than echoing what you asked for, so a",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "than echoing what you asked for, so a"
-        },
-        "15": {
-            "init": "comment button press by hand shows up here too",
-            "name": "comment",
-            "id": 792,
-            "position_x": 726,
-            "position_y": 300,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "button press by hand shows up here too",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "button press by hand shows up here too"
-        },
-        "16": {
-            "init": "comment a switch takes about a second - measured",
-            "name": "comment",
-            "id": 829,
-            "position_x": 726,
-            "position_y": 375,
             "width": 280,
-            "height": 30,
+            "height": 136,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a switch takes about a second - measured",
+                    "name": "block",
+                    "value": "what is live NOW - it reports, rather\nthan echoing what you asked for, so a\nbutton press by hand shows up here too\na switch takes about a second - measured\n0.8, 0.9, 3.5 and 7.7s over four. The\nlong ones are the receiver reporting\nitself paired, not the picture arriving\nvideo and USB route SEPARATELY. Picture\nchanged but mouse did not? That is the\nUSB pairing, not the video",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 120,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a switch takes about a second - measured"
+            "text": "what is live NOW - it reports, rather\nthan echoing what you asked for, so a\nbutton press by hand shows up here too\na switch takes about a second - measured\n0.8, 0.9, 3.5 and 7.7s over four. The\nlong ones are the receiver reporting\nitself paired, not the picture arriving\nvideo and USB route SEPARATELY. Picture\nchanged but mouse did not? That is the\nUSB pairing, not the video"
         },
-        "17": {
-            "init": "comment 0.8, 0.9, 3.5 and 7.7s over four. The",
-            "name": "comment",
-            "id": 866,
-            "position_x": 726,
-            "position_y": 455,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "0.8, 0.9, 3.5 and 7.7s over four. The",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "0.8, 0.9, 3.5 and 7.7s over four. The"
-        },
-        "18": {
-            "init": "comment long ones are the receiver reporting",
-            "name": "comment",
-            "id": 903,
-            "position_x": 726,
-            "position_y": 535,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "long ones are the receiver reporting",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "long ones are the receiver reporting"
-        },
-        "19": {
-            "init": "comment itself paired, not the picture arriving",
-            "name": "comment",
-            "id": 940,
-            "position_x": 726,
-            "position_y": 615,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "itself paired, not the picture arriving",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "itself paired, not the picture arriving"
-        },
-        "20": {
-            "init": "comment video and USB route SEPARATELY. Picture",
-            "name": "comment",
-            "id": 977,
-            "position_x": 726,
-            "position_y": 695,
-            "width": 273,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "video and USB route SEPARATELY. Picture",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "video and USB route SEPARATELY. Picture"
-        },
-        "21": {
-            "init": "comment changed but mouse did not? That is the",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 726,
-            "position_y": 735,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "changed but mouse did not? That is the",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "changed but mouse did not? That is the"
-        },
-        "22": {
-            "init": "comment USB pairing, not the video",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 726,
-            "position_y": 775,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "USB pairing, not the video",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "USB pairing, not the video"
-        },
-        "23": {
+        "9": {
             "name": "close",
-            "id": 1088,
+            "id": 570,
             "position_x": 24,
-            "position_y": 352,
+            "position_y": 262,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -596,7 +291,7 @@
     },
     "links": {
         "0": {
-            "source_node": 570,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
@@ -610,7 +305,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "active target",
-            "dest_node": 681,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

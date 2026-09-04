@@ -1,11 +1,11 @@
 {
-    "height": 1325,
-    "width": 1734,
+    "height": 1368,
+    "width": 1737,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 718,
     "name": "t.ESEKF_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.ESEKF_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 540,
+            "width": 561,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 876,
+            "position_x": 879,
             "position_y": 45,
             "width": 818,
             "height": 816,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 280,
-            "height": 320,
+            "width": 119,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 400,
-            "width": 220,
-            "height": 90,
+            "width": 144,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -121,8 +121,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 505,
-            "width": 300,
-            "height": 260,
+            "width": 240,
+            "height": 336,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -134,7 +134,7 @@
             "id": 459,
             "position_x": 594,
             "position_y": 780,
-            "width": 231,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -157,9 +157,9 @@
             "name": "quaternion_diff_and_axis",
             "id": 496,
             "position_x": 30,
-            "position_y": 820,
-            "width": 280,
-            "height": 180,
+            "position_y": 861,
+            "width": 197,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -169,9 +169,9 @@
             "name": "plot",
             "id": 533,
             "position_x": 30,
-            "position_y": 1015,
+            "position_y": 1056,
             "width": 208,
-            "height": 176,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -233,8 +233,8 @@
             "name": "comment",
             "id": 570,
             "position_x": 594,
-            "position_y": 1200,
-            "width": 231,
+            "position_y": 1241,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -259,7 +259,7 @@
             "position_x": 360,
             "position_y": 505,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -307,85 +307,50 @@
             }
         },
         "11": {
-            "init": "comment the alphas: damp, responsive, error",
-            "name": "comment",
+            "name": "text_block",
             "id": 644,
+            "annotation": true,
             "position_x": 594,
             "position_y": 665,
-            "width": 245,
-            "height": 30,
+            "width": 255,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the alphas: damp, responsive, error",
+                    "name": "block",
+                    "value": "the alphas: damp, responsive, error\nthis says what the filter is doing -\nthe settings only say what you asked",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the alphas: damp, responsive, error"
+            "text": "the alphas: damp, responsive, error\nthis says what the filter is doing -\nthe settings only say what you asked"
         },
         "12": {
-            "init": "comment this says what the filter is doing -",
-            "name": "comment",
-            "id": 681,
-            "position_x": 594,
-            "position_y": 695,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "this says what the filter is doing -",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "this says what the filter is doing -"
-        },
-        "13": {
-            "init": "comment the settings only say what you asked",
-            "name": "comment",
-            "id": 718,
-            "position_x": 594,
-            "position_y": 725,
-            "width": 252,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the settings only say what you asked",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the settings only say what you asked"
-        },
-        "14": {
             "name": "close",
-            "id": 755,
+            "id": 681,
             "position_x": 24,
-            "position_y": 1221,
+            "position_y": 1264,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

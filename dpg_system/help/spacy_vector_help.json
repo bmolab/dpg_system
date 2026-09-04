@@ -1,11 +1,11 @@
 {
-    "height": 955,
-    "width": 1901,
+    "height": 929,
+    "width": 1775,
     "position": [
         100,
         100
     ],
-    "id": 1125,
+    "id": 940,
     "name": "spacy_vector_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/spacy_vector_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 576,
+            "width": 598,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1053,
+            "position_x": 927,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -97,7 +97,7 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 220,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -120,7 +120,7 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 220,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -143,8 +143,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 180,
-            "width": 230,
-            "height": 110,
+            "width": 138,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -155,7 +155,7 @@
             "id": 459,
             "position_x": 30,
             "position_y": 305,
-            "width": 127,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -182,9 +182,9 @@
             "init": "comment about 0.85 - a strong match",
             "name": "comment",
             "id": 496,
-            "position_x": 736,
+            "position_x": 611,
             "position_y": 355,
-            "width": 189,
+            "width": 174,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -208,7 +208,7 @@
             "id": 533,
             "position_x": 30,
             "position_y": 400,
-            "width": 280,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -227,160 +227,115 @@
             }
         },
         "9": {
-            "init": "comment send this to the second inlet instead:",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
-            "position_x": 736,
+            "annotation": true,
+            "position_x": 611,
             "position_y": 450,
-            "width": 266,
-            "height": 30,
+            "width": 280,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "send this to the second inlet instead:",
+                    "name": "block",
+                    "value": "send this to the second inlet instead:\nabout 0.27 - and that is as low as\nunrelated phrases go. 0.4 means nothing.",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "send this to the second inlet instead:"
+            "text": "send this to the second inlet instead:\nabout 0.27 - and that is as low as\nunrelated phrases go. 0.4 means nothing."
         },
         "10": {
-            "init": "comment about 0.27 - and that is as low as",
-            "name": "comment",
-            "id": 607,
-            "position_x": 736,
-            "position_y": 480,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "about 0.27 - and that is as low as",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "about 0.27 - and that is as low as"
-        },
-        "11": {
-            "init": "comment unrelated phrases go. 0.4 means nothing.",
-            "name": "comment",
-            "id": 644,
-            "position_x": 736,
-            "position_y": 510,
-            "width": 280,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "unrelated phrases go. 0.4 means nothing.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "unrelated phrases go. 0.4 means nothing."
-        },
-        "12": {
             "name": "spacy_vector",
-            "id": 681,
+            "id": 607,
             "position_x": 350,
             "position_y": 62,
-            "width": 220,
-            "height": 80,
+            "width": 113,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
+        "11": {
             "name": "info",
-            "id": 718,
+            "id": 644,
             "position_x": 350,
             "position_y": 160,
-            "width": 240,
-            "height": 80,
+            "width": 235,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "14": {
-            "init": "comment 300 numbers, however long the phrase",
-            "name": "comment",
-            "id": 755,
-            "position_x": 736,
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 611,
             "position_y": 255,
-            "width": 252,
-            "height": 30,
+            "width": 286,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "300 numbers, however long the phrase",
+                    "name": "block",
+                    "value": "300 numbers, however long the phrase\nword order is invisible: it is an average",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "300 numbers, however long the phrase"
+            "text": "300 numbers, however long the phrase\nword order is invisible: it is an average"
         },
-        "15": {
-            "init": "comment word order is invisible: it is an average",
-            "name": "comment",
-            "id": 792,
-            "position_x": 736,
-            "position_y": 285,
-            "width": 287,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "word order is invisible: it is an average",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "word order is invisible: it is an average"
-        },
-        "16": {
+        "13": {
             "name": "message",
-            "id": 829,
+            "id": 718,
             "position_x": 350,
             "position_y": 400,
-            "width": 300,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -398,12 +353,12 @@
                 }
             }
         },
-        "17": {
+        "14": {
             "name": "message",
-            "id": 866,
+            "id": 755,
             "position_x": 350,
             "position_y": 460,
-            "width": 360,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -421,25 +376,25 @@
                 }
             }
         },
-        "18": {
+        "15": {
             "name": "spacy_confusion",
-            "id": 903,
+            "id": 792,
             "position_x": 350,
             "position_y": 520,
-            "width": 230,
-            "height": 110,
+            "width": 101,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "19": {
+        "16": {
             "name": "heat_map",
-            "id": 940,
+            "id": 829,
             "position_x": 350,
             "position_y": 645,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -486,86 +441,51 @@
                 }
             }
         },
-        "20": {
-            "init": "comment rows apple/pear/engine, columns",
-            "name": "comment",
-            "id": 977,
-            "position_x": 736,
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 611,
             "position_y": 805,
-            "width": 217,
-            "height": 30,
+            "width": 268,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "rows apple/pear/engine, columns",
+                    "name": "block",
+                    "value": "rows apple/pear/engine, columns\nfruit/machine/banana/theory - the two\nfruits light up together, engine alone",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "rows apple/pear/engine, columns"
+            "text": "rows apple/pear/engine, columns\nfruit/machine/banana/theory - the two\nfruits light up together, engine alone"
         },
-        "21": {
-            "init": "comment fruit/machine/banana/theory - the two",
-            "name": "comment",
-            "id": 1014,
-            "position_x": 736,
-            "position_y": 835,
-            "width": 259,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "fruit/machine/banana/theory - the two",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "fruit/machine/banana/theory - the two"
-        },
-        "22": {
-            "init": "comment fruits light up together, engine alone",
-            "name": "comment",
-            "id": 1051,
-            "position_x": 736,
-            "position_y": 865,
-            "width": 266,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "fruits light up together, engine alone",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "fruits light up together, engine alone"
-        },
-        "23": {
+        "18": {
             "name": "close",
-            "id": 1088,
+            "id": 903,
             "position_x": 24,
-            "position_y": 823,
+            "position_y": 825,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -616,47 +536,47 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 681,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "phrase in"
         },
         "4": {
-            "source_node": 681,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "phrase vector out",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "5": {
-            "source_node": 829,
+            "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 903,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input2"
         },
         "6": {
-            "source_node": 866,
+            "source_node": 755,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 903,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "7": {
-            "source_node": 903,
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 940,
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

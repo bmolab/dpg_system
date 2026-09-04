@@ -1,11 +1,11 @@
 {
     "height": 801,
-    "width": 1674,
+    "width": 1565,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 681,
     "name": "t.scatter_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.scatter_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 552,
+            "width": 574,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 836,
+            "position_x": 727,
             "position_y": 45,
             "width": 798,
             "height": 696,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,7 +109,7 @@
             "id": 385,
             "position_x": 30,
             "position_y": 118,
-            "width": 220,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -132,8 +132,8 @@
             "id": 422,
             "position_x": 280,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -144,7 +144,7 @@
             "id": 459,
             "position_x": 280,
             "position_y": 118,
-            "width": 220,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -166,9 +166,9 @@
             "init": "comment click either: index, value, index, value",
             "name": "comment",
             "id": 496,
-            "position_x": 526,
+            "position_x": 436,
             "position_y": 170,
-            "width": 280,
+            "width": 254,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -192,8 +192,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 210,
-            "width": 240,
-            "height": 140,
+            "width": 234,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -206,7 +206,7 @@
             "position_x": 30,
             "position_y": 370,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -254,85 +254,50 @@
             }
         },
         "10": {
-            "init": "comment each click updates only its own slots",
-            "name": "comment",
+            "name": "text_block",
             "id": 607,
-            "position_x": 526,
+            "annotation": true,
+            "position_x": 436,
             "position_y": 530,
-            "width": 259,
-            "height": 30,
+            "width": 261,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "each click updates only its own slots",
+                    "name": "block",
+                    "value": "each click updates only its own slots\nthe rest keeps what it had\nclick clear on the node to zero it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "each click updates only its own slots"
+            "text": "each click updates only its own slots\nthe rest keeps what it had\nclick clear on the node to zero it"
         },
         "11": {
-            "init": "comment the rest keeps what it had",
-            "name": "comment",
-            "id": 644,
-            "position_x": 526,
-            "position_y": 560,
-            "width": 182,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the rest keeps what it had",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the rest keeps what it had"
-        },
-        "12": {
-            "init": "comment click clear on the node to zero it",
-            "name": "comment",
-            "id": 681,
-            "position_x": 526,
-            "position_y": 590,
-            "width": 238,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "click clear on the node to zero it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "click clear on the node to zero it"
-        },
-        "13": {
             "name": "close",
-            "id": 718,
+            "id": 644,
             "position_x": 24,
-            "position_y": 548,
+            "position_y": 550,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

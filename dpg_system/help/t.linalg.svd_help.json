@@ -1,11 +1,11 @@
 {
     "height": 901,
-    "width": 1589,
+    "width": 1596,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 644,
     "name": "t.linalg.svd_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.svd_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 516,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 731,
+            "position_x": 738,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -97,8 +97,8 @@
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 46,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -109,8 +109,8 @@
             "id": 385,
             "position_x": 30,
             "position_y": 120,
-            "width": 180,
-            "height": 180,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +123,7 @@
             "position_x": 250,
             "position_y": 120,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -176,7 +176,7 @@
             "id": 459,
             "position_x": 484,
             "position_y": 310,
-            "width": 105,
+            "width": 101,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -200,8 +200,8 @@
             "id": 496,
             "position_x": 30,
             "position_y": 350,
-            "width": 200,
-            "height": 130,
+            "width": 82,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -213,7 +213,7 @@
             "position_x": 30,
             "position_y": 500,
             "width": 208,
-            "height": 148,
+            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -261,85 +261,50 @@
             }
         },
         "9": {
-            "init": "comment the singular values, descending",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
+            "annotation": true,
             "position_x": 484,
             "position_y": 660,
-            "width": 217,
-            "height": 30,
+            "width": 224,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the singular values, descending",
+                    "name": "block",
+                    "value": "the singular values, descending\nhow fast they fall is how few\ndimensions the data really has",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the singular values, descending"
+            "text": "the singular values, descending\nhow fast they fall is how few\ndimensions the data really has"
         },
         "10": {
-            "init": "comment how fast they fall is how few",
-            "name": "comment",
-            "id": 607,
-            "position_x": 484,
-            "position_y": 690,
-            "width": 203,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "how fast they fall is how few",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "how fast they fall is how few"
-        },
-        "11": {
-            "init": "comment dimensions the data really has",
-            "name": "comment",
-            "id": 644,
-            "position_x": 484,
-            "position_y": 720,
-            "width": 210,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "dimensions the data really has",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "dimensions the data really has"
-        },
-        "12": {
             "name": "close",
-            "id": 681,
+            "id": 607,
             "position_x": 24,
-            "position_y": 678,
+            "position_y": 680,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
