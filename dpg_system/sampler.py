@@ -9,7 +9,12 @@ except ImportError:
     torchaudio = None
 
 class Sample:
-    def __init__(self, data, volume=1.0, loop=False, loop_start=0, loop_end=-1, crossfade_frames=0, pitch=1.0, sample_start=0, sample_end=-1):
+    def __init__(self, data, volume=1.0, loop=False, loop_start=0, loop_end=-1, crossfade_frames=0, pitch=1.0, sample_start=0, sample_end=-1, sample_rate=None):
+        # The rate the frames were recorded at, or None for "the engine's".
+        # Frames are never resampled: a voice folds this rate over its own
+        # into its pitch, so loop points and positions stay in file frames
+        # and a 48 kHz file plays at 48 kHz speed on a 44.1 kHz engine.
+        self.sample_rate = sample_rate
         # Allow passing path or array
         if isinstance(data, str):
             self.data = self._load_file(data)
@@ -49,6 +54,7 @@ class Sample:
             waveform, sample_rate = torchaudio.load(filepath)
             if not waveform.is_cpu:
                 waveform = waveform.cpu()
+            self.sample_rate = int(sample_rate)
             # Convert (C, N) to (N, C)
             arr = waveform.numpy().T
             return arr
@@ -81,9 +87,11 @@ class Voice:
         self.envelope_val = 0.0
         self.target_envelope = 0.0
         
-        # Pitch
+        # Pitch, in file frames per output frame. The user's pitch is
+        # multiplied by the sample's rate over the engine's (see Sample).
         self.current_pitch = 1.0
         self.target_pitch = 1.0
+        self._rate_ratio = 1.0
         
         # Envelope Params
         self.attack_s = 0.0
@@ -238,6 +246,9 @@ class Voice:
                 self.active = True
                 
                 p = cmd["pitch"] if cmd["pitch"] is not None else sample.default_pitch
+                rate = getattr(sample, 'sample_rate', None)
+                self._rate_ratio = float(rate) / float(self.sample_rate) if rate else 1.0
+                p = p * self._rate_ratio
                 self.target_pitch = p
                 # Snap pitch on trigger? Or glide? usually snap
                 self.current_pitch = p 
@@ -290,7 +301,7 @@ class Voice:
                 if cmd["param"] == "volume":
                     self.target_gain = cmd["value"]
                 elif cmd["param"] == "pitch":
-                    self.target_pitch = cmd["value"]
+                    self.target_pitch = cmd["value"] * self._rate_ratio
                     
             elif t == "set_envelope":
                 self.attack_s = cmd["attack"]
@@ -588,12 +599,9 @@ class Voice:
         
         self.grains = active_grains
         
-        # Apply Master Envelope to Output
-        # Broadcast env_curve across channels
-        if channels > 1:
-            out *= env_curve[:, np.newaxis]
-        else:
-            out *= env_curve
+        # Apply Master Envelope to Output. `out` is (frames, channels) even
+        # for one channel, so the curve always needs its channel axis.
+        out *= env_curve[:, np.newaxis]
             
         return out
 
@@ -994,7 +1002,10 @@ class Voice:
         # Apply Volumes
         # gain_curve * env_curve
         total_gain = gain_curve * env_curve
-        if total_gain.ndim == 1 and channels > 1:
+        # out_buf is always (frames, channels), so a per-frame curve needs
+        # its channel axis even when channels == 1 -- without it a mono
+        # device broadcast (frames,) against (frames, 1) into (frames, frames).
+        if total_gain.ndim == 1:
             total_gain = total_gain[:, np.newaxis]
             
         out_buf *= total_gain

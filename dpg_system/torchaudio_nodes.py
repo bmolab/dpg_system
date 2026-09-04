@@ -608,9 +608,10 @@ class MixerBridge:
     This replaces a second PortAudio output stream (the old AudioMixer) that
     t.audio.play and t.audio.multiplayer used to open beside the sampler and
     synth stream, with all the device contention that implied. A voice is
-    just varispeed playback of a Sample built from the array, at a pitch of
-    the array's rate over the engine's -- so a 16 kHz tensor and a 48 kHz
-    file both play at the right speed, which the old mixer never did.
+    just varispeed playback of a Sample built from the array; the Sample
+    carries the array's rate and the voice folds it into its pitch, so a
+    16 kHz tensor and a 48 kHz file both play at the right speed, which the
+    old mixer never did.
 
     The pool sits at the top of the engine's 128 voices, clear of
     polyphonic_sampler's default range (64-80). audio_mixer moves it.
@@ -677,15 +678,14 @@ class MixerBridge:
             data = data[:, :2]                # voices are at most stereo
         if data.shape[0] < 2:
             return None
-        sample = Sample(np.ascontiguousarray(data))
-        rate = float(sample_rate) if sample_rate else float(engine.sample_rate)
-        pitch = rate / float(engine.sample_rate)
+        rate = int(sample_rate) if sample_rate else None
+        sample = Sample(np.ascontiguousarray(data), sample_rate=rate)
         index = cls._allocate(engine)
         if index is None:
             return None
         voice = engine.voices[index]
         voice.set_envelope(0.0, 0.005)        # 5 ms tail so a stop does not click
-        voice.trigger(sample, volume=float(volume), pitch=pitch, mode='normal')
+        voice.trigger(sample, volume=float(volume), pitch=1.0, mode='normal')
         cls._started[index] = time.monotonic()
         return index
 
