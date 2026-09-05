@@ -1,4 +1,5 @@
 import re
+import copy
 import time
 import json
 import os
@@ -743,6 +744,11 @@ class ContextTrackerNode(Node):
         self._rebuild_place_lookup()
         # --- Inputs ---
         self.text_input = self.add_input('text in', triggers_execution=True)
+        # Provisional text: parsed and emitted against a throwaway copy of the
+        # state, so a pause-emitted fragment can be shown downstream now and the
+        # completed sentence digested once, later, on 'text in'.
+        self.provisional_input = self.add_input('provisional in', triggers_execution=True)
+        self._provisional = False
         self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_all)
         self.set_context_input = self.add_input('set context', triggers_execution=True)
         # Vocabulary loading inputs
@@ -1080,7 +1086,7 @@ class ContextTrackerNode(Node):
                         self.place_ages[finer] = 0
                 # Furnishings belong to the departed place
                 self.clear_props()
-            self.detected_output.send([f'place.{scale}', value])
+            self._detected([f'place.{scale}', value])
             changed = True
         if changed:
             self.compose_place()
@@ -1119,7 +1125,7 @@ class ContextTrackerNode(Node):
                 continue
             self.props.append({'text': text, 'age': 0})
             del self.props[:-max_props]
-            self.detected_output.send(['prop', text])
+            self._detected(['prop', text])
             changed = True
         if changed:
             self.compose_props()
@@ -1129,7 +1135,7 @@ class ContextTrackerNode(Node):
     def clear_props(self):
         """Eject all props — the scene moved out from under them."""
         for p in self.props:
-            self.detected_output.send(['prop.drop', p['text']])
+            self._detected(['prop.drop', p['text']])
         self.props = []
         self.compose_props()
     # --- Time ladder ---
@@ -1170,7 +1176,7 @@ class ContextTrackerNode(Node):
                 if prev != '' or consistent is False:
                     self.time_slots[finer] = ''
                     self.time_ages[finer] = 0
-            self.detected_output.send([f'time.{scale}', value])
+            self._detected([f'time.{scale}', value])
             changed = True
         if changed:
             self.compose_time()
@@ -1277,13 +1283,13 @@ class ContextTrackerNode(Node):
                     self.clear_props()
                     self.place_slots['site'] = value
                     self.compose_place()
-                    self.detected_output.send(['place', self.slots['place']])
+                    self._detected(['place', self.slots['place']])
                     self.update_status()
                     self.emit_output()
                 elif slot_name in self.slots:
                     self.slots[slot_name] = value
                     self.slot_ages[slot_name] = 0
-                    self.detected_output.send([slot_name, value])
+                    self._detected([slot_name, value])
                     self.update_status()
                     self.emit_output()
             return
@@ -1292,91 +1298,121 @@ class ContextTrackerNode(Node):
             if data.strip() != '':
                 self.slots['artist'] = data.strip()
                 self.slot_ages['artist'] = 0
-                self.detected_output.send(['artist', self.slots['artist']])
+                self._detected(['artist', self.slots['artist']])
                 self.update_status()
                 self.emit_output()
+            return
+        if self.active_input == self.provisional_input:
+            text = any_to_string(self.provisional_input())
+            if text.strip() == '':
+                return
+            saved = self._snapshot_state()
+            self._provisional = True
+            try:
+                self.process_text(text)
+            finally:
+                self._provisional = False
+                self._restore_state(saved)
+                self.update_status()
             return
         if self.text_input.fresh_input:
             text = any_to_string(self.text_input())
             if text.strip() == '':
                 return
-            self.chunk_count += 1
-            # Age all slots (place and time are aged per-scale below)
-            ladder_managed = ('place', 'era', 'time_of_year', 'time_of_day',
-                              'actors', 'props')
+            self.process_text(text)
+    def process_text(self, text):
+        """Digest one chunk of text: age and decay the registers, extract, apply, emit.
+        Called for real by 'text in'; 'provisional in' calls it on a state snapshot
+        that is restored afterwards, so nothing here needs to know which."""
+        self.chunk_count += 1
+        # Age all slots (place and time are aged per-scale below)
+        ladder_managed = ('place', 'era', 'time_of_year', 'time_of_day',
+                          'actors', 'props')
+        for name in self.slot_names:
+            if name not in ladder_managed and self.slots[name] != '':
+                self.slot_ages[name] += 1
+        for scale in PLACE_SCALES:
+            if self.place_slots[scale] != '':
+                self.place_ages[scale] += 1
+        for scale in TIME_SCALES:
+            if self.time_slots[scale] != '':
+                self.time_ages[scale] += 1
+        for p in self.props:
+            p['age'] += 1
+        # Optional decay — ladder scales decay slower the coarser they are
+        decay = self.decay_chunks()
+        if decay > 0:
             for name in self.slot_names:
-                if name not in ladder_managed and self.slots[name] != '':
-                    self.slot_ages[name] += 1
+                if name not in ladder_managed and self.slot_ages[name] > decay:
+                    self.slots[name] = ''
+                    self.slot_ages[name] = 0
+            expired = False
             for scale in PLACE_SCALES:
-                if self.place_slots[scale] != '':
-                    self.place_ages[scale] += 1
+                if (self.place_slots[scale] != ''
+                        and self.place_ages[scale] > decay * PLACE_DECAY_MULTIPLIERS[scale]):
+                    self.place_slots[scale] = ''
+                    self.place_ages[scale] = 0
+                    expired = True
+            if expired:
+                self.compose_place()
+            expired = False
             for scale in TIME_SCALES:
-                if self.time_slots[scale] != '':
-                    self.time_ages[scale] += 1
-            for p in self.props:
-                p['age'] += 1
-            # Optional decay — ladder scales decay slower the coarser they are
-            decay = self.decay_chunks()
-            if decay > 0:
-                for name in self.slot_names:
-                    if name not in ladder_managed and self.slot_ages[name] > decay:
-                        self.slots[name] = ''
-                        self.slot_ages[name] = 0
-                expired = False
-                for scale in PLACE_SCALES:
-                    if (self.place_slots[scale] != ''
-                            and self.place_ages[scale] > decay * PLACE_DECAY_MULTIPLIERS[scale]):
-                        self.place_slots[scale] = ''
-                        self.place_ages[scale] = 0
-                        expired = True
-                if expired:
-                    self.compose_place()
-                expired = False
-                for scale in TIME_SCALES:
-                    if (self.time_slots[scale] != ''
-                            and self.time_ages[scale] > decay * TIME_DECAY_MULTIPLIERS[scale]):
-                        self.time_slots[scale] = ''
-                        self.time_ages[scale] = 0
-                        expired = True
-                if expired:
-                    self.compose_time()
-                # Props are as transient as rooms (interior-rate decay)
-                fresh = [p for p in self.props if p['age'] <= decay]
-                if len(fresh) != len(self.props):
-                    self.props = fresh
-                    self.compose_props()
-            # Actor salience decays every chunk — it's the core mechanic,
-            # independent of the optional slot decay
-            self.decay_actors()
-            # --- Run extraction ---
-            detections = self.extract_context(text)
-            # Apply detections
-            changed = False
-            place_dets = detections.pop('place', None)
-            if place_dets:
-                if self.apply_place_detections(place_dets):
-                    changed = True
-            time_dets = detections.pop('time', None)
-            if time_dets:
-                if self.apply_time_detections(time_dets):
-                    changed = True
-            prop_texts = detections.pop('props', None)
-            if prop_texts:
-                if self.apply_props(prop_texts):
-                    changed = True
-            actor_mentions = detections.pop('actor_mentions', None)
-            if actor_mentions:
-                if self.apply_actor_mentions(actor_mentions):
-                    changed = True
-            for slot_name, value in detections.items():
-                if value and value != self.slots[slot_name]:
-                    self.slots[slot_name] = value
-                    self.slot_ages[slot_name] = 0
-                    self.detected_output.send([slot_name, value])
-                    changed = True
-            if changed:
-                self.update_status()
-            self.emit_output()
+                if (self.time_slots[scale] != ''
+                        and self.time_ages[scale] > decay * TIME_DECAY_MULTIPLIERS[scale]):
+                    self.time_slots[scale] = ''
+                    self.time_ages[scale] = 0
+                    expired = True
+            if expired:
+                self.compose_time()
+            # Props are as transient as rooms (interior-rate decay)
+            fresh = [p for p in self.props if p['age'] <= decay]
+            if len(fresh) != len(self.props):
+                self.props = fresh
+                self.compose_props()
+        # Actor salience decays every chunk — it's the core mechanic,
+        # independent of the optional slot decay
+        self.decay_actors()
+        # --- Run extraction ---
+        detections = self.extract_context(text)
+        # Apply detections
+        changed = False
+        place_dets = detections.pop('place', None)
+        if place_dets:
+            if self.apply_place_detections(place_dets):
+                changed = True
+        time_dets = detections.pop('time', None)
+        if time_dets:
+            if self.apply_time_detections(time_dets):
+                changed = True
+        prop_texts = detections.pop('props', None)
+        if prop_texts:
+            if self.apply_props(prop_texts):
+                changed = True
+        actor_mentions = detections.pop('actor_mentions', None)
+        if actor_mentions:
+            if self.apply_actor_mentions(actor_mentions):
+                changed = True
+        for slot_name, value in detections.items():
+            if value and value != self.slots[slot_name]:
+                self.slots[slot_name] = value
+                self.slot_ages[slot_name] = 0
+                self._detected([slot_name, value])
+                changed = True
+        if changed:
+            self.update_status()
+        self.emit_output()
+    # --- Provisional processing ---
+    _STATE_ATTRS = ('slots', 'slot_ages', 'chunk_count', 'place_slots', 'place_ages',
+                    'time_slots', 'time_ages', 'actors', 'props')
+    def _snapshot_state(self):
+        return {name: copy.deepcopy(getattr(self, name)) for name in self._STATE_ATTRS}
+    def _restore_state(self, saved):
+        for name, value in saved.items():
+            setattr(self, name, value)
+    def _detected(self, payload):
+        """'detected' announces committed detections only; provisional passes stay quiet."""
+        if not self._provisional:
+            self.detected_output.send(payload)
     # --- Actor roster ---
     def _strip_title(self, name):
         """Split a leading title off a name; titles are gender evidence."""
@@ -1610,7 +1646,7 @@ class ContextTrackerNode(Node):
                         entry['human'] = True
                 elif m['class'] == 'neut' and entry['human'] is None:
                     entry['human'] = False
-                self.detected_output.send(
+                self._detected(
                     ['actor.ref', f"{m['text']} -> {entry['display']}"])
                 self._absorb_attrs(entry, m)
                 continue
@@ -1653,7 +1689,7 @@ class ContextTrackerNode(Node):
                 'salience': m['role'], 'age': 0, 'attrs': [],
             }
             self.actors.append(entry)
-            self.detected_output.send(['actor', m['display']])
+            self._detected(['actor', m['display']])
             self._absorb_attrs(entry, m)
         self.actors.sort(key=lambda a: a['salience'], reverse=True)
         del self.actors[self.max_actors():]
@@ -1671,13 +1707,13 @@ class ContextTrackerNode(Node):
                 continue
             for have in attrs:
                 if have['cat'] == a['cat']:
-                    self.detected_output.send(
+                    self._detected(
                         ['actor.attr.drop',
                          f"{entry['display']}: {have['text']}"])
             attrs[:] = [have for have in attrs if have['cat'] != a['cat']]
             attrs.append(a)
             del attrs[:-max_attrs]
-            self.detected_output.send(
+            self._detected(
                 ['actor.attr', f"{entry['display']}: {a['text']}"])
     @staticmethod
     def actor_display(a):
