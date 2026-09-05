@@ -1451,5 +1451,11 @@
   "whisper": [
     "whisper",
     "eleven_labs"
+  ],
+  "_nemotron_nodes": [
+    "--- nemotron_nodes.py ---"
+  ],
+  "nemotron": [
+    "nemotron"
   ]
 }

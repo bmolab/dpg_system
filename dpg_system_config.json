@@ -35,6 +35,7 @@
  "vision_describe_nodes": true,
  "movie_nodes": true,
  "whisper_nodes": true,
+ "nemotron_nodes": true,
  "context_tracker_nodes": true,
  "mgl_shaders_node": true,
  "noise_review_node": true,

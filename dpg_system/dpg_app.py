@@ -79,6 +79,7 @@ optional_import = [
     'vision_describe_nodes',
     'movie_nodes',
     'whisper_nodes',
+    'nemotron_nodes',
     'context_tracker_nodes',
     'mgl_shaders_nodes',
     'noise_review_node',

@@ -1,0 +1,602 @@
+{
+    "height": 1810,
+    "width": 1712,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "nemotron_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/nemotron_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment nemotron - streaming speech to text, final as it arrives",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 672,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nemotron - streaming speech to text, final as it arrives",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nemotron - streaming speech to text, final as it arrives"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 818,
+            "height": 1716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Speech into text, with no guessing stage.\n\nTHE NODE:\n\nnemotron   listens, and gives you each word the moment it is decided\n\nHOW IT DIFFERS FROM whisper:\nwhisper re-reads the last thirty seconds many times a second and works out what\nhas stopped changing; that is where its in_progress guesses and its confirmation\ndelay come from. nemotron is a streaming transducer: sound goes in once, and\nevery token it emits is final. Nothing is ever withdrawn. Words arrive about a\ntenth of a second behind the speaker, and the cost is the same whether a phrase\nhas been open for one second or thirty.\n\nThe price is that there is no second look. If it hears a word wrong, that word\nstays wrong. whisper's revisions were often corrections; here there are none.\n\nIt runs on this machine, on the GPU through MLX. The first switch-on downloads\nthe model (about 1.2 GB) and takes a few seconds to load; after that it starts\nat once.\n\nFOUR OUTLETS, TWO KINDS OF BOUNDARY:\nThe model does not say where a phrase or a sentence ends, so the node decides,\nand it decides at two scales.\n\nin_progress            the current phrase, growing a word at a time. It only\n                       ever gets longer. Feed the newest fifo_string register.\nphrase                 the phrase, once it closes: a pause of 'phrase_silence'\n                       seconds, a sentence end, or 'max_phrase_words'. Shift\n                       the fifo on this.\nsentence_in_progress   the sentence so far, sent again each time a phrase\n                       closes. This is for context_tracker's 'provisional in':\n                       the tracker follows it at once without committing.\nsentence               the sentence, once it closes: a full stop, question mark\n                       or exclamation; a pause of 'sentence_silence' seconds;\n                       or 'max_sentence_words'. Feed context_tracker's 'text in'.\n\nA sentence is one or more phrases. A pause for thought closes a phrase but not\nthe sentence, so the tracker sees the half-sentence provisionally, and the\nwhole sentence once, later.\n\nPUNCTUATION COMES LATE, ON PURPOSE:\nThe model emits the full stop together with the FIRST WORD OF THE NEXT SENTENCE,\nnot at the pause. So a pause usually closes the phrase before its full stop\narrives. When a bare full stop then turns up, the node attaches it to the\nsentence rather than starting a new phrase with it - which is also what closes\nthe sentence. At the shortest look-ahead the model often omits sentence\npunctuation altogether, and 'sentence_silence' does the work instead.\n\nLOOK-AHEAD IS THE TRADE:\n'look-ahead' is how much future sound the model hears before committing to a\nword: 80 ms up to 1120 ms. Shorter is faster and slightly less accurate, and\npunctuation thins out. 160 ms is a good default; 560 ms if the words matter\nmore than the beat.\n\n'language' is a prompt key such as en-US or fr-FR; 'auto' lets it detect.\n'model' offers the 8-bit build, which is smaller and about as good.\n\nCONTINUOUS SPEECH RUNS ON, AND 'semantic_split' IS THE ANSWER:\nSomeone reading, or a podcast, leaves pauses too short for the silence rules,\nand the model marks only some of the sentence ends it hears. Sentences then\ngrow until a length cap cuts them somewhere arbitrary. 'semantic_split' turns\non a second, small model on the CPU that reads the open text and says where\nthe sentences end - the ends the recogniser left unmarked. It runs when a\nphrase closes and every 'split_check_every' new words, once the open text is\nat least 'split_min_words' long, and never cuts inside the last\n'split_guard_words', which have no right context yet. Where the recogniser\nitself put a comma it is trusted and no cut is made there.\n\nSome speakers never end a sentence at all. Past 'split_max_words' with no\nsentence end in sight, the node breaks at the most plausible clause boundary\ninstead: a comma the recogniser heard, or the strongest clause mark the\nsplitter predicts, preferring the later of near-equal candidates so the pieces\nstay as long as they plausibly can. Only when even that fails does\n'max_sentence_words' cut blindly. No piece is ever shorter than a few words.\n\nWhen a cut falls inside the current phrase, that much of it goes out as a\n'phrase' first, so the fifo shifts, then the 'sentence', then the remainder\ncarries on as the new phrase. The first switch-on downloads about a gigabyte.\nLeave it off for live conversation, where pauses and the model's own\npunctuation already do the work.\n\n'record_debug' writes the audio the model actually heard, and a log of every\ntoken with its time, to ~/nemotron_debug. For when words go missing: if they\nare in the recording but not the log, the model lost them; if they are not in\nthe recording, something before the node did.\n\nSYNTAX:\nnemotron\nnemotron 8bit\nnemotron 560 ms fr-FR\n\nEXAMPLE:\nnemotron\n\nINPUTS and PARAMETERS:\n\non/off / audio device / audio_in / sample_rate_in:\nStart listening, and where from. Patch a signal into audio_in to use that\ninstead of a device.\n\nmodel / look-ahead / language:\nWhich build, how much future it hears, and what language to expect.\n\nphrase_silence / sentence_silence:\nHow long a pause closes a phrase, and how long a pause closes a sentence.\n\nmax_phrase_words / max_sentence_words:\nLength caps, for when nobody pauses. 0 is off.\n\ngain:\nInput level.\n\nsemantic_split / split_min_words / split_guard_words / split_check_every:\nFind the sentence ends the recogniser leaves unmarked in continuous speech.\n\nsplit_max_words:\nPast this, with no sentence end found, break at the best clause boundary.\n\nrecord_debug:\nSave what the model heard, and what it made of it, for diagnosis.\n\nOUTPUTS:\n\nin_progress:\nThe current phrase, growing. Display this, or feed a fifo register.\n\nphrase:\nA closed phrase. Shift the fifo on this.\n\nsentence_in_progress:\nThe sentence so far. context_tracker 'provisional in'.\n\nsentence:\nA closed sentence. context_tracker 'text in'.\n\nRELATED:\nwhisper, which guesses and revises, and hears noise as words.\ncontext_tracker, which this was shaped to feed.\nfifo_string, for the last few phrases as a rolling window.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Speech into text, with no guessing stage.\n\nTHE NODE:\n\nnemotron   listens, and gives you each word the moment it is decided\n\nHOW IT DIFFERS FROM whisper:\nwhisper re-reads the last thirty seconds many times a second and works out what\nhas stopped changing; that is where its in_progress guesses and its confirmation\ndelay come from. nemotron is a streaming transducer: sound goes in once, and\nevery token it emits is final. Nothing is ever withdrawn. Words arrive about a\ntenth of a second behind the speaker, and the cost is the same whether a phrase\nhas been open for one second or thirty.\n\nThe price is that there is no second look. If it hears a word wrong, that word\nstays wrong. whisper's revisions were often corrections; here there are none.\n\nIt runs on this machine, on the GPU through MLX. The first switch-on downloads\nthe model (about 1.2 GB) and takes a few seconds to load; after that it starts\nat once.\n\nFOUR OUTLETS, TWO KINDS OF BOUNDARY:\nThe model does not say where a phrase or a sentence ends, so the node decides,\nand it decides at two scales.\n\nin_progress            the current phrase, growing a word at a time. It only\n                       ever gets longer. Feed the newest fifo_string register.\nphrase                 the phrase, once it closes: a pause of 'phrase_silence'\n                       seconds, a sentence end, or 'max_phrase_words'. Shift\n                       the fifo on this.\nsentence_in_progress   the sentence so far, sent again each time a phrase\n                       closes. This is for context_tracker's 'provisional in':\n                       the tracker follows it at once without committing.\nsentence               the sentence, once it closes: a full stop, question mark\n                       or exclamation; a pause of 'sentence_silence' seconds;\n                       or 'max_sentence_words'. Feed context_tracker's 'text in'.\n\nA sentence is one or more phrases. A pause for thought closes a phrase but not\nthe sentence, so the tracker sees the half-sentence provisionally, and the\nwhole sentence once, later.\n\nPUNCTUATION COMES LATE, ON PURPOSE:\nThe model emits the full stop together with the FIRST WORD OF THE NEXT SENTENCE,\nnot at the pause. So a pause usually closes the phrase before its full stop\narrives. When a bare full stop then turns up, the node attaches it to the\nsentence rather than starting a new phrase with it - which is also what closes\nthe sentence. At the shortest look-ahead the model often omits sentence\npunctuation altogether, and 'sentence_silence' does the work instead.\n\nLOOK-AHEAD IS THE TRADE:\n'look-ahead' is how much future sound the model hears before committing to a\nword: 80 ms up to 1120 ms. Shorter is faster and slightly less accurate, and\npunctuation thins out. 160 ms is a good default; 560 ms if the words matter\nmore than the beat.\n\n'language' is a prompt key such as en-US or fr-FR; 'auto' lets it detect.\n'model' offers the 8-bit build, which is smaller and about as good.\n\nCONTINUOUS SPEECH RUNS ON, AND 'semantic_split' IS THE ANSWER:\nSomeone reading, or a podcast, leaves pauses too short for the silence rules,\nand the model marks only some of the sentence ends it hears. Sentences then\ngrow until a length cap cuts them somewhere arbitrary. 'semantic_split' turns\non a second, small model on the CPU that reads the open text and says where\nthe sentences end - the ends the recogniser left unmarked. It runs when a\nphrase closes and every 'split_check_every' new words, once the open text is\nat least 'split_min_words' long, and never cuts inside the last\n'split_guard_words', which have no right context yet. Where the recogniser\nitself put a comma it is trusted and no cut is made there.\n\nSome speakers never end a sentence at all. Past 'split_max_words' with no\nsentence end in sight, the node breaks at the most plausible clause boundary\ninstead: a comma the recogniser heard, or the strongest clause mark the\nsplitter predicts, preferring the later of near-equal candidates so the pieces\nstay as long as they plausibly can. Only when even that fails does\n'max_sentence_words' cut blindly. No piece is ever shorter than a few words.\n\nWhen a cut falls inside the current phrase, that much of it goes out as a\n'phrase' first, so the fifo shifts, then the 'sentence', then the remainder\ncarries on as the new phrase. The first switch-on downloads about a gigabyte.\nLeave it off for live conversation, where pauses and the model's own\npunctuation already do the work.\n\n'record_debug' writes the audio the model actually heard, and a log of every\ntoken with its time, to ~/nemotron_debug. For when words go missing: if they\nare in the recording but not the log, the model lost them; if they are not in\nthe recording, something before the node did.\n\nSYNTAX:\nnemotron\nnemotron 8bit\nnemotron 560 ms fr-FR\n\nEXAMPLE:\nnemotron\n\nINPUTS and PARAMETERS:\n\non/off / audio device / audio_in / sample_rate_in:\nStart listening, and where from. Patch a signal into audio_in to use that\ninstead of a device.\n\nmodel / look-ahead / language:\nWhich build, how much future it hears, and what language to expect.\n\nphrase_silence / sentence_silence:\nHow long a pause closes a phrase, and how long a pause closes a sentence.\n\nmax_phrase_words / max_sentence_words:\nLength caps, for when nobody pauses. 0 is off.\n\ngain:\nInput level.\n\nsemantic_split / split_min_words / split_guard_words / split_check_every:\nFind the sentence ends the recogniser leaves unmarked in continuous speech.\n\nsplit_max_words:\nPast this, with no sentence end found, break at the best clause boundary.\n\nrecord_debug:\nSave what the model heard, and what it made of it, for diagnosis.\n\nOUTPUTS:\n\nin_progress:\nThe current phrase, growing. Display this, or feed a fifo register.\n\nphrase:\nA closed phrase. Shift the fifo on this.\n\nsentence_in_progress:\nThe sentence so far. context_tracker 'provisional in'.\n\nsentence:\nA closed sentence. context_tracker 'text in'.\n\nRELATED:\nwhisper, which guesses and revises, and hears noise as words.\ncontext_tracker, which this was shaped to feed.\nfifo_string, for the last few phrases as a rolling window."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "nemotron",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 340,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 30,
+            "position_y": 435,
+            "width": 261,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "every word is final when it appears -\nnothing is revised, and nothing is\nre-read",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "every word is final when it appears -\nnothing is revised, and nothing is\nre-read"
+        },
+        "6": {
+            "name": "text_display",
+            "id": 459,
+            "position_x": 420,
+            "position_y": 120,
+            "width": 340,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 140,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 420,
+            "position_y": 315,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "in_progress: the phrase, growing a word\nat a time. It only gets longer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "in_progress: the phrase, growing a word\nat a time. It only gets longer."
+        },
+        "8": {
+            "name": "text_display",
+            "id": 533,
+            "position_x": 420,
+            "position_y": 390,
+            "width": 340,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 140,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 420,
+            "position_y": 585,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "phrase: closed by a pause or a sentence\nend. Shift a fifo on this.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "phrase: closed by a pause or a sentence\nend. Shift a fifo on this."
+        },
+        "10": {
+            "name": "text_display",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 660,
+            "width": 340,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 140,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 420,
+            "position_y": 855,
+            "width": 292,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "sentence_in_progress: the sentence so far,\nre-sent at each phrase. context_tracker\n\"provisional in\" follows it without\ncommitting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "sentence_in_progress: the sentence so far,\nre-sent at each phrase. context_tracker\n\"provisional in\" follows it without\ncommitting"
+        },
+        "12": {
+            "name": "text_display",
+            "id": 681,
+            "position_x": 420,
+            "position_y": 960,
+            "width": 340,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 140,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 420,
+            "position_y": 1155,
+            "width": 298,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "sentence: closed by . ? ! or a long pause.\ncontext_tracker \"text in\" digests this once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "sentence: closed by . ? ! or a long pause.\ncontext_tracker \"text in\" digests this once"
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 249,
+            "height": 76,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the full stop arrives with the NEXT\nsentence's first word, so a pause\ncloses the phrase before its\npunctuation - the node attaches it\nto the sentence when it comes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the full stop arrives with the NEXT\nsentence's first word, so a pause\ncloses the phrase before its\npunctuation - the node attaches it\nto the sentence when it comes"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1265,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on/off"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "in_progress",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phrase",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sentence_in_progress",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sentence",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}
