@@ -31,6 +31,7 @@ def register_quaternion_nodes():
     Node.app.register_node('quaternion_norm', NormalizeQuaternionNode.factory)
     Node.app.register_node('quaternion_relative', QuaternionRelativeNode.factory)
     Node.app.register_node('tracker_align', TrackerAlignNode.factory)
+    Node.app.register_node('swing_twist', SwingTwistNode.factory)
 
 
 class QuaternionToEulerNode(Node):
@@ -1274,3 +1275,195 @@ class TrackerAlignNode(Node):
 #     b2 = F.normalize(b2, dim=-1)
 #     b3 = torch.cross(b1, b2, dim=-1)
 #     return torch.stack((b1, b2, b3), dim=-2)
+
+class SwingTwistNode(Node):
+    """Split an orientation into where the device points (swing) and how far it
+    is turned about its own pointing axis (twist).
+
+    A yaw/pitch/roll triple measures two of its angles about axes that do not
+    move with the device, so once the device is tilted those angles stop
+    matching what a hand feels. The twist here is measured about a body axis,
+    so rolling the device reads as roll however it is held. The swing is what
+    is left: the rotation that carries the twist axis to where it now points.
+    q = swing * twist, both scalar-first [w, x, y, z].
+
+    Two references for zero twist:
+      level         top of the device up - the aircraft's bank. Undefined
+                    pointing straight up or down, so it blends into the
+                    shortest-arc twist within a few degrees of vertical.
+      shortest arc  twist beyond the shortest rotation that carries the twist
+                    axis to its current direction. Well defined everywhere
+                    except pointing exactly backwards, but its zero rolls
+                    with direction: at azimuth 90 and elevation 45 a device
+                    with its top up reads 45 degrees of twist."""
+
+    axis_vectors = {'x': (1.0, 0.0, 0.0), 'y': (0.0, 1.0, 0.0), 'z': (0.0, 0.0, 1.0),
+                    '-x': (-1.0, 0.0, 0.0), '-y': (0.0, -1.0, 0.0), '-z': (0.0, 0.0, -1.0)}
+    up_index = {'x': 0, 'y': 1, 'z': 2}
+    vertical_blend = math.sin(math.radians(12.0))   # horizontal reach below which level bank fades out
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return SwingTwistNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.degree_factor = 180.0 / math.pi
+
+        # swing_twist [twist axis] [up axis]   e.g.  swing_twist x z  for a Pipo
+        twist_default = 'x'
+        up_default = 'y'
+        if args is not None:
+            axes = [str(a) for a in args if str(a) in self.axis_vectors]
+            if len(axes) > 0:
+                twist_default = axes[0]
+            if len(axes) > 1 and axes[1] in self.up_index:
+                up_default = axes[1]
+
+        self.neutral = None          # captured reference, scalar-first, or None
+        self.last_q = None
+
+        self.input = self.add_input('quaternion', triggers_execution=True)
+        self.twist_axis = self.add_property('twist axis', widget_type='combo', default_value=twist_default)
+        self.twist_axis.widget.combo_items = ['x', 'y', 'z', '-x', '-y', '-z']
+        self.up_axis = self.add_property('up axis', widget_type='combo', default_value=up_default)
+        self.up_axis.widget.combo_items = ['x', 'y', 'z']
+        self.set_neutral_button = self.add_property('set neutral', widget_type='button', callback=self.set_neutral)
+        self.clear_neutral_button = self.add_property('clear neutral', widget_type='button', callback=self.clear_neutral)
+        self.twist_reference = self.add_option('twist reference', widget_type='combo', default_value='level')
+        self.twist_reference.widget.combo_items = ['level', 'shortest arc']
+        self.degrees = self.add_option('degrees', widget_type='checkbox', default_value=True)
+
+        self.direction_output = self.add_output('direction')
+        self.azimuth_output = self.add_output('azimuth')
+        self.elevation_output = self.add_output('elevation')
+        self.twist_output = self.add_output('twist')
+        self.swing_quat_output = self.add_output('swing quaternion')
+        self.twist_quat_output = self.add_output('twist quaternion')
+
+    def set_neutral(self):
+        """Take the pose being held now as zero: no swing, no twist. Everything
+        after is measured from it, in that pose's own frame, so 'up axis' means
+        the device's up when it was held here."""
+        if self.last_q is not None:
+            q = np.asarray(self.last_q, dtype=np.float64)
+            if q.ndim > 1:
+                q = q.reshape(-1, 4)[0]
+            self.neutral = q / (np.linalg.norm(q) + 1e-12)
+
+    def clear_neutral(self):
+        self.neutral = None
+
+    @staticmethod
+    def decompose(q, axis):
+        """Shortest-arc swing-twist. q: (..., 4) scalar-first, axis: (3,) unit body axis.
+        Returns swing (..., 4), twist (..., 4), twist angle (...) in radians, direction (..., 3)."""
+        q = q / (np.linalg.norm(q, axis=-1, keepdims=True) + 1e-12)
+        w = q[..., 0]
+        v = q[..., 1:]
+        p = v @ axis                                    # component of the vector part along the twist axis
+        twist = np.concatenate([w[..., None], p[..., None] * axis], axis=-1)
+        n = np.linalg.norm(twist, axis=-1, keepdims=True)
+        degenerate = n[..., 0] < 1e-10                  # a half turn exactly across the axis: twist undefined
+        twist = np.where(degenerate[..., None], np.array([1.0, 0.0, 0.0, 0.0]), twist / np.where(degenerate[..., None], 1.0, n))
+        twist = np.where((twist[..., 0] < 0)[..., None], -twist, twist)   # shortest representation, angle in (-pi, pi]
+        angle = 2.0 * np.arctan2(twist[..., 1:] @ axis, twist[..., 0])
+        conj = twist * np.array([1.0, -1.0, -1.0, -1.0])
+        swing = quaternion_multiply_wxyz_np(q, conj)
+        direction = rotate_vector_wxyz_np(q, axis)
+        return swing, twist, angle, direction
+
+    @staticmethod
+    def level_bank(q, axis, up, direction):
+        """Twist measured against 'top up': the angle from the horizontal
+        sideways axis at the current direction to where the device's own
+        sideways axis has gone. Returns bank (...) in radians and the
+        horizontal reach (...) of the direction, 0 when vertical."""
+        side_neutral = np.cross(up, axis)               # the device's sideways axis when it sits at identity
+        side_now = rotate_vector_wxyz_np(q, side_neutral)
+        side_level = np.cross(up, direction)            # sideways at the current direction, kept horizontal
+        reach = np.linalg.norm(side_level, axis=-1)
+        side_level = side_level / (reach[..., None] + 1e-12)
+        bank = np.arctan2(np.sum(np.cross(side_level, side_now) * direction, axis=-1),
+                          np.sum(side_level * side_now, axis=-1))
+        return bank, reach
+
+    @staticmethod
+    def azimuth_from(axis, up, direction):
+        """Bearing of the direction about up, zero where the twist axis points at
+        identity, positive turning right - clockwise seen from above, as a compass reads."""
+        reference = axis - (axis @ up) * up
+        if np.linalg.norm(reference) < 1e-6:            # twist axis is the up axis: fall back to the next axis round
+            reference = np.roll(up, 1)
+        reference = reference / np.linalg.norm(reference)
+        return np.arctan2(np.sum(np.cross(direction, reference) * up, axis=-1), direction @ reference)
+
+    def execute(self):
+        if not self.input.fresh_input:
+            return
+        q = any_to_array(self.input()).astype(np.float64)
+        if q.shape[-1] != 4:
+            if self.app.verbose:
+                print('swing_twist expects quaternions of 4 values, scalar first')
+            return
+        self.last_q = q
+        neutral = self.neutral
+        if neutral is not None:
+            # rotation from the neutral pose to now, expressed in the neutral pose's frame
+            q = quaternion_multiply_wxyz_np(neutral * np.array([1.0, -1.0, -1.0, -1.0]), q)
+        axis = np.array(self.axis_vectors[self.twist_axis()], dtype=np.float64)
+        up = np.zeros(3)
+        up[self.up_index[self.up_axis()]] = 1.0
+        swing, twist, angle, direction = self.decompose(q, axis)
+
+        if self.twist_reference() == 'level':
+            bank, reach = self.level_bank(q, axis, up, direction)
+            # fade from bank to shortest-arc twist as the direction nears vertical, on the circle
+            weight = np.clip(reach / self.vertical_blend, 0.0, 1.0) ** 2
+            angle = np.arctan2(weight * np.sin(bank) + (1.0 - weight) * np.sin(angle),
+                               weight * np.cos(bank) + (1.0 - weight) * np.cos(angle))
+            half = 0.5 * angle
+            twist = np.concatenate([np.cos(half)[..., None], np.sin(half)[..., None] * axis], axis=-1)
+            swing = quaternion_multiply_wxyz_np(q, twist * np.array([1.0, -1.0, -1.0, -1.0]))
+
+        elevation = np.arcsin(np.clip(direction @ up, -1.0, 1.0))
+        azimuth = self.azimuth_from(axis, up, direction)
+        if self.degrees():
+            angle = angle * self.degree_factor
+            elevation = elevation * self.degree_factor
+            azimuth = azimuth * self.degree_factor
+
+        self.twist_quat_output.send(swing_squeeze(twist))
+        self.swing_quat_output.send(swing_squeeze(swing))
+        self.twist_output.send(swing_squeeze(angle))
+        self.elevation_output.send(swing_squeeze(elevation))
+        self.azimuth_output.send(swing_squeeze(azimuth))
+        self.direction_output.send(swing_squeeze(direction))
+
+
+def swing_squeeze(a):
+    """A lone quaternion in gives plain values out; batches stay arrays."""
+    a = np.asarray(a)
+    if a.ndim == 0:
+        return float(a)
+    return a
+
+
+def quaternion_multiply_wxyz_np(a, b):
+    """Hamilton product of scalar-first quaternions, broadcasting over leading dims."""
+    aw, ax, ay, az = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    bw, bx, by, bz = b[..., 0], b[..., 1], b[..., 2], b[..., 3]
+    return np.stack([
+        aw * bw - ax * bx - ay * by - az * bz,
+        aw * bx + ax * bw + ay * bz - az * by,
+        aw * by - ax * bz + ay * bw + az * bx,
+        aw * bz + ax * by - ay * bx + az * bw], axis=-1)
+
+
+def rotate_vector_wxyz_np(q, vec):
+    """Rotate a body vector into the world by scalar-first q: v' = q v q*, broadcasting over leading dims."""
+    w = q[..., 0:1]
+    u = q[..., 1:]
+    vec = np.broadcast_to(vec, u.shape)
+    t = 2.0 * np.cross(u, vec)
+    return vec + w * t + np.cross(u, t)

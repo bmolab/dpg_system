@@ -426,3 +426,134 @@ links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('eq', 'quaternion rotation', 'ta', 'imu root quat')]
 print(build('quaternion_norm', 'quaternion_norm and tracker_align - staying valid',
             body, demo, links, demo_width=580, text_width=800, text_height=740))
+
+
+# ------------------------------------------------------------------ swing_twist
+body = """Split an orientation into where a thing points and how far it is turned 
+about its own pointing axis.
+
+WHY YAW, PITCH AND ROLL FEEL WRONG IN THE HAND:
+A yaw/pitch/roll triple is a recipe: turn about the world's vertical, then 
+about a sideways axis, then about the forward axis, in that order. Unless the 
+sensor happens to use exactly that order with roll last, its roll is measured 
+about an axis that does not move with the device, and once a hand-held sensor 
+is tipped up, rolling it no longer reads as roll. Any one axis on its own 
+makes sense; two together do not.
+
+swing_twist measures differently. The TWIST is the rotation about one of the 
+device's own axes - the one you name as 'twist axis', usually the axis along 
+its length. Rolling the device changes the twist and nothing else, however 
+the device is held. The SWING is everything left over: the rotation that 
+carries that axis from where it starts to where it now points. Together they 
+remake the original rotation exactly, swing applied after twist.
+
+WHAT COMES OUT:
+
+direction     where the twist axis points now, as a unit vector
+azimuth       the bearing of that direction about the up axis - zero where 
+              the twist axis points at rest, positive turning right, as a 
+              compass reads
+elevation     how far above or below level it points, -90 to +90
+twist         how far the device is turned about its own axis, positive 
+              clockwise seen from behind
+swing / twist quaternion   the two halves, for composing further
+
+WHAT ZERO TWIST MEANS - 'twist reference':
+level          the top of the device is up: an aircraft's bank. This is what 
+               a hand expects, and the default. It has no meaning pointing 
+               straight up or down, where turning the device and turning 
+               about its length are the same motion - so within about twelve 
+               degrees of vertical it fades over into the other reference 
+               rather than jumping
+shortest arc   twist beyond the shortest rotation that carries the axis to 
+               where it points. Well defined everywhere except pointing 
+               exactly backwards, but its zero rolls with direction: at 
+               azimuth 90 and elevation 45, a device with its top up reads 
+               45 degrees of twist. Useful when the device spends its time 
+               near vertical
+
+SET NEUTRAL:
+Hold the device the way you call 'straight' and press 'set neutral'. From then 
+on everything is measured from that pose: twist zero, azimuth zero, elevation 
+zero, in the frame of the device as it was held then. This is usually what a 
+hand-held device wants - a gesture starts from wherever the hand is, not from 
+magnetic north - and it also absorbs any fixed offset a sensor's quaternion 
+carries in relation to its own body. 'clear neutral' goes back to measuring 
+from the world.
+
+IF THE SIGNS COME OUT WRONG:
+Turn right: azimuth should rise. Tip the front up: elevation should rise. 
+Roll to the right: twist should rise. If elevation and twist BOTH run backwards 
+while azimuth is right, the end you call the front is the sensor's negative 
+axis - name '-x' (or '-y', '-z') as the twist axis.
+
+SYNTAX:
+swing_twist
+swing_twist <twist axis> <up axis>
+
+EXAMPLE:
+swing_twist x z
+
+INPUTS and PARAMETERS:
+
+quaternion:
+The orientation, scalar first - as euler_to_quaternion and pipo_motion 
+produce it. A batch of quaternions works too.
+
+twist axis:
+Which of the device's own axes is its length, with sign: x, y, z, -x, -y, -z. 
+Can be given as the first argument.
+
+up axis:
+Which axis is up, for azimuth, elevation and level twist - the world's up, or 
+the device's up in its neutral pose once one is set. y is the default; 
+pipo_motion's world has z up. Can be given as the second argument.
+
+set neutral / clear neutral:
+Capture the pose being held as zero, or go back to the world frame.
+
+twist reference:
+level or shortest arc, as above.
+
+degrees:
+Angles in degrees rather than radians.
+
+OUTPUTS: 
+
+direction / azimuth / elevation / twist / swing quaternion / twist quaternion:
+As above.
+
+RELATED:
+quaternion_relative in front of this node measures everything from a captured 
+starting pose rather than from the world, which is often what a gesture wants."""
+
+demo = starter() + [
+    {'key': 'sig', 'init': 'signal 4.0 sin', 'pos': (30, 132), 'w': 129, 'h': 78,
+     'props': SIG('sin', 4.0, 150.0, True)},
+    {'key': 'sig2', 'init': 'signal 7.0 triangle', 'pos': (200, 132), 'w': 129, 'h': 78,
+     'props': SIG('triangle', 7.0, 60.0, True)},
+    {'key': 'c2', 'comment': True, 'text': 'roll about x, and a slower tilt about z',
+     'pos': (30, 215)},
+    {'key': 'pk', 'init': 'pack 3', 'pos': (30, 250), 'w': 140, 'h': 100},
+    {'key': 'eq', 'init': 'euler_to_quaternion', 'pos': (30, 365), 'w': 260, 'h': 120,
+     'props': {'degrees': True}},
+    {'key': 'st', 'init': 'swing_twist x y', 'pos': (30, 490), 'w': 300, 'h': 190,
+     'props': {'twist axis': 'x', 'up axis': 'y'}},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 700), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'f2', 'init': 'float', 'pos': (180, 700), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'f3', 'init': 'float', 'pos': (330, 700), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c0', 'comment': True, 'text': 'azimuth, elevation, twist - elevation reads back\nthe tilt, twist reads back the roll, unmixed',
+     'pos': (30, 755)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 820), 'w': 300, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'where the x axis points now',
+     'pos': (30, 870)},
+]
+links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'), ('tt', '1', 'sig2', 'on'),
+         ('sig', '', 'pk', 'in 1'), ('sig2', '', 'pk', 'in 3'),
+         ('pk', 'out', 'eq', 'xyz rotation'),
+         ('eq', 'quaternion rotation', 'st', 'quaternion'),
+         ('st', 'azimuth', 'f1', ''), ('st', 'elevation', 'f2', ''),
+         ('st', 'twist', 'f3', ''), ('st', 'direction', 'l1', '')]
+print(build('swing_twist', 'swing_twist - pointing direction and turn about the device',
+            body, demo, links, demo_width=560, text_width=810, text_height=760))

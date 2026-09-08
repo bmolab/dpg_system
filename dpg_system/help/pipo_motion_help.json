@@ -1,11 +1,11 @@
 {
-    "height": 801,
-    "width": 1693,
+    "height": 881,
+    "width": 1779,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 866,
     "name": "pipo_motion_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/pipo_motion_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment pipo_motion - a phone as a sensor",
+            "init": "comment pipo_motion - a small wireless sensor",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 414,
+            "width": 463,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "pipo_motion - a phone as a sensor",
+                    "value": "pipo_motion - a small wireless sensor",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "pipo_motion - a phone as a sensor"
+            "comment": "pipo_motion - a small wireless sensor"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 855,
+            "position_x": 941,
             "position_y": 45,
             "width": 798,
-            "height": 696,
+            "height": 776,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two nodes that read a phone's sensors over the network.\n\nTHE NODES:\n\npipo_motion  orientation and acceleration\npipo_range   a distance reading\n\nThese take data from a phone running a sensor-streaming app, over OSC, on a \nport you set. That makes a phone into a cheap and immediately available motion \nsensor - useful for testing a patch without setting up a suit, for a second \nperformer, or for putting a sensor somewhere a suit will not go.\n\nWHAT YOU GET:\npipo_motion gives yaw, pitch and roll as separate outlets, plus acceleration. \nThose are Euler angles rather than a quaternion, which means they gimbal-lock \nand are awkward to do arithmetic on - see the rotation conversions help patch \nfor why, and convert with euler_to_quaternion before doing anything but \ndisplaying them.\n\nThe acceleration outlet is the more directly useful of the two for movement \nwork, because it does not depend on a heading and so is not subject to \nmagnetic error.\n\npipo_range gives a distance, from whatever ranging sensor the phone offers.\n\nSYNTAX:\npipo_motion\npipo_range\n\nEXAMPLE:\npipo_motion\n\nINPUTS and PARAMETERS:\n\nport:\nThe port to listen on. Set the phone to send there.\n\nOUTPUTS: \n\nyaw / pitch / roll:\nOrientation, as angles.\n\nacc:\nAcceleration.\n\ndist (pipo_range):\nThe distance reading.\n\nWHAT TO EXPECT OF THE DATA:\nA phone's orientation comes from the same kind of sensor fusion a suit uses, so \nit has the same weakness: the heading depends on the magnetic field and is \nwrong near steel. The pitch and roll come from gravity and are dependable; \nthe yaw is the one to distrust. That is the same story as the mag_offset help \npatch tells for the suit, and the same reasoning applies.",
+                    "value": "Two nodes that read a Pipo sensor over the network.\n\nTHE NODES:\n\npipo_motion  orientation and acceleration\npipo_range   a distance reading\n\nThese take data from a Pipo Motion or a phone running a sensor-streaming app, \nover OSC, on a port you set. That makes a small wireless inertial sensor - \nuseful for testing a patch without setting up a suit, for a hand-held prop, \nfor a second performer, or for putting a sensor somewhere a suit will not go.\n\nWHAT YOU GET:\npipo_motion gives yaw, pitch and roll as separate outlets, acceleration, and - \nwhen the sensor is set to send its quaternion - the orientation as one \nquaternion, scalar first.\n\nYaw, pitch and roll are Euler angles. They read well on a display but \ngimbal-lock and are awkward to do arithmetic on, and for a sensor held in the \nhand they stop matching what the hand feels as soon as it is tipped - see the \nswing_twist help patch for why. Prefer the quaternion outlet whenever the \nsensor can send it, and feed it to swing_twist for a hand-held reading or to \nquaternion_relative to measure from a captured starting pose.\n\nThe acceleration outlet is directly useful for movement work because it does \nnot depend on a heading and so is not subject to magnetic error.\n\npipo_range gives a distance, from whatever ranging sensor the device offers.\n\nTHE SENSOR'S AXES:\nThe Pipo Motion has z up, pitch about y and roll about x - so x is along the \nsensor, and is the axis to name as 'twist axis' in swing_twist, with 'up axis' \nset to z: 'swing_twist x z'. Which END of the sensor you call the front decides \nthe sign: if tipping the front up reads as negative elevation and rolling \nright as negative twist, your front is the sensor's -x, so use \n'swing_twist -x z'. Hold the sensor straight and press 'set neutral' on \nswing_twist to measure from that pose rather than from magnetic north.\n\nSYNTAX:\npipo_motion\npipo_range\n\nEXAMPLE:\npipo_motion\n\nINPUTS and PARAMETERS:\n\nport:\nThe port to listen on. Set the sensor to send there.\n\nOUTPUTS: \n\nyaw / pitch / roll:\nOrientation, as angles.\n\nacc:\nAcceleration.\n\nquaternion:\nOrientation as a scalar-first quaternion. Sends once all four components have \narrived; nothing comes out until the sensor is set to send them.\n\ndist (pipo_range):\nThe distance reading.\n\nWHAT TO EXPECT OF THE DATA:\nThe orientation comes from the same kind of sensor fusion a suit uses, so \nit has the same weakness: the heading depends on the magnetic field and is \nwrong near steel. The pitch and roll come from gravity and are dependable; \nthe yaw is the one to distrust. That is the same story as the mag_offset help \npatch tells for the suit, and the same reasoning applies.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 680,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two nodes that read a phone's sensors over the network.\n\nTHE NODES:\n\npipo_motion  orientation and acceleration\npipo_range   a distance reading\n\nThese take data from a phone running a sensor-streaming app, over OSC, on a \nport you set. That makes a phone into a cheap and immediately available motion \nsensor - useful for testing a patch without setting up a suit, for a second \nperformer, or for putting a sensor somewhere a suit will not go.\n\nWHAT YOU GET:\npipo_motion gives yaw, pitch and roll as separate outlets, plus acceleration. \nThose are Euler angles rather than a quaternion, which means they gimbal-lock \nand are awkward to do arithmetic on - see the rotation conversions help patch \nfor why, and convert with euler_to_quaternion before doing anything but \ndisplaying them.\n\nThe acceleration outlet is the more directly useful of the two for movement \nwork, because it does not depend on a heading and so is not subject to \nmagnetic error.\n\npipo_range gives a distance, from whatever ranging sensor the phone offers.\n\nSYNTAX:\npipo_motion\npipo_range\n\nEXAMPLE:\npipo_motion\n\nINPUTS and PARAMETERS:\n\nport:\nThe port to listen on. Set the phone to send there.\n\nOUTPUTS: \n\nyaw / pitch / roll:\nOrientation, as angles.\n\nacc:\nAcceleration.\n\ndist (pipo_range):\nThe distance reading.\n\nWHAT TO EXPECT OF THE DATA:\nA phone's orientation comes from the same kind of sensor fusion a suit uses, so \nit has the same weakness: the heading depends on the magnetic field and is \nwrong near steel. The pitch and roll come from gravity and are dependable; \nthe yaw is the one to distrust. That is the same story as the mag_offset help \npatch tells for the suit, and the same reasoning applies."
+            "text": "Two nodes that read a Pipo sensor over the network.\n\nTHE NODES:\n\npipo_motion  orientation and acceleration\npipo_range   a distance reading\n\nThese take data from a Pipo Motion or a phone running a sensor-streaming app, \nover OSC, on a port you set. That makes a small wireless inertial sensor - \nuseful for testing a patch without setting up a suit, for a hand-held prop, \nfor a second performer, or for putting a sensor somewhere a suit will not go.\n\nWHAT YOU GET:\npipo_motion gives yaw, pitch and roll as separate outlets, acceleration, and - \nwhen the sensor is set to send its quaternion - the orientation as one \nquaternion, scalar first.\n\nYaw, pitch and roll are Euler angles. They read well on a display but \ngimbal-lock and are awkward to do arithmetic on, and for a sensor held in the \nhand they stop matching what the hand feels as soon as it is tipped - see the \nswing_twist help patch for why. Prefer the quaternion outlet whenever the \nsensor can send it, and feed it to swing_twist for a hand-held reading or to \nquaternion_relative to measure from a captured starting pose.\n\nThe acceleration outlet is directly useful for movement work because it does \nnot depend on a heading and so is not subject to magnetic error.\n\npipo_range gives a distance, from whatever ranging sensor the device offers.\n\nTHE SENSOR'S AXES:\nThe Pipo Motion has z up, pitch about y and roll about x - so x is along the \nsensor, and is the axis to name as 'twist axis' in swing_twist, with 'up axis' \nset to z: 'swing_twist x z'. Which END of the sensor you call the front decides \nthe sign: if tipping the front up reads as negative elevation and rolling \nright as negative twist, your front is the sensor's -x, so use \n'swing_twist -x z'. Hold the sensor straight and press 'set neutral' on \nswing_twist to measure from that pose rather than from magnetic north.\n\nSYNTAX:\npipo_motion\npipo_range\n\nEXAMPLE:\npipo_motion\n\nINPUTS and PARAMETERS:\n\nport:\nThe port to listen on. Set the sensor to send there.\n\nOUTPUTS: \n\nyaw / pitch / roll:\nOrientation, as angles.\n\nacc:\nAcceleration.\n\nquaternion:\nOrientation as a scalar-first quaternion. Sends once all four components have \narrived; nothing comes out until the sensor is set to send them.\n\ndist (pipo_range):\nThe distance reading.\n\nWHAT TO EXPECT OF THE DATA:\nThe orientation comes from the same kind of sensor fusion a suit uses, so \nit has the same weakness: the heading depends on the magnetic field and is \nwrong near steel. The pitch and roll come from gravity and are dependable; \nthe yaw is the one to distrust. That is the same story as the mag_offset help \npatch tells for the suit, and the same reasoning applies."
         },
         "3": {
             "name": "pipo_motion",
@@ -98,19 +98,19 @@
             "position_x": 30,
             "position_y": 62,
             "width": 117,
-            "height": 84,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "init": "comment set the port the phone sends to",
+            "init": "comment set the port the sensor sends to",
             "name": "comment",
             "id": 385,
-            "position_x": 564,
-            "position_y": 275,
-            "width": 199,
+            "position_x": 594,
+            "position_y": 295,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -118,7 +118,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "set the port the phone sends to",
+                    "value": "set the port the sensor sends to",
                     "value_type": "str"
                 },
                 "1": {
@@ -127,7 +127,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "set the port the phone sends to"
+            "comment": "set the port the sensor sends to"
         },
         "5": {
             "name": "float",
@@ -217,7 +217,7 @@
             "name": "text_block",
             "id": 533,
             "annotation": true,
-            "position_x": 564,
+            "position_x": 594,
             "position_y": 370,
             "width": 261,
             "height": 40,
@@ -254,66 +254,158 @@
             "text": "yaw, pitch, roll - pitch and roll are\ndependable; yaw is the magnetic one"
         },
         "9": {
-            "name": "pack",
+            "name": "swing_twist",
             "id": 570,
             "position_x": 30,
             "position_y": 445,
-            "width": 33,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "pack 3"
-        },
-        "10": {
-            "name": "euler_to_quaternion",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 560,
-            "width": 125,
-            "height": 70,
+            "width": 154,
+            "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "degrees",
-                    "value": true,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "11": {
-            "init": "comment convert before doing anything but showing",
-            "name": "comment",
-            "id": 644,
-            "position_x": 564,
-            "position_y": 695,
-            "width": 260,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "convert before doing anything but showing",
+                    "name": "twist axis",
+                    "value": "x",
                     "value_type": "str"
                 },
                 "1": {
+                    "name": "up axis",
+                    "value": "z",
+                    "value_type": "str"
+                }
+            },
+            "init": "swing_twist x z"
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
                     "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
-            },
-            "comment": "convert before doing anything but showing"
+            }
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 650,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
         },
         "12": {
-            "name": "plot",
+            "name": "float",
             "id": 681,
             "position_x": 330,
-            "position_y": 445,
+            "position_y": 650,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 594,
+            "position_y": 705,
+            "width": 317,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the quaternion outlet through swing_twist:\nazimuth, elevation, and a roll that stays roll\nhowever the sensor is tipped",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the quaternion outlet through swing_twist:\nazimuth, elevation, and a roll that stays roll\nhowever the sensor is tipped"
+        },
+        "14": {
+            "name": "plot",
+            "id": 755,
+            "position_x": 360,
+            "position_y": 62,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -372,12 +464,12 @@
                 }
             }
         },
-        "13": {
+        "15": {
             "name": "text_block",
-            "id": 718,
+            "id": 792,
             "annotation": true,
-            "position_x": 564,
-            "position_y": 630,
+            "position_x": 594,
+            "position_y": 245,
             "width": 218,
             "height": 40,
             "visibility": "show_all",
@@ -412,11 +504,11 @@
             },
             "text": "acceleration needs no heading,\nso no magnetic error"
         },
-        "14": {
+        "16": {
             "name": "close",
-            "id": 755,
+            "id": 829,
             "position_x": 24,
-            "position_y": 660,
+            "position_y": 722,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -466,48 +558,48 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "yaw",
+            "source_output_name": "quaternion",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "in 1"
+            "dest_input_name": "quaternion"
         },
         "4": {
-            "source_node": 348,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "pitch",
-            "dest_node": 570,
+            "source_output_name": "azimuth",
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "in 2"
+            "dest_input_name": ""
         },
         "5": {
-            "source_node": 348,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "roll",
-            "dest_node": 570,
+            "source_output_name": "elevation",
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "in 3"
+            "dest_input_name": ""
         },
         "6": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 607,
+            "source_output_name": "twist",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "xyz rotation"
+            "dest_input_name": ""
         },
         "7": {
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "acc",
-            "dest_node": 681,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

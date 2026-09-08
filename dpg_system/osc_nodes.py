@@ -1950,7 +1950,8 @@ class OSCSourceNode(OSCThreadingSource, OSCRegistrableMixin, Node):
 
 
 class PipoMotionSourceNode(Node):
-    """Receives OSC from a PiPo-Motion sensor and outputs yaw, pitch, roll as separate floats and acceleration as an np.array."""
+    """Receives OSC from a PiPo-Motion sensor and outputs yaw, pitch, roll as separate floats, acceleration as an np.array,
+    and (when the sensor is set to send /motion/quat{w,x,y,z}) the orientation as a scalar-first quaternion."""
 
     @staticmethod
     def factory(name, data, args=None):
@@ -1978,8 +1979,15 @@ class PipoMotionSourceNode(Node):
         self.pitch_output = self.add_output('pitch')
         self.roll_output = self.add_output('roll')
         self.acc_output = self.add_output('acc')
+        self.quat_output = self.add_output('quaternion')
 
         self.acc = np.zeros(3, dtype=np.float32)
+        # scalar-first [w, x, y, z]; the sensor sends the four components as
+        # separate messages, so gather all four before sending, whatever order
+        # they arrive in
+        self.quat = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
+        self.quat_seen = 0
+        self.quat_index = {'/motion/quatw': 0, '/motion/quatx': 1, '/motion/quaty': 2, '/motion/quatz': 3}
 
         self.start_serving()
 
@@ -2013,6 +2021,13 @@ class PipoMotionSourceNode(Node):
                 elif address == '/motion/accZ':
                     self.acc[2] = value
                     self.acc_output.send(self.acc.copy())
+                elif address in self.quat_index:
+                    index = self.quat_index[address]
+                    self.quat[index] = value
+                    self.quat_seen |= (1 << index)
+                    if self.quat_seen == 0b1111:
+                        self.quat_seen = 0
+                        self.quat_output.send(self.quat.copy())
             finally:
                 self.lock.release()
 
@@ -2025,6 +2040,8 @@ class PipoMotionSourceNode(Node):
             self.dispatcher.map('/motion/accX', self.osc_handler)
             self.dispatcher.map('/motion/accY', self.osc_handler)
             self.dispatcher.map('/motion/accZ', self.osc_handler)
+            for address in self.quat_index:
+                self.dispatcher.map(address, self.osc_handler)
             self.server = osc_server.ThreadingOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher)
             self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.server_thread.start()

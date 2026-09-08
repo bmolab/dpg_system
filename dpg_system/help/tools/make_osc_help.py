@@ -360,30 +360,43 @@ print(build('osc_query_json', 'osc_query_json - finding out what a device offers
             body, demo, links, demo_width=620, text_width=790, text_height=700))
 
 # ------------------------------------------------------------------ pipo_motion
-body = """Two nodes that read a phone's sensors over the network.
+body = """Two nodes that read a Pipo sensor over the network.
 
 THE NODES:
 
 pipo_motion  orientation and acceleration
 pipo_range   a distance reading
 
-These take data from a phone running a sensor-streaming app, over OSC, on a 
-port you set. That makes a phone into a cheap and immediately available motion 
-sensor - useful for testing a patch without setting up a suit, for a second 
-performer, or for putting a sensor somewhere a suit will not go.
+These take data from a Pipo Motion or a phone running a sensor-streaming app, 
+over OSC, on a port you set. That makes a small wireless inertial sensor - 
+useful for testing a patch without setting up a suit, for a hand-held prop, 
+for a second performer, or for putting a sensor somewhere a suit will not go.
 
 WHAT YOU GET:
-pipo_motion gives yaw, pitch and roll as separate outlets, plus acceleration. 
-Those are Euler angles rather than a quaternion, which means they gimbal-lock 
-and are awkward to do arithmetic on - see the rotation conversions help patch 
-for why, and convert with euler_to_quaternion before doing anything but 
-displaying them.
+pipo_motion gives yaw, pitch and roll as separate outlets, acceleration, and - 
+when the sensor is set to send its quaternion - the orientation as one 
+quaternion, scalar first.
 
-The acceleration outlet is the more directly useful of the two for movement 
-work, because it does not depend on a heading and so is not subject to 
-magnetic error.
+Yaw, pitch and roll are Euler angles. They read well on a display but 
+gimbal-lock and are awkward to do arithmetic on, and for a sensor held in the 
+hand they stop matching what the hand feels as soon as it is tipped - see the 
+swing_twist help patch for why. Prefer the quaternion outlet whenever the 
+sensor can send it, and feed it to swing_twist for a hand-held reading or to 
+quaternion_relative to measure from a captured starting pose.
 
-pipo_range gives a distance, from whatever ranging sensor the phone offers.
+The acceleration outlet is directly useful for movement work because it does 
+not depend on a heading and so is not subject to magnetic error.
+
+pipo_range gives a distance, from whatever ranging sensor the device offers.
+
+THE SENSOR'S AXES:
+The Pipo Motion has z up, pitch about y and roll about x - so x is along the 
+sensor, and is the axis to name as 'twist axis' in swing_twist, with 'up axis' 
+set to z: 'swing_twist x z'. Which END of the sensor you call the front decides 
+the sign: if tipping the front up reads as negative elevation and rolling 
+right as negative twist, your front is the sensor's -x, so use 
+'swing_twist -x z'. Hold the sensor straight and press 'set neutral' on 
+swing_twist to measure from that pose rather than from magnetic north.
 
 SYNTAX:
 pipo_motion
@@ -395,7 +408,7 @@ pipo_motion
 INPUTS and PARAMETERS:
 
 port:
-The port to listen on. Set the phone to send there.
+The port to listen on. Set the sensor to send there.
 
 OUTPUTS: 
 
@@ -405,11 +418,15 @@ Orientation, as angles.
 acc:
 Acceleration.
 
+quaternion:
+Orientation as a scalar-first quaternion. Sends once all four components have 
+arrived; nothing comes out until the sensor is set to send them.
+
 dist (pipo_range):
 The distance reading.
 
 WHAT TO EXPECT OF THE DATA:
-A phone's orientation comes from the same kind of sensor fusion a suit uses, so 
+The orientation comes from the same kind of sensor fusion a suit uses, so 
 it has the same weakness: the heading depends on the magnetic field and is 
 wrong near steel. The pitch and roll come from gravity and are dependable; 
 the yaw is the one to distrust. That is the same story as the mag_offset help 
@@ -417,27 +434,28 @@ patch tells for the suit, and the same reasoning applies."""
 
 demo = [
     {'key': 'pm', 'init': 'pipo_motion', 'pos': (30, 62), 'w': 260, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'set the port the phone sends to',
+    {'key': 'c0', 'comment': True, 'text': 'set the port the sensor sends to',
      'pos': (30, 275)},
     {'key': 'f1', 'init': 'float', 'pos': (30, 315), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'f2', 'init': 'float', 'pos': (180, 315), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'f3', 'init': 'float', 'pos': (330, 315), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c1', 'comment': True, 'text': 'yaw, pitch, roll - pitch and roll are\ndependable; yaw is the magnetic one',
      'pos': (30, 370)},
-    {'key': 'pk', 'init': 'pack 3', 'pos': (30, 445), 'w': 140, 'h': 100},
-    {'key': 'eq', 'init': 'euler_to_quaternion', 'pos': (30, 560), 'w': 260, 'h': 120,
-     'props': {'degrees': True}},
-    {'key': 'c3', 'comment': True, 'text': 'convert before doing anything but showing',
-     'pos': (30, 695)},
-    {'key': 'p1', 'init': 'plot', 'pos': (330, 445), 'w': 208, 'h': 176,
+    {'key': 'st', 'init': 'swing_twist x z', 'pos': (30, 445), 'w': 300, 'h': 190,
+     'props': {'twist axis': 'x', 'up axis': 'z'}},
+    {'key': 'f4', 'init': 'float', 'pos': (30, 650), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'f5', 'init': 'float', 'pos': (180, 650), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'f6', 'init': 'float', 'pos': (330, 650), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c3', 'comment': True, 'text': 'the quaternion outlet through swing_twist:\nazimuth, elevation, and a roll that stays roll\nhowever the sensor is tipped',
+     'pos': (30, 705)},
+    {'key': 'p1', 'init': 'plot', 'pos': (360, 62), 'w': 208, 'h': 176,
      'props': PLOT(-2.0, 2.0)},
     {'key': 'c4', 'comment': True, 'text': 'acceleration needs no heading,\nso no magnetic error',
-     'pos': (330, 630)},
+     'pos': (360, 245)},
 ]
 links = [('pm', 'yaw', 'f1', ''), ('pm', 'pitch', 'f2', ''), ('pm', 'roll', 'f3', ''),
-         ('pm', 'yaw', 'pk', 'in 1'), ('pm', 'pitch', 'pk', 'in 2'),
-         ('pm', 'roll', 'pk', 'in 3'),
-         ('pk', 'out', 'eq', 'xyz rotation'),
+         ('pm', 'quaternion', 'st', 'quaternion'),
+         ('st', 'azimuth', 'f4', ''), ('st', 'elevation', 'f5', ''), ('st', 'twist', 'f6', ''),
          ('pm', 'acc', 'p1', 'y')]
-print(build('pipo_motion', 'pipo_motion - a phone as a sensor', body, demo, links,
-            demo_width=580, text_width=790, text_height=680))
+print(build('pipo_motion', 'pipo_motion - a small wireless sensor', body, demo, links,
+            demo_width=600, text_width=790, text_height=760))

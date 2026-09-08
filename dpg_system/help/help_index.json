@@ -752,6 +752,9 @@
     "quaternion_norm",
     "tracker_align"
   ],
+  "swing_twist": [
+    "swing_twist"
+  ],
   "quaternion_to_6d": [
     "quaternion_to_6d",
     "matrix_to_6d",
@@ -1457,5 +1460,8 @@
   ],
   "nemotron": [
     "nemotron"
+  ],
+  "smpl_resist": [
+    "smpl_resist"
   ]
 }
