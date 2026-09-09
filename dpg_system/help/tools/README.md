@@ -137,7 +137,13 @@ outlet. Flags any node that never sent anything or only ever sent zeros.
 
     python3 dpg_system/help/tools/smoke.py dpg_system/help/foo_help.json
 
-**What it cannot check:** the audio graph. A ~ node's signal outlets carry
+**What it cannot check:** a send that happens during the load. The taps go on
+after `load_from_file` returns, so a node that emits its state once from
+`post_load_callback` (body_proportions does) reads as "never sent" even though
+the message reached its target. Check those by hand: load the patch and inspect
+the receiving node.
+
+**Nor the audio graph. A ~ node's signal outlets carry
 samples through the compiled DSP program rather than sending messages, and
 headlessly there is no audio callback running at all, so nothing in the signal
 path moves. The tool skips signal outlets and says how many audio nodes a patch

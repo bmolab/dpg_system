@@ -206,6 +206,7 @@ body = """These draw a moving body, and the things you want to see about how it 
 THE NODES:
 
 mgl_body              a skeleton, driven by a pose
+body_proportions      per-segment length, width and depth factors for it
 mgl_body_orientation  the same, with per-joint orientation disks
 mgl_orientation_disks the disks on their own
 mgl_contact_disks     where the body is touching the ground, sized by area
@@ -217,9 +218,45 @@ data as fast as it arrives and draws the latest on each render, so the frame
 rate of the source and of the display are independent.
 
 'skeleton_mode' and 'display_mode' change what it draws - spheres at the joints, 
-limbs between them, or both. 'limb_lengths' lets you set the proportions rather 
-than taking the defaults, which matters when the pose came from a body that is 
-not the default size.
+limbs between them, or both.
+
+CHANGING THE PROPORTIONS:
+There are two layers, and they stack.
+
+'limb_lengths' takes the dict smpl_beta_editor sends and sets the BASE skeleton: 
+absolute segment lengths in metres, for a body that is not the default size.
+
+'limb_scale' multiplies whatever the base is. Each segment has three factors - 
+length, width, depth - with 1.0 meaning unchanged. Length moves the joint at the 
+far end and stretches the drawn limb; width and depth fatten it. The pelvis bowl 
+and shoulder blades keep their drawn shape under a length factor and only move 
+what hangs off them. The factors stay put when new base lengths arrive or the 
+skeleton mode changes.
+
+Send it a dict, or a message:
+
+limb_scale left_upper_arm 3.0 0.5 0.5    length, width, depth
+limb_scale upper_arm 1.2                 one value: length only, both sides
+limb_scale left_hand 2.0 2.0             two values: width and depth only
+limb_scale left 0.7                      a whole side
+limb_scale all 1.0 2.0 2.0               everything
+limb_scale reset
+
+The same messages work on the 'mgl chain in' inlet. Segment names are the 
+segment that ENDS at a joint: left_upper_leg is hip to knee. The names are 
+spine_lower, spine_mid, spine_upper, spine_to_neck, neck, head, and per side 
+hip, upper_leg, lower_leg, foot, toes, heel, shoulder_blade, collar, upper_arm, 
+lower_arm, hand, fingers.
+
+body_proportions IS THE HAND-EDITING FRONT END FOR THAT:
+One row per segment, three drag floats each. It sends the whole dict on every 
+edit and once when the patch loads, so mgl_body needs no priming - wire 
+'limb_scale' to 'limb_scale' and drag. 'symmetric' mirrors a left edit onto the 
+right row; untick it and the sides go their own way, which is how you get a 
+lopsided body on purpose. 'scales in' takes the same dict or message forms 
+listed above and sets the rows, so a preset or a patch can drive it. Each change 
+rebuilds the limb geometry, which is cheap enough to drag but not something to 
+feed at frame rate - for that, send messages straight to mgl_body.
 
 SEEING WHAT A NUMBER MEANS:
 The other four nodes exist because a value about a body is much easier to 
@@ -256,6 +293,13 @@ What to draw.
 scale / joint_radius / limb_lengths:
 The size of the body and its parts.
 
+limb_scale:
+Per-segment length, width and depth factors over the base. See above.
+
+scales in / symmetric / reset (body_proportions):
+Set every row from a dict, mirror edits across the body, or put everything 
+back to 1.0.
+
 joint_data / color:
 Per-joint values and colours - this is how you colour joints by a measurement.
 
@@ -289,6 +333,9 @@ demo = chain() + [
      'pos': (30, 1075)},
     {'key': 'i1', 'init': 'int', 'pos': (340, 660), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c2', 'comment': True, 'text': 'which joint was clicked', 'pos': (340, 710)},
+    {'key': 'bp', 'init': 'body_proportions', 'pos': (340, 760), 'w': 300, 'h': 980},
+    {'key': 'c4', 'comment': True, 'text': 'each row: length, width, depth\nuntick symmetric for a lopsided body',
+     'pos': (340, 1755)},
     {'key': 'cd', 'init': 'mgl_contact_disks', 'pos': (30, 1150), 'w': 260, 'h': 300},
     {'key': 'c3', 'comment': True, 'text': 'contacts drawn where they happen,\neach disk sized by its area',
      'pos': (30, 1465)},
@@ -296,6 +343,7 @@ demo = chain() + [
 links = CHAIN_LINKS + [
     ('lgt', 'mgl chain out', 'bd', 'mgl chain in'),
     ('bd', 'joint_id', 'i1', ''),
+    ('bp', 'limb_scale', 'bd', 'limb_scale'),
     ('bd', 'mgl chain out', 'cd', 'mgl chain in')]
 print(build('mgl_body', 'mgl_body - drawing a body, and what it is doing', body,
             demo, links, demo_width=580, text_width=820, text_height=820))

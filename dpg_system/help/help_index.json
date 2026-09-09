@@ -406,6 +406,7 @@
   ],
   "mgl_body": [
     "mgl_body",
+    "body_proportions",
     "mgl_body_orientation",
     "mgl_contact_disks",
     "mgl_orientation_disks",

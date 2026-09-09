@@ -42,6 +42,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_disk', MGLDiskNode.factory)
     Node.app.register_node('mgl_contact_disks', MGLContactDisksNode.factory)
     Node.app.register_node('mgl_body', MGLBodyNode.factory)
+    Node.app.register_node('body_proportions', BodyProportionsNode.factory)
     Node.app.register_node('mgl_surface', MGLSurfaceNode.factory)
     Node.app.register_node('mgl_line', MGLLineNode.factory)
     Node.app.register_node('mgl_text', MGLTextNode.factory)
@@ -5003,7 +5004,7 @@ class MGLEnableNode(MGLNode):
                 inner.disable(self._current_flag)
 
 
-from dpg_system.mgl_body_node import MGLBodyNode
+from dpg_system.mgl_body_node import MGLBodyNode, BodyProportionsNode
 from dpg_system.mgl_smpl_mesh_node import MGLSMPLMeshNode
 from dpg_system.mgl_smpl_heatmap_node import MGLSMPLHeatmapNode
 from dpg_system.mgl_body_orientation_node import MGLBodyOrientationNode

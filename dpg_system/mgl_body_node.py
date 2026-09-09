@@ -16,6 +16,64 @@ from dpg_system.moderngl_nodes import MGLNode
 logger = logging.getLogger(__name__)
 
 
+# Segment vocabulary for limb scaling. Each name is the segment that ENDS at the
+# named body joint: the joint's bone_translation is the offset from its parent,
+# so 'left_upper_leg' is the hip-to-knee segment and lives on the LeftKnee joint.
+LIMB_SEGMENT_TO_JOINT = {
+    'spine_lower':    t_SpinePelvis,            # pelvis -> spine1
+    'spine_mid':      t_LowerVertebrae,         # spine1 -> spine2
+    'spine_upper':    t_MidVertebrae,           # spine2 -> spine3
+    'spine_to_neck':  t_UpperVertebrae,         # spine3 -> neck base
+    'neck':           t_BaseOfSkull,            # neck base -> skull
+    'head':           t_TopOfHead,              # skull -> top of head
+    'left_hip':       t_LeftHip,                # pelvis -> hip
+    'right_hip':      t_RightHip,
+    'left_upper_leg': t_LeftKnee,               # hip -> knee
+    'right_upper_leg': t_RightKnee,
+    'left_lower_leg': t_LeftAnkle,              # knee -> ankle
+    'right_lower_leg': t_RightAnkle,
+    'left_foot':      t_LeftBallOfFoot,         # ankle -> ball of foot
+    'right_foot':     t_RightBallOfFoot,
+    'left_toes':      t_LeftToeTip,             # ball of foot -> toe tip
+    'right_toes':     t_RightToeTip,
+    'left_heel':      t_LeftHeel,               # ankle -> heel
+    'right_heel':     t_RightHeel,
+    'left_shoulder_blade': t_LeftShoulderBladeBase,   # spine -> blade base
+    'right_shoulder_blade': t_RightShoulderBladeBase,
+    'left_collar':    t_LeftShoulder,           # blade base -> shoulder
+    'right_collar':   t_RightShoulder,
+    'left_upper_arm': t_LeftElbow,              # shoulder -> elbow
+    'right_upper_arm': t_RightElbow,
+    'left_lower_arm': t_LeftWrist,              # elbow -> wrist
+    'right_lower_arm': t_RightWrist,
+    'left_hand':      t_LeftKnuckle,            # wrist -> knuckle
+    'right_hand':     t_RightKnuckle,
+    'left_fingers':   t_LeftFingerTip,          # knuckle -> finger tip
+    'right_fingers':  t_RightFingerTip,
+}
+AXIAL_SEGMENTS = ['spine_lower', 'spine_mid', 'spine_upper', 'spine_to_neck', 'neck', 'head']
+PAIRED_SEGMENTS = ['hip', 'upper_leg', 'lower_leg', 'foot', 'toes', 'heel',
+                   'shoulder_blade', 'collar', 'upper_arm', 'lower_arm', 'hand', 'fingers']
+
+# Joints whose drawn shape is custom geometry that must not be stretched along
+# its length (pelvis bowl, shoulder blades). A length factor still moves their
+# child joints; only the drawn length is left alone.
+LENGTH_EXEMPT_JOINTS = {t_SpinePelvis, t_LeftShoulderBladeBase, t_RightShoulderBladeBase}
+
+
+def limb_segment_joints(name):
+    """Resolve a segment name (sided, unsided, 'left', 'right' or 'all') to body joint indices."""
+    if name in LIMB_SEGMENT_TO_JOINT:
+        return [LIMB_SEGMENT_TO_JOINT[name]]
+    if name == 'all':
+        return list(LIMB_SEGMENT_TO_JOINT.values())
+    if name in ('left', 'right'):
+        return [j for n, j in LIMB_SEGMENT_TO_JOINT.items() if n.startswith(name + '_')]
+    if name in PAIRED_SEGMENTS:
+        return [LIMB_SEGMENT_TO_JOINT['left_' + name], LIMB_SEGMENT_TO_JOINT['right_' + name]]
+    return []
+
+
 
 class MGLBodyNode(MGLNode):
     # Centimeters to meters conversion (pelvis bone_translation is stored in cm)
@@ -66,6 +124,7 @@ class MGLBodyNode(MGLNode):
         self.joint_radius_input = self.add_input('joint_radius', widget_type='drag_float', default_value=0.1)
         self.joint_data_input = self.add_input('joint_data')
         self.limb_lengths_input = self.add_input('limb_lengths')
+        self.limb_scale_input = self.add_input('limb_scale', callback=self._on_limb_scale)
         self.skeleton_mode_input = self.add_input('skeleton_mode', widget_type='combo', default_value='shadow', callback=self._on_skeleton_mode_changed)
         self.skeleton_mode_input.widget.combo_items = ['shadow', 'smpl']
         self.use_s_curve_spine_input = self.add_input('s_curve_spine', widget_type='checkbox', default_value=True, callback=self._on_skeleton_mode_changed)
@@ -86,6 +145,13 @@ class MGLBodyNode(MGLNode):
         # Baseline translations used for Shadow mode scaling (captured from originals)
         self._baseline_translations = None
         self._gl_dirty = False
+
+        # Limb scaling is a layer over whatever the base skeleton is. _unscaled holds
+        # each joint's (bone_translation, dims) as the base left them; _limb_scales
+        # holds per-joint [length, width, depth] factors applied on top.
+        self._limb_scales = {}
+        self._unscaled = None
+        self._capture_unscaled()
 
         # GL resource handles (initialized in initialize_gl)
         self.cube_vbo = None
@@ -789,6 +855,9 @@ class MGLBodyNode(MGLNode):
 
     def _on_skeleton_mode_changed(self):
         """Re-apply limb data when skeleton mode is toggled."""
+        self._with_base(self._rebuild_base_for_mode)
+
+    def _rebuild_base_for_mode(self):
         # Restore original Shadow bone translations before re-applying
         for joint_idx, orig_bt in self._original_translations.items():
             if joint_idx < len(self.body.joints) and self.body.joints[joint_idx] is not None:
@@ -1058,6 +1127,111 @@ class MGLBodyNode(MGLNode):
                 joint.dims[0] = length
                 joint.base_dims[0] = length
 
+    # ------------------------------------------------------------------
+    #  limb scaling layer
+    # ------------------------------------------------------------------
+    def _capture_unscaled(self):
+        """Snapshot every joint's base translation and dims (the state the scales multiply)."""
+        self._unscaled = {}
+        for ji, joint in enumerate(self.body.joints):
+            if joint is not None:
+                self._unscaled[ji] = (np.array(joint.bone_translation, dtype=float).copy(),
+                                      list(joint.dims))
+
+    def _restore_unscaled(self):
+        if self._unscaled is None:
+            return
+        for ji, (trans, dims) in self._unscaled.items():
+            joint = self.body.joints[ji]
+            if joint is None:
+                continue
+            joint.bone_translation = trans.copy()
+            joint.dims[:] = list(dims)
+
+    def _with_base(self, fn):
+        """Run a base-skeleton change with the scale layer peeled off, then put it back."""
+        self._restore_unscaled()
+        fn()
+        self._capture_unscaled()
+        self._apply_limb_scales()
+
+    def _apply_limb_scales(self):
+        if self._unscaled is None:
+            return
+        for ji, (trans, dims) in self._unscaled.items():
+            joint = self.body.joints[ji]
+            if joint is None:
+                continue
+            s = self._limb_scales.get(ji)
+            if s is None:
+                joint.bone_translation = trans.copy()
+                joint.dims[:] = list(dims)
+                continue
+            joint.bone_translation = trans * s[0]
+            joint.dims[0] = dims[0] if ji in LENGTH_EXEMPT_JOINTS else dims[0] * s[0]
+            joint.dims[1] = dims[1] * s[1]
+            joint.dims[2] = dims[2] * s[2]
+        self._gl_dirty = True
+
+    def _set_limb_scale(self, name, values):
+        """values: a number (length only), [w, d] (thickness only) or [l, w, d]."""
+        joints = limb_segment_joints(str(name))
+        if not joints:
+            return False
+        if isinstance(values, np.ndarray):
+            values = values.flatten().tolist()
+        if not isinstance(values, (list, tuple)):
+            values = [values]
+        vals = [any_to_float(v) for v in values if is_number(v)]
+        if not vals:
+            return False
+        for ji in joints:
+            cur = list(self._limb_scales.get(ji, [1.0, 1.0, 1.0]))
+            if len(vals) == 1:
+                cur[0] = vals[0]
+            elif len(vals) == 2:
+                cur[1], cur[2] = vals[0], vals[1]
+            else:
+                cur = vals[:3]
+            self._limb_scales[ji] = cur
+        return True
+
+    def receive_limb_scale(self, message):
+        """Accept a scale dict {segment: l | [w, d] | [l, w, d]} or a list message
+        'limb_scale <segment> l [w d]' (the leading word is optional), or 'reset'."""
+        if isinstance(message, dict):
+            for name, values in message.items():
+                self._set_limb_scale(name, values)
+            self._apply_limb_scales()
+            return True
+        if isinstance(message, str):
+            message = [message]
+        if isinstance(message, (list, tuple)) and len(message) > 0:
+            message = list(message)
+            if isinstance(message[0], str) and message[0] == 'limb_scale':
+                message = message[1:]
+            if len(message) == 0:
+                return False
+            head = message[0]
+            if isinstance(head, str) and head == 'reset':
+                self._limb_scales = {}
+                self._apply_limb_scales()
+                return True
+            if isinstance(head, str) and len(message) > 1:
+                if self._set_limb_scale(head, message[1:]):
+                    self._apply_limb_scales()
+                    return True
+        return False
+
+    def _on_limb_scale(self):
+        data = self.limb_scale_input()
+        if data is not None:
+            self.receive_limb_scale(data)
+
+    def handle_other_messages(self, message):
+        if isinstance(message, (list, tuple)) and len(message) > 0 and message[0] == 'limb_scale':
+            self.receive_limb_scale(message)
+
     def execute(self):
         if self.pose_input.fresh_input:
             data = self.pose_input()
@@ -1071,7 +1245,7 @@ class MGLBodyNode(MGLNode):
             limb_data = self.limb_lengths_input()
             if limb_data is not None:
                 self._last_limb_data = limb_data
-                self._apply_limb_lengths(limb_data)
+                self._with_base(lambda: self._apply_limb_lengths(limb_data))
 
         # Main thread only: a pose/orientation frame arriving on a streaming
         # thread triggers execute() and can race the main-thread gl chain,
@@ -1278,3 +1452,144 @@ class MGLBodyNode(MGLNode):
         child_global = parent_mat @ rest_rot @ trans_bone @ anim_rot
         self.traverse_matrices(joint_index, child_global)
 
+
+
+class BodyProportionsNode(Node):
+    """Hand-editable per-segment scale factors for mgl_body.
+
+    One three-column row per segment: length, width, depth, each a factor on the
+    body's base proportions (1.0 = unchanged). Emits the full scale dict on any
+    edit and once after the patch loads, so mgl_body needs no priming handshake.
+    'symmetric' mirrors a left edit onto the right row and vice versa; untick it
+    and each side keeps its own values.
+    """
+    ROW_ORDER = AXIAL_SEGMENTS + [side + '_' + seg for seg in PAIRED_SEGMENTS for side in ('left', 'right')]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return BodyProportionsNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self._mirroring = False
+
+        self.set_input = self.add_input('scales in', callback=self._receive_scales)
+        self.symmetric_input = self.add_input('symmetric', widget_type='checkbox', default_value=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
+
+        self.rows = {}
+        for name in self.ROW_ORDER:
+            self.rows[name] = self.add_input(name, widget_type='drag_float_n',
+                                             default_value=[1.0, 1.0, 1.0], columns=3,
+                                             widget_width=45, callback=self._row_changed)
+        self.output = self.add_output('limb_scale')
+
+    # --- state ---
+    def _row_values(self, name):
+        val = self.rows[name]()
+        if val is None:
+            return [1.0, 1.0, 1.0]
+        vals = any_to_array(val).flatten().tolist()
+        if len(vals) == 1:
+            return [vals[0]] * 3
+        if len(vals) < 3:
+            return (vals + [1.0, 1.0, 1.0])[:3]
+        return vals[:3]
+
+    def scales(self):
+        return {name: self._row_values(name) for name in self.ROW_ORDER}
+
+    def _send_all(self):
+        self.output.send(self.scales())
+
+    @staticmethod
+    def _mirror_name(name):
+        if name.startswith('left_'):
+            return 'right_' + name[5:]
+        if name.startswith('right_'):
+            return 'left_' + name[6:]
+        return None
+
+    # --- callbacks ---
+    def _row_changed(self):
+        if self._mirroring or self.active_input is None:
+            return
+        name = self.active_input.get_label() if hasattr(self.active_input, 'get_label') else self.active_input._label
+        if name not in self.rows:
+            return
+        if self.symmetric_input():
+            other = self._mirror_name(name)
+            if other is not None:
+                self._mirroring = True
+                try:
+                    self.rows[other].set(self._row_values(name))
+                finally:
+                    self._mirroring = False
+        self._send_all()
+
+    def _receive_scales(self):
+        """A dict {segment: l | [w, d] | [l, w, d]} sets rows; unsided names set both sides."""
+        data = self.set_input()
+        if not isinstance(data, dict):
+            return
+        self._mirroring = True
+        try:
+            for key, values in data.items():
+                if isinstance(values, np.ndarray):
+                    values = values.flatten().tolist()
+                if not isinstance(values, (list, tuple)):
+                    values = [values]
+                vals = [any_to_float(v) for v in values if is_number(v)]
+                if not vals:
+                    continue
+                key = str(key)
+                if key in self.rows:
+                    targets = [key]
+                elif key in PAIRED_SEGMENTS:
+                    targets = ['left_' + key, 'right_' + key]
+                elif key in ('left', 'right'):
+                    targets = [n for n in self.ROW_ORDER if n.startswith(key + '_')]
+                elif key == 'all':
+                    targets = list(self.ROW_ORDER)
+                else:
+                    continue
+                for t in targets:
+                    cur = self._row_values(t)
+                    if len(vals) == 1:
+                        cur[0] = vals[0]
+                    elif len(vals) == 2:
+                        cur[1], cur[2] = vals[0], vals[1]
+                    else:
+                        cur = vals[:3]
+                    self.rows[t].set(cur)
+        finally:
+            self._mirroring = False
+        self._send_all()
+
+    def reset(self):
+        self._mirroring = True
+        try:
+            for row in self.rows.values():
+                row.set([1.0, 1.0, 1.0])
+        finally:
+            self._mirroring = False
+        self._send_all()
+
+    def post_load_callback(self):
+        self._send_all()
+
+    # --- presets ---
+    def get_preset_state(self):
+        return {'scales': self.scales()}
+
+    def set_preset_state(self, preset):
+        scales = preset.get('scales') if isinstance(preset, dict) else None
+        if isinstance(scales, dict):
+            self._mirroring = True
+            try:
+                for name, vals in scales.items():
+                    if name in self.rows:
+                        self.rows[name].set(list(vals))
+            finally:
+                self._mirroring = False
+            self._send_all()
