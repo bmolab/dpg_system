@@ -7,9 +7,12 @@ from dpg_system.conversion_utils import *
 from dpg_system.moderngl_base import MGLContext
 import moderngl
 
+from dpg_system.limb_scale import LimbScaleSet
+
 try:
     import torch
     import smplx
+    from dpg_system.smpl_limb_scale import SMPLLimbScaler
     SMPLX_AVAILABLE = True
 except ImportError:
     SMPLX_AVAILABLE = False
@@ -507,6 +510,8 @@ class MGLSMPLHeatmapNode(Node):
         super().__init__(label, data, args)
 
         self.smpl_model = None
+        self.scaler = None                 # SMPLLimbScaler: scaled rest mesh + forward pass
+        self.limb_scales = LimbScaleSet()  # survives a model reload
         self.faces_np = None
         self.n_verts = 0
         self.skinning_weights = None  # (V, 24) numpy
@@ -550,6 +555,8 @@ class MGLSMPLHeatmapNode(Node):
         self.trans_input = self.add_input('trans', cross_thread_latest=True)
         self.torques_input = self.add_input('torques', cross_thread_latest=True)
         self.config_input = self.add_input('config', triggers_execution=True, cross_thread_latest=True)
+        # Per-segment length/width/depth factors over the shape (see dpg_system.limb_scale)
+        self.limb_scale_input = self.add_input('limb_scale', callback=self._on_limb_scale)
 
         self.max_torque_prop = self.add_input('max torque', widget_type='drag_float',
                                                 default_value=50.0, speed=1.0)
@@ -646,6 +653,13 @@ class MGLSMPLHeatmapNode(Node):
                 output = self.smpl_model()
                 verts = output.vertices[0].cpu().numpy()
                 self.n_verts = len(verts)
+
+            # The scaler owns the posed forward pass; the muscle atlases below
+            # are built from the UNSCALED T-pose, which is right - they are
+            # per-vertex assignments and carry over to any proportions.
+            self.scaler = SMPLLimbScaler(self.smpl_model)
+            self.scaler.scales = self.limb_scales
+            self.scaler.set_betas(self.betas_tensor)
 
             # Extract skinning weights for body joints only (first 24 of 52)
             weights_full = self.smpl_model.lbs_weights.cpu().numpy()  # (V, 52)
@@ -950,25 +964,11 @@ class MGLSMPLHeatmapNode(Node):
             r_root_new = r_perm * r_root
             global_orient = r_root_new.as_rotvec().astype(np.float32)
 
-        global_orient_t = torch.tensor(global_orient, dtype=torch.float32).unsqueeze(0)
-        body_pose_t = torch.tensor(body_pose, dtype=torch.float32).unsqueeze(0)
-        transl = torch.tensor(trans, dtype=torch.float32).unsqueeze(0)
-
-        with torch.no_grad():
-            fwd_kwargs = dict(global_orient=global_orient_t, body_pose=body_pose_t, transl=transl)
-            if self.betas_tensor is not None:
-                fwd_kwargs['betas'] = self.betas_tensor
-            output = self.smpl_model(**fwd_kwargs)
-            vertices = output.vertices[0].cpu().numpy()
-            joint_positions = output.joints[0, :24].cpu().numpy()  # (24, 3)
-
-        # Correct for SMPL template offset:
-        # smplx places pelvis at (J_regressor @ v_shaped + transl),
-        # smpl_processor places pelvis at just transl.
-        # Subtract the template offset so mesh aligns with processor skeleton.
-        pelvis_offset = joint_positions[0] - trans.astype(np.float64)
-        vertices -= pelvis_offset.astype(np.float32)
-        joint_positions -= pelvis_offset
+        # The scaler reproduces the model's forward pass over the limb-scaled
+        # rest mesh, with the pelvis placed at trans (smpl_processor's
+        # convention) rather than at the regressed template pelvis.
+        vertices, joints_all = self.scaler.forward(global_orient, body_pose, trans)
+        joint_positions = joints_all[:24].astype(np.float64)  # (24, 3)
 
         # Compute per-joint global rotation matrices from pose parameters
         from scipy.spatial.transform import Rotation as R_scipy
@@ -2472,6 +2472,28 @@ class MGLSMPLHeatmapNode(Node):
             if self._load_model():
                 self.vao = None
                 self.vbo = None
+                self._repose_last()
+
+    def _repose_last(self):
+        """Re-run the forward pass with the last pose so a shape change shows at once."""
+        if self.last_pose is None:
+            return
+        result = self._run_forward(self.last_pose, self.last_trans)
+        if result is not None:
+            self.last_vertices, self.last_joint_positions, self.last_global_rotations = result
+
+    def receive_limb_scale(self, message):
+        if not self.limb_scales.apply_message(message):
+            return False
+        if self.scaler is not None:
+            self.scaler._rest_cache = None
+            self._repose_last()
+        return True
+
+    def _on_limb_scale(self):
+        data = self.limb_scale_input()
+        if data is not None:
+            self.receive_limb_scale(data)
 
     def execute(self):
         if self.config_input.fresh_input:
@@ -2513,6 +2535,8 @@ class MGLSMPLHeatmapNode(Node):
                 do_draw = True
             elif isinstance(msg, list) and len(msg) > 0 and msg[0] == 'draw':
                 do_draw = True
+            if not do_draw and LimbScaleSet.is_limb_scale_message(msg):
+                self.receive_limb_scale(msg)
             if do_draw:
                 self.draw()
                 self.gl_output.send('draw')

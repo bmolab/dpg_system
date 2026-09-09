@@ -12,6 +12,8 @@ from dpg_system.matrix_utils import *
 from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount
 from dpg_system.body_defs import *
 from dpg_system.moderngl_nodes import MGLNode
+from dpg_system.limb_scale import (LimbScaleSet, AXIAL_SEGMENTS, PAIRED_SEGMENTS, SEGMENT_NAMES,
+                                   expand_segment_name, coerce_factors, merge_factors)
 
 logger = logging.getLogger(__name__)
 
@@ -51,28 +53,10 @@ LIMB_SEGMENT_TO_JOINT = {
     'left_fingers':   t_LeftFingerTip,          # knuckle -> finger tip
     'right_fingers':  t_RightFingerTip,
 }
-AXIAL_SEGMENTS = ['spine_lower', 'spine_mid', 'spine_upper', 'spine_to_neck', 'neck', 'head']
-PAIRED_SEGMENTS = ['hip', 'upper_leg', 'lower_leg', 'foot', 'toes', 'heel',
-                   'shoulder_blade', 'collar', 'upper_arm', 'lower_arm', 'hand', 'fingers']
-
 # Joints whose drawn shape is custom geometry that must not be stretched along
 # its length (pelvis bowl, shoulder blades). A length factor still moves their
 # child joints; only the drawn length is left alone.
 LENGTH_EXEMPT_JOINTS = {t_SpinePelvis, t_LeftShoulderBladeBase, t_RightShoulderBladeBase}
-
-
-def limb_segment_joints(name):
-    """Resolve a segment name (sided, unsided, 'left', 'right' or 'all') to body joint indices."""
-    if name in LIMB_SEGMENT_TO_JOINT:
-        return [LIMB_SEGMENT_TO_JOINT[name]]
-    if name == 'all':
-        return list(LIMB_SEGMENT_TO_JOINT.values())
-    if name in ('left', 'right'):
-        return [j for n, j in LIMB_SEGMENT_TO_JOINT.items() if n.startswith(name + '_')]
-    if name in PAIRED_SEGMENTS:
-        return [LIMB_SEGMENT_TO_JOINT['left_' + name], LIMB_SEGMENT_TO_JOINT['right_' + name]]
-    return []
-
 
 
 class MGLBodyNode(MGLNode):
@@ -149,7 +133,7 @@ class MGLBodyNode(MGLNode):
         # Limb scaling is a layer over whatever the base skeleton is. _unscaled holds
         # each joint's (bone_translation, dims) as the base left them; _limb_scales
         # holds per-joint [length, width, depth] factors applied on top.
-        self._limb_scales = {}
+        self._limb_scales = LimbScaleSet()
         self._unscaled = None
         self._capture_unscaled()
 
@@ -1158,12 +1142,13 @@ class MGLBodyNode(MGLNode):
     def _apply_limb_scales(self):
         if self._unscaled is None:
             return
+        by_joint = {ji: self._limb_scales.get(name) for name, ji in LIMB_SEGMENT_TO_JOINT.items()}
         for ji, (trans, dims) in self._unscaled.items():
             joint = self.body.joints[ji]
             if joint is None:
                 continue
-            s = self._limb_scales.get(ji)
-            if s is None:
+            s = by_joint.get(ji)
+            if s is None or s == [1.0, 1.0, 1.0]:
                 joint.bone_translation = trans.copy()
                 joint.dims[:] = list(dims)
                 continue
@@ -1173,54 +1158,11 @@ class MGLBodyNode(MGLNode):
             joint.dims[2] = dims[2] * s[2]
         self._gl_dirty = True
 
-    def _set_limb_scale(self, name, values):
-        """values: a number (length only), [w, d] (thickness only) or [l, w, d]."""
-        joints = limb_segment_joints(str(name))
-        if not joints:
-            return False
-        if isinstance(values, np.ndarray):
-            values = values.flatten().tolist()
-        if not isinstance(values, (list, tuple)):
-            values = [values]
-        vals = [any_to_float(v) for v in values if is_number(v)]
-        if not vals:
-            return False
-        for ji in joints:
-            cur = list(self._limb_scales.get(ji, [1.0, 1.0, 1.0]))
-            if len(vals) == 1:
-                cur[0] = vals[0]
-            elif len(vals) == 2:
-                cur[1], cur[2] = vals[0], vals[1]
-            else:
-                cur = vals[:3]
-            self._limb_scales[ji] = cur
-        return True
-
     def receive_limb_scale(self, message):
-        """Accept a scale dict {segment: l | [w, d] | [l, w, d]} or a list message
-        'limb_scale <segment> l [w d]' (the leading word is optional), or 'reset'."""
-        if isinstance(message, dict):
-            for name, values in message.items():
-                self._set_limb_scale(name, values)
+        """Accept any limb_scale message form (see dpg_system.limb_scale)."""
+        if self._limb_scales.apply_message(message):
             self._apply_limb_scales()
             return True
-        if isinstance(message, str):
-            message = [message]
-        if isinstance(message, (list, tuple)) and len(message) > 0:
-            message = list(message)
-            if isinstance(message[0], str) and message[0] == 'limb_scale':
-                message = message[1:]
-            if len(message) == 0:
-                return False
-            head = message[0]
-            if isinstance(head, str) and head == 'reset':
-                self._limb_scales = {}
-                self._apply_limb_scales()
-                return True
-            if isinstance(head, str) and len(message) > 1:
-                if self._set_limb_scale(head, message[1:]):
-                    self._apply_limb_scales()
-                    return True
         return False
 
     def _on_limb_scale(self):
@@ -1229,7 +1171,7 @@ class MGLBodyNode(MGLNode):
             self.receive_limb_scale(data)
 
     def handle_other_messages(self, message):
-        if isinstance(message, (list, tuple)) and len(message) > 0 and message[0] == 'limb_scale':
+        if LimbScaleSet.is_limb_scale_message(message):
             self.receive_limb_scale(message)
 
     def execute(self):
@@ -1463,7 +1405,7 @@ class BodyProportionsNode(Node):
     'symmetric' mirrors a left edit onto the right row and vice versa; untick it
     and each side keeps its own values.
     """
-    ROW_ORDER = AXIAL_SEGMENTS + [side + '_' + seg for seg in PAIRED_SEGMENTS for side in ('left', 'right')]
+    ROW_ORDER = list(SEGMENT_NAMES)
 
     @staticmethod
     def factory(name, data, args=None):
@@ -1535,33 +1477,11 @@ class BodyProportionsNode(Node):
         self._mirroring = True
         try:
             for key, values in data.items():
-                if isinstance(values, np.ndarray):
-                    values = values.flatten().tolist()
-                if not isinstance(values, (list, tuple)):
-                    values = [values]
-                vals = [any_to_float(v) for v in values if is_number(v)]
+                vals = coerce_factors(values)
                 if not vals:
                     continue
-                key = str(key)
-                if key in self.rows:
-                    targets = [key]
-                elif key in PAIRED_SEGMENTS:
-                    targets = ['left_' + key, 'right_' + key]
-                elif key in ('left', 'right'):
-                    targets = [n for n in self.ROW_ORDER if n.startswith(key + '_')]
-                elif key == 'all':
-                    targets = list(self.ROW_ORDER)
-                else:
-                    continue
-                for t in targets:
-                    cur = self._row_values(t)
-                    if len(vals) == 1:
-                        cur[0] = vals[0]
-                    elif len(vals) == 2:
-                        cur[1], cur[2] = vals[0], vals[1]
-                    else:
-                        cur = vals[:3]
-                    self.rows[t].set(cur)
+                for t in expand_segment_name(key):
+                    self.rows[t].set(merge_factors(self._row_values(t), vals))
         finally:
             self._mirroring = False
         self._send_all()

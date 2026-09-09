@@ -23,6 +23,27 @@ colour - but the pair is the arrangement they were built for.
 Both need the same pose and trans that drive any SMPL body, and the same
 'config' for the shape.
 
+CHANGING THE PROPORTIONS:
+Both take 'limb_scale': per-segment length, width and depth factors over the
+shape, 1.0 meaning unchanged. It is the same vocabulary mgl_body uses, so one
+body_proportions node can drive the skeleton, the mesh and the heatmap at once -
+wire its 'limb_scale' outlet to each. Length moves the joint at the far end and
+stretches the flesh along the bone; width fattens it across the body, depth
+front to back. A dict or a message, on the inlet or on the chain:
+
+limb_scale left_upper_arm 3.0 0.5 0.5    length, width, depth
+limb_scale upper_leg 1.2                 one value: length only, both sides
+limb_scale left 0.7                      a whole side
+limb_scale reset
+
+The scaling is done in the rest pose, before the body is posed, so a stretched
+limb's children move with it but are never sheared. Its skin is the same skin,
+stretched, so the blend at the joints spreads with extreme values - expressive,
+not anatomical. Hips and shoulder blades share their flesh with the spine and
+take length only; toes and the head have no joint beyond them and take shape
+only; heels have no SMPL joint and are ignored. Display only: smpl_torque and
+the ragdoll keep the beta-derived limb lengths.
+
 A NOTE ON THE PORT NAMES:
 mgl_smpl_heatmap labels its chain ports 'gl chain in' and 'gl chain out' where
 every other mgl node says 'mgl chain'. It IS an mgl node - the naming is a
@@ -80,6 +101,9 @@ The body: its joint rotations, where it is, and its shape.
 torques:
 Per-joint torque, for the heatmap.
 
+limb_scale:
+Per-segment length, width and depth factors over the shape. See above.
+
 max torque:
 What counts as full scale. Set this from the torque you actually see.
 
@@ -131,6 +155,9 @@ demo = [
      'props': {'color': 'viridis', 'width': 200, 'height': 100, 'sample count': 24,
                'min y': 0.0, 'max y': 1.0, 'update_mode': 'heat_map',
                'number format': '%.2f'}},
+    {'key': 'bp', 'init': 'body_proportions', 'pos': (760, 62), 'w': 300, 'h': 980},
+    {'key': 'c10', 'comment': True, 'text': 'each row: length, width, depth\ndrives the mesh and the heatmap together',
+     'pos': (760, 1060)},
     {'key': 'c9', 'comment': True, 'text': 'the muscle values come back out, so\nwhat is on screen can drive a sound\nwithout computing it twice\nthe muscle weight modes are expressive,\nnot anatomical - a fixed axis per muscle\ncannot decompose arm elevation',
      'pos': (30, 955)},
 ]
@@ -140,6 +167,8 @@ links = [('take', 'joint_data', 'tq', 'pose'),
          ('ctx', 'mgl_chain', 'mesh', 'mgl chain in'),
          ('mesh', 'mgl chain out', 'hm', 'gl chain in'),
          ('tq', 'torque_vectors', 'hm', 'torques'),
+         ('bp', 'limb_scale', 'mesh', 'limb_scale'),
+         ('bp', 'limb_scale', 'hm', 'limb_scale'),
          ('hm', 'muscle activations', 'hmap', 'y')]
 print(build('mgl_smpl_mesh', 'mgl SMPL body - the figure and its effort', body,
-            demo, links, demo_width=780, text_width=810, text_height=770))
+            demo, links, demo_width=1100, text_width=810, text_height=900))

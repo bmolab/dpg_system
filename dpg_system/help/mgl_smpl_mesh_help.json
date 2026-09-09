@@ -1,11 +1,11 @@
 {
     "height": 1224,
-    "width": 1754,
+    "width": 2234,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 866,
     "name": "mgl_smpl_mesh_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_smpl_mesh_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 896,
+            "position_x": 1376,
             "position_y": 45,
             "width": 818,
-            "height": 786,
+            "height": 916,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Drawing a body, and painting its effort onto the skin.\n\nTHE NODES:\n\nmgl_smpl_mesh      the SMPL body as a solid mesh\nmgl_smpl_heatmap   the same body, translucent, coloured by torque\n\nTHEY ARE MEANT TO BE STACKED:\nThe heatmap is designed to sit ON TOP of the mesh. Put mgl_smpl_mesh in the\nchain first to draw the body, then mgl_smpl_heatmap after it to lay a\ntranslucent coloured skin over the same pose. You see the figure and the effort\nat once.\n\nEither works alone - the heatmap on its own gives a ghostly body made only of\ncolour - but the pair is the arrangement they were built for.\n\nBoth need the same pose and trans that drive any SMPL body, and the same\n'config' for the shape.\n\nA NOTE ON THE PORT NAMES:\nmgl_smpl_heatmap labels its chain ports 'gl chain in' and 'gl chain out' where\nevery other mgl node says 'mgl chain'. It IS an mgl node - the naming is a\nleftover, not a sign that it belongs to the older gl system. Wire it into an mgl\nchain like anything else.\n\nWHAT THE COLOUR MEANS:\nPer-joint torque is spread onto the vertices using the same skinning weights\nthat move the mesh, so the colour lands where the muscle would be rather than in\na ball at the joint. 'max torque' sets what counts as full scale - the value the\ntop of the colour range corresponds to - and getting it wrong is the usual\nreason a heatmap reads as entirely blue or entirely red.\n\n'color mode' picks the palette: heatmap for blue-to-red, viridis for something\neven and readable, grayscale when the colour is carrying something else.\n\n'lighting' chooses whether the overlay is lit like a surface or glows regardless\nof the light, and 'opacity' and 'min opacity' set how much of the body beneath\nshows through.\n\n'weight mode' IS THE INTERESTING ONE, AND IT IS UNSETTLED:\nIt chooses how joint torque becomes vertex colour. 'skinning' is the plain\nanswer - use the mesh's own weights. The 'muscle' modes instead try to place the\ncolour where a particular muscle would be, and the numbered versions are\nsuccessive attempts at that.\n\nBe careful how much you read into them. The muscle model is a fixed direction\nper muscle multiplied by the joint torque, which is right for some movements and\nwrong for others - it tracks facing well and mis-tracks arm elevation, where a\nsingle fixed axis cannot decompose the torque properly. Treat the muscle modes\nas an expressive rendering rather than an anatomical measurement.\n\n'iso' and 'proximity' modes spread by distance rather than by muscle, which is\nblunter and more predictable.\n\n'muscle activations' COMES BACK OUT:\nThe node also sends the per-muscle values it computed, so whatever is on screen\ncan drive something else - a sound, a store, a plot - without recomputing it.\n\nSYNTAX:\nmgl_smpl_mesh\nmgl_smpl_heatmap\n\nEXAMPLE:\nmgl_smpl_mesh\n\nINPUTS and PARAMETERS:\n\nmgl chain in / gl chain in:\nThe scene chain. Both are the same thing despite the names.\n\npose / trans / config:\nThe body: its joint rotations, where it is, and its shape.\n\ntorques:\nPer-joint torque, for the heatmap.\n\nmax torque:\nWhat counts as full scale. Set this from the torque you actually see.\n\nmode / cull / point_size / round / texture:\nHow the mesh is drawn.\n\ncolor mode / lighting / ambient / opacity / min opacity:\nHow the overlay looks.\n\nweight mode / spread / edge threshold / dir bias:\nHow torque is spread onto the skin.\n\ngender / model_path / up_axis:\nWhich SMPL model, and which way is up.\n\nOUTPUTS: \n\nmgl chain out / gl chain out:\nThe chain, to continue it.\n\nmuscle activations:\nThe per-muscle values, for anything else that wants them.\n\nRELATED:\nsmpl_torque produces the torques.\ntorque_gang if you want groups of joints as numbers rather than colour on a\nbody.\nThe mgl pages for the rest of the scene chain.",
+                    "value": "Drawing a body, and painting its effort onto the skin.\n\nTHE NODES:\n\nmgl_smpl_mesh      the SMPL body as a solid mesh\nmgl_smpl_heatmap   the same body, translucent, coloured by torque\n\nTHEY ARE MEANT TO BE STACKED:\nThe heatmap is designed to sit ON TOP of the mesh. Put mgl_smpl_mesh in the\nchain first to draw the body, then mgl_smpl_heatmap after it to lay a\ntranslucent coloured skin over the same pose. You see the figure and the effort\nat once.\n\nEither works alone - the heatmap on its own gives a ghostly body made only of\ncolour - but the pair is the arrangement they were built for.\n\nBoth need the same pose and trans that drive any SMPL body, and the same\n'config' for the shape.\n\nCHANGING THE PROPORTIONS:\nBoth take 'limb_scale': per-segment length, width and depth factors over the\nshape, 1.0 meaning unchanged. It is the same vocabulary mgl_body uses, so one\nbody_proportions node can drive the skeleton, the mesh and the heatmap at once -\nwire its 'limb_scale' outlet to each. Length moves the joint at the far end and\nstretches the flesh along the bone; width fattens it across the body, depth\nfront to back. A dict or a message, on the inlet or on the chain:\n\nlimb_scale left_upper_arm 3.0 0.5 0.5    length, width, depth\nlimb_scale upper_leg 1.2                 one value: length only, both sides\nlimb_scale left 0.7                      a whole side\nlimb_scale reset\n\nThe scaling is done in the rest pose, before the body is posed, so a stretched\nlimb's children move with it but are never sheared. Its skin is the same skin,\nstretched, so the blend at the joints spreads with extreme values - expressive,\nnot anatomical. Hips and shoulder blades share their flesh with the spine and\ntake length only; toes and the head have no joint beyond them and take shape\nonly; heels have no SMPL joint and are ignored. Display only: smpl_torque and\nthe ragdoll keep the beta-derived limb lengths.\n\nA NOTE ON THE PORT NAMES:\nmgl_smpl_heatmap labels its chain ports 'gl chain in' and 'gl chain out' where\nevery other mgl node says 'mgl chain'. It IS an mgl node - the naming is a\nleftover, not a sign that it belongs to the older gl system. Wire it into an mgl\nchain like anything else.\n\nWHAT THE COLOUR MEANS:\nPer-joint torque is spread onto the vertices using the same skinning weights\nthat move the mesh, so the colour lands where the muscle would be rather than in\na ball at the joint. 'max torque' sets what counts as full scale - the value the\ntop of the colour range corresponds to - and getting it wrong is the usual\nreason a heatmap reads as entirely blue or entirely red.\n\n'color mode' picks the palette: heatmap for blue-to-red, viridis for something\neven and readable, grayscale when the colour is carrying something else.\n\n'lighting' chooses whether the overlay is lit like a surface or glows regardless\nof the light, and 'opacity' and 'min opacity' set how much of the body beneath\nshows through.\n\n'weight mode' IS THE INTERESTING ONE, AND IT IS UNSETTLED:\nIt chooses how joint torque becomes vertex colour. 'skinning' is the plain\nanswer - use the mesh's own weights. The 'muscle' modes instead try to place the\ncolour where a particular muscle would be, and the numbered versions are\nsuccessive attempts at that.\n\nBe careful how much you read into them. The muscle model is a fixed direction\nper muscle multiplied by the joint torque, which is right for some movements and\nwrong for others - it tracks facing well and mis-tracks arm elevation, where a\nsingle fixed axis cannot decompose the torque properly. Treat the muscle modes\nas an expressive rendering rather than an anatomical measurement.\n\n'iso' and 'proximity' modes spread by distance rather than by muscle, which is\nblunter and more predictable.\n\n'muscle activations' COMES BACK OUT:\nThe node also sends the per-muscle values it computed, so whatever is on screen\ncan drive something else - a sound, a store, a plot - without recomputing it.\n\nSYNTAX:\nmgl_smpl_mesh\nmgl_smpl_heatmap\n\nEXAMPLE:\nmgl_smpl_mesh\n\nINPUTS and PARAMETERS:\n\nmgl chain in / gl chain in:\nThe scene chain. Both are the same thing despite the names.\n\npose / trans / config:\nThe body: its joint rotations, where it is, and its shape.\n\ntorques:\nPer-joint torque, for the heatmap.\n\nlimb_scale:\nPer-segment length, width and depth factors over the shape. See above.\n\nmax torque:\nWhat counts as full scale. Set this from the torque you actually see.\n\nmode / cull / point_size / round / texture:\nHow the mesh is drawn.\n\ncolor mode / lighting / ambient / opacity / min opacity:\nHow the overlay looks.\n\nweight mode / spread / edge threshold / dir bias:\nHow torque is spread onto the skin.\n\ngender / model_path / up_axis:\nWhich SMPL model, and which way is up.\n\nOUTPUTS: \n\nmgl chain out / gl chain out:\nThe chain, to continue it.\n\nmuscle activations:\nThe per-muscle values, for anything else that wants them.\n\nRELATED:\nsmpl_torque produces the torques.\ntorque_gang if you want groups of joints as numbers rather than colour on a\nbody.\nThe mgl pages for the rest of the scene chain.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 770,
+                    "value": 900,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Drawing a body, and painting its effort onto the skin.\n\nTHE NODES:\n\nmgl_smpl_mesh      the SMPL body as a solid mesh\nmgl_smpl_heatmap   the same body, translucent, coloured by torque\n\nTHEY ARE MEANT TO BE STACKED:\nThe heatmap is designed to sit ON TOP of the mesh. Put mgl_smpl_mesh in the\nchain first to draw the body, then mgl_smpl_heatmap after it to lay a\ntranslucent coloured skin over the same pose. You see the figure and the effort\nat once.\n\nEither works alone - the heatmap on its own gives a ghostly body made only of\ncolour - but the pair is the arrangement they were built for.\n\nBoth need the same pose and trans that drive any SMPL body, and the same\n'config' for the shape.\n\nA NOTE ON THE PORT NAMES:\nmgl_smpl_heatmap labels its chain ports 'gl chain in' and 'gl chain out' where\nevery other mgl node says 'mgl chain'. It IS an mgl node - the naming is a\nleftover, not a sign that it belongs to the older gl system. Wire it into an mgl\nchain like anything else.\n\nWHAT THE COLOUR MEANS:\nPer-joint torque is spread onto the vertices using the same skinning weights\nthat move the mesh, so the colour lands where the muscle would be rather than in\na ball at the joint. 'max torque' sets what counts as full scale - the value the\ntop of the colour range corresponds to - and getting it wrong is the usual\nreason a heatmap reads as entirely blue or entirely red.\n\n'color mode' picks the palette: heatmap for blue-to-red, viridis for something\neven and readable, grayscale when the colour is carrying something else.\n\n'lighting' chooses whether the overlay is lit like a surface or glows regardless\nof the light, and 'opacity' and 'min opacity' set how much of the body beneath\nshows through.\n\n'weight mode' IS THE INTERESTING ONE, AND IT IS UNSETTLED:\nIt chooses how joint torque becomes vertex colour. 'skinning' is the plain\nanswer - use the mesh's own weights. The 'muscle' modes instead try to place the\ncolour where a particular muscle would be, and the numbered versions are\nsuccessive attempts at that.\n\nBe careful how much you read into them. The muscle model is a fixed direction\nper muscle multiplied by the joint torque, which is right for some movements and\nwrong for others - it tracks facing well and mis-tracks arm elevation, where a\nsingle fixed axis cannot decompose the torque properly. Treat the muscle modes\nas an expressive rendering rather than an anatomical measurement.\n\n'iso' and 'proximity' modes spread by distance rather than by muscle, which is\nblunter and more predictable.\n\n'muscle activations' COMES BACK OUT:\nThe node also sends the per-muscle values it computed, so whatever is on screen\ncan drive something else - a sound, a store, a plot - without recomputing it.\n\nSYNTAX:\nmgl_smpl_mesh\nmgl_smpl_heatmap\n\nEXAMPLE:\nmgl_smpl_mesh\n\nINPUTS and PARAMETERS:\n\nmgl chain in / gl chain in:\nThe scene chain. Both are the same thing despite the names.\n\npose / trans / config:\nThe body: its joint rotations, where it is, and its shape.\n\ntorques:\nPer-joint torque, for the heatmap.\n\nmax torque:\nWhat counts as full scale. Set this from the torque you actually see.\n\nmode / cull / point_size / round / texture:\nHow the mesh is drawn.\n\ncolor mode / lighting / ambient / opacity / min opacity:\nHow the overlay looks.\n\nweight mode / spread / edge threshold / dir bias:\nHow torque is spread onto the skin.\n\ngender / model_path / up_axis:\nWhich SMPL model, and which way is up.\n\nOUTPUTS: \n\nmgl chain out / gl chain out:\nThe chain, to continue it.\n\nmuscle activations:\nThe per-muscle values, for anything else that wants them.\n\nRELATED:\nsmpl_torque produces the torques.\ntorque_gang if you want groups of joints as numbers rather than colour on a\nbody.\nThe mgl pages for the rest of the scene chain."
+            "text": "Drawing a body, and painting its effort onto the skin.\n\nTHE NODES:\n\nmgl_smpl_mesh      the SMPL body as a solid mesh\nmgl_smpl_heatmap   the same body, translucent, coloured by torque\n\nTHEY ARE MEANT TO BE STACKED:\nThe heatmap is designed to sit ON TOP of the mesh. Put mgl_smpl_mesh in the\nchain first to draw the body, then mgl_smpl_heatmap after it to lay a\ntranslucent coloured skin over the same pose. You see the figure and the effort\nat once.\n\nEither works alone - the heatmap on its own gives a ghostly body made only of\ncolour - but the pair is the arrangement they were built for.\n\nBoth need the same pose and trans that drive any SMPL body, and the same\n'config' for the shape.\n\nCHANGING THE PROPORTIONS:\nBoth take 'limb_scale': per-segment length, width and depth factors over the\nshape, 1.0 meaning unchanged. It is the same vocabulary mgl_body uses, so one\nbody_proportions node can drive the skeleton, the mesh and the heatmap at once -\nwire its 'limb_scale' outlet to each. Length moves the joint at the far end and\nstretches the flesh along the bone; width fattens it across the body, depth\nfront to back. A dict or a message, on the inlet or on the chain:\n\nlimb_scale left_upper_arm 3.0 0.5 0.5    length, width, depth\nlimb_scale upper_leg 1.2                 one value: length only, both sides\nlimb_scale left 0.7                      a whole side\nlimb_scale reset\n\nThe scaling is done in the rest pose, before the body is posed, so a stretched\nlimb's children move with it but are never sheared. Its skin is the same skin,\nstretched, so the blend at the joints spreads with extreme values - expressive,\nnot anatomical. Hips and shoulder blades share their flesh with the spine and\ntake length only; toes and the head have no joint beyond them and take shape\nonly; heels have no SMPL joint and are ignored. Display only: smpl_torque and\nthe ragdoll keep the beta-derived limb lengths.\n\nA NOTE ON THE PORT NAMES:\nmgl_smpl_heatmap labels its chain ports 'gl chain in' and 'gl chain out' where\nevery other mgl node says 'mgl chain'. It IS an mgl node - the naming is a\nleftover, not a sign that it belongs to the older gl system. Wire it into an mgl\nchain like anything else.\n\nWHAT THE COLOUR MEANS:\nPer-joint torque is spread onto the vertices using the same skinning weights\nthat move the mesh, so the colour lands where the muscle would be rather than in\na ball at the joint. 'max torque' sets what counts as full scale - the value the\ntop of the colour range corresponds to - and getting it wrong is the usual\nreason a heatmap reads as entirely blue or entirely red.\n\n'color mode' picks the palette: heatmap for blue-to-red, viridis for something\neven and readable, grayscale when the colour is carrying something else.\n\n'lighting' chooses whether the overlay is lit like a surface or glows regardless\nof the light, and 'opacity' and 'min opacity' set how much of the body beneath\nshows through.\n\n'weight mode' IS THE INTERESTING ONE, AND IT IS UNSETTLED:\nIt chooses how joint torque becomes vertex colour. 'skinning' is the plain\nanswer - use the mesh's own weights. The 'muscle' modes instead try to place the\ncolour where a particular muscle would be, and the numbered versions are\nsuccessive attempts at that.\n\nBe careful how much you read into them. The muscle model is a fixed direction\nper muscle multiplied by the joint torque, which is right for some movements and\nwrong for others - it tracks facing well and mis-tracks arm elevation, where a\nsingle fixed axis cannot decompose the torque properly. Treat the muscle modes\nas an expressive rendering rather than an anatomical measurement.\n\n'iso' and 'proximity' modes spread by distance rather than by muscle, which is\nblunter and more predictable.\n\n'muscle activations' COMES BACK OUT:\nThe node also sends the per-muscle values it computed, so whatever is on screen\ncan drive something else - a sound, a store, a plot - without recomputing it.\n\nSYNTAX:\nmgl_smpl_mesh\nmgl_smpl_heatmap\n\nEXAMPLE:\nmgl_smpl_mesh\n\nINPUTS and PARAMETERS:\n\nmgl chain in / gl chain in:\nThe scene chain. Both are the same thing despite the names.\n\npose / trans / config:\nThe body: its joint rotations, where it is, and its shape.\n\ntorques:\nPer-joint torque, for the heatmap.\n\nlimb_scale:\nPer-segment length, width and depth factors over the shape. See above.\n\nmax torque:\nWhat counts as full scale. Set this from the torque you actually see.\n\nmode / cull / point_size / round / texture:\nHow the mesh is drawn.\n\ncolor mode / lighting / ambient / opacity / min opacity:\nHow the overlay looks.\n\nweight mode / spread / edge threshold / dir bias:\nHow torque is spread onto the skin.\n\ngender / model_path / up_axis:\nWhich SMPL model, and which way is up.\n\nOUTPUTS: \n\nmgl chain out / gl chain out:\nThe chain, to continue it.\n\nmuscle activations:\nThe per-muscle values, for anything else that wants them.\n\nRELATED:\nsmpl_torque produces the torques.\ntorque_gang if you want groups of joints as numbers rather than colour on a\nbody.\nThe mgl pages for the rest of the scene chain."
         },
         "3": {
             "name": "smpl_take",
@@ -120,7 +120,7 @@
             "init": "comment a pose, and the torque it implies",
             "name": "comment",
             "id": 422,
-            "position_x": 580,
+            "position_x": 1060,
             "position_y": 600,
             "width": 211,
             "height": 30,
@@ -159,7 +159,7 @@
             "position_x": 400,
             "position_y": 285,
             "width": 154,
-            "height": 210,
+            "height": 224,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -169,7 +169,7 @@
             "init": "comment the solid body, first in the chain",
             "name": "comment",
             "id": 533,
-            "position_x": 580,
+            "position_x": 1060,
             "position_y": 540,
             "width": 217,
             "height": 30,
@@ -196,7 +196,7 @@
             "position_x": 400,
             "position_y": 590,
             "width": 154,
-            "height": 210,
+            "height": 224,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -206,7 +206,7 @@
             "name": "text_block",
             "id": 607,
             "annotation": true,
-            "position_x": 580,
+            "position_x": 1060,
             "position_y": 1100,
             "width": 286,
             "height": 64,
@@ -246,7 +246,7 @@
             "name": "text_block",
             "id": 644,
             "annotation": true,
-            "position_x": 580,
+            "position_x": 1060,
             "position_y": 645,
             "width": 274,
             "height": 52,
@@ -336,10 +336,62 @@
             }
         },
         "13": {
-            "name": "text_block",
+            "name": "body_proportions",
             "id": 718,
+            "position_x": 760,
+            "position_y": 62,
+            "width": 274,
+            "height": 490,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
             "annotation": true,
-            "position_x": 580,
+            "position_x": 1060,
+            "position_y": 1060,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "each row: length, width, depth\ndrives the mesh and the heatmap together",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "each row: length, width, depth\ndrives the mesh and the heatmap together"
+        },
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 1060,
             "position_y": 955,
             "width": 280,
             "height": 88,
@@ -375,9 +427,9 @@
             },
             "text": "the muscle values come back out, so\nwhat is on screen can drive a sound\nwithout computing it twice\nthe muscle weight modes are expressive,\nnot anatomical - a fixed axis per muscle\ncannot decompose arm elevation"
         },
-        "14": {
+        "16": {
             "name": "close",
-            "id": 755,
+            "id": 829,
             "position_x": 24,
             "position_y": 975,
             "width": 88,
@@ -456,6 +508,26 @@
             "dest_input_name": "torques"
         },
         "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "limb_scale",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "limb_scale"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "limb_scale",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "limb_scale"
+        },
+        "8": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,

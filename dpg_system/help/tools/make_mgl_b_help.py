@@ -251,7 +251,8 @@ lower_arm, hand, fingers.
 body_proportions IS THE HAND-EDITING FRONT END FOR THAT:
 One row per segment, three drag floats each. It sends the whole dict on every 
 edit and once when the patch loads, so mgl_body needs no priming - wire 
-'limb_scale' to 'limb_scale' and drag. 'symmetric' mirrors a left edit onto the 
+'limb_scale' to 'limb_scale' and drag. mgl_smpl_mesh and mgl_smpl_heatmap take 
+the same inlet, so the one node can drive the skeleton and the skin together. 'symmetric' mirrors a left edit onto the 
 right row; untick it and the sides go their own way, which is how you get a 
 lopsided body on purpose. 'scales in' takes the same dict or message forms 
 listed above and sets the rows, so a preset or a patch can drive it. Each change 

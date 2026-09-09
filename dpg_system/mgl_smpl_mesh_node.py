@@ -5,10 +5,12 @@ from dpg_system.conversion_utils import *
 from dpg_system.moderngl_base import MGLContext
 import moderngl
 from dpg_system.moderngl_nodes import MGLShapeNode
+from dpg_system.limb_scale import LimbScaleSet
 
 try:
     import torch
     import smplx
+    from dpg_system.smpl_limb_scale import SMPLLimbScaler
     SMPLX_AVAILABLE = True
 except ImportError:
     SMPLX_AVAILABLE = False
@@ -34,6 +36,8 @@ class MGLSMPLMeshNode(MGLShapeNode):
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
         self.smpl_model = None
+        self.scaler = None                 # SMPLLimbScaler: scaled rest mesh + forward pass
+        self.limb_scales = LimbScaleSet()  # survives a model reload
         self.faces_np = None
         self.n_verts = 0
         self.n_faces = 0
@@ -61,6 +65,8 @@ class MGLSMPLMeshNode(MGLShapeNode):
         self.up_axis_prop.widget.combo_items = ['Y', 'Z']
         # Config input: dict with {gender, betas, mocap_framerate} from NPZ
         self.config_input = self.add_input('config', triggers_execution=True, cross_thread_latest=True)
+        # Per-segment length/width/depth factors over the shape (see dpg_system.limb_scale)
+        self.limb_scale_input = self.add_input('limb_scale', callback=self._on_limb_scale)
 
         self.end_initialization()
 
@@ -103,6 +109,10 @@ class MGLSMPLMeshNode(MGLShapeNode):
                 output = self.smpl_model()
                 verts = output.vertices[0].cpu().numpy()
                 self.n_verts = len(verts)
+
+            self.scaler = SMPLLimbScaler(self.smpl_model)
+            self.scaler.scales = self.limb_scales
+            self.scaler.set_betas(self.betas_tensor)
             
             # print(f"MGLSMPLMeshNode: Loaded SMPL-H ({g_tag}), {self.n_verts} verts, {self.n_faces} faces")
             self.current_gender = self.gender_prop()
@@ -200,28 +210,10 @@ class MGLSMPLMeshNode(MGLShapeNode):
             r_root_new = r_perm * r_root
             global_orient = r_root_new.as_rotvec().astype(np.float32)
         
-        global_orient_t = torch.tensor(global_orient, dtype=torch.float32).unsqueeze(0)
-        body_pose_t = torch.tensor(body_pose_vals, dtype=torch.float32).unsqueeze(0)
-        transl = torch.tensor(trans, dtype=torch.float32).unsqueeze(0)
-        
-        with torch.no_grad():
-            fwd_kwargs = dict(
-                global_orient=global_orient_t,
-                body_pose=body_pose_t,
-                transl=transl
-            )
-            if self.betas_tensor is not None:
-                fwd_kwargs['betas'] = self.betas_tensor
-            output = self.smpl_model(**fwd_kwargs)
-            vertices = output.vertices[0].cpu().numpy()
-            joint_positions = output.joints[0, :24].cpu().numpy()
-        
-        # Correct for SMPL template offset:
-        # smplx places pelvis at (J_regressor @ v_shaped + transl),
-        # smpl_processor places pelvis at just transl.
-        pelvis_offset = joint_positions[0] - trans.astype(np.float64)
-        vertices -= pelvis_offset.astype(np.float32)
-        
+        # The scaler reproduces the model's forward pass over the limb-scaled
+        # rest mesh, and already places the pelvis at trans (smpl_processor's
+        # convention) rather than at the regressed template pelvis.
+        vertices, _ = self.scaler.forward(global_orient, body_pose_vals, trans)
         return vertices
     
     def _z_to_y_up(self, verts):
@@ -247,10 +239,8 @@ class MGLSMPLMeshNode(MGLShapeNode):
             if not self._load_model():
                 return None, None
         
-        # T-pose vertices
-        with torch.no_grad():
-            output = self.smpl_model()
-            vertices = output.vertices[0].cpu().numpy()
+        # T-pose vertices, with the limb scales applied
+        vertices = self.scaler.rest_vertices()
         
         normals = self._compute_normals(vertices, self.faces_np)
         
@@ -318,14 +308,42 @@ class MGLSMPLMeshNode(MGLShapeNode):
                 # Force geometry rebuild on next draw
                 self.vao = None
                 self.vbo = None
-                # Re-run forward pass with last pose so we don't flash T-pose
-                if self.last_pose is not None:
-                    vertices = self._run_forward(self.last_pose, self.last_trans)
-                    if vertices is not None:
-                        normals = self._compute_normals(vertices, self.faces_np)
-                        self.prev_vbo_data = self._build_vbo_data(vertices, normals)
-                else:
-                    self.prev_vbo_data = None
+                self._repose_last()
+
+    def _repose_last(self):
+        """Refresh the vertex data so a shape change shows at once: re-run the
+        forward pass with the last pose, or show the scaled T-pose if none yet."""
+        vertices = None
+        if self.last_pose is not None:
+            vertices = self._run_forward(self.last_pose, self.last_trans)
+        if vertices is None and self.scaler is not None:
+            vertices = self.scaler.rest_vertices()
+            if self.up_axis_prop() == 'Y':
+                vertices = self._z_to_y_up(vertices)
+        if vertices is not None:
+            normals = self._compute_normals(vertices, self.faces_np)
+            self.prev_vbo_data = self._build_vbo_data(vertices, normals)
+        else:
+            self.prev_vbo_data = None
+
+    def receive_limb_scale(self, message):
+        if not self.limb_scales.apply_message(message):
+            return False
+        if self.scaler is not None:
+            self.scaler._rest_cache = None
+            self._repose_last()
+        return True
+
+    def _on_limb_scale(self):
+        data = self.limb_scale_input()
+        if data is not None:
+            self.receive_limb_scale(data)
+
+    def handle_other_messages(self, message):
+        if LimbScaleSet.is_limb_scale_message(message):
+            self.receive_limb_scale(message)
+        else:
+            super().handle_other_messages(message)
                 # print(f"MGLSMPLMeshNode: Config applied — gender={self.current_gender}, betas={'set' if self.betas_tensor is not None else 'none'}")
     
     def draw(self):
