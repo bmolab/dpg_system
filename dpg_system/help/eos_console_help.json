@@ -1,11 +1,11 @@
 {
-    "height": 991,
+    "height": 1053,
     "width": 1888,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 792,
     "name": "eos_console_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/eos_console_help.json",
     "nodes": {
@@ -373,10 +373,63 @@
             "text": "anything color_source does not cover:\npan, tilt, zoom, gobo - named as Eos\nspells it, with min/max to suit"
         },
         "12": {
-            "name": "close",
+            "name": "eos_slider",
             "id": 681,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 316,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "eos_slider intens 1-10"
+        },
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 720,
+            "position_y": 941,
+            "width": 268,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one slider, ten channels - the readout\nshows the list compacted and how many\nmessages each move sends",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one slider, ten channels - the readout\nshows the list compacted and how many\nmessages each move sends"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
             "position_x": 24,
-            "position_y": 670,
+            "position_y": 740,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

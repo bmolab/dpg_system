@@ -170,6 +170,10 @@ demo = [
      'props': {'min': -270, 'max': 270}},
     {'key': 'c9', 'comment': True, 'text': 'anything color_source does not cover:\npan, tilt, zoom, gobo - named as Eos\nspells it, with min/max to suit',
      'pos': (420, 825)},
+
+    {'key': 'sl', 'init': 'eos_slider intens 1-10', 'pos': (30, 640), 'w': 300, 'h': 240},
+    {'key': 'c10', 'comment': True, 'text': 'one slider, ten channels - the readout\nshows the list compacted and how many\nmessages each move sends',
+     'pos': (30, 895)},
 ]
 links = [('con', 'osc received', 'td', '###text in'),
          ('sig', '', 'es', 'osc to send')]
