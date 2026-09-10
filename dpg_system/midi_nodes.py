@@ -3,6 +3,7 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import mido
 import platform
+import threading
 
 if platform.system() == "Darwin":
     try:
@@ -52,6 +53,7 @@ def register_midi_nodes():
     Node.app.register_node('midi_device', MidiDeviceNode.factory)
     Node.app.register_node('blue_board', BlueBoardNode.factory)
     Node.app.register_node('mpd218', MPD218Node.factory)
+    Node.app.register_node('mpe_in', MPEInNode.factory)
 
 
 note_off_code = 128
@@ -170,6 +172,15 @@ class MidiIn:
         if len(self.input_list) == 0:
             self.input_list = mido.get_input_names()
         if len(self.input_list) > 0:
+            # An exact name wins over a longer one that merely starts the same way:
+            # 'Erae 2 MIDI' must not resolve to 'Erae 2 MIDI (MPE)'.
+            if partial_name in self.input_list:
+                self.in_port_name = partial_name
+                if self.in_port_name in MidiInPort.ports:
+                    self.in_port = MidiInPort.ports[self.in_port_name]
+                else:
+                    self.in_port = MidiInPort(self.in_port_name)
+                return self.in_port_name
             for input in self.input_list:
                 if len(input) > len(partial_name):
                     length = len(partial_name)
@@ -554,6 +565,13 @@ class MidiOut:
         if len(self.output_list) == 0:
             self.output_list = mido.get_output_names()
         if len(self.output_list) > 0:
+            if partial_name in self.output_list:
+                self.out_port_name = partial_name
+                if self.out_port_name in MidiOutPort.ports:
+                    self.out_port = MidiOutPort.ports[self.out_port_name]
+                else:
+                    self.out_port = MidiOutPort(self.out_port_name)
+                return self.out_port_name
             for output in self.output_list:
                 if len(output) > len(partial_name):
                     length = len(partial_name)
@@ -1186,3 +1204,174 @@ class MPD218Node(MidiDeviceNode):
             return
 
 
+
+
+class MPEInNode(MidiIn, Node):
+    """mpe_in - a multi-touch controller's MIDI as fingers.
+
+    MPE gives every finger its own MIDI channel: the note says where it landed,
+    pitch bend says how far it has slid sideways since, controller 74 says how
+    far up, and channel pressure says how hard. This node keeps one voice per
+    channel and hands each finger out as a list, so an MPE pad (Erae, Linnstrument,
+    Seaboard...) reads the way a touch surface should rather than as sixteen
+    keyboards. A plain single-channel controller works the same way: its one
+    channel is voice 0.
+
+    Expressive controllers stream bend and pressure at ~100 Hz on every finger.
+    With 'coalesce' on, the node collects those on the MIDI thread and sends one
+    'move' per finger per frame from the main thread; note on/off are never
+    dropped.
+    """
+    STATE_DOWN, STATE_MOVE, STATE_UP = 0, 1, 2
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MPEInNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        MidiIn.__init__(self, label, data, args)
+        Node.__init__(self, label, data, args)
+
+        # per channel (0..15): note, velocity, bend (semitones), pressure, slide, active
+        self.notes = np.zeros(16, dtype=np.int32)
+        self.velocities = np.zeros(16, dtype=np.float32)
+        self.bends = np.zeros(16, dtype=np.float32)
+        self.pressures = np.zeros(16, dtype=np.float32)
+        self.slides = np.zeros(16, dtype=np.float32)
+        self.active = np.zeros(16, dtype=bool)
+        self.master_bend = 0.0
+        self.lock = threading.Lock()
+        self.pending_events = []            # (state, channel) - note on/off, in order
+        self.dirty = np.zeros(16, dtype=bool)
+        self.any_change = False
+
+        name = ''
+        if self.in_port is not None and self.in_port.port is not None:
+            name = self.in_port.port.name
+        self.in_port_name_property = self.add_string_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
+        self.in_port_name_property.widget.combo_items = self.input_list
+
+        self.touch_out = self.add_output('touch')
+        self.voices_out = self.add_output('voices')
+        self.count_out = self.add_output('count')
+        self.master_out = self.add_output('master')
+
+        self.mode = self.add_option('mode', widget_type='combo', default_value='all channels', callback=self.mode_changed)
+        self.mode.widget.combo_items = ['all channels', 'mpe lower', 'mpe upper']
+        self.bend_range = self.add_option('bend range', widget_type='drag_float', default_value=48.0, min=0.0, max=96.0)
+        self.master_bend_range = self.add_option('master bend range', widget_type='drag_float', default_value=2.0, min=0.0, max=96.0)
+        self.slide_cc = self.add_option('slide cc', widget_type='input_int', default_value=74, min=0, max=127)
+        self.normalize = self.add_option('normalize', widget_type='checkbox', default_value=True)
+        self.coalesce = self.add_option('coalesce', widget_type='checkbox', default_value=True)
+
+        self.master_channel = -1
+        if self.in_port is not None:
+            self.in_port.add_client(self, code=None)
+        self.add_frame_task()
+
+    def mode_changed(self):
+        mode = self.mode()
+        self.master_channel = {'mpe lower': 0, 'mpe upper': 15}.get(mode, -1)
+
+    def port_changed(self):
+        self.in_port_name = self.in_port_name_property()
+        super().port_changed()
+        self.in_port_name_property.set(self.in_port_name)
+
+    def custom_cleanup(self):
+        self.remove_frame_tasks()
+        if self.in_port is not None:
+            self.in_port.remove_client(self)
+
+    # ------------------------------------------------------------ MIDI thread
+    def receive_midi_bytes(self, midi_bytes):
+        if len(midi_bytes) < 2:
+            return
+        status = midi_bytes[0]
+        if status >= 0xF0:
+            return
+        kind = status & 0xF0
+        ch = status & 0x0F
+        if ch == self.master_channel:
+            self.receive_master(kind, midi_bytes)
+            return
+
+        with self.lock:
+            if kind == 0x90 and len(midi_bytes) >= 3 and midi_bytes[2] > 0:
+                self.notes[ch] = midi_bytes[1]
+                self.velocities[ch] = midi_bytes[2]
+                self.active[ch] = True
+                self.pending_events.append((self.STATE_DOWN, ch))
+            elif kind == 0x80 or (kind == 0x90 and len(midi_bytes) >= 3):
+                if self.active[ch] and self.notes[ch] == midi_bytes[1]:
+                    self.active[ch] = False
+                    self.velocities[ch] = midi_bytes[2] if len(midi_bytes) >= 3 else 0
+                    self.pending_events.append((self.STATE_UP, ch))
+            elif kind == 0xE0 and len(midi_bytes) >= 3:
+                raw = (midi_bytes[2] << 7 | midi_bytes[1]) - 8192
+                self.bends[ch] = raw / 8192.0 * float(self.bend_range())
+                self.dirty[ch] = True
+            elif kind == 0xD0:
+                self.pressures[ch] = midi_bytes[1]
+                self.dirty[ch] = True
+            elif kind == 0xA0 and len(midi_bytes) >= 3:
+                self.pressures[ch] = midi_bytes[2]
+                self.dirty[ch] = True
+            elif kind == 0xB0 and len(midi_bytes) >= 3 and midi_bytes[1] == self.slide_cc():
+                self.slides[ch] = midi_bytes[2]
+                self.dirty[ch] = True
+            else:
+                return
+            self.any_change = True
+
+        if not self.coalesce():
+            self.flush()
+
+    def receive_master(self, kind, midi_bytes):
+        if kind == 0xE0 and len(midi_bytes) >= 3:
+            raw = (midi_bytes[2] << 7 | midi_bytes[1]) - 8192
+            self.master_bend = raw / 8192.0 * float(self.master_bend_range())
+            with self.lock:
+                self.dirty[:] = self.active
+                self.any_change = True
+            if not self.coalesce():
+                self.flush()
+        self.master_out.send(list(midi_bytes))
+
+    # ------------------------------------------------------------ main thread
+    def frame_task(self):
+        if self.any_change and self.coalesce():
+            self.flush()
+
+    def flush(self):
+        with self.lock:
+            if not self.any_change:
+                return
+            events = self.pending_events
+            self.pending_events = []
+            dirty = self.dirty.copy()
+            self.dirty[:] = False
+            self.any_change = False
+            active = self.active.copy()
+            notes = self.notes.copy()
+            vel = self.velocities.copy()
+            pitch = notes + self.bends + self.master_bend
+            pressure = self.pressures.copy()
+            slide = self.slides.copy()
+
+        if self.normalize():
+            vel = vel / 127.0
+            pressure = pressure / 127.0
+            slide = slide / 127.0
+
+        for state, ch in events:
+            self.touch_out.send([int(ch), state, int(notes[ch]), float(pitch[ch]), float(pressure[ch]), float(slide[ch]), float(vel[ch])])
+            dirty[ch] = False
+        for ch in np.nonzero(dirty & active)[0]:
+            self.touch_out.send([int(ch), self.STATE_MOVE, int(notes[ch]), float(pitch[ch]), float(pressure[ch]), float(slide[ch]), float(vel[ch])])
+
+        voices = np.stack([active.astype(np.float32), notes.astype(np.float32), pitch.astype(np.float32),
+                           pressure.astype(np.float32), slide.astype(np.float32)], axis=1)
+        self.voices_out.send(voices)
+        self.count_out.send(int(active.sum()))

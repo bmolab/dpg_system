@@ -85,6 +85,7 @@ optional_import = [
     'noise_review_node',
     'gemma_4_node',
     'nvx_nodes',
+    'erae_nodes',
 ]
 
 imported = []

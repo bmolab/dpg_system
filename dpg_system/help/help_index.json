@@ -113,6 +113,12 @@
     "color_source",
     "eos_send"
   ],
+  "_erae_nodes": [
+    "--- erae_nodes.py ---"
+  ],
+  "erae": [
+    "erae"
+  ],
   "_gang_nodes": [
     "--- gang_nodes.py ---"
   ],
@@ -401,6 +407,9 @@
     "mpd218",
     "blue_board"
   ],
+  "mpe_in": [
+    "mpe_in"
+  ],
   "_moderngl_nodes": [
     "--- moderngl_nodes.py ---"
   ],
@@ -525,6 +534,12 @@
   "ndi_receiver": [
     "ndi_receiver",
     "depth_anything"
+  ],
+  "_nemotron_nodes": [
+    "--- nemotron_nodes.py ---"
+  ],
+  "nemotron": [
+    "nemotron"
   ],
   "_node": [
     "--- node.py ---"
@@ -753,9 +768,6 @@
     "quaternion_norm",
     "tracker_align"
   ],
-  "swing_twist": [
-    "swing_twist"
-  ],
   "quaternion_to_6d": [
     "quaternion_to_6d",
     "matrix_to_6d",
@@ -774,6 +786,9 @@
     "rotvec_to_quaternion",
     "matrix_to_axis_angle",
     "matrix_to_rotvec"
+  ],
+  "swing_twist": [
+    "swing_twist"
   ],
   "_sampler_nodes": [
     "--- sampler_nodes.py ---"
@@ -1455,14 +1470,5 @@
   "whisper": [
     "whisper",
     "eleven_labs"
-  ],
-  "_nemotron_nodes": [
-    "--- nemotron_nodes.py ---"
-  ],
-  "nemotron": [
-    "nemotron"
-  ],
-  "smpl_resist": [
-    "smpl_resist"
   ]
 }

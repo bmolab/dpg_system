@@ -1,0 +1,431 @@
+{
+    "height": 881,
+    "width": 1865,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "mpe_in_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mpe_in_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mpe_in - fingers from a multi-touch controller",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mpe_in - fingers from a multi-touch controller",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mpe_in - fingers from a multi-touch controller"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1027,
+            "position_y": 45,
+            "width": 798,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A multi-touch controller's MIDI, read as fingers rather than as notes.\n\nTHE NODE:\n\nmpe_in   one voice per MIDI channel, each finger out as a list\n\nWHAT MPE IS:\nOrdinary MIDI has one pitch bend and one pressure per channel, so two fingers on\none channel fight over them. MPE gives every finger its own channel: the note\nsays where it landed, pitch bend says how far it has slid sideways since,\ncontroller 74 says how far up, and channel pressure says how hard. An Erae, a\nLinnstrument or a Seaboard in MPE mode is sixteen channels of that.\n\nThis node keeps one voice per channel and hands each finger out as a list, so\nthe pad reads the way a touch surface should. A plain single-channel controller\nworks the same way - its channel is voice 0 - so it is also the node for an\nErae layout that is not in MPE mode yet.\n\nTHE TOUCH LIST:\n'touch' sends voice, state, note, pitch, pressure, slide, velocity. The voice\nis the channel, 0..15, which MPE keeps constant for the life of a finger. The\nstate is 0 down, 1 move, 2 up. The pitch is the note plus the bend in\nsemitones, a float, so a slide reads as a continuous position. Pressure, slide\nand velocity come out 0..1 unless 'normalize' is off.\n\n'voices' is the whole state at once - a 16 by 5 array of active, note, pitch,\npressure, slide - which is the handy form for drawing all the fingers or\nfeeding a bank of voices in one go. 'count' is how many are down.\n\n100 HZ, COALESCED:\nExpressive controllers stream bend and pressure on every finger about a hundred\ntimes a second, as separate messages. With 'coalesce' on the node gathers those\nand sends one 'move' per finger per frame; downs and ups are never dropped.\nTurn it off to get every message the instant it arrives.\n\nBEND RANGE IS THE THING TO SET:\nThe bend arrives as a fraction of a range the controller and you agreed on and\nMIDI never carries. MPE's convention is 48 semitones per finger; if the pitch\nyou see slides too far or too little, this is the number to change.\n\nMODE:\n'all channels' treats every channel as a finger. 'mpe lower' makes channel 1\nthe master - its bend applies to every finger, its other messages come out of\n'master' - and 'mpe upper' does the same with channel 16.\n\nSYNTAX:\nmpe_in\nmpe_in <port name>\n\nEXAMPLE:\nmpe_in\n\nINPUTS and PARAMETERS:\n\nport:\nThe device.\n\nmode:\nall channels, mpe lower, or mpe upper.\n\nbend range / master bend range:\nSemitones at full bend, per finger and for the master channel.\n\nslide cc:\nWhich controller carries the upward slide - 74 by convention.\n\nnormalize:\nPressure, slide and velocity as 0..1 rather than 0..127.\n\ncoalesce:\nOne move per finger per frame, or every message as it comes.\n\nOUTPUTS:\n\ntouch:\nvoice, state, note, pitch, pressure, slide, velocity per event.\n\nvoices:\nThe 16 by 5 array of every voice: active, note, pitch, pressure, slide.\n\ncount:\nHow many fingers are down.\n\nmaster:\nThe master channel's messages, raw, in the mpe modes.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A multi-touch controller's MIDI, read as fingers rather than as notes.\n\nTHE NODE:\n\nmpe_in   one voice per MIDI channel, each finger out as a list\n\nWHAT MPE IS:\nOrdinary MIDI has one pitch bend and one pressure per channel, so two fingers on\none channel fight over them. MPE gives every finger its own channel: the note\nsays where it landed, pitch bend says how far it has slid sideways since,\ncontroller 74 says how far up, and channel pressure says how hard. An Erae, a\nLinnstrument or a Seaboard in MPE mode is sixteen channels of that.\n\nThis node keeps one voice per channel and hands each finger out as a list, so\nthe pad reads the way a touch surface should. A plain single-channel controller\nworks the same way - its channel is voice 0 - so it is also the node for an\nErae layout that is not in MPE mode yet.\n\nTHE TOUCH LIST:\n'touch' sends voice, state, note, pitch, pressure, slide, velocity. The voice\nis the channel, 0..15, which MPE keeps constant for the life of a finger. The\nstate is 0 down, 1 move, 2 up. The pitch is the note plus the bend in\nsemitones, a float, so a slide reads as a continuous position. Pressure, slide\nand velocity come out 0..1 unless 'normalize' is off.\n\n'voices' is the whole state at once - a 16 by 5 array of active, note, pitch,\npressure, slide - which is the handy form for drawing all the fingers or\nfeeding a bank of voices in one go. 'count' is how many are down.\n\n100 HZ, COALESCED:\nExpressive controllers stream bend and pressure on every finger about a hundred\ntimes a second, as separate messages. With 'coalesce' on the node gathers those\nand sends one 'move' per finger per frame; downs and ups are never dropped.\nTurn it off to get every message the instant it arrives.\n\nBEND RANGE IS THE THING TO SET:\nThe bend arrives as a fraction of a range the controller and you agreed on and\nMIDI never carries. MPE's convention is 48 semitones per finger; if the pitch\nyou see slides too far or too little, this is the number to change.\n\nMODE:\n'all channels' treats every channel as a finger. 'mpe lower' makes channel 1\nthe master - its bend applies to every finger, its other messages come out of\n'master' - and 'mpe upper' does the same with channel 16.\n\nSYNTAX:\nmpe_in\nmpe_in <port name>\n\nEXAMPLE:\nmpe_in\n\nINPUTS and PARAMETERS:\n\nport:\nThe device.\n\nmode:\nall channels, mpe lower, or mpe upper.\n\nbend range / master bend range:\nSemitones at full bend, per finger and for the master channel.\n\nslide cc:\nWhich controller carries the upward slide - 74 by convention.\n\nnormalize:\nPressure, slide and velocity as 0..1 rather than 0..127.\n\ncoalesce:\nOne move per finger per frame, or every message as it comes.\n\nOUTPUTS:\n\ntouch:\nvoice, state, note, pitch, pressure, slide, velocity per event.\n\nvoices:\nThe 16 by 5 array of every voice: active, note, pitch, pressure, slide.\n\ncount:\nHow many fingers are down.\n\nmaster:\nThe master channel's messages, raw, in the mpe modes."
+        },
+        "3": {
+            "name": "mpe_in",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 237,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 626,
+            "position_y": 280,
+            "width": 317,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one list per finger event:\nvoice state note pitch pressure slide velocity",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one list per finger event:\nvoice state note pitch pressure slide velocity"
+        },
+        "5": {
+            "name": "unpack",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 45,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "unpack 7"
+        },
+        "6": {
+            "name": "int",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 170,
+            "position_y": 500,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 310,
+            "position_y": 500,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 470,
+            "position_y": 500,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment voice          state            pitch              pressure",
+            "name": "comment",
+            "id": 607,
+            "position_x": 626,
+            "position_y": 560,
+            "width": 371,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "voice          state            pitch              pressure",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "voice          state            pitch              pressure"
+        },
+        "11": {
+            "name": "int",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment fingers down",
+            "name": "comment",
+            "id": 681,
+            "position_x": 626,
+            "position_y": 115,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fingers down",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fingers down"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 572,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "touch",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 3,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 4,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}
