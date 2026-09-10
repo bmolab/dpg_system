@@ -2,12 +2,18 @@ import dearpygui.dearpygui as dpg
 from dpg_system.node import Node, NodeInput
 from dpg_system.conversion_utils import *
 import threading
+import re
 from dpg_system.osc_nodes import *
 
 def register_eos_nodes():
     Node.app.register_node('eos_console', EOSConsoleNode.factory)
     Node.app.register_node('color_source', ColorSourceNode.factory)
     Node.app.register_node('eos_send', OSCSendEOSNode.factory)
+    Node.app.register_node('eos_int', OSCSendEOSNode.factory)
+    Node.app.register_node('eos_float', OSCSendEOSNode.factory)
+    Node.app.register_node('eos_slider', OSCSendEOSNode.factory)
+    Node.app.register_node('eos_knob', OSCSendEOSNode.factory)
+    Node.app.register_node('eos_toggle', OSCSendEOSNode.factory)
 
 class EOSConsoleNode(OSCDeviceNode):
     @staticmethod
@@ -177,6 +183,31 @@ class ColorSourceNode(Node, OSCBase, OSCSender):
 
 
 class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
+    """One value to one named parameter of one Eos channel.
+
+    The registered name picks the input widget - the same idiom as the value
+    nodes (int / float / slider / knob / toggle). Everything else is shared:
+    the composed path is
+
+        /eos/user/<user>/chan/<channel>/param/<parameter>
+
+    and it is shown in full under the inputs so what goes out is never a guess.
+    'target channel' is a channel SPEC, not one number - '1-10', '1 3 5 7 9',
+    '1,3,5' or '1 thru 10' - and one message goes out per channel, because the
+    parameter path on the desk takes exactly one channel.
+    'eos_send' keeps its original drag_int, so patches saved before the family
+    existed load unchanged.
+    """
+    # registered name suffix -> (input widget, value family, limit widget)
+    _VARIANTS = {
+        'send':   ('drag_int',     int,   'drag_int'),
+        'int':    ('drag_int',     int,   'drag_int'),
+        'float':  ('drag_float',   float, 'drag_float'),
+        'slider': ('slider_float', float, 'drag_float'),
+        'knob':   ('knob_float',   float, 'drag_float'),
+        'toggle': ('checkbox',     float, 'drag_float'),
+    }
+
     @staticmethod
     def factory(name, data, args=None):
         node = OSCSendEOSNode(name, data, args)
@@ -185,44 +216,125 @@ class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.channel = 1
+        variant = label.split('_')[-1]
+        self.widget_type, self.value_family, limit_widget = self._VARIANTS.get(variant, self._VARIANTS['send'])
+
+        self.channel_spec = '1'
+        self.user = 99
         self.address = 'empty'
 
-        if len(args) > 0:
-            if is_number(args[0]):
-                self.channel = any_to_int(args[0])
+        # Anything that reads as channels (numbers, ranges) is channels, in the
+        # order given, so 'eos_send intens 1 3 5' and 'eos_send intens 1-10'
+        # both work; the one word that is not is the parameter name.
+        channel_tokens = []
+        for arg in args:
+            arg = any_to_string(arg)
+            if arg.lower() in ('thru', 'to') or re.fullmatch(r'[\d,\-]+', arg):
+                channel_tokens.append(arg)
             else:
-                self.address = args[0]
-
-        if len(args) > 1:
-            if is_number(args[1]):
-                self.channel = any_to_int(args[1])
-            else:
-                self.address = args[1]
+                self.address = arg
+        if channel_tokens:
+            self.channel_spec = ' '.join(channel_tokens)
         self.name = 'eos'
         min = 0
         max = 100
         if self.address in ['pan', 'tilt']:
             min = -360
             max = 360
+        if self.value_family is float:
+            min = float(min)
+            max = float(max)
 
-        self.input = self.add_input('osc to send', widget_type='drag_int', callback=self.change_in_value, min=min, max=max)
+        if self.widget_type == 'checkbox':
+            self.input = self.add_input('osc to send', widget_type='checkbox', callback=self.change_in_value)
+        else:
+            self.input = self.add_input('osc to send', widget_type=self.widget_type, callback=self.change_in_value, min=min, max=max)
         self.target_address_property = self.add_input('parameter', widget_type='text_input', default_value=self.address, callback=self.address_changed)
-        self.target_channel_property = self.add_input('target channel', widget_type='input_int', default_value=self.channel, min=1)
-        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_channel_property = self.add_input('target channel', widget_type='text_input', default_value=self.channel_spec, widget_width=120, callback=self.refresh_address_display)
+        # A label is display only: never saved, never restored, never an inlet.
+        self.address_display = self.add_label(self.displayed_address())
 
-        self.min_property = self.add_option('min', widget_type='drag_int', default_value=min, callback=self.min_max_changed)
-        self.max_property = self.add_option('max', widget_type='drag_int', default_value=max, callback=self.min_max_changed)
+        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.user_property = self.add_option('user', widget_type='input_int', default_value=self.user, min=1, callback=self.refresh_address_display)
+
+        self.min_property = self.add_option('min', widget_type=limit_widget, default_value=min, callback=self.min_max_changed)
+        self.max_property = self.add_option('max', widget_type=limit_widget, default_value=max, callback=self.min_max_changed)
 
         self._registerable_init()
 
     def min_max_changed(self):
         self.input.widget.set_limits(min_=self.min_property(), max_=self.max_property())
 
+    _CHAN_TOKEN = re.compile(r'^\d+(-\d+)?$')
+
+    @staticmethod
+    def parse_channels(spec):
+        """'1-10', '1 3 5', '1,3,5', '1 thru 10', '1 to 4 7' -> [ints], in order, no repeats."""
+        text = any_to_string(spec).lower().replace(',', ' ')
+        text = re.sub(r'\s*(thru|to|-)\s*', '-', text)
+        channels = []
+        for token in text.split():
+            if not OSCSendEOSNode._CHAN_TOKEN.match(token):
+                continue
+            if '-' in token:
+                a, b = (int(x) for x in token.split('-'))
+                step = 1 if b >= a else -1
+                run = range(a, b + step, step)
+            else:
+                run = [int(token)]
+            for c in run:
+                if c > 0 and c not in channels:
+                    channels.append(c)
+        return channels
+
+    @staticmethod
+    def format_channels(channels):
+        """[1,2,3,5,7,8] -> '1-3,5,7-8'; consecutive runs collapse."""
+        if not channels:
+            return '?'
+        parts = []
+        start = prev = channels[0]
+        for c in channels[1:] + [None]:
+            if c is not None and c == prev + 1:
+                prev = c
+                continue
+            parts.append(str(start) if start == prev else f'{start}-{prev}')
+            if c is not None:
+                start = prev = c
+        return ','.join(parts)
+
+    def current_user(self):
+        # The widgets exist only after create; before that the parsed defaults
+        # are what the display should show.
+        if hasattr(self, 'user_property') and self.user_property() is not None:
+            return any_to_int(self.user_property())
+        return self.user
+
+    def current_channels(self):
+        spec = self.channel_spec
+        if hasattr(self, 'target_channel_property') and self.target_channel_property() is not None:
+            spec = self.target_channel_property()
+        return self.parse_channels(spec)
+
+    def composed_address(self, channel):
+        return '/eos/user/' + str(self.current_user()) + '/chan/' + str(channel) + '/param/' + self.address
+
+    def displayed_address(self):
+        channels = self.current_channels()
+        shown = self.composed_address(self.format_channels(channels))
+        if len(channels) > 1:
+            shown += f'  ({len(channels)} channels)'
+        return shown
+
+    def refresh_address_display(self):
+        if hasattr(self, 'address_display'):
+            self.address_display.set(self.displayed_address())
+
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
         self._registerable_custom_create()
+        self.refresh_address_display()
 
     def find_target_node(self, name):
         if self.osc_manager is not None:
@@ -248,6 +360,9 @@ class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
         data = self.input()
         if data is None:
             return
+        if self.widget_type == 'checkbox':
+            # A toggle is full or out: max when on, min when off.
+            data = self.max_property() if any_to_bool(data) else self.min_property()
         t = type(data)
         if t not in [str, int, float, bool, np.int64, np.double]:
             try:
@@ -255,9 +370,11 @@ class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
             except TypeError:
                 return
             data, homogenous, types = list_to_hybrid_list(data)
+        elif t is not str:
+            data = any_to_int(data) if self.value_family is int else any_to_float(data)
         if data is not None and self.target and self.address != '':
-            address = '/eos/user/99/chan/' + str(self.target_channel_property()) + '/param/' + self.address
-            self.target.send_message(address, data)
+            for channel in self.current_channels():
+                self.target.send_message(self.composed_address(channel), data)
 
     def execute(self):
         self.change_in_value()
@@ -293,4 +410,6 @@ class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
 
             # 3. UPDATE the registry, passing in the captured old path.
             self._update_registration(old_path_components=old_path_components)
+
+        self.refresh_address_display()
 

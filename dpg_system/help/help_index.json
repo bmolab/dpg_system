@@ -111,7 +111,12 @@
   "eos_console": [
     "eos_console",
     "color_source",
-    "eos_send"
+    "eos_send",
+    "eos_int",
+    "eos_float",
+    "eos_slider",
+    "eos_knob",
+    "eos_toggle"
   ],
   "_erae_nodes": [
     "--- erae_nodes.py ---"
@@ -908,6 +913,9 @@
   "smpl_ragdoll": [
     "smpl_ragdoll",
     "ragdoll_blend_ui"
+  ],
+  "smpl_resist": [
+    "smpl_resist"
   ],
   "smpl_torque": [
     "smpl_torque"

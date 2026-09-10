@@ -11,6 +11,8 @@ THE NODES:
 eos_console    the connection to the desk - one of these per console
 color_source   intensity and colour for one channel, as sliders
 eos_send       one named parameter of one channel
+eos_int        the same, and eos_float / eos_slider / eos_knob / eos_toggle -
+               one node per kind of input
 
 eos_console FIRST, AND ONLY ONE:
 It is the connection, not a command. Everything else finds the desk by NAME, so
@@ -51,11 +53,39 @@ white. A fixture without one simply ignores it.
 eos_send IS THE GENERAL ONE:
 One value, one named parameter, on one channel. 'parameter' is the parameter
 name as Eos spells it - intens, red, pan, tilt, zoom, and so on - and 'min' and
-'max' set the range of the input slider, so you can drive a 0-to-100 intensity
-or a -270-to-270 pan with the same node.
+'max' set the range of the input, so you can drive a 0-to-100 intensity or a
+-270-to-270 pan with the same node.
 
 Use it for anything color_source does not cover: position, beam, gobo, or a
 parameter peculiar to one fixture.
+
+The path it composes is shown in full under the inputs - user, channel and
+parameter, exactly as it will go out - so a parameter that does nothing can be
+checked against what the desk expects without a sniffer. 'user' is an option,
+99 by default.
+
+MANY CHANNELS FROM ONE NODE:
+'target channel' is a channel LIST, not one number. Ten fixtures in channels 1
+to 10 are '1-10' or '1 thru 10'; the odd ones are '1 3 5 7 9' or '1,3,5,7,9';
+and the forms mix, so '1-4 7 9-10' is fine too. Each value goes out once per
+channel, because the desk's parameter path takes exactly one channel - the
+readout under the inputs shows the list compacted and says how many messages
+that is.
+
+ONE NODE PER KIND OF INPUT:
+eos_send takes whole numbers in a drag box. The same node under other names
+gives the other inputs, and Eos is happy with fractional values, so pick
+whichever suits the hand:
+
+    eos_int      a drag box of whole numbers (what eos_send is)
+    eos_float    a drag box of fractional values
+    eos_slider   a slider
+    eos_knob     a knob
+    eos_toggle   a checkbox - sends 'max' when on and 'min' when off, so with
+                 the defaults it is full and out for an intensity
+
+They differ only in the input widget; parameter, channel, user and the target
+are the same on all of them.
 
 CHANNEL NUMBERS ARE THE DESK'S, NOT THE FIXTURE'S:
 Both senders address a CHANNEL as the console understands it - the number you
@@ -66,7 +96,11 @@ matters here.
 SYNTAX:
 eos_console <name> <ip> <target port> <source port>
 color_source <channel>
-eos_send <parameter> <channel>
+eos_send <parameter> <channels>
+eos_int / eos_float / eos_slider / eos_knob / eos_toggle <parameter> <channels>
+
+EXAMPLE:
+eos_slider intens 1-10
 
 EXAMPLE:
 color_source 7
@@ -81,19 +115,25 @@ intensity / red / green / blue / lime (color_source):
 The parameters, 0 to 100. Each sends when it moves.
 
 target channel:
-Which channel on the desk.
+Which channel on the desk. On eos_send and family this is a list - '1-10',
+'1 3 5', '1,3,5', '1 thru 10' - and one message goes out per channel.
 
 address (color_source):
 The command path before the channel. The default is the user-99 channel path.
 
-osc to send (eos_send):
-The value.
+osc to send (eos_send and family):
+The value. On eos_toggle, on sends 'max' and off sends 'min'.
 
-parameter (eos_send):
+parameter (eos_send and family):
 The Eos parameter name.
 
-min / max (eos_send):
+user (eos_send and family):
+The desk user number in the path. 99 by default.
+
+min / max (eos_send and family):
 The range of the input.
+
+The line under the inputs is the composed path, for reading only.
 
 target name:
 Which eos_console to send through. Must match its name.
