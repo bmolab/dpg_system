@@ -308,12 +308,12 @@ class PointCloudVoxelNode(PointCloudNode):
         self.sense_property = self.add_property('sense', widget_type='drag_float',
                                                 default_value=1.0, min=0.0, max=4.0)
         self.sense_property.widget.speed = 0.01
+        self.min_points_property = self.add_property('min points', widget_type='drag_int',
+                                                     default_value=1, min=1)
         self.output = self.add_output('voxel cloud')
         self.count_output = self.add_output('counts')
         self.reduce_option = self.add_option('reduce', widget_type='combo', default_value='center')
         self.reduce_option.widget.combo_items = ['center', 'centroid']
-        self.min_points_option = self.add_option('min points', widget_type='drag_int',
-                                                 default_value=1, min=1)
         self._add_bounds_options([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
         # Voxels are cubes ('voxel size (cm)') unless 'cubic voxels' is off, in
         # which case width/height/depth come from 'voxel size x,y,z (cm)' —
@@ -354,7 +354,7 @@ class PointCloudVoxelNode(PointCloudNode):
             self.count_output.send(np.empty((0,), dtype=np.int64))
             return
         counts = np.bincount(lin_v, minlength=self.grid.ncells)
-        min_points = max(1, int(self.min_points_option()))
+        min_points = max(1, int(self.min_points_property()))
         occupied = np.nonzero(counts >= min_points)[0]
         if occupied.size == 0:
             self._send(self.output, np.empty((0, 3), dtype=np.float32))

@@ -118,8 +118,11 @@ Keep the outside instead.
 voxel size (m):
 The grid resolution. The most consequential number here.
 
-reduce / min points (pc_voxel):
-Cube centre or centroid, and the density floor.
+min points (pc_voxel):
+The density floor - voxels holding fewer points than this are dropped.
+
+reduce (pc_voxel, option):
+Cube centre or centroid.
 
 OUTPUTS: 
 
