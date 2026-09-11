@@ -31,6 +31,8 @@ def register_signal_nodes():
     Node.app.register_node("signal", SignalNode.factory)
     Node.app.register_node("togedge", TogEdgeNode.factory)
     Node.app.register_node("subsample", SubSampleNode.factory)
+    Node.app.register_node("rate_limiter", RateLimiterNode.factory)
+    Node.app.register_node("speedlim", RateLimiterNode.factory)
     Node.app.register_node("diff", DifferentiateNode.factory)
     Node.app.register_node('noise_gate', NoiseGateNode.factory)
     Node.app.register_node('trigger', ThresholdTriggerNode.factory)
@@ -508,6 +510,77 @@ class SubSampleNode(Node):
                 self.forced = True
                 self.active = False
                 self.sample_count = 0
+
+
+class RateLimiterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RateLimiterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        interval = self.arg_as_float(default_value=50.0)
+        self.units = 1000
+        self.units_dict = {'seconds': 1, 'milliseconds': 1000, 'minutes': 1.0 / 60.0, 'hours': 1.0 / 60.0 / 60.0}
+
+        self.input = self.add_input('input', triggers_execution=True)
+        self.interval_input = self.add_float_input('interval', widget_type='drag_float', default_value=interval,
+                                                   min=0.0, max=math.inf)
+        self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds',
+                                                callback=self.set_units)
+        self.units_property.widget.combo_items = list(self.units_dict)
+        self.output = self.add_output('out')
+
+        # pending holds the most recent value that arrived too soon to be sent.
+        # last_input_time > last_output_time is the 'something is waiting' flag.
+        self.pending = None
+        self.last_input_time = 0.0
+        self.last_output_time = 0.0
+        self.add_frame_task()
+
+    def set_units(self, input=None):
+        units_string = self.units_property()
+        if units_string in self.units_dict:
+            self.units = self.units_dict[units_string]
+
+    def interval_in_seconds(self):
+        interval = any_to_float(self.interval_input())
+        if interval <= 0:
+            return 0.0
+        return interval / self.units
+
+    # execute() runs on whichever thread feeds the input (a vive tracker, for instance,
+    # sends from its own polling thread). A value that clears the interval goes out
+    # immediately, so an isolated event after a long silence is never delayed.
+
+    def execute(self):
+        value = self.input()
+        now = time.time()
+        self.pending = value
+        self.last_input_time = now
+        if now - self.last_output_time >= self.interval_in_seconds():
+            # assigning last_output_time after last_input_time leaves them equal,
+            # which is what tells frame_task there is nothing left to flush
+            self.last_output_time = now
+            self.output.send(value)
+
+    # frame_task() runs on the main thread and releases the held value once the
+    # interval has expired, so the last position always arrives even though the
+    # source has gone quiet.
+
+    def frame_task(self):
+        if self.last_input_time <= self.last_output_time:
+            return
+        now = time.time()
+        if now - self.last_output_time < self.interval_in_seconds():
+            return
+        self.last_output_time = now
+        self.output.send(self.pending)
+
+    def custom_cleanup(self):
+        self.remove_frame_tasks()
 
 
 class NoiseGateNode(Node):
