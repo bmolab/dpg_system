@@ -23,6 +23,8 @@ def register_interface_nodes():
     Node.app.register_node("set_reset", ToggleNode.factory)
     Node.app.register_node("button", ButtonNode.factory)
     Node.app.register_node("b", ButtonNode.factory)
+    Node.app.register_node("button_set", ButtonSetNode.factory)
+    Node.app.register_node("buttons", ButtonSetNode.factory)
     Node.app.register_node("pan_view", PanViewNode.factory)
     Node.app.register_node("home_view", HomeViewNode.factory)
     Node.app.register_node("mouse", MouseNode.factory)
@@ -263,6 +265,174 @@ class ButtonNode(_HideTitleBarMixin, Node):
 
     def execute(self):
         self.output.send(self.message())
+
+
+class ButtonSetNode(_HideTitleBarMixin, Node):
+    """A column of buttons, each labelled with the message it sends.
+
+    button_set red green blue     three buttons; clicking 'green' sends 'green'
+    button_set 4                  four buttons, labelled 1 2 3 4
+
+    The label is the message, so there is nothing else to fill in -- what a
+    button says is what comes out of the one outlet. Each button is also an
+    inlet, so a patch can press it without a click, and a label sent as a
+    message to any of them presses that button -- so a patch can press one by
+    name without knowing where it sits.
+
+    Labels stay editable in the options ('label 1', 'label 2', ...), as do
+    the button width and height. The 'message' template makes the messages
+    something other than the bare label -- 'preset {name}', 'go {index}' --
+    while the buttons still read as their names.
+    """
+    default_labels = None
+    default_template = '{name}'
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ButtonSetNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        names = []
+        for i in range(len(self.ordered_args)):
+            val, t = decode_arg(self.ordered_args, i)
+            names.append(str(val))
+        # A single number is a count -- 'button_set 4' is four numbered
+        # buttons. Anything else is taken as labels, so 'button_set 1 2 3'
+        # means the three buttons it looks like.
+        if len(names) == 1 and names[0].isdigit():
+            names = [str(i + 1) for i in range(max(int(names[0]), 1))]
+        elif not names:
+            names = list(self.default_labels) if self.default_labels else ['1', '2', '3', '4']
+        self.names = names
+        self.count = len(names)
+
+        self.buttons = []
+        for i, name in enumerate(names):
+            self.buttons.append(self.add_input(name, widget_type='button', widget_width=14,
+                                               callback=(lambda i=i: self.button_pressed(i))))
+        self.output = self.add_output('out')
+
+        self.template_option = self.add_option('message', widget_type='text_input', width=200,
+                                               default_value=self.default_template)
+        self.width_option = self.add_option('width', widget_type='input_int', default_value=0,
+                                            min=0, max=None, callback=self.sizing_changed)
+        self.uniform_option = self.add_option('uniform_width', widget_type='checkbox',
+                                              default_value=True, callback=self.sizing_changed)
+        self.height_option = self.add_option('height', widget_type='input_int', default_value=0,
+                                             min=0, max=None, callback=self.sizing_changed)
+        self.flash_duration = self.add_option('flash_duration', widget_type='drag_float',
+                                              min=0, max=1.0, default_value=0.1)
+        self._add_hide_title_bar_option(default_value=False)
+        self.label_options = []
+        for i, name in enumerate(names):
+            self.label_options.append(self.add_option('label %d' % (i + 1), widget_type='text_input',
+                                                      width=140, default_value=name,
+                                                      callback=self.labels_changed))
+        self._flashing = {}
+        self._sized = False
+
+    # -- appearance -----------------------------------------------------------
+
+    def apply_sizes(self):
+        """Fit each button to its label. False until the text can be measured.
+
+        Dear PyGui cannot measure text before a frame has been drawn, and
+        nodes are built during patch load, so this is retried from the frame
+        task until it works once.
+        """
+        fixed = int(self.width_option())
+        widths = []
+        for button in self.buttons:
+            if fixed > 0:
+                widths.append(fixed)
+                continue
+            uuid = button.widget.uuid
+            if dpg.get_text_size(dpg.get_item_label(uuid), font=dpg.get_item_font(uuid)) is None:
+                return False
+            widths.append(int(button.widget.get_label_width(minimum_width=14)))
+        if self.uniform_option() and widths:
+            widths = [max(widths)] * len(widths)
+        height = int(self.height_option())
+        for button, width in zip(self.buttons, widths):
+            dpg.set_item_width(button.widget.uuid, width)
+            # 0 leaves the button at whatever height the font asks for.
+            if height > 0:
+                dpg.set_item_height(button.widget.uuid, height)
+        return True
+
+    def sizing_changed(self):
+        self._sized = self.apply_sizes()
+        if not self._sized:
+            self.add_frame_task()
+
+    def labels_changed(self):
+        for i, option in enumerate(self.label_options):
+            name = str(option()).strip()
+            if name == '' or name == self.names[i]:
+                continue
+            old_name, button = self.names[i], self.buttons[i]
+            self.names[i] = name
+            button.set_label(name)
+            button.name_archive.append(old_name)
+            # The label is how a message finds this button, so the routes to
+            # it move with it.
+            if self.property_registery.get(old_name) is button:
+                del self.property_registery[old_name]
+                self.message_handlers.pop(old_name, None)
+            self.property_registery[name] = button
+            self.message_handlers[name] = self.property_message
+        self.sizing_changed()
+
+    # -- pressing -------------------------------------------------------------
+
+    def message_for(self, i):
+        out = []
+        for token in str(self.template_option()).split():
+            tok = token.replace('{name}', self.names[i]).replace('{index}', str(i))
+            try:
+                out.append(int(tok) if tok.lstrip('-').isdigit() else float(tok))
+            except ValueError:
+                out.append(tok)
+        if len(out) == 0:
+            return self.names[i]
+        return out[0] if len(out) == 1 else out
+
+    def flash(self, i):
+        uuid = self.buttons[i].widget.uuid
+        if dpg.does_item_exist(uuid):
+            dpg.bind_item_theme(uuid, Node.active_theme)
+        self._flashing[i] = time.time() + self.flash_duration()
+        self.add_frame_task()
+
+    def button_pressed(self, i):
+        # clicked, sent a message, or handed data by a cord -- all arrive here
+        if getattr(self, 'in_loading_process', False):
+            return
+        self.flash(i)
+        self.output.send(self.message_for(i))
+
+    # -- node -----------------------------------------------------------------
+
+    def custom_create(self, from_file):
+        self.sizing_changed()
+        self._apply_title_bar_visibility()
+
+    def custom_cleanup(self):
+        self.remove_frame_tasks()
+
+    def frame_task(self):
+        if not self._sized:
+            self._sized = self.apply_sizes()
+        now = time.time()
+        for i, until in list(self._flashing.items()):
+            if now >= until:
+                del self._flashing[i]
+                uuid = self.buttons[i].widget.uuid
+                if dpg.does_item_exist(uuid):
+                    dpg.bind_item_theme(uuid, Node.inactive_theme)
+        if self._sized and not self._flashing:
+            self.remove_frame_tasks()
 
 
 class PanViewNode(_ViewButtonNodeMixin, Node):

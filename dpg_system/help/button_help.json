@@ -1,11 +1,11 @@
 {
-    "height": 821,
-    "width": 1475,
+    "height": 815,
+    "width": 1292,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 940,
     "name": "button_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/button_help.json",
     "nodes": {
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 500,
+            "width": 480,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 637,
+            "position_x": 462,
             "position_y": 45,
             "width": 798,
             "height": 716,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These are the two ways of clicking something: one that fires, and one that stays.\n\nA button is a moment. Click it and it sends, then it is done - nothing is \nremembered. Use it to start something.\n\nA toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nThe distinction is the same one togedge draws between an event and a state, \nand choosing the wrong one is a common source of patches that almost work: \na button cannot tell you whether something is currently running, and a toggle \ncannot tell you that it just started.\n\nTHE NODES:\n\nbutton      click to send; b is a shorter name for it\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nSYNTAX:\nbutton\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (button, toggle):\nAnything arriving here acts as a click.\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nmessage (button):\nWhat the button actually sends. The default is the word \"bang\". \nChange it and the button sends that instead - which turns a button into a \none-click way of firing any fixed value or command.\n\nflash_duration / color (button):\nHow long the button lights up when clicked, and what colour it is. \nWorth setting when several buttons sit together and you want them told apart.\n\nwidth / height (button):\nIts size.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nOUTPUTS: \n\nout:\nbutton sends its message, once per click. \ntoggle and set_reset send 1 when they turn on and 0 when they turn off.\n\nA NOTE ON WHAT A BUTTON SENDS:\nBy default it is the WORD \"bang\", not a number. Anything expecting a number \nwill read it as 0 - so a button wired into accumulate adds nothing at all. \nSend a bang to a counter to count clicks, or set the message option to a \nnumber if you want arithmetic.",
+                    "value": "These are the two ways of clicking something: one that fires, and one that stays.\n\nA button is a moment. Click it and it sends, then it is done - nothing is \nremembered. Use it to start something.\n\nA toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nThe distinction is the same one togedge draws between an event and a state, \nand choosing the wrong one is a common source of patches that almost work: \na button cannot tell you whether something is currently running, and a toggle \ncannot tell you that it just started.\n\nTHE NODES:\n\nbutton      click to send; b is a shorter name for it\nbutton_set  a column of buttons, each one labelled with what it sends\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nbutton_set is the button for a choice rather than a moment. Its arguments are \nthe labels, and the label is the message - 'button_set red green blue' is three \nbuttons, and clicking the middle one sends 'green'. That is the whole node: \nnothing to fill in, and what a button says is what comes out of it. Where a \nradio shows which one is current, a button_set does not remember - it is a row \nof separate moments that happen to be named.\n\nSYNTAX:\nbutton\nbutton_set <label> <label> ...\nbutton_set <count>\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (button, toggle):\nAnything arriving here acts as a click.\n\nthe buttons (button_set):\nEach button is an inlet of its own, and anything arriving there presses it - \nso the patch can press a button the way a person does. A label sent as a \nmessage to any of them presses THAT button whichever inlet it arrives at, \nwhich is how a patch presses one by name without knowing where it sits.\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nmessage (button):\nWhat the button actually sends. The default is the word \"bang\". \nChange it and the button sends that instead - which turns a button into a \none-click way of firing any fixed value or command.\n\nflash_duration / color (button):\nHow long the button lights up when clicked, and what colour it is. \nWorth setting when several buttons sit together and you want them told apart.\n\nwidth / height (button):\nIts size.\n\nmessage (button_set):\nA template, when the bare label is not the message you want. '{name}' is the \nlabel and '{index}' its position: 'preset {name}' sends 'preset red'. The \nbuttons go on reading as their names.\n\nlabel 1, label 2, ... (button_set):\nThe labels, editable after the fact. Renaming a button renames the message it \nsends, the inlet, and the message that presses it, all at once.\n\nwidth / height / uniform_width / flash_duration (button_set):\nButtons fit their labels unless a width is set here, and stand at the height of \ntheir text unless a height is; uniform_width squares the column off to the \nwidest one. Height is worth raising for anything meant to be hit in a hurry, or \non a touchscreen. flash_duration is how long a button lights up when it is \npressed - which is what tells you a button the PATCH pressed went off at all.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nOUTPUTS: \n\nout:\nbutton sends its message, once per click. \nbutton_set sends the label of whichever button was pressed. \ntoggle and set_reset send 1 when they turn on and 0 when they turn off.\n\nA NOTE ON WHAT A BUTTON SENDS:\nBy default it is the WORD \"bang\", not a number. Anything expecting a number \nwill read it as 0 - so a button wired into accumulate adds nothing at all. \nSend a bang to a counter to count clicks, or set the message option to a \nnumber if you want arithmetic.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,15 +90,15 @@
                     "value_type": "str"
                 }
             },
-            "text": "These are the two ways of clicking something: one that fires, and one that stays.\n\nA button is a moment. Click it and it sends, then it is done - nothing is \nremembered. Use it to start something.\n\nA toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nThe distinction is the same one togedge draws between an event and a state, \nand choosing the wrong one is a common source of patches that almost work: \na button cannot tell you whether something is currently running, and a toggle \ncannot tell you that it just started.\n\nTHE NODES:\n\nbutton      click to send; b is a shorter name for it\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nSYNTAX:\nbutton\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (button, toggle):\nAnything arriving here acts as a click.\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nmessage (button):\nWhat the button actually sends. The default is the word \"bang\". \nChange it and the button sends that instead - which turns a button into a \none-click way of firing any fixed value or command.\n\nflash_duration / color (button):\nHow long the button lights up when clicked, and what colour it is. \nWorth setting when several buttons sit together and you want them told apart.\n\nwidth / height (button):\nIts size.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nOUTPUTS: \n\nout:\nbutton sends its message, once per click. \ntoggle and set_reset send 1 when they turn on and 0 when they turn off.\n\nA NOTE ON WHAT A BUTTON SENDS:\nBy default it is the WORD \"bang\", not a number. Anything expecting a number \nwill read it as 0 - so a button wired into accumulate adds nothing at all. \nSend a bang to a counter to count clicks, or set the message option to a \nnumber if you want arithmetic."
+            "text": "These are the two ways of clicking something: one that fires, and one that stays.\n\nA button is a moment. Click it and it sends, then it is done - nothing is \nremembered. Use it to start something.\n\nA toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nThe distinction is the same one togedge draws between an event and a state, \nand choosing the wrong one is a common source of patches that almost work: \na button cannot tell you whether something is currently running, and a toggle \ncannot tell you that it just started.\n\nTHE NODES:\n\nbutton      click to send; b is a shorter name for it\nbutton_set  a column of buttons, each one labelled with what it sends\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nbutton_set is the button for a choice rather than a moment. Its arguments are \nthe labels, and the label is the message - 'button_set red green blue' is three \nbuttons, and clicking the middle one sends 'green'. That is the whole node: \nnothing to fill in, and what a button says is what comes out of it. Where a \nradio shows which one is current, a button_set does not remember - it is a row \nof separate moments that happen to be named.\n\nSYNTAX:\nbutton\nbutton_set <label> <label> ...\nbutton_set <count>\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (button, toggle):\nAnything arriving here acts as a click.\n\nthe buttons (button_set):\nEach button is an inlet of its own, and anything arriving there presses it - \nso the patch can press a button the way a person does. A label sent as a \nmessage to any of them presses THAT button whichever inlet it arrives at, \nwhich is how a patch presses one by name without knowing where it sits.\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nmessage (button):\nWhat the button actually sends. The default is the word \"bang\". \nChange it and the button sends that instead - which turns a button into a \none-click way of firing any fixed value or command.\n\nflash_duration / color (button):\nHow long the button lights up when clicked, and what colour it is. \nWorth setting when several buttons sit together and you want them told apart.\n\nwidth / height (button):\nIts size.\n\nmessage (button_set):\nA template, when the bare label is not the message you want. '{name}' is the \nlabel and '{index}' its position: 'preset {name}' sends 'preset red'. The \nbuttons go on reading as their names.\n\nlabel 1, label 2, ... (button_set):\nThe labels, editable after the fact. Renaming a button renames the message it \nsends, the inlet, and the message that presses it, all at once.\n\nwidth / height / uniform_width / flash_duration (button_set):\nButtons fit their labels unless a width is set here, and stand at the height of \ntheir text unless a height is; uniform_width squares the column off to the \nwidest one. Height is worth raising for anything meant to be hit in a hurry, or \non a touchscreen. flash_duration is how long a button lights up when it is \npressed - which is what tells you a button the PATCH pressed went off at all.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nOUTPUTS: \n\nout:\nbutton sends its message, once per click. \nbutton_set sends the label of whichever button was pressed. \ntoggle and set_reset send 1 when they turn on and 0 when they turn off.\n\nA NOTE ON WHAT A BUTTON SENDS:\nBy default it is the WORD \"bang\", not a number. Anything expecting a number \nwill read it as 0 - so a button wired into accumulate adds nothing at all. \nSend a bang to a counter to count clicks, or set the message option to a \nnumber if you want arithmetic."
         },
         "3": {
             "name": "button",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "width": 88,
+            "height": 46,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,9 +108,9 @@
             "init": "comment a moment: click and it is over",
             "name": "comment",
             "id": 385,
-            "position_x": 340,
+            "position_x": 30,
             "position_y": 115,
-            "width": 193,
+            "width": 210,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -152,7 +152,7 @@
             "id": 459,
             "position_x": 30,
             "position_y": 250,
-            "width": 130,
+            "width": 127,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -179,9 +179,9 @@
             "init": "comment counter counts bangs; accumulate would not",
             "name": "comment",
             "id": 496,
-            "position_x": 340,
+            "position_x": 30,
             "position_y": 300,
-            "width": 267,
+            "width": 294,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -216,9 +216,9 @@
             "init": "comment a state: it stays where you put it",
             "name": "comment",
             "id": 570,
-            "position_x": 340,
+            "position_x": 30,
             "position_y": 395,
-            "width": 217,
+            "width": 238,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -289,7 +289,7 @@
             "id": 681,
             "position_x": 30,
             "position_y": 615,
-            "width": 130,
+            "width": 127,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -317,8 +317,8 @@
             "id": 718,
             "position_x": 250,
             "position_y": 345,
-            "width": 64,
-            "height": 56,
+            "width": 130,
+            "height": 90,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -328,9 +328,9 @@
             "init": "comment the same state, decided by the patch",
             "name": "comment",
             "id": 755,
-            "position_x": 340,
+            "position_x": 250,
             "position_y": 445,
-            "width": 230,
+            "width": 252,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -350,10 +350,60 @@
             "comment": "the same state, decided by the patch"
         },
         "15": {
-            "name": "close",
+            "name": "button_set",
             "id": 792,
+            "position_x": 250,
+            "position_y": 62,
+            "width": 100,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "button_set red green blue"
+        },
+        "16": {
+            "name": "string",
+            "id": 829,
+            "position_x": 250,
+            "position_y": 195,
+            "width": 160,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "init": "comment the label IS the message",
+            "name": "comment",
+            "id": 866,
+            "position_x": 250,
+            "position_y": 245,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the label IS the message",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the label IS the message"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
             "position_x": 24,
-            "position_y": 687,
+            "position_y": 725,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -415,6 +465,16 @@
             "source_output_index": 0,
             "source_output_name": "count out",
             "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

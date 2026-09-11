@@ -3241,8 +3241,10 @@ class Node:
             return
         if len(args) == 1:
             property.set(args[0])
-        else:
+        elif len(args) > 0:
             property.set(args)
+        # A bare message carries no value -- 'reset' to a button property is
+        # the press itself -- so there is nothing to set, only the callback.
         if property.widget is not None:
             if property.widget.callback is not None:
                 property.widget.edited = True

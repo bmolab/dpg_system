@@ -241,6 +241,7 @@ cannot tell you that it just started.
 THE NODES:
 
 button      click to send; b is a shorter name for it
+button_set  a column of buttons, each one labelled with what it sends
 toggle      click to switch between on and off
 set_reset   a toggle driven by two inlets instead of by clicking
 
@@ -249,8 +250,17 @@ Anything arriving at "set" turns it on, anything at "reset" turns it off,
 and it holds that state in between - which is how you latch a condition that 
 begins in one place and ends in another.
 
+button_set is the button for a choice rather than a moment. Its arguments are 
+the labels, and the label is the message - 'button_set red green blue' is three 
+buttons, and clicking the middle one sends 'green'. That is the whole node: 
+nothing to fill in, and what a button says is what comes out of it. Where a 
+radio shows which one is current, a button_set does not remember - it is a row 
+of separate moments that happen to be named.
+
 SYNTAX:
 button
+button_set <label> <label> ...
+button_set <count>
 toggle
 set_reset
 
@@ -258,6 +268,12 @@ INPUTS and PARAMETERS:
 
 in (button, toggle):
 Anything arriving here acts as a click.
+
+the buttons (button_set):
+Each button is an inlet of its own, and anything arriving there presses it - 
+so the patch can press a button the way a person does. A label sent as a 
+message to any of them presses THAT button whichever inlet it arrives at, 
+which is how a patch presses one by name without knowing where it sits.
 
 set / reset (set_reset):
 Turn the state on and off. Anything sent works; only the arrival matters.
@@ -274,6 +290,22 @@ Worth setting when several buttons sit together and you want them told apart.
 width / height (button):
 Its size.
 
+message (button_set):
+A template, when the bare label is not the message you want. '{name}' is the 
+label and '{index}' its position: 'preset {name}' sends 'preset red'. The 
+buttons go on reading as their names.
+
+label 1, label 2, ... (button_set):
+The labels, editable after the fact. Renaming a button renames the message it 
+sends, the inlet, and the message that presses it, all at once.
+
+width / height / uniform_width / flash_duration (button_set):
+Buttons fit their labels unless a width is set here, and stand at the height of 
+their text unless a height is; uniform_width squares the column off to the 
+widest one. Height is worth raising for anything meant to be hit in a hurry, or 
+on a touchscreen. flash_duration is how long a button lights up when it is 
+pressed - which is what tells you a button the PATCH pressed went off at all.
+
 bind to:
 A variable name. A bound toggle and its variable are the same thing.
 
@@ -281,6 +313,7 @@ OUTPUTS:
 
 out:
 button sends its message, once per click. 
+button_set sends the label of whichever button was pressed. 
 toggle and set_reset send 1 when they turn on and 0 when they turn off.
 
 A NOTE ON WHAT A BUTTON SENDS:
@@ -309,9 +342,14 @@ demo = [
     {'key': 'sr', 'init': 'set_reset', 'pos': (250, 345), 'w': 130, 'h': 90},
     {'key': 'c3', 'comment': True, 'text': 'the same state, decided by the patch',
      'pos': (250, 445)},
+    {'key': 'bs', 'init': 'button_set red green blue', 'pos': (250, 62),
+     'w': 100, 'h': 120},
+    {'key': 's1', 'init': 'string', 'pos': (250, 195), 'w': 160, 'h': 42},
+    {'key': 'c4', 'comment': True, 'text': 'the label IS the message',
+     'pos': (250, 245)},
 ]
 links = [('btn', '', 'cnt', 'input'), ('cnt', 'count out', 'i1', ''),
          ('tog', '', 'met', 'on'), ('met', '', 'cnt2', 'input'),
-         ('cnt2', 'count out', 'i2', '')]
+         ('cnt2', 'count out', 'i2', ''), ('bs', 'out', 's1', '')]
 print(build('button', 'button and toggle - a moment, or a state', body, demo, links,
             demo_width=440, text_width=790, text_height=700))
