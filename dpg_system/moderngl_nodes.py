@@ -2523,6 +2523,11 @@ class MGLPointCloudNode(MGLShapeNode):
         if not from_file:
             self.mode_input.set('points')
             self.mode_input.widget.set('points')
+            # Points carry a dummy (0, 1, 0) normal, so the shader's manual
+            # point culling would discard every point above the camera --
+            # never what you want on a cloud.
+            self.cull_input.set(False)
+            self.cull_input.widget.set(False)
 
     def execute(self):
         if self.points_input.fresh_input:
@@ -4486,9 +4491,15 @@ class MGLOrbitCameraNode(MGLNode):
         self.drag_speed = self.add_option('drag_speed', widget_type='drag_float', default_value=0.3)
         self.zoom_speed = self.add_option('zoom_speed', widget_type='drag_float', default_value=1.0)
         self._drag_last = None
-        # canonical views: message 'top' / 'front' / 'side' into any input
-        # snaps yaw/elevation (target and distance stay put)
-        self._view_presets = {'top': (0.0, 90.0), 'front': (180.0, 0.0), 'side': (90.0, 0.0)}
+        # canonical views: message 'top' / 'bottom' / 'front' / 'back' /
+        # 'left' / 'right' into any input snaps yaw/elevation (target and
+        # distance stay put). yaw 0 puts the eye on +Z, and the subject is
+        # taken to face -Z (so 'front' looks at it from -Z, and its right
+        # side faces +X); 'side' is kept as the old name for 'right'.
+        self._view_presets = {'top': (0.0, 90.0), 'bottom': (0.0, -90.0),
+                              'front': (180.0, 0.0), 'back': (0.0, 0.0),
+                              'right': (90.0, 0.0), 'left': (270.0, 0.0),
+                              'side': (90.0, 0.0)}
         for view in self._view_presets:
             self.message_handlers[view] = self._view_message
 
@@ -4574,7 +4585,14 @@ class MGLOrbitCameraNode(MGLNode):
             aspect = 1.0
         if self.projection_option() == 'orthographic':
             half_h = dist * math.tan(math.radians(max(1.0, min(179.0, fov_val))) * 0.5)
-            p = orthographic(half_h * aspect, half_h, self.near(), self.far())
+            # The depth slab is measured from the eye, so the perspective
+            # near of 0.1 would clip away everything on the camera side of
+            # the eye plane - in ortho there is no reason for that (the
+            # projection has no divide, so a plane behind the eye is fine).
+            # Centre the slab on the target instead: far becomes its
+            # half-depth, and near is unused in this mode.
+            half_d = max(abs(self.far()), 1e-3)
+            p = orthographic(half_h * aspect, half_h, dist - half_d, dist + half_d)
         else:
             p = perspective(fov_val, aspect, self.near(), self.far())
         self.ctx.set_projection_matrix(p)
