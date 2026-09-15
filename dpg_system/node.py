@@ -1652,6 +1652,47 @@ class Combo(SelectorWidget):
         dpg.add_combo(self.combo_items, label=self._label, width=self.widget_width,
                       tag=self.uuid, user_data=self.node, default_value=self.default_value)
 
+    def fit_to_items(self, pad: int = 12, minimum_width: int = 20):
+        """Widen the combo to its longest item at the bound font, plus the arrow.
+
+        Returns the width applied, or None when text cannot be measured yet --
+        dpg cannot measure text before a frame has been drawn, which is when
+        nodes are built during a patch load, so callers retry on a later frame.
+        """
+        if not dpg.does_item_exist(self.uuid):
+            return None
+        items = [any_to_string(item) for item in self.combo_items] or ['']
+        # Measured with an explicit font whenever one is known: get_text_size
+        # then reports unscaled font metrics consistently, which we scale by
+        # the global font scale. Without a font argument it reports unscaled
+        # metrics on the first rendered frame and scaled ones after, so the
+        # app's default font stands in for an unbound widget.
+        font_id = dpg.get_item_font(self.uuid)
+        if not font_id and self.node is not None:
+            font_id = getattr(self.node.app, 'font_24', None)
+        text_width = 0.0
+        text_height = 0.0
+        try:
+            for text in items:
+                if font_id:
+                    size = dpg.get_text_size(text, font=font_id)
+                else:
+                    size = dpg.get_text_size(text)
+                if size is None or size[1] <= 0:
+                    return None
+                text_width = max(text_width, size[0])
+                text_height = max(text_height, size[1])
+        except Exception:
+            return None
+        scale = 1.0
+        if font_id:
+            scale = dpg.get_global_font_scale() or 1.0
+        # The drop-down arrow is a square one frame-height wide.
+        width = (text_width + text_height) * scale + pad
+        width = max(width, minimum_width)
+        dpg.configure_item(self.uuid, width=int(width))
+        return width
+
 
 class RadioGroup(SelectorWidget):
     def _draw_widget(self):

@@ -521,7 +521,7 @@ class HomeViewNode(_ViewButtonNodeMixin, Node):
         editor.home_nodes()
 
 
-class MenuNode(Node):
+class MenuNode(_HideTitleBarMixin, Node):
     @staticmethod
     def factory(name, data, args=None):
         node = MenuNode(name, data, args)
@@ -536,10 +536,63 @@ class MenuNode(Node):
         self.choices = self.args_as_list(ordered_args) or ['']
         self.choice = self.add_input('##choice', widget_type='combo', default_value=self.choices[0], callback=self.set_choice)
         self.choice.widget.combo_items = self.choices
+        # A name column to the left of the combo, hidden until a prefix is set.
+        self.choice.widget.prefix_label = ''
+        self.prefix_option = self.add_option('prefix', widget_type='text_input', default_value='',
+                                             callback=self.prefix_changed)
+        self.prefix_as_label = self.add_option('prefix_as_label', widget_type='checkbox', default_value=True,
+                                               callback=self.prefix_changed)
         self.font_size_option = self.add_option('font size', widget_type='combo', default_value='24',
                                                  callback=self.large_font_changed)
         self.font_size_option.widget.combo_items = ['24', '30', '36', '48']
+        self._add_hide_title_bar_option(default_value=False)
         self.output = self.add_output('')
+        self._fit_retries_left = 0
+
+    def custom_create(self, from_file):
+        self.prefix_changed()
+        self.fit_width()
+        self._apply_title_bar_visibility()
+
+    def prefix_changed(self):
+        """Show the prefix as a name in front of the combo, or hide the column."""
+        widget = self.choice.widget
+        if widget.prefix_uuid is None or not dpg.does_item_exist(widget.prefix_uuid):
+            return
+        text = self.prefix_option().strip() if self.prefix_as_label() else ''
+        dpg.set_value(widget.prefix_uuid, text)
+        for uuid in (widget.prefix_uuid, widget.prefix_spacer_uuid):
+            if text:
+                dpg.show_item(uuid)
+            else:
+                dpg.hide_item(uuid)
+
+    # --- width ---
+
+    def fit_width(self):
+        """Size the combo to its longest item; retry on later frames if text
+        cannot be measured yet (nodes built during a patch load)."""
+        if self.choice.widget.fit_to_items() is None:
+            if self._fit_retries_left <= 0:
+                self._fit_retries_left = 30
+                self.app.queue_main_thread_call(self._retry_fit_width)
+
+    def _retry_fit_width(self):
+        if not self.created or self.choice.widget is None:
+            self._fit_retries_left = 0
+            return
+        if self.choice.widget.fit_to_items() is not None:
+            self._fit_retries_left = 0
+            return
+        self._fit_retries_left -= 1
+        if self._fit_retries_left > 0:
+            self.app.queue_main_thread_call(self._retry_fit_width)
+
+    def set_items(self, items):
+        self.choices = items
+        self.choice.widget.combo_items = self.choices
+        dpg.configure_item(self.choice.widget.uuid, items=self.choices)
+        self.fit_width()
 
     def get_preset_state(self):
         preset = {}
@@ -561,7 +614,7 @@ class MenuNode(Node):
             self.choice.set_font(self.app.font_36)
         elif font_size == '48':
             self.choice.set_font(self.app.font_48)
-        adjusted_width = self.choice.widget.adjust_to_text_width()
+        self.fit_width()
 
     def set_choice_internal(self):
         input_choice = self.choice()
@@ -576,17 +629,18 @@ class MenuNode(Node):
                     test_choice = input_choice[1]
                     do_execute = False
                 elif input_choice[0] == 'append':
+                    new_choices = list(self.choices)
                     for new_choice in input_choice[1:]:
-                        if new_choice not in self.choices:
-                            self.choices.append(new_choice)
-                    dpg.configure_item(self.choice.widget.uuid, items=self.choices)
+                        if new_choice not in new_choices:
+                            new_choices.append(new_choice)
+                    self.set_items(new_choices)
                     do_execute = False
                 else:
-                    self.choices = []
+                    new_choices = []
                     for new_choice in input_choice:
-                        if new_choice not in self.choices:
-                            self.choices.append(new_choice)
-                    dpg.configure_item(self.choice.widget.uuid, items=self.choices)
+                        if new_choice not in new_choices:
+                            new_choices.append(new_choice)
+                    self.set_items(new_choices)
                     do_execute = False
         elif t in [int, float, bool]:
             test_choice = str(input_choice)
@@ -608,7 +662,11 @@ class MenuNode(Node):
             self.execute()
 
     def execute(self):
-        self.outputs[0].send(self.choice())
+        prefix = self.prefix_option().split()
+        if prefix:
+            self.outputs[0].send(prefix + [self.choice()])
+        else:
+            self.outputs[0].send(self.choice())
 
 
 class MouseNode(Node):
