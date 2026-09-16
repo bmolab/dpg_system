@@ -1,0 +1,475 @@
+{
+    "height": 1021,
+    "width": 1923,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "finger_zones_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/finger_zones_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment finger_zones - which finger is this touch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "finger_zones - which finger is this touch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "finger_zones - which finger is this touch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1085,
+            "position_y": 45,
+            "width": 798,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Turns the erae node's fingers - numbered in the order they landed - into\nnamed fingers: thumb, index, middle, ring, pinky, of one hand or both.\n\nTHE NODE:\n\nfinger_zones   touch in, the same touch out with a finger name, and a picture\n               of the home circles to draw on the pad\n\nHOW A TOUCH GETS ITS FINGER:\nFive circles (ten for 'both') sit in the natural resting positions of a hand\nlaid palm down on the pad. When a touch lands it takes the finger of the\nnearest circle that no other touch holds, and it KEEPS that finger for as\nlong as it stays down, however far it wanders - a middle finger that slides\nover the ring finger's circle is still the middle finger. The names are freed\non 'up'. So the circles only matter at the moment of landing; after that the\nfinger is an identity, not a place.\n\nRE-ACQUISITION:\nA finger that lifts and lands again close to where it left - within 'reacquire\nradius', inside 'reacquire time' - gets its old name back rather than being\njudged afresh by the circles. That is what keeps a trill or a re-press on a\nfinger that has drifted from home from turning the index finger into the\nmiddle one. Only a name that is still free can be re-acquired.\n\nWHEN THE CIRCLE IS TAKEN:\nTwo touches landing in the same circle cannot both be the same finger, so the\nsecond takes the nearest circle still free. Set 'catch radius' and a landing\nfarther than that from every free circle is left unassigned: it still comes\nout of 'touch', with finger -1, so nothing is lost, but it holds no name and\nno voice.\n\nTHE PICTURE:\n'zones image' sends the circles as a height x width x 3 image whenever the\nlayout changes, on 'draw', and (with 'show held') whenever a finger lands or\nlifts, held circles filled in 'held color'. Connect it to the erae node's\n'backdrop' and the pad shows the home positions under the pressure halos, or\nto 'image' to draw it plainly. Width and height are the zone's size - 43 x 25\nfor a full-pad zone - and the erae node's 'zone size' outlet can set them.\n\nTHE LAYOUT:\n'hands' is right, left or both. 'centre x' and 'centre y' place the hand (the\nmidpoint between the hands for 'both'), 'spread' scales it - the thumb-to-\npinky span is about twice 'spread' - 'separation' is the distance between the\ntwo hands' centres, and 'rotation' turns each hand, both splaying outward by\nthe same angle. 'radius' is the drawn circle, in pixels; it does not affect\nwhich finger a touch gets.\n\nOUTPUTS:\n'touch' is finger, action, x, y, z per event, where finger is 0..4 (thumb to\npinky) or 0..9 (left thumb to right pinky), -1 if unassigned, or the name\nitself with 'finger as name'. 'voices' is an array with one row per finger:\nheld, x, y, z - a fixed slot per finger, so a patch can read the ring finger's\npressure without routing on ids. 'count' is how many fingers hold a name.\n\nThrough 'source' the node also reads mpe_in's touch lists, taking pitch as x,\nslide as y and pressure as z; the circles are then laid out in note and slide\nunits.\n\nSYNTAX:\nfinger_zones\n\nEXAMPLE:\nfinger_zones\n\nINPUTS and PARAMETERS:\n\ntouch:\nA finger event from erae (finger zone action x y z) or mpe_in.\n\nzone size:\nzone width height, as the erae node sends it, or width height: sets the size\nof the picture.\n\ndraw:\nSend the zones image now.\n\nreset:\nForget every held finger and recent lift.\n\nhands:\nright, left or both.\n\nsource:\nerae or mpe_in - which touch list shape to read.\n\nwidth / height:\nThe picture's size in pixels.\n\ncentre x / centre y / spread / separation / rotation:\nWhere the hands sit, how big they are, how far apart, and how they are turned.\n\nradius:\nThe drawn circle's radius in pixels.\n\ncatch radius:\nFarther than this from every free circle, a landing is unassigned. 0 means no\nlimit.\n\nreacquire radius / reacquire time:\nHow close to where a finger lifted, and how soon after, a landing counts as\nthe same finger again.\n\nfinger as name:\nSend 'thumb' 'index' ... (or 'left thumb' ...) in place of 0 1 ....\n\nshow held:\nSend the image again whenever a finger lands or lifts, with held circles\nfilled.\n\nzone color / held color / background:\nThe circles, the circles a finger holds, and the rest of the picture.\n\nOUTPUTS:\n\ntouch:\nfinger, action, x, y, z per event.\n\nvoices:\nOne row per finger: held, x, y, z.\n\ncount:\nHow many fingers hold a name.\n\nzones image:\nThe home circles as a picture, top row first.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Turns the erae node's fingers - numbered in the order they landed - into\nnamed fingers: thumb, index, middle, ring, pinky, of one hand or both.\n\nTHE NODE:\n\nfinger_zones   touch in, the same touch out with a finger name, and a picture\n               of the home circles to draw on the pad\n\nHOW A TOUCH GETS ITS FINGER:\nFive circles (ten for 'both') sit in the natural resting positions of a hand\nlaid palm down on the pad. When a touch lands it takes the finger of the\nnearest circle that no other touch holds, and it KEEPS that finger for as\nlong as it stays down, however far it wanders - a middle finger that slides\nover the ring finger's circle is still the middle finger. The names are freed\non 'up'. So the circles only matter at the moment of landing; after that the\nfinger is an identity, not a place.\n\nRE-ACQUISITION:\nA finger that lifts and lands again close to where it left - within 'reacquire\nradius', inside 'reacquire time' - gets its old name back rather than being\njudged afresh by the circles. That is what keeps a trill or a re-press on a\nfinger that has drifted from home from turning the index finger into the\nmiddle one. Only a name that is still free can be re-acquired.\n\nWHEN THE CIRCLE IS TAKEN:\nTwo touches landing in the same circle cannot both be the same finger, so the\nsecond takes the nearest circle still free. Set 'catch radius' and a landing\nfarther than that from every free circle is left unassigned: it still comes\nout of 'touch', with finger -1, so nothing is lost, but it holds no name and\nno voice.\n\nTHE PICTURE:\n'zones image' sends the circles as a height x width x 3 image whenever the\nlayout changes, on 'draw', and (with 'show held') whenever a finger lands or\nlifts, held circles filled in 'held color'. Connect it to the erae node's\n'backdrop' and the pad shows the home positions under the pressure halos, or\nto 'image' to draw it plainly. Width and height are the zone's size - 43 x 25\nfor a full-pad zone - and the erae node's 'zone size' outlet can set them.\n\nTHE LAYOUT:\n'hands' is right, left or both. 'centre x' and 'centre y' place the hand (the\nmidpoint between the hands for 'both'), 'spread' scales it - the thumb-to-\npinky span is about twice 'spread' - 'separation' is the distance between the\ntwo hands' centres, and 'rotation' turns each hand, both splaying outward by\nthe same angle. 'radius' is the drawn circle, in pixels; it does not affect\nwhich finger a touch gets.\n\nOUTPUTS:\n'touch' is finger, action, x, y, z per event, where finger is 0..4 (thumb to\npinky) or 0..9 (left thumb to right pinky), -1 if unassigned, or the name\nitself with 'finger as name'. 'voices' is an array with one row per finger:\nheld, x, y, z - a fixed slot per finger, so a patch can read the ring finger's\npressure without routing on ids. 'count' is how many fingers hold a name.\n\nThrough 'source' the node also reads mpe_in's touch lists, taking pitch as x,\nslide as y and pressure as z; the circles are then laid out in note and slide\nunits.\n\nSYNTAX:\nfinger_zones\n\nEXAMPLE:\nfinger_zones\n\nINPUTS and PARAMETERS:\n\ntouch:\nA finger event from erae (finger zone action x y z) or mpe_in.\n\nzone size:\nzone width height, as the erae node sends it, or width height: sets the size\nof the picture.\n\ndraw:\nSend the zones image now.\n\nreset:\nForget every held finger and recent lift.\n\nhands:\nright, left or both.\n\nsource:\nerae or mpe_in - which touch list shape to read.\n\nwidth / height:\nThe picture's size in pixels.\n\ncentre x / centre y / spread / separation / rotation:\nWhere the hands sit, how big they are, how far apart, and how they are turned.\n\nradius:\nThe drawn circle's radius in pixels.\n\ncatch radius:\nFarther than this from every free circle, a landing is unassigned. 0 means no\nlimit.\n\nreacquire radius / reacquire time:\nHow close to where a finger lifted, and how soon after, a landing counts as\nthe same finger again.\n\nfinger as name:\nSend 'thumb' 'index' ... (or 'left thumb' ...) in place of 0 1 ....\n\nshow held:\nSend the image again whenever a finger lands or lifts, with held circles\nfilled.\n\nzone color / held color / background:\nThe circles, the circles a finger holds, and the rest of the picture.\n\nOUTPUTS:\n\ntouch:\nfinger, action, x, y, z per event.\n\nvoices:\nOne row per finger: held, x, y, z.\n\ncount:\nHow many fingers hold a name.\n\nzones image:\nThe home circles as a picture, top row first."
+        },
+        "3": {
+            "name": "erae",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 262,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "show touches",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "finger_zones",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 88,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "finger as name",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 696,
+            "position_y": 520,
+            "width": 348,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the erae fingers in, named fingers out;\nthe circles go back to the pad as the backdrop\nunder the halos, and the zone size sets the picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the erae fingers in, named fingers out;\nthe circles go back to the pad as the backdrop\nunder the halos, and the zone size sets the picture"
+        },
+        "6": {
+            "name": "unpack",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 45,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "unpack 5"
+        },
+        "7": {
+            "name": "string",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 790,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 220,
+            "position_y": 790,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 380,
+            "position_y": 790,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 540,
+            "position_y": 790,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment finger              x                 y                 z",
+            "name": "comment",
+            "id": 644,
+            "position_x": 696,
+            "position_y": 850,
+            "width": 359,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "finger              x                 y                 z",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "finger              x                 y                 z"
+        },
+        "12": {
+            "name": "int",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 680,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment fingers holding a name",
+            "name": "comment",
+            "id": 718,
+            "position_x": 696,
+            "position_y": 690,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fingers holding a name",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fingers holding a name"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 862,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "touch",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "touch"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "zone size",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "zone size"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "zones image",
+            "dest_node": 348,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "backdrop"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "touch",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 2,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 3,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 4,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

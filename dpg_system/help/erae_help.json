@@ -5,19 +5,18 @@
         100,
         100
     ],
-    "id": 201,
+    "id": 866,
     "name": "erae_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/erae_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 232,
-            "sid": 1,
+            "id": 237,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "hidden",
+            "visibility": "show_all",
             "draggable": true,
             "protected": true,
             "presentation_state": "hidden",
@@ -32,8 +31,7 @@
         "1": {
             "init": "comment erae - the Embodme Erae 2 through its API",
             "name": "comment",
-            "id": 334,
-            "sid": 2,
+            "id": 274,
             "position_x": 24,
             "position_y": -4,
             "width": 512,
@@ -45,20 +43,19 @@
                 "0": {
                     "name": "text",
                     "value": "erae - the Embodme Erae 2 through its API",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             },
             "comment": "erae - the Embodme Erae 2 through its API"
         },
         "2": {
             "name": "text_block",
-            "id": 352,
-            "sid": 3,
+            "id": 311,
             "position_x": 1010,
             "position_y": 45,
             "width": 798,
@@ -69,8 +66,8 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The Embodme Erae 2 (or Erae Touch) as a touch surface and a display,\nthrough Embodme's own API rather than through MIDI notes.\n\nTHE NODE:\n\nerae   finger stream in, pixels / rectangles / images out\n\nWHY NOT JUST MIDI:\nThe pad already sends MIDI and MPE, and midi_note_in and the others read that\nfine. But a note is a coarse thing to make of a finger: a number for where it\nlanded, a bent pitch for where it went, and no way to tell two fingers apart\nonce they cross. The API gives you each finger as it is - a float x, y and\npressure z, with an identity that lasts from the moment it lands to the moment\nit lifts. And it lets you draw on the pad, so the surface can show the state\nof the patch under your hands.\n\nAPI ZONES:\nThe API only sees 'API Zone' elements, which you place on the pad in Embodme's\nErae Lab and give an index, 0 and up. The rest of a layout - keys, faders, pads\n- goes on speaking MIDI as before, and that arrives at 'midi received'. A zone\nindex that is not in the current layout answers 'query' with a size of 0 0 and\nnever sends a finger, which is the first thing to check when nothing comes out.\n\nTHE FINGER STREAM:\n'touch' sends one list per event: finger, zone, action, x, y, z. The finger\nnumber is a small slot - 0 for the first finger down, 1 for the next while the\nfirst is held - and it is freed when the finger lifts, so it is stable enough\nto route on. The action is 0 for down, 1 for move, 2 for up, or the words\n'down' 'move' 'up' if 'action as name' is ticked. x and y are in zone pixels\n- 0..42 across and 0..24 up on a full-pad zone, bottom-left origin - and z is\nthe pressure, 0..1, and it is always 0 on the 'up' event so a stream of z ends\nat rest. Events come at about 100 a second per finger.\n\nDRAWING:\n'pixel' takes x y r g b, 'rect' takes x y w h r g b, both with colours 0..255.\n'image' takes an array of height x width x 3 (or a grey height x width), top\nrow first like any picture, and puts it in the zone at 'image x', 'image y'.\nLong images are cut into runs of 32 pixels per message on the way out, as the\ndevice asks. 'clear' wipes the zone. Every drawing command goes to the zone\nnamed in 'zone'.\n\nshow touches DRAWS THE FINGERS FOR YOU:\nTick 'show touches' and the node paints the zone itself: a dot under each\nfinger with a ring round it that widens as you press, the way Erae Lab's key\nelement shows a slide. 'halo min radius' and 'halo max radius' are the ring at\nno pressure and at full pressure, 'halo width' its thickness, and the two\ncolours are the ring and the empty zone. Only the pixels that changed since\nthe last frame are sent, at most 'display fps' times a second, so the pad keeps\nup with four fingers moving at once.\n\napi mode IS THE SWITCH:\nThe node turns the API on when it is made and off when it is deleted. Untick\n'api mode' to hand the pad back to its ordinary behaviour without deleting the\nnode.\n\nSYNTAX:\nerae\nerae <port name>\n\nEXAMPLE:\nerae\n\nINPUTS and PARAMETERS:\n\napi mode:\nWhether the API is switched on in the device.\n\nzone:\nWhich API Zone the queries and drawing commands address.\n\nquery:\nAsk the size of the current zone; the answer comes out of 'zone size'.\n\nclear:\nWipe the current zone's display.\n\npixel / rect / image:\nDrawing, as above.\n\nin port / out port:\nThe device. The API travels on 'Erae 2 MIDI', not the '(MPE)' port.\n\nproduct:\nErae 2 or Erae Touch - they differ by one byte in the address.\n\naction as name:\nSend 'down' 'move' 'up' in place of 0 1 2.\n\nimage x / image y:\nWhere the bottom-left corner of an image lands in the zone.\n\nshow touches:\nPaint a pressure halo under every finger in the zone.\n\nhalo color / background:\nThe ring, and the zone with no fingers on it.\n\nhalo min radius / halo max radius / halo width:\nThe ring's radius in pixels at zero and at full pressure, and its thickness.\n\npressure range:\nThe z value that counts as full pressure - 1 for the Erae 2.\n\ndisplay fps:\nThe most frames a second the halo display will send.\n\nhalo offset:\nNudges the halos onto the fingertips. The LED grid sits half a pixel left of\nand below the touch grid, so 0.5 lines them up; larger moves them left and down.\n\nOUTPUTS:\n\ntouch:\nfinger, zone, action, x, y, z per event.\n\nzone size:\nzone, width, height in answer to 'query' - 0 0 if the zone is not laid out.\n\napi version:\nThe API version the device reports, sent once when the API is enabled.\n\nmidi received:\nEverything the pad sends that is not API traffic - its ordinary notes and\ncontrollers.",
-                    "value_type": "string"
+                    "value": "The Embodme Erae 2 (or Erae Touch) as a touch surface and a display,\nthrough Embodme's own API rather than through MIDI notes.\n\nTHE NODE:\n\nerae   finger stream in, pixels / rectangles / images out\n\nWHY NOT JUST MIDI:\nThe pad already sends MIDI and MPE, and midi_note_in and the others read that\nfine. But a note is a coarse thing to make of a finger: a number for where it\nlanded, a bent pitch for where it went, and no way to tell two fingers apart\nonce they cross. The API gives you each finger as it is - a float x, y and\npressure z, with an identity that lasts from the moment it lands to the moment\nit lifts. And it lets you draw on the pad, so the surface can show the state\nof the patch under your hands.\n\nAPI ZONES:\nThe API only sees 'API Zone' elements, which you place on the pad in Embodme's\nErae Lab and give an index, 0 and up. The rest of a layout - keys, faders, pads\n- goes on speaking MIDI as before, and that arrives at 'midi received'. A zone\nindex that is not in the current layout answers 'query' with a size of 0 0 and\nnever sends a finger, which is the first thing to check when nothing comes out.\n\nTHE FINGER STREAM:\n'touch' sends one list per event: finger, zone, action, x, y, z. The finger\nnumber is a small slot - 0 for the first finger down, 1 for the next while the\nfirst is held - and it is freed when the finger lifts, so it is stable enough\nto route on. The action is 0 for down, 1 for move, 2 for up, or the words\n'down' 'move' 'up' if 'action as name' is ticked. x and y are in zone pixels\n- 0..42 across and 0..24 up on a full-pad zone, bottom-left origin - and z is\nthe pressure, 0..1, and it is always 0 on the 'up' event so a stream of z ends\nat rest. Events come at about 100 a second per finger.\n\nDRAWING:\n'pixel' takes x y r g b, 'rect' takes x y w h r g b, both with colours 0..255.\n'image' takes an array of height x width x 3 (or a grey height x width), top\nrow first like any picture, and puts it in the zone at 'image x', 'image y'.\nLong images are cut into runs of 32 pixels per message on the way out, as the\ndevice asks. 'clear' wipes the zone. Every drawing command goes to the zone\nnamed in 'zone'.\n\n'backdrop' takes an image the same way but does not draw it: it is kept and\npainted UNDER the halos, so a picture of the patch's state (the home circles\nfrom finger_zones, say) stays on the pad while the fingers are shown over it.\nAnything that is not an image clears the backdrop.\n\nshow touches DRAWS THE FINGERS FOR YOU:\nTick 'show touches' and the node paints the zone itself: a dot under each\nfinger with a ring round it that widens as you press, the way Erae Lab's key\nelement shows a slide. 'halo min radius' and 'halo max radius' are the ring at\nno pressure and at full pressure, 'halo width' its thickness, and the two\ncolours are the ring and the empty zone. Only the pixels that changed since\nthe last frame are sent, at most 'display fps' times a second, so the pad keeps\nup with four fingers moving at once.\n\napi mode IS THE SWITCH:\nThe node turns the API on when it is made and off when it is deleted. Untick\n'api mode' to hand the pad back to its ordinary behaviour without deleting the\nnode.\n\nSYNTAX:\nerae\nerae <port name>\n\nEXAMPLE:\nerae\n\nINPUTS and PARAMETERS:\n\napi mode:\nWhether the API is switched on in the device.\n\nzone:\nWhich API Zone the queries and drawing commands address.\n\nquery:\nAsk the size of the current zone; the answer comes out of 'zone size'.\n\nclear:\nWipe the current zone's display.\n\npixel / rect / image:\nDrawing, as above.\n\nbackdrop:\nAn image to keep under the halos when 'show touches' is on.\n\nin port / out port:\nThe device. The API travels on 'Erae 2 MIDI', not the '(MPE)' port.\n\nproduct:\nErae 2 or Erae Touch - they differ by one byte in the address.\n\naction as name:\nSend 'down' 'move' 'up' in place of 0 1 2.\n\nimage x / image y:\nWhere the bottom-left corner of an image lands in the zone.\n\nshow touches:\nPaint a pressure halo under every finger in the zone.\n\nhalo color / background:\nThe ring, and the zone with no fingers on it.\n\nhalo min radius / halo max radius / halo width:\nThe ring's radius in pixels at zero and at full pressure, and its thickness.\n\npressure range:\nThe z value that counts as full pressure - 1 for the Erae 2.\n\ndisplay fps:\nThe most frames a second the halo display will send.\n\nhalo offset:\nNudges the halos onto the fingertips. The LED grid sits half a pixel left of\nand below the touch grid, so 0.5 lines them up; larger moves them left and down.\n\nOUTPUTS:\n\ntouch:\nfinger, zone, action, x, y, z per event.\n\nzone size:\nzone, width, height in answer to 'query' - 0 0 if the zone is not laid out.\n\napi version:\nThe API version the device reports, sent once when the API is enabled.\n\nmidi received:\nEverything the pad sends that is not API traffic - its ordinary notes and\ncontrollers.",
+                    "value_type": "str"
                 },
                 "1": {
                     "name": "lock",
@@ -90,145 +87,27 @@
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             },
-            "text": "The Embodme Erae 2 (or Erae Touch) as a touch surface and a display,\nthrough Embodme's own API rather than through MIDI notes.\n\nTHE NODE:\n\nerae   finger stream in, pixels / rectangles / images out\n\nWHY NOT JUST MIDI:\nThe pad already sends MIDI and MPE, and midi_note_in and the others read that\nfine. But a note is a coarse thing to make of a finger: a number for where it\nlanded, a bent pitch for where it went, and no way to tell two fingers apart\nonce they cross. The API gives you each finger as it is - a float x, y and\npressure z, with an identity that lasts from the moment it lands to the moment\nit lifts. And it lets you draw on the pad, so the surface can show the state\nof the patch under your hands.\n\nAPI ZONES:\nThe API only sees 'API Zone' elements, which you place on the pad in Embodme's\nErae Lab and give an index, 0 and up. The rest of a layout - keys, faders, pads\n- goes on speaking MIDI as before, and that arrives at 'midi received'. A zone\nindex that is not in the current layout answers 'query' with a size of 0 0 and\nnever sends a finger, which is the first thing to check when nothing comes out.\n\nTHE FINGER STREAM:\n'touch' sends one list per event: finger, zone, action, x, y, z. The finger\nnumber is a small slot - 0 for the first finger down, 1 for the next while the\nfirst is held - and it is freed when the finger lifts, so it is stable enough\nto route on. The action is 0 for down, 1 for move, 2 for up, or the words\n'down' 'move' 'up' if 'action as name' is ticked. x and y are in zone pixels\n- 0..42 across and 0..24 up on a full-pad zone, bottom-left origin - and z is\nthe pressure, 0..1, and it is always 0 on the 'up' event so a stream of z ends\nat rest. Events come at about 100 a second per finger.\n\nDRAWING:\n'pixel' takes x y r g b, 'rect' takes x y w h r g b, both with colours 0..255.\n'image' takes an array of height x width x 3 (or a grey height x width), top\nrow first like any picture, and puts it in the zone at 'image x', 'image y'.\nLong images are cut into runs of 32 pixels per message on the way out, as the\ndevice asks. 'clear' wipes the zone. Every drawing command goes to the zone\nnamed in 'zone'.\n\nshow touches DRAWS THE FINGERS FOR YOU:\nTick 'show touches' and the node paints the zone itself: a dot under each\nfinger with a ring round it that widens as you press, the way Erae Lab's key\nelement shows a slide. 'halo min radius' and 'halo max radius' are the ring at\nno pressure and at full pressure, 'halo width' its thickness, and the two\ncolours are the ring and the empty zone. Only the pixels that changed since\nthe last frame are sent, at most 'display fps' times a second, so the pad keeps\nup with four fingers moving at once.\n\napi mode IS THE SWITCH:\nThe node turns the API on when it is made and off when it is deleted. Untick\n'api mode' to hand the pad back to its ordinary behaviour without deleting the\nnode.\n\nSYNTAX:\nerae\nerae <port name>\n\nEXAMPLE:\nerae\n\nINPUTS and PARAMETERS:\n\napi mode:\nWhether the API is switched on in the device.\n\nzone:\nWhich API Zone the queries and drawing commands address.\n\nquery:\nAsk the size of the current zone; the answer comes out of 'zone size'.\n\nclear:\nWipe the current zone's display.\n\npixel / rect / image:\nDrawing, as above.\n\nin port / out port:\nThe device. The API travels on 'Erae 2 MIDI', not the '(MPE)' port.\n\nproduct:\nErae 2 or Erae Touch - they differ by one byte in the address.\n\naction as name:\nSend 'down' 'move' 'up' in place of 0 1 2.\n\nimage x / image y:\nWhere the bottom-left corner of an image lands in the zone.\n\nshow touches:\nPaint a pressure halo under every finger in the zone.\n\nhalo color / background:\nThe ring, and the zone with no fingers on it.\n\nhalo min radius / halo max radius / halo width:\nThe ring's radius in pixels at zero and at full pressure, and its thickness.\n\npressure range:\nThe z value that counts as full pressure - 1 for the Erae 2.\n\ndisplay fps:\nThe most frames a second the halo display will send.\n\nhalo offset:\nNudges the halos onto the fingertips. The LED grid sits half a pixel left of\nand below the touch grid, so 0.5 lines them up; larger moves them left and down.\n\nOUTPUTS:\n\ntouch:\nfinger, zone, action, x, y, z per event.\n\nzone size:\nzone, width, height in answer to 'query' - 0 0 if the zone is not laid out.\n\napi version:\nThe API version the device reports, sent once when the API is enabled.\n\nmidi received:\nEverything the pad sends that is not API traffic - its ordinary notes and\ncontrollers."
+            "text": "The Embodme Erae 2 (or Erae Touch) as a touch surface and a display,\nthrough Embodme's own API rather than through MIDI notes.\n\nTHE NODE:\n\nerae   finger stream in, pixels / rectangles / images out\n\nWHY NOT JUST MIDI:\nThe pad already sends MIDI and MPE, and midi_note_in and the others read that\nfine. But a note is a coarse thing to make of a finger: a number for where it\nlanded, a bent pitch for where it went, and no way to tell two fingers apart\nonce they cross. The API gives you each finger as it is - a float x, y and\npressure z, with an identity that lasts from the moment it lands to the moment\nit lifts. And it lets you draw on the pad, so the surface can show the state\nof the patch under your hands.\n\nAPI ZONES:\nThe API only sees 'API Zone' elements, which you place on the pad in Embodme's\nErae Lab and give an index, 0 and up. The rest of a layout - keys, faders, pads\n- goes on speaking MIDI as before, and that arrives at 'midi received'. A zone\nindex that is not in the current layout answers 'query' with a size of 0 0 and\nnever sends a finger, which is the first thing to check when nothing comes out.\n\nTHE FINGER STREAM:\n'touch' sends one list per event: finger, zone, action, x, y, z. The finger\nnumber is a small slot - 0 for the first finger down, 1 for the next while the\nfirst is held - and it is freed when the finger lifts, so it is stable enough\nto route on. The action is 0 for down, 1 for move, 2 for up, or the words\n'down' 'move' 'up' if 'action as name' is ticked. x and y are in zone pixels\n- 0..42 across and 0..24 up on a full-pad zone, bottom-left origin - and z is\nthe pressure, 0..1, and it is always 0 on the 'up' event so a stream of z ends\nat rest. Events come at about 100 a second per finger.\n\nDRAWING:\n'pixel' takes x y r g b, 'rect' takes x y w h r g b, both with colours 0..255.\n'image' takes an array of height x width x 3 (or a grey height x width), top\nrow first like any picture, and puts it in the zone at 'image x', 'image y'.\nLong images are cut into runs of 32 pixels per message on the way out, as the\ndevice asks. 'clear' wipes the zone. Every drawing command goes to the zone\nnamed in 'zone'.\n\n'backdrop' takes an image the same way but does not draw it: it is kept and\npainted UNDER the halos, so a picture of the patch's state (the home circles\nfrom finger_zones, say) stays on the pad while the fingers are shown over it.\nAnything that is not an image clears the backdrop.\n\nshow touches DRAWS THE FINGERS FOR YOU:\nTick 'show touches' and the node paints the zone itself: a dot under each\nfinger with a ring round it that widens as you press, the way Erae Lab's key\nelement shows a slide. 'halo min radius' and 'halo max radius' are the ring at\nno pressure and at full pressure, 'halo width' its thickness, and the two\ncolours are the ring and the empty zone. Only the pixels that changed since\nthe last frame are sent, at most 'display fps' times a second, so the pad keeps\nup with four fingers moving at once.\n\napi mode IS THE SWITCH:\nThe node turns the API on when it is made and off when it is deleted. Untick\n'api mode' to hand the pad back to its ordinary behaviour without deleting the\nnode.\n\nSYNTAX:\nerae\nerae <port name>\n\nEXAMPLE:\nerae\n\nINPUTS and PARAMETERS:\n\napi mode:\nWhether the API is switched on in the device.\n\nzone:\nWhich API Zone the queries and drawing commands address.\n\nquery:\nAsk the size of the current zone; the answer comes out of 'zone size'.\n\nclear:\nWipe the current zone's display.\n\npixel / rect / image:\nDrawing, as above.\n\nbackdrop:\nAn image to keep under the halos when 'show touches' is on.\n\nin port / out port:\nThe device. The API travels on 'Erae 2 MIDI', not the '(MPE)' port.\n\nproduct:\nErae 2 or Erae Touch - they differ by one byte in the address.\n\naction as name:\nSend 'down' 'move' 'up' in place of 0 1 2.\n\nimage x / image y:\nWhere the bottom-left corner of an image lands in the zone.\n\nshow touches:\nPaint a pressure halo under every finger in the zone.\n\nhalo color / background:\nThe ring, and the zone with no fingers on it.\n\nhalo min radius / halo max radius / halo width:\nThe ring's radius in pixels at zero and at full pressure, and its thickness.\n\npressure range:\nThe z value that counts as full pressure - 1 for the Erae 2.\n\ndisplay fps:\nThe most frames a second the halo display will send.\n\nhalo offset:\nNudges the halos onto the fingertips. The LED grid sits half a pixel left of\nand below the touch grid, so 0.5 lines them up; larger moves them left and down.\n\nOUTPUTS:\n\ntouch:\nfinger, zone, action, x, y, z per event.\n\nzone size:\nzone, width, height in answer to 'query' - 0 0 if the zone is not laid out.\n\napi version:\nThe API version the device reports, sent once when the API is enabled.\n\nmidi received:\nEverything the pad sends that is not API traffic - its ordinary notes and\ncontrollers."
         },
         "3": {
-            "init": "erae Erae 2 MIDI",
             "name": "erae",
-            "id": 381,
-            "sid": 4,
-            "position_x": 70,
+            "id": 348,
+            "position_x": 30,
             "position_y": 62,
             "width": 262,
-            "height": 478,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "api mode",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "zone",
-                    "value": 0,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "query",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "3": {
-                    "name": "clear",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "4": {
-                    "name": "in port",
-                    "value": "Erae 2 MIDI",
-                    "value_type": "string"
-                },
-                "5": {
-                    "name": "out port",
-                    "value": "Erae 2 MIDI",
-                    "value_type": "string"
-                },
-                "6": {
-                    "name": "channel",
-                    "value": 1,
-                    "value_type": "int"
-                },
-                "7": {
-                    "name": "product",
-                    "value": "Erae 2",
-                    "value_type": "string"
-                },
-                "8": {
-                    "name": "action as name",
-                    "value": false,
-                    "value_type": "bool"
-                },
-                "9": {
-                    "name": "image x",
-                    "value": 0,
-                    "value_type": "int"
-                },
-                "10": {
-                    "name": "image y",
-                    "value": 0,
-                    "value_type": "int"
-                },
-                "11": {
-                    "name": "debug",
-                    "value": false,
-                    "value_type": "bool"
-                },
-                "12": {
-                    "name": "show touches",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "13": {
-                    "name": "halo color",
-                    "value": [
-                        1.0,
-                        0.5490196347236633,
-                        0.09803921729326248,
-                        1.0
-                    ],
-                    "value_type": "list"
-                },
-                "14": {
-                    "name": "background",
-                    "value": [
-                        0.027450980618596077,
-                        0.027450980618596077,
-                        0.09803921729326248,
-                        1.0
-                    ],
-                    "value_type": "list"
-                },
-                "15": {
-                    "name": "halo min radius",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "16": {
-                    "name": "halo max radius",
-                    "value": 10.0,
-                    "value_type": "float"
-                },
-                "17": {
-                    "name": "halo width",
-                    "value": 2.0,
-                    "value_type": "float"
-                },
-                "18": {
-                    "name": "pressure range",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "19": {
-                    "name": "display fps",
-                    "value": 60.0,
-                    "value_type": "float"
-                },
-                "20": {
-                    "name": "halo offset",
-                    "value": 0.5,
-                    "value_type": "float"
-                }
-            }
+            "properties": {}
         },
         "4": {
             "name": "text_block",
-            "id": 463,
-            "sid": 5,
+            "id": 385,
+            "annotation": true,
             "position_x": 646,
             "position_y": 500,
             "width": 194,
@@ -240,7 +119,7 @@
                 "0": {
                     "name": "block",
                     "value": "one list per finger event:\nfinger zone action x y z",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
                 "1": {
                     "name": "lock",
@@ -260,28 +139,27 @@
                 "4": {
                     "name": "text_size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             },
             "text": "one list per finger event:\nfinger zone action x y z"
         },
         "5": {
-            "init": "unpack 6",
             "name": "unpack",
-            "id": 480,
-            "sid": 6,
+            "id": 422,
             "position_x": 30,
             "position_y": 560,
             "width": 45,
             "height": 112,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "unpack 6"
         },
         "6": {
             "name": "int",
-            "id": 497,
-            "sid": 7,
+            "id": 459,
             "position_x": 30,
             "position_y": 680,
             "width": 130,
@@ -291,51 +169,25 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": 0,
-                    "value_type": "int"
-                },
-                "1": {
-                    "name": "min",
-                    "value": 0,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "max",
-                    "value": 0,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "speed_property",
-                    "value": 1,
-                    "value_type": "int"
-                },
-                "4": {
                     "name": "format",
                     "value": "%d",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
-                "5": {
-                    "name": "bind to",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "6": {
+                "1": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "7": {
+                "2": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             }
         },
         "7": {
             "name": "float",
-            "id": 535,
-            "sid": 8,
+            "id": 496,
             "position_x": 170,
             "position_y": 680,
             "width": 130,
@@ -345,51 +197,25 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": 17.804256439208984,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "min",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "max",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "3": {
-                    "name": "speed_property",
-                    "value": 0.009999999776482582,
-                    "value_type": "float"
-                },
-                "4": {
                     "name": "format",
                     "value": "%.2f",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
-                "5": {
-                    "name": "bind to",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "6": {
+                "1": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "7": {
+                "2": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             }
         },
         "8": {
             "name": "float",
-            "id": 565,
-            "sid": 9,
+            "id": 533,
             "position_x": 330,
             "position_y": 680,
             "width": 130,
@@ -399,51 +225,25 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": 4.653147220611572,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "min",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "max",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "3": {
-                    "name": "speed_property",
-                    "value": 0.009999999776482582,
-                    "value_type": "float"
-                },
-                "4": {
                     "name": "format",
                     "value": "%.2f",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
-                "5": {
-                    "name": "bind to",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "6": {
+                "1": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "7": {
+                "2": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             }
         },
         "9": {
             "name": "float",
-            "id": 595,
-            "sid": 10,
+            "id": 570,
             "position_x": 490,
             "position_y": 680,
             "width": 130,
@@ -453,52 +253,26 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "min",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "max",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "3": {
-                    "name": "speed_property",
-                    "value": 0.009999999776482582,
-                    "value_type": "float"
-                },
-                "4": {
                     "name": "format",
                     "value": "%.2f",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
-                "5": {
-                    "name": "bind to",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "6": {
+                "1": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "7": {
+                "2": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             }
         },
         "10": {
             "init": "comment finger          x                 y                 z",
             "name": "comment",
-            "id": 625,
-            "sid": 11,
+            "id": 607,
             "position_x": 646,
             "position_y": 740,
             "width": 334,
@@ -510,20 +284,19 @@
                 "0": {
                     "name": "text",
                     "value": "finger          x                 y                 z",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             },
             "comment": "finger          x                 y                 z"
         },
         "11": {
             "name": "button",
-            "id": 636,
-            "sid": 12,
+            "id": 644,
             "position_x": 380,
             "position_y": 62,
             "width": 45,
@@ -531,58 +304,11 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "bind to",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "2": {
-                    "name": "message",
-                    "value": "bang",
-                    "value_type": "string"
-                },
-                "3": {
-                    "name": "width",
-                    "value": 14,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "height",
-                    "value": 14,
-                    "value_type": "int"
-                },
-                "5": {
-                    "name": "flash_duration",
-                    "value": 0.10000000149011612,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "color",
-                    "value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "value_type": "list"
-                },
-                "7": {
-                    "name": "hide_title_bar",
-                    "value": false,
-                    "value_type": "bool"
-                }
-            }
+            "properties": {}
         },
         "12": {
             "name": "message",
-            "id": 670,
-            "sid": 13,
+            "id": 681,
             "position_x": 380,
             "position_y": 118,
             "width": 130,
@@ -594,34 +320,19 @@
                 "0": {
                     "name": "text in",
                     "value": "2 2 6 4 255 40 0",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
                 "1": {
-                    "name": "adapt_width",
-                    "value": "grow_to_fit",
-                    "value_type": "string"
-                },
-                "2": {
-                    "name": "bind to",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "3": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "4": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             }
         },
         "13": {
             "name": "text_block",
-            "id": 691,
-            "sid": 14,
+            "id": 718,
+            "annotation": true,
             "position_x": 646,
             "position_y": 170,
             "width": 224,
@@ -633,7 +344,7 @@
                 "0": {
                     "name": "block",
                     "value": "x y w h r g b - a rectangle lit\non the pad, in the current zone",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
                 "1": {
                     "name": "lock",
@@ -653,44 +364,27 @@
                 "4": {
                     "name": "text_size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             },
             "text": "x y w h r g b - a rectangle lit\non the pad, in the current zone"
         },
         "14": {
             "name": "print",
-            "id": 708,
-            "sid": 15,
-            "position_x": 459,
-            "position_y": 234,
+            "id": 755,
+            "position_x": 380,
+            "position_y": 260,
             "width": 39,
             "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "identifier",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "1": {
-                    "name": "precision",
-                    "value": 3,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "end",
-                    "value": "",
-                    "value_type": "string"
-                }
-            }
+            "properties": {}
         },
         "15": {
             "name": "text_block",
-            "id": 722,
-            "sid": 16,
+            "id": 792,
+            "annotation": true,
             "position_x": 646,
             "position_y": 350,
             "width": 212,
@@ -702,7 +396,7 @@
                 "0": {
                     "name": "block",
                     "value": "zone width height - 0 0 means\nthe zone is not in the layout",
-                    "value_type": "string"
+                    "value_type": "str"
                 },
                 "1": {
                     "name": "lock",
@@ -722,15 +416,14 @@
                 "4": {
                     "name": "text_size",
                     "value": "24",
-                    "value_type": "string"
+                    "value_type": "str"
                 }
             },
             "text": "zone width height - 0 0 means\nthe zone is not in the layout"
         },
         "16": {
             "name": "close",
-            "id": 739,
-            "sid": 17,
+            "id": 829,
             "position_x": 24,
             "position_y": 752,
             "width": 88,
@@ -749,84 +442,84 @@
     },
     "links": {
         "0": {
-            "source_node": 381,
-            "source_node_name": "erae",
+            "source_node": 348,
+            "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "touch",
-            "dest_node": 480,
-            "dest_node_name": "unpack",
+            "dest_node": 422,
+            "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "1": {
-            "source_node": 381,
-            "source_node_name": "erae",
-            "source_output_index": 1,
-            "source_output_name": "zone size",
-            "dest_node": 708,
-            "dest_node_name": "print",
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "in"
+            "dest_input_name": ""
         },
         "2": {
-            "source_node": 480,
-            "source_node_name": "unpack",
-            "source_output_index": 0,
-            "source_output_name": "out 1",
-            "dest_node": 497,
-            "dest_node_name": "int",
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 3,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "3": {
-            "source_node": 480,
-            "source_node_name": "unpack",
-            "source_output_index": 3,
-            "source_output_name": "out 4",
-            "dest_node": 535,
-            "dest_node_name": "float",
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 4,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 480,
-            "source_node_name": "unpack",
-            "source_output_index": 4,
-            "source_output_name": "out 5",
-            "dest_node": 565,
-            "dest_node_name": "float",
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 5,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "5": {
-            "source_node": 480,
-            "source_node_name": "unpack",
-            "source_output_index": 5,
-            "source_output_name": "out 6",
-            "dest_node": 595,
-            "dest_node_name": "float",
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "6": {
-            "source_node": 636,
-            "source_node_name": "button",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 670,
-            "dest_node_name": "message",
-            "dest_input_index": 0,
-            "dest_input_name": "###text in"
-        },
-        "7": {
-            "source_node": 670,
-            "source_node_name": "message",
+            "source_node": 681,
+            "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 381,
-            "dest_node_name": "erae",
-            "dest_input_index": 5,
+            "dest_node": 348,
+            "dest_node_name": "",
+            "dest_input_index": 0,
             "dest_input_name": "rect"
+        },
+        "7": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "zone size",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
         }
     }
 }

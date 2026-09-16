@@ -124,6 +124,9 @@
   "erae": [
     "erae"
   ],
+  "finger_zones": [
+    "finger_zones"
+  ],
   "_gang_nodes": [
     "--- gang_nodes.py ---"
   ],

@@ -45,6 +45,11 @@ Long images are cut into runs of 32 pixels per message on the way out, as the
 device asks. 'clear' wipes the zone. Every drawing command goes to the zone
 named in 'zone'.
 
+'backdrop' takes an image the same way but does not draw it: it is kept and
+painted UNDER the halos, so a picture of the patch's state (the home circles
+from finger_zones, say) stays on the pad while the fingers are shown over it.
+Anything that is not an image clears the backdrop.
+
 show touches DRAWS THE FINGERS FOR YOU:
 Tick 'show touches' and the node paints the zone itself: a dot under each
 finger with a ring round it that widens as you press, the way Erae Lab's key
@@ -82,6 +87,9 @@ Wipe the current zone's display.
 
 pixel / rect / image:
 Drawing, as above.
+
+backdrop:
+An image to keep under the halos when 'show touches' is on.
 
 in port / out port:
 The device. The API travels on 'Erae 2 MIDI', not the '(MPE)' port.
