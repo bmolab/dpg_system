@@ -1,6 +1,6 @@
 {
-    "height": 801,
-    "width": 1438,
+    "height": 790,
+    "width": 1282,
     "position": [
         100,
         100
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 525,
+            "width": 504,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 590,
+            "position_x": 442,
             "position_y": 45,
             "width": 808,
             "height": 696,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "slider and knob set a number by dragging, within limits you decide.\n\nThey hold the same kind of value a number box does, and send it the same way. \nWhat they add is a sense of WHERE the value sits in its range - you can see at a \nglance that something is near the top of its travel, which a number alone does \nnot tell you.\n\nUse them wherever the range matters as much as the number: levels, mixes, \nthresholds, anything a person will adjust by feel rather than by typing.\n\nTO USE THEM:\nDrag to change. Double-click to type a value exactly.\n\nSYNTAX:\nslider <value>\nknob <value>\n\nEXAMPLE:\nslider 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number sets the slider; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\npower:\nBends the scale, so that the travel is not evenly distributed across the range. \nAt 1 the slider is linear. Above 1 the low end gets more of the travel, \nwhich is what you want for anything perceptual - loudness, brightness, \nfrequency - where the interesting detail is all down at the bottom and a linear \nslider spends most of its length on values you do not care about.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat and int are the same value without the travel. \ngain is a slider that multiplies a signal passing through it, rather than \nsending its own value. \nslider_bank is a row of named sliders that each send a message.",
+                    "value": "slider and knob set a number by dragging, within limits you decide.\n\nThey hold the same kind of value a number box does, and send it the same way. \nWhat they add is a sense of WHERE the value sits in its range - you can see at a \nglance that something is near the top of its travel, which a number alone does \nnot tell you.\n\nUse them wherever the range matters as much as the number: levels, mixes, \nthresholds, anything a person will adjust by feel rather than by typing.\n\nTO USE THEM:\nDrag to change. Double-click to type a value exactly.\n\nSYNTAX:\nslider <value>\nknob <value>\n\nEXAMPLE:\nslider 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number sets the slider; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. Every \ninterface node has it - for a panel of controls that is meant to be looked \nat rather than patched.\n\npower:\nBends the scale, so that the travel is not evenly distributed across the range. \nAt 1 the slider is linear. Above 1 the low end gets more of the travel, \nwhich is what you want for anything perceptual - loudness, brightness, \nfrequency - where the interesting detail is all down at the bottom and a linear \nslider spends most of its length on values you do not care about.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat and int are the same value without the travel. \ngain is a slider that multiplies a signal passing through it, rather than \nsending its own value. \nslider_bank is a row of named sliders that each send a message.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "slider and knob set a number by dragging, within limits you decide.\n\nThey hold the same kind of value a number box does, and send it the same way. \nWhat they add is a sense of WHERE the value sits in its range - you can see at a \nglance that something is near the top of its travel, which a number alone does \nnot tell you.\n\nUse them wherever the range matters as much as the number: levels, mixes, \nthresholds, anything a person will adjust by feel rather than by typing.\n\nTO USE THEM:\nDrag to change. Double-click to type a value exactly.\n\nSYNTAX:\nslider <value>\nknob <value>\n\nEXAMPLE:\nslider 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number sets the slider; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\npower:\nBends the scale, so that the travel is not evenly distributed across the range. \nAt 1 the slider is linear. Above 1 the low end gets more of the travel, \nwhich is what you want for anything perceptual - loudness, brightness, \nfrequency - where the interesting detail is all down at the bottom and a linear \nslider spends most of its length on values you do not care about.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat and int are the same value without the travel. \ngain is a slider that multiplies a signal passing through it, rather than \nsending its own value. \nslider_bank is a row of named sliders that each send a message."
+            "text": "slider and knob set a number by dragging, within limits you decide.\n\nThey hold the same kind of value a number box does, and send it the same way. \nWhat they add is a sense of WHERE the value sits in its range - you can see at a \nglance that something is near the top of its travel, which a number alone does \nnot tell you.\n\nUse them wherever the range matters as much as the number: levels, mixes, \nthresholds, anything a person will adjust by feel rather than by typing.\n\nTO USE THEM:\nDrag to change. Double-click to type a value exactly.\n\nSYNTAX:\nslider <value>\nknob <value>\n\nEXAMPLE:\nslider 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number sets the slider; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. Every \ninterface node has it - for a panel of controls that is meant to be looked \nat rather than patched.\n\npower:\nBends the scale, so that the travel is not evenly distributed across the range. \nAt 1 the slider is linear. Above 1 the low end gets more of the travel, \nwhich is what you want for anything perceptual - loudness, brightness, \nfrequency - where the interesting detail is all down at the bottom and a linear \nslider spends most of its length on values you do not care about.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat and int are the same value without the travel. \ngain is a slider that multiplies a signal passing through it, rather than \nsending its own value. \nslider_bank is a row of named sliders that each send a message."
         },
         "3": {
             "name": "load_bang",
@@ -98,7 +98,7 @@
             "position_x": 30,
             "position_y": 62,
             "width": 88,
-            "height": 42,
+            "height": 46,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -110,7 +110,7 @@
             "position_x": 150,
             "position_y": 66,
             "width": 22,
-            "height": 42,
+            "height": 46,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -122,8 +122,8 @@
             "id": 422,
             "position_x": 30,
             "position_y": 132,
-            "width": 230,
-            "height": 42,
+            "width": 220,
+            "height": 60,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -160,9 +160,9 @@
             "init": "comment drag it; double-click to type",
             "name": "comment",
             "id": 459,
-            "position_x": 286,
+            "position_x": 30,
             "position_y": 200,
-            "width": 187,
+            "width": 203,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -186,7 +186,7 @@
             "id": 496,
             "position_x": 30,
             "position_y": 240,
-            "width": 130,
+            "width": 127,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -214,8 +214,8 @@
             "id": 533,
             "position_x": 30,
             "position_y": 300,
-            "width": 64,
-            "height": 74,
+            "width": 100,
+            "height": 110,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -243,7 +243,7 @@
             "id": 570,
             "position_x": 30,
             "position_y": 430,
-            "width": 130,
+            "width": 127,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -270,7 +270,7 @@
             "name": "text_block",
             "id": 607,
             "annotation": true,
-            "position_x": 286,
+            "position_x": 30,
             "position_y": 485,
             "width": 274,
             "height": 40,
@@ -310,7 +310,7 @@
             "name": "close",
             "id": 644,
             "position_x": 24,
-            "position_y": 502,
+            "position_y": 595,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

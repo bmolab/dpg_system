@@ -82,49 +82,12 @@ def register_interface_nodes():
     Node.app.register_node('function_sequencer', ShapeSequencerNode.factory)
 
 
-_view_button_chromeless_theme = None
-
-
 def _get_view_button_chromeless_theme():
-    global _view_button_chromeless_theme
-    if _view_button_chromeless_theme is None:
-        with dpg.theme() as _view_button_chromeless_theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
-                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
-                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
-                dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
-                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
-                # Hovering must not paint the bar back in; the selected colour
-                # is left alone so a selected node still shows it.
-                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
-    return _view_button_chromeless_theme
+    """Kept for callers outside this module; the theme now lives on Node."""
+    return Node.chromeless_theme()
 
 
-class _HideTitleBarMixin:
-    """Adds a `hide_title_bar` checkbox option that renders the node chromeless
-    (transparent background/outline, no label) like ClosePatchNode."""
-
-    def _add_hide_title_bar_option(self, default_value=True):
-        self.hide_title_bar = self.add_option(
-            'hide_title_bar', widget_type='checkbox',
-            default_value=default_value, callback=self._apply_title_bar_visibility)
-
-    def _apply_title_bar_visibility(self):
-        if self.hide_title_bar():
-            dpg.bind_item_theme(self.uuid, _get_view_button_chromeless_theme())
-            dpg.configure_item(self.uuid, label='')
-        else:
-            # Re-run visibility to restore the right base theme (global / locked / do_not_delete).
-            self.set_visibility(getattr(self, 'visibility', 'show_all'))
-
-    def set_custom_visibility(self):
-        if self.hide_title_bar():
-            dpg.configure_item(self.uuid, label='')
-            dpg.bind_item_theme(self.uuid, _get_view_button_chromeless_theme())
-
-
-class _ViewButtonNodeMixin(_HideTitleBarMixin):
+class _ViewButtonNodeMixin:
     """Adds the chromeless option plus a `title` text option that drives the
     button's label/width, and 28px button height, for view-control nodes."""
 
@@ -150,7 +113,7 @@ class _ViewButtonNodeMixin(_HideTitleBarMixin):
         self._apply_title_bar_visibility()
 
 
-class ButtonNode(_HideTitleBarMixin, Node):
+class ButtonNode(Node):
     @staticmethod
     def factory(name, data, args=None):
         node = ButtonNode(name, data, args)
@@ -270,7 +233,7 @@ class ButtonNode(_HideTitleBarMixin, Node):
         self.output.send(self.message())
 
 
-class ButtonSetNode(_HideTitleBarMixin, Node):
+class ButtonSetNode(Node):
     """A column of buttons, each labelled with the message it sends.
 
     button_set red green blue     three buttons; clicking 'green' sends 'green'
@@ -538,7 +501,7 @@ def _show_widget_prefix(widget, text):
             dpg.hide_item(uuid)
 
 
-class MenuNode(_HideTitleBarMixin, Node):
+class MenuNode(Node):
     @staticmethod
     def factory(name, data, args=None):
         node = MenuNode(name, data, args)
@@ -720,6 +683,7 @@ class MouseNode(Node):
 # presets can hold UI state, Nodes state, Patch state
 
 class PresetsNode(Node):
+    title_bar_hideable = True
     restoring_patch = False
 
     @staticmethod
@@ -948,6 +912,7 @@ class PresetsNode(Node):
 
 
 class TableNode(Node):
+    title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
         node = TableNode(name, data, args)
@@ -1049,7 +1014,7 @@ class TableNode(Node):
             dpg.set_value(target_tag, any_to_string(value))
 
 
-class RadioButtonsNode(_HideTitleBarMixin, Node):
+class RadioButtonsNode(Node):
     @staticmethod
     def factory(name, data, args=None):
         node = RadioButtonsNode(name, data, args)
@@ -1123,7 +1088,7 @@ class RadioButtonsNode(_HideTitleBarMixin, Node):
             self.output.send(self.radio_group())
 
 
-class ToggleNode(_HideTitleBarMixin, Node):
+class ToggleNode(Node):
     @staticmethod
     def factory(name, data, args=None):
         node = ToggleNode(name, data, args)
@@ -1296,6 +1261,7 @@ class ToggleNode(_HideTitleBarMixin, Node):
 
 
 class GainNode(Node):
+    title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
         node = GainNode(name, data, args)
@@ -1332,6 +1298,7 @@ class GainNode(Node):
 
 
 class ValueNode(Node):
+    title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
         base_name = name.split('_')[-1]
@@ -2181,6 +2148,7 @@ class TextDisplayNode(TextEditorNode):
 #         self.output.send()
 
 class Vector2DNode(Node):
+    title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
         node = Vector2DNode(name, data, args)
@@ -2538,6 +2506,7 @@ class Vector2DNode(Node):
 
 
 class PrintNode(Node):
+    title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
         node = PrintNode(name, data, args)
@@ -2675,6 +2644,7 @@ class LoadActionNode(Node):
 
 
 class ColorPickerNode(Node):
+    title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
         node = ColorPickerNode(name, data, args)
@@ -2750,6 +2720,7 @@ class ColorPickerNode(Node):
 
 
 class CMYColorNode(Node):
+    title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
         node = CMYColorNode(name, data, args)
@@ -2873,6 +2844,7 @@ class CMYColorNode(Node):
 
 
 class KeyNode(Node):
+    title_bar_hideable = True
     node_list = []
     inited = False
     map = {}
@@ -3304,6 +3276,7 @@ class MomentarySliderNode(Node):
         momentary_slider 20       - one int slider, range -20 to 20
         momentary_slider pan tilt - two named float sliders
     """
+    title_bar_hideable = True
 
     @staticmethod
     def factory(name, data, args=None):
@@ -3444,6 +3417,7 @@ class XYPadNode(Node):
         momentary_xy          - momentary (snaps back to 0,0), range -1.0 to 1.0
         momentary_xy 0.5      - momentary, range -0.5 to 0.5
     """
+    title_bar_hideable = True
 
     @staticmethod
     def factory(name, data, args=None):
@@ -4974,6 +4948,7 @@ class EnvelopeNode(Node):
         envelope 10       - x range 0-10, y range 0-1
         envelope 10 5     - x range 0-10, y range 0-5
     """
+    title_bar_hideable = True
 
     @staticmethod
     def factory(name, data, args=None):
@@ -5194,6 +5169,7 @@ class ShapeSequencerNode(Node):
         shape_seq 16 10       - 16 steps, x range 0-10
         shape_seq 16 10 5     - ... and y range 0-5
     """
+    title_bar_hideable = True
 
     SAMPLES_PER_CURVE = 32
     MAX_STEPS = 64
@@ -5862,6 +5838,7 @@ class SliderBankNode(Node):
         send                       send every slider's message, in order
     A plain list of numbers sets the sliders in order.
     """
+    title_bar_hideable = True
     default_names = None
     default_template = '{name} {value}'
     default_min = 0.0

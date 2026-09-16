@@ -28,6 +28,11 @@ The name of a variable. Once bound, the widget and the variable are the same
 thing - move the widget and the variable changes, set the variable and the 
 widget moves. This is how one control drives several distant parts of a patch 
 without a cord. See the var help patch.
+
+hide_title_bar:
+Draws the widget alone, without the node's title bar and frame. Every 
+interface node has it - for a panel of controls that is meant to be looked 
+at rather than patched.
 """
 
 # ---------------------------------------------------------------- float / int

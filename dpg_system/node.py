@@ -2655,6 +2655,9 @@ class Node:
             display_.set_visibility(visibility_state)
 
         self.set_custom_visibility()
+        if visibility_state == 'show_all' and self._title_bar_hidden():
+            dpg.bind_item_theme(self.uuid, Node.chromeless_theme())
+            dpg.configure_item(self.uuid, label='')
 
     def create_button_themes(self):
         with dpg.theme() as Node.active_theme:
@@ -2714,6 +2717,48 @@ class Node:
 
     def set_custom_visibility(self) -> None:
         pass
+
+    # --- hidden title bar ---
+    # A class opting in with title_bar_hideable = True gets a hide_title_bar
+    # option added at creation; the option renders the node chromeless
+    # (transparent background, outline and title, no label) so only its
+    # widgets show. Nodes that add the option themselves keep their order.
+    title_bar_hideable = False
+    _chromeless_theme = None
+
+    @classmethod
+    def chromeless_theme(cls):
+        if Node._chromeless_theme is None:
+            with dpg.theme() as Node._chromeless_theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    # Hovering must not paint the bar back in; the selected
+                    # colour is left alone so a selected node still shows it.
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+        return Node._chromeless_theme
+
+    def _add_hide_title_bar_option(self, default_value=False):
+        self.hide_title_bar = self.add_option(
+            'hide_title_bar', widget_type='checkbox',
+            default_value=default_value, callback=self._apply_title_bar_visibility)
+
+    def _title_bar_hidden(self) -> bool:
+        option = getattr(self, 'hide_title_bar', None)
+        if option is None or option.widget is None:
+            return False
+        return bool(option())
+
+    def _apply_title_bar_visibility(self):
+        if self._title_bar_hidden():
+            dpg.bind_item_theme(self.uuid, Node.chromeless_theme())
+            dpg.configure_item(self.uuid, label='')
+        else:
+            # Re-run visibility to restore the right base theme (global / locked / do_not_delete).
+            self.set_visibility(getattr(self, 'visibility', 'show_all'))
 
     def presenting(self) -> bool:
         """True while this node's editor is in presentation mode, when pins
@@ -3152,6 +3197,8 @@ class Node:
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):
             dpg.set_item_pos(self.uuid, pos)
             self.handle_parsed_args()
+            if self.title_bar_hideable and getattr(self, 'hide_title_bar', None) is None:
+                self._add_hide_title_bar_option()
             if len(self.ordered_elements) > 0:
                 for attribute in self.ordered_elements:
                     attribute.create(self.uuid)
