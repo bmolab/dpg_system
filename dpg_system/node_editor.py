@@ -1074,11 +1074,26 @@ class NodeEditor:
         for node in self._nodes:
             node.presentation_state = node.visibility
 
+    _visibility_rank = {'show_all': 0, 'widgets_only': 1, 'hidden': 2}
+
+    def presented_visibility(self, node):
+        """What a node shows while presenting: its presentation state, but
+        never more than its edit-mode visibility allows - a node set to
+        widgets only, or hidden, while editing stays that way on stage."""
+        rank = self._visibility_rank
+        edit = node.edit_visibility
+        presentation = node.presentation_state
+        if rank.get(edit, 0) >= rank.get(presentation, 0):
+            return edit
+        return presentation
+
     def enter_presentation_state(self):
         self.presenting = True
         for node in self._nodes:
             if node.label != '':
-                node.set_visibility(node.presentation_state)
+                node.edit_visibility = node.visibility
+                node.edit_draggable = node.draggable
+                node.set_visibility(self.presented_visibility(node))
                 node.set_draggable(False)
         dpg.bind_theme(self.node_presentation_theme)
 
@@ -1086,8 +1101,9 @@ class NodeEditor:
         self.presenting = False
         for node in self._nodes:
             if node.label != '':
-                node.set_visibility('show_all')
-                node.set_draggable(True)
+                # Draggable first: the show_all theme depends on it (locked look).
+                node.set_draggable(node.edit_draggable)
+                node.set_visibility(node.edit_visibility)
         dpg.bind_theme(self.node_theme)
 
     def patchify_selection(self):

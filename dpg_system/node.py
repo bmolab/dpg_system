@@ -2667,6 +2667,10 @@ class Node:
         self.draggable = True
         self.visibility = 'show_all'
         self.presentation_state = 'show_all'
+        # What the node showed in edit mode, kept while presenting so leaving
+        # presentation puts it back rather than revealing everything.
+        self.edit_visibility = 'show_all'
+        self.edit_draggable = True
         self.do_not_delete = False
         self.active_input = None
         self.in_loading_process = False
@@ -3487,8 +3491,11 @@ class Node:
             size = dpg.get_item_rect_size(self.uuid)
             node_container['width'] = size[0]
             node_container['height'] = size[1]
-            node_container['visibility'] = self.visibility
-            node_container['draggable'] = self.draggable
+            # While presenting the node wears its presentation look; the patch
+            # stores what it is in edit mode.
+            presenting = self.presenting()
+            node_container['visibility'] = self.edit_visibility if presenting else self.visibility
+            node_container['draggable'] = self.edit_draggable if presenting else self.draggable
             if self.do_not_delete:
                 node_container['protected'] = True
             node_container['presentation_state'] = self.presentation_state
