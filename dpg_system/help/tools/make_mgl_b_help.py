@@ -255,9 +255,10 @@ edit and once when the patch loads, so mgl_body needs no priming - wire
 the same inlet, so the one node can drive the skeleton and the skin together. 'symmetric' mirrors a left edit onto the 
 right row; untick it and the sides go their own way, which is how you get a 
 lopsided body on purpose. 'scales in' takes the same dict or message forms 
-listed above and sets the rows, so a preset or a patch can drive it. Each change 
-rebuilds the limb geometry, which is cheap enough to drag but not something to 
-feed at frame rate - for that, send messages straight to mgl_body.
+listed above and sets the rows, so a preset or a patch can drive it. A change 
+costs nothing beyond the normal draw - the dims ride in each limb's bone matrix 
+rather than in its geometry - so animate the proportions freely, from the node 
+or with messages at frame rate.
 
 SEEING WHAT A NUMBER MEANS:
 The other four nodes exist because a value about a body is much easier to 

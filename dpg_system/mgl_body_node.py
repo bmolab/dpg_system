@@ -664,15 +664,11 @@ class MGLBodyNode(MGLNode):
             if i < len(self.body.limb_vertices) and self.body.limb_vertices[i] is not None:
                 pts = self.body.limb_vertices[i]
             
-            # Simple scaling logic based on dims or defaults
-            scale_vec = np.array([0.05, 0.05, 1.0])
-            if i < len(self.body.joints) and self.body.joints[i] is not None:
-                j = self.body.joints[i]
-                if hasattr(j, 'dims'):
-                     dz = j.dims[0]
-                     dx = j.dims[1] / 2.0
-                     dy = j.dims[2] / 2.0
-                     scale_vec = np.array([dx, dy, dz])
+            # The geometry is unit-sized: x, y in half-widths, z from 0 to 1.
+            # The joint's dims (length, width, depth) are applied per draw in the
+            # bone matrix (see _dims_matrix), so a proportion change never
+            # rebuilds this buffer.
+            scale_vec = np.array([1.0, 1.0, 1.0])
 
 
             def add_tri(p1, p2, p3, n):
@@ -857,13 +853,11 @@ class MGLBodyNode(MGLNode):
                 offsets = self._get_default_smpl_offsets()
                 if offsets is not None:
                     self._apply_smpl_offsets(offsets, {})
-                    self._gl_dirty = True
                     logger.debug('mgl_body: applied default SMPL skeleton offsets')
                 else:
                     logger.warning('mgl_body: smplx not available, cannot switch to SMPL skeleton')
         elif self._last_limb_data is not None:
             self._apply_limb_lengths(self._last_limb_data)
-        self._gl_dirty = True
 
     def _apply_limb_lengths(self, limb_data):
         """Apply SMPL limb lengths to body joints by scaling bone_translation vectors."""
@@ -888,7 +882,6 @@ class MGLBodyNode(MGLNode):
             offsets = limb_data.get('offsets') if isinstance(limb_data, dict) else None
             if offsets is not None:
                 self._apply_smpl_offsets(offsets, lengths)
-                self._gl_dirty = True
                 return
             # Fall through to shadow mode if no offsets available
 
@@ -948,8 +941,6 @@ class MGLBodyNode(MGLNode):
                         base_dims = self.body.joints[ji].base_dims
                         self.body.joints[ji].dims[1] = base_dims[1] * ratio
                         self.body.joints[ji].dims[2] = base_dims[2] * ratio
-
-        self._gl_dirty = True
 
     def _get_default_smpl_offsets(self):
         """Compute default SMPL offsets from smplx model (betas=0, neutral)."""
@@ -1156,7 +1147,6 @@ class MGLBodyNode(MGLNode):
             joint.dims[0] = dims[0] if ji in LENGTH_EXEMPT_JOINTS else dims[0] * s[0]
             joint.dims[1] = dims[1] * s[1]
             joint.dims[2] = dims[2] * s[2]
-        self._gl_dirty = True
 
     def receive_limb_scale(self, message):
         """Accept any limb_scale message form (see dpg_system.limb_scale)."""
@@ -1242,13 +1232,15 @@ class MGLBodyNode(MGLNode):
         self.traverse_matrices(t_PelvisAnchor, root_mat)
         
 
-        # 2. Upload Bone Matrices
+        # 2. Upload Bone Matrices, each carrying its joint's dims as a scale.
+        # global_matrices stay unscaled: callbacks, spheres and the orientation
+        # disks position themselves from those.
         bones_bytes = bytearray()
         MAX_BONES = 50
         
         for i in range(MAX_BONES):
             if i in self.global_matrices:
-                m = self.global_matrices[i]
+                m = self.global_matrices[i] @ self._dims_matrix(i)
             else:
                 m = np.identity(4, dtype='f4')
             bones_bytes.extend(m.T.astype('f4').flatten().tobytes())
@@ -1331,6 +1323,15 @@ class MGLBodyNode(MGLNode):
         if hasattr(self, 'latest_joint_data') and self.latest_joint_data is not None:
              if self.draw_spheres_input():
                  self.draw_instanced(self.latest_joint_data)
+
+    def _dims_matrix(self, joint_index):
+        """Scale taking the unit limb geometry to this joint's dims:
+        x by half the width, y by half the depth, z by the length."""
+        joint = self.body.joints[joint_index] if joint_index < len(self.body.joints) else None
+        if joint is None or not hasattr(joint, 'dims'):
+            return np.identity(4, dtype='f4')
+        d = joint.dims
+        return np.diag([d[1] * 0.5, d[2] * 0.5, d[0], 1.0]).astype('f4')
 
     def traverse_matrices(self, joint_index, current_mat):
         if joint_index == t_PelvisAnchor:
