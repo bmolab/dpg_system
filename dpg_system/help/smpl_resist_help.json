@@ -1,0 +1,264 @@
+{
+    "height": 1100,
+    "width": 1767,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "smpl_resist_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_resist_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_resist - a body that resists going with the flow",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 561,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_resist - a body that resists going with the flow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_resist - a body that resists going with the flow"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 909,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smpl_resist makes the body resist going with the flow.\n\nsmpl_ragdoll runs one way: a joint's control is taken from the performer and \ngravity and momentum fill in. This runs the other way. It finds how much of \neach joint's captured motion is the body going along with gravity and with \nthe momentum handed to it by the rest of the body - the arm swing a walk \npumps, the head lagging a turn, the follow-through after a throw, a limb \ndropping - and pushes back against that share, leaving the performer's own \naction alone.\n\nHOW IT DECIDES:\nInverse dynamics on the capture, joint by joint. Everything below a joint is \none rigid body pinned there; gravity and the joint point's own acceleration \ngive the acceleration the flow wants. The joint's actual acceleration against \nits parent is compared with that. Moving with the flow at the flow's rate is \npassive; held still against it, or moved the other way, is muscle. That \npassivity opens a valve per joint.\n\nWHAT IT DOES:\nBehind the valve is a pull toward a hold posture, which is a latch: it \nfollows the capture while the valve is shut and freezes as the valve \nopens, so a passive swing is clipped where it began. The pull is 'resist' \ntimes the passivity, capped at one: a joint the valve finds wholly carried \nis pinned, one it finds a tenth carried is pulled a tenth of the way. \n'leak_s' is how fast a hold engages and releases; 'hold_s' how fast a \nfrozen hold may drift. 'brake' adds viscous damping on the joint's own \nvelocity - it reads as smoothing rather than holding, so it starts at 0.\n\nHow much shows depends on how much the performer actually let go. On the \nAMASS walk the knees in swing read half passive and the shoulders a fifth, \nso at resist 1 the knee swing is cut by a third and the head bob by half \nwhile the arms barely change; resist 3 holds the knees nearly straight \nand takes the head bob down to a third. A punch keeps its reach; the \nelbow's whip out is what gets held.\n\n'legs' scales the legs and starts at 0: the root still follows the \ncapture, so resisting the legs' swing makes the feet skate. Turn it up to \nsee them held anyway. 'gain <joints> <value>' scales any joint or group.\n\nFor the posture of tension - raised shoulders, a guarded arm - see 'tone' \non smpl_ragdoll: that is the held shape, this is the held movement.\n\nSYNTAX:\nsmpl_resist\n\nINPUTS and PARAMETERS:\n\npose / trans / config:\nThe captured pose, its translation, and the body's size and mass.\n\nresist / brake / hold_s / leak_s / legs:\nThe pull toward the hold posture, the damping, how fast a frozen hold may \ndrift, how fast a hold engages and releases, and the scale on the legs.\n\ndynamics_cutoff / passive_floor / quiet_speed / attack_s / max_deviation:\nThe low-pass on the differenced kinematics (Hz); the acceleration and the \nrelative speed below which a joint is quiet rather than carried; how fast \nthe valve can open, so a single noisy frame cannot; the most any joint may \ndiffer from the capture (radians).\n\nreset:\nStart the kinematics and the deviation again.\n\nup_axis / axis_permutation / quat_format / total_mass:\nAs on smpl_torque; this node does the conversion itself, so do not also \ndo it upstream.\n\nOUTPUTS:\n\npose / smpl_pose / trans:\nThe result, in the incoming layout and as SMPL axis-angle; the translation \npasses through.\n\npassive_share:\nPer joint, how passive its recent motion is - what the valve sees.\n\ndeviation:\nPer joint, how far the output is from the capture (radians).\n",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "smpl_ragdoll lets go of part of the body and hands it to physics.\n\nThe pose coming in is what the performer did. This node picks joints to RELEASE \nand simulates them instead - they fall, swing, collide and settle under gravity, \nwhile the rest of the body keeps following the performer.\n\nThat makes it a blend rather than a switch. A released arm is still attached to \na driven shoulder, so it swings from a body that is moving as the person moves. \n'blend_weight' sets how far each released joint has gone from driven to free, \nand 'ramp_ms' how long that transition takes - so a limb can be let go and \ncaught again without a discontinuity.\n\nTHE NODES:\n\nsmpl_ragdoll     the simulation\nragdoll_blend_ui a bank of named sliders for the per-joint blend weights\n\nragdoll_blend_ui EXISTS BECAUSE THE WEIGHTS ARE PER JOINT:\nIt is a slider_bank with the joint names filled in, sending the messages \nsmpl_ragdoll expects. Twenty-odd separate sliders and cords would be unusable; \nthis is one node and one cord.\n\nRELEASE AND CATCH:\n'release' hands the named joints to physics. 'catch' takes them back, ramping \nso the limb returns to the performer's pose rather than snapping to it.\n\n'auto_release_unsupported' releases a limb when nothing is holding it up, after \n'auto_release_delay'. That is how a body goes limp when it stops supporting \nitself, without anyone deciding the moment.\n\nWHAT COMES BACK OUT:\nBesides the blended pose, the node reports what the physics found - \n'contact_forces' where the body is touching, 'support' for whether it is held \nup, 'energy_removed' for what the collisions absorbed, and \n'free_torque_vectors' for what the released joints are experiencing.\n\nThose are worth watching rather than only using: 'support' falling is the \nphysical fact behind a body giving way, and it is available before anything \nvisibly collapses.\n\nSYNTAX:\nsmpl_ragdoll\n\nEXAMPLE:\nsmpl_ragdoll\n\nINPUTS and PARAMETERS:\n\npose / trans / config:\nThe driven pose, its translation, and the body's size and mass.\n\nweights:\nPer-joint blend, from ragdoll_blend_ui.\n\nrelease / catch / reset:\nHand joints to physics, take them back, start again.\n\nfree_joints:\nWhich joints may be released.\n\nblend_weight / ramp_ms / blend_soft / blend_firm:\nHow far from driven to free, and how the transition is shaped.\n\ngravity / total_mass / limit_stiffness / friction / self_collision:\nThe physics.\n\nfloor_enable / floor_height / floor_auto:\nThe ground it lands on.\n\nmotor_strength / spring_rate / partial_damping / gravity_comp:\nHow strongly a partly-released joint is still driven.\n\nsubsteps / substep_rate:\nSimulation accuracy. More is stabler and slower - raise it if limbs jitter or \npass through each other.\n\nup_axis / axis_permutation / quat_format:\nAs on smpl_torque, and with the same warning: this node does the conversion \nitself, so do not also do it upstream.\n\nOUTPUTS: \n\npose / smpl_pose / trans:\nThe blended result.\n\nblend_weights / support / contact_forces / energy_removed / free_torque_vectors:\nWhat the simulation is doing and what it found."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 119,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "smpl_beta_editor",
+            "id": 385,
+            "position_x": 350,
+            "position_y": 62,
+            "width": 229,
+            "height": 322,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "shadow_to_smpl",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 179,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "smpl_resist",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 185,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 605,
+            "position_y": 640,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the arm swing goes, the reach stays",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the arm swing goes, the reach stays"
+        },
+        "8": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 996,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trans",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trans"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "config"
+        }
+    }
+}

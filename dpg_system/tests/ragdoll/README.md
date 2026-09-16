@@ -36,3 +36,5 @@ read `assets/motion_capture_files/`.
 | flick4 | Walk B17 frames 500–600 release flicks |
 | leg_release, leg_sweep, fall_through, w999 | a released leg vs the support measure; the 0.999 case |
 | bounce | pelvis bobbing and horizontal offset vs weight |
+| tone_arm | tone on the left arm at weight 1 on the walk: the clench pull (hand displacement, elbow flexion, range shrinkage) and the tremor (5–20 Hz RMS and peak); right arm as control |
+| resist_walk | smpl_resist on the walk and the punching take at several gains: arm swing and head bob removed, reach and elbow range kept; deviation ceiling and output continuity |

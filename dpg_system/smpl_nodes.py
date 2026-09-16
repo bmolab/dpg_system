@@ -59,6 +59,8 @@ def register_smpl_nodes():
     from dpg_system.smpl_ragdoll import SMPLRagdollNode, RagdollBlendUINode
     Node.app.register_node("smpl_ragdoll", SMPLRagdollNode.factory)
     Node.app.register_node("ragdoll_blend_ui", RagdollBlendUINode.factory)
+    from dpg_system.smpl_resist import SMPLResistNode
+    Node.app.register_node("smpl_resist", SMPLResistNode.factory)
 
 
 class SMPLNode(Node):
