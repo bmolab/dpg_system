@@ -311,6 +311,15 @@ widest one. Height is worth raising for anything meant to be hit in a hurry, or
 on a touchscreen. flash_duration is how long a button lights up when it is 
 pressed - which is what tells you a button the PATCH pressed went off at all.
 
+colours (button_set):
+Wire a color node straight into a button and it colours that button. A colour - 
+3 or 4 numbers, 0-1 as a color node sends them, or 0-255 - arriving at a 
+button's inlet sets its colour instead of pressing it; anything else still 
+presses. By message, 'color <button> r g b a' colours a button named by its 
+label or its number counting from 1, and 'color <button>' on its own puts it 
+back to the default look. The colours are saved with the patch, and a pressed 
+button still flashes and then returns to its own colour.
+
 bind to:
 A variable name. A bound toggle and its variable are the same thing.
 

@@ -254,12 +254,13 @@ class ButtonSetNode(Node):
     something other than the bare label -- 'preset {name}', 'go {index}' --
     while the buttons still read as their names.
 
-    Buttons are coloured by message rather than by a picker apiece:
-    'color <button> r g b a', where <button> is a label or a 1-based number
-    and the colour is what a color node sends (0-1 floats; alpha may be left
-    off). 'prepend color green' between a color node and the set is enough.
-    'color <button>' alone returns it to the default look; 'color r g b a'
-    with no button colours them all. Colours are saved with the patch.
+    Buttons are coloured by cord rather than by a picker apiece: a colour --
+    3 or 4 numbers, as a color node sends -- arriving at a button's inlet
+    colours that button instead of pressing it. By message it is
+    'color <button> r g b a', <button> a label or a 1-based number, and
+    'color <button>' alone returns it to the default look. Values are 0-1,
+    or 0-255 if any is over 1; alpha may be left off. Colours are saved with
+    the patch.
     """
     default_labels = None
     default_template = '{name}'
@@ -287,7 +288,7 @@ class ButtonSetNode(Node):
         self.buttons = []
         for i, name in enumerate(names):
             self.buttons.append(self.add_input(name, widget_type='button', widget_width=14,
-                                               callback=(lambda i=i: self.button_pressed(i))))
+                                               callback=(lambda i=i: self.button_input(i))))
         self.output = self.add_output('out')
 
         self.template_option = self.add_option('message', widget_type='text_input', width=200,
@@ -418,11 +419,6 @@ class ButtonSetNode(Node):
             return
         i = self.button_index(args[0]) if isinstance(args[0], (str, int, float, np.number)) else None
         if i is None:
-            # no button named: the whole set
-            rgba = self.parse_color(args)
-            if rgba is not None:
-                for j in range(self.count):
-                    self.set_color(j, rgba)
             return
         values = args[1:]
         if len(values) == 1 and isinstance(values[0], (list, tuple, np.ndarray)):
@@ -462,6 +458,26 @@ class ButtonSetNode(Node):
             dpg.bind_item_theme(uuid, Node.active_theme)
         self._flashing[i] = time.time() + self.flash_duration()
         self.add_frame_task()
+
+    @staticmethod
+    def as_color(data):
+        """3 or 4 numbers arriving at an inlet are a colour, not a press."""
+        if isinstance(data, (list, tuple, np.ndarray)) and not isinstance(data, str):
+            values = list(np.ravel(data)) if isinstance(data, np.ndarray) else list(data)
+            if len(values) in (3, 4) and all(
+                    isinstance(v, (int, float, np.number)) and not isinstance(v, bool) for v in values):
+                return ButtonSetNode.parse_color(values)
+        return None
+
+    def button_input(self, i):
+        # a cord handing this button data (rather than a click) may carry a colour
+        button = self.buttons[i]
+        if self.active_input is button:
+            rgba = self.as_color(button._data)
+            if rgba is not None:
+                self.set_color(i, rgba)
+                return
+        self.button_pressed(i)
 
     def button_pressed(self, i):
         # clicked, sent a message, or handed data by a cord -- all arrive here
