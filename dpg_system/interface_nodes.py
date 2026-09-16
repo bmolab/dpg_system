@@ -1120,7 +1120,7 @@ class RadioButtonsNode(_HideTitleBarMixin, Node):
             self.output.send(self.radio_group())
 
 
-class ToggleNode(Node):
+class ToggleNode(_HideTitleBarMixin, Node):
     @staticmethod
     def factory(name, data, args=None):
         node = ToggleNode(name, data, args)
@@ -1149,9 +1149,42 @@ class ToggleNode(Node):
             self.reset_input = self.add_input('reset', triggers_execution=True)
         else:
             self.input = self.add_input('', triggers_execution=True, widget_type='checkbox', callback=self.call_execute)
+            # A name column to the left of the box, hidden until a prefix is set.
+            self.input.widget.prefix_label = ''
         self.input.bang_repeats_previous = False
         self.output = self.add_output('')
         self.bound_variable = self.add_option('bind to', widget_type='text_input', width=120, default_value=variable_name, callback=self.binding_changed)
+        self.prefix_option = self.add_option('prefix', widget_type='text_input', default_value='',
+                                             callback=self.prefix_changed)
+        self.prefix_as_label = self.add_option('prefix_as_label', widget_type='checkbox', default_value=True,
+                                               callback=self.prefix_changed)
+        self.font_size_option = self.add_option('font size', widget_type='combo', default_value='24',
+                                                 callback=self.font_size_changed)
+        self.font_size_option.widget.combo_items = ['24', '30', '36', '48']
+        self._add_hide_title_bar_option(default_value=False)
+
+    def prefix_changed(self):
+        """Show the prefix as a name in front of the box, or hide the column."""
+        if self.input.widget is None:
+            return
+        text = self.prefix_option().strip() if self.prefix_as_label() else ''
+        _show_widget_prefix(self.input.widget, text)
+
+    def font_size_changed(self):
+        # Bound at the inlet, so the name column in front inherits it too. The
+        # check box is a frame-height square, so it grows with the text.
+        fonts = {'24': self.app.font_24, '30': self.app.font_30,
+                 '36': self.app.font_36, '48': self.app.font_48}
+        font = fonts.get(self.font_size_option())
+        if font is not None:
+            self.input.set_font(font)
+
+    def send_value(self, value):
+        prefix = self.prefix_option().split()
+        if prefix:
+            self.output.send(prefix + [value])
+        else:
+            self.output.send(value)
 
     def get_preset_state(self):
         preset = {}
@@ -1182,6 +1215,8 @@ class ToggleNode(Node):
 
     def custom_create(self, from_file):
         self.binding_changed()
+        self.prefix_changed()
+        self._apply_title_bar_visibility()
 
     def variable_update(self):
         if self.variable is not None:
@@ -1198,7 +1233,7 @@ class ToggleNode(Node):
         value = any_to_int(value)
         if self.variable is not None and propagate:
             self.variable.set(value, from_client=self)
-        self.outputs[0].send(value)
+        self.send_value(value)
 
     def custom_cleanup(self):
         if self.variable is not None:
@@ -1252,7 +1287,7 @@ class ToggleNode(Node):
         if self.variable is not None:
             self.variable.set(self.value, from_client=self)
         if not self.temp_block_output:
-            self.output.send(self.value)
+            self.send_value(self.value)
         else:
             self.temp_block_output = False
 

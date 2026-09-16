@@ -309,6 +309,20 @@ pressed - which is what tells you a button the PATCH pressed went off at all.
 bind to:
 A variable name. A bound toggle and its variable are the same thing.
 
+prefix / prefix_as_label (toggle, set_reset):
+Word(s) sent in front of the value. A prefix of "record" makes the toggle send 
+"record 1" and "record 0" - a message rather than a bare number, ready for a 
+node that reads the first word as a command. With prefix_as_label the prefix 
+is also drawn as a name in front of the toggle, so a chromeless toggle still 
+says what it is for.
+
+font size (toggle):
+The size of the box and its name - 24, 30, 36 or 48.
+
+hide_title_bar (button, toggle, set_reset):
+Draws the widget alone, without the node's title bar and frame. For a panel 
+of controls that is meant to be looked at rather than patched.
+
 OUTPUTS: 
 
 out:
@@ -331,7 +345,8 @@ demo = [
     {'key': 'i1', 'init': 'int', 'pos': (30, 250), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c1', 'comment': True, 'text': 'counter counts bangs; accumulate would not',
      'pos': (30, 300)},
-    {'key': 'tog', 'init': 'toggle', 'pos': (30, 345), 'w': 45, 'h': 42},
+    {'key': 'tog', 'init': 'toggle', 'pos': (30, 345), 'w': 45, 'h': 42,
+     'props': {'prefix': 'run', 'font size': '30', 'hide_title_bar': True}},
     {'key': 'c2', 'comment': True, 'text': 'a state: it stays where you put it',
      'pos': (30, 395)},
     {'key': 'met', 'init': 'metro 200', 'pos': (30, 435), 'w': 129, 'h': 70,
