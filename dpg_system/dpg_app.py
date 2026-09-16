@@ -676,6 +676,28 @@ class App:
                 return self._hovered_descendant(uuid)
         return None
 
+    def node_under_mouse(self):
+        """The visible node whose rectangle holds the mouse, or None.
+
+        Checked by rectangle rather than hover state because imnodes stops
+        reporting a hovered node once a click begins (see hovered_item).
+        """
+        editor = self.get_current_editor()
+        if editor is None:
+            return None
+        x, y = dpg.get_mouse_pos(local=False)
+        for node in list(editor._nodes):
+            uuid = getattr(node, 'uuid', -1)
+            if uuid is None or uuid == -1 or not dpg.does_item_exist(uuid):
+                continue
+            if getattr(node, 'visibility', 'show_all') == 'hidden':
+                continue
+            left, top = dpg.get_item_rect_min(uuid)
+            right, bottom = dpg.get_item_rect_max(uuid)
+            if left <= x <= right and top <= y <= bottom:
+                return node
+        return None
+
     @staticmethod
     def _is_hovered(uuid):
         # Not every item keeps hover state (plot series, themes, handlers
@@ -1611,7 +1633,10 @@ class App:
                 dpg.bind_item_theme(rh.uuid, _get_resize_handle_dragging_theme())
                 return
         if self.control_or_command_down():
-            self.toggle_presentation()
+            # Only a click on empty canvas switches modes; on a node the
+            # modifier belongs to the node (selection, the widget itself).
+            if self.node_under_mouse() is None:
+                self.toggle_presentation()
         else:
             editor = self.get_current_editor()
             if editor is not None and not editor.presenting:
