@@ -90,14 +90,50 @@ voxel twice as far away catches about a quarter as many depth pixels, so the
 default squares the distance before weighting. It uses radial distance rather
 than depth, so it survives levelling and yaw.
 
+GROUPING VOXELS INTO BOXES:
+'boxes (x,y,z)' divides the working volume into a coarser lattice - 8,8,8 for
+512 boxes - and sends the sum of the voxel weights in each one out of 'box
+values' as an (x,y,z) array. Leave any axis at 0 and nothing is subdivided.
+
+Boxes are not a layer on top of the voxels, they are a constraint on them. The
+crop divides into EXACTLY the number of boxes you asked for, and the voxel size
+then bends to the nearest one that fits a whole number of voxels into each box:
+
+    box size   = crop / boxes
+    n          = round(box size / your voxel size)
+    voxel size = box size / n
+
+So 'voxel size (cm)' becomes a TARGET once boxes are on. Ask for 7 cm voxels in
+a 2 m box divided 4 ways and you get 7.1429 cm - 7 voxels per box, on the nose,
+every box holding the same 343 voxels with nothing left over. There is nothing
+to tune and nothing to feed back; it is a calculation, not a search.
+
+The one thing you give up is exactly cubic voxels: for an arbitrary crop the
+three axes snap by different amounts. The C++ app makes the same trade, and for
+the same reason - you cannot have both.
+
+The frame carries the boxes on to whatever comes next as a 'clusters' entry -
+per-voxel labels, per-box values, and the lattice geometry. Boxes are only the
+first way of grouping voxels; blobs, k-means and hand-painted regions would put
+the same thing on the frame, so anything reading it works with all of them.
+
 SEEING THE VOLUME:
 pc_voxel also sits on an mgl chain. Patch 'mgl chain in' from the chain that
-draws the cloud and it draws the working volume as a wireframe box, in the
-chain's current colour, then passes the draw on. The box is the volume it is
-really using - the crop carried in on the frame, or its own min/max options
+draws the cloud and it draws the working volume as a wireframe, in the chain's
+current colour, then passes the draw on. With boxes on you get the box lattice;
+with them off, the bare outline of the volume. Either way it is the volume it
+is really using - the crop carried in on the frame, or its own min/max options
 when the cloud arrived raw - so it is the fastest way to see your crop against
-the live cloud instead of reading coordinates off pc_info. 'show volume'
-(option) turns the box off without unpatching.
+the live cloud instead of reading coordinates off pc_info.
+
+Four options (plus a colour each) decide what that wireframe looks like: 'show
+lines' draws the cell edges, 'show points' draws a dot at every lattice node -
+every corner of every box - at 'point size' pixels, and 'line color' /
+'point color' set them independently so the two read apart. Turn both off and
+the overlay goes away without unpatching. Points alone, at a decent size, give
+you the box corners as a constellation without the cage of lines over the
+cloud; that is usually the more readable of the two once the subdivision gets
+fine.
 
 pc_info IS FOR SETTING THE OTHERS UP:
 It reports count, the bounding box, and the centroid, and passes the cloud
@@ -130,8 +166,13 @@ The grid resolution. The most consequential number here.
 min points (pc_voxel):
 The density floor - voxels holding fewer points than this are dropped.
 
+boxes (x,y,z) (pc_voxel):
+Divide the volume into this many boxes per axis. 0 for none. Snaps the voxel
+size so a whole number of voxels fits each box.
+
 mgl chain in (pc_voxel):
-A draw from an mgl chain. Draws the working volume as a wireframe box.
+A draw from an mgl chain. Draws the volume as a wireframe - the box lattice
+when subdivided, the outline when not.
 
 reduce (pc_voxel, option):
 Cube centre or centroid.
@@ -143,6 +184,9 @@ The reduced cloud, with the metadata carried forward.
 
 counts:
 Points per voxel.
+
+box values (pc_voxel):
+Sum of the voxel weights in each box, as an (x,y,z) array.
 
 mgl chain out (pc_voxel):
 The draw, passed on to the rest of the chain.

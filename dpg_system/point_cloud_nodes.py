@@ -15,7 +15,8 @@ background model, temporal persistence) is gather/scatter on flat arrays with
 
 Nodes:
   pc_crop        axis-aligned box crop (+ invert)
-  pc_voxel       voxel-grid downsample -> occupied voxel centres / centroids
+  pc_voxel       voxel-grid downsample -> occupied voxel centres / centroids,
+                 optionally grouped into a lattice of boxes
   pc_background  static background subtraction (learn N frames, then remove)
   pc_denoise     density + temporal-persistence speckle/flicker removal
   pc_info        report point count / bounds / centroid (bounds-tuning aid)
@@ -29,10 +30,21 @@ nodes pass the metadata through. pc_voxel likewise attaches its voxel size
 adopt it the same way, so a chain shares one grid geometry. Renderers unwrap
 the 'point_cloud' key, so either form draws directly.
 
+Cluster-frame convention: a node that groups voxels attaches a 'clusters' dict
+to the frame — {'labels': (N,) int32 cluster id per output point, 'values':
+(K,) float32 per cluster, 'shape': (kx, ky, kz) when the clusters form a
+regular lattice else None, 'origin'/'cell': (3,) float32 lattice geometry}.
+Boxes (pc_voxel) are the first producer; connected components, k-means and
+hand-painted regions are the same shape of thing and would emit the same dict,
+so one display / threshold / OSC stage downstream serves all of them. Boxes
+are special only in that they constrain the voxel size, which is why they live
+in pc_voxel rather than in a node of their own.
+
 pc_voxel additionally accepts an mgl chain, drawing the volume it is working
-in as a wireframe box (see VolumeBoundsDrawMixin) — the one place these nodes
-touch GL, and only through a lazy import, so the module stays numpy-only for
-patches with no 3D view.
+in as a wireframe — the box lattice when subdivided, the bare outline when not
+(see VolumeGridDrawMixin). That is the one place these nodes touch GL, and
+only through a lazy import, so the module stays numpy-only for patches with no
+3D view.
 """
 
 import threading
@@ -44,6 +56,7 @@ from dpg_system.conversion_utils import any_to_array
 CLOUD_KEY = 'point_cloud'
 CROP_KEY = 'crop'
 VOXEL_SIZE_KEY = 'voxel_size'
+CLUSTER_KEY = 'clusters'
 
 
 def unwrap_cloud(data):
@@ -92,24 +105,33 @@ class _VoxelGrid:
         self.ncells = 1
         self._key = None
 
-    def configure(self, lo, hi, voxel_size):
+    def configure(self, lo, hi, voxel_size, dims=None):
         """(Re)build the grid. Returns True if the geometry changed. Raises
         ValueError if the resulting grid would exceed MAX_VOXEL_CELLS.
 
         ``voxel_size`` is a scalar for cubic voxels or a length-3 (x, y, z)
-        for anisotropic ones; it is stored as a (3,) float32 either way."""
+        for anisotropic ones; it is stored as a (3,) float32 either way.
+
+        ``dims`` pins the grid to an exact voxel count per axis and derives the
+        voxel size from it instead, which is what box subdivision needs: asking
+        for ceil((hi - lo) / size) back would let one float32 ulp turn 64
+        voxels into 65 and leave the last box a single voxel deep."""
         lo = np.asarray(lo, dtype=np.float32)
         hi = np.asarray(hi, dtype=np.float32)
         lo, hi = np.minimum(lo, hi), np.maximum(lo, hi)
-        voxel_size = np.asarray(voxel_size, dtype=np.float32).reshape(-1)
-        if voxel_size.size == 1:
-            voxel_size = np.repeat(voxel_size, 3)
-        voxel_size = np.maximum(voxel_size[:3], 1e-6)
-        key = (tuple(lo.tolist()), tuple(hi.tolist()), tuple(voxel_size.tolist()))
+        if dims is None:
+            voxel_size = np.asarray(voxel_size, dtype=np.float32).reshape(-1)
+            if voxel_size.size == 1:
+                voxel_size = np.repeat(voxel_size, 3)
+            voxel_size = np.maximum(voxel_size[:3], 1e-6)
+            dims = np.maximum(np.ceil((hi - lo) / voxel_size).astype(np.int64), 1)
+        else:
+            dims = np.maximum(np.asarray(dims, dtype=np.int64).reshape(-1)[:3], 1)
+            voxel_size = np.maximum((hi - lo) / dims, 1e-6).astype(np.float32)
+        key = (tuple(lo.tolist()), tuple(hi.tolist()),
+               tuple(voxel_size.tolist()), tuple(dims.tolist()))
         if key == self._key:
             return False
-        dims = np.ceil((hi - lo) / voxel_size).astype(np.int64)
-        dims = np.maximum(dims, 1)
         ncells = int(dims[0] * dims[1] * dims[2])
         if ncells > MAX_VOXEL_CELLS:
             raise ValueError(
@@ -141,14 +163,18 @@ class _VoxelGrid:
         lin = vi[:, 0] + vi[:, 1] * nx + vi[:, 2] * (nx * ny)
         return lin, valid
 
-    def centres(self, lin_indices):
-        """Voxel centres (M, 3) float32 for an array of linear voxel indices."""
+    def coords(self, lin_indices):
+        """Unpack linear voxel indices to (M, 3) int64 (ix, iy, iz)."""
         nx, ny = self.dims[0], self.dims[1]
         iz = lin_indices // (nx * ny)
         rem = lin_indices - iz * (nx * ny)
         iy = rem // nx
         ix = rem - iy * nx
-        ijk = np.stack((ix, iy, iz), axis=1).astype(np.float32)
+        return np.stack((ix, iy, iz), axis=1)
+
+    def centres(self, lin_indices):
+        """Voxel centres (M, 3) float32 for an array of linear voxel indices."""
+        ijk = self.coords(lin_indices).astype(np.float32)
         return (self.lo + (ijk + 0.5) * self.voxel_size).astype(np.float32)
 
 
@@ -239,14 +265,48 @@ class PointCloudNode(Node):
         return v[:3]
 
 
-# Corner i of the box has x from hi when bit 0 is set, y when bit 1, z when
-# bit 2; an edge joins two corners differing in exactly one bit, which is all
-# twelve of them, each listed once (from the end where that bit is clear).
-_BOX_CORNER_BITS = np.array([[(i >> a) & 1 for a in range(3)] for i in range(8)],
-                            dtype=np.float32)
-_BOX_EDGE_INDICES = np.array([(i, i ^ bit) for bit in (1, 2, 4)
-                              for i in range(8) if not (i & bit)],
-                             dtype=np.int64).reshape(-1)
+def _lattice_cuts(lo, hi, divisions):
+    """Cut-plane positions per axis: d[a] + 1 of them, the ends included."""
+    d = np.maximum(np.asarray(divisions, dtype=np.int64).reshape(-1)[:3], 1)
+    lo = np.asarray(lo, dtype=np.float32)
+    hi = np.asarray(hi, dtype=np.float32)
+    return [np.linspace(lo[a], hi[a], int(d[a]) + 1, dtype=np.float32) for a in range(3)]
+
+
+def _lattice_vertices(lo, hi, divisions):
+    """The (M, 3) float32 lattice nodes — every cut plane intersection, which
+    is every corner of every cell, each listed once."""
+    cx, cy, cz = _lattice_cuts(lo, hi, divisions)
+    gx, gy, gz = np.meshgrid(cx, cy, cz, indexing='ij')
+    return np.stack((gx.ravel(), gy.ravel(), gz.ravel()), axis=1).astype(np.float32)
+
+
+def _lattice_lines(lo, hi, divisions):
+    """Vertices (M, 2, 3) float32 for the wireframe of a box subdivided into
+    ``divisions`` cells per axis.
+
+    Drawn as three families of parallel lines rather than twelve edges per
+    cell: an 8x8x8 subdivision is 243 lines this way and 6,144 edges the other,
+    for the same picture, since every interior edge is shared. Divisions of
+    (1, 1, 1) degenerate to exactly the twelve edges of the outer box, which is
+    what an unsubdivided volume wants."""
+    lo = np.asarray(lo, dtype=np.float32)
+    hi = np.asarray(hi, dtype=np.float32)
+    cuts = _lattice_cuts(lo, hi, divisions)
+    segments = []
+    for axis in range(3):
+        u, v = (axis + 1) % 3, (axis + 2) % 3
+        # One line spanning `axis` at every node of the (u, v) cut lattice.
+        gu, gv = np.meshgrid(cuts[u], cuts[v], indexing='ij')
+        n = gu.size
+        seg = np.empty((n, 2, 3), dtype=np.float32)
+        seg[:, :, u] = gu.reshape(n, 1)
+        seg[:, :, v] = gv.reshape(n, 1)
+        seg[:, 0, axis] = lo[axis]
+        seg[:, 1, axis] = hi[axis]
+        segments.append(seg)
+    return np.concatenate(segments, axis=0)
+
 
 _GL_MODULES = None
 
@@ -268,16 +328,23 @@ def _gl_modules():
     return _GL_MODULES
 
 
-class VolumeBoundsDrawMixin:
+class VolumeGridDrawMixin:
     """Lets a grid node sit in an mgl chain and draw its working volume.
 
     The node gets 'mgl chain in' / 'mgl chain out' pins and behaves like any
     mgl_ node on the chain: a 'draw' message draws the volume as a wireframe
-    box and is then passed along. The box is the volume the node is actually
-    voxelising — the crop carried on the last cloud frame, or the node's own
-    min/max options when the frame arrived raw — so it shows you the real
-    working volume rather than a second copy of the numbers. Colour comes from
-    the chain (mgl_color), as it does for mgl_line.
+    and is then passed along. The volume is the one the node is actually
+    working in — the crop carried on the last cloud frame, or the node's own
+    min/max options when the frame arrived raw — so it shows the real working
+    volume rather than a second copy of the numbers. Where the node subdivides
+    that volume (``_grid_divisions``), the wireframe is the lattice of cell
+    boundaries instead of a bare outline.
+
+    The lattice draws as lines, as points at its nodes, or both, each with its
+    own colour; both off is how the overlay is turned off. The colours are used
+    as set rather than multiplied into the chain colour, so lines and points
+    can be told apart at a glance — this is a reference overlay, not scene
+    geometry that should take the chain's material.
 
     Drawing is main-thread only, for the reason given in MGLNode.execute: a
     cloud arriving on a sensor thread can find the chain's 'draw' sitting in
@@ -285,38 +352,67 @@ class VolumeBoundsDrawMixin:
     message is left unconsumed instead, for the main-thread chain trigger that
     is about to process it."""
 
-    _box_vert_src = '''
+    _grid_vert_src = '''
         #version 330
         uniform mat4 M;
         uniform mat4 V;
         uniform mat4 P;
+        uniform float point_size;
         in vec3 in_position;
         void main() {
             gl_Position = P * V * M * vec4(in_position, 1.0);
+            gl_PointSize = point_size;
         }
     '''
-    # Unlit: a reference box wants one flat colour, not a wireframe that
-    # brightens and dims with the light rig it happens to be drawn under.
-    _box_frag_src = '''
+    # Unlit: a reference wireframe wants one flat colour, not lines that
+    # brighten and dim with the light rig they happen to be drawn under.
+    # One program serves both passes; `round_points` is off for the line pass,
+    # where gl_PointCoord means nothing.
+    _grid_frag_src = '''
         #version 330
         uniform vec4 color;
+        uniform bool round_points;
         out vec4 f_color;
         void main() {
+            if (round_points) {
+                vec2 c = 2.0 * gl_PointCoord - 1.0;
+                if (dot(c, c) > 1.0) discard;
+            }
             f_color = vec4(color.rgb * color.a, color.a);
         }
     '''
 
-    def _add_bounds_draw(self):
-        """Add the chain pins and the show/hide option. Call after the node's
+    def _add_volume_draw(self):
+        """Add the chain pins and the overlay options. Call after the node's
         own inputs and outputs so the pins land at the end of each column."""
         self.mgl_input = self.add_input('mgl chain in', triggers_execution=True)
         self.mgl_output = self.add_output('mgl chain out')
-        self.show_volume_option = self.add_option('show volume', widget_type='checkbox',
-                                                  default_value=True)
-        self._box_prog = None
-        self._box_vbo = None
-        self._box_vao = None
-        self._box_key = None
+        # Lines, points at the lattice nodes, or both — both off is the way to
+        # turn the overlay off. Colours are taken as set rather than multiplied
+        # into the chain colour, so the two can be told apart at a glance.
+        self.show_lines_option = self.add_option('show lines', widget_type='checkbox',
+                                                 default_value=True)
+        self.line_color_option = self.add_option('line color', widget_type='color_picker',
+                                                 default_value=[1.0, 1.0, 1.0, 1.0])
+        self.show_points_option = self.add_option('show points', widget_type='checkbox',
+                                                  default_value=False)
+        self.point_color_option = self.add_option('point color', widget_type='color_picker',
+                                                  default_value=[1.0, 1.0, 1.0, 1.0])
+        self.point_size_option = self.add_option('point size', widget_type='drag_float',
+                                                 default_value=4.0, min=1.0)
+        self._grid_prog = None
+        self._grid_line_vbo = None
+        self._grid_line_vao = None
+        self._grid_line_verts = 0
+        self._grid_point_vbo = None
+        self._grid_point_vao = None
+        self._grid_point_verts = 0
+        self._grid_key = None
+
+    def _grid_divisions(self):
+        """Cells per axis to draw the volume subdivided into. The default draws
+        the outline only; a node that subdivides overrides this."""
+        return (1, 1, 1)
 
     def _mgl_pending(self):
         """True if a chain message is waiting and this is the thread that may
@@ -332,13 +428,32 @@ class VolumeBoundsDrawMixin:
             message = message[0] if message and isinstance(message[0], str) else None
         if message != 'draw':
             return
-        if self.show_volume_option():
+        if self.show_lines_option() or self.show_points_option():
             try:
                 self._draw_volume()
             except Exception as e:
                 if self.app.verbose:
                     print(f'{self.label}: volume draw failed: {e}')
         self.mgl_output.send('draw')
+
+    @staticmethod
+    def _rgba(option):
+        """A colour widget's value as an rgba 4-tuple of floats 0..1. The
+        picker hands back 0..255 in some themes, hence the rescale."""
+        white = (1.0, 1.0, 1.0, 1.0)
+        try:
+            c = [float(v) for v in any_to_array(option()).reshape(-1)[:4]]
+        except (TypeError, ValueError):
+            return white
+        # A widget that is missing or not yet drawn reads back as a scalar or
+        # an empty list; anything short of rgb is not a colour.
+        if len(c) < 3:
+            return white
+        if max(c) > 1.0:
+            c = [v / 255.0 for v in c]
+        if len(c) < 4:
+            c.append(1.0)
+        return tuple(min(1.0, max(0.0, v)) for v in c)
 
     def _draw_volume(self):
         moderngl, MGLContext = _gl_modules()
@@ -351,30 +466,50 @@ class VolumeBoundsDrawMixin:
 
         lo, hi = self._bounds(*self._bounds_defaults)
         lo, hi = np.minimum(lo, hi), np.maximum(lo, hi)
+        divisions = self._grid_divisions()
 
-        if self._box_prog is None:
-            self._box_prog = inner_ctx.program(vertex_shader=self._box_vert_src,
-                                               fragment_shader=self._box_frag_src)
-        if self._box_vbo is None:
-            self._box_vbo = inner_ctx.buffer(reserve=_BOX_EDGE_INDICES.size * 3 * 4)
-            self._box_vao = inner_ctx.vertex_array(
-                self._box_prog, [(self._box_vbo, '3f', 'in_position')])
-            self._box_key = None
+        if self._grid_prog is None:
+            self._grid_prog = inner_ctx.program(vertex_shader=self._grid_vert_src,
+                                                fragment_shader=self._grid_frag_src)
 
-        key = (tuple(lo.tolist()), tuple(hi.tolist()))
-        if key != self._box_key:
-            corners = lo + _BOX_CORNER_BITS * (hi - lo)
-            self._box_vbo.write(np.ascontiguousarray(corners[_BOX_EDGE_INDICES],
-                                                     dtype=np.float32).tobytes())
-            self._box_key = key
+        key = (tuple(lo.tolist()), tuple(hi.tolist()), tuple(divisions))
+        if key != self._grid_key:
+            self._build_lattice(ctx, inner_ctx, lo, hi, divisions)
+            self._grid_key = key
 
-        prog = self._box_prog
+        prog = self._grid_prog
         prog['M'].write(ctx.get_model_matrix().astype('f4').T.tobytes())
         prog['V'].write(ctx.view_matrix.astype('f4').tobytes())
         prog['P'].write(ctx.projection_matrix.astype('f4').tobytes())
-        c = tuple(ctx.current_color)
-        prog['color'].value = c if len(c) == 4 else c[:3] + (1.0,)
-        self._box_vao.render(mode=moderngl.LINES)
+
+        if self.show_lines_option() and self._grid_line_verts:
+            prog['color'].value = self._rgba(self.line_color_option)
+            prog['round_points'].value = False
+            self._grid_line_vao.render(mode=moderngl.LINES)
+        if self.show_points_option() and self._grid_point_verts:
+            prog['color'].value = self._rgba(self.point_color_option)
+            prog['round_points'].value = True
+            prog['point_size'].value = max(1.0, float(self.point_size_option()))
+            self._grid_point_vao.render(mode=moderngl.POINTS)
+
+    def _build_lattice(self, ctx, inner_ctx, lo, hi, divisions):
+        """(Re)fill the line and point buffers for this volume. The vertex
+        count changes with the subdivision, so a buffer is reallocated when its
+        shape changes and only rewritten when the volume merely moves."""
+        for verts, attr in ((_lattice_lines(lo, hi, divisions).reshape(-1, 3), 'line'),
+                            (_lattice_vertices(lo, hi, divisions), 'point')):
+            verts = np.ascontiguousarray(verts, dtype=np.float32)
+            count = verts.shape[0]
+            if count != getattr(self, f'_grid_{attr}_verts'):
+                ctx.defer_release(getattr(self, f'_grid_{attr}_vao'),
+                                  getattr(self, f'_grid_{attr}_vbo'))
+                vbo = inner_ctx.buffer(reserve=max(verts.nbytes, 12))
+                setattr(self, f'_grid_{attr}_vbo', vbo)
+                setattr(self, f'_grid_{attr}_vao', inner_ctx.vertex_array(
+                    self._grid_prog, [(vbo, '3f', 'in_position')]))
+                setattr(self, f'_grid_{attr}_verts', count)
+            if count:
+                getattr(self, f'_grid_{attr}_vbo').write(verts.tobytes())
 
     def custom_cleanup(self):
         # Node deletion runs from a DPG handler callback with no GL context
@@ -382,10 +517,14 @@ class VolumeBoundsDrawMixin:
         _, MGLContext = _gl_modules()
         ctx = MGLContext._instance if MGLContext is not None else None
         if ctx is not None:
-            ctx.defer_release(self._box_vao, self._box_vbo, self._box_prog)
-        self._box_vao = None
-        self._box_vbo = None
-        self._box_prog = None
+            ctx.defer_release(self._grid_line_vao, self._grid_line_vbo,
+                              self._grid_point_vao, self._grid_point_vbo,
+                              self._grid_prog)
+        self._grid_line_vao = self._grid_line_vbo = None
+        self._grid_point_vao = self._grid_point_vbo = None
+        self._grid_line_verts = self._grid_point_verts = 0
+        self._grid_prog = None
+        self._grid_key = None
         super().custom_cleanup()
 
 
@@ -433,7 +572,7 @@ class PointCloudCropNode(PointCloudNode):
                    **{CROP_KEY: (lo.tolist(), hi.tolist())})
 
 
-class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
+class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
     """Voxel-grid downsample: collapse each occupied voxel to one point (its
     centre or the centroid of the points it holds). ``min points`` doubles as a
     density floor, dropping sparse speckle voxels.
@@ -448,10 +587,30 @@ class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
     distance is used rather than the C++ code's z so it survives leveling/yaw
     rotations, which preserve |p| but not z.
 
+    ``boxes (x,y,z)`` groups the voxels into a coarser lattice of boxes, the
+    first of the cluster-frame producers (see CLUSTER_KEY). Boxes are not a
+    layer on top of the voxels but a constraint on them: the crop divides into
+    exactly the requested number of boxes, and the voxel size is then derived
+    so that a whole number of voxels spans each one —
+
+        box size  = (hi - lo) / boxes
+        n         = round(box size / target voxel size)   # voxels per box
+        voxel size = box size / n
+
+    which is cPointCloudToVoxels::CalcOptimalVoxelSize from the C++ app. It is
+    closed form, so nothing has to search or be fed back: 'voxel size (cm)' is
+    a target, and the size actually used (on the frame, and reported by
+    pc_info) is the nearest one that divides the boxes evenly. Every box then
+    holds exactly n.x * n.y * n.z voxels with no remainder. The cost is that
+    voxels cannot stay exactly cubic for an arbitrary crop — the C++ app makes
+    the same trade, snapping each axis independently after copying the x
+    target across.
+
     The node also sits on an mgl chain: a 'draw' arriving on ``mgl chain in``
-    draws the working volume as a wireframe box and is passed on, so the crop
-    the voxels are actually built over can be seen in the 3D view alongside
-    the cloud. See VolumeBoundsDrawMixin."""
+    draws the working volume as a wireframe — the box lattice when subdivided,
+    the bare outline when not — and is passed on, so the volume the voxels are
+    really built over can be seen alongside the cloud. See
+    VolumeGridDrawMixin."""
 
     @staticmethod
     def factory(name, data, args=None):
@@ -461,6 +620,8 @@ class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
         super().__init__(label, data, args)
         self.grid = _VoxelGrid()
         self._warned_large = False
+        self.box_count = None        # (3,) int64 boxes per axis, or None
+        self.voxels_per_box = None   # (3,) int64, exact, when boxes are on
         self.input = self.add_input('point cloud', triggers_execution=True)
         self.voxel_input = self.add_input('voxel size (cm)', widget_type='drag_float',
                                           default_value=5.0, min=0.01)
@@ -475,8 +636,17 @@ class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
         self.sense_property.widget.speed = 0.01
         self.min_points_property = self.add_property('min points', widget_type='drag_int',
                                                      default_value=1, min=1)
+        # 0 on any axis leaves the cloud unsubdivided; the voxel size is then
+        # taken as typed rather than snapped. A drag_float_n shown as whole
+        # numbers — there is no integer row widget, and the bounds vectors
+        # beside it are drag_float_n too, so the node stays of a piece.
+        self.boxes_input = self.add_input('boxes (x,y,z)', widget_type='drag_float_n',
+                                          default_value=[0.0, 0.0, 0.0], columns=3,
+                                          widget_width=60, min=0.0)
+        self.boxes_input.widget.speed = 1.0
         self.output = self.add_output('voxel cloud')
         self.count_output = self.add_output('counts')
+        self.box_output = self.add_output('box values')
         self.reduce_option = self.add_option('reduce', widget_type='combo', default_value='center')
         self.reduce_option.widget.combo_items = ['center', 'centroid']
         self._add_bounds_options([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
@@ -492,16 +662,64 @@ class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
         # volume' at the foot of the options — and so patches saved before the
         # pins existed still reconnect: a link restores by its saved index
         # first, and appending leaves every existing index where it was.
-        self._add_bounds_draw()
+        self._add_volume_draw()
+
+    def custom_create(self, from_file):
+        # Format has to be applied to drawn items, so not in __init__.
+        self.boxes_input.widget.set_format('%.0f')
+
+    def _target_voxel_size(self):
+        """The requested voxel size in metres, (3,) float32. Cubic copies the
+        single widget across all three axes — before any box snapping, exactly
+        as the C++ app does."""
+        if self.cubic_option():
+            size = np.repeat(np.float32(self.voxel_input()), 3)
+        else:
+            size = self._vec3(self.voxel_xyz_option, [5.0, 5.0, 5.0])
+        return np.maximum(size.astype(np.float32) * 0.01, 1e-4)   # cm -> m
+
+    def _requested_boxes(self):
+        """Boxes per axis as (3,) int64, or None when subdivision is off."""
+        try:
+            b = np.rint(np.asarray(any_to_array(self.boxes_input()),
+                                   dtype=np.float64)).astype(np.int64).reshape(-1)
+        except (TypeError, ValueError):
+            return None
+        if b.size == 1:
+            b = np.repeat(b, 3)
+        if b.size < 3 or np.any(b[:3] < 1):
+            return None
+        return b[:3]
+
+    def _grid_divisions(self):
+        """What the mgl chain draws: the box lattice, or the bare outline."""
+        if self.box_count is None:
+            return (1, 1, 1)
+        return tuple(int(v) for v in self.box_count)
 
     def _ensure_grid(self):
         lo, hi = self._bounds(*self._bounds_defaults)
-        if self.cubic_option():
-            size = float(self.voxel_input()) * 0.01        # cm -> m
+        target = self._target_voxel_size()
+        boxes = self._requested_boxes()
+        dims = None
+        if boxes is not None:
+            # CalcOptimalVoxelSize: the crop divides into exactly `boxes`
+            # boxes, and the voxel size bends to the nearest one that fits a
+            # whole number of voxels into each. dims is handed to the grid
+            # rather than recomputed from the size, so the count is exact.
+            extent = np.maximum(np.asarray(hi, dtype=np.float32) -
+                                np.asarray(lo, dtype=np.float32), 1e-6)
+            box_size = extent / boxes
+            per_box = np.maximum(np.rint(box_size / target), 1).astype(np.int64)
+            dims = boxes * per_box
+            size = box_size / per_box
         else:
-            size = self._vec3(self.voxel_xyz_option, [5.0, 5.0, 5.0]) * 0.01
+            per_box = None
+            size = target
         try:
-            self.grid.configure(lo, hi, size)
+            self.grid.configure(lo, hi, size, dims=dims)
+            self.box_count = boxes
+            self.voxels_per_box = per_box
             self._warned_large = False
             return True
         except ValueError as e:
@@ -509,6 +727,39 @@ class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
                 print(f'{self.label}: {e}')
                 self._warned_large = True
             return False
+
+    def _cluster_boxes(self, occupied, weights):
+        """Sum voxel weights into boxes, send the dense (bx, by, bz) array, and
+        return the frame's cluster entry (None when subdivision is off).
+
+        ``occupied`` may be empty: the box array still goes out, all zeros, so
+        a display downstream clears rather than holding the last frame."""
+        if self.box_count is None:
+            return None
+        bx, by, bz = (int(v) for v in self.box_count)
+        n_boxes = bx * by * bz
+        if occupied.size == 0:
+            labels = np.empty((0,), dtype=np.int32)
+            values = np.zeros(n_boxes, dtype=np.float32)
+        else:
+            # dims is boxes * voxels_per_box exactly, so this divides cleanly:
+            # every voxel lands in a box and no box is short.
+            bijk = self.grid.coords(occupied) // self.voxels_per_box
+            labels = bijk[:, 0] + bijk[:, 1] * bx + bijk[:, 2] * (bx * by)
+            values = np.bincount(labels, weights=weights,
+                                 minlength=n_boxes).astype(np.float32)
+            labels = labels.astype(np.int32)
+        # The linear index is x + bx*y + bx*by*z, so the C-order unpack is
+        # [z][y][x]; transpose back to [x][y][z] for the output array.
+        self.box_output.send(np.ascontiguousarray(
+            values.reshape(bz, by, bx).transpose(2, 1, 0)))
+        return {
+            'labels': labels,
+            'values': values,
+            'shape': (bx, by, bz),
+            'origin': self.grid.lo.copy(),
+            'cell': (self.grid.voxel_size * self.voxels_per_box).astype(np.float32),
+        }
 
     def execute(self):
         # Two trigger inputs: the cloud and the mgl chain. A 'draw' must not
@@ -527,16 +778,19 @@ class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
             return
         lin, valid = self.grid.index(pts)
         lin_v = lin[valid]
+        empty = np.empty((0,), dtype=np.int64)
         if lin_v.size == 0:
             self._send(self.output, np.empty((0, 3), dtype=np.float32))
-            self.count_output.send(np.empty((0,), dtype=np.int64))
+            self.count_output.send(empty)
+            self._cluster_boxes(empty, None)
             return
         counts = np.bincount(lin_v, minlength=self.grid.ncells)
         min_points = max(1, int(self.min_points_property()))
         occupied = np.nonzero(counts >= min_points)[0]
         if occupied.size == 0:
             self._send(self.output, np.empty((0, 3), dtype=np.float32))
-            self.count_output.send(np.empty((0,), dtype=np.int64))
+            self.count_output.send(empty)
+            self._cluster_boxes(empty, None)
             return
 
         if self.reduce_option() == 'centroid':
@@ -563,8 +817,11 @@ class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
             weights *= sense
         weights = np.clip(weights / VOXEL_WEIGHT_NORM, 0.0, 1.0)
 
-        self._send(self.output, np.ascontiguousarray(out),
-                   voxel_size=self.grid.voxel_size_meta(), weights=weights)
+        meta = {VOXEL_SIZE_KEY: self.grid.voxel_size_meta(), 'weights': weights}
+        clusters = self._cluster_boxes(occupied, weights)
+        if clusters is not None:
+            meta[CLUSTER_KEY] = clusters
+        self._send(self.output, np.ascontiguousarray(out), **meta)
 
 
 class PointCloudBackgroundNode(PointCloudNode):
