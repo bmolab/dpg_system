@@ -521,6 +521,20 @@ class HomeViewNode(_ViewButtonNodeMixin, Node):
         editor.home_nodes()
 
 
+def _show_widget_prefix(widget, text):
+    """Put `text` in the widget's left-hand name column, or hide the column
+    when there is nothing to show. The column exists only if the widget was
+    drawn with a prefix_label."""
+    if widget.prefix_uuid is None or not dpg.does_item_exist(widget.prefix_uuid):
+        return
+    dpg.set_value(widget.prefix_uuid, text)
+    for uuid in (widget.prefix_uuid, widget.prefix_spacer_uuid):
+        if text:
+            dpg.show_item(uuid)
+        else:
+            dpg.hide_item(uuid)
+
+
 class MenuNode(_HideTitleBarMixin, Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -556,16 +570,8 @@ class MenuNode(_HideTitleBarMixin, Node):
 
     def prefix_changed(self):
         """Show the prefix as a name in front of the combo, or hide the column."""
-        widget = self.choice.widget
-        if widget.prefix_uuid is None or not dpg.does_item_exist(widget.prefix_uuid):
-            return
         text = self.prefix_option().strip() if self.prefix_as_label() else ''
-        dpg.set_value(widget.prefix_uuid, text)
-        for uuid in (widget.prefix_uuid, widget.prefix_spacer_uuid):
-            if text:
-                dpg.show_item(uuid)
-            else:
-                dpg.hide_item(uuid)
+        _show_widget_prefix(self.choice.widget, text)
 
     # --- width ---
 
@@ -1040,7 +1046,7 @@ class TableNode(Node):
             dpg.set_value(target_tag, any_to_string(value))
 
 
-class RadioButtonsNode(Node):
+class RadioButtonsNode(_HideTitleBarMixin, Node):
     @staticmethod
     def factory(name, data, args=None):
         node = RadioButtonsNode(name, data, args)
@@ -1059,11 +1065,27 @@ class RadioButtonsNode(Node):
 
         self.radio_group = self.add_input(widget_type='radio_group', callback=self.execute)
         self.radio_group.widget.combo_items = self.buttons
+        # A name column to the left of the buttons, hidden until a prefix is set.
+        self.radio_group.widget.prefix_label = ''
         if label == 'radio_h':
             self.radio_group.widget.horizontal = True
         else:
             self.radio_group.widget.horizontal = False
         self.output = self.add_output("")
+        self.prefix_option = self.add_option('prefix', widget_type='text_input', default_value='',
+                                             callback=self.prefix_changed)
+        self.prefix_as_label = self.add_option('prefix_as_label', widget_type='checkbox', default_value=True,
+                                               callback=self.prefix_changed)
+        self._add_hide_title_bar_option(default_value=False)
+
+    def custom_create(self, from_file):
+        self.prefix_changed()
+        self._apply_title_bar_visibility()
+
+    def prefix_changed(self):
+        """Show the prefix as a name in front of the buttons, or hide the column."""
+        text = self.prefix_option().strip() if self.prefix_as_label() else ''
+        _show_widget_prefix(self.radio_group.widget, text)
 
     def get_preset_state(self):
         preset = {}
@@ -1079,7 +1101,11 @@ class RadioButtonsNode(Node):
         self.execute()
 
     def execute(self):
-        self.output.send(self.radio_group())
+        prefix = self.prefix_option().split()
+        if prefix:
+            self.output.send(prefix + [self.radio_group()])
+        else:
+            self.output.send(self.radio_group())
 
 
 class ToggleNode(Node):
