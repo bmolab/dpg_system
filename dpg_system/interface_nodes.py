@@ -2129,6 +2129,16 @@ class TextDisplayNode(TextEditorNode):
 #         self.output.send()
 
 class Vector2DNode(Node):
+    """Display, edit and pass through a 1D or 2D vector.
+
+    The shape follows the data. Rows are shown from a pool of
+    max_component_count, and each visible row's drag_float_n grows to the
+    data's width, capped at max_column_count: anything wider shows its first
+    columns (use heat_map for wide arrays). Arguments give an initial shape
+    only. A learned shape persists through the 'component count' and
+    'column count' options, so a bare `vector` that has seen 22x3 reloads
+    as 22x3.
+    """
     title_bar_hideable = True
     @staticmethod
     def factory(name, data, args=None):
@@ -2139,23 +2149,27 @@ class Vector2DNode(Node):
         super().__init__(label, data, args)
 
         self.max_component_count = 64
+        self.max_column_count = 8
         dim1 = 4
         dim2 = 1
         if len(args) > 0:
             dim1 = any_to_int(args[0])
         if len(args) > 1:
             dim2 = any_to_int(args[1])
+        dim1 = max(1, min(dim1, self.max_component_count))
+        dim2 = max(1, min(dim2, self.max_column_count))
 
         self.format = '%.3f'
 
+        # current_dims is the shape of the data; display_columns is how much
+        # of its width the rows show (the data can be wider than the cap).
         self.current_dims = [dim1, dim2]
+        self.display_columns = dim2
 
         self.input = self.add_input('in', triggers_execution=True, trigger_button=True, trigger_callback=self.send)
         self.input.bang_repeats_previous = False
         self.output_vector = None
         self.component_properties = []
-        if dim2 > 8:
-            dim2 = 8
         self.component_widget_width = 45
         kwargs = {'columns': dim2}
         for i in range(self.max_component_count):
@@ -2173,18 +2187,99 @@ class Vector2DNode(Node):
             self.vector_format_input.widget.combo_items = ['numpy', 'list']
         self.output = self.add_output('out')
 
-        self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_dims[0], callback=self.component_count_changed)
+        self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=dim1, min=1, max=self.max_component_count, callback=self.component_count_changed)
+        self.column_count_property = self.add_option('column count', widget_type='drag_int', default_value=dim2, min=1, max=self.max_column_count, callback=self.column_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
         self.all_inputs_trigger_option = self.add_option('all inputs trigger', widget_type='checkbox', default_value=True)
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.component_widget_width, callback=self.width_changed)
         self.save_option = self.add_option('save', widget_type='button', callback=self._save_values)
         self.load_option = self.add_option('load', widget_type='button', callback=self._load_values)
-        if self.current_dims[1] == 1:
-            self.output_vector = np.zeros(self.current_dims[0])
+        if dim2 == 1:
+            self.output_vector = np.zeros(dim1)
         else:
             self.output_vector = np.zeros(self.current_dims)
 
         self.first_component_input_index = -1
+
+    # ------------------------------------------------------------ shape
+
+    @staticmethod
+    def _on_main_thread():
+        return threading.get_ident() == getattr(Node.app, 'main_thread_id', threading.get_ident())
+
+    def _set_display_columns(self, width):
+        """Show `width` columns (capped) on every visible row and mirror it in
+        the option, which is what carries a learned width into the patch."""
+        cols = max(1, min(int(width), self.max_column_count))
+        self.display_columns = cols
+        if self.column_count_property() != cols:
+            self.column_count_property.set(cols)
+        # Off the main thread the rows are left to their own setters, which
+        # land the resize on the main thread themselves.
+        if self._on_main_thread():
+            for i in range(self.current_dims[0]):
+                self.component_properties[i].widget.set_columns(cols)
+
+    def _apply_row_visibility(self):
+        """Show the first current_dims[0] rows, each brought to the display
+        width as it is shown, and hide the rest. Hidden rows keep whatever
+        width they had: they are resized lazily, when they next appear."""
+        resize = self._on_main_thread()
+        for i, cp in enumerate(self.component_properties):
+            if i < self.current_dims[0]:
+                if resize:
+                    cp.widget.set_columns(self.display_columns)
+                dpg.show_item(cp.uuid)
+                for uuid in cp.widget.uuids:
+                    dpg.show_item(uuid)
+            else:
+                dpg.hide_item(cp.uuid)
+                for uuid in cp.widget.uuids:
+                    dpg.hide_item(uuid)
+
+    def _show_shape(self):
+        """Bring rows and widths in line with current_dims and push
+        output_vector into the rows."""
+        rows = max(1, min(self.current_dims[0], self.max_component_count))
+        self.current_dims[0] = rows
+        if self.component_count_property() != rows:
+            self.component_count_property.set(rows)
+        self._set_display_columns(self.current_dims[1])
+        self._apply_row_visibility()
+        for i in range(rows):
+            self.component_properties[i].set(any_to_list(self.output_vector[i]))
+
+    def _collect_component_array(self):
+        # Each visible row's widget returns a list of its columns (a scalar
+        # when it has one column); rows are padded or cut to the display width
+        # so a row caught mid-resize cannot make the stack ragged. Stacking
+        # gives (rows, columns); a single column is returned 1-D.
+        dim1 = self.current_dims[0]
+        cols = self.display_columns
+        rows = []
+        for i in range(dim1):
+            value = self.component_properties[i]()
+            row = any_to_list(value) if value is not None else []
+            rows.append((list(row) + [0.0] * cols)[:cols])
+        values = np.array(rows, dtype=float)
+        if cols == 1:
+            values = values.reshape(dim1)
+        return values
+
+    def _rebuild_output_vector(self):
+        """The rows are the truth after an edit: rebuild the output from them
+        in the chosen format."""
+        values = self._collect_component_array()
+        vf = self.vector_format_input()
+        if vf == 'torch':
+            self.output_vector = torch.from_numpy(values)
+        elif vf == 'list':
+            self.output_vector = values.tolist()
+        else:
+            self.output_vector = values
+        self.output.set_value(self.output_vector)
+
+    # ------------------------------------------------------------ callbacks
 
     def vector_format_changed(self):
         t = type(self.output_vector)
@@ -2207,29 +2302,15 @@ class Vector2DNode(Node):
                 self.output_vector = torch.tensor(self.output_vector)
 
     def zero(self):
-        not_zeroed = True
-        if self.vector_format_input() == 'numpy':
-            if self.current_dims[0] == self.output_vector.shape[0]:
-                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
-                    self.output_vector = np.zeros(self.current_dims[0])
-                    not_zeroed = False
-            if not_zeroed:
-                self.output_vector = np.zeros(self.current_dims)
-
-        elif self.vector_format_input() == 'torch':
-            if self.current_dims[0] == self.output_vector.shape[0]:
-                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
-                    self.output_vector = torch.zeros(self.current_dims[0])
-                    not_zeroed = False
-            if not_zeroed:
-                self.output_vector = torch.zeros(self.current_dims)
+        dims = self.current_dims
+        shape = (dims[0],) if dims[1] == 1 else tuple(dims)
+        vf = self.vector_format_input()
+        if vf == 'torch':
+            self.output_vector = torch.zeros(shape)
+        elif vf == 'list':
+            self.output_vector = np.zeros(shape).tolist()
         else:
-            if self.current_dims[0] == len(self.output_vector):
-                if self.current_dims[1] == 1 and not isinstance(self.output_vector[0], list):
-                    self.output_vector = [0.0] * self.current_dims[0]
-                    not_zeroed = False
-            if not_zeroed:
-                self.output_vector = [[0.0] * self.current_dims[0]] * self.current_dims[1]
+            self.output_vector = np.zeros(shape)
         self.execute()
 
     def _save_values(self):
@@ -2262,13 +2343,15 @@ class Vector2DNode(Node):
             if not values:
                 print(f'Vector2DNode: no values found in {load_path}')
                 return
-            if len(values) != self.current_dims[0]:
-                new_count = min(len(values), self.max_component_count)
-                self.component_count_property.set(new_count)
-                self.component_count_changed()
-            for i in range(min(len(values), self.current_dims[0])):
+            rows = min(len(values), self.max_component_count)
+            self.current_dims = [rows, len(any_to_list(values[0]))]
+            self.component_count_property.set(rows)
+            self._set_display_columns(self.current_dims[1])
+            self._apply_row_visibility()
+            for i in range(rows):
                 self.component_properties[i].widget.set(any_to_list(values[i]))
-            self.execute()
+            self._rebuild_output_vector()
+            self.output.send(self.output_vector)
             print(f'Vector2DNode: loaded values from {load_path}')
         except Exception as e:
             print(f'Vector2DNode: error loading values: {e}')
@@ -2289,44 +2372,32 @@ class Vector2DNode(Node):
             self.execute()
 
     def custom_create(self, from_file):
-        for i in range(self.max_component_count):
-            if i < self.current_dims[0]:
-                dpg.show_item(self.component_properties[i].uuid)
-                for uuid in self.component_properties[i].widget.uuids:
-                    dpg.show_item(uuid)
-            else:
-                dpg.hide_item(self.component_properties[i].uuid)
-                for uuid in self.component_properties[i].widget.uuids:
-                    dpg.hide_item(uuid)
         self.first_component_input_index = self.component_properties[0].input_index
+        self._apply_row_visibility()
 
     def component_count_changed(self):
-        self.current_dims[0] = self.component_count_property()
-        for i in range(self.max_component_count):
-            if i < self.current_dims[0]:
-                dpg.show_item(self.component_properties[i].uuid)
-                for uuid in self.component_properties[i].widget.uuids:
-                    dpg.show_item(uuid)
-            else:
-                dpg.hide_item(self.component_properties[i].uuid)
-                for uuid in self.component_properties[i].widget.uuids:
-                    dpg.hide_item(uuid)
-        # if type(self.output_vector) == np.ndarray:
-        #     if tuple(self.current_dims) != self.output_vector.shape:
-        #         self.component_count_property.set(self.output_vector.shape[0])
-        # elif type(self.output_vector) == torch.Tensor:
-        #     if self.current_dims != self.output_vector.shape:
-        #         self.component_count_property.set(self.output_vector.shape[0])
-        # elif type(self.output_vector) == list:
-        #     if self.current_dims != len(self.output_vector):
-        #         self.component_count_property.set(len(self.output_vector))
+        self.current_dims[0] = max(1, min(self.component_count_property(), self.max_component_count))
+        self._apply_row_visibility()
+        self._rebuild_output_vector()
+
+    def column_count_changed(self):
+        self.current_dims[1] = max(1, min(self.column_count_property(), self.max_column_count))
+        self._set_display_columns(self.current_dims[1])
+        self._rebuild_output_vector()
 
     def component_changed(self):
-        if self.first_component_input_index != -1:
-            input = self.active_input()
-            self.active_input.widget.set(any_to_list(input))
-            if self.all_inputs_trigger_option():
-                self.execute()
+        if self.first_component_input_index == -1:
+            return
+        input = self.active_input()
+        widget = self.active_input.widget
+        widget.set(any_to_list(input))
+        if widget.columns != self.display_columns:
+            # A row set to a new width -- a wider list patched straight into
+            # the row, or a row restored from a patch -- sets the node's width.
+            self.current_dims[1] = widget.columns
+            self._set_display_columns(widget.columns)
+        if self.all_inputs_trigger_option():
+            self.execute()
 
     def change_format(self):
         self.format = self.format_option()
@@ -2340,33 +2411,12 @@ class Vector2DNode(Node):
             for uuid in self.component_properties[i].widget.uuids:
                 dpg.configure_item(uuid, width=width)
 
-    def _collect_component_array(self):
-        # Each component widget (drag_float_n) returns its value as a list of
-        # length dim2 -- even when dim2 == 1. Stacking the rows yields a
-        # (dim1, dim2) array; assigning these lists element-wise into a 1-D
-        # array raises "setting an array element with a sequence" on numpy >= 1.25.
-        dim1 = self.current_dims[0]
-        dim2 = self.current_dims[1] if len(self.current_dims) > 1 else 1
-        rows = [any_to_list(self.component_properties[i]()) for i in range(dim1)]
-        values = np.array(rows, dtype=float)
-        if dim2 == 1:
-            values = values.reshape(dim1)
-        return values
-
     def send(self):
         output_array = self._collect_component_array()
         self.output.send(output_array)
 
     def load_custom(self, container):
-        values = self._collect_component_array()
-        vf = self.vector_format_input()
-        if vf == 'torch':
-            self.output_vector = torch.from_numpy(values)
-        elif vf == 'list':
-            self.output_vector = values.tolist()
-        else:
-            self.output_vector = values
-        self.output.set_value(self.output_vector)
+        self._rebuild_output_vector()
 
     def execute(self):
         if self.input.fresh_input:
@@ -2385,15 +2435,13 @@ class Vector2DNode(Node):
                         t = np.ndarray
                     elif self.vector_format_input() == 'torch':
                         value = string_to_tensor(value)
-                        t = torch.tensor
+                        t = torch.Tensor
             if t == list:
                 dim1 = len(value)
                 dim2 = 1
                 if type(value[0]) is list:
                     dim2 = len(value[0])
-                new_dims = [dim1, dim2]
-                if new_dims != self.current_dims:
-                    self.current_dims = new_dims
+                self.current_dims = [dim1, dim2]
                 value = any_to_numerical_list(value)
                 if self.vector_format_input() == 'list':
                     self.output_vector = value.copy()
@@ -2437,49 +2485,17 @@ class Vector2DNode(Node):
                 elif self.vector_format_input() == 'torch':
                     self.output_vector = value.clone()
 
-            if type(self.output_vector) == np.ndarray:
-                if tuple(self.current_dims) != self.output_vector.shape or self.component_count_property() != self.current_dims[0]:
-                    self.component_count_property.set(self.output_vector.shape[0])
-            elif type(self.output_vector) == torch.Tensor:
-                if self.current_dims != self.output_vector.shape or self.component_count_property() != self.current_dims[0]:
-                    self.component_count_property.set(self.output_vector.shape[0])
-            elif type(self.output_vector) == list:
-                if self.current_dims != len(self.output_vector) or self.component_count_property() != self.current_dims[0]:
-                    self.component_count_property.set(len(self.output_vector))
-            # self.current_component_count = self.component_count_property()
-
-            if self.current_dims[0] > self.max_component_count:
-                self.current_dims[0] = self.max_component_count
-            for i in range(self.max_component_count):
-                if i < self.current_dims[0]:
-                    dpg.show_item(self.component_properties[i].uuid)
-                    for uuid in self.component_properties[i].widget.uuids:
-                        dpg.show_item(uuid)
-                    self.component_properties[i].set(any_to_list(self.output_vector[i]))
-                else:
-                    dpg.hide_item(self.component_properties[i].uuid)
-                    for uuid in self.component_properties[i].widget.uuids:
-                        dpg.hide_item(uuid)
-                self.output.set_value(self.output_vector)
+            self._show_shape()
+            self.output.set_value(self.output_vector)
         else:
-            did_set = False
-            if self.active_input is not None:
+            which = -1
+            if self.active_input is not None and self.first_component_input_index != -1:
                 which = self.active_input.input_index - self.first_component_input_index
-                if which >= 0:
-                    if which < self.current_dims[0]:
-                        if self.vector_format_input() == 'torch':
-                            self.output_vector[which] = torch.tensor(self.component_properties[which]())
-                        elif self.vector_format_input() == 'numpy':
-                            self.output_vector[which] = np.array(self.component_properties[which]())
-                        else:
-                            self.output_vector[which] = self.component_properties[which]()
-                        did_set = True
-            # elif self.vector_format_input() == 'torch':
-            #     self.output_vector[which] = self.component_properties[which]()
-            # else:
-            #     self.output_vector[which] = self.component_properties[which]()
-                self.output.set_value(self.output_vector)
-            if not did_set:
+            if 0 <= which < self.current_dims[0]:
+                # a row was edited: the rows are the truth
+                self._rebuild_output_vector()
+            else:
+                # something else changed the data (zero, a preset): push it out
                 for i in range(self.current_dims[0]):
                     self.component_properties[i].set(any_to_list(self.output_vector[i]))
                 self.output.set_value(self.output_vector)

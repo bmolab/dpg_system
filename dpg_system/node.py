@@ -1890,12 +1890,27 @@ class TableWidget(BasePropertyWidget):
 
 
 class DragFloatN(ScalarWidget):
+    """A row of drag_floats whose width follows the data.
+
+    The row starts `columns` wide and grows on demand, up to max_columns,
+    when a wider list is set on it: new items are added into the live row.
+    A narrower list parks the surplus items hidden as spares rather than
+    deleting them, and a later widening takes the spares back first, so the
+    row never destroys an item and never holds more than its widest shape.
+
+    `uuids` always holds exactly the active columns. Everything that walks it
+    (value reads, save, restore's compare, show/hide, format and width) sees
+    the row's current width and nothing else; spares live in `spare_uuids`.
+    """
+    max_columns = 8
+
     def __init__(self, *args, columns=1, **kwargs):
         super().__init__(*args, **kwargs)
-        self.columns = columns
+        self.columns = max(1, min(int(columns), self.max_columns))
         # Generate extra UUIDs
         for _ in range(self.columns - 1):
             self.uuids.append(dpg.generate_uuid())
+        self.spare_uuids = []
         self.speed = 0.01
 
     def _force_horizontal(self):
@@ -1904,41 +1919,140 @@ class DragFloatN(ScalarWidget):
     def _get_zero_value(self):
         return [0.0] * self.columns
 
+    def _column_label(self, index):
+        # The visible label sits after the last column. With more than one
+        # column the first carries the same name hidden ('##'), which is what
+        # restore_properties matches a saved row against.
+        if index == self.columns - 1:
+            return self._label
+        if index == 0:
+            return '##' + self._label
+        return ''
+
     def _draw_widget(self):
         mn, mx = self._get_limits(-math.inf, math.inf)
         # Default value comes as list from init
         for i in range(self.columns):
-            val = self.default_value[i] if self.default_value else 0.0
-            # Last column: visible label displayed after the widget
-            # First column (if not last): hidden label for restore_properties matching
-            if i == self.columns - 1:
-                lbl = self._label
-            elif i == 0:
-                lbl = '##' + self._label
-            else:
-                lbl = ''
-            dpg.add_drag_float(width=self.widget_width, clamped=True, label=lbl, tag=self.uuids[i],
+            val = 0.0
+            if self.default_value and i < len(self.default_value):
+                val = self.default_value[i]
+            dpg.add_drag_float(width=self.widget_width, clamped=True, label=self._column_label(i), tag=self.uuids[i],
                                max_value=mx, min_value=mn, user_data=self.node,
                                default_value=val, speed=self.speed)
+
+    def _drawn(self):
+        return dpg.does_item_exist(self.uuid)
+
+    @staticmethod
+    def _off_main_thread():
+        app = Node.app
+        if app is None:
+            return False
+        return threading.get_ident() != getattr(app, 'main_thread_id', threading.get_ident())
+
+    def _draw_column(self, uuid):
+        """Add one more drag_float into the live row, right after the last
+        active column (so ahead of any trigger button that follows the row)."""
+        siblings = dpg.get_item_children(self.h_group_uuid, 1)
+        before = 0
+        last = self.uuids[-1]
+        if last in siblings:
+            at = siblings.index(last) + 1
+            if at < len(siblings):
+                before = siblings[at]
+        dpg.add_drag_float(tag=uuid, parent=self.h_group_uuid, before=before, width=self.widget_width,
+                           clamped=True, label='', user_data=self, default_value=0.0, speed=self.speed,
+                           callback=lambda s, a, u: self.value_changed(a))
+
+    def _sync_column(self, uuid):
+        """Give a column the first column's current look. Width, format,
+        speed, limits, theme, handlers and enabled state can all have been
+        changed on the row since it was drawn, by code that walks uuids --
+        which a spare, or an item that did not exist yet, was not in."""
+        template = self.uuid
+        cfg = dpg.get_item_configuration(template)
+        settings = {}
+        for key in ('width', 'format', 'speed', 'min_value', 'max_value'):
+            if key in cfg:
+                settings[key] = cfg[key]
+        if settings:
+            dpg.configure_item(uuid, **settings)
+        info = dpg.get_item_info(template)
+        theme = info.get('theme')
+        if theme:
+            dpg.bind_item_theme(uuid, theme)
+        handlers = info.get('handlers')
+        if handlers:
+            dpg.bind_item_handler_registry(uuid, handlers)
+        if dpg.is_item_enabled(template):
+            dpg.enable_item(uuid)
+        else:
+            dpg.disable_item(uuid)
+
+    def set_columns(self, n):
+        """Resize the row to n active columns (1..max_columns), growing into
+        the live widget if it has been drawn. Once drawn this must run on the
+        main thread; set() defers there itself."""
+        n = max(1, min(int(n), self.max_columns))
+        if n == self.columns:
+            return
+        drawn = self._drawn()
+        while self.columns < n:
+            if self.spare_uuids:
+                uuid = self.spare_uuids.pop(0)
+                if drawn:
+                    dpg.show_item(uuid)
+            else:
+                uuid = dpg.generate_uuid()
+                if drawn:
+                    self._draw_column(uuid)
+            self.uuids.append(uuid)
+            self.columns += 1
+            if drawn:
+                self._sync_column(uuid)
+        while self.columns > n:
+            uuid = self.uuids.pop()
+            self.spare_uuids.insert(0, uuid)
+            self.columns -= 1
+            if drawn:
+                dpg.hide_item(uuid)
+        if isinstance(self.default_value, list):
+            self.default_value = (list(self.default_value) + [0.0] * n)[:n]
+        if drawn:
+            for i, uuid in enumerate(self.uuids):
+                dpg.configure_item(uuid, label=self._column_label(i))
+            for uuid in self.spare_uuids:
+                dpg.configure_item(uuid, label='')
+            self._update_value_from_dpg()
 
     def _convert_and_set(self, data):
         if isinstance(data, np.ndarray):
             data = data.flatten().tolist()
         if isinstance(data, list):
+            if len(data) == 0:
+                return
             if len(data) == 1 and is_number(data[0]):
                 self._apply_val_to_all(any_to_float(data[0]))
                 self.value = data
-            elif len(data) == self.columns:
-                vals = []
-                for index, datum in enumerate(data):
-                    if is_number(datum):
-                        val = self._clamp(any_to_float(datum))
-                        if dpg.does_item_exist(self.uuids[index]):
-                            dpg.set_value(self.uuids[index], val)
-                        elif getattr(self, "default_value", None) and index < len(self.default_value):
-                            self.default_value[index] = val
-                        vals.append(val)
-                self.value = vals
+                return
+            width = min(len(data), self.max_columns)
+            if width != self.columns:
+                if self._drawn() and self._off_main_thread():
+                    # Creating items off the render thread is unsafe: land the
+                    # whole set on the main thread instead.
+                    Node.app.queue_main_thread_call(self._convert_and_set, data)
+                    return
+                self.set_columns(width)
+            vals = []
+            for index, datum in enumerate(data[:width]):
+                if is_number(datum):
+                    val = self._clamp(any_to_float(datum))
+                    if dpg.does_item_exist(self.uuids[index]):
+                        dpg.set_value(self.uuids[index], val)
+                    elif getattr(self, "default_value", None) and index < len(self.default_value):
+                        self.default_value[index] = val
+                    vals.append(val)
+            self.value = vals
         elif is_number(data):
             val = any_to_float(data)
             self._apply_val_to_all(val)
