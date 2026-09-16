@@ -113,6 +113,19 @@ class _ViewButtonNodeMixin:
         self._apply_title_bar_visibility()
 
 
+def button_color_theme(rgba):
+    """A button theme in a colour given as 0-255 r g b a, lightened on hover."""
+    base = tuple(int(v) for v in rgba[:4])
+    hov = (min(base[0] + 30, 255), min(base[1] + 30, 255), min(base[2] + 30, 255), base[3])
+    with dpg.theme() as theme:
+        with dpg.theme_component(dpg.mvAll):
+            dpg.add_theme_color(dpg.mvThemeCol_Button, base, category=dpg.mvThemeCat_Core)
+            dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, base, category=dpg.mvThemeCat_Core)
+            dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, hov, category=dpg.mvThemeCat_Core)
+            dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+    return theme
+
+
 class ButtonNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -182,16 +195,7 @@ class ButtonNode(Node):
         if c is None or len(c) < 4 or c[3] <= 0:
             self._color_theme = None
             return
-        r, g, b, a = c[0], c[1], c[2], c[3]
-        base = (int(r), int(g), int(b), int(a))
-        hov = (min(base[0] + 30, 255), min(base[1] + 30, 255), min(base[2] + 30, 255), base[3])
-        with dpg.theme() as theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_color(dpg.mvThemeCol_Button, base, category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, base, category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, hov, category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-        self._color_theme = theme
+        self._color_theme = button_color_theme(c)
 
     def color_changed(self):
         self._rebuild_color_theme()
@@ -249,6 +253,13 @@ class ButtonSetNode(Node):
     the button width and height. The 'message' template makes the messages
     something other than the bare label -- 'preset {name}', 'go {index}' --
     while the buttons still read as their names.
+
+    Buttons are coloured by message rather than by a picker apiece:
+    'color <button> r g b a', where <button> is a label or a 1-based number
+    and the colour is what a color node sends (0-1 floats; alpha may be left
+    off). 'prepend color green' between a color node and the set is enough.
+    'color <button>' alone returns it to the default look; 'color r g b a'
+    with no button colours them all. Colours are saved with the patch.
     """
     default_labels = None
     default_template = '{name}'
@@ -297,6 +308,9 @@ class ButtonSetNode(Node):
                                                       callback=self.labels_changed))
         self._flashing = {}
         self._sized = False
+        self.colors = [None] * self.count
+        self._color_themes = [None] * self.count
+        self.message_handlers['color'] = self.color_message
 
     # -- appearance -----------------------------------------------------------
 
@@ -348,7 +362,85 @@ class ButtonSetNode(Node):
                 self.message_handlers.pop(old_name, None)
             self.property_registery[name] = button
             self.message_handlers[name] = self.property_message
+        # a button renamed 'color' must not take the colour message with it
+        self.message_handlers['color'] = self.color_message
         self.sizing_changed()
+
+    def button_theme(self, i):
+        return self._color_themes[i] if self._color_themes[i] is not None else Node.inactive_theme
+
+    def set_color(self, i, rgba):
+        """Colour button i (0-255 r g b a), or None for the default look."""
+        old = self._color_themes[i]
+        self.colors[i] = None if rgba is None else [int(v) for v in rgba]
+        self._color_themes[i] = None if rgba is None else button_color_theme(self.colors[i])
+        uuid = self.buttons[i].widget.uuid
+        if i not in self._flashing and dpg.does_item_exist(uuid):
+            dpg.bind_item_theme(uuid, self.button_theme(i))
+        if old is not None and dpg.does_item_exist(old):
+            dpg.delete_item(old)
+
+    def button_index(self, target):
+        """A label, else a 1-based number, to a button index (or None)."""
+        if isinstance(target, (float, np.floating)) and float(target).is_integer():
+            target = int(target)
+        name = str(target)
+        if name in self.names:
+            return self.names.index(name)
+        if name.lstrip('-').isdigit() and 1 <= int(name) <= self.count:
+            return int(name) - 1
+        return None
+
+    @staticmethod
+    def parse_color(values):
+        """The colour a color node sends (0-1 floats), or 0-255 values, as
+        0-255 r g b a. Alpha defaults to opaque."""
+        try:
+            nums = [float(v) for v in values]
+        except (TypeError, ValueError):
+            return None
+        if len(nums) not in (3, 4):
+            return None
+        scale = 1.0 if max(nums) > 1.0 else 255.0
+        rgba = [min(max(v * scale, 0.0), 255.0) for v in nums]
+        if len(rgba) == 3:
+            rgba.append(255.0)
+        return rgba
+
+    def color_message(self, message='', args=None):
+        args = list(any_to_list(args)) if args is not None else []
+        if len(args) == 1 and isinstance(args[0], (list, tuple, np.ndarray)):
+            args = list(args[0])
+        if not args:
+            # a bare 'color' is a press, if a button is called that
+            if 'color' in self.names:
+                self.button_pressed(self.names.index('color'))
+            return
+        i = self.button_index(args[0]) if isinstance(args[0], (str, int, float, np.number)) else None
+        if i is None:
+            # no button named: the whole set
+            rgba = self.parse_color(args)
+            if rgba is not None:
+                for j in range(self.count):
+                    self.set_color(j, rgba)
+            return
+        values = args[1:]
+        if len(values) == 1 and isinstance(values[0], (list, tuple, np.ndarray)):
+            values = list(values[0])
+        if not values:
+            self.set_color(i, None)
+            return
+        rgba = self.parse_color(values)
+        if rgba is not None:
+            self.set_color(i, rgba)
+
+    def save_custom(self, container):
+        if any(c is not None for c in self.colors):
+            container['button_colors'] = list(self.colors)
+
+    def load_custom(self, container):
+        for i, c in enumerate(container.get('button_colors', [])[:self.count]):
+            self.set_color(i, c)
 
     # -- pressing -------------------------------------------------------------
 
@@ -383,6 +475,9 @@ class ButtonSetNode(Node):
     def custom_create(self, from_file):
         self.sizing_changed()
         self._apply_title_bar_visibility()
+        for i in range(self.count):
+            if self._color_themes[i] is not None and dpg.does_item_exist(self.buttons[i].widget.uuid):
+                dpg.bind_item_theme(self.buttons[i].widget.uuid, self.button_theme(i))
 
     def custom_cleanup(self):
         self.remove_frame_tasks()
@@ -396,7 +491,7 @@ class ButtonSetNode(Node):
                 del self._flashing[i]
                 uuid = self.buttons[i].widget.uuid
                 if dpg.does_item_exist(uuid):
-                    dpg.bind_item_theme(uuid, Node.inactive_theme)
+                    dpg.bind_item_theme(uuid, self.button_theme(i))
         if self._sized and not self._flashing:
             self.remove_frame_tasks()
 
@@ -2132,9 +2227,9 @@ class Vector2DNode(Node):
     """Display, edit and pass through a 1D or 2D vector.
 
     The shape follows the data. Rows are shown from a pool of
-    max_component_count, and each visible row's drag_float_n grows to the
-    data's width, capped at max_column_count: anything wider shows its first
-    columns (use heat_map for wide arrays). Arguments give an initial shape
+    max_component_count, drawn only when first shown, and each visible row's
+    drag_float_n grows to the data's width, capped at max_column_count:
+    anything wider shows its first columns (use heat_map for wide arrays). Arguments give an initial shape
     only. A learned shape persists through the 'component count' and
     'column count' options, so a bare `vector` that has seen 22x3 reloads
     as 22x3.
@@ -2176,6 +2271,8 @@ class Vector2DNode(Node):
             cp = self.add_input('[' + str(i) + ']', widget_type='drag_float_n', widget_width=self.component_widget_width, callback=self.component_changed, **kwargs)
             cp.name_archive.append('row ' + str(i))
             cp.name_archive.append(str(i))
+            # Rows beyond the initial shape draw nothing until first shown.
+            cp.widget.deferred = i >= dim1
             self.component_properties.append(cp)
 
         self.zero_input = self.add_input('zero', widget_type='button', callback=self.zero)
@@ -2207,28 +2304,39 @@ class Vector2DNode(Node):
     def _on_main_thread():
         return threading.get_ident() == getattr(Node.app, 'main_thread_id', threading.get_ident())
 
-    def _set_display_columns(self, width):
+    def _row_template(self):
+        """The look every column copies: row 0's first column, which is always
+        drawn. Read once per batch, since reading it walks the item tree."""
+        first = self.component_properties[0].widget
+        if first._drawn():
+            return first.template_state(first.uuid)
+        return None
+
+    def _set_display_columns(self, width, template=None):
         """Show `width` columns (capped) on every visible row and mirror it in
-        the option, which is what carries a learned width into the patch."""
+        the option, which is what carries a learned width into the patch.
+        Main thread only once rows are drawn (see _show_shape)."""
         cols = max(1, min(int(width), self.max_column_count))
         self.display_columns = cols
         if self.column_count_property() != cols:
             self.column_count_property.set(cols)
-        # Off the main thread the rows are left to their own setters, which
-        # land the resize on the main thread themselves.
-        if self._on_main_thread():
-            for i in range(self.current_dims[0]):
-                self.component_properties[i].widget.set_columns(cols)
+        if template is None:
+            template = self._row_template()
+        for i in range(self.current_dims[0]):
+            self.component_properties[i].widget.set_columns(cols, template)
 
-    def _apply_row_visibility(self):
-        """Show the first current_dims[0] rows, each brought to the display
-        width as it is shown, and hide the rest. Hidden rows keep whatever
-        width they had: they are resized lazily, when they next appear."""
-        resize = self._on_main_thread()
+    def _apply_row_visibility(self, template=None):
+        """Show the first current_dims[0] rows, drawing any that have never
+        been shown and bringing each to the display width, and hide the rest.
+        Hidden rows keep whatever width they had: they are resized lazily,
+        when they next appear. Main thread only (see _show_shape)."""
+        if template is None:
+            template = self._row_template()
         for i, cp in enumerate(self.component_properties):
             if i < self.current_dims[0]:
-                if resize:
-                    cp.widget.set_columns(self.display_columns)
+                if cp.widget.deferred:
+                    cp.widget.draw_deferred(template)
+                cp.widget.set_columns(self.display_columns, template)
                 dpg.show_item(cp.uuid)
                 for uuid in cp.widget.uuids:
                     dpg.show_item(uuid)
@@ -2239,13 +2347,19 @@ class Vector2DNode(Node):
 
     def _show_shape(self):
         """Bring rows and widths in line with current_dims and push
-        output_vector into the rows."""
+        output_vector into the rows. Drawing and resizing rows creates items,
+        which must happen on the render thread: off it, the whole display
+        update is queued there (latest data wins) while the outlet goes on."""
+        if not self._on_main_thread():
+            Node.app.queue_main_thread_call(self._show_shape)
+            return
         rows = max(1, min(self.current_dims[0], self.max_component_count))
         self.current_dims[0] = rows
         if self.component_count_property() != rows:
             self.component_count_property.set(rows)
-        self._set_display_columns(self.current_dims[1])
-        self._apply_row_visibility()
+        template = self._row_template()
+        self._set_display_columns(self.current_dims[1], template)
+        self._apply_row_visibility(template)
         for i in range(rows):
             self.component_properties[i].set(any_to_list(self.output_vector[i]))
 
@@ -2391,11 +2505,16 @@ class Vector2DNode(Node):
         input = self.active_input()
         widget = self.active_input.widget
         widget.set(any_to_list(input))
-        if widget.columns != self.display_columns:
-            # A row set to a new width -- a wider list patched straight into
-            # the row, or a row restored from a patch -- sets the node's width.
+        which = self.active_input.input_index - self.first_component_input_index
+        if which < self.current_dims[0] and widget.columns != self.display_columns:
+            # A visible row set to a new width -- a wider list patched straight
+            # into the row, or a row restored from a patch -- sets the node's
+            # width. A hidden row (stale values in a saved patch) does not.
             self.current_dims[1] = widget.columns
-            self._set_display_columns(widget.columns)
+            if self._on_main_thread():
+                self._set_display_columns(widget.columns)
+            else:
+                Node.app.queue_main_thread_call(self._set_display_columns, widget.columns)
         if self.all_inputs_trigger_option():
             self.execute()
 

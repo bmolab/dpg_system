@@ -1898,9 +1898,16 @@ class DragFloatN(ScalarWidget):
     deleting them, and a later widening takes the spares back first, so the
     row never destroys an item and never holds more than its widest shape.
 
-    `uuids` always holds exactly the active columns. Everything that walks it
-    (value reads, save, restore's compare, show/hide, format and width) sees
-    the row's current width and nothing else; spares live in `spare_uuids`.
+    `uuids` always holds exactly the active, existing columns. Everything
+    that walks it (value reads, save, restore's compare, show/hide, format
+    and width) sees the row's current width and nothing else; spares live
+    in `spare_uuids`.
+
+    A row marked `deferred` before its node is created draws nothing at
+    creation: its items do not exist, `uuids` is empty, and its value lives
+    in default_value until draw_deferred() builds it into its attribute.
+    Every dpg call that binds, labels or generates ids walks the whole item
+    tree, so a row that is not shown costs nothing until it is.
     """
     max_columns = 8
 
@@ -1911,6 +1918,7 @@ class DragFloatN(ScalarWidget):
         for _ in range(self.columns - 1):
             self.uuids.append(dpg.generate_uuid())
         self.spare_uuids = []
+        self.deferred = False
         self.speed = 0.01
 
     def _force_horizontal(self):
@@ -1922,12 +1930,23 @@ class DragFloatN(ScalarWidget):
     def _column_label(self, index):
         # The visible label sits after the last column. With more than one
         # column the first carries the same name hidden ('##'), which is what
-        # restore_properties matches a saved row against.
+        # a saved row is matched against on restore.
         if index == self.columns - 1:
             return self._label
         if index == 0:
             return '##' + self._label
         return ''
+
+    # ------------------------------------------------------------ drawing
+
+    def create(self) -> None:
+        if self.deferred:
+            # Nothing exists yet. Keep the value in default_value and leave
+            # uuids empty so nothing that walks it touches a missing item.
+            self._init_default_value()
+            self.uuids = []
+            return
+        super().create()
 
     def _draw_widget(self):
         mn, mx = self._get_limits(-math.inf, math.inf)
@@ -1940,8 +1959,27 @@ class DragFloatN(ScalarWidget):
                                max_value=mx, min_value=mn, user_data=self.node,
                                default_value=val, speed=self.speed)
 
+    def draw_deferred(self, template=None):
+        """Build a deferred row into its attribute, on first show. `template`
+        is a column state from template_state() to copy the look from; the
+        row has no drawn column of its own to copy."""
+        if not self.deferred or self._drawn():
+            return
+        if self.input is None or not dpg.does_item_exist(self.input.uuid):
+            return
+        self.uuids = [self.uuid] + [dpg.generate_uuid() for _ in range(self.columns - 1)]
+        self.deferred = False
+        dpg.push_container_stack(self.input.uuid)
+        try:
+            BasePropertyWidget.create(self)
+        finally:
+            dpg.pop_container_stack()
+        if template is not None:
+            for uuid in self.uuids:
+                self._sync_column(uuid, template)
+
     def _drawn(self):
-        return dpg.does_item_exist(self.uuid)
+        return bool(self.uuids) and dpg.does_item_exist(self.uuid)
 
     @staticmethod
     def _off_main_thread():
@@ -1964,66 +2002,89 @@ class DragFloatN(ScalarWidget):
                            clamped=True, label='', user_data=self, default_value=0.0, speed=self.speed,
                            callback=lambda s, a, u: self.value_changed(a))
 
-    def _sync_column(self, uuid):
-        """Give a column the first column's current look. Width, format,
-        speed, limits, theme, handlers and enabled state can all have been
-        changed on the row since it was drawn, by code that walks uuids --
-        which a spare, or an item that did not exist yet, was not in."""
-        template = self.uuid
-        cfg = dpg.get_item_configuration(template)
-        settings = {}
-        for key in ('width', 'format', 'speed', 'min_value', 'max_value'):
-            if key in cfg:
-                settings[key] = cfg[key]
-        if settings:
-            dpg.configure_item(uuid, **settings)
-        info = dpg.get_item_info(template)
-        theme = info.get('theme')
-        if theme:
-            dpg.bind_item_theme(uuid, theme)
-        handlers = info.get('handlers')
-        if handlers:
-            dpg.bind_item_handler_registry(uuid, handlers)
-        if dpg.is_item_enabled(template):
+    @staticmethod
+    def template_state(uuid):
+        """The look of a drawn column, read once so many columns can copy it:
+        each of these reads walks the item tree."""
+        cfg = dpg.get_item_configuration(uuid)
+        info = dpg.get_item_info(uuid)
+        return {'settings': {key: cfg[key] for key in ('width', 'format', 'speed', 'min_value', 'max_value') if key in cfg},
+                'theme': info.get('theme'), 'handlers': info.get('handlers'),
+                'enabled': dpg.is_item_enabled(uuid)}
+
+    def _sync_column(self, uuid, template=None):
+        """Give a column a drawn column's current look. Width, format, speed,
+        limits, theme, handlers and enabled state can all have been changed on
+        the row since it was drawn, by code that walks uuids -- which a spare,
+        or an item that did not exist yet, was not in."""
+        if template is None:
+            template = self.template_state(self.uuid)
+        if template['settings']:
+            dpg.configure_item(uuid, **template['settings'])
+        if template['theme']:
+            dpg.bind_item_theme(uuid, template['theme'])
+        if template['handlers']:
+            dpg.bind_item_handler_registry(uuid, template['handlers'])
+        if template['enabled']:
             dpg.enable_item(uuid)
         else:
             dpg.disable_item(uuid)
 
-    def set_columns(self, n):
+    def set_columns(self, n, template=None):
         """Resize the row to n active columns (1..max_columns), growing into
         the live widget if it has been drawn. Once drawn this must run on the
         main thread; set() defers there itself."""
         n = max(1, min(int(n), self.max_columns))
         if n == self.columns:
             return
-        drawn = self._drawn()
+        if not self._drawn():
+            self.columns = n
+            self._plan_uuids()
+            if isinstance(self.default_value, list):
+                self.default_value = (list(self.default_value) + [0.0] * n)[:n]
+                self.value = list(self.default_value)
+            return
         while self.columns < n:
             if self.spare_uuids:
                 uuid = self.spare_uuids.pop(0)
-                if drawn:
-                    dpg.show_item(uuid)
+                dpg.show_item(uuid)
             else:
                 uuid = dpg.generate_uuid()
-                if drawn:
-                    self._draw_column(uuid)
+                self._draw_column(uuid)
             self.uuids.append(uuid)
             self.columns += 1
-            if drawn:
-                self._sync_column(uuid)
+            self._sync_column(uuid, template)
         while self.columns > n:
             uuid = self.uuids.pop()
             self.spare_uuids.insert(0, uuid)
             self.columns -= 1
-            if drawn:
-                dpg.hide_item(uuid)
+            dpg.hide_item(uuid)
         if isinstance(self.default_value, list):
             self.default_value = (list(self.default_value) + [0.0] * n)[:n]
-        if drawn:
-            for i, uuid in enumerate(self.uuids):
-                dpg.configure_item(uuid, label=self._column_label(i))
-            for uuid in self.spare_uuids:
-                dpg.configure_item(uuid, label='')
-            self._update_value_from_dpg()
+        for i, uuid in enumerate(self.uuids):
+            dpg.configure_item(uuid, label=self._column_label(i))
+        for uuid in self.spare_uuids:
+            dpg.configure_item(uuid, label='')
+        self._update_value_from_dpg()
+
+    # ------------------------------------------------------------ values
+
+    def _plan_uuids(self):
+        """A row that has ids allocated but no items yet (created normally,
+        not deferred, and set before its node is drawn) keeps one id per
+        column so _draw_widget finds them."""
+        if not self.uuids:
+            return
+        while len(self.uuids) < self.columns:
+            self.uuids.append(dpg.generate_uuid())
+        del self.uuids[self.columns:]
+
+    def _set_undrawn(self, vals):
+        """Hold values for a row that has no items yet."""
+        self.columns = max(1, min(len(vals), self.max_columns))
+        self._plan_uuids()
+        self.default_value = list(vals[:self.columns])
+        self.value = list(self.default_value)
 
     def _convert_and_set(self, data):
         if isinstance(data, np.ndarray):
@@ -2036,8 +2097,12 @@ class DragFloatN(ScalarWidget):
                 self.value = data
                 return
             width = min(len(data), self.max_columns)
+            if not self._drawn():
+                vals = [self._clamp(any_to_float(d)) if is_number(d) else 0.0 for d in data[:width]]
+                self._set_undrawn(vals)
+                return
             if width != self.columns:
-                if self._drawn() and self._off_main_thread():
+                if self._off_main_thread():
                     # Creating items off the render thread is unsafe: land the
                     # whole set on the main thread instead.
                     Node.app.queue_main_thread_call(self._convert_and_set, data)
@@ -2047,10 +2112,7 @@ class DragFloatN(ScalarWidget):
             for index, datum in enumerate(data[:width]):
                 if is_number(datum):
                     val = self._clamp(any_to_float(datum))
-                    if dpg.does_item_exist(self.uuids[index]):
-                        dpg.set_value(self.uuids[index], val)
-                    elif getattr(self, "default_value", None) and index < len(self.default_value):
-                        self.default_value[index] = val
+                    dpg.set_value(self.uuids[index], val)
                     vals.append(val)
             self.value = vals
         elif is_number(data):
@@ -2060,11 +2122,27 @@ class DragFloatN(ScalarWidget):
 
     def _apply_val_to_all(self, val):
         clamped = self._clamp(val)
-        for index, uuid in enumerate(self.uuids):
-            if dpg.does_item_exist(uuid):
-                dpg.set_value(uuid, clamped)
-            elif getattr(self, "default_value", None) and index < len(self.default_value):
-                self.default_value[index] = clamped
+        if not self._drawn():
+            self._set_undrawn([clamped] * max(1, self.columns))
+            return
+        for uuid in self.uuids:
+            dpg.set_value(uuid, clamped)
+
+    def _update_value_from_dpg(self):
+        if not self._drawn():
+            return          # the value is already what we hold
+        super()._update_value_from_dpg()
+
+    def save(self, widget_container: Dict[str, Any]) -> None:
+        if self._drawn():
+            super().save(widget_container)
+            return
+        widget_container['name'] = self._label.strip('#')
+        value = any_to_list(self.value) if self.value is not None else list(self.default_value or [0.0])
+        if self.columns == 1 and len(value) == 1:
+            value = value[0]
+        widget_container['value'] = value
+        widget_container['value_type'] = type(value).__name__
 
     def set_format(self, format: str) -> None:
         for uuid in self.uuids:
@@ -2842,20 +2920,26 @@ class Node:
             return self.my_editor.patch_name
 
     def cleanup(self) -> None:
+        # Safe to run twice, and on items that were never drawn or are already
+        # gone: some nodes call this again from __del__ as a fallback, and a
+        # deferred widget has no item until first shown.
+        def delete(uuid):
+            if uuid is not None and dpg.does_item_exist(uuid):
+                dpg.delete_item(uuid)
         self.remove_frame_tasks()
         self.custom_cleanup()
         for input_ in self.inputs:
             input_.delete_parents()
             if input_.widget is not None:
-                dpg.delete_item(input_.widget.uuid)
-            dpg.delete_item(input_.uuid)
+                delete(input_.widget.uuid)
+            delete(input_.uuid)
         for output_ in self.outputs:
             output_.remove_links()
-            dpg.delete_item(output_.uuid)
+            delete(output_.uuid)
         for property_ in self.properties:
             if property_.widget:
-                dpg.delete_item(property_.widget.uuid)
-            dpg.delete_item(property_.uuid)
+                delete(property_.widget.uuid)
+            delete(property_.uuid)
 
     def set_draggable(self, can_drag: bool) -> None:
         self.draggable = can_drag
@@ -3684,7 +3768,12 @@ class Node:
             # Mirror BasePropertyWidget.save()'s read pattern so we compare apples
             # to apples — there's no widget.get(), and self.value can lag the DPG state.
             try:
-                if len(widget.uuids) > 1:
+                if not widget.uuids or not dpg.does_item_exist(widget.uuid):
+                    # Not drawn yet (a deferred widget): what it holds is the state.
+                    current = widget.value
+                    if isinstance(current, list) and len(current) == 1 and not isinstance(value, list):
+                        current = current[0]
+                elif len(widget.uuids) > 1:
                     current = [dpg.get_value(u) for u in widget.uuids]
                 else:
                     current = dpg.get_value(widget.uuid)
@@ -3698,72 +3787,57 @@ class Node:
             return True
 
         if 'properties' in node_container:
+            # Index every port by the name it saves under (BasePropertyWidget.save
+            # writes the widget's own label with '#' stripped) and by its archived
+            # old names. First port wins, as the sequential scan this replaces
+            # did. The labels come from the widgets, not from dpg: asking dpg for
+            # a label walks the whole item tree, and doing that once per saved
+            # property per port made loading a patch quadratic in its size.
+            def index(ports, with_archive):
+                table = {}
+                for port in ports:
+                    if port.widget is None:
+                        continue
+                    names = [port.widget._label.strip('#')]
+                    if with_archive and getattr(port, 'name_archive', None):
+                        names += [old.strip('#') for old in port.name_archive]
+                    for name in names:
+                        table.setdefault(name, port)
+                return table
+            inputs_by_name = index(self.inputs, True)
+            properties_by_name = index(self.properties, False)
+            options_by_name = index(self.options, True)
+
             properties_container = node_container['properties']
-            for index, property_index in enumerate(properties_container):
+            for property_index in properties_container:
                 property_container = properties_container[property_index]
-                if 'name' in property_container:
-                    property_label = property_container['name'].strip('#')
-                    org_label = property_container['name']
-                    found = False
+                if 'name' not in property_container:
+                    continue
+                property_label = property_container['name'].strip('#')
+                has_value = 'value' in property_container
+                value = property_container.get('value')
 
-                    for input in self.inputs:
-                        if input.widget is not None:
-                            a_label = dpg.get_item_label(input.widget.uuid)
-                            a_label = a_label.strip('#')
-                            match = (a_label == property_label or a_label == org_label)
-                            if not match and input.name_archive:
-                                for old_name in input.name_archive:
-                                    if old_name.strip('#') == property_label:
-                                        match = True
-                                        break
-                            if match:
-                                if 'value' in property_container:
-                                    value = property_container['value']
-                                    if input.widget.widget != 'button':
-                                        self.active_input = input
-                                        apply(input.widget, value)
-                                found = True
-                                break
-                    if not found:
-                        for property in self.properties:
-                            if property.widget is not None:
-                                a_label = dpg.get_item_label(property.widget.uuid)
-                                if a_label == property_label:
-                                    if 'value' in property_container:
-                                        value = property_container['value']
-                                        if property.widget.widget != 'button':
-                                            apply(property.widget, value)
-                                    found = True
-                                    break
-                    if not found:
-                        for option in self.options:
-                            if option.widget:
-                                a_label = dpg.get_item_label(option.widget.uuid)
-                                a_label = a_label.strip('#')
-                                match = (a_label == property_label)
-                                if not match and option.name_archive:
-                                    for old_name in option.name_archive:
-                                        if old_name.strip('#') == property_label:
-                                            match = True
-                                            break
-                                if match:
-                                    if 'value' in property_container:
-                                        value = property_container['value']
-                                        if option.widget.widget != 'button':
-                                            apply(option.widget, value)
-                                    found = True
-                                    break
-                    if not found:
-                        if property_label == '':
-                            if len(self.inputs) > 0:
-                                input = self.inputs[0]
-                                if input.widget is not None:
-                                    if 'value' in property_container:
-                                        value = property_container['value']
-                                        if input.widget.widget != 'button':
-                                            self.active_input = input
-                                            apply(input.widget, value)
-
+                input = inputs_by_name.get(property_label)
+                if input is not None:
+                    if has_value and input.widget.widget != 'button':
+                        self.active_input = input
+                        apply(input.widget, value)
+                    continue
+                property = properties_by_name.get(property_label)
+                if property is not None:
+                    if has_value and property.widget.widget != 'button':
+                        apply(property.widget, value)
+                    continue
+                option = options_by_name.get(property_label)
+                if option is not None:
+                    if has_value and option.widget.widget != 'button':
+                        apply(option.widget, value)
+                    continue
+                if property_label == '' and len(self.inputs) > 0:
+                    input = self.inputs[0]
+                    if input.widget is not None and has_value and input.widget.widget != 'button':
+                        self.active_input = input
+                        apply(input.widget, value)
 
         self.load_custom(node_container)
         self.update_parameters_from_widgets()
