@@ -90,6 +90,15 @@ voxel twice as far away catches about a quarter as many depth pixels, so the
 default squares the distance before weighting. It uses radial distance rather
 than depth, so it survives levelling and yaw.
 
+SEEING THE VOLUME:
+pc_voxel also sits on an mgl chain. Patch 'mgl chain in' from the chain that
+draws the cloud and it draws the working volume as a wireframe box, in the
+chain's current colour, then passes the draw on. The box is the volume it is
+really using - the crop carried in on the frame, or its own min/max options
+when the cloud arrived raw - so it is the fastest way to see your crop against
+the live cloud instead of reading coordinates off pc_info. 'show volume'
+(option) turns the box off without unpatching.
+
 pc_info IS FOR SETTING THE OTHERS UP:
 It reports count, the bounding box, and the centroid, and passes the cloud
 through untouched. Put it after the sensor while you are choosing crop bounds:
@@ -121,6 +130,9 @@ The grid resolution. The most consequential number here.
 min points (pc_voxel):
 The density floor - voxels holding fewer points than this are dropped.
 
+mgl chain in (pc_voxel):
+A draw from an mgl chain. Draws the working volume as a wireframe box.
+
 reduce (pc_voxel, option):
 Cube centre or centroid.
 
@@ -131,6 +143,9 @@ The reduced cloud, with the metadata carried forward.
 
 counts:
 Points per voxel.
+
+mgl chain out (pc_voxel):
+The draw, passed on to the rest of the chain.
 
 count / min / max / centroid:
 What pc_info found.

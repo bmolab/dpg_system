@@ -28,7 +28,14 @@ nodes pass the metadata through. pc_voxel likewise attaches its voxel size
 (metres; float when cubic, (x, y, z) otherwise), and grid nodes downstream
 adopt it the same way, so a chain shares one grid geometry. Renderers unwrap
 the 'point_cloud' key, so either form draws directly.
+
+pc_voxel additionally accepts an mgl chain, drawing the volume it is working
+in as a wireframe box (see VolumeBoundsDrawMixin) — the one place these nodes
+touch GL, and only through a lazy import, so the module stays numpy-only for
+patches with no 3D view.
 """
+
+import threading
 
 import numpy as np
 from dpg_system.node import Node
@@ -214,6 +221,9 @@ class PointCloudNode(Node):
     def _add_bounds_options(self, lo_default, hi_default):
         """Fallback volume bounds, used only when no crop spec rides in on the
         frame — tucked into options to keep the node body clean."""
+        # Kept so anything needing the volume later (the bounds draw) can ask
+        # for it without repeating the node's defaults.
+        self._bounds_defaults = (list(lo_default), list(hi_default))
         self.min_option = self.add_option('min (x,y,z)', widget_type='drag_float_n',
                                           default_value=list(lo_default), columns=3, widget_width=60)
         self.max_option = self.add_option('max (x,y,z)', widget_type='drag_float_n',
@@ -227,6 +237,156 @@ class PointCloudNode(Node):
         if v.size < 3:
             return np.asarray(fallback, dtype=np.float32)
         return v[:3]
+
+
+# Corner i of the box has x from hi when bit 0 is set, y when bit 1, z when
+# bit 2; an edge joins two corners differing in exactly one bit, which is all
+# twelve of them, each listed once (from the end where that bit is clear).
+_BOX_CORNER_BITS = np.array([[(i >> a) & 1 for a in range(3)] for i in range(8)],
+                            dtype=np.float32)
+_BOX_EDGE_INDICES = np.array([(i, i ^ bit) for bit in (1, 2, 4)
+                              for i in range(8) if not (i & bit)],
+                             dtype=np.int64).reshape(-1)
+
+_GL_MODULES = None
+
+
+def _gl_modules():
+    """(moderngl, MGLContext), or (None, None) where moderngl is not installed.
+
+    Imported on first draw rather than at module import: these nodes are
+    numpy-only and load in patches that never open a 3D view, and
+    moderngl_nodes is an independently switchable module in the app config."""
+    global _GL_MODULES
+    if _GL_MODULES is None:
+        try:
+            import moderngl
+            from dpg_system.moderngl_base import MGLContext
+            _GL_MODULES = (moderngl, MGLContext)
+        except ImportError:
+            _GL_MODULES = (None, None)
+    return _GL_MODULES
+
+
+class VolumeBoundsDrawMixin:
+    """Lets a grid node sit in an mgl chain and draw its working volume.
+
+    The node gets 'mgl chain in' / 'mgl chain out' pins and behaves like any
+    mgl_ node on the chain: a 'draw' message draws the volume as a wireframe
+    box and is then passed along. The box is the volume the node is actually
+    voxelising — the crop carried on the last cloud frame, or the node's own
+    min/max options when the frame arrived raw — so it shows you the real
+    working volume rather than a second copy of the numbers. Colour comes from
+    the chain (mgl_color), as it does for mgl_line.
+
+    Drawing is main-thread only, for the reason given in MGLNode.execute: a
+    cloud arriving on a sensor thread can find the chain's 'draw' sitting in
+    the input, and running GL there has no context current and segfaults. The
+    message is left unconsumed instead, for the main-thread chain trigger that
+    is about to process it."""
+
+    _box_vert_src = '''
+        #version 330
+        uniform mat4 M;
+        uniform mat4 V;
+        uniform mat4 P;
+        in vec3 in_position;
+        void main() {
+            gl_Position = P * V * M * vec4(in_position, 1.0);
+        }
+    '''
+    # Unlit: a reference box wants one flat colour, not a wireframe that
+    # brightens and dims with the light rig it happens to be drawn under.
+    _box_frag_src = '''
+        #version 330
+        uniform vec4 color;
+        out vec4 f_color;
+        void main() {
+            f_color = vec4(color.rgb * color.a, color.a);
+        }
+    '''
+
+    def _add_bounds_draw(self):
+        """Add the chain pins and the show/hide option. Call after the node's
+        own inputs and outputs so the pins land at the end of each column."""
+        self.mgl_input = self.add_input('mgl chain in', triggers_execution=True)
+        self.mgl_output = self.add_output('mgl chain out')
+        self.show_volume_option = self.add_option('show volume', widget_type='checkbox',
+                                                  default_value=True)
+        self._box_prog = None
+        self._box_vbo = None
+        self._box_vao = None
+        self._box_key = None
+
+    def _mgl_pending(self):
+        """True if a chain message is waiting and this is the thread that may
+        act on it."""
+        return (self.mgl_input.fresh_input
+                and threading.current_thread() is threading.main_thread())
+
+    def _handle_mgl(self):
+        """Consume one chain message. Anything that is not a 'draw' is simply
+        dropped, as it is for the mgl_ nodes that do not implement it."""
+        message = self.mgl_input()
+        if isinstance(message, list):
+            message = message[0] if message and isinstance(message[0], str) else None
+        if message != 'draw':
+            return
+        if self.show_volume_option():
+            try:
+                self._draw_volume()
+            except Exception as e:
+                if self.app.verbose:
+                    print(f'{self.label}: volume draw failed: {e}')
+        self.mgl_output.send('draw')
+
+    def _draw_volume(self):
+        moderngl, MGLContext = _gl_modules()
+        if moderngl is None:
+            return
+        ctx = MGLContext.get_instance()
+        inner_ctx = getattr(ctx, 'ctx', None)
+        if inner_ctx is None:
+            return
+
+        lo, hi = self._bounds(*self._bounds_defaults)
+        lo, hi = np.minimum(lo, hi), np.maximum(lo, hi)
+
+        if self._box_prog is None:
+            self._box_prog = inner_ctx.program(vertex_shader=self._box_vert_src,
+                                               fragment_shader=self._box_frag_src)
+        if self._box_vbo is None:
+            self._box_vbo = inner_ctx.buffer(reserve=_BOX_EDGE_INDICES.size * 3 * 4)
+            self._box_vao = inner_ctx.vertex_array(
+                self._box_prog, [(self._box_vbo, '3f', 'in_position')])
+            self._box_key = None
+
+        key = (tuple(lo.tolist()), tuple(hi.tolist()))
+        if key != self._box_key:
+            corners = lo + _BOX_CORNER_BITS * (hi - lo)
+            self._box_vbo.write(np.ascontiguousarray(corners[_BOX_EDGE_INDICES],
+                                                     dtype=np.float32).tobytes())
+            self._box_key = key
+
+        prog = self._box_prog
+        prog['M'].write(ctx.get_model_matrix().astype('f4').T.tobytes())
+        prog['V'].write(ctx.view_matrix.astype('f4').tobytes())
+        prog['P'].write(ctx.projection_matrix.astype('f4').tobytes())
+        c = tuple(ctx.current_color)
+        prog['color'].value = c if len(c) == 4 else c[:3] + (1.0,)
+        self._box_vao.render(mode=moderngl.LINES)
+
+    def custom_cleanup(self):
+        # Node deletion runs from a DPG handler callback with no GL context
+        # current, so release has to be handed back to the context.
+        _, MGLContext = _gl_modules()
+        ctx = MGLContext._instance if MGLContext is not None else None
+        if ctx is not None:
+            ctx.defer_release(self._box_vao, self._box_vbo, self._box_prog)
+        self._box_vao = None
+        self._box_vbo = None
+        self._box_prog = None
+        super().custom_cleanup()
 
 
 class PointCloudCropNode(PointCloudNode):
@@ -273,7 +433,7 @@ class PointCloudCropNode(PointCloudNode):
                    **{CROP_KEY: (lo.tolist(), hi.tolist())})
 
 
-class PointCloudVoxelNode(PointCloudNode):
+class PointCloudVoxelNode(VolumeBoundsDrawMixin, PointCloudNode):
     """Voxel-grid downsample: collapse each occupied voxel to one point (its
     centre or the centroid of the points it holds). ``min points`` doubles as a
     density floor, dropping sparse speckle voxels.
@@ -286,7 +446,12 @@ class PointCloudVoxelNode(PointCloudNode):
     is the C++ VOXEL SENSE gain, applied inside the compensation exactly as
     there ((d*sense)^2 / d*sense / sense for squared / linear / none). Radial
     distance is used rather than the C++ code's z so it survives leveling/yaw
-    rotations, which preserve |p| but not z."""
+    rotations, which preserve |p| but not z.
+
+    The node also sits on an mgl chain: a 'draw' arriving on ``mgl chain in``
+    draws the working volume as a wireframe box and is passed on, so the crop
+    the voxels are actually built over can be seen in the 3D view alongside
+    the cloud. See VolumeBoundsDrawMixin."""
 
     @staticmethod
     def factory(name, data, args=None):
@@ -323,9 +488,14 @@ class PointCloudVoxelNode(PointCloudNode):
         self.voxel_xyz_option = self.add_option('voxel size x,y,z (cm)', widget_type='drag_float_n',
                                                 default_value=[5.0, 5.0, 5.0],
                                                 columns=3, widget_width=60)
+        # Last, so the chain pins land at the foot of each column and 'show
+        # volume' at the foot of the options — and so patches saved before the
+        # pins existed still reconnect: a link restores by its saved index
+        # first, and appending leaves every existing index where it was.
+        self._add_bounds_draw()
 
     def _ensure_grid(self):
-        lo, hi = self._bounds([-3.0, -3.0, 0.0], [3.0, 3.0, 6.0])
+        lo, hi = self._bounds(*self._bounds_defaults)
         if self.cubic_option():
             size = float(self.voxel_input()) * 0.01        # cm -> m
         else:
@@ -341,6 +511,14 @@ class PointCloudVoxelNode(PointCloudNode):
             return False
 
     def execute(self):
+        # Two trigger inputs: the cloud and the mgl chain. A 'draw' must not
+        # re-run the voxeliser over the retained cloud (self.input() hands back
+        # the last frame whether or not it is fresh), and a cloud arriving on a
+        # sensor thread must not stall waiting for the chain.
+        if self._mgl_pending():
+            self._handle_mgl()
+            if not self.input.fresh_input:
+                return
         pts = self._get_cloud()
         if pts is None:
             return
