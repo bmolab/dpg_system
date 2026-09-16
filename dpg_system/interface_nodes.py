@@ -912,7 +912,14 @@ class PresetsNode(Node):
 
 
 class TableNode(Node):
+    """A grid of numbers you can see and edit.
+
+    The cells hold text; anything that reads as a number is sent as one.
+    Whenever the grid changes - an array arriving, a cell edited by hand - the
+    whole contents go out as a list of rows.
+    """
     title_bar_hideable = True
+
     @staticmethod
     def factory(name, data, args=None):
         node = TableNode(name, data, args)
@@ -921,97 +928,71 @@ class TableNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.columns = 2
         self.rows = 2
-
+        self.columns = 2
         if len(args) > 1:
-            self.rows = any_to_int(args[0])
-            self.columns = any_to_int(args[1])
-        kwargs = {'columns': self.columns, 'rows': self.rows}
-        # print(kwargs)
+            self.rows = max(1, any_to_int(args[0]))
+            self.columns = max(1, any_to_int(args[1]))
+        elif len(args) == 1:
+            self.rows = self.columns = max(1, any_to_int(args[0]))
 
-        self.input = self.add_input('array in', widget_type='table', triggers_execution=True, **kwargs)
+        self.input = self.add_input('array in', widget_type='table', triggers_execution=True,
+                                    rows=self.rows, columns=self.columns)
         self.set_input = self.add_input('set', callback=self.set)
         self.get_input = self.add_input('get', callback=self.get)
         self.output = self.add_output('out')
 
+    @staticmethod
+    def cell_as_value(text):
+        """A cell's text as int or float when it reads as one, else the text."""
+        if isinstance(text, (int, float)):
+            return text
+        try:
+            return int(text)
+        except (TypeError, ValueError):
+            pass
+        try:
+            return float(text)
+        except (TypeError, ValueError):
+            return text
 
-        self.source = [0.0] * (self.columns * self.rows)
-        for i in range(self.rows):
-            for j in range(self.columns):
-                self.source[i * self.columns + j] = i * self.columns + j
+    def contents(self):
+        widget = self.input.widget
+        widget._update_value_from_dpg()
+        return [[self.cell_as_value(cell) for cell in row] for row in widget.value]
+
+    @staticmethod
+    def _address(incoming):
+        """(row, column, rest) from 'row col ...' or '[row col] ...'."""
+        if isinstance(incoming, (list, tuple)) and len(incoming) > 0:
+            if isinstance(incoming[0], (list, tuple)) and len(incoming[0]) == 2:
+                return any_to_int(incoming[0][0]), any_to_int(incoming[0][1]), list(incoming[1:])
+            if len(incoming) >= 2:
+                return any_to_int(incoming[0]), any_to_int(incoming[1]), list(incoming[2:])
+        return None, None, []
 
     def set(self):
-        incoming = self.set_input()
-        if type(incoming) is list:
-            if len(incoming) == 2:
-                address = incoming[0]
-                if type(address) is list and len(address) == 2:
-                    row = any_to_int(address[0])
-                    column = any_to_int(address[1])
-                    value = incoming[1]
-                    self.set_cell_widget_value(row, column, value)
-            elif len(incoming) == 3:
-                row = any_to_int(incoming[0])
-                column = any_to_int(incoming[1])
-                value = incoming[2]
-                self.set_cell_widget_value(row, column, value)
+        row, column, rest = self._address(self.set_input())
+        if row is not None and len(rest) == 1:
+            self.input.widget.set_cell(row, column, rest[0])
 
     def get(self):
-        incoming = self.get_input()
-        if type(incoming) is list:
-            if len(incoming) == 1 and isinstance(incoming[0], (list, tuple)) and len(incoming[0]) == 2:
-                address = incoming[0]
-                row = any_to_int(address[0])
-                column = any_to_int(address[1])
-                value = self.get_cell_widget_value(row, column)
-                self.output.send(value)
-            elif len(incoming) == 2:
-                row = any_to_int(incoming[0])
-                column = any_to_int(incoming[1])
-                value = self.get_cell_widget_value(row, column)
-                self.output.send(value)
-
-    def custom_create(self, from_file):
-        for column in range(self.columns):
-            for row in range(self.rows):
-                self.set_cell_widget_value(row, column, self.source[row * self.columns + column])
-
-    def execute(self):
-        incoming = self.input()
-        handled = False
-        t = type(incoming)
-        if t is torch.Tensor:
-            incoming = any_to_list(incoming.flatten())
-            t = list
-        if t is np.ndarray:
-            incoming = any_to_list(incoming.ravel())
-            t = list
-        if t is list:
-            if len(incoming) == self.columns and incoming and isinstance(incoming[0], (list, tuple)):
-                if len(incoming[0]) == self.rows:
-                    handled = True
-                    for row in range(self.rows):
-                        for column in range(self.columns):
-                            self.set_cell_widget_value(row, column, incoming[row][column])
-            if not handled:
-                if len(incoming) == self.columns * self.rows:
-                    for row in range(self.rows):
-                        for column in range(self.columns):
-                            self.set_cell_widget_value(row, column, incoming[row * self.columns + column])
-
-    def get_cell_tag(self, row, col):
-        return f"cell_{row}_{col}"
+        row, column, _ = self._address(self.get_input())
+        if row is not None:
+            value = self.input.widget.get_cell(row, column)
+            if value is not None:
+                self.output.send(self.cell_as_value(value))
 
     def get_cell_widget_value(self, row, col):
-        target_tag = self.get_cell_tag(row, col)
-        value = dpg.get_value(target_tag)
-        return value
+        return self.input.widget.get_cell(row, col)
 
     def set_cell_widget_value(self, row, col, value):
-        if row >= 0 and row < self.rows and col >= 0 and col < self.columns:
-            target_tag = self.get_cell_tag(row, col)
-            dpg.set_value(target_tag, any_to_string(value))
+        return self.input.widget.set_cell(row, col, value)
+
+    def execute(self):
+        # Whatever arrived at 'array in' has already been laid into the cells
+        # by the inlet; a cell edit lands here the same way. Send the grid.
+        self.output.send(self.contents())
 
 
 class RadioButtonsNode(Node):

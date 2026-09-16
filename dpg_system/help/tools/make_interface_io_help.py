@@ -145,8 +145,12 @@ you change any of them by hand. It is both a readout and an input.
 Use it for anything small and structured enough to want to look at directly - 
 a matrix, a set of weights, a short lookup, calibration figures.
 
+TO EDIT A CELL:
+Click it, type, and press Enter. The whole grid is sent as soon as you do.
+
 SYNTAX:
 table <rows: int> <columns: int>
+table <size: int>
 
 EXAMPLE:
 table 4 4
@@ -154,19 +158,26 @@ table 4 4
 INPUTS and PARAMETERS:
 
 array in:
-An array or list to load into the grid. Receiving one triggers the node and 
-redraws the table.
+An array or list to load into the grid - a list of rows, a flat list of 
+rows x columns values, or an array of either shape. Receiving one fills the 
+table and sends its contents. A bang sends them again.
 
 set:
-Change one cell without replacing everything. Send the position and the value.
+Change one cell without replacing everything: 'set 1 2 0.5' puts 0.5 in row 1, 
+column 2 (counting from 0). Nothing is sent.
 
 get:
-Ask for a cell's value.
+Ask for one cell: 'get 1 2' sends its value from out.
+
+hide_title_bar:
+Draws the grid alone, without the node's title bar and frame.
 
 OUTPUTS: 
 
 out:
-The table's contents.
+The table's contents as a list of rows, sent whenever the grid changes - an 
+array arriving, or a cell edited by hand. A cell that reads as a number is 
+sent as a number; anything else is sent as text.
 
 RELATED:
 array holds the same kind of data without showing it. 

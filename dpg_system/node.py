@@ -870,7 +870,8 @@ class BasePropertyWidget:
         # Apply to main widget(s)
         for uid in self.uuids:
             dpg.bind_item_theme(uid, item_theme)
-            if self.widget not in ('label', 'text_display'):
+            # A table cannot be enabled or disabled; its cells can (see TableWidget).
+            if self.widget not in ('label', 'text_display', 'table'):
                 if enable_item:
                     dpg.enable_item(uid)
                 else:
@@ -1754,22 +1755,138 @@ class Spacer(BasePropertyWidget):
 
 
 class TableWidget(BasePropertyWidget):
-    def __init__(self, *args, rows=1, columns=1, **kwargs):
+    """A grid of editable cells.
+
+    The value is a list of rows, each a list of strings, one per cell. Every
+    cell is a text input, so the table is a readout and a control at once:
+    typing into a cell and pressing Enter reports the edit the way any other
+    widget does. The table and its cells carry their own ids, so any number of
+    tables can share a patch.
+    """
+
+    def __init__(self, *args, rows=1, columns=1, cell_width=60, **kwargs):
         super().__init__(*args, **kwargs)
-        self.rows = rows
-        self.columns = columns
+        self.rows = max(1, int(rows))
+        self.columns = max(1, int(columns))
+        self.cell_width = cell_width
+        self.cell_uuids = []
+
+    # --- value shape ---
+
+    def _get_zero_value(self):
+        return [['0'] * self.columns for _ in range(self.rows)]
+
+    def set_default_value(self, data):
+        self.default_value = self._as_grid(data)
+
+    def _as_grid(self, data):
+        """Coerce anything array-like into rows x columns of strings.
+
+        Accepts a list of rows, a flat list of rows*columns values, an array,
+        or a single value for every cell; anything missing reads '0'.
+        """
+        grid = self._get_zero_value()
+        if data is None:
+            return grid
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        elif torch_available and isinstance(data, torch.Tensor):
+            data = data.tolist()
+        if isinstance(data, (list, tuple)):
+            if len(data) > 0 and isinstance(data[0], (list, tuple)):
+                for i, row in enumerate(data[:self.rows]):
+                    for j, cell in enumerate(list(row)[:self.columns]):
+                        grid[i][j] = any_to_string(cell)
+            else:
+                for index, cell in enumerate(list(data)[:self.rows * self.columns]):
+                    grid[index // self.columns][index % self.columns] = any_to_string(cell)
+        else:
+            text = any_to_string(data)
+            grid = [[text] * self.columns for _ in range(self.rows)]
+        return grid
+
+    # --- drawing ---
 
     def _draw_widget(self):
-        with dpg.table(tag="table", header_row=False, width=300):
-            for i in range(self.columns):
+        # The label is what a saved patch matches this inlet by (see
+        # restore_properties); tables never draw theirs, so no ## is needed.
+        with dpg.table(tag=self.uuid, label=self._label, header_row=False, user_data=self.node,
+                       policy=dpg.mvTable_SizingFixedFit,
+                       borders_innerH=True, borders_innerV=True,
+                       borders_outerH=True, borders_outerV=True):
+            for _ in range(self.columns):
                 dpg.add_table_column()
+            self.cell_uuids = []
             for i in range(self.rows):
+                row_uuids = []
                 with dpg.table_row():
                     for j in range(self.columns):
-                        dpg.add_text('0', tag=f"cell_{i}_{j}")
+                        row_uuids.append(dpg.add_input_text(
+                            default_value=self.default_value[i][j], width=self.cell_width,
+                            on_enter=True, user_data=self, callback=self._cell_edited))
+                self.cell_uuids.append(row_uuids)
+        self.value = [list(row) for row in self.default_value]
 
-    def set_format(self, format: str) -> None:
-        dpg.configure_item(self.uuid, format=format)
+    def _cell_edited(self, sender=None, app_data=None, user_data=None):
+        hold_active_input = self.node.active_input if self.node else None
+        self._update_value_from_dpg()
+        self._propagate_changes(hold_active_input)
+
+    # --- value sync ---
+
+    def _update_value_from_dpg(self):
+        if self.cell_uuids:
+            self.value = [[dpg.get_value(uid) for uid in row] for row in self.cell_uuids]
+
+    def _convert_and_set(self, data):
+        grid = self._as_grid(data)
+        if self.cell_uuids:
+            for i, row in enumerate(self.cell_uuids):
+                for j, uid in enumerate(row):
+                    dpg.set_value(uid, grid[i][j])
+        else:
+            self.default_value = grid
+        self.value = grid
+
+    def get_cell(self, row, col):
+        if 0 <= row < self.rows and 0 <= col < self.columns:
+            if self.cell_uuids:
+                return dpg.get_value(self.cell_uuids[row][col])
+            return self.value[row][col]
+        return None
+
+    def set_cell(self, row, col, value):
+        if 0 <= row < self.rows and 0 <= col < self.columns:
+            text = any_to_string(value)
+            if self.cell_uuids:
+                dpg.set_value(self.cell_uuids[row][col], text)
+            if self.value is None:
+                self.value = self._get_zero_value()
+            self.value[row][col] = text
+            return True
+        return False
+
+    def set_visibility(self, visibility_state: str = 'show_all') -> None:
+        super().set_visibility(visibility_state)
+        enable = visibility_state != 'hidden'
+        for row in self.cell_uuids:
+            for uid in row:
+                if enable:
+                    dpg.enable_item(uid)
+                else:
+                    dpg.disable_item(uid)
+
+    # --- persistence ---
+
+    def save(self, widget_container: Dict[str, Any]) -> None:
+        widget_container['name'] = self._label.strip('#')
+        self._update_value_from_dpg()
+        widget_container['value'] = [list(row) for row in self.value]
+        widget_container['value_type'] = 'list'
+
+    def load(self, widget_container: Dict[str, Any]) -> None:
+        if 'value' in widget_container:
+            self.set(widget_container['value'])
 
 
 class DragFloatN(ScalarWidget):

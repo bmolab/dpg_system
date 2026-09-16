@@ -1,6 +1,6 @@
 {
-    "height": 641,
-    "width": 1401,
+    "height": 680,
+    "width": 1242,
     "position": [
         100,
         100
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 451,
+            "width": 432,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 573,
+            "position_x": 422,
             "position_y": 45,
             "width": 788,
             "height": 536,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The table node is a grid of numbers you can see and edit.\n\nWhere an array is a block of data you have to display with something else, \na table shows the numbers themselves, laid out in rows and columns, and lets \nyou change any of them by hand. It is both a readout and an input.\n\nUse it for anything small and structured enough to want to look at directly - \na matrix, a set of weights, a short lookup, calibration figures.\n\nSYNTAX:\ntable <rows: int> <columns: int>\n\nEXAMPLE:\ntable 4 4\n\nINPUTS and PARAMETERS:\n\narray in:\nAn array or list to load into the grid. Receiving one triggers the node and \nredraws the table.\n\nset:\nChange one cell without replacing everything. Send the position and the value.\n\nget:\nAsk for a cell's value.\n\nOUTPUTS: \n\nout:\nThe table's contents.\n\nRELATED:\narray holds the same kind of data without showing it. \nheat_map displays a grid as colour rather than as numbers, which is the better \nchoice once the grid is too large to read.",
+                    "value": "The table node is a grid of numbers you can see and edit.\n\nWhere an array is a block of data you have to display with something else, \na table shows the numbers themselves, laid out in rows and columns, and lets \nyou change any of them by hand. It is both a readout and an input.\n\nUse it for anything small and structured enough to want to look at directly - \na matrix, a set of weights, a short lookup, calibration figures.\n\nTO EDIT A CELL:\nClick it, type, and press Enter. The whole grid is sent as soon as you do.\n\nSYNTAX:\ntable <rows: int> <columns: int>\ntable <size: int>\n\nEXAMPLE:\ntable 4 4\n\nINPUTS and PARAMETERS:\n\narray in:\nAn array or list to load into the grid - a list of rows, a flat list of \nrows x columns values, or an array of either shape. Receiving one fills the \ntable and sends its contents. A bang sends them again.\n\nset:\nChange one cell without replacing everything: 'set 1 2 0.5' puts 0.5 in row 1, \ncolumn 2 (counting from 0). Nothing is sent.\n\nget:\nAsk for one cell: 'get 1 2' sends its value from out.\n\nhide_title_bar:\nDraws the grid alone, without the node's title bar and frame.\n\nOUTPUTS: \n\nout:\nThe table's contents as a list of rows, sent whenever the grid changes - an \narray arriving, or a cell edited by hand. A cell that reads as a number is \nsent as a number; anything else is sent as text.\n\nRELATED:\narray holds the same kind of data without showing it. \nheat_map displays a grid as colour rather than as numbers, which is the better \nchoice once the grid is too large to read.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "The table node is a grid of numbers you can see and edit.\n\nWhere an array is a block of data you have to display with something else, \na table shows the numbers themselves, laid out in rows and columns, and lets \nyou change any of them by hand. It is both a readout and an input.\n\nUse it for anything small and structured enough to want to look at directly - \na matrix, a set of weights, a short lookup, calibration figures.\n\nSYNTAX:\ntable <rows: int> <columns: int>\n\nEXAMPLE:\ntable 4 4\n\nINPUTS and PARAMETERS:\n\narray in:\nAn array or list to load into the grid. Receiving one triggers the node and \nredraws the table.\n\nset:\nChange one cell without replacing everything. Send the position and the value.\n\nget:\nAsk for a cell's value.\n\nOUTPUTS: \n\nout:\nThe table's contents.\n\nRELATED:\narray holds the same kind of data without showing it. \nheat_map displays a grid as colour rather than as numbers, which is the better \nchoice once the grid is too large to read."
+            "text": "The table node is a grid of numbers you can see and edit.\n\nWhere an array is a block of data you have to display with something else, \na table shows the numbers themselves, laid out in rows and columns, and lets \nyou change any of them by hand. It is both a readout and an input.\n\nUse it for anything small and structured enough to want to look at directly - \na matrix, a set of weights, a short lookup, calibration figures.\n\nTO EDIT A CELL:\nClick it, type, and press Enter. The whole grid is sent as soon as you do.\n\nSYNTAX:\ntable <rows: int> <columns: int>\ntable <size: int>\n\nEXAMPLE:\ntable 4 4\n\nINPUTS and PARAMETERS:\n\narray in:\nAn array or list to load into the grid - a list of rows, a flat list of \nrows x columns values, or an array of either shape. Receiving one fills the \ntable and sends its contents. A bang sends them again.\n\nset:\nChange one cell without replacing everything: 'set 1 2 0.5' puts 0.5 in row 1, \ncolumn 2 (counting from 0). Nothing is sent.\n\nget:\nAsk for one cell: 'get 1 2' sends its value from out.\n\nhide_title_bar:\nDraws the grid alone, without the node's title bar and frame.\n\nOUTPUTS: \n\nout:\nThe table's contents as a list of rows, sent whenever the grid changes - an \narray arriving, or a cell edited by hand. A cell that reads as a number is \nsent as a number; anything else is sent as text.\n\nRELATED:\narray holds the same kind of data without showing it. \nheat_map displays a grid as colour rather than as numbers, which is the better \nchoice once the grid is too large to read."
         },
         "3": {
             "name": "table",
@@ -109,9 +109,9 @@
             "init": "comment click a cell and type into it",
             "name": "comment",
             "id": 385,
-            "position_x": 356,
+            "position_x": 30,
             "position_y": 275,
-            "width": 187,
+            "width": 203,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -136,7 +136,7 @@
             "position_x": 30,
             "position_y": 320,
             "width": 208,
-            "height": 150,
+            "height": 148,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -187,9 +187,9 @@
             "init": "comment the same numbers as colour",
             "name": "comment",
             "id": 459,
-            "position_x": 356,
+            "position_x": 30,
             "position_y": 480,
-            "width": 168,
+            "width": 182,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -212,7 +212,7 @@
             "name": "close",
             "id": 496,
             "position_x": 24,
-            "position_y": 500,
+            "position_y": 590,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
