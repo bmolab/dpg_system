@@ -749,7 +749,8 @@
   "pc_crop": [
     "pc_crop",
     "pc_voxel",
-    "pc_info"
+    "pc_info",
+    "mgl_cluster_boxes"
   ],
   "_prompt_nodes": [
     "--- prompt_nodes.py ---"

@@ -117,6 +117,27 @@ per-voxel labels, per-box values, and the lattice geometry. Boxes are only the
 first way of grouping voxels; blobs, k-means and hand-painted regions would put
 the same thing on the frame, so anything reading it works with all of them.
 
+SHOWING WHAT IS IN EACH BOX:
+mgl_cluster_boxes draws the result: one translucent cube per box, its colour
+carrying that box's sum. Feed it the voxel cloud and put it on an mgl chain.
+
+The sum drives brightness, so an empty box vanishes and a busy one glows;
+'sensitivity' is the gain on that, and is the control you actually use - the
+raw sums depend on your voxel size, your crop and your sense setting, so wind
+it until the range of the room reads well and leave it.
+
+'color mode' decides the hue. 'uniform' gives every box the same hue and
+saturation, so the picture is purely intensity - what you want when you are
+reading activity. 'per box' walks the hue by 'hue spread' per box, the way the
+C++ app colours its regions, so neighbouring boxes stay distinguishable - what
+you want when you are working out WHICH box is which.
+
+'threshold' hides boxes below a level rather than drawing them nearly black.
+'fill' shrinks each cube inside its box so the lattice reads as separate cells.
+'blend' is additive by default: these cubes are translucent and unsorted, so
+alpha blending would make the picture depend on the order they happen to be
+drawn in, while additive does not.
+
 SEEING THE VOLUME:
 pc_voxel also sits on an mgl chain. Patch 'mgl chain in' from the chain that
 draws the cloud and it draws the working volume as a wireframe, in the chain's
@@ -144,6 +165,7 @@ SYNTAX:
 pc_crop
 pc_voxel
 pc_info
+mgl_cluster_boxes
 
 EXAMPLE:
 pc_crop
@@ -187,6 +209,13 @@ Points per voxel.
 
 box values (pc_voxel):
 Sum of the voxel weights in each box, as an (x,y,z) array.
+
+voxel cloud (mgl_cluster_boxes):
+The frame from pc_voxel. It reads the boxes off the frame, so nothing else
+needs patching.
+
+sensitivity / hue / saturation / alpha (mgl_cluster_boxes):
+Gain on the sum, and the colour it is drawn in.
 
 mgl chain out (pc_voxel):
 The draw, passed on to the rest of the chain.

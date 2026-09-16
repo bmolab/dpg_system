@@ -58,6 +58,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_body_orientation', MGLBodyOrientationNode.factory)
     Node.app.register_node('mgl_enable', MGLEnableNode.factory)
     Node.app.register_node('mgl_shader', MGLShaderNode.factory)
+    register_mgl_cluster_nodes()
 
 
 class MGLNode(Node):
@@ -5027,3 +5028,4 @@ from dpg_system.mgl_smpl_mesh_node import MGLSMPLMeshNode
 from dpg_system.mgl_smpl_heatmap_node import MGLSMPLHeatmapNode
 from dpg_system.mgl_body_orientation_node import MGLBodyOrientationNode
 from dpg_system.mgl_shader_node import MGLShaderNode
+from dpg_system.mgl_cluster_nodes import register_mgl_cluster_nodes
