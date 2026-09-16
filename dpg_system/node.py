@@ -238,7 +238,7 @@ class NodeOutput:
 
     def send_internal(self, no_trigger=False) -> None:
         if self.output_always or self.new_output:
-            if Node.app.show_active_pins and self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
+            if Node.app.show_active_pins and self.node.visibility == 'show_all' and not self.node.presenting() and dpg.does_item_exist(self.uuid):
                 try:
                     if Node.app.color_code_pins:
                         t = self.sent_type
@@ -2120,7 +2120,7 @@ class NodeInput:
 
                 self._data = data
                 self.fresh_input = True
-                if Node.app.show_active_pins and self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
+                if Node.app.show_active_pins and self.node.visibility == 'show_all' and not self.node.presenting() and dpg.does_item_exist(self.uuid):
                     try:
                         if Node.app.color_code_pins:
                             if self.received_type is list:
@@ -2714,6 +2714,11 @@ class Node:
 
     def set_custom_visibility(self) -> None:
         pass
+
+    def presenting(self) -> bool:
+        """True while this node's editor is in presentation mode, when pins
+        and links are hidden and must not be lit up by activity."""
+        return bool(getattr(self.my_editor, 'presenting', False))
 
     def set_font(self, font: Any) -> None:
         dpg.bind_item_font(self.uuid, font)

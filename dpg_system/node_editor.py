@@ -1460,8 +1460,9 @@ class NodeEditor:
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, [255, 255, 0, 255], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
-                self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
+                # Presenting shows controls, not patching: pins go with the links.
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_PinHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
 
 
 ########################################################################################################################
