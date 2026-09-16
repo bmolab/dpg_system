@@ -496,8 +496,18 @@ class BulletRagdollSim:
     """
 
     def __init__(self, processor):
-        from dpg_system.smpl_ragdoll import RAGDOLL_JOINT_LIMITS   # lazy: circular import
+        from dpg_system.smpl_ragdoll import RAGDOLL_JOINT_LIMITS, RAGDOLL_CLENCH   # lazy: circular import
         self.processor = processor
+        # tone: the clench each joint is pulled toward (local axis-angle),
+        # and the tremor oscillator's state per joint (angle, rate)
+        self.clench = np.zeros((24, 3))
+        self._clench_set = np.zeros(24, dtype=bool)
+        for j in range(1, 22):
+            c = RAGDOLL_CLENCH.get(JOINT_NAMES[j])
+            if c is not None:
+                self.clench[j] = np.radians(c); self._clench_set[j] = True
+        self._tremor_x = np.zeros((24, 3)); self._tremor_v = np.zeros((24, 3))
+        self._tremor_rng = np.random.default_rng(0)
         self.free_indices = []
         self.root_free = False
         self.body = None
@@ -580,6 +590,51 @@ class BulletRagdollSim:
 
     # -- configuration -------------------------------------------------
 
+    def set_clench(self, j, rot):
+        self.clench[j] = np.asarray(rot, dtype=float).reshape(3)
+        self._clench_set[j] = True
+
+    def _tone_targets(self, mocap_aa, tones, dt, p_):
+        """Tone acts on the target.  A toned joint's captured rotation is
+        pulled clench_pull * tone of the way toward its clench -- which also
+        shrinks its movement about the clench by the same fraction -- and a
+        tremor is added: per axis, a resonator at tremor_hz driven by white
+        noise, scaled so its RMS is tremor_deg * tone.  Returns the toned
+        pose, the same without the tremor (what the rates are differenced
+        from), the tremor's rate per joint for the feed-forward, and the
+        toned indices."""
+        toned = np.nonzero(tones[:22] > 1e-6)[0]
+        toned = toned[toned > 0]
+        rate = np.zeros((24, 3))
+        if toned.size == 0:
+            self._tremor_x[:] = 0.0; self._tremor_v[:] = 0.0
+            return mocap_aa, mocap_aa, rate, toned
+        t = np.clip(tones[toned], 0.0, 1.0)
+        aa = mocap_aa.copy()
+        pull = toned[self._clench_set[toned]]
+        if pull.size:
+            f = float(p_.clench_pull) * np.clip(tones[pull], 0.0, 1.0)
+            q_cap = _qexp(aa[pull]); q_cl = _qexp(self.clench[pull])
+            rel = _qlog(_qmul(q_cl, _qconj(q_cap)))
+            aa[pull] = _qlog(_qmul(_qexp(rel * f[:, None]), q_cap))
+        steady = aa.copy()
+        # tremor: x'' + 2 zeta w x' + w^2 x = s xi, stationary RMS of x is
+        # s / sqrt(4 zeta w^3) per axis; tremor_deg is the RMS angle over
+        # the three axes.  Semi-implicit Euler at the frame rate.
+        amp = math.radians(max(float(p_.tremor_deg), 0.0)) * t / math.sqrt(3.0)
+        if np.any(amp > 0.0):
+            w0 = 2.0 * math.pi * max(float(p_.tremor_hz), 0.1)
+            zeta = 0.2
+            s = amp * math.sqrt(4.0 * zeta * w0 ** 3)
+            xi = self._tremor_rng.standard_normal((toned.size, 3)) / math.sqrt(dt)
+            x = self._tremor_x[toned]; v = self._tremor_v[toned]
+            v = v + dt * (s[:, None] * xi - 2.0 * zeta * w0 * v - w0 * w0 * x)
+            x = x + dt * v
+            self._tremor_x[toned] = x; self._tremor_v[toned] = v
+            aa[toned] = _qlog(_qmul(_qexp(aa[toned]), _qexp(x)))   # tremor in the child frame
+            rate[toned] = v
+        return aa, steady, rate, toned
+
     def set_free_joints(self, indices):
         # Every joint is always simulated; "free" only decides whose weight
         # matters.  Changing the set does not reset the simulation.
@@ -618,6 +673,7 @@ class BulletRagdollSim:
         self.base_seed = _Seed(); self.base_ang_seed = _Seed()
         self.joint_seed = {j: _Seed() for j in range(1, 24)}
         self.joint_speed_ema = np.full(24, 1.0)
+        self._tremor_x[:] = 0.0; self._tremor_v[:] = 0.0
         self.prev_root = None
         self.prev_joint = {}
         self.was_prescribed = np.ones(24, dtype=bool)
@@ -737,12 +793,16 @@ class BulletRagdollSim:
 
     # -- the frame ---------------------------------------------------------
 
-    def advance(self, mocap_aa, mocap_trans, weights, p_):
+    def advance(self, mocap_aa, mocap_trans, weights, p_, tones=None):
         self._ensure_body(p_)
         body = self.body; cid = body.cid
         dt = p_.dt
         mocap_aa = np.asarray(mocap_aa, dtype=float).reshape(-1, 3)[:24].copy()
         mocap_trans = np.asarray(mocap_trans, dtype=float).reshape(3)
+        # tone rewrites the capture before anything reads it, so the rates,
+        # the limits and the jump detector all see the toned target
+        tones = np.zeros(24) if tones is None else np.asarray(tones, dtype=float)
+        mocap_aa, steady_aa, tremor_rate, toned = self._tone_targets(mocap_aa, tones, dt, p_)
         w = np.ones(24); w[:22] = np.clip(weights[:22], 0.0, 1.0)
         self._drive_force = float(p_.drive_force)
         self._spring_rate = max(float(getattr(p_, 'spring_rate', 60.0)), 1.0)
@@ -786,7 +846,7 @@ class BulletRagdollSim:
                 self.joint_speed_ema[:] = 0.0
                 self.prev_root = root_rot; self.prev_trans = mocap_trans.copy()
                 for j in range(1, 24):
-                    self.prev_joint[j] = R.from_rotvec(mocap_aa[j])
+                    self.prev_joint[j] = R.from_rotvec(steady_aa[j])
                 prev_root, prev_trans = self.prev_root, self.prev_trans
 
         # -- velocity estimates from the capture, for every joint and the base
@@ -799,7 +859,7 @@ class BulletRagdollSim:
         self.prev_root = root_rot; self.prev_trans = mocap_trans.copy()
         joint_w = {}
         for j in range(1, 24):
-            q = R.from_rotvec(mocap_aa[j])
+            q = R.from_rotvec(steady_aa[j])      # tremor excluded: its rate is added below
             prev = self.prev_joint.get(j)
             if prev is not None:
                 # child-frame rate: q_prev^-1 q ; parent-frame: q q_prev^-1
@@ -818,6 +878,11 @@ class BulletRagdollSim:
             else:
                 joint_w[j] = np.zeros(3)
             self.prev_joint[j] = q
+        # the tremor's own rate, unsmoothed: the seed's averaging would take
+        # most of a ten hertz rate out of the feed-forward and the motor
+        # would smear the shake instead of following it
+        for j in toned:
+            joint_w[j] = joint_w[j] + tremor_rate[j]
 
         # -- the root: a fixed constraint to the world, retargeted through the
         # frame.  Not a reset: a multibody whose base is reset every frame
@@ -1293,7 +1358,10 @@ class BulletRagdollSim:
         else:
             self.last_support = 1.0
 
-        result = {j: aa[j] for j in range(1, 22) if not prescribed[j]}
+        # a toned joint is reported from the simulation even while
+        # prescribed: the raw capture is not where it went
+        toned_set = set(int(j) for j in toned)
+        result = {j: aa[j] for j in range(1, 22) if not prescribed[j] or j in toned_set}
         if prescribed[0]:
             return result, root_rot, mocap_trans
         return result, self.root_rot, self.trans

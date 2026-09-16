@@ -30,6 +30,22 @@ and `catch`, and ramp over `ramp_ms`.  A catch reels both the root and the
 joints from where they are to the capture at a bounded rate, at full
 strength, so nothing snaps.
 
+Tone
+----
+The weights run one way: from the capture's control of a joint down to none,
+with gravity filling in.  Tone runs the other way, adding control the
+performer did not apply.  It is a second value per joint, 0 to 1, and acts
+on the target rather than the motor -- at weight 1 the joint already tracks
+with whatever force it takes, so more stiffness there shows nothing; what a
+tense body shows is where it goes.  A toned joint's target is pulled part
+of the way (`clench_pull` at tone 1) from the capture toward a clench
+rotation -- the startle pattern's guarded posture, in RAGDOLL_CLENCH, or
+one set by `clench <joint> x y z` in degrees -- which also shrinks its
+movement about that posture; and it trembles: band-limited noise at
+`tremor_hz` with `tremor_deg` RMS at tone 1, the signal-dependent noise of
+a muscle holding effort.  `tone <joints> <v>` sets it, ramped like a
+weight, for any joint whether or not it is in the free set.
+
 Losing support
 --------------
 A driven root goes where the capture went, whatever the simulation is doing
@@ -145,6 +161,26 @@ JOINT_GROUPS = {
     'everything': list(range(0, 22)),      # synonym for 'all'
 }
 
+# The clench: where a toned joint is pulled toward, as SMPL local axis-angle
+# in degrees.  A flexor guarding posture -- the startle pattern: shoulders
+# up, upper arms drawn down and forward into the sides, elbows bent, wrists
+# curled.  Axes checked on the built body (internal Y-up frame, facing +Z):
+# for the left arm, collar +Z shrugs, shoulder -Z lowers the arm from the
+# T-pose and -Y brings it forward, elbow -Y flexes, wrist -Z curls; the
+# right side mirrors Y and Z.  Joints not listed have no clench and only
+# tremble.  The table is arms only so far: the trunk, neck and legs are
+# open, and `clench <joint> x y z` sets any joint at run time.
+RAGDOLL_CLENCH = {
+    'left_collar':     (0.0,   0.0,  15.0),
+    'right_collar':    (0.0,   0.0, -15.0),
+    'left_shoulder':   (0.0, -25.0, -55.0),
+    'right_shoulder':  (0.0,  25.0,  55.0),
+    'left_elbow':      (0.0, -95.0,   0.0),
+    'right_elbow':     (0.0,  95.0,   0.0),
+    'left_wrist':      (0.0,   0.0, -25.0),
+    'right_wrist':     (0.0,   0.0,  25.0),
+}
+
 
 class RagdollParams:
     """Plain holder for the per-frame simulation knobs (see smpl_bullet)."""
@@ -153,6 +189,10 @@ class RagdollParams:
         self.dt = 1.0 / 60.0
         self.ramp_s = 0.12            # the node's ramp, for a catch that completes over it
         self.gravity = 1.0            # scale on the true gravity field
+        # -- tone
+        self.clench_pull = 0.4        # fraction of the way from the capture to the clench at tone 1
+        self.tremor_deg = 2.0         # RMS tremor at tone 1, degrees
+        self.tremor_hz = 10.0         # tremor centre frequency (physiological: 8-12 Hz)
         # -- the blended regime
         self.motor_strength = 1.0     # multiplier on a partial joint's spring stiffness
         self.blend_soft = 180.0       # degrees a partial joint gives under its typical load at weight 0
@@ -268,6 +308,8 @@ class SMPLRagdollNode(Node):
         self._unsupported_time = 0.0
         self.weights = np.zeros(22)
         self.weight_targets = np.zeros(22)
+        self.tones = np.zeros(22)
+        self.tone_targets = np.zeros(22)
         self.params = RagdollParams()
 
         self.pose_input = self.add_input('pose', triggers_execution=True)
@@ -339,6 +381,9 @@ class SMPLRagdollNode(Node):
         self.gravity_comp_prop = self.add_option('gravity_comp', widget_type='drag_float', default_value=1.0)
         self.blend_soft_prop = self.add_option('blend_soft', widget_type='drag_float', default_value=180.0)
         self.blend_firm_prop = self.add_option('blend_firm', widget_type='drag_float', default_value=1.0)
+        self.clench_pull_prop = self.add_option('clench_pull', widget_type='drag_float', default_value=0.4)
+        self.tremor_deg_prop = self.add_option('tremor_deg', widget_type='drag_float', default_value=2.0)
+        self.tremor_hz_prop = self.add_option('tremor_hz', widget_type='drag_float', default_value=10.0)
         self.substeps_prop = self.add_option(
             'substeps', widget_type='drag_int', default_value=4)
         self.substep_rate_prop = self.add_option(
@@ -360,6 +405,8 @@ class SMPLRagdollNode(Node):
         self.message_handlers['weight'] = self._weight_message
         self.message_handlers['release'] = self._release_message
         self.message_handlers['catch'] = self._catch_message
+        self.message_handlers['tone'] = self._tone_message
+        self.message_handlers['clench'] = self._clench_message
 
     # ------------------------------------------------------------------
     # Free set and weights
@@ -504,6 +551,46 @@ class SMPLRagdollNode(Node):
         for j in self._targets_for(args, 'catch'):
             self.weight_targets[j] = w
 
+    def _tone_message(self, message='', args=None):
+        """tone <joints...> <value>: ramp the named joints' tone.  Any joint,
+        free or not -- tone acts on the target, not on what physics owns."""
+        args = list(args or [])
+        if len(args) < 2:
+            print('smpl_ragdoll: usage: tone <joints...> <value>')
+            return
+        try:
+            value = float(np.clip(float(args[-1]), 0.0, 1.0))
+        except (TypeError, ValueError):
+            print(f'smpl_ragdoll: tone: last argument must be a number, got {args[-1]!r}')
+            return
+        indices, unknown = self._resolve_joints(args[:-1])
+        if unknown:
+            print(f'smpl_ragdoll: tone: unknown joint or group {unknown}')
+        for j in indices:
+            if j > 0:
+                self.tone_targets[j] = value
+
+    def _clench_message(self, message='', args=None):
+        """clench <joint> <x> <y> <z>: set where a joint's tone pulls it, as
+        SMPL local axis-angle in degrees."""
+        args = list(args or [])
+        if len(args) != 4:
+            print('smpl_ragdoll: usage: clench <joint> <x> <y> <z>   (degrees, SMPL local axis-angle)')
+            return
+        indices, unknown = self._resolve_joints(args[:1])
+        if unknown or not indices:
+            print(f'smpl_ragdoll: clench: unknown joint {args[0]!r}')
+            return
+        try:
+            rot = np.radians([float(a) for a in args[1:]])
+        except (TypeError, ValueError):
+            print('smpl_ragdoll: clench: x y z must be numbers')
+            return
+        self._ensure_processor()
+        for j in indices:
+            if j > 0:
+                self.sim.set_clench(j, rot)
+
     def _apply_weights_array(self, data):
         """A whole per-joint array of weight targets: 22 (SMPL, root first) or
         20 (active order)."""
@@ -596,6 +683,7 @@ class SMPLRagdollNode(Node):
         delta = self.weight_targets - self.weights
         step = np.clip(delta, -rate, rate)
         self.weights += step
+        self.tones += np.clip(self.tone_targets - self.tones, -rate, rate)
 
     # ------------------------------------------------------------------
     # Processor
@@ -743,7 +831,7 @@ class SMPLRagdollNode(Node):
         # the simulation shadows the capture and accumulates the velocity and
         # spin that a release inherits; skipping those frames would make the
         # body let go from rest, with no momentum at all.
-        if not self.free_indices:
+        if not self.free_indices and not np.any(self.tones > 1e-6):
             self.weights_output.send(self.weights.copy())
             self.pose_output.send(raw)
             # Still emitted, so an inert node is a working format converter
@@ -768,6 +856,9 @@ class SMPLRagdollNode(Node):
         p.gravity_comp = float(self.gravity_comp_prop())
         p.blend_soft = float(self.blend_soft_prop())
         p.blend_firm = float(self.blend_firm_prop())
+        p.clench_pull = float(self.clench_pull_prop())
+        p.tremor_deg = float(self.tremor_deg_prop())
+        p.tremor_hz = float(self.tremor_hz_prop())
         p.substeps = max(1, int(self.substeps_prop()))
         p.substep_rate = float(self.substep_rate_prop())
         p.gravity = float(self.gravity_prop())
@@ -791,7 +882,7 @@ class SMPLRagdollNode(Node):
                 t_int, aa_int, _quats = proc._prepare_trans_and_pose(
                     frame, root_trans.reshape(1, 3), options)
                 result, root_rot, trans_int = self.sim.advance(
-                    aa_int[0], t_int[0], self.weights, p)
+                    aa_int[0], t_int[0], self.weights, p, tones=self.tones)
             except Exception as e:
                 print(f'smpl_ragdoll: simulation failed ({e}); passing through')
                 self.pose_output.send(raw)

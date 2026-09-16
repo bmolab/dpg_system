@@ -19,6 +19,7 @@ class Stub(SMPLRagdollNode):
         self.betas=np.zeros(10); self.total_mass=75.0
         self.free_indices=[]; self.root_free=False; self._unsupported_time=0.0
         self.weights=np.zeros(22); self.weight_targets=np.zeros(22)
+        self.tones=np.zeros(22); self.tone_targets=np.zeros(22)
         self.params=RagdollParams()
         self.pose_input=In(np.zeros((24,3))); self.trans_input=In(np.zeros(3))
         self.config_input=In(None,fresh=False); self.weights_input=In(None,fresh=False)
@@ -43,6 +44,7 @@ class Stub(SMPLRagdollNode):
         self.pivot_smoothing_prop=P(0.25); self.max_ang_vel_prop=P(40.0)
         self.root_seed_smoothing_prop=P(0.3); self.total_mass_prop=P(75.0)
         # node defaults, as they appear in the patch
+        self.clench_pull_prop=P(0.4); self.tremor_deg_prop=P(2.0); self.tremor_hz_prop=P(10.0)
         self.up_axis_prop=P('Y'); self.axis_perm_prop=P('x, z, -y')
         self.quat_format_prop=P('wxyz')
         self._parse_free_joints(free)
