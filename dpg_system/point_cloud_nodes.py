@@ -390,16 +390,23 @@ class VolumeGridDrawMixin:
         # Lines, points at the lattice nodes, or both — both off is the way to
         # turn the overlay off. Colours are taken as set rather than multiplied
         # into the chain colour, so the two can be told apart at a glance.
+        #
+        # The defaults are the settings arrived at in patches/femto_test: green
+        # lines at 18% alpha under brighter green points at 47%, which sits
+        # over a live cloud without burying it. Colour defaults are on dpg's
+        # own 0..255 scale, since that is what add_color_picker takes and what
+        # the widget reads back (_rgba rescales); a 0..1 default here would
+        # draw the picker almost black.
         self.show_lines_option = self.add_option('show lines', widget_type='checkbox',
                                                  default_value=True)
         self.line_color_option = self.add_option('line color', widget_type='color_picker',
-                                                 default_value=[1.0, 1.0, 1.0, 1.0])
+                                                 default_value=[9.247, 255.0, 0.0, 45.333])
         self.show_points_option = self.add_option('show points', widget_type='checkbox',
-                                                  default_value=False)
+                                                  default_value=True)
         self.point_color_option = self.add_option('point color', widget_type='color_picker',
-                                                  default_value=[1.0, 1.0, 1.0, 1.0])
+                                                  default_value=[0.0, 255.0, 1.086, 118.996])
         self.point_size_option = self.add_option('point size', widget_type='drag_float',
-                                                 default_value=4.0, min=1.0)
+                                                 default_value=3.0, min=1.0)
         self._grid_prog = None
         self._grid_line_vbo = None
         self._grid_line_vao = None
