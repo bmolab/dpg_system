@@ -500,6 +500,11 @@
      "name": "hide_title_bar",
      "value": true,
      "value_type": "bool"
+    },
+    "4": {
+     "name": "font size",
+     "value": "36",
+     "value_type": "string"
     }
    }
   },
@@ -540,6 +545,31 @@
     }
    },
    "comment": "prints 'color red' etc."
+  },
+  "18": {
+   "init": "comment option font size",
+   "name": "comment",
+   "id": 5920,
+   "position_x": 457,
+   "position_y": 255,
+   "width": 480,
+   "height": 30,
+   "visibility": "show_all",
+   "draggable": true,
+   "presentation_state": "show_all",
+   "properties": {
+    "0": {
+     "name": "text",
+     "value": "option font size: 24 / 30 / 36 / 48, scales the buttons with their text",
+     "value_type": "string"
+    },
+    "1": {
+     "name": "font size",
+     "value": "24",
+     "value_type": "string"
+    }
+   },
+   "comment": "option font size: 24 / 30 / 36 / 48, scales the buttons with their text"
   }
  },
  "links": {

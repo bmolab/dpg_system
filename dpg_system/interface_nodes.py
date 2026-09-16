@@ -1076,11 +1076,23 @@ class RadioButtonsNode(_HideTitleBarMixin, Node):
                                              callback=self.prefix_changed)
         self.prefix_as_label = self.add_option('prefix_as_label', widget_type='checkbox', default_value=True,
                                                callback=self.prefix_changed)
+        self.font_size_option = self.add_option('font size', widget_type='combo', default_value='24',
+                                                 callback=self.font_size_changed)
+        self.font_size_option.widget.combo_items = ['24', '30', '36', '48']
         self._add_hide_title_bar_option(default_value=False)
 
     def custom_create(self, from_file):
         self.prefix_changed()
         self._apply_title_bar_visibility()
+
+    def font_size_changed(self):
+        # Bound at the inlet, so the name column in front inherits it too. The
+        # radio circle is a frame-height square, so it grows with the text.
+        fonts = {'24': self.app.font_24, '30': self.app.font_30,
+                 '36': self.app.font_36, '48': self.app.font_48}
+        font = fonts.get(self.font_size_option())
+        if font is not None:
+            self.radio_group.set_font(font)
 
     def prefix_changed(self):
         """Show the prefix as a name in front of the buttons, or hide the column."""
