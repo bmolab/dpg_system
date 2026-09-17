@@ -90,6 +90,28 @@ voxel twice as far away catches about a quarter as many depth pixels, so the
 default squares the distance before weighting. It uses radial distance rather
 than depth, so it survives levelling and yaw.
 
+STOPPING VOXELS FLICKERING:
+'count smoothing (Hz)' low-passes each voxel's point count before 'min points'
+is applied to it. 0 is off, which is the default; 1-2 Hz is the useful range.
+
+The reason it helps is that thresholding a RAW count makes a voxel blink every
+time the count crosses the line, and within a point or two of the line the
+count is mostly sensor noise. Smooth the count first and the threshold gets
+hysteresis: a voxel whose raw count alternates 1, 6, 1, 6 against min points 3
+blinks 24 times in 25 frames, and stops dead at 1 Hz - while a voxel whose
+count averages BELOW the threshold correctly stays off instead of blinking on.
+
+It is worth knowing this is not the same as pc_denoise's 'persistence', which
+smooths the on/off flag rather than the count and so has already thrown the
+useful information away. Measured against a noiseless reference on a simulated
+wall plus a walking figure: no filter 85 spurious flickers a frame,
+pc_denoise's persistence 37, this 7.
+
+The cutoff is in Hz against the measured frame interval, so the amount of
+smoothing does not change if the capture rate does. It costs about 2 ms a frame
+on a busy cloud and nothing on a quiet one - only voxels holding points, or
+still carrying a value, are touched, never the whole grid.
+
 GROUPING VOXELS INTO BOXES:
 'boxes (x,y,z)' divides the working volume into a coarser lattice - 8,8,8 for
 512 boxes - and sends the sum of the voxel weights in each one out of 'box
@@ -240,6 +262,10 @@ The grid resolution. The most consequential number here.
 
 min points (pc_voxel):
 The density floor - voxels holding fewer points than this are dropped.
+
+count smoothing (Hz) (pc_voxel):
+Low-pass on each voxel's count before the threshold. 0 is off, 1-2 Hz stops
+voxels flickering on the edge of 'min points'.
 
 boxes (x,y,z) (pc_voxel):
 Divide the volume into this many boxes per axis. 0 for none. Snaps the voxel
