@@ -288,7 +288,7 @@ def _lattice_vertices(lo, hi, divisions):
     return np.stack((gx.ravel(), gy.ravel(), gz.ravel()), axis=1).astype(np.float32)
 
 
-def _lattice_lines(lo, hi, divisions):
+def _lattice_lines(lo, hi, divisions, skip_outer_edges=False):
     """Vertices (M, 2, 3) float32 for the wireframe of a box subdivided into
     ``divisions`` cells per axis.
 
@@ -296,7 +296,12 @@ def _lattice_lines(lo, hi, divisions):
     cell: an 8x8x8 subdivision is 243 lines this way and 6,144 edges the other,
     for the same picture, since every interior edge is shared. Divisions of
     (1, 1, 1) degenerate to exactly the twelve edges of the outer box, which is
-    what an unsubdivided volume wants."""
+    what an unsubdivided volume wants.
+
+    ``skip_outer_edges`` drops the twelve lines that ARE those box edges — the
+    ones whose two perpendicular coordinates are both at an extreme. Without
+    it, drawing the bounds over the lattice puts two lines in the same place
+    and the bounds colour is whatever the two blend to rather than its own."""
     lo = np.asarray(lo, dtype=np.float32)
     hi = np.asarray(hi, dtype=np.float32)
     cuts = _lattice_cuts(lo, hi, divisions)
@@ -305,13 +310,24 @@ def _lattice_lines(lo, hi, divisions):
         u, v = (axis + 1) % 3, (axis + 2) % 3
         # One line spanning `axis` at every node of the (u, v) cut lattice.
         gu, gv = np.meshgrid(cuts[u], cuts[v], indexing='ij')
+        if skip_outer_edges:
+            edge_u = np.zeros(cuts[u].size, dtype=bool)
+            edge_v = np.zeros(cuts[v].size, dtype=bool)
+            edge_u[[0, -1]] = True
+            edge_v[[0, -1]] = True
+            keep = ~(edge_u[:, None] & edge_v[None, :])
+            gu, gv = gu[keep], gv[keep]
         n = gu.size
+        if n == 0:
+            continue
         seg = np.empty((n, 2, 3), dtype=np.float32)
         seg[:, :, u] = gu.reshape(n, 1)
         seg[:, :, v] = gv.reshape(n, 1)
         seg[:, 0, axis] = lo[axis]
         seg[:, 1, axis] = hi[axis]
         segments.append(seg)
+    if not segments:
+        return np.empty((0, 2, 3), dtype=np.float32)
     return np.concatenate(segments, axis=0)
 
 
@@ -497,9 +513,12 @@ class VolumeGridDrawMixin:
             self._grid_prog = inner_ctx.program(vertex_shader=self._grid_vert_src,
                                                 fragment_shader=self._grid_frag_src)
 
-        key = (tuple(lo.tolist()), tuple(hi.tolist()), tuple(divisions))
+        # Whether the bounds are drawn changes the lattice itself, so it is
+        # part of the key.
+        bounds = bool(self.show_bounds_option())
+        key = (tuple(lo.tolist()), tuple(hi.tolist()), tuple(divisions), bounds)
         if key != self._grid_key:
-            self._build_lattice(ctx, inner_ctx, lo, hi, divisions)
+            self._build_lattice(ctx, inner_ctx, lo, hi, divisions, bounds)
             self._grid_key = key
 
         prog = self._grid_prog
@@ -522,11 +541,12 @@ class VolumeGridDrawMixin:
             prog['round_points'].value = False
             self._grid_bounds_vao.render(mode=moderngl.LINES)
 
-    def _build_lattice(self, ctx, inner_ctx, lo, hi, divisions):
+    def _build_lattice(self, ctx, inner_ctx, lo, hi, divisions, skip_outer_edges):
         """(Re)fill the line and point buffers for this volume. The vertex
         count changes with the subdivision, so a buffer is reallocated when its
         shape changes and only rewritten when the volume merely moves."""
-        for verts, attr in ((_lattice_lines(lo, hi, divisions).reshape(-1, 3), 'line'),
+        lattice = _lattice_lines(lo, hi, divisions, skip_outer_edges)
+        for verts, attr in ((lattice.reshape(-1, 3), 'line'),
                             (_lattice_vertices(lo, hi, divisions), 'point'),
                             # (1, 1, 1) degenerates to the twelve outer edges.
                             (_lattice_lines(lo, hi, (1, 1, 1)).reshape(-1, 3), 'bounds')):
