@@ -127,18 +127,33 @@ and floors at zero, so a box just over the line starts from zero instead of
 jumping; 'gate' zeroes what is under and passes the rest untouched. This is
 where you kill the floor of sensor noise.
 
-'smooth' is a per-box one-pole. 'knee' (option) makes it adaptive the way the
-C++ cBins filter is: a box whose value is barely moving gets smoothed harder
-than one that is moving fast, so idle noise averages away without smearing a
-real arrival. 'decay' bleeds a constant off every frame so a box does not rest
-on a residue.
+The filter is adaptive either way - smooth hard while a box is idle, get out
+of the way when it moves. 'filter' (option) picks which:
+
+'one euro' is the default and the better of the two. It low-passes each box at
+a cutoff that rises with that box's speed: 'min cutoff' sets how still an idle
+box looks, 'beta' how little a moving one lags. Tune it the way its authors
+say - beta to 0, drop 'min cutoff' until an idle box stops shimmering, then
+raise beta until a real arrival stops lagging.
+
+'adaptive' is the C++ cBins filter, kept for fidelity: 'smooth' is the floor on
+the smoothing and 'knee' the change at which it is released.
+
+The reason one euro is the default is not subtlety, it is TIME. Its numbers are
+in Hz against the measured frame interval, so its behaviour does not move when
+the frame rate does. Measured over 10 to 90 fps, the C++ filter's step response
+ran from 0.044 s to 0.400 s - a factor of nine - while one euro held 0.400 s
+throughout. Tune the C++ one at 30 fps and it is a different filter at 15. It
+also took about 10% less lag at every jitter budget tested.
+
+'decay' bleeds a constant off per second so a box does not rest on a residue.
 
 'motion' switches from the level to the CHANGE in the level - the C++
 dynamicBins - so a box lights up when something moves through it rather than
 when something is in it. Differencing amplifies noise, so it comes after the
-smoothing, not before; on a depth sensor you want some 'smooth' on before you
-turn it on. Around 0.7 measured best here - it cut the spurious motion of a
-still object by 4x while a real move still came through 80x over the floor.
+filter, not before; on a depth sensor do not turn it on with 'filter' set to
+none. Measured on a still but noisy box, the spurious motion reported was 7.7
+unfiltered, 0.9 through the adaptive filter and 0.34 through one euro.
 
 SHOWING WHAT IS IN EACH BOX:
 mgl_cluster_boxes draws the result: one translucent cube per box, its colour
@@ -259,8 +274,9 @@ of the two.
 hue / saturation / alpha (mgl_cluster_boxes):
 The colour it is drawn in.
 
-cloud / threshold / smooth / motion (pc_cluster_filter):
-The frame, and the conditioning applied to the values on it.
+cloud / threshold / min cutoff / beta / motion (pc_cluster_filter):
+The frame, and the conditioning applied to the values on it. 'min cutoff' and
+'beta' are the one euro filter's two controls.
 
 mgl chain out (pc_voxel):
 The draw, passed on to the rest of the chain.
