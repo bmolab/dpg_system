@@ -126,6 +126,35 @@ than the count and has already thrown the useful information away. It is also
 worth knowing that persistence does nothing at all unless its threshold is
 above 1 - decay.
 
+MAKING A VOXEL EARN ITS PLACE:
+'points to appear' is a second, higher threshold that a voxel must clear to
+APPEAR, where 'min points' is only what it must hold to STAY. 0 is off. Try
+'min points' 3 with 'points to appear' 8.
+
+This is aimed at the noise that looks like one frame over the line and nothing
+the next. A voxel that has been quiet is expensive to create; one that keeps
+holding points earns its way down to 'min points' over 'settle' seconds
+(option, 0.25 by default) and is then cheap to keep.
+
+It is the answer to a problem raising 'min points' cannot solve, because a real
+surface at 6 m only puts about 9 points in a 5 cm voxel - a flat threshold high
+enough to reject speckle rejects the surface with it. Over 90 frames of a
+simulated room:
+
+  min points 3            99.3% of true voxels kept,  80,268 one-frame blinks
+  min points 8            72.2%                      117,913
+  appear 8, min points 3  98.4%                          179
+  the same, with the count filter in front               4
+
+Note the middle row: raising the flat threshold does not just cost you real
+voxels, it makes the blinking WORSE, because the count then chatters across a
+line it is closer to.
+
+What earns the threshold down is holding points, not being drawn - otherwise a
+weak but real voxel could never start. So a voxel steady at 5 points appears
+after about a quarter second, while one alternating 5 and 0 never does: at a
+50% duty it only gets half way down.
+
 GROUPING VOXELS INTO BOXES:
 'boxes (x,y,z)' divides the working volume into a coarser lattice - 8,8,8 for
 512 boxes - and sends the sum of the voxel weights in each one out of 'box
@@ -281,6 +310,10 @@ count cutoff (Hz) (pc_voxel):
 One Euro filter on each voxel's count before the threshold. 0 is off; 0.2 stops
 voxels flickering on the edge of 'min points' without lagging a real arrival.
 'count beta' (option) sets how far a fast change opens it up.
+
+points to appear (pc_voxel):
+What a voxel must hold to APPEAR, against 'min points' to STAY. 0 is off. A
+voxel that keeps holding points earns its way down over 'settle' seconds.
 
 boxes (x,y,z) (pc_voxel):
 Divide the volume into this many boxes per axis. 0 for none. Snaps the voxel
