@@ -1810,12 +1810,17 @@ class TableWidget(BasePropertyWidget):
     def _draw_widget(self):
         # The label is what a saved patch matches this inlet by (see
         # restore_properties); tables never draw theirs, so no ## is needed.
+        # Inside a node the content region is unbounded, so a table with no
+        # width of its own stretches without limit. Size it from the cells:
+        # each cell carries the theme's cell padding on both sides, plus the
+        # outer borders.
+        table_width = self.columns * (self.cell_width + 8) + 2
         with dpg.table(tag=self.uuid, label=self._label, header_row=False, user_data=self.node,
-                       policy=dpg.mvTable_SizingFixedFit,
+                       policy=dpg.mvTable_SizingFixedFit, width=table_width,
                        borders_innerH=True, borders_innerV=True,
                        borders_outerH=True, borders_outerV=True):
             for _ in range(self.columns):
-                dpg.add_table_column()
+                dpg.add_table_column(width_fixed=True, init_width_or_weight=self.cell_width)
             self.cell_uuids = []
             for i in range(self.rows):
                 row_uuids = []
