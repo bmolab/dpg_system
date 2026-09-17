@@ -750,6 +750,7 @@
     "pc_crop",
     "pc_voxel",
     "pc_info",
+    "pc_cluster_filter",
     "mgl_cluster_boxes"
   ],
   "_prompt_nodes": [

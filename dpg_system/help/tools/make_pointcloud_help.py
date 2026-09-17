@@ -117,6 +117,29 @@ per-voxel labels, per-box values, and the lattice geometry. Boxes are only the
 first way of grouping voxels; blobs, k-means and hand-painted regions would put
 the same thing on the frame, so anything reading it works with all of them.
 
+CLEANING THE BOX VALUES UP:
+pc_cluster_filter sits between pc_voxel and whatever reads the boxes, and
+conditions the per-box numbers. It changes nothing else on the frame, so you
+can put one in, or two, or none.
+
+'threshold' with 'gate' set to 'squeeze' subtracts the threshold from every box
+and floors at zero, so a box just over the line starts from zero instead of
+jumping; 'gate' zeroes what is under and passes the rest untouched. This is
+where you kill the floor of sensor noise.
+
+'smooth' is a per-box one-pole. 'knee' (option) makes it adaptive the way the
+C++ cBins filter is: a box whose value is barely moving gets smoothed harder
+than one that is moving fast, so idle noise averages away without smearing a
+real arrival. 'decay' bleeds a constant off every frame so a box does not rest
+on a residue.
+
+'motion' switches from the level to the CHANGE in the level - the C++
+dynamicBins - so a box lights up when something moves through it rather than
+when something is in it. Differencing amplifies noise, so it comes after the
+smoothing, not before; on a depth sensor you want some 'smooth' on before you
+turn it on. Around 0.7 measured best here - it cut the spurious motion of a
+still object by 4x while a real move still came through 80x over the floor.
+
 SHOWING WHAT IS IN EACH BOX:
 mgl_cluster_boxes draws the result: one translucent cube per box, its colour
 carrying that box's sum. Feed it the voxel cloud and put it on an mgl chain.
@@ -124,7 +147,21 @@ carrying that box's sum. Feed it the voxel cloud and put it on an mgl chain.
 The sum drives brightness, so an empty box vanishes and a busy one glows;
 'sensitivity' is the gain on that, and is the control you actually use - the
 raw sums depend on your voxel size, your crop and your sense setting, so wind
-it until the range of the room reads well and leave it.
+it until the range of the room reads well and leave it. 1.0 is roughly right
+for a room; the widget is scaled so that it is.
+
+THE FRAME IS WHERE THE DYNAMIC RANGE COMES FROM:
+Each box is drawn twice - a filled cube and its wireframe outline - off the
+same sum but at two gains. 'frame sensitivity' defaults to 4x 'sensitivity',
+so the outline saturates while the fill is still a quarter of the way up. The
+bottom of the range is carried by the frame lighting up, the top by the fill
+blooming behind it, and you read far more of the range than either could show
+alone. The C++ app does the same thing with boxGain and boxFrameGain.
+
+Wind 'frame sensitivity' up for a room where almost nothing is happening and
+you want the faintest presence to register; wind it down toward 'sensitivity'
+when everything is already bright and the outlines are just glare. 'show fill'
+and 'show frames' turn off either half.
 
 'color mode' decides the hue. 'uniform' gives every box the same hue and
 saturation, so the picture is purely intensity - what you want when you are
@@ -165,6 +202,7 @@ SYNTAX:
 pc_crop
 pc_voxel
 pc_info
+pc_cluster_filter
 mgl_cluster_boxes
 
 EXAMPLE:
@@ -214,8 +252,15 @@ voxel cloud (mgl_cluster_boxes):
 The frame from pc_voxel. It reads the boxes off the frame, so nothing else
 needs patching.
 
-sensitivity / hue / saturation / alpha (mgl_cluster_boxes):
-Gain on the sum, and the colour it is drawn in.
+sensitivity / frame sensitivity (mgl_cluster_boxes):
+Gain on the sum for the fill and for the outline. The outline wants the higher
+of the two.
+
+hue / saturation / alpha (mgl_cluster_boxes):
+The colour it is drawn in.
+
+cloud / threshold / smooth / motion (pc_cluster_filter):
+The frame, and the conditioning applied to the values on it.
 
 mgl chain out (pc_voxel):
 The draw, passed on to the rest of the chain.

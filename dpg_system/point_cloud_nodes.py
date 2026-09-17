@@ -20,6 +20,7 @@ Nodes:
   pc_background  static background subtraction (learn N frames, then remove)
   pc_denoise     density + temporal-persistence speckle/flicker removal
   pc_info        report point count / bounds / centroid (bounds-tuning aid)
+  pc_cluster_filter  gate / smooth / difference the per-cluster values
 
 Cloud-frame convention: a frame on the wire is either a raw (N, 3) array or a
 dict {'point_cloud': pts, 'crop': (min, max), ...}. pc_crop attaches its crop
@@ -88,6 +89,7 @@ def register_point_cloud_nodes():
     Node.app.register_node('pc_background', PointCloudBackgroundNode.factory)
     Node.app.register_node('pc_denoise', PointCloudDenoiseNode.factory)
     Node.app.register_node('pc_info', PointCloudInfoNode.factory)
+    Node.app.register_node('pc_cluster_filter', PointCloudClusterFilterNode.factory)
 
 
 class _VoxelGrid:
@@ -1076,3 +1078,134 @@ class PointCloudInfoNode(PointCloudNode):
         self.max_output.send(pts.max(axis=0).astype(np.float32))
         self.min_output.send(pts.min(axis=0).astype(np.float32))
         self.count_output.send(int(pts.shape[0]))
+
+class PointCloudClusterFilterNode(PointCloudNode):
+    """Condition the per-cluster values on a cloud frame, in place.
+
+    Everything after pc_voxel's bincount is a (K,) signal per frame, and none
+    of it is specific to voxels — which is why it lives here rather than in
+    pc_voxel. Put one of these between pc_voxel and a display or an OSC stage,
+    or chain two, or none. It will serve blobs and painted regions unchanged
+    once those exist, because it only touches clusters['values'].
+
+    The chain is the C++ cBins one, in its order, since the order matters:
+
+      gate / squeeze   ThresholdMotions and SqueezeMotions. 'gate' zeroes
+                       anything at or below the threshold and passes the rest
+                       untouched; 'squeeze' subtracts the threshold instead, so
+                       a box just over it starts from zero rather than jumping.
+      smooth           AdaptiveBinFilter: a one-pole per cluster whose time
+                       constant collapses when the value moves fast. 'knee' is
+                       the change at which smoothing is fully released, so
+                       sensor noise is averaged away while a real arrival is
+                       not smeared. 'decay' bleeds a constant off every frame,
+                       which stops a cluster resting on a residue.
+      motion           The C++ dynamicBins: the frame-to-frame change rather
+                       than the level, |v - v_last|. Differencing amplifies
+                       noise, which is why it comes after the smoothing rather
+                       than before it — the same order cBins uses.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PointCloudClusterFilterNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('cloud', triggers_execution=True)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float',
+                                              default_value=0.0, min=0.0)
+        self.threshold_input.widget.speed = 0.1
+        self.smooth_input = self.add_input('smooth', widget_type='drag_float',
+                                           default_value=0.0, min=0.0, max=0.999)
+        self.smooth_input.widget.speed = 0.005
+        self.motion_input = self.add_input('motion', widget_type='checkbox',
+                                           default_value=False)
+        self.output = self.add_output('cloud out')
+        self.values_output = self.add_output('values')
+        self.gate_option = self.add_option('gate', widget_type='combo', default_value='squeeze')
+        self.gate_option.widget.combo_items = ['none', 'gate', 'squeeze']
+        # cBins' filterThreshold / filterThresholdRatio. The knee is in the
+        # units of the values themselves, so it is scene-dependent; 0 makes the
+        # smoothing a plain one-pole at 'smooth'.
+        self.knee_option = self.add_option('knee', widget_type='drag_float',
+                                           default_value=0.0, min=0.0)
+        self.knee_option.widget.speed = 0.1
+        self.decay_option = self.add_option('decay', widget_type='drag_float',
+                                            default_value=0.0, min=0.0)
+        self.decay_option.widget.speed = 0.005
+        self._filtered = None    # (K,) smoothing state
+        self._last = None        # (K,) previous value, for motion
+        self._state_size = 0
+
+    def _reset_state(self, k):
+        """Drop the per-cluster history when the lattice changes shape — a new
+        box count means cluster 7 is a different piece of the room."""
+        if self._state_size != k:
+            self._filtered = np.zeros(k, dtype=np.float32)
+            self._last = np.zeros(k, dtype=np.float32)
+            self._state_size = k
+
+    def _process(self, values):
+        self._reset_state(values.size)
+        out = values
+
+        threshold = max(0.0, float(self.threshold_input()))
+        gate = self.gate_option()
+        if threshold > 0.0 and gate != 'none':
+            if gate == 'squeeze':
+                out = np.maximum(out - threshold, 0.0)
+            else:
+                out = np.where(out > threshold, out, 0.0)
+
+        smooth = min(0.999, max(0.0, float(self.smooth_input())))
+        knee = max(0.0, float(self.knee_option()))
+        decay = max(0.0, float(self.decay_option()))
+        if smooth > 0.0 or decay > 0.0:
+            if knee > 0.0:
+                # Fully released once the change reaches the knee; sqrt so the
+                # release comes on early rather than only at the top.
+                change = np.clip(np.sqrt(np.abs(out - self._filtered) / knee), 0.0, 1.0)
+                degree = np.maximum(1.0 - change, smooth)
+            else:
+                degree = smooth
+            self._filtered = np.maximum(
+                self._filtered * degree + out * (1.0 - degree) - knee * decay, 0.0
+            ).astype(np.float32)
+            out = self._filtered
+
+        if self.motion_input():
+            motion = np.abs(out - self._last).astype(np.float32)
+            self._last = np.array(out, dtype=np.float32, copy=True)
+            out = motion
+        return np.ascontiguousarray(out, dtype=np.float32)
+
+    def execute(self):
+        raw = self.input()
+        pts, meta = unwrap_cloud(raw)
+        clusters = meta.get(CLUSTER_KEY)
+        if not isinstance(clusters, dict) or clusters.get('values') is None:
+            # Nothing to condition: pass the frame on untouched rather than
+            # swallowing it, so the node can sit in a chain before the boxes
+            # are switched on.
+            self.output.send(raw)
+            return
+        values = np.asarray(clusters['values'], dtype=np.float32).reshape(-1)
+        out_values = self._process(values)
+
+        clusters = dict(clusters)
+        clusters['values'] = out_values
+        meta = dict(meta)
+        meta[CLUSTER_KEY] = clusters
+        out = dict(meta)
+        out[CLOUD_KEY] = pts
+        self.output.send(out)
+
+        shape = clusters.get('shape')
+        if shape is not None and out_values.size == int(np.prod(shape)):
+            bx, by, bz = (int(v) for v in shape)
+            # Same unpack as pc_voxel's: linear index is x + bx*y + bx*by*z.
+            self.values_output.send(np.ascontiguousarray(
+                out_values.reshape(bz, by, bx).transpose(2, 1, 0)))
+        else:
+            self.values_output.send(out_values)

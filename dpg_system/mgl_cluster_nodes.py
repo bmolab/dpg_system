@@ -66,6 +66,18 @@ _CUBE_INDICES = np.array([
     1, 3, 5,  3, 7, 5,      # +x
 ], dtype=np.int32)
 
+# The same eight corners as twelve edges, for the frame pass.
+_CUBE_EDGE_INDICES = np.array([(i, i ^ bit) for bit in (1, 2, 4)
+                               for i in range(8) if not (i & bit)],
+                              dtype=np.int32).reshape(-1)
+
+# 'sensitivity' 1.0 means this much gain on the raw sum. The sums are counts of
+# distance-compensated voxel weights, so their natural scale is in the tens or
+# hundreds and a raw gain of 1 buries every box at full brightness. This puts a
+# usable setting at 1.0 on the widget — it is the value arrived at by hand
+# before the scale existed.
+SENSITIVITY_SCALE = 0.015
+
 
 class MGLClusterBoxesNode(MGLNode):
     """One translucent cube per cluster, coloured by that cluster's value.
@@ -90,15 +102,22 @@ class MGLClusterBoxesNode(MGLNode):
         uniform mat4 M;
         uniform mat4 V;
         uniform mat4 P;
+        uniform bool frame_pass;
+        uniform float alpha;
         in vec3 in_position;
         in vec3 inst_centre;
         in vec3 inst_size;
-        in vec4 inst_color;
+        in vec3 inst_rgb;        // the hue/saturation at full value
+        in vec2 inst_levels;     // (fill, frame) intensity 0..1
         out vec4 v_color;
         void main() {
             vec3 world = inst_centre + in_position * inst_size;
             gl_Position = P * V * M * vec4(world, 1.0);
-            v_color = inst_color;
+            // hsv_to_rgb is linear in v, so scaling the full-value colour here
+            // is the same colour the CPU would have produced at this level —
+            // and lets one instance buffer serve both passes.
+            float level = frame_pass ? inst_levels.y : inst_levels.x;
+            v_color = vec4(inst_rgb * level, level * alpha);
         }
     '''
     _frag_src = '''
@@ -123,6 +142,16 @@ class MGLClusterBoxesNode(MGLNode):
         self.sensitivity_input = self.add_input('sensitivity', widget_type='drag_float',
                                                 default_value=1.0, min=0.0)
         self.sensitivity_input.widget.speed = 0.01
+        # The frame is driven off the same sum at its own, higher gain, which
+        # is what buys the visual dynamic range: the outline saturates while
+        # the fill is still coming up off zero, so the bottom of the range is
+        # legible and the fill carries the top. The C++ app does exactly this
+        # with boxGain and boxFrameGain rather than a hard handoff, and 4x is
+        # about the ratio it is usually run at.
+        self.frame_sensitivity_input = self.add_input('frame sensitivity',
+                                                      widget_type='drag_float',
+                                                      default_value=4.0, min=0.0)
+        self.frame_sensitivity_input.widget.speed = 0.01
         self.hue_input = self.add_input('hue', widget_type='drag_float',
                                         default_value=0.33, min=0.0, max=1.0)
         self.hue_input.widget.speed = 0.002
@@ -132,6 +161,10 @@ class MGLClusterBoxesNode(MGLNode):
         self.alpha_input = self.add_input('alpha', widget_type='drag_float',
                                           default_value=1.0, min=0.0, max=1.0)
         self.alpha_input.widget.speed = 0.01
+        self.show_fill_option = self.add_option('show fill', widget_type='checkbox',
+                                                default_value=True)
+        self.show_frames_option = self.add_option('show frames', widget_type='checkbox',
+                                                  default_value=True)
         self.mode_option = self.add_option('color mode', widget_type='combo',
                                            default_value='uniform')
         self.mode_option.widget.combo_items = ['uniform', 'per box']
@@ -159,8 +192,10 @@ class MGLClusterBoxesNode(MGLNode):
         self._prog = None
         self._cube_vbo = None
         self._cube_ibo = None
+        self._edge_ibo = None
         self._inst_vbo = None
-        self._vao = None
+        self._fill_vao = None
+        self._frame_vao = None
         self._inst_capacity = 0
 
     def execute(self):
@@ -194,9 +229,11 @@ class MGLClusterBoxesNode(MGLNode):
         return self._centres
 
     def _instance_data(self):
-        """(N, 10) float32 of centre, size and rgba for the boxes worth drawing,
-        or None. Boxes at or below the threshold are dropped rather than drawn
-        transparent — with a fine subdivision most boxes are empty most of the
+        """(N, 11) float32 — centre, size, full-value rgb, and the fill and
+        frame levels — for the boxes worth drawing, or None.
+
+        Boxes below the threshold on both levels are dropped rather than drawn
+        transparent: with a fine subdivision most boxes are empty most of the
         time, and they cost nothing if they never reach the GPU."""
         frame = self.frame
         if frame is None:
@@ -206,13 +243,20 @@ class MGLClusterBoxesNode(MGLNode):
         if values.size != n_boxes:
             return None
 
-        sensitivity = max(0.0, float(self.sensitivity_input()))
-        intensity = np.clip(values * sensitivity, 0.0, 1.0)
-        keep = np.nonzero(intensity > max(0.0, float(self.threshold_option())))[0]
+        gain = max(0.0, float(self.sensitivity_input())) * SENSITIVITY_SCALE
+        frame_gain = max(0.0, float(self.frame_sensitivity_input())) * SENSITIVITY_SCALE
+        fill_level = np.clip(values * gain, 0.0, 1.0)
+        frame_level = np.clip(values * frame_gain, 0.0, 1.0)
+
+        threshold = max(0.0, float(self.threshold_option()))
+        if not self.show_fill_option():
+            fill_level = np.zeros_like(fill_level)
+        if not self.show_frames_option():
+            frame_level = np.zeros_like(frame_level)
+        keep = np.nonzero(np.maximum(fill_level, frame_level) > threshold)[0]
         if keep.size == 0:
             return None
 
-        v = intensity[keep]
         saturation = float(self.saturation_input())
         hue = float(self.hue_input())
         if self.mode_option() == 'per box':
@@ -220,11 +264,14 @@ class MGLClusterBoxesNode(MGLNode):
         else:
             hues = np.full(keep.size, hue, dtype=np.float32)
 
-        inst = np.empty((keep.size, 10), dtype=np.float32)
+        inst = np.empty((keep.size, 11), dtype=np.float32)
         inst[:, 0:3] = self._box_centres(shape, origin, cell)[keep]
         inst[:, 3:6] = cell * float(self.fill_option())
-        inst[:, 6:9] = hsv_to_rgb(hues, saturation, v)
-        inst[:, 9] = v * float(self.alpha_input())
+        # Full value here; the shader scales by each pass's level, which is the
+        # same result because hsv_to_rgb is linear in v.
+        inst[:, 6:9] = hsv_to_rgb(hues, saturation, np.ones(keep.size, dtype=np.float32))
+        inst[:, 9] = fill_level[keep]
+        inst[:, 10] = frame_level[keep]
         return inst
 
     def _ensure_gpu(self, inner_ctx, instances):
@@ -234,19 +281,24 @@ class MGLClusterBoxesNode(MGLNode):
         if self._cube_vbo is None:
             self._cube_vbo = inner_ctx.buffer(np.ascontiguousarray(_CUBE_CORNERS).tobytes())
             self._cube_ibo = inner_ctx.buffer(_CUBE_INDICES.tobytes())
-            self._vao = None
+            self._edge_ibo = inner_ctx.buffer(_CUBE_EDGE_INDICES.tobytes())
+            self._fill_vao = self._frame_vao = None
         if self._inst_vbo is None or self._inst_capacity < instances:
             self.ctx.defer_release(self._inst_vbo)
             # Headroom, so a cloud that breathes across a box boundary does not
             # reallocate every frame.
             self._inst_capacity = max(instances, 256)
-            self._inst_vbo = inner_ctx.buffer(reserve=self._inst_capacity * 10 * 4)
-            self._vao = None
-        if self._vao is None:
-            self._vao = inner_ctx.vertex_array(self._prog, [
-                (self._cube_vbo, '3f', 'in_position'),
-                (self._inst_vbo, '3f 3f 4f/i', 'inst_centre', 'inst_size', 'inst_color'),
-            ], self._cube_ibo)
+            self._inst_vbo = inner_ctx.buffer(reserve=self._inst_capacity * 11 * 4)
+            self._fill_vao = self._frame_vao = None
+        if self._fill_vao is None:
+            # Two vertex arrays over one instance buffer: the same cube corners
+            # and the same per-box data, read as triangles for the fill and as
+            # edges for the frame.
+            content = [(self._cube_vbo, '3f', 'in_position'),
+                       (self._inst_vbo, '3f 3f 3f 2f/i', 'inst_centre', 'inst_size',
+                        'inst_rgb', 'inst_levels')]
+            self._fill_vao = inner_ctx.vertex_array(self._prog, content, self._cube_ibo)
+            self._frame_vao = inner_ctx.vertex_array(self._prog, content, self._edge_ibo)
 
     def draw(self):
         if self.ctx is None:
@@ -254,14 +306,16 @@ class MGLClusterBoxesNode(MGLNode):
         inst = self._instance_data()
         if inst is None:
             return
+        instances = inst.shape[0]
         inner_ctx = self.ctx.ctx
-        self._ensure_gpu(inner_ctx, inst.shape[0])
+        self._ensure_gpu(inner_ctx, instances)
         self._inst_vbo.write(np.ascontiguousarray(inst).tobytes())
 
         prog = self._prog
         prog['M'].write(self.ctx.get_model_matrix().astype('f4').T.tobytes())
         prog['V'].write(self.ctx.view_matrix.astype('f4').tobytes())
         prog['P'].write(self.ctx.projection_matrix.astype('f4').tobytes())
+        prog['alpha'].value = float(self.alpha_input())
 
         additive = self.blend_option() == 'additive'
         fbo = inner_ctx.fbo
@@ -273,7 +327,13 @@ class MGLClusterBoxesNode(MGLNode):
         if additive:
             inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE)
         fbo.depth_mask = False
-        self._vao.render(moderngl.TRIANGLES, instances=inst.shape[0])
+        if self.show_fill_option():
+            prog['frame_pass'].value = False
+            self._fill_vao.render(moderngl.TRIANGLES, instances=instances)
+        if self.show_frames_option():
+            # After the fill, so the outline reads on top of it.
+            prog['frame_pass'].value = True
+            self._frame_vao.render(moderngl.LINES, instances=instances)
         fbo.depth_mask = True
         if additive:
             inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
@@ -284,11 +344,14 @@ class MGLClusterBoxesNode(MGLNode):
         # its next render block.
         ctx = MGLContext._instance
         if ctx is not None:
-            ctx.defer_release(self._vao, self._cube_vbo, self._cube_ibo,
-                              self._inst_vbo, self._prog)
-        self._vao = None
+            ctx.defer_release(self._fill_vao, self._frame_vao, self._cube_vbo,
+                              self._cube_ibo, self._edge_ibo, self._inst_vbo,
+                              self._prog)
+        self._fill_vao = None
+        self._frame_vao = None
         self._cube_vbo = None
         self._cube_ibo = None
+        self._edge_ibo = None
         self._inst_vbo = None
         self._prog = None
         self._inst_capacity = 0
