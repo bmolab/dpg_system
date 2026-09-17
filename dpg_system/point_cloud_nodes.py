@@ -410,6 +410,13 @@ class VolumeGridDrawMixin:
                                                   default_value=[0.0, 255.0, 1.086, 118.996])
         self.point_size_option = self.add_option('point size', widget_type='drag_float',
                                                  default_value=3.0, min=1.0)
+        # The outer box on its own colour. With a fine subdivision the lattice
+        # reads as a haze and the extent of the volume is the thing you lose;
+        # this puts it back without brightening every interior line.
+        self.show_bounds_option = self.add_option('show bounds', widget_type='checkbox',
+                                                  default_value=True)
+        self.bounds_color_option = self.add_option('bounds color', widget_type='color_picker',
+                                                   default_value=[255.0, 150.0, 0.0, 120.0])
         self._grid_prog = None
         self._grid_line_vbo = None
         self._grid_line_vao = None
@@ -417,6 +424,9 @@ class VolumeGridDrawMixin:
         self._grid_point_vbo = None
         self._grid_point_vao = None
         self._grid_point_verts = 0
+        self._grid_bounds_vbo = None
+        self._grid_bounds_vao = None
+        self._grid_bounds_verts = 0
         self._grid_key = None
 
     def _grid_divisions(self):
@@ -438,7 +448,8 @@ class VolumeGridDrawMixin:
             message = message[0] if message and isinstance(message[0], str) else None
         if message != 'draw':
             return
-        if self.show_lines_option() or self.show_points_option():
+        if (self.show_lines_option() or self.show_points_option()
+                or self.show_bounds_option()):
             try:
                 self._draw_volume()
             except Exception as e:
@@ -501,13 +512,20 @@ class VolumeGridDrawMixin:
             prog['round_points'].value = True
             prog['point_size'].value = max(1.0, float(self.point_size_option()))
             self._grid_point_vao.render(mode=moderngl.POINTS)
+        if self.show_bounds_option() and self._grid_bounds_verts:
+            # Last, so the outline sits over the lattice rather than under it.
+            prog['color'].value = self._rgba(self.bounds_color_option)
+            prog['round_points'].value = False
+            self._grid_bounds_vao.render(mode=moderngl.LINES)
 
     def _build_lattice(self, ctx, inner_ctx, lo, hi, divisions):
         """(Re)fill the line and point buffers for this volume. The vertex
         count changes with the subdivision, so a buffer is reallocated when its
         shape changes and only rewritten when the volume merely moves."""
         for verts, attr in ((_lattice_lines(lo, hi, divisions).reshape(-1, 3), 'line'),
-                            (_lattice_vertices(lo, hi, divisions), 'point')):
+                            (_lattice_vertices(lo, hi, divisions), 'point'),
+                            # (1, 1, 1) degenerates to the twelve outer edges.
+                            (_lattice_lines(lo, hi, (1, 1, 1)).reshape(-1, 3), 'bounds')):
             verts = np.ascontiguousarray(verts, dtype=np.float32)
             count = verts.shape[0]
             if count != getattr(self, f'_grid_{attr}_verts'):
@@ -529,10 +547,13 @@ class VolumeGridDrawMixin:
         if ctx is not None:
             ctx.defer_release(self._grid_line_vao, self._grid_line_vbo,
                               self._grid_point_vao, self._grid_point_vbo,
+                              self._grid_bounds_vao, self._grid_bounds_vbo,
                               self._grid_prog)
         self._grid_line_vao = self._grid_line_vbo = None
         self._grid_point_vao = self._grid_point_vbo = None
+        self._grid_bounds_vao = self._grid_bounds_vbo = None
         self._grid_line_verts = self._grid_point_verts = 0
+        self._grid_bounds_verts = 0
         self._grid_prog = None
         self._grid_key = None
         super().custom_cleanup()
