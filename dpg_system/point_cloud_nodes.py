@@ -789,18 +789,29 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         lin, valid = self.grid.index(pts)
         lin_v = lin[valid]
         empty = np.empty((0,), dtype=np.int64)
-        if lin_v.size == 0:
-            self._send(self.output, np.empty((0, 3), dtype=np.float32))
+
+        def send_empty():
+            # An empty result still describes the same grid, so it carries the
+            # same metadata. Dropping 'weights' and 'voxel_size' here is not
+            # harmless: a renderer reads those to decide how to size its points
+            # at all, so an empty frame used to switch mgl_point_cloud from
+            # weighted, voxel-sized sprites to unweighted ones at its fallback
+            # widget size — which is what a room with nobody in it produced,
+            # every frame that nothing reached 'min points'.
+            self._send(self.output, np.empty((0, 3), dtype=np.float32),
+                       voxel_size=self.grid.voxel_size_meta(),
+                       weights=np.empty((0,), dtype=np.float32))
             self.count_output.send(empty)
             self._cluster_boxes(empty, None)
+
+        if lin_v.size == 0:
+            send_empty()
             return
         counts = np.bincount(lin_v, minlength=self.grid.ncells)
         min_points = max(1, int(self.min_points_property()))
         occupied = np.nonzero(counts >= min_points)[0]
         if occupied.size == 0:
-            self._send(self.output, np.empty((0, 3), dtype=np.float32))
-            self.count_output.send(empty)
-            self._cluster_boxes(empty, None)
+            send_empty()
             return
 
         if self.reduce_option() == 'centroid':

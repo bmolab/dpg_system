@@ -2626,6 +2626,25 @@ class MGLPointCloudNode(MGLShapeNode):
             points, weights, voxel_size = frame
             count = points.shape[0]
 
+            if count == 0:
+                # An empty cloud has to clear the view, not leave the last one
+                # on the GPU. render_geometry() declines to build 0 vertices,
+                # so without this the previous frame's points keep being drawn
+                # — and drawn under THIS frame's uniforms. Dropping the program
+                # as well is what stops them: MGLShapeNode.draw returns on a
+                # null prog, and calls vao.render() unguarded otherwise.
+                if self.vao is not None:
+                    self.vao.release()
+                if self.vbo is not None:
+                    self.vbo.release()
+                if self.ibo is not None:
+                    self.ibo.release()
+                self.vao = self.vbo = self.ibo = self.prog = None
+                self.weights_data = weights
+                self.voxel_size_m = voxel_size
+                self.built_frame = frame
+                return
+
             # Dummy Normals (0, 1, 0)
             normals = np.tile([0.0, 1.0, 0.0], (count, 1)).astype(np.float32)
 
