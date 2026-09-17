@@ -4606,8 +4606,12 @@ class MGLOrbitCameraNode(MGLNode):
                 speed = self.drag_speed()
                 dx = x - self._drag_last[0]
                 dy = y - self._drag_last[1]
-                self.yaw.set(self.yaw() + dx * speed)
-                elev = self.elevation() - dy * speed
+                # turntable grab: the scene follows the cursor, so the eye
+                # orbits against it. Dragging right swings the subject right
+                # (camera left, yaw down); dragging down tips its top toward
+                # the viewer (camera up, elevation up).
+                self.yaw.set(self.yaw() - dx * speed)
+                elev = self.elevation() + dy * speed
                 self.elevation.set(max(-89.0, min(89.0, elev)))
             self._drag_last = (x, y)
         elif kind == 'mouse_down' and len(event) >= 4:
