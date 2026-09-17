@@ -178,7 +178,7 @@
                 },
                 "7": {
                     "name": "number format",
-                    "value": "%.0f",
+                    "value": "%.2f",
                     "value_type": "str"
                 }
             }
