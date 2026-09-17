@@ -2515,10 +2515,19 @@ class MGLPointCloudNode(MGLShapeNode):
         self.voxel_size_draw_input = self.add_input('draw at voxel size', widget_type='checkbox',
                                                     default_value=True)
         self.end_initialization()
-        self.points_data = None
-        self.weights_data = None
+        # Points, weights and voxel size travel as ONE immutable tuple. The
+        # cloud arrives on the sensor thread while draw() runs on the main one,
+        # and holding them in three attributes let draw() pair this frame's
+        # points with the last frame's weights: where the counts happened to
+        # match, a near point inherited a far point's weight and rendered at
+        # full size, and because the build then cleared self.dirty the bad
+        # geometry stayed on screen until the next update. Publishing one
+        # reference makes the swap atomic - the same thing MGLLineArrayNode
+        # does with its own frame.
+        self.frame = None
+        self.built_frame = None
+        self.weights_data = None    # what the last build actually used
         self.voxel_size_m = None
-        self.dirty = False
 
     def custom_create(self, from_file):
         if not from_file:
@@ -2556,46 +2565,54 @@ class MGLPointCloudNode(MGLShapeNode):
                     data = data.reshape(-1, 3)
 
                 if data.ndim == 2 and data.shape[1] == 3:
-                     self.points_data = data
-                     self.weights_data = None
-                     if weights is not None:
-                         w = np.asarray(weights, dtype=np.float32).reshape(-1)
-                         if w.size == data.shape[0]:
-                             self.weights_data = np.clip(w, 0.0, 1.0)
-                     self.voxel_size_m = None
-                     if voxel_size is not None:
-                         try:
-                             v = np.asarray(voxel_size, dtype=np.float32).reshape(-1)
-                             if v.size in (1, 3) and np.all(v > 0):
-                                 # sprites are square, so anisotropic voxels
-                                 # draw at the mean of their axes
-                                 self.voxel_size_m = float(v.mean())
-                         except (TypeError, ValueError):
-                             pass
-                     self.dirty = True
+                    w = None
+                    if weights is not None:
+                        w = np.asarray(weights, dtype=np.float32).reshape(-1)
+                        # A weight per point or none at all: a partial array
+                        # would silently mis-size the points it did not cover.
+                        w = np.clip(w, 0.0, 1.0) if w.size == data.shape[0] else None
+                    vs = None
+                    if voxel_size is not None:
+                        try:
+                            v = np.asarray(voxel_size, dtype=np.float32).reshape(-1)
+                            if v.size in (1, 3) and np.all(v > 0):
+                                # sprites are square, so anisotropic voxels
+                                # draw at the mean of their axes
+                                vs = float(v.mean())
+                        except (TypeError, ValueError):
+                            pass
+                    # Single assignment, last: draw() either sees the whole of
+                    # the previous frame or the whole of this one.
+                    self.frame = (data, w, vs)
 
         super().execute()
 
     def draw(self):
-        if self.ctx and self.dirty and self.points_data is not None:
-            # Prepare interleaved data [x,y,z, nx,ny,nz, u,v]
-            count = self.points_data.shape[0]
+        # Taken once. Everything below works off these locals, so a cloud
+        # arriving mid-draw cannot change the geometry out from under it.
+        frame = self.frame
+        if self.ctx and frame is not None and frame is not self.built_frame:
+            points, weights, voxel_size = frame
+            count = points.shape[0]
 
             # Dummy Normals (0, 1, 0)
             normals = np.tile([0.0, 1.0, 0.0], (count, 1)).astype(np.float32)
 
             # UVs: u carries the per-point weight for the shader (v unused)
             uvs = np.zeros((count, 2), dtype=np.float32)
-            if self.weights_data is not None and self.weights_data.size == count:
-                uvs[:, 0] = self.weights_data
+            if weights is not None:
+                uvs[:, 0] = weights
 
-            # Combine
-            # [N, 8]
-            vertices = np.hstack([self.points_data, normals, uvs]).flatten().astype(np.float32)
+            # [N, 8] interleaved [x,y,z, nx,ny,nz, u,v]
+            vertices = np.hstack([points, normals, uvs]).flatten().astype(np.float32)
 
-            # Update Geometry
             self.render_geometry(vertices, indices=None)
-            self.dirty = False
+            # Both describe the geometry now on the GPU, so the point size and
+            # the weight mode can never be read off a different frame than the
+            # buffer they are applied to.
+            self.weights_data = weights
+            self.voxel_size_m = voxel_size
+            self.built_frame = frame
 
         self._point_weight_flags = (self.WEIGHT_MODE_FLAGS.get(self.weights_input(), 0)
                                     if self.weights_data is not None else 0)
