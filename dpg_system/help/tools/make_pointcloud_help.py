@@ -91,26 +91,36 @@ default squares the distance before weighting. It uses radial distance rather
 than depth, so it survives levelling and yaw.
 
 STOPPING VOXELS FLICKERING:
-'count smoothing (Hz)' low-passes each voxel's point count before 'min points'
-is applied to it. 0 is off, which is the default; 1-2 Hz is the useful range.
+'count hold (s)' holds each voxel's count UP as it falls, and 'min points' is
+applied to the held value. 0 is off, which is the default; 0.1 s is a good
+starting point.
 
-The reason it helps is that thresholding a RAW count makes a voxel blink every
-time the count crosses the line, and within a point or two of the line the
-count is mostly sensor noise. Smooth the count first and the threshold gets
-hysteresis: a voxel whose raw count alternates 1, 6, 1, 6 against min points 3
-blinks 24 times in 25 frames, and stops dead at 1 Hz - while a voxel whose
-count averages BELOW the threshold correctly stays off instead of blinking on.
+Thresholding a raw count makes a voxel blink whenever the count crosses the
+line, and within a point or two of the line the count is mostly sensor noise.
+Holding the count across those gaps keeps the voxel lit through them: a voxel
+whose raw count alternates 1, 6, 1, 6 against min points 3 blinks 24 times in
+25 frames and stops dead at 0.1 s.
 
-It is worth knowing this is not the same as pc_denoise's 'persistence', which
-smooths the on/off flag rather than the count and so has already thrown the
-useful information away. Measured against a noiseless reference on a simulated
-wall plus a walking figure: no filter 85 spurious flickers a frame,
-pc_denoise's persistence 37, this 7.
+It only ever ADDS. Rising is instant - a voxel lights on the very frame its
+points arrive, at any hold setting - and only the fall is slowed. That is
+deliberate: a symmetric smoothing approaches the true count from below, so a
+voxel needs several frames to climb past 'min points', and a moving body only
+occupies one for two or three. It deletes exactly the content you care about
+while leaving static furniture untouched. This cannot.
 
-The cutoff is in Hz against the measured frame interval, so the amount of
-smoothing does not change if the capture rate does. It costs about 2 ms a frame
-on a busy cloud and nothing on a quiet one - only voxels holding points, or
-still carrying a value, are touched, never the whole grid.
+What it costs instead is a trail. Measured on a figure crossing the room, a
+hold of 0.1 s leaves about 45% more voxels lit than the raw cloud and 0.5 s
+about three times as many - so wind it up until the flicker stops and no
+further.
+
+The number is the release time constant in real seconds, measured against the
+frame interval: set 0.3 and a voxel lingers 0.3 s after its points stop,
+whatever the capture rate is doing.
+
+This is not pc_denoise's 'persistence', which smooths the on/off flag rather
+than the count and has already thrown the useful information away. It is also
+worth knowing that persistence does nothing at all unless its threshold is
+above 1 - decay.
 
 GROUPING VOXELS INTO BOXES:
 'boxes (x,y,z)' divides the working volume into a coarser lattice - 8,8,8 for
@@ -263,9 +273,10 @@ The grid resolution. The most consequential number here.
 min points (pc_voxel):
 The density floor - voxels holding fewer points than this are dropped.
 
-count smoothing (Hz) (pc_voxel):
-Low-pass on each voxel's count before the threshold. 0 is off, 1-2 Hz stops
-voxels flickering on the edge of 'min points'.
+count hold (s) (pc_voxel):
+How long a voxel's count lingers after its points stop. 0 is off, 0.1 s stops
+voxels flickering on the edge of 'min points'. Rise is instant, so it never
+removes or delays anything.
 
 boxes (x,y,z) (pc_voxel):
 Divide the volume into this many boxes per axis. 0 for none. Snaps the voxel

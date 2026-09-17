@@ -674,13 +674,13 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         self.sense_property.widget.speed = 0.01
         self.min_points_property = self.add_property('min points', widget_type='drag_int',
                                                      default_value=1, min=1)
-        # Low-pass on the per-voxel count, in Hz against the measured frame
-        # interval. 0 is off and is the default, since it changes what every
-        # existing patch sends; 1-2 Hz is the useful range.
-        self.count_smooth_property = self.add_property('count smoothing (Hz)',
-                                                       widget_type='drag_float',
-                                                       default_value=0.0, min=0.0)
-        self.count_smooth_property.widget.speed = 0.05
+        # How long a voxel's count lingers after the points stop arriving, in
+        # seconds. 0 is off. Rise is instant, so this can only ever hold a
+        # voxel on for longer - it never delays one or removes one.
+        self.count_hold_property = self.add_property('count hold (s)',
+                                                     widget_type='drag_float',
+                                                     default_value=0.0, min=0.0)
+        self.count_hold_property.widget.speed = 0.005
         # 0 on any axis leaves the cloud unsubdivided; the voxel size is then
         # taken as typed rather than snapped. A drag_float_n shown as whole
         # numbers — there is no integer row widget, and the bounds vectors
@@ -778,35 +778,37 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
                 self._warned_large = True
             return False
 
-    def _smooth_counts(self, counts):
-        """One-pole on the per-voxel count, returning (indices, smoothed).
+    def _hold_counts(self, counts):
+        """Hold each voxel's count up as it falls, returning (indices, held).
 
-        Thresholding a raw count makes a voxel blink whenever the count crosses
-        'min points', and within a point or two of the threshold the count is
-        mostly sensor noise, so it blinks every frame. Smoothing the count and
-        thresholding that instead gives occupancy the hysteresis it wants: a
-        voxel whose raw count alternates 2, 3, 2, 3 stops flickering. Measured
-        against a noiseless reference on a simulated wall plus a walking
-        figure, this cut spurious voxel flicker from 85 per frame to 7, where
-        the same idea applied to binary occupancy (pc_denoise's persistence)
-        only reached 37 — smoothing a count carries information that smoothing
-        an on/off flag has already thrown away.
+        Asymmetric on purpose. A symmetric low-pass approaches the true count
+        from below, so a voxel needs several frames to climb past 'min points'
+        — and a moving body only occupies a given voxel for two or three. It
+        therefore deletes exactly the content you care about while leaving
+        static furniture untouched, which is subtractive in a way no amount of
+        tuning fixes. Rising is instant here; only the fall is slowed.
+
+        What that buys is still the thing worth having. Thresholding a raw
+        count makes a voxel blink whenever the count crosses the line, and
+        within a point or two of the line the count is mostly sensor noise.
+        Holding the count up across the gaps keeps the voxel lit through them,
+        without ever costing a frame on the way in.
+
+        ``hold`` is the release time constant in seconds — the time to fall to
+        about a third — measured against the real frame interval, so it does
+        not change meaning when the capture rate does.
 
         Run over the union of the voxels holding points this frame and those
-        still carrying state, never the whole grid: a 6 m crop at 5 cm is 1.7M
-        cells, of which a live cloud occupies a few thousand. Dense costs
-        3.6 ms a frame to filter mostly zeros; this costs about 0.01 ms.
-
-        Cutoff is in Hz against the measured frame interval, so the amount of
-        smoothing does not change when the capture rate does.
+        still carrying a value, never the whole grid: a 6 m crop at 5 cm is
+        1.7M cells, of which a live cloud occupies a few thousand.
         """
-        cutoff = max(0.0, float(self.count_smooth_property()))
-        if cutoff <= 0.0:
+        hold = max(0.0, float(self.count_hold_property()))
+        if hold <= 0.0:
             return None
 
         now = time.perf_counter()
         previous, self._count_time = self._count_time, now
-        # Same clamp as pc_cluster_filter: a stalled sensor must not wipe the
+        # Same clamp as pc_cluster_filter: a stalled sensor must not empty the
         # history in one step, and the first frame has no interval.
         dt = 1.0 / 30.0 if previous is None else min(max(now - previous, 1.0 / 240.0), 0.5)
 
@@ -826,14 +828,18 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
             self._count_val = None
             return None
 
-        alpha = dt / (dt + 1.0 / (2.0 * np.pi * cutoff))
-        smoothed = (prev + alpha * (counts[union].astype(np.float32) - prev)).astype(np.float32)
+        raw = counts[union].astype(np.float32)
+        alpha = dt / (dt + hold)
+        # Where raw is the larger it wins outright, so a voxel reaches its real
+        # count the frame its points arrive; where it is smaller the decayed
+        # value is the larger and the fall is what gets slowed.
+        held = np.maximum(raw, prev + alpha * (raw - prev)).astype(np.float32)
         # Drop the tail so the state does not grow to the size of the grid as
         # noise wanders over it. Well under any usable 'min points'.
-        alive = smoothed > 0.05
+        alive = held > 0.05
         self._count_lin = union[alive]
-        self._count_val = smoothed[alive]
-        return union, smoothed
+        self._count_val = held[alive]
+        return union, held
 
     def _cluster_boxes(self, occupied, weights):
         """Sum voxel weights into boxes, send the dense (bx, by, bz) array, and
@@ -906,16 +912,15 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
             return
         counts = np.bincount(lin_v, minlength=self.grid.ncells)
         min_points = max(1, int(self.min_points_property()))
-        smoothed = self._smooth_counts(counts)
-        if smoothed is None:
+        held = self._hold_counts(counts)
+        if held is None:
             occupied = np.nonzero(counts >= min_points)[0]
             values = counts[occupied].astype(np.float32)
         else:
-            union, values_all = smoothed
-            # The one-pole approaches its target from below and never arrives,
-            # so a voxel sitting at exactly 'min points' settles a fraction
-            # under it and would be excluded for ever. The tolerance is far
-            # smaller than any difference between two counts.
+            union, values_all = held
+            # The tolerance matters on the way down, where the value falls
+            # towards the count asymptotically: without it a voxel resting at
+            # exactly 'min points' would drop out a fraction under it.
             picked = values_all >= min_points - COUNT_EPSILON
             occupied = union[picked]
             values = values_all[picked]
