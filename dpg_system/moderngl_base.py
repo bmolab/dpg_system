@@ -1165,7 +1165,15 @@ class MGLContext:
                 void main() {
                     vec4 world_pos = M * vec4(in_position, 1.0);
                     gl_Position = P * V * world_pos;
-                    float perspective_size = point_size / gl_Position.w;
+                    // A point at or behind the eye divides by ~0 here. The near
+                    // plane normally clips it first, but it only takes a near
+                    // plane dragged towards 0, an orthographic-ish projection
+                    // or a non-finite position to get past that, and the result
+                    // is not a subtle one: the sprite lands wherever x/w and
+                    // y/w put it and is drawn at the top of
+                    // GL_POINT_SIZE_RANGE, which on this driver is 2047 px.
+                    float clip_w = max(gl_Position.w, 1e-4);
+                    float perspective_size = point_size / clip_w;
                     if (point_size > 1.5) {
                         gl_PointSize = perspective_size + 2.0;
                     } else {
@@ -1175,8 +1183,19 @@ class MGLContext:
                     // core size, keeping the 2px antialias pad.
                     if ((point_weight_mode & 1) != 0) {
                         float w = clamp(in_texcoord.x, 0.0, 1.0);
+                        // NaN fails every comparison, so this scrubs it as well
+                        // as clamping: clamp() itself is not required to reject
+                        // one, and a NaN reaching gl_PointSize is rounded by
+                        // the driver to the top of its range - a full-size dot
+                        // with no relation to the point's weight or distance.
+                        if (!(w >= 0.0)) { w = 0.0; }
                         gl_PointSize = max(1.0, (gl_PointSize - 2.0) * w + 2.0);
                     }
+                    // Last line of defence, for the same reason: anything that
+                    // is not a sane size becomes the smallest one, never the
+                    // largest.
+                    if (!(gl_PointSize >= 1.0)) { gl_PointSize = 1.0; }
+                    gl_PointSize = min(gl_PointSize, 512.0);
                     v_point_px = gl_PointSize;
                     mat3 normal_matrix = transpose(inverse(mat3(M)));
                     v_normal = normal_matrix * in_normal;

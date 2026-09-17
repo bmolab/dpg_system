@@ -2528,6 +2528,7 @@ class MGLPointCloudNode(MGLShapeNode):
         self.built_frame = None
         self.weights_data = None    # what the last build actually used
         self.voxel_size_m = None
+        self._reported_non_finite = 0
 
     def custom_create(self, from_file):
         if not from_file:
@@ -2565,6 +2566,7 @@ class MGLPointCloudNode(MGLShapeNode):
                     data = data.reshape(-1, 3)
 
                 if data.ndim == 2 and data.shape[1] == 3:
+                    data, weights = self._drop_non_finite(data, weights)
                     w = None
                     if weights is not None:
                         w = np.asarray(weights, dtype=np.float32).reshape(-1)
@@ -2586,6 +2588,35 @@ class MGLPointCloudNode(MGLShapeNode):
                     self.frame = (data, w, vs)
 
         super().execute()
+
+    def _drop_non_finite(self, points, weights):
+        """Remove points (and their weights) that are not finite.
+
+        A NaN or inf coordinate produces a NaN gl_Position, and a NaN weight a
+        NaN gl_PointSize; either way the driver rounds the sprite to the top of
+        GL_POINT_SIZE_RANGE and puts it whereever x/w lands, which reads as a
+        full-size dot at a random place that owes nothing to the data. The
+        all-finite case is the one that matters for speed and costs one pass
+        with no copy."""
+        finite = np.isfinite(points).all(axis=1)
+        if weights is not None:
+            w = np.asarray(weights, dtype=np.float32).reshape(-1)
+            if w.size == points.shape[0]:
+                finite &= np.isfinite(w)
+                weights = w
+        if finite.all():
+            return points, weights
+        dropped = int(finite.size - finite.sum())
+        if dropped != self._reported_non_finite:
+            # Reported on a change rather than every frame: a sensor that emits
+            # a few of these emits them continuously.
+            print(f'{self.label}: dropped {dropped} of {finite.size} points '
+                  f'with non-finite position or weight')
+            self._reported_non_finite = dropped
+        points = np.compress(finite, points, axis=0)
+        if weights is not None:
+            weights = np.compress(finite, weights, axis=0)
+        return points, weights
 
     def draw(self):
         # Taken once. Everything below works off these locals, so a cloud
