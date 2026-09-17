@@ -681,9 +681,6 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         self._count_val = None       # (M,) their filtered counts
         self._count_dx = None        # (M,) their filtered rate of change
         self._count_time = None
-        self._hyst_lin = None        # (M,) sorted indices with hysteresis state
-        self._hyst_conf = None       # (M,) 0..1 how established each one is
-        self._hyst_on = None         # (M,) whether it is currently occupied
         self.input = self.add_input('point cloud', triggers_execution=True)
         self.voxel_input = self.add_input('voxel size (cm)', widget_type='drag_float',
                                           default_value=5.0, min=0.01)
@@ -705,11 +702,6 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
                                                        widget_type='drag_float',
                                                        default_value=0.0, min=0.0)
         self.count_cutoff_property.widget.speed = 0.01
-        # Hysteresis: what a voxel must hold to APPEAR, as against 'min points'
-        # which is only what it must hold to stay. 0 turns it off.
-        self.appear_points_property = self.add_property('points to appear',
-                                                        widget_type='drag_int',
-                                                        default_value=0, min=0)
         # Spatial support: how many of a voxel's 26 neighbours must also be
         # occupied for it to survive. 0 is off.
         self.min_neighbours_property = self.add_property('min neighbours',
@@ -740,10 +732,6 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         self.count_beta_option = self.add_option('count beta', widget_type='drag_float',
                                                  default_value=0.2, min=0.0)
         self.count_beta_option.widget.speed = 0.01
-        # How quickly a voxel that keeps showing up earns the lower threshold.
-        self.settle_option = self.add_option('settle (s)', widget_type='drag_float',
-                                             default_value=0.25, min=0.01)
-        self.settle_option.widget.speed = 0.01
         # Last, so the chain pins land at the foot of each column and 'show
         # volume' at the foot of the options — and so patches saved before the
         # pins existed still reconnect: a link restores by its saved index
@@ -810,9 +798,6 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
                 self._count_val = None
                 self._count_dx = None
                 self._count_time = None
-                self._hyst_lin = None
-                self._hyst_conf = None
-                self._hyst_on = None
             self.box_count = boxes
             self.voxels_per_box = per_box
             self._warned_large = False
@@ -879,7 +864,7 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
             prev_dx[hit] = self._count_dx[pos[hit]]
         if union.size == 0:
             self._count_lin = self._count_val = self._count_dx = None
-            return np.empty((0,), dtype=np.int64), np.empty((0,), dtype=np.float32), dt
+            return np.empty((0,), dtype=np.int64), np.empty((0,), dtype=np.float32)
 
         raw = counts[union].astype(np.float32)
         # The derivative is taken against the previous filtered value and is
@@ -897,79 +882,7 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         self._count_lin = union[alive]
         self._count_val = filtered[alive]
         self._count_dx = speed[alive]
-        return union, filtered, dt
-
-    def _threshold(self, union, values, min_points, dt):
-        """Which of ``union`` are occupied, returning (indices, their values).
-
-        Plain comparison against ``min_points`` unless 'points to appear' is
-        set above it, which turns the threshold into a Schmitt trigger: a voxel
-        that has been empty has to clear the high threshold to appear at all,
-        while one already showing stays on any count at or above 'min points'.
-
-        The high threshold is not fixed either. A voxel that keeps showing up
-        earns its way down towards the low one over 'settle' seconds, so
-        established geometry is cheap to hold and a fresh voxel in a part of
-        the room that has been quiet is expensive to create. That is the shape
-        of the noise: a single frame over the threshold and nothing the next.
-
-        It is a better answer than simply raising 'min points', which cannot
-        work at range — a real surface at 6 m only puts about 9 points in a
-        5 cm voxel, so a threshold high enough to reject speckle rejects the
-        surface too. Measured over 90 frames of a simulated room, raising min
-        points from 3 to 8 cut true voxels kept from 99.3% to 72.2% and made
-        one-frame blinking WORSE (80k to 118k, since the count then chatters
-        across the higher line). Hysteresis at 8 -> 3 kept 98.4% and took the
-        blinking to 179; with the count filter in front of it, to 4.
-        """
-        appear = int(self.appear_points_property())
-        if appear <= min_points:
-            picked = values >= min_points - COUNT_EPSILON
-            return union[picked], values[picked]
-
-        # State has to cover voxels that are quiet now but still established,
-        # so it is carried on its own index rather than this frame's.
-        if self._hyst_lin is None or self._hyst_lin.size == 0:
-            all_lin = union
-            conf = np.zeros(union.size, dtype=np.float32)
-            was_on = np.zeros(union.size, dtype=bool)
-            vals = values
-        else:
-            all_lin = np.union1d(union, self._hyst_lin)
-            conf = np.zeros(all_lin.size, dtype=np.float32)
-            was_on = np.zeros(all_lin.size, dtype=bool)
-            vals = np.zeros(all_lin.size, dtype=np.float32)
-            pos = np.minimum(np.searchsorted(self._hyst_lin, all_lin), self._hyst_lin.size - 1)
-            hit = self._hyst_lin[pos] == all_lin
-            conf[hit] = self._hyst_conf[pos[hit]]
-            was_on[hit] = self._hyst_on[pos[hit]]
-            if union.size:
-                upos = np.minimum(np.searchsorted(all_lin, union), all_lin.size - 1)
-                vals[upos] = values
-
-        entry = appear - (appear - min_points) * conf
-        on = np.where(was_on,
-                      vals >= min_points - COUNT_EPSILON,
-                      vals >= entry - COUNT_EPSILON)
-        # Confidence tracks whether the voxel is HOLDING POINTS, not whether it
-        # won the argument about being drawn. Otherwise a voxel that is
-        # genuinely there but weak — a real surface at 6 m puts only about 9
-        # points in a 5 cm voxel — could never earn its threshold down, since
-        # it would have to be on already to start. On this reading a voxel that
-        # keeps its count up settles in after 'settle' seconds whatever the
-        # entry threshold was, while one that blinks at a 50% duty only ever
-        # reaches half way down and stays out.
-        candidate = (vals >= min_points - COUNT_EPSILON).astype(np.float32)
-        alpha = dt / (dt + max(0.01, float(self.settle_option())))
-        conf = (conf + alpha * (candidate - conf)).astype(np.float32)
-
-        # Keep only what still matters: occupied, or still carrying enough
-        # confidence to be worth a lowered threshold.
-        alive = on | (conf > 0.02) | (candidate > 0)
-        self._hyst_lin = all_lin[alive]
-        self._hyst_conf = conf[alive]
-        self._hyst_on = on[alive]
-        return all_lin[on], vals[on]
+        return union, filtered
 
     def _drop_lonely(self, occupied, values):
         """Remove voxels without enough occupied neighbours.
@@ -1092,14 +1005,13 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         if filtered is None:
             union = np.nonzero(counts)[0]
             values_all = counts[union].astype(np.float32)
-            dt = self._measure_dt()
         else:
-            union, values_all, dt = filtered
-        # COUNT_EPSILON throughout: the count filter approaches its target
-        # asymptotically, so a voxel resting at exactly 'min points' settles a
+            union, values_all = filtered
+        # COUNT_EPSILON because the count filter approaches its target
+        # asymptotically: a voxel resting at exactly 'min points' settles a
         # hair under it and would be excluded for ever.
-        occupied, values = self._threshold(union, values_all, min_points, dt)
-        occupied, values = self._drop_lonely(occupied, values)
+        picked = values_all >= min_points - COUNT_EPSILON
+        occupied, values = self._drop_lonely(union[picked], values_all[picked])
         if occupied.size == 0:
             send_empty()
             return
