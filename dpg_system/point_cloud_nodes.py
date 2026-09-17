@@ -678,7 +678,8 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         self.box_count = None        # (3,) int64 boxes per axis, or None
         self.voxels_per_box = None   # (3,) int64, exact, when boxes are on
         self._count_lin = None       # (M,) sorted linear indices carrying state
-        self._count_val = None       # (M,) their smoothed counts
+        self._count_val = None       # (M,) their filtered counts
+        self._count_dx = None        # (M,) their filtered rate of change
         self._count_time = None
         self.input = self.add_input('point cloud', triggers_execution=True)
         self.voxel_input = self.add_input('voxel size (cm)', widget_type='drag_float',
@@ -694,13 +695,13 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         self.sense_property.widget.speed = 0.01
         self.min_points_property = self.add_property('min points', widget_type='drag_int',
                                                      default_value=1, min=1)
-        # How long a voxel's count lingers after the points stop arriving, in
-        # seconds. 0 is off. Rise is instant, so this can only ever hold a
-        # voxel on for longer - it never delays one or removes one.
-        self.count_hold_property = self.add_property('count hold (s)',
-                                                     widget_type='drag_float',
-                                                     default_value=0.0, min=0.0)
-        self.count_hold_property.widget.speed = 0.005
+        # One euro on the per-voxel count: 'count cutoff' is the resting
+        # cutoff in Hz (lower smooths harder), 'count beta' how far a fast
+        # change opens it up. 0 cutoff is off.
+        self.count_cutoff_property = self.add_property('count cutoff (Hz)',
+                                                       widget_type='drag_float',
+                                                       default_value=0.0, min=0.0)
+        self.count_cutoff_property.widget.speed = 0.01
         # 0 on any axis leaves the cloud unsubdivided; the voxel size is then
         # taken as typed rather than snapped. A drag_float_n shown as whole
         # numbers — there is no integer row widget, and the bounds vectors
@@ -723,6 +724,9 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         self.voxel_xyz_option = self.add_option('voxel size x,y,z (cm)', widget_type='drag_float_n',
                                                 default_value=[5.0, 5.0, 5.0],
                                                 columns=3, widget_width=60)
+        self.count_beta_option = self.add_option('count beta', widget_type='drag_float',
+                                                 default_value=0.2, min=0.0)
+        self.count_beta_option.widget.speed = 0.01
         # Last, so the chain pins land at the foot of each column and 'show
         # volume' at the foot of the options — and so patches saved before the
         # pins existed still reconnect: a link restores by its saved index
@@ -787,6 +791,7 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
                 # room; the smoothing history no longer refers to anything.
                 self._count_lin = None
                 self._count_val = None
+                self._count_dx = None
                 self._count_time = None
             self.box_count = boxes
             self.voxels_per_box = per_box
@@ -798,32 +803,33 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
                 self._warned_large = True
             return False
 
-    def _hold_counts(self, counts):
-        """Hold each voxel's count up as it falls, returning (indices, held).
+    def _filter_counts(self, counts):
+        """One Euro on the per-voxel count, returning (indices, filtered).
 
-        Asymmetric on purpose. A symmetric low-pass approaches the true count
-        from below, so a voxel needs several frames to climb past 'min points'
-        — and a moving body only occupies a given voxel for two or three. It
-        therefore deletes exactly the content you care about while leaving
-        static furniture untouched, which is subtractive in a way no amount of
-        tuning fixes. Rising is instant here; only the fall is slowed.
+        Thresholding a raw count makes a voxel blink whenever the count crosses
+        'min points', and within a point or two of the line the count is mostly
+        sensor noise. What is wanted is a filter that ignores a stray reading
+        but does not hesitate over a real one, and the two are told apart by
+        how fast the count is moving, not by how big it is: One Euro smooths at
+        'count cutoff' while a voxel is quiet and opens the cutoff up by
+        'count beta' times the (low-passed) rate of change when it is not.
 
-        What that buys is still the thing worth having. Thresholding a raw
-        count makes a voxel blink whenever the count crosses the line, and
-        within a point or two of the line the count is mostly sensor noise.
-        Holding the count up across the gaps keeps the voxel lit through them,
-        without ever costing a frame on the way in.
-
-        ``hold`` is the release time constant in seconds — the time to fall to
-        about a third — measured against the real frame interval, so it does
-        not change meaning when the capture rate does.
+        The two simpler things both fail, in opposite directions. A plain
+        low-pass is systematically below the true count while it is rising, so
+        it dims and deletes the moving content it lags behind. Clamping it to
+        never fall below the raw count fixes that but amplifies noise instead:
+        a stray reading is taken at face value and then held. Measured over a
+        two-frame stray of 4 and 3 points against 'min points' 3, the clamped
+        version lights the voxel for 2 frames and a real body sweeping past
+        leaves 13 frames of trail where the truth was 6; One Euro at 0.2/0.2
+        lights the stray for 0 and trails 7, with no lag at all on arrival.
 
         Run over the union of the voxels holding points this frame and those
         still carrying a value, never the whole grid: a 6 m crop at 5 cm is
         1.7M cells, of which a live cloud occupies a few thousand.
         """
-        hold = max(0.0, float(self.count_hold_property()))
-        if hold <= 0.0:
+        cutoff = max(0.0, float(self.count_cutoff_property()))
+        if cutoff <= 0.0:
             return None
 
         now = time.perf_counter()
@@ -836,30 +842,37 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         if self._count_lin is None or self._count_lin.size == 0:
             union = here
             prev = np.zeros(union.size, dtype=np.float32)
+            prev_dx = np.zeros(union.size, dtype=np.float32)
         else:
             union = np.union1d(here, self._count_lin)      # sorted
             prev = np.zeros(union.size, dtype=np.float32)
+            prev_dx = np.zeros(union.size, dtype=np.float32)
             pos = np.searchsorted(self._count_lin, union)
             pos = np.minimum(pos, self._count_lin.size - 1)
             hit = self._count_lin[pos] == union
             prev[hit] = self._count_val[pos[hit]]
+            prev_dx[hit] = self._count_dx[pos[hit]]
         if union.size == 0:
-            self._count_lin = None
-            self._count_val = None
+            self._count_lin = self._count_val = self._count_dx = None
             return None
 
         raw = counts[union].astype(np.float32)
-        alpha = dt / (dt + hold)
-        # Where raw is the larger it wins outright, so a voxel reaches its real
-        # count the frame its points arrive; where it is smaller the decayed
-        # value is the larger and the fall is what gets slowed.
-        held = np.maximum(raw, prev + alpha * (raw - prev)).astype(np.float32)
+        # The derivative is taken against the previous filtered value and is
+        # itself low-passed at 1 Hz, so one noisy sample cannot unlock the
+        # filter at the moment it is most needed.
+        a_d = dt / (dt + 1.0 / (2.0 * np.pi))
+        dx = (raw - prev) / dt
+        speed = (prev_dx + a_d * (dx - prev_dx)).astype(np.float32)
+        fc = cutoff + max(0.0, float(self.count_beta_option())) * np.abs(speed)
+        alpha = dt / (dt + 1.0 / (2.0 * np.pi * fc))
+        filtered = (prev + alpha * (raw - prev)).astype(np.float32)
         # Drop the tail so the state does not grow to the size of the grid as
         # noise wanders over it. Well under any usable 'min points'.
-        alive = held > 0.05
+        alive = filtered > 0.05
         self._count_lin = union[alive]
-        self._count_val = held[alive]
-        return union, held
+        self._count_val = filtered[alive]
+        self._count_dx = speed[alive]
+        return union, filtered
 
     def _cluster_boxes(self, occupied, weights):
         """Sum voxel weights into boxes, send the dense (bx, by, bz) array, and
@@ -932,15 +945,16 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
             return
         counts = np.bincount(lin_v, minlength=self.grid.ncells)
         min_points = max(1, int(self.min_points_property()))
-        held = self._hold_counts(counts)
+        held = self._filter_counts(counts)
         if held is None:
             occupied = np.nonzero(counts >= min_points)[0]
             values = counts[occupied].astype(np.float32)
         else:
             union, values_all = held
-            # The tolerance matters on the way down, where the value falls
-            # towards the count asymptotically: without it a voxel resting at
-            # exactly 'min points' would drop out a fraction under it.
+            # The filter approaches its target asymptotically, so a voxel
+            # resting at exactly 'min points' settles a hair under it and
+            # would be excluded for ever. Far smaller than any real gap
+            # between two counts.
             picked = values_all >= min_points - COUNT_EPSILON
             occupied = union[picked]
             values = values_all[picked]

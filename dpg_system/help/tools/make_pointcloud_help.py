@@ -91,31 +91,35 @@ default squares the distance before weighting. It uses radial distance rather
 than depth, so it survives levelling and yaw.
 
 STOPPING VOXELS FLICKERING:
-'count hold (s)' holds each voxel's count UP as it falls, and 'min points' is
-applied to the held value. 0 is off, which is the default; 0.1 s is a good
-starting point.
+'count cutoff (Hz)' filters each voxel's point count before 'min points' is
+applied to it. 0 is off, which is the default; 0.2 is a good starting point,
+with 'count beta' (option) at 0.2 beside it.
 
 Thresholding a raw count makes a voxel blink whenever the count crosses the
 line, and within a point or two of the line the count is mostly sensor noise.
-Holding the count across those gaps keeps the voxel lit through them: a voxel
-whose raw count alternates 1, 6, 1, 6 against min points 3 blinks 24 times in
-25 frames and stops dead at 0.1 s.
+What you want is a filter that ignores a stray reading but does not hesitate
+over a real one - and the two are told apart by how FAST the count is moving,
+not by how big it is. This is a One Euro filter: it smooths hard at 'count
+cutoff' while a voxel is quiet, and opens the cutoff up by 'count beta' times
+the rate of change when it is not. Lower the cutoff for less flicker at rest,
+raise beta if a real arrival lags.
 
-It only ever ADDS. Rising is instant - a voxel lights on the very frame its
-points arrive, at any hold setting - and only the fall is slowed. That is
-deliberate: a symmetric smoothing approaches the true count from below, so a
-voxel needs several frames to climb past 'min points', and a moving body only
-occupies one for two or three. It deletes exactly the content you care about
-while leaving static furniture untouched. This cannot.
+Measured on one voxel at 30 fps, min points 3:
 
-What it costs instead is a trail. Measured on a figure crossing the room, a
-hold of 0.1 s leaves about 45% more voxels lit than the raw cloud and 0.5 s
-about three times as many - so wind it up until the flicker stops and no
-further.
+  a 2-frame stray of 4 then 3 points     lit 2 frames raw, 0 filtered
+  a real arrival of 25 points            lit on frame 1 either way
+  a body sweeping past for 6 frames      6 frames raw, 7 filtered
+  a marginal voxel wobbling 1-5 points   19 flips raw, 8 filtered
 
-The number is the release time constant in real seconds, measured against the
-frame interval: set 0.3 and a voxel lingers 0.3 s after its points stop,
-whatever the capture rate is doing.
+The two simpler filters both fail, in opposite directions, and it is worth
+knowing why. A plain low-pass sits below the true count the whole time it is
+rising, so it dims and deletes the moving content it is lagging behind.
+Clamping it so it can never fall below the raw count cures that but amplifies
+noise instead - a stray reading is believed at once and then held, and that
+same sweeping body trails 13 frames instead of 7.
+
+The numbers are in Hz against the measured frame interval, so none of this
+changes meaning when the capture rate does.
 
 This is not pc_denoise's 'persistence', which smooths the on/off flag rather
 than the count and has already thrown the useful information away. It is also
@@ -273,10 +277,10 @@ The grid resolution. The most consequential number here.
 min points (pc_voxel):
 The density floor - voxels holding fewer points than this are dropped.
 
-count hold (s) (pc_voxel):
-How long a voxel's count lingers after its points stop. 0 is off, 0.1 s stops
-voxels flickering on the edge of 'min points'. Rise is instant, so it never
-removes or delays anything.
+count cutoff (Hz) (pc_voxel):
+One Euro filter on each voxel's count before the threshold. 0 is off; 0.2 stops
+voxels flickering on the edge of 'min points' without lagging a real arrival.
+'count beta' (option) sets how far a fast change opens it up.
 
 boxes (x,y,z) (pc_voxel):
 Divide the volume into this many boxes per axis. 0 for none. Snaps the voxel
