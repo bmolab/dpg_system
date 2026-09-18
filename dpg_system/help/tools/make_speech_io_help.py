@@ -85,6 +85,30 @@ transcribe the node talking, or a face that should move with the voice.
 'stop' finishes the current phrase and stops; 'hard stop' cuts immediately.
 'accept input' closes the door without stopping what is already queued.
 
+SPEAKING A PHRASE THAT IS STILL BEING WRITTEN:
+'text to speak' wants a finished phrase, which means waiting for the last word
+of it before the first word can be spoken. When the text is coming from a
+language model, that wait is most of the delay you hear.
+
+'stream text' takes it as it is made instead: patch the model's output straight
+in, and bang 'end of response' - the model's own 'end' outlet - when it has
+finished. The words go up to the service over a socket it can answer on
+continuously, so the voice starts once there is enough to start on, and keeps
+going while the rest is still being written. It also sounds better than
+chopping the answer into sentences and sending each one: the delivery carries
+across the whole answer instead of restarting at every full stop.
+
+'characters before speaking' is how much it gathers before beginning. Fifty is
+the least the service accepts and the soonest it will start; more gives it more
+to read ahead into, which it says better. A word is never split between two
+messages, and a '<backspace>' from a model that is re-choosing a word takes back
+a character that has not been sent yet.
+
+Whole phrases and streamed ones share the one queue, so they are spoken in the
+order they were given, and 'speaking' stays true from the first piece of a
+streamed phrase until the last of it has played. The v3 models cannot be typed
+into this way; given streamed text they wait for the end and speak it whole.
+
 THE VOICE SETTINGS ARE PERFORMANCE DIRECTION:
 'stability' low lets the delivery vary between renderings and sound more alive;
 high makes it consistent and flatter. 'style exaggeration' pushes the character
@@ -118,6 +142,13 @@ How sure it must be before a phrase is emitted.
 
 text to speak / voice / model:
 What to say and who says it.
+
+stream text / end of response:
+A phrase as it is being written, and the bang that says that is all of it.
+
+characters before speaking:
+How much streamed text it gathers before it starts. Less is sooner, more is
+better spoken.
 
 speed / stability / style exaggeration / similarity_boost:
 How it is said.
