@@ -87,6 +87,7 @@ optional_import = [
     'nvx_nodes',
     'erae_nodes',
     'bonsai_2_node',
+    'qwen_moe_node',
 ]
 
 imported = []
