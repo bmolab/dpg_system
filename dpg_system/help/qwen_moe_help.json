@@ -1,0 +1,622 @@
+{
+    "height": 1232,
+    "width": 2051,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "qwen_moe_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/qwen_moe_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment qwen_moe - a mixture of experts, in this process",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 598,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "qwen_moe - a mixture of experts, in this process",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "qwen_moe - a mixture of experts, in this process"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1193,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A 35 billion parameter model that generates faster than a 12 billion one.\n\nWHY IT IS FAST:\nIt is a mixture of experts: 35 billion parameters in total, but only about 3\nbillion are read for any one token. Generating is limited by how many bytes come\nout of memory per token, so what matters is the 3 billion and not the 35. On this\nmachine, measured the same way:\n\nqwen_moe (this node)   56 tok/s\ngemma_4 12B            37 tok/s\nbonsai_2 27B           21 tok/s\ngemma_4 31B            16 tok/s\n\nIt is also the most capable of the four. It is not a trade-off - it wins on both\ncounts. What it costs is memory: 20 GB resident against bonsai_2's 7, which is\nmost of this machine, so the two do not sit in memory together comfortably. Use\none or the other rather than both.\n\nIT RUNS IN THIS PROCESS, UNLIKE bonsai_2:\nbonsai_2 has to drive a separate server, because its weight format needs a\nllama.cpp fork. This model is ordinary enough to run through MLX inside\ndpg_system, and that changes three things for the better.\n\nTHE MEASUREMENTS ARE EXACT, NOT SAMPLED:\n'display_mode' entropy, probability and unnormalised probability are computed\nover the WHOLE vocabulary - all 248320 tokens - because the logits are right\nhere. bonsai_2 can only see the forty candidates its server reports, so its\nentropy is a floor rather than the figure. The candidate list carries RAW LOGITS,\nas gemma_4's does, so 'sigmoid scaler' and 'sigmoid offset' behave the same way\nin all three nodes.\n\n'score_incoming_text' is exact for the same reason. bonsai_2 has to force each\ntoken with a bias and read the value back; here the log-probability is simply\nread off the distribution.\n\nSTEPPING BACK IS CHEAP, BUT NOT FREE:\n30 of this model's 40 layers carry a recurrent state rather than a key-value\ncache, and a recurrent state cannot be rewound a token at a time. So the node\nkeeps a snapshot of the state at the start of each turn and replays from there,\nwhich puts a step back inside the current answer at about a twentieth of a\nsecond. Stepping back further than the start of the turn rebuilds from the\nbeginning, at around 600 tokens a second.\n\n'step' AND 'choice' WORK AS THEY DO ELSEWHERE:\n'step' takes one token, forward or back. 'choice' walks the alternatives the\nmodel was weighing and substitutes one. While free-running the node keeps the\nmodel a step ahead of itself, which is worth about a fifth of the speed; the\nmoment you step, choose or slow it down it drops back to exact token-at-a-time\nwork. You do not have to do anything for that - it notices.\n\nWHAT IT DOES NOT HAVE:\nNo 'reasoning_effort'. Bonsai 2's template takes one; this model's does not, and\ninjecting a sentence it was not trained on would be worse than leaving it out.\n\nEverything else reads the same as bonsai_2: the three stops, target_length\nnudging towards a length by making the ending likelier at a sentence end,\nthinking on its own outlet, asides marked with a single asterisk going to\n'actions_out', stale reasoning dropped between turns, and words read into the\nmodel as they arrive.\n\nSYNTAX:\nqwen_moe\nqwen_moe <model>    a hugging face id or a local path to MLX weights\n\nEXAMPLE:\nqwen_moe\n\nINPUTS and PARAMETERS:\n\non / off:\nLoad the model and be ready. Twenty gigabytes, so this is what takes the time.\n\nprompt / pre-prompt / streaming_prompt:\nWhat to answer, what to put before it, and text arriving a piece at a time.\n\nsystem_prompt:\nWho it is being. Set before starting.\n\npolite_stop / interrupt / hard interrupt:\nThe three stops, in increasing rudeness.\n\nstep (+-1) / choice (+-1):\nOne token at a time, and which of the alternatives.\n\ntemperature / top_k / top_p / min_p / repeat_penalty / seed:\nThe sampling.\n\ntarget_length / max_tokens / stop_bias:\nA length to aim at, a length not to exceed, and how hard the aim pushes.\n\nslowdown:\nPace the output for reading.\n\nscore_incoming_text / reset_input_score:\nMeasure how predictable incoming text is, exactly.\n\nshow_probs / display_mode / sigmoid scaler / sigmoid offset:\nThe candidate list, and what the layout colours each token by.\n\nthinking / thinking in layout:\nWhether it reasons first, and whether that shows in the layout.\n\nkeep thinking in context / read prompt as it arrives / candidates shown:\nKeep earlier reasoning, read words as they arrive, and how many alternatives to\ncollect.\n\nOUTPUTS: \n\noutput:\nThe text, token by token as it comes.\n\nthinking:\nThe reasoning, if there was any.\n\ntoken_out / end / active:\nEach token, a signal at the end, and whether it is generating.\n\ninput_token_score / input_cumulative_score:\nHow predictable the text you sent was.\n\nlayout_out / actions_out:\nDisplay information, and anything marked as an unspoken aside.\n\nRELATED:\nbonsai_2 for a 27B model in seven gigabytes, when memory is short.\ngemma_4 for a smaller model in this process.\ntext_display to read the output in the patch.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A 35 billion parameter model that generates faster than a 12 billion one.\n\nWHY IT IS FAST:\nIt is a mixture of experts: 35 billion parameters in total, but only about 3\nbillion are read for any one token. Generating is limited by how many bytes come\nout of memory per token, so what matters is the 3 billion and not the 35. On this\nmachine, measured the same way:\n\nqwen_moe (this node)   56 tok/s\ngemma_4 12B            37 tok/s\nbonsai_2 27B           21 tok/s\ngemma_4 31B            16 tok/s\n\nIt is also the most capable of the four. It is not a trade-off - it wins on both\ncounts. What it costs is memory: 20 GB resident against bonsai_2's 7, which is\nmost of this machine, so the two do not sit in memory together comfortably. Use\none or the other rather than both.\n\nIT RUNS IN THIS PROCESS, UNLIKE bonsai_2:\nbonsai_2 has to drive a separate server, because its weight format needs a\nllama.cpp fork. This model is ordinary enough to run through MLX inside\ndpg_system, and that changes three things for the better.\n\nTHE MEASUREMENTS ARE EXACT, NOT SAMPLED:\n'display_mode' entropy, probability and unnormalised probability are computed\nover the WHOLE vocabulary - all 248320 tokens - because the logits are right\nhere. bonsai_2 can only see the forty candidates its server reports, so its\nentropy is a floor rather than the figure. The candidate list carries RAW LOGITS,\nas gemma_4's does, so 'sigmoid scaler' and 'sigmoid offset' behave the same way\nin all three nodes.\n\n'score_incoming_text' is exact for the same reason. bonsai_2 has to force each\ntoken with a bias and read the value back; here the log-probability is simply\nread off the distribution.\n\nSTEPPING BACK IS CHEAP, BUT NOT FREE:\n30 of this model's 40 layers carry a recurrent state rather than a key-value\ncache, and a recurrent state cannot be rewound a token at a time. So the node\nkeeps a snapshot of the state at the start of each turn and replays from there,\nwhich puts a step back inside the current answer at about a twentieth of a\nsecond. Stepping back further than the start of the turn rebuilds from the\nbeginning, at around 600 tokens a second.\n\n'step' AND 'choice' WORK AS THEY DO ELSEWHERE:\n'step' takes one token, forward or back. 'choice' walks the alternatives the\nmodel was weighing and substitutes one. While free-running the node keeps the\nmodel a step ahead of itself, which is worth about a fifth of the speed; the\nmoment you step, choose or slow it down it drops back to exact token-at-a-time\nwork. You do not have to do anything for that - it notices.\n\nWHAT IT DOES NOT HAVE:\nNo 'reasoning_effort'. Bonsai 2's template takes one; this model's does not, and\ninjecting a sentence it was not trained on would be worse than leaving it out.\n\nEverything else reads the same as bonsai_2: the three stops, target_length\nnudging towards a length by making the ending likelier at a sentence end,\nthinking on its own outlet, asides marked with a single asterisk going to\n'actions_out', stale reasoning dropped between turns, and words read into the\nmodel as they arrive.\n\nSYNTAX:\nqwen_moe\nqwen_moe <model>    a hugging face id or a local path to MLX weights\n\nEXAMPLE:\nqwen_moe\n\nINPUTS and PARAMETERS:\n\non / off:\nLoad the model and be ready. Twenty gigabytes, so this is what takes the time.\n\nprompt / pre-prompt / streaming_prompt:\nWhat to answer, what to put before it, and text arriving a piece at a time.\n\nsystem_prompt:\nWho it is being. Set before starting.\n\npolite_stop / interrupt / hard interrupt:\nThe three stops, in increasing rudeness.\n\nstep (+-1) / choice (+-1):\nOne token at a time, and which of the alternatives.\n\ntemperature / top_k / top_p / min_p / repeat_penalty / seed:\nThe sampling.\n\ntarget_length / max_tokens / stop_bias:\nA length to aim at, a length not to exceed, and how hard the aim pushes.\n\nslowdown:\nPace the output for reading.\n\nscore_incoming_text / reset_input_score:\nMeasure how predictable incoming text is, exactly.\n\nshow_probs / display_mode / sigmoid scaler / sigmoid offset:\nThe candidate list, and what the layout colours each token by.\n\nthinking / thinking in layout:\nWhether it reasons first, and whether that shows in the layout.\n\nkeep thinking in context / read prompt as it arrives / candidates shown:\nKeep earlier reasoning, read words as they arrive, and how many alternatives to\ncollect.\n\nOUTPUTS: \n\noutput:\nThe text, token by token as it comes.\n\nthinking:\nThe reasoning, if there was any.\n\ntoken_out / end / active:\nEach token, a signal at the end, and whether it is generating.\n\ninput_token_score / input_cumulative_score:\nHow predictable the text you sent was.\n\nlayout_out / actions_out:\nDisplay information, and anything marked as an unspoken aside.\n\nRELATED:\nbonsai_2 for a 27B model in seven gigabytes, when memory is short.\ngemma_4 for a smaller model in this process.\ntext_display to read the output in the patch."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 62,
+            "width": 261,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "switch on and WAIT - twenty gigabytes\nof weights load here",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "switch on and WAIT - twenty gigabytes\nof weights load here"
+        },
+        "5": {
+            "name": "string",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 550,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "You are a terse, concrete writer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 185,
+            "width": 550,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "Describe a room nobody has entered for a year.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "name": "qwen_moe",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 230,
+            "height": 546,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 900,
+            "width": 323,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "three billion of thirty-five billion parameters\nare read per token, which is why it outruns\nevery smaller model here",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "three billion of thirty-five billion parameters\nare read per token, which is why it outruns\nevery smaller model here"
+        },
+        "9": {
+            "name": "text_display",
+            "id": 570,
+            "position_x": 460,
+            "position_y": 250,
+            "width": 354,
+            "height": 250,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment the answer, arriving token by token",
+            "name": "comment",
+            "id": 607,
+            "position_x": 840,
+            "position_y": 525,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the answer, arriving token by token",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the answer, arriving token by token"
+        },
+        "11": {
+            "name": "text_display",
+            "id": 644,
+            "position_x": 460,
+            "position_y": 570,
+            "width": 354,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment thinking on its own outlet, as in bonsai_2",
+            "name": "comment",
+            "id": 681,
+            "position_x": 840,
+            "position_y": 805,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "thinking on its own outlet, as in bonsai_2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "thinking on its own outlet, as in bonsai_2"
+        },
+        "13": {
+            "name": "toggle",
+            "id": 718,
+            "position_x": 460,
+            "position_y": 860,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment lit while it is generating",
+            "name": "comment",
+            "id": 755,
+            "position_x": 840,
+            "position_y": 860,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lit while it is generating",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lit while it is generating"
+        },
+        "15": {
+            "name": "plot",
+            "id": 792,
+            "position_x": 460,
+            "position_y": 920,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -8.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "16": {
+            "name": "text_block",
+            "id": 829,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 1110,
+            "width": 311,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "with score_incoming_text on, how PREDICTABLE\nyour text was - exact here, read straight off\nthe whole distribution",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "with score_incoming_text on, how PREDICTABLE\nyour text was - exact here, read straight off\nthe whole distribution"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 1128,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on / off"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "system_prompt"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "prompt"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "thinking",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "input_token_score",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}
