@@ -86,6 +86,7 @@ optional_import = [
     'gemma_4_node',
     'nvx_nodes',
     'erae_nodes',
+    'bonsai_2_node',
 ]
 
 imported = []
@@ -1012,6 +1013,13 @@ class App:
                     node.custom_cleanup()
                 except Exception:
                     traceback.print_exc()
+        # Bonsai 2 runs in a llama-server child process holding several GB of
+        # weights; os._exit below skips atexit, so it is stopped here by hand.
+        try:
+            from dpg_system.bonsai_2_node import BonsaiServer
+            BonsaiServer.shutdown_all()
+        except Exception:
+            pass
         try:
             dpg.stop_dearpygui()
         except Exception:

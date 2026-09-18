@@ -42,5 +42,6 @@
  "gemma_4_node": true,
  "default_ip_base": "10.1.1.0",
  "nvx_nodes": true,
- "erae_nodes": true
+ "erae_nodes": true,
+ "bonsai_2_node": true
 }
