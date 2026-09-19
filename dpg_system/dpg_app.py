@@ -326,7 +326,15 @@ class App:
         self.loading = False
         self.font_48 = None
         self.font_36 = None
+        self.font_30 = None
         self.font_24 = None
+        self.font_registry = None
+        self.font_file = 'Inconsolata-g.otf'
+        self._font_sizes = {}  # font -> (file, size), for zoomed versions
+        self._zoom_fonts = {}  # (file, size) -> font
+        self._zoom_wheel = 0.0
+        self._zoom_queued = False
+        self._zoom_lock = threading.Lock()
         self.setup_dpg()
         self.verbose = False
         self.verbose_menu_item = -1
@@ -471,7 +479,7 @@ class App:
         dpg.create_context()
         dpg.configure_app(manual_callback_management=True)
         if 'macOS' in platform_.platform():
-            with dpg.font_registry():
+            with dpg.font_registry() as self.font_registry:
                 if os.path.exists('Inconsolata-g.otf'):
                     self.font_24 = dpg.add_font("Inconsolata-g.otf", 24)
                     dpg.bind_font(self.font_24)
@@ -480,7 +488,7 @@ class App:
                     self.font_48 = dpg.add_font("Inconsolata-g.otf", 48)
                     self.font_36 = dpg.add_font("Inconsolata-g.otf", 36)
         else:
-            with dpg.font_registry():
+            with dpg.font_registry() as self.font_registry:
                 if os.path.exists('Inconsolata-g.otf'):
                     # self.font_24 = dpg.add_font("Inconsolata-g.otf", 12)
                     # dpg.bind_font(self.font_24)
@@ -489,8 +497,106 @@ class App:
                     self.font_48 = dpg.add_font("Inconsolata-g.otf", 24)
                     self.font_36 = dpg.add_font("Inconsolata-g.otf", 18)
         # handle other platforms...
+        for font in (self.font_24, self.font_30, self.font_36, self.font_48):
+            self._font_face(font)
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
+
+    # ------------------------------------------------------------ zoom
+
+    def default_font(self):
+        """The font patchers are drawn in at 100%. None off macOS, where
+        nothing is bound and dpg's built-in font is used."""
+        return self.font_24
+
+    def _font_face(self, font):
+        """(file, size) of a loaded font, remembered so a zoom that lands on
+        a size already loaded reuses that font."""
+        if not font:
+            return None
+        known = self._font_sizes.get(font)
+        if known is None:
+            try:
+                config = dpg.get_item_configuration(font)
+                known = (config['file'], int(round(config['size'])))
+            except Exception:
+                return None
+            self._font_sizes[font] = known
+            self._zoom_fonts.setdefault(known, font)
+        return known
+
+    def zoomed_font(self, font, zoom):
+        """`font` as it should be drawn at `zoom`: the same face at the scaled
+        size, built on first use. `font` None means the default font. Main
+        thread only when it has to build one."""
+        if zoom == 1.0:
+            return font
+        if font:
+            known = self._font_face(font)
+            if known is None:
+                return font
+            file, size = known
+        else:
+            # dpg's built-in font is 13 px; Inconsolata stands in for it
+            file, size = self.font_file, 13
+        if self.font_registry is None or not os.path.exists(file):
+            return font
+        size = max(4, int(round(size * zoom)))
+        key = (file, size)
+        if key not in self._zoom_fonts:
+            self._zoom_fonts[key] = dpg.add_font(file, size, parent=self.font_registry)
+            self._font_sizes[self._zoom_fonts[key]] = key
+        return self._zoom_fonts[key]
+
+    def zoom_wheel_handler(self, sender, app_data):
+        """Cmd-scroll zooms the patcher about the mouse. Wheel events arrive
+        off the main thread and faster than a zoom can be redrawn, so they
+        are summed and applied at most once a frame."""
+        if not self.control_or_command_down():
+            return
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+        try:
+            amount = float(app_data)
+        except (TypeError, ValueError):
+            return
+        with self._zoom_lock:
+            self._zoom_wheel += amount
+            if self._zoom_queued:
+                return
+            self._zoom_queued = True
+        self.queue_main_thread_call(self._apply_wheel_zoom, editor)
+
+    def _apply_wheel_zoom(self, editor):
+        with self._zoom_lock:
+            steps = int(self._zoom_wheel)  # toward zero: trackpads send fractions
+            self._zoom_wheel -= steps
+            self._zoom_queued = False
+        if steps != 0 and editor in self.node_editors:
+            editor.zoom_step(steps, list(dpg.get_mouse_pos(local=False)))
+
+    def zoom_in(self):
+        self._zoom_current(1)
+
+    def zoom_out(self):
+        self._zoom_current(-1)
+
+    def zoom_reset(self):
+        self._zoom_current(None)
+
+    def _zoom_current(self, steps):
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+        if steps is None:
+            self.queue_main_thread_call(editor.set_zoom, 1.0)
+        else:
+            self.queue_main_thread_call(editor.zoom_step, steps)
+
+    def zero_handler(self):
+        if self.control_or_command_down():
+            self.zoom_reset()
 
     def register_patcher(self, name):
         self.patchers.append(name)
@@ -953,6 +1059,10 @@ class App:
                 self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Home (H)", callback=self.home_current_editor)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Zoom In (Cmd-scroll)", callback=self.zoom_in)
+                dpg.add_menu_item(label="Zoom Out (Cmd-scroll)", callback=self.zoom_out)
+                dpg.add_menu_item(label="Actual Size (Cmd-0)", callback=self.zoom_reset)
 
 
             with dpg.menu(label='Options'):
@@ -2330,6 +2440,7 @@ class App:
         self.current_node_editor = chosen_tab_index
         if self.get_current_editor() is not None:
             dpg.set_value(self.minimap_menu_item, self.get_current_editor().mini_map)
+            self.get_current_editor().bind_theme()
 
     def remove_node_editor(self, stale_editor):
         if stale_editor is None:
@@ -2463,6 +2574,8 @@ class App:
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_0, callback=self.zero_handler)
+                            dpg.add_mouse_wheel_handler(callback=self.zoom_wheel_handler)
                             dpg.add_mouse_move_handler(callback=self.drag_create_nodes)
                             dpg.add_mouse_click_handler(callback=self.mouse_down_handler)
                             dpg.add_mouse_release_handler(callback=self.mouse_up_handler)
