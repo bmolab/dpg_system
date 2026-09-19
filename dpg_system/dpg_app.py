@@ -1042,8 +1042,8 @@ class App:
                 dpg.add_menu_item(label="Align Selected", callback=self.align_selected)
                 dpg.add_menu_item(label="Align Center and Distribute Selected (Y)", callback=self.align_distribute_selected)
                 dpg.add_menu_item(label="Align Edge and Distribute Selected", callback=self.align_distribute_selected_top)
-                dpg.add_menu_item(label="Space Out Selected (+)", callback=self.space_out_selected)
-                dpg.add_menu_item(label="Tighten Selected (-)", callback=self.tighten_selected)
+                dpg.add_menu_item(label="Space Out Selected (Cmd +)", callback=self.space_out_selected)
+                dpg.add_menu_item(label="Tighten Selected (Cmd -)", callback=self.tighten_selected)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Reset Origin", callback=self.reset_node_editor_origin)
             with dpg.menu(label='Visibility'):
@@ -1060,8 +1060,8 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Home (H)", callback=self.home_current_editor)
                 dpg.add_separator()
-                dpg.add_menu_item(label="Zoom In (Cmd-scroll)", callback=self.zoom_in)
-                dpg.add_menu_item(label="Zoom Out (Cmd-scroll)", callback=self.zoom_out)
+                dpg.add_menu_item(label="Zoom In (Cmd + or Cmd-scroll)", callback=self.zoom_in)
+                dpg.add_menu_item(label="Zoom Out (Cmd - or Cmd-scroll)", callback=self.zoom_out)
                 dpg.add_menu_item(label="Actual Size (Cmd-0)", callback=self.zoom_reset)
 
 
@@ -1440,12 +1440,28 @@ class App:
                 self.comment_handler()
 
     def plus_handler(self):
+        # With nodes selected Cmd-+ spreads them; with none it zooms in.
         if self.control_or_command_down():
-            self.space_out_selected()
+            if self.nodes_are_selected():
+                self.space_out_selected()
+            else:
+                self.zoom_in()
 
     def minus_handler(self):
         if self.control_or_command_down():
-            self.tighten_selected()
+            if self.nodes_are_selected():
+                self.tighten_selected()
+            else:
+                self.zoom_out()
+
+    def nodes_are_selected(self):
+        editor = self.get_current_editor()
+        if editor is None:
+            return False
+        try:
+            return len(dpg.get_selected_nodes(editor.uuid)) > 0
+        except Exception:
+            return False
 
     def space_handler(self):
         pass
