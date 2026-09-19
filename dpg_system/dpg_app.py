@@ -3,6 +3,7 @@ import os
 os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
 # import dearpygui.dearpygui as dpg
+import math
 import time
 import numpy as np
 from importlib import import_module
@@ -332,7 +333,9 @@ class App:
         self.font_file = 'Inconsolata-g.otf'
         self._font_sizes = {}  # font -> (file, size), for zoomed versions
         self._zoom_fonts = {}  # (file, size) -> font
-        self._zoom_wheel = 0.0
+        self._zoom_target = None  # log zoom the current scroll gesture is heading for
+        self._zoom_target_editor = None
+        self._zoom_last_wheel = 0.0
         self._zoom_queued = False
         self._zoom_lock = threading.Lock()
         self.setup_dpg()
@@ -499,6 +502,14 @@ class App:
         # handle other platforms...
         for font in (self.font_24, self.font_30, self.font_36, self.font_48):
             self._font_face(font)
+        # Built now, with the rest, so that zooming never rebuilds the atlas.
+        if self.font_registry is not None and os.path.exists(self.font_file):
+            for size in NodeEditor.ZOOM_FONT_SIZES:
+                key = (self.font_file, size)
+                if key not in self._zoom_fonts:
+                    font = dpg.add_font(self.font_file, size, parent=self.font_registry)
+                    self._zoom_fonts[key] = font
+                    self._font_sizes[font] = key
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
 
@@ -541,17 +552,33 @@ class App:
             file, size = self.font_file, 13
         if self.font_registry is None or not os.path.exists(file):
             return font
-        size = max(4, int(round(size * zoom)))
+        # the nearest size already built, if this face has them
+        wanted = size * zoom
+        sizes = [s for (f, s) in self._zoom_fonts if f == file] or [max(4, int(round(wanted)))]
+        size = min(sizes, key=lambda s: abs(math.log(s / wanted)))
         key = (file, size)
         if key not in self._zoom_fonts:
             self._zoom_fonts[key] = dpg.add_font(file, size, parent=self.font_registry)
             self._font_sizes[self._zoom_fonts[key]] = key
         return self._zoom_fonts[key]
 
+    # Zoom per unit of scroll, as a factor: one notch of a wheel is one level.
+    # A trackpad sends many small fractions instead, and they add up smoothly.
+    zoom_wheel_rate = 1.1
+    # A pause this long ends a gesture, and what was left over from it.
+    zoom_gesture_gap = 0.25
+
     def zoom_wheel_handler(self, sender, app_data):
-        """Cmd-scroll zooms the patcher about the mouse. Wheel events arrive
-        off the main thread and faster than a zoom can be redrawn, so they
-        are summed and applied at most once a frame."""
+        """Cmd-scroll zooms the patcher about the pointer.
+
+        The scroll moves a continuous target zoom and the patcher shows the
+        level nearest it, so small trackpad movements accumulate evenly
+        rather than waiting to add up to a whole step. The target is clamped
+        to the levels, so scrolling on past the end stores nothing up that
+        has to be scrolled off again, and a fresh gesture starts from the
+        zoom as shown. Wheel events arrive off the main thread and faster
+        than a zoom can be redrawn, so the zoom is applied at most once a
+        frame."""
         if not self.control_or_command_down():
             return
         editor = self.get_current_editor()
@@ -561,8 +588,16 @@ class App:
             amount = float(app_data)
         except (TypeError, ValueError):
             return
+        now = time.perf_counter()
+        levels = NodeEditor.ZOOM_LEVELS
         with self._zoom_lock:
-            self._zoom_wheel += amount
+            if (self._zoom_target is None or self._zoom_target_editor is not editor
+                    or now - self._zoom_last_wheel > self.zoom_gesture_gap):
+                self._zoom_target = math.log(editor.zoom)
+                self._zoom_target_editor = editor
+            self._zoom_last_wheel = now
+            self._zoom_target += amount * math.log(self.zoom_wheel_rate)
+            self._zoom_target = min(max(self._zoom_target, math.log(levels[0])), math.log(levels[-1]))
             if self._zoom_queued:
                 return
             self._zoom_queued = True
@@ -570,11 +605,13 @@ class App:
 
     def _apply_wheel_zoom(self, editor):
         with self._zoom_lock:
-            steps = int(self._zoom_wheel)  # toward zero: trackpads send fractions
-            self._zoom_wheel -= steps
+            target = math.exp(self._zoom_target)
             self._zoom_queued = False
-        if steps != 0 and editor in self.node_editors:
-            editor.zoom_step(steps, list(dpg.get_mouse_pos(local=False)))
+        if editor not in self.node_editors:
+            return
+        level = min(NodeEditor.ZOOM_LEVELS, key=lambda z: abs(math.log(z / target)))
+        if level != editor.zoom:
+            editor.set_zoom(level, list(dpg.get_mouse_pos(local=False)))
 
     # The menu items zoom about the middle of the patcher: the pointer is up on
     # the menu when one is chosen. The keys zoom about the pointer.

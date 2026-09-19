@@ -760,7 +760,16 @@ class NodeEditor:
         except Exception as e:
             print(f'home_nodes error: {type(e).__name__}: {e}')
 
-    ZOOM_LEVELS = [0.33, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.4, 1.6, 1.8, 2.0, 2.5]
+    # Every font size a zoom can call for, all built at startup: a font added
+    # later makes dpg rebuild the whole atlas on the next frame, which takes
+    # longer the more fonts there are (70 ms at ten, 300 ms at twenty) and
+    # stalls the zoom mid-gesture. A font a node chose for itself is drawn at
+    # the nearest of these sizes.
+    ZOOM_FONT_SIZES = [8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 27, 30, 33, 36,
+                       40, 44, 48, 53, 58, 64, 72, 80, 88, 96]
+    # Each level puts the 24 px default font at one of those sizes exactly, so
+    # ordinary text always matches the widgets it sits in.
+    ZOOM_LEVELS = [size / 24 for size in ZOOM_FONT_SIZES if size <= 58]
 
     def zoom_step(self, steps, anchor=None):
         """Move `steps` zoom levels in (positive) or out, about `anchor`, a
