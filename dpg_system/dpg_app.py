@@ -671,12 +671,13 @@ class App:
         moves - about the point pressed. Back at that point is back at the
         zoom it started from."""
         editor = self.get_current_editor()
-        if editor is None or self.node_under_mouse() is not None or self.link_under_mouse():
+        if editor is None or self.node_under_mouse() is not None or self.patching_under_mouse():
             return False
         pressed = list(dpg.get_mouse_pos(local=False))
         if self._pointer_in(editor) is None:
             return False
         self._zoom_drag = (editor, pressed, editor.zoom)
+        editor.hide_box_selector(True)
         return True
 
     def follow_zoom_drag(self):
@@ -708,9 +709,13 @@ class App:
         editor = self._zoom_drag[0]
         self._zoom_drag = None
         self._zoom_drag_level = None
-        # The press on empty canvas also started a box selection.
+        # The press on empty canvas also started a box selection, drawn in
+        # nothing while the zoom ran; whatever it swept up is dropped here.
         if editor in self.node_editors:
-            self.queue_main_thread_call(dpg.clear_selected_nodes, editor.uuid)
+            def finish():
+                dpg.clear_selected_nodes(editor.uuid)
+                editor.hide_box_selector(False)
+            self.queue_main_thread_call(finish)
 
     def zero_handler(self):
         if self.control_or_command_down():
@@ -902,22 +907,26 @@ class App:
                 return self._hovered_descendant(uuid)
         return None
 
-    def link_under_mouse(self, reach=6.0):
-        """True if the pointer is on a patch cord - where Cmd-Shift-drag moves
-        the cord to another outlet rather than zooming.
+    # What imnodes counts as near enough to a cord or a pin to take the press
+    # (its LinkHoverDistance and PinHoverRadius), with a margin, so that no
+    # press is near enough for imnodes and far enough for the zoom.
+    patching_reach = 12.0
 
-        Found by geometry, as node_under_mouse is: imnodes stops reporting
-        hover once a click begins. A cord runs from its outlet's pin, on the
-        node's right edge at the outlet's height, to the inlet's pin on the
-        other node's left edge, as a cubic whose handles run a quarter of its
-        length out horizontally (imnodes' shape). `reach` is how near counts,
-        at 100%; it grows with the zoom, as the cords' own hover distance does.
+    def patching_under_mouse(self):
+        """True if the pointer is on a patch cord or on a pin - where a
+        Cmd-Shift-drag re-patches rather than zooming.
+
+        Found by geometry, as node_under_mouse is, because imnodes stops
+        reporting hover once a click begins. A cord runs from its outlet's
+        pin, on the node's right edge at the outlet's height, to the inlet's
+        pin on the other node's left edge, as a cubic whose handles run a
+        quarter of its length out horizontally (imnodes' shape).
         """
         editor = self.get_current_editor()
         if editor is None:
             return False
         x, y = dpg.get_mouse_pos(local=False)
-        reach = reach * max(editor.zoom, 1.0) + 2
+        reach = self.patching_reach * editor.zoom
         pin_offset = 2 * editor.zoom
 
         def pin(port, right):
@@ -938,6 +947,20 @@ class App:
             return px, (top + bottom) / 2
 
         for node in list(editor._nodes):
+            # Pins sit just outside the node's rectangle, so only a node the
+            # pointer is beside can have one under it.
+            try:
+                left, top = dpg.get_item_rect_min(node.uuid)
+                right, bottom = dpg.get_item_rect_max(node.uuid)
+            except Exception:
+                continue
+            span = reach + pin_offset
+            if left - span <= x <= right + span and top - span <= y <= bottom + span:
+                outputs = list(getattr(node, 'outputs', []))
+                for port in list(getattr(node, 'inputs', [])) + outputs:
+                    spot = pin(port, port in outputs)
+                    if spot is not None and math.hypot(x - spot[0], y - spot[1]) <= reach:
+                        return True
             for output in getattr(node, 'outputs', []):
                 for inlet in list(getattr(output, '_children', [])):
                     try:

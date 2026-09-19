@@ -1573,6 +1573,7 @@ class NodeEditor:
         self._zoom_styles = []
         self._zoom_components = []
         self._zoom_default_styles = []
+        self._box_selector_colors = []
         with dpg.theme() as self.node_theme:
             with dpg.theme_component(dpg.mvAll):
                 self._add_zoom_styles(link_thickness=2)
@@ -1594,6 +1595,21 @@ class NodeEditor:
                 # Presenting shows controls, not patching: pins go with the links.
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_PinHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+
+    def hide_box_selector(self, hidden):
+        """While a zoom drag is running, the box selection the press also
+        started is drawn in nothing at all. imnodes has no way to turn the box
+        selector off, and its colours are its own, so they are only stated
+        while they are wanted away."""
+        for item in self._box_selector_colors:
+            if dpg.does_item_exist(item):
+                dpg.delete_item(item)
+        self._box_selector_colors = []
+        if hidden:
+            for component in self._zoom_components:
+                for colour in (dpg.mvNodeCol_BoxSelector, dpg.mvNodeCol_BoxSelectorOutline):
+                    self._box_selector_colors.append(dpg.add_theme_color(
+                        colour, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes, parent=component))
 
     def bind_theme(self):
         """Themes are bound globally, so the tab being shown must re-assert its
