@@ -419,6 +419,9 @@ class App:
         self._pending_drag_snapshot = None  # (editor, positions_fingerprint) speculatively pushed on mouse-down
         self._pending_widget_edit = None    # (editor, widget_uuid, before_value) speculatively pushed on widget-activated
         self._pending_help_target = None    # (node, mouse_down_pos) captured on alt-mouse-down, fired on mouse-up
+        self._zoom_drag = None  # (editor, press position, zoom at press) during a Cmd-Shift-drag zoom
+        self._zoom_drag_level = None
+        self._zoom_drag_queued = False
         self.saving_to_lib = False
         self.project_name = os.path.basename(__file__).split('.')[0]
         self.currently_loading_patch_name = ''
@@ -562,9 +565,11 @@ class App:
             self._font_sizes[self._zoom_fonts[key]] = key
         return self._zoom_fonts[key]
 
-    # Zoom per unit of scroll, as a factor: one notch of a wheel is one level.
-    # A trackpad sends many small fractions instead, and they add up smoothly.
-    zoom_wheel_rate = 1.1
+    # Zoom per unit of scroll, as a factor. dpg reports scroll in whole units
+    # only, once a frame - a slow trackpad drag never reaches a whole unit and
+    # does nothing, a fast one sends a unit or more every frame - so this is
+    # kept low enough that a fast drag is not a rush.
+    zoom_wheel_rate = 1.04
     # A pause this long ends a gesture, and what was left over from it.
     zoom_gesture_gap = 0.25
 
@@ -649,6 +654,56 @@ class App:
         if left <= x <= left + width and top <= y <= top + height:
             return [x, y]
         return None
+
+    # Drag distance for a doubling (or halving) of the zoom.
+    zoom_drag_doubling = 200.0
+
+    def start_zoom_drag(self):
+        """Cmd-Shift-press on empty canvas: the zoom now follows how far the
+        pointer is above or below where it was pressed - not how fast it
+        moves - about the point pressed. Back at that point is back at the
+        zoom it started from."""
+        editor = self.get_current_editor()
+        if editor is None or self.node_under_mouse() is not None:
+            return False
+        pressed = list(dpg.get_mouse_pos(local=False))
+        if self._pointer_in(editor) is None:
+            return False
+        self._zoom_drag = (editor, pressed, editor.zoom)
+        return True
+
+    def follow_zoom_drag(self):
+        if self._zoom_drag is None:
+            return
+        if not dpg.is_mouse_button_down(0):
+            self.end_zoom_drag()
+            return
+        editor, pressed, start_zoom = self._zoom_drag
+        rise = pressed[1] - dpg.get_mouse_pos(local=False)[1]
+        wanted = start_zoom * 2.0 ** (rise / self.zoom_drag_doubling)
+        self._zoom_drag_level = min(NodeEditor.ZOOM_LEVELS, key=lambda z: abs(math.log(z / wanted)))
+        if not self._zoom_drag_queued:
+            self._zoom_drag_queued = True
+            self.queue_main_thread_call(self._apply_zoom_drag)
+
+    def _apply_zoom_drag(self):
+        self._zoom_drag_queued = False
+        drag = self._zoom_drag
+        if drag is None or self._zoom_drag_level is None:
+            return
+        editor, pressed, _ = drag
+        if editor in self.node_editors and self._zoom_drag_level != editor.zoom:
+            editor.set_zoom(self._zoom_drag_level, list(pressed))
+
+    def end_zoom_drag(self):
+        if self._zoom_drag is None:
+            return
+        editor = self._zoom_drag[0]
+        self._zoom_drag = None
+        self._zoom_drag_level = None
+        # The press on empty canvas also started a box selection.
+        if editor in self.node_editors:
+            self.queue_main_thread_call(dpg.clear_selected_nodes, editor.uuid)
 
     def zero_handler(self):
         if self.control_or_command_down():
@@ -1119,6 +1174,7 @@ class App:
                 dpg.add_menu_item(label="Zoom In (Cmd + or Cmd-scroll)", callback=lambda: self.zoom_in())
                 dpg.add_menu_item(label="Zoom Out (Cmd - or Cmd-scroll)", callback=lambda: self.zoom_out())
                 dpg.add_menu_item(label="Actual Size (Cmd-0)", callback=lambda: self.zoom_reset())
+                dpg.add_menu_item(label="(Cmd-Shift-drag on empty canvas: up in, down out)", enabled=False)
 
 
             with dpg.menu(label='Options'):
@@ -1823,6 +1879,11 @@ class App:
                 self.resize_start_size = (w, h)
                 dpg.bind_item_theme(rh.uuid, _get_resize_handle_dragging_theme())
                 return
+        if self.control_or_command_down() and self.shift_down() and dpg.is_mouse_button_down(0):
+            # Cmd-Shift-drag on empty canvas zooms (Cmd-click alone still
+            # switches modes).
+            if self.start_zoom_drag():
+                return
         if self.control_or_command_down():
             # Only a click on empty canvas switches modes; on a node the
             # modifier belongs to the node (selection, the widget itself).
@@ -1862,6 +1923,7 @@ class App:
         return tuple((n.uuid, *dpg.get_item_pos(n.uuid)) for n in editor._nodes)
 
     def mouse_up_handler(self, sender=None, app_data=None, user_data=None):
+        self.end_zoom_drag()
         if self._pending_help_target is not None:
             target, down_pos = self._pending_help_target
             self._pending_help_target = None
@@ -1895,6 +1957,9 @@ class App:
                 print(f'drag commit check failed: {e}')
 
     def drag_create_nodes(self):
+        if self._zoom_drag is not None:
+            self.follow_zoom_drag()
+            return
         if self.resize_drag is not None:
             if not dpg.is_mouse_button_down(0):
                 from dpg_system.node import _get_resize_handle_theme
