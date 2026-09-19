@@ -53,6 +53,46 @@ def truncate_to_sampleable(entries, top_k, top_p, min_p):
     return entries
 
 
+class MLXWorker:
+    """Every MLX call this node makes happens on this one thread, for the whole
+    class.
+
+    MLX registers its streams PER THREAD, so work left queued on one thread's
+    stream cannot be finished on another. Loading the model on one thread,
+    generating on a fresh thread per prompt and pre-reading on a third worked for
+    a single turn and then raised
+
+        There is no Stream(gpu, 1) in current thread
+
+    as soon as a later turn touched the cache or the logits an earlier one had
+    left behind. It has to be one thread, and a class-level one at that, because
+    the loaded model is shared between nodes.
+    """
+
+    jobs = Queue()
+    thread = None
+    start_lock = threading.Lock()
+
+    @classmethod
+    def submit(cls, job):
+        with cls.start_lock:
+            if cls.thread is None:
+                cls.thread = threading.Thread(target=cls.run, daemon=True)
+                cls.thread.start()
+        cls.jobs.put(job)
+
+    @classmethod
+    def run(cls):
+        while True:
+            job = cls.jobs.get()
+            if job is None:
+                continue
+            try:
+                job()
+            except Exception as e:
+                print('qwen_moe:', e)
+
+
 class MLXModel:
     """One loaded copy of a model, shared by every qwen_moe node that names it.
     Twenty gigabytes is not something to hold twice."""
@@ -152,8 +192,7 @@ class QwenMoeChatNode(Node):
         self.spoken_text_start = 0
         self.spoken_turn_new_system = True
         self.prefill_lock = threading.Lock()
-        self.prefill_wanted = threading.Event()
-        self.prefill_thread = None
+        self.prefill_pending = False
         self.prefill_stop = False
         self.starting_model = False
 
@@ -267,12 +306,10 @@ class QwenMoeChatNode(Node):
         def load():
             try:
                 self.ensure_model()
-            except Exception as e:
-                print('qwen_moe:', e)
             finally:
                 self.starting_model = False
 
-        threading.Thread(target=load, daemon=True).start()
+        MLXWorker.submit(load)
 
     # ------------------------------------------------------- cache and logits
 
@@ -640,8 +677,7 @@ class QwenMoeChatNode(Node):
             self.take_step = 1 if value > 0 else -1
 
     def initiate_generation(self):
-        self.thread = threading.Thread(target=self.generate)
-        self.thread.start()
+        MLXWorker.submit(self.generate)
 
     def generate(self):
         preferred_id = None
@@ -710,7 +746,6 @@ class QwenMoeChatNode(Node):
             print('qwen_moe:', e)
         self.active = False
         self.active_out.send(self.active)
-        sys.exit()
 
     def sample_token(self, preferred_choice=None):
         logits = self.next_logits()
@@ -741,6 +776,14 @@ class QwenMoeChatNode(Node):
         action outlet, everything else to the text."""
         self.token_out.send(token_id)
 
+        if token_id == self.holder.think_open:
+            # The prompt always opens the thought block itself - closed when
+            # thinking is off, open when it is on - so a <think> the model
+            # produces of its own accord is spurious. Drop the tag and let the
+            # answer carry on: printing it puts markup in the text, and treating
+            # it as a real block diverts the rest of the answer to the thinking
+            # outlet and reads as the text being cut off.
+            return
         if token_id == self.holder.think_close:
             self.in_thinking = False
             self.answer_start = len(self.context_tokens)
@@ -936,35 +979,35 @@ class QwenMoeChatNode(Node):
     # ------------------------------------------- reading words as they arrive
 
     def request_prefill(self):
+        """Queue a read of whatever has arrived. One outstanding job is enough:
+        it always reads the CURRENT text, so a burst of words becomes one read."""
         if not self.preread() or self.holder is None:
             return
-        if self.prefill_thread is None:
-            self.prefill_stop = False
-            self.prefill_thread = threading.Thread(target=self.prefill_worker, daemon=True)
-            self.prefill_thread.start()
-        self.prefill_wanted.set()
+        if self.prefill_pending:
+            return
+        self.prefill_pending = True
+        MLXWorker.submit(self.read_arrived_text)
 
-    def prefill_worker(self):
-        while not self.prefill_stop:
-            if not self.prefill_wanted.wait(0.25):
-                continue
-            self.prefill_wanted.clear()
-            if self.prefill_stop:
+    def read_arrived_text(self):
+        self.prefill_pending = False
+        if self.prefill_stop:
+            return
+        text = self.streaming_prompt
+        with self.prefill_lock:
+            if self.active or self.do_reset or self.holder is None:
                 return
-            text = self.streaming_prompt
-            with self.prefill_lock:
-                if self.active or self.do_reset or self.holder is None:
-                    continue
-                try:
-                    if len(text.strip()) == 0:
-                        if self.queue.empty():
-                            self.abandon_spoken_turn()
-                        continue
-                    self.open_spoken_turn()
-                    self.feed_spoken_text(text)
-                except Exception as e:
-                    print('qwen_moe pre-read:', e)
-                    self.abandon_spoken_turn()
+            try:
+                if len(text.strip()) == 0:
+                    # an empty box with something queued means it was just
+                    # submitted, and that turn is about to be generated
+                    if self.queue.empty():
+                        self.abandon_spoken_turn()
+                    return
+                self.open_spoken_turn()
+                self.feed_spoken_text(text)
+            except Exception as e:
+                print('qwen_moe pre-read:', e)
+                self.abandon_spoken_turn()
 
     def open_spoken_turn(self):
         if self.spoken_turn_open:
@@ -1123,6 +1166,13 @@ class QwenMoeChatNode(Node):
         if self.preprompt != '':
             prompt = self.preprompt + prompt
             self.preprompt = ''
+        if len(prompt.strip()) == 0:
+            # A bang, or an empty text widget, arrives here as ''. Taking it as a
+            # prompt builds an empty user turn - '<|im_start|>user\n<|im_end|>' -
+            # which the model then answers ("did you just send an empty
+            # message?"), wasting a turn and leaving that exchange in the
+            # context. There is nothing to ask, so ask nothing.
+            return
         self.queue.put(prompt, block=False)
 
     def submit_streaming_prompt(self):
@@ -1230,7 +1280,6 @@ class QwenMoeChatNode(Node):
         self.response_start = 0
         self.answer_start = 0
         self.spoken_turn_open = False
-        self.prefill_wanted.clear()
         self.new_system_prompt = True
         self.queue.queue.clear()
         self.set_seed()
@@ -1238,8 +1287,6 @@ class QwenMoeChatNode(Node):
     def custom_cleanup(self):
         self.active = False
         self.prefill_stop = True
-        self.prefill_wanted.set()
-        self.prefill_thread = None
         self.cache = None
         self.turn_snapshot = None
         self.logits = None
