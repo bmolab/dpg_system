@@ -576,27 +576,46 @@ class App:
         if steps != 0 and editor in self.node_editors:
             editor.zoom_step(steps, list(dpg.get_mouse_pos(local=False)))
 
-    def zoom_in(self):
-        self._zoom_current(1)
+    # The menu items zoom about the middle of the patcher: the pointer is up on
+    # the menu when one is chosen. The keys zoom about the pointer.
+    def zoom_in(self, at_pointer=False):
+        self._zoom_current(1, at_pointer)
 
-    def zoom_out(self):
-        self._zoom_current(-1)
+    def zoom_out(self, at_pointer=False):
+        self._zoom_current(-1, at_pointer)
 
-    def zoom_reset(self):
-        self._zoom_current(None)
+    def zoom_reset(self, at_pointer=False):
+        self._zoom_current(None, at_pointer)
 
-    def _zoom_current(self, steps):
+    def _zoom_current(self, steps, at_pointer):
         editor = self.get_current_editor()
         if editor is None:
             return
-        if steps is None:
-            self.queue_main_thread_call(editor.set_zoom, 1.0)
-        else:
-            self.queue_main_thread_call(editor.zoom_step, steps)
+
+        def zoom():
+            anchor = self._pointer_in(editor) if at_pointer else None
+            if steps is None:
+                editor.set_zoom(1.0, anchor)
+            else:
+                editor.zoom_step(steps, anchor)
+
+        self.queue_main_thread_call(zoom)
+
+    def _pointer_in(self, editor):
+        """The pointer, if it is over the patcher; else None (the middle)."""
+        try:
+            x, y = dpg.get_mouse_pos(local=False)
+            left, top = dpg.get_item_rect_min(editor.uuid)
+            width, height = dpg.get_item_rect_size(editor.uuid)
+        except Exception:
+            return None
+        if left <= x <= left + width and top <= y <= top + height:
+            return [x, y]
+        return None
 
     def zero_handler(self):
         if self.control_or_command_down():
-            self.zoom_reset()
+            self.zoom_reset(at_pointer=True)
 
     def register_patcher(self, name):
         self.patchers.append(name)
@@ -1060,9 +1079,9 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Home (H)", callback=self.home_current_editor)
                 dpg.add_separator()
-                dpg.add_menu_item(label="Zoom In (Cmd + or Cmd-scroll)", callback=self.zoom_in)
-                dpg.add_menu_item(label="Zoom Out (Cmd - or Cmd-scroll)", callback=self.zoom_out)
-                dpg.add_menu_item(label="Actual Size (Cmd-0)", callback=self.zoom_reset)
+                dpg.add_menu_item(label="Zoom In (Cmd + or Cmd-scroll)", callback=lambda: self.zoom_in())
+                dpg.add_menu_item(label="Zoom Out (Cmd - or Cmd-scroll)", callback=lambda: self.zoom_out())
+                dpg.add_menu_item(label="Actual Size (Cmd-0)", callback=lambda: self.zoom_reset())
 
 
             with dpg.menu(label='Options'):
@@ -1445,14 +1464,14 @@ class App:
             if self.nodes_are_selected():
                 self.space_out_selected()
             else:
-                self.zoom_in()
+                self.zoom_in(at_pointer=True)
 
     def minus_handler(self):
         if self.control_or_command_down():
             if self.nodes_are_selected():
                 self.tighten_selected()
             else:
-                self.zoom_out()
+                self.zoom_out(at_pointer=True)
 
     def nodes_are_selected(self):
         editor = self.get_current_editor()
