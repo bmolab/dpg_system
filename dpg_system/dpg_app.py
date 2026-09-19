@@ -313,6 +313,13 @@ class DebugState:
 
 
 
+
+def _distance_to_segment(x, y, a, b):
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    length = dx * dx + dy * dy
+    t = 0.0 if length == 0 else max(0.0, min(1.0, ((x - a[0]) * dx + (y - a[1]) * dy) / length))
+    return math.hypot(x - (a[0] + t * dx), y - (a[1] + t * dy))
+
 class App:
     def __init__(self):
         self.config = None
@@ -664,7 +671,7 @@ class App:
         moves - about the point pressed. Back at that point is back at the
         zoom it started from."""
         editor = self.get_current_editor()
-        if editor is None or self.node_under_mouse() is not None:
+        if editor is None or self.node_under_mouse() is not None or self.link_under_mouse():
             return False
         pressed = list(dpg.get_mouse_pos(local=False))
         if self._pointer_in(editor) is None:
@@ -894,6 +901,66 @@ class App:
             if left <= x <= right and top <= y <= bottom:
                 return self._hovered_descendant(uuid)
         return None
+
+    def link_under_mouse(self, reach=6.0):
+        """True if the pointer is on a patch cord - where Cmd-Shift-drag moves
+        the cord to another outlet rather than zooming.
+
+        Found by geometry, as node_under_mouse is: imnodes stops reporting
+        hover once a click begins. A cord runs from its outlet's pin, on the
+        node's right edge at the outlet's height, to the inlet's pin on the
+        other node's left edge, as a cubic whose handles run a quarter of its
+        length out horizontally (imnodes' shape). `reach` is how near counts,
+        at 100%; it grows with the zoom, as the cords' own hover distance does.
+        """
+        editor = self.get_current_editor()
+        if editor is None:
+            return False
+        x, y = dpg.get_mouse_pos(local=False)
+        reach = reach * max(editor.zoom, 1.0) + 2
+        pin_offset = 2 * editor.zoom
+
+        def pin(port, right):
+            # An inlet or outlet has no rectangle of its own in dpg; what it
+            # holds - its label, or its widget - has, and sits at the same
+            # height as the pin.
+            inside = getattr(port, 'label_uuid', None)
+            if inside is None or not dpg.does_item_exist(inside):
+                widget = getattr(port, 'widget', None)
+                inside = getattr(widget, 'uuid', None)
+            if inside is None or not dpg.does_item_exist(inside):
+                return None
+            node_uuid = port.node.uuid
+            top = dpg.get_item_rect_min(inside)[1]
+            bottom = dpg.get_item_rect_max(inside)[1]
+            px = (dpg.get_item_rect_max(node_uuid)[0] + pin_offset if right
+                  else dpg.get_item_rect_min(node_uuid)[0] - pin_offset)
+            return px, (top + bottom) / 2
+
+        for node in list(editor._nodes):
+            for output in getattr(node, 'outputs', []):
+                for inlet in list(getattr(output, '_children', [])):
+                    try:
+                        start, end = pin(output, True), pin(inlet, False)
+                    except Exception:
+                        continue
+                    if start is None or end is None:
+                        continue
+                    (x0, y0), (x3, y3) = start, end
+                    if not (min(x0, x3) - reach <= x <= max(x0, x3) + reach):
+                        continue
+                    handle = 0.25 * math.hypot(x3 - x0, y3 - y0)
+                    x1, x2 = x0 + handle, x3 - handle
+                    previous = (x0, y0)
+                    for i in range(1, 25):
+                        t = i / 24
+                        u = 1 - t
+                        point = (u * u * u * x0 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x3,
+                                 u * u * u * y0 + 3 * u * u * t * y0 + 3 * u * t * t * y3 + t * t * t * y3)
+                        if _distance_to_segment(x, y, previous, point) <= reach:
+                            return True
+                        previous = point
+        return False
 
     def node_under_mouse(self):
         """The visible node whose rectangle holds the mouse, or None.
@@ -1881,9 +1948,11 @@ class App:
                 return
         if self.control_or_command_down() and self.shift_down() and dpg.is_mouse_button_down(0):
             # Cmd-Shift-drag on empty canvas zooms (Cmd-click alone still
-            # switches modes).
-            if self.start_zoom_drag():
-                return
+            # switches modes). On a cord it belongs to the cord, which
+            # Cmd-Shift-drag moves to another outlet - and either way,
+            # holding shift is not a request to switch modes.
+            self.start_zoom_drag()
+            return
         if self.control_or_command_down():
             # Only a click on empty canvas switches modes; on a node the
             # modifier belongs to the node (selection, the widget itself).
