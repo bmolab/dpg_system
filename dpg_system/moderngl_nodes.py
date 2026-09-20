@@ -546,14 +546,19 @@ class MGLContextNode(Node):
         self.height = max(1, self.height_option())
 
     def _on_node_display_size_changed(self):
+        # The options are the size at 100%; what is drawn follows the zoom.
         w = max(1, self.node_display_width_option())
         h = max(1, self.node_display_height_option())
         if self.image_item and dpg.does_item_exist(self.image_item):
-            dpg.set_item_width(self.image_item, w)
-            dpg.set_item_height(self.image_item, h)
+            dpg.set_item_width(self.image_item, self.zoomed(w))
+            dpg.set_item_height(self.image_item, self.zoomed(h))
         rh = self.node_resize_handle
         if rh is not None and dpg.does_item_exist(rh.uuid):
-            dpg.set_item_width(rh.uuid, w)
+            dpg.set_item_width(rh.uuid, self.zoomed(w))
+
+    def custom_zoom(self, ratio, exact):
+        # Sized from the options rather than scaled, so every zoom is exact.
+        self._on_node_display_size_changed()
 
     def _on_node_resize_drag(self, new_w, new_h):
         # Default drag updates display size only (via width_option=node_display_*).
@@ -567,28 +572,30 @@ class MGLContextNode(Node):
         kwargs = {}
         if before is not None:
             kwargs['before'] = before
+        # w and h are the size at 100%: the picture is drawn at the zoom.
         if self.node_mouse_events_option():
             item = dpg.add_image_button(
                 self.texture_tag, parent=self.image_attribute,
-                width=w, height=h, **kwargs,
+                width=self.zoomed(w), height=self.zoomed(h), **kwargs,
             )
             dpg.bind_item_theme(item, _get_node_image_button_theme())
         else:
             item = dpg.add_image(
                 self.texture_tag, parent=self.image_attribute,
-                width=w, height=h, **kwargs,
+                width=self.zoomed(w), height=self.zoomed(h), **kwargs,
             )
         return item
 
     def _install_node_resize_handle(self, bar_width):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
-        btn = dpg.add_button(parent=self.image_attribute, label='', width=int(bar_width), height=4)
+        btn = dpg.add_button(parent=self.image_attribute, label='',
+                             width=self.zoomed(int(bar_width)), height=self.zoomed(4))
         handle = ResizeHandle(
             btn, self.image_item, axis='xy',
             width_option=self.node_display_width_option,
             height_option=self.node_display_height_option,
             sync_width=True, sync_height=False,
-            on_resize=self._on_node_resize_drag,
+            on_resize=self._on_node_resize_drag, zoom_aware=True,
         )
         dpg.set_item_user_data(btn, handle)
         dpg.bind_item_theme(btn, _get_resize_handle_theme())
@@ -1111,6 +1118,7 @@ class MGLDisplayNode(Node):
         self.fullscreen_input = self.add_input('fullscreen', widget_type='checkbox', default_value=False, callback=self.toggle_fullscreen)
         self.image_attribute = None
         self.image_item = None
+        self._display_size = None   # the picture's size at 100%
         self.fullscreen = False
         self.fullscreen_window = None
         self.texture_tag = None
@@ -1121,6 +1129,14 @@ class MGLDisplayNode(Node):
 
     def custom_create(self, from_file):
         self.image_attribute = dpg.add_node_attribute(attribute_type=dpg.mvNode_Attr_Static)
+
+    def custom_zoom(self, ratio, exact):
+        if self._display_size is None or not self.image_item:
+            return
+        if dpg.does_item_exist(self.image_item):
+            width, height = self._display_size
+            dpg.configure_item(self.image_item,
+                               width=self.zoomed(width), height=self.zoomed(height))
 
     def custom_cleanup(self):
         if self.fullscreen_window:
@@ -1177,11 +1193,15 @@ class MGLDisplayNode(Node):
             
             if w <= 0: w = dpg.get_item_width(self.texture_tag)
             if h <= 0: h = dpg.get_item_height(self.texture_tag)
-            
+
+            # What was asked for is the size at 100%; the picture in the patch
+            # is drawn at the zoom, and custom_zoom comes back through here.
+            self._display_size = (w, h)
             if self.image_item is None and self.image_attribute:
-                self.image_item = dpg.add_image(self.texture_tag, parent=self.image_attribute, width=w, height=h)
+                self.image_item = dpg.add_image(self.texture_tag, parent=self.image_attribute,
+                                                width=self.zoomed(w), height=self.zoomed(h))
             elif self.image_item:
-                 dpg.configure_item(self.image_item, width=w, height=h)
+                 dpg.configure_item(self.image_item, width=self.zoomed(w), height=self.zoomed(h))
             
             if self.fullscreen:
                 self.update_fullscreen_image()
