@@ -63,6 +63,8 @@ class NodeEditor:
         # ones; patches, the clipboard and undo snapshots hold 100% values.
         self.zoom = 1.0
         self.zoom_font = None  # bound on the editor when zoom != 1
+        self._pan = None          # where the view is: screen = pan + position + padding * zoom
+        self._moved_on_frame = -1  # when the nodes were last moved from here
 
     def set_name(self, name):
         old_name = getattr(self, 'patch_name', None)
@@ -779,6 +781,52 @@ class NodeEditor:
         target = levels[max(0, min(len(levels) - 1, here + steps))]
         self.set_zoom(target, anchor)
 
+    def node_padding(self):
+        for style, values in self.ZOOM_STYLES:
+            if style == dpg.mvNodeStyleVar_NodePadding:
+                return values
+        return [0, 0]
+
+    def pan(self):
+        """Where the view is: a node is drawn at pan + its position + the node
+        padding at the current zoom. That padding is why the two cannot be
+        rolled into one - it changes with the zoom, and anchoring as though it
+        did not walked the whole patch across the canvas a little at a time.
+
+        Held from frame to frame rather than measured on the spot, because a
+        node's rectangle is where it was DRAWN, a frame behind the position it
+        has been given. Panning is what changes it, and that is picked up on
+        the next frame drawn.
+        """
+        return self._pan
+
+    def frame_shift_check(self):
+        """Once a frame, before the next is drawn. A node's rectangle is only
+        worth reading when it was drawn where the node now is: the last frame
+        drawn is the one before this, so a zoom in either of them leaves the
+        rectangles behind the positions."""
+        if self.app.frame_number - self._moved_on_frame <= 1:
+            return
+        if self.origin is None or not dpg.does_item_exist(self.origin.uuid):
+            return
+        try:
+            screen = dpg.get_item_rect_min(self.origin.uuid)
+            grid = dpg.get_item_pos(self.origin.uuid)
+        except Exception:
+            return
+        if screen[0] == 0 and screen[1] == 0:
+            return  # not drawn yet
+        padding = self.node_padding()
+        measured = [screen[0] - grid[0] - padding[0] * self.zoom,
+                    screen[1] - grid[1] - padding[1] * self.zoom]
+        # Rectangles come back in whole pixels, so the same view measures a
+        # little differently at each zoom. Taking every reading would feed
+        # that jitter into the anchoring and creep across many zooms; only a
+        # real pan moves it by more than a pixel.
+        if self._pan is None or max(abs(measured[0] - self._pan[0]),
+                                    abs(measured[1] - self._pan[1])) > 1.5:
+            self._pan = measured
+
     def exact_pos(self, node):
         """A node's position without the rounding to whole pixels that dpg
         does. Zooming out and back in, or saving while zoomed out, would
@@ -804,15 +852,7 @@ class NodeEditor:
         if abs(ratio - 1.0) < 1e-6:
             return
 
-        # Screen = grid + shift: the same for every node, so any one gives it.
-        shift = None
-        if self.origin is not None and dpg.does_item_exist(self.origin.uuid):
-            try:
-                screen = dpg.get_item_rect_min(self.origin.uuid)
-                grid = dpg.get_item_pos(self.origin.uuid)
-                shift = [screen[0] - grid[0], screen[1] - grid[1]]
-            except Exception:
-                shift = None
+        pan = self.pan()
         if anchor is None:
             try:
                 top_left = dpg.get_item_rect_min(self.uuid)
@@ -820,11 +860,16 @@ class NodeEditor:
                 anchor = [top_left[0] + size[0] / 2, top_left[1] + size[1] / 2]
             except Exception:
                 anchor = [0, 0]
-        if shift is not None:
-            fixed = [anchor[0] - shift[0], anchor[1] - shift[1]]
+        # Worked through in screen terms, with the padding in, so that the
+        # point under the anchor is the one that stays put.
+        padding = self.node_padding()
+        if pan is not None:
+            fixed = [anchor[0] - pan[0], anchor[1] - pan[1]]
         else:
             fixed = [0.0, 0.0]
+        was, now = self.zoom, zoom
 
+        self._moved_on_frame = self.app.frame_number
         self.zoom = zoom
         self.zoom_font = self.app.zoomed_font(self.app.default_font(), zoom) if zoom != 1.0 else None
         self._scale_styles(zoom)
@@ -833,8 +878,8 @@ class NodeEditor:
         for node in self._nodes:
             try:
                 x, y = self.exact_pos(node)
-                x = fixed[0] + (x - fixed[0]) * ratio
-                y = fixed[1] + (y - fixed[1]) * ratio
+                x = fixed[0] + (x + padding[0] * was - fixed[0]) * ratio - padding[0] * now
+                y = fixed[1] + (y + padding[1] * was - fixed[1]) * ratio - padding[1] * now
                 exact[node.uuid] = (x, y)
                 dpg.set_item_pos(node.uuid, [int(round(x)), int(round(y))])
                 node.apply_zoom(ratio)

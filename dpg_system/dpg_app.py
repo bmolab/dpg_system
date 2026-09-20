@@ -2844,6 +2844,7 @@ class App:
                     now = time.perf_counter()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
+                        node_editor.frame_shift_check()
                     self.trace_indent = ''
                     if self.trace:
                         print()
