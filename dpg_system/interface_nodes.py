@@ -1507,7 +1507,8 @@ class ValueNode(Node):
 
         adjusted_width = self.input.widget.adjust_to_text_width()
         if self.width_option is not None:
-            self.width_option.widget.set(adjusted_width)
+            # Text is measured in the font as drawn, so at the zoom.
+            self.width_option.widget.set(self.unzoomed(adjusted_width))
 
         trigger = self.input.widget.trigger_widget
         if trigger:
@@ -1520,8 +1521,9 @@ class ValueNode(Node):
         # the node is dropped from the patch with only a console message.
         if self.width_option is None:
             return
+        # The option is the width at 100%; the widget is drawn at the zoom.
         width = self.width_option()
-        dpg.set_item_width(self.input.widget.uuid, width)
+        dpg.set_item_width(self.input.widget.uuid, self.zoomed(width))
 
     def binding_changed(self):
         binding = self.variable_binding_property()
@@ -1562,7 +1564,13 @@ class ValueNode(Node):
         self.install_resize_handle()
 
     def install_resize_handle(self):
-        self.add_resize_handle(self.input.widget, axis='x', width_option=self.width_option)
+        self.add_resize_handle(self.input.widget, axis='x', width_option=self.width_option,
+                               zoom_aware=True)
+
+    def custom_zoom(self, ratio, exact):
+        # Sized from the option rather than scaled, so every zoom is exact.
+        super().custom_zoom(ratio, exact)
+        self.options_changed()
 
     def custom_cleanup(self):
         if self.variable is not None:
@@ -1683,15 +1691,17 @@ class ValueNode(Node):
 
     def _handle_auto_grow(self):
         if self.grow_mode in ['grow_to_fit', 'grow_or_shrink_to_fit']:
+            # Measured in the font as drawn, so at the zoom; the option keeps
+            # the width at 100%.
             adjusted_width = self.input.widget.get_text_width()
             current_opt = self.width_option()
             if self.grow_mode == 'grow_to_fit':
-                if adjusted_width > current_opt:
+                if self.unzoomed(adjusted_width) > current_opt:
                     dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
-                    self.width_option.set(adjusted_width)
+                    self.width_option.set(self.unzoomed(adjusted_width))
             else:
                 dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
-                self.width_option.set(adjusted_width)
+                self.width_option.set(self.unzoomed(adjusted_width))
 
 
 class NumericValueNode(ValueNode):
@@ -1958,7 +1968,7 @@ class TextEditorNode(StringNode):
                                            callback=self.options_changed)
 
     def custom_create(self, from_file):
-        dpg.set_item_height(self.input.widget.uuid, self.height_option())
+        dpg.set_item_height(self.input.widget.uuid, self.zoomed(self.height_option()))
         super().custom_create(from_file)
         self.input.widget.rewrap()
 
@@ -1966,7 +1976,7 @@ class TextEditorNode(StringNode):
         self.resize_handle = self.add_resize_handle(
             self.input.widget, axis='xy',
             width_option=self.width_option, height_option=self.height_option,
-            on_resize=self.on_resized
+            on_resize=self.on_resized, zoom_aware=True
         )
 
     def on_resized(self, new_w, new_h):
@@ -1976,7 +1986,8 @@ class TextEditorNode(StringNode):
     def options_changed(self):
         super().options_changed()
         if self.height_option:
-            h = self.height_option()
+            # The option is the height at 100%; drawn at the zoom.
+            h = self.zoomed(self.height_option())
             dpg.set_item_height(self.input.widget.uuid, h)
             if getattr(self, 'resize_handle', None) and dpg.does_item_exist(self.resize_handle.uuid):
                 dpg.set_item_height(self.resize_handle.uuid, h)

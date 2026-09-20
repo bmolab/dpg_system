@@ -3273,6 +3273,14 @@ class Node:
         """A size given at 100%, in the units this patcher is drawn at."""
         return zoomed_size(self, size)
 
+    def unzoomed(self, size):
+        """A size measured on screen, back at 100% - what an option that is
+        saved with the patch should hold."""
+        zoom = node_zoom(self)
+        if zoom == 1.0 or size is None:
+            return size
+        return max(1, int(round(size / zoom)))
+
     def set_title(self, title: str) -> None:
         dpg.configure_item(self.uuid, label=title)
 
@@ -3575,7 +3583,8 @@ class Node:
             return new_output
         return None
 
-    def add_resize_handle(self, widget, axis='x', width_option=None, height_option=None, extra_targets=None, on_resize=None):
+    def add_resize_handle(self, widget, axis='x', width_option=None, height_option=None, extra_targets=None,
+                          on_resize=None, zoom_aware=False):
         parent = widget.h_group_uuid
         if parent is None:
             return None
@@ -3587,10 +3596,14 @@ class Node:
                     handle_height = int(v)
             except Exception as e:
                 print(f"add_resize_handle: height_option failed: {e}")
-        btn_uuid = dpg.add_button(parent=parent, label='', width=4, height=handle_height)
+        btn_uuid = dpg.add_button(parent=parent, label='', width=self.zoomed(4),
+                                  height=self.zoomed(handle_height))
         extra_uuids = [w.uuid for w in extra_targets] if extra_targets else None
         handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option,
-                              extra_target_uuids=extra_uuids, on_resize=on_resize)
+                              extra_target_uuids=extra_uuids, on_resize=on_resize,
+                              zoom_aware=zoom_aware)
+        if zoom_aware:
+            self.zoom_scaled_items.append(btn_uuid)
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         return handle
