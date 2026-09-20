@@ -2098,6 +2098,12 @@ class App:
                 dx = mp[0] - self.resize_start_mouse[0]
                 dy = mp[1] - self.resize_start_mouse[1]
                 rh = self.resize_drag
+                # The item is sized on screen, at the zoom; the option that
+                # remembers it - and is saved with the patch - is at 100%.
+                zoom = self.current_zoom() if rh.zoom_aware else 1.0
+                def remember(option, size):
+                    if option is not None:
+                        option.set(max(1, int(round(size / zoom))))
                 if dpg.does_item_exist(rh.target_uuid):
                     new_w = self.resize_start_size[0]
                     new_h = self.resize_start_size[1]
@@ -2116,8 +2122,7 @@ class App:
                             dpg.set_item_width(rh.uuid, new_size)
                         if rh.sync_height and dpg.does_item_exist(rh.uuid):
                             dpg.set_item_height(rh.uuid, new_size)
-                        if rh.width_option is not None:
-                            rh.width_option.set(new_size)
+                        remember(rh.width_option, new_size)
                     else:
                         if 'x' in rh.axis:
                             new_w = max(20, int(self.resize_start_size[0] + dx))
@@ -2127,8 +2132,7 @@ class App:
                                     dpg.set_item_width(extra_uuid, new_w)
                             if rh.sync_width and dpg.does_item_exist(rh.uuid):
                                 dpg.set_item_width(rh.uuid, new_w)
-                            if rh.width_option is not None:
-                                rh.width_option.set(new_w)
+                            remember(rh.width_option, new_w)
                         if 'y' in rh.axis:
                             new_h = max(20, int(self.resize_start_size[1] + dy))
                             dpg.set_item_height(rh.target_uuid, new_h)
@@ -2137,11 +2141,11 @@ class App:
                                     dpg.set_item_height(extra_uuid, new_h)
                             if rh.sync_height and dpg.does_item_exist(rh.uuid):
                                 dpg.set_item_height(rh.uuid, new_h)
-                            if rh.height_option is not None:
-                                rh.height_option.set(new_h)
+                            remember(rh.height_option, new_h)
                     if rh.on_resize is not None:
                         try:
-                            rh.on_resize(new_w, new_h)
+                            # at 100%, as the options are
+                            rh.on_resize(new_w / zoom, new_h / zoom)
                         except Exception as e:
                             print(f'resize handle on_resize failed: {e}')
         if self.dragging_created_nodes:

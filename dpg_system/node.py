@@ -175,7 +175,7 @@ def _get_pin_active_bang_theme():
 class ResizeHandle:
     def __init__(self, uuid, target_uuid, axis='x', width_option=None, height_option=None,
                  sync_width=False, sync_height=True, square=False, extra_target_uuids=None,
-                 on_resize=None):
+                 on_resize=None, zoom_aware=False):
         self.uuid = uuid
         self.target_uuid = target_uuid
         self.axis = axis
@@ -186,6 +186,10 @@ class ResizeHandle:
         self.square = square
         self.extra_target_uuids = list(extra_target_uuids) if extra_target_uuids else []
         self.on_resize = on_resize
+        # Set where the owner draws at the patcher's zoom: the size it is
+        # told to remember is then the size at 100%, as a patch stores it.
+        # Families that have not been through that yet keep the old reading.
+        self.zoom_aware = zoom_aware
 
 
 class NodeOutput:
@@ -2961,6 +2965,11 @@ class Node:
         self.properties = []
         self.displays = []
         self.ordered_elements = []
+        # Items the node draws for itself - a plot, a canvas, an image - whose
+        # size is in pixels and so follows the patcher's zoom. A node puts
+        # them here as it makes them, at self.zoomed() size, and custom_zoom
+        # keeps them in step.
+        self.zoom_scaled_items = []
         self.message_handlers = {}
         self.message_handlers['set_preset'] = self.set_preset_state
         self.message_handlers['get_preset'] = self.get_preset_state
@@ -3253,10 +3262,12 @@ class Node:
             self._zoom_font_bound = font is not None
 
     def custom_zoom(self, ratio: float, exact: Dict) -> None:
-        """Override to scale what this node draws for itself. self.zoomed(n)
-        gives a size in the patcher's units; scale_item_size(uuid, ratio,
-        exact) does the usual width and height of an item."""
-        pass
+        """Scale what this node draws for itself. Anything in
+        zoom_scaled_items is resized; a node that has to redraw its contents
+        as well overrides this, calls super, and repaints from the size the
+        item has then (vu~ and fader~ do)."""
+        for uuid in self.zoom_scaled_items:
+            scale_item_size(uuid, ratio, exact)
 
     def zoomed(self, size):
         """A size given at 100%, in the units this patcher is drawn at."""

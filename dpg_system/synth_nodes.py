@@ -1338,7 +1338,7 @@ class AdditiveNode(SynthNode):
                                        height=self.plot_height,
                                        on_change=self.spectrum_edited,
                                        line_color=(240, 170, 80),
-                                       name=label)
+                                       name=label, node=self)
         # The same spectrum, editable a partial at a time. A drawn curve
         # cannot single out the ninth harmonic without passing over the
         # eighth; one bar per partial can.
@@ -1349,7 +1349,7 @@ class AdditiveNode(SynthNode):
                               height=self.plot_height,
                               on_change=self.bars_edited,
                               bar_color=(240, 170, 80),
-                              name=label)
+                              name=label, node=self)
         self._shown_bars = self.bars.count
         # Which editor is live. Set before any option exists, since a widget
         # callback during creation or load can reach sync_options first.
@@ -3096,7 +3096,7 @@ class ShaperNode(SynthNode):
                                        width=self.plot_width,
                                        height=self.plot_height,
                                        on_change=self.curve_changed,
-                                       name=label)
+                                       name=label, node=self)
         # 'point 1 0.5 0.8' and friends, so the curve can be moved from a patch
         # rather than only by hand. See BreakpointEditor.handle_message.
         for name in BreakpointEditor.MESSAGES:
@@ -5216,7 +5216,7 @@ class ModeTableNode(SynthNode):
         self.editor = ModeEditor(width=self.plot_width,
                                  height=self.plot_height,
                                  on_change=self.modes_edited,
-                                 name=label)
+                                 name=label, node=self)
         self.editor.set_modes(MODAL_MATERIALS[material], notify=False)
         # What the material combo last actually applied, and the guards that
         # keep a load from re-applying it over the table being restored --
@@ -8340,7 +8340,7 @@ class ScopeNode(SynthNode):
                                     category=dpg.mvThemeCat_Plots)
 
         with dpg.plot(label='', tag=self.plot_tag,
-                      height=self.plot_height, width=self.plot_width,
+                      height=self.zoomed(self.plot_height), width=self.zoomed(self.plot_width),
                       no_title=True, no_menus=True, no_box_select=True,
                       no_mouse_pos=True):
             dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.x_axis_tag,
@@ -8361,13 +8361,14 @@ class ScopeNode(SynthNode):
     def install_resize_handle(self):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=self.scope_display.uuid, label='',
-                                  width=self.plot_width, height=4)
+                                  width=self.zoomed(self.plot_width), height=self.zoomed(4))
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
             width_option=self.width_option, height_option=self.height_option,
             sync_width=True, sync_height=False,
-            on_resize=self.handle_resized
+            on_resize=self.handle_resized, zoom_aware=True
         )
+        self.zoom_scaled_items += [self.plot_tag, btn_uuid]
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
@@ -8384,13 +8385,14 @@ class ScopeNode(SynthNode):
     def size_changed(self):
         if not self.plot_ready:
             return
+        # The options are the size at 100%; what is drawn follows the zoom.
         self.plot_width = any_to_int(self.width_option())
         self.plot_height = any_to_int(self.height_option())
-        dpg.set_item_width(self.plot_tag, self.plot_width)
-        dpg.set_item_height(self.plot_tag, self.plot_height)
+        dpg.set_item_width(self.plot_tag, self.zoomed(self.plot_width))
+        dpg.set_item_height(self.plot_tag, self.zoomed(self.plot_height))
         handle = getattr(self, 'resize_handle', None)
         if handle is not None and dpg.does_item_exist(handle.uuid):
-            dpg.set_item_width(handle.uuid, self.plot_width)
+            dpg.set_item_width(handle.uuid, self.zoomed(self.plot_width))
 
     def window_changed(self):
         samples = self._clamp_samples(any_to_int(self.samples_option()))
