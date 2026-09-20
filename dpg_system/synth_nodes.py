@@ -581,6 +581,15 @@ class SynthNode(Node):
     def synth_frame_task(self):
         pass
 
+    def custom_zoom(self, ratio, exact):
+        super().custom_zoom(ratio, exact)
+        # The name column, and the captions standing over it, are measured in
+        # the font as drawn and nudged into place from where the widgets
+        # landed. At a new zoom both are measured again: the frame task is
+        # already the thing that settles them, so it is simply re-armed.
+        self._labels_aligned = False
+        self._align_attempts = 0
+
     def custom_cleanup(self):
         if self._registered:
             synth_graph.unregister(self)
@@ -3421,6 +3430,7 @@ class VuNode(SynthNode):
     def custom_zoom(self, ratio, exact):
         # The canvases are the node's own, so they are resized here; what is
         # painted on them is in pixels, so it is painted again.
+        super().custom_zoom(ratio, exact)
         for drawlist in getattr(self, '_drawlists', []):
             scale_item_size(drawlist, ratio, exact)
         self._paint_meters()
@@ -7797,6 +7807,7 @@ class FaderNode(SynthNode):
     def custom_zoom(self, ratio, exact):
         # The canvas belongs to the slider and has already been resized with
         # it; the lanes on it are in pixels, so they are drawn again.
+        super().custom_zoom(ratio, exact)
         self._meter_tags = None
 
     @staticmethod
