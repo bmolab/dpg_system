@@ -78,9 +78,15 @@ _resize_handle_dragging_theme = None
 def _get_tight_group_theme():
     global _tight_group_theme
     if _tight_group_theme is None or not dpg.does_item_exist(_tight_group_theme):
+        spacing = [2, 4]
         with dpg.theme() as _tight_group_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, 2, 4, category=dpg.mvThemeCat_Core)
+                item = dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, spacing[0], spacing[1],
+                                           category=dpg.mvThemeCat_Core)
+        # Tight rows are inside nodes, so this spacing follows the zoom too.
+        if Node.app is not None and hasattr(Node.app, 'register_scalable_style'):
+            Node.app.register_scalable_style(item, spacing)
+            Node.app.scale_node_styles(Node.app.current_zoom())
     return _tight_group_theme
 
 

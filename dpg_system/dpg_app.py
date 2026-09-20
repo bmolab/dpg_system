@@ -356,6 +356,8 @@ class App:
         self.frame_padding = [4, 0]
         self.cell_padding = [4, 2]
         self.item_spacing = [5, 2]
+        self.item_inner_spacing = [4, 4]   # dpg's own default, stated so it can scale
+        self._node_core_styles = []        # (style item, value at 100%)
         self.setup_themes()
         self.node_factory_container = NodeFactoryContainer("Modifiers", 150, -1)
         self.side_panel = dpg.generate_uuid()
@@ -738,13 +740,53 @@ class App:
     def resize_viewport(self, width, height):
         dpg.configure_viewport(self.viewport, width=width, height=height)
 
+    def register_scalable_style(self, item, values):
+        """A spacing or padding inside a node, to follow the patcher's zoom."""
+        self._node_core_styles.append((item, list(values)))
+        return item
+
+    def core_styles(self, scaling=True):
+        """The spacing and padding a node is laid out with.
+
+        Fixed pixels between and inside widgets are what made nodes crowd
+        each other when zoomed out: the gaps between nodes shrank while the
+        space inside them did not. `scaling` False is the same set for the
+        app's own furniture - menus, dialogs - which stays put.
+        """
+        for style, values in ((dpg.mvStyleVar_WindowPadding, self.window_padding),
+                              (dpg.mvStyleVar_FramePadding, self.frame_padding),
+                              (dpg.mvStyleVar_CellPadding, self.cell_padding),
+                              (dpg.mvStyleVar_ItemSpacing, self.item_spacing),
+                              (dpg.mvStyleVar_ItemInnerSpacing, self.item_inner_spacing)):
+            item = dpg.add_theme_style(style, values[0], values[1], category=dpg.mvThemeCat_Core)
+            if scaling:
+                self.register_scalable_style(item, values)
+
+    def current_zoom(self):
+        editor = self.get_current_editor()
+        return getattr(editor, 'zoom', 1.0) if editor is not None else 1.0
+
+    def scale_node_styles(self, zoom):
+        """Set every such spacing to what it should be at `zoom`. They live in
+        themes shared by all the patchers, and only one patcher is shown at a
+        time, so this follows the tab in view."""
+        for item, values in self._node_core_styles:
+            dpg.set_value(item, [values[0] * zoom, values[1] * zoom])
+
     def setup_themes(self):
+        # What the main window is dressed in: the same look, but its spacing
+        # does not follow a patcher's zoom.
+        with dpg.theme() as self.chrome_theme:
+            with dpg.theme_component(dpg.mvAll):
+                self.core_styles(scaling=False)
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+
         with dpg.theme() as self.global_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
+                self.core_styles()
                 dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
@@ -754,38 +796,28 @@ class App:
 
         with dpg.theme() as self.do_not_delete_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
+                self.core_styles()
 
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (64, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (128, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (192, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
 
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
 
         with dpg.theme() as self.locked_position_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
+                self.core_styles()
 
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (32, 32, 32, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (64, 64, 64, 255), category=dpg.mvThemeCat_Nodes)
 
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
 
         with dpg.theme() as self.invisible_theme:
@@ -822,6 +854,7 @@ class App:
 
         with dpg.theme() as self.widget_only_theme:
             with dpg.theme_component(dpg.mvAll):
+                self.core_styles()
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
@@ -834,6 +867,7 @@ class App:
 
         with dpg.theme() as self.widget_only_node_theme:
             with dpg.theme_component(dpg.mvAll):
+                self.core_styles()
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
@@ -2757,7 +2791,7 @@ class App:
                 glfw.init()
                 self.window_context = glfw.get_current_context()
             self.main_window_id = main_window
-            dpg.bind_item_theme(main_window, self.global_theme)
+            dpg.bind_item_theme(main_window, self.chrome_theme)
             dpg.add_spacer(height=14)
             with dpg.tab_bar(callback=self.selected_tab) as self.tab_bar:
                 with dpg.tab(label='patch ' + str(self.new_patcher_index), user_data=len(self.tabs)) as tab:

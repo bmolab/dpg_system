@@ -871,6 +871,7 @@ class NodeEditor:
 
         self._moved_on_frame = self.app.frame_number
         self.zoom = zoom
+        self.app.scale_node_styles(zoom)
         self.zoom_font = self.app.zoomed_font(self.app.default_font(), zoom) if zoom != 1.0 else None
         self._scale_styles(zoom)
 
@@ -1660,6 +1661,7 @@ class NodeEditor:
         """Themes are bound globally, so the tab being shown must re-assert its
         own: its zoom, and whether it is presenting."""
         dpg.bind_theme(self.node_presentation_theme if self.presenting else self.node_theme)
+        self.app.scale_node_styles(self.zoom)
 
 
 ########################################################################################################################
