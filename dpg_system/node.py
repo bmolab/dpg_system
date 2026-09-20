@@ -1300,6 +1300,15 @@ class VerticalSliderFloat(FloatWidget):
     and the slider draws that many empty meter lanes beside itself in a
     drawlist (meter_drawlist, meter_lane_width) for the node to paint --
     the widget owns the layout, the node owns the eyes."""
+    def zoom_items(self):
+        # The lanes' canvas goes with the slider; what is painted on it is
+        # the node's to redraw (custom_zoom).
+        items = super().zoom_items()
+        drawlist = getattr(self, 'meter_drawlist', None)
+        if drawlist is not None:
+            items.append(drawlist)
+        return items
+
     def _draw_widget(self):
         mn, mx = self._get_limits(0.0, 1.0)
         height = getattr(self, 'slider_height', 120)
@@ -1314,8 +1323,8 @@ class VerticalSliderFloat(FloatWidget):
                                      default_value=self.default_value,
                                      min_value=mn, max_value=mx)
                 self.meter_drawlist = dpg.add_drawlist(
-                    width=meters * self.meter_lane_width + 2,
-                    height=height)
+                    width=self._zoomed(meters * self.meter_lane_width + 2),
+                    height=self._zoomed(height))
         else:
             dpg.add_slider_float(label=self._label, vertical=True,
                                  width=self._zoomed(min(self.widget_width, 32)),
@@ -3244,9 +3253,14 @@ class Node:
             self._zoom_font_bound = font is not None
 
     def custom_zoom(self, ratio: float, exact: Dict) -> None:
-        """Override to scale what this node draws for itself. scale_item_size
-        (uuid, ratio, exact) does the usual width/height of an item."""
+        """Override to scale what this node draws for itself. self.zoomed(n)
+        gives a size in the patcher's units; scale_item_size(uuid, ratio,
+        exact) does the usual width and height of an item."""
         pass
+
+    def zoomed(self, size):
+        """A size given at 100%, in the units this patcher is drawn at."""
+        return zoomed_size(self, size)
 
     def set_title(self, title: str) -> None:
         dpg.configure_item(self.uuid, label=title)
