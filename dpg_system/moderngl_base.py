@@ -303,12 +303,19 @@ class MGLNativeWindow:
 
     def _on_glfw_mouse_button(self, win, button, action, mods):
         x, y = self._last_cursor
+        # u, v: the position as a 0..1 fraction of the window, for picking
+        # (see MGLContextNode._dpg_ui_mouse_uv).
+        try:
+            w, h = self.get_size()
+            u, v = x / max(1.0, float(w)), y / max(1.0, float(h))
+        except Exception:
+            u = v = -1.0
         if action == 1:
             self._buttons_down.add(button)
-            self._push_ui_event(['mouse_down', x, y, button])
+            self._push_ui_event(['mouse_down', x, y, button, u, v])
         else:
             self._buttons_down.discard(button)
-            self._push_ui_event(['mouse_up', x, y, button])
+            self._push_ui_event(['mouse_up', x, y, button, u, v])
 
     def _on_glfw_cursor(self, win, x, y):
         x, y = int(x), int(y)
@@ -596,6 +603,15 @@ class MGLDisplayWindow:
         if len(self.ui_events) < _UI_EVENT_QUEUE_MAX:
             self.ui_events.append(event)
 
+    def _mouse_uv(self, x, y):
+        # (top-left) pixel position as a 0..1 fraction of the window, for
+        # picking (see MGLContextNode._dpg_ui_mouse_uv).
+        try:
+            w, h = self._win.get_size()
+            return x / max(1.0, float(w)), y / max(1.0, float(h))
+        except Exception:
+            return -1.0, -1.0
+
     def _mouse_xy(self, x, y):
         # pyglet's origin is bottom-left; ui output uses top-left like GLFW
         try:
@@ -661,12 +677,12 @@ class MGLDisplayWindow:
         self._focused = True  # clicking the window fronts it
         x, y = self._mouse_xy(x, y)
         self._push_ui_event(['mouse_down', x, y,
-                             _PYGLET_TO_GLFW_BUTTON.get(button, 0)])
+                             _PYGLET_TO_GLFW_BUTTON.get(button, 0), *self._mouse_uv(x, y)])
 
     def _on_mouse_release(self, x, y, button, modifiers):
         x, y = self._mouse_xy(x, y)
         self._push_ui_event(['mouse_up', x, y,
-                             _PYGLET_TO_GLFW_BUTTON.get(button, 0)])
+                             _PYGLET_TO_GLFW_BUTTON.get(button, 0), *self._mouse_uv(x, y)])
 
     def _on_mouse_motion(self, x, y, dx, dy):
         if not self._focused:

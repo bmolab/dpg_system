@@ -21,6 +21,7 @@ Nodes:
   pc_denoise     density + temporal-persistence speckle/flicker removal
   pc_info        report point count / bounds / centroid (bounds-tuning aid)
   pc_cluster_filter  gate / smooth / difference the per-cluster values
+  pc_regions, pc_accumulate   hand-authored regions (point_cloud_region_nodes)
 
 Cloud-frame convention: a frame on the wire is either a raw (N, 3) array or a
 dict {'point_cloud': pts, 'crop': (min, max), ...}. pc_crop attaches its crop
@@ -95,6 +96,9 @@ def register_point_cloud_nodes():
     Node.app.register_node('pc_denoise', PointCloudDenoiseNode.factory)
     Node.app.register_node('pc_info', PointCloudInfoNode.factory)
     Node.app.register_node('pc_cluster_filter', PointCloudClusterFilterNode.factory)
+    # Imported here, not at the top: the region nodes build on this module.
+    from dpg_system.point_cloud_region_nodes import register_point_cloud_region_nodes
+    register_point_cloud_region_nodes()
 
 
 class _VoxelGrid:
@@ -930,6 +934,18 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
         keep = counts >= k
         return occupied[keep], values[keep]
 
+    def _own_crop(self):
+        """The crop entry to add when none rode in: this node's own volume.
+        Bounded by its min/max options rather than by a pc_crop, it is the
+        only one that knows them, and everything downstream that builds a grid
+        (pc_regions, pc_accumulate, ...) would otherwise fall back to its own
+        defaults and work in a different volume. The claim a crop makes — no
+        point lies outside it — holds: only in-grid voxels are sent."""
+        if CROP_KEY in self.in_meta:
+            return {}
+        hi = self.grid.lo + self.grid.dims * self.grid.voxel_size
+        return {CROP_KEY: (self.grid.lo.tolist(), hi.tolist())}
+
     def _cluster_boxes(self, occupied, weights):
         """Sum voxel weights into boxes, send the dense (bx, by, bz) array, and
         return the frame's cluster entry (None when subdivision is off).
@@ -992,7 +1008,7 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
             # every frame that nothing reached 'min points'.
             self._send(self.output, np.empty((0, 3), dtype=np.float32),
                        voxel_size=self.grid.voxel_size_meta(),
-                       weights=np.empty((0,), dtype=np.float32))
+                       weights=np.empty((0,), dtype=np.float32), **self._own_crop())
             self.count_output.send(empty)
             self._cluster_boxes(empty, None)
 
@@ -1047,7 +1063,8 @@ class PointCloudVoxelNode(VolumeGridDrawMixin, PointCloudNode):
             weights *= sense
         weights = np.clip(weights / VOXEL_WEIGHT_NORM, 0.0, 1.0)
 
-        meta = {VOXEL_SIZE_KEY: self.grid.voxel_size_meta(), 'weights': weights}
+        meta = {VOXEL_SIZE_KEY: self.grid.voxel_size_meta(), 'weights': weights,
+                **self._own_crop()}
         clusters = self._cluster_boxes(occupied, weights)
         if clusters is not None:
             meta[CLUSTER_KEY] = clusters

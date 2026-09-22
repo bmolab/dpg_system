@@ -421,6 +421,23 @@ class MGLContextNode(Node):
             origin = dpg.get_item_rect_min(win)
         return int(x - origin[0]), int(y - origin[1])
 
+    def _dpg_ui_mouse_uv(self, win, x, y):
+        # The click as a 0..1 fraction of the displayed image, top-left
+        # origin. Pixel positions are in whatever size the image happens to be
+        # shown at, which nothing downstream can know; anything that has to
+        # turn a click into a ray through the scene (mgl_regions' picking)
+        # needs it in these terms.
+        size = None
+        children = dpg.get_item_children(win, slot=1)
+        if children:
+            for child in children:
+                if dpg.get_item_type(child) == "mvAppItemType::mvImage":
+                    size = dpg.get_item_rect_size(child)
+                    break
+        if size is None:
+            size = dpg.get_item_rect_size(win)
+        return x / max(1.0, float(size[0])), y / max(1.0, float(size[1]))
+
     def _dpg_ui_key(self, sender, key):
         win = self._dpg_ui_window()
         if win is None or not dpg.is_item_focused(win):
@@ -441,7 +458,8 @@ class MGLContextNode(Node):
             return
         self._dpg_mouse_captured = True
         x, y = self._dpg_ui_mouse_xy(win)
-        self._push_dpg_ui_event(['mouse_down', x, y, int(button)])
+        u, v = self._dpg_ui_mouse_uv(win, x, y)
+        self._push_dpg_ui_event(['mouse_down', x, y, int(button), u, v])
 
     def _dpg_ui_mouse_release(self, sender, button):
         # gate on capture or focus, not hover, so the release that ends a
@@ -452,7 +470,8 @@ class MGLContextNode(Node):
         if win is None or not (captured or dpg.is_item_focused(win)):
             return
         x, y = self._dpg_ui_mouse_xy(win)
-        self._push_dpg_ui_event(['mouse_up', x, y, int(button)])
+        u, v = self._dpg_ui_mouse_uv(win, x, y)
+        self._push_dpg_ui_event(['mouse_up', x, y, int(button), u, v])
 
     def _dpg_ui_mouse_move(self, sender, app_data):
         win = self._dpg_ui_window()
