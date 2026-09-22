@@ -3,6 +3,7 @@ import os
 os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
 # import dearpygui.dearpygui as dpg
+import math
 import time
 import numpy as np
 from importlib import import_module
@@ -86,6 +87,8 @@ optional_import = [
     'gemma_4_node',
     'nvx_nodes',
     'erae_nodes',
+    'bonsai_2_node',
+    'qwen_moe_node',
 ]
 
 imported = []
@@ -310,6 +313,13 @@ class DebugState:
 
 
 
+
+def _distance_to_segment(x, y, a, b):
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    length = dx * dx + dy * dy
+    t = 0.0 if length == 0 else max(0.0, min(1.0, ((x - a[0]) * dx + (y - a[1]) * dy) / length))
+    return math.hypot(x - (a[0] + t * dx), y - (a[1] + t * dy))
+
 class App:
     def __init__(self):
         self.config = None
@@ -324,7 +334,17 @@ class App:
         self.loading = False
         self.font_48 = None
         self.font_36 = None
+        self.font_30 = None
         self.font_24 = None
+        self.font_registry = None
+        self.font_file = 'Inconsolata-g.otf'
+        self._font_sizes = {}  # font -> (file, size), for zoomed versions
+        self._zoom_fonts = {}  # (file, size) -> font
+        self._zoom_target = None  # log zoom the current scroll gesture is heading for
+        self._zoom_target_editor = None
+        self._zoom_last_wheel = 0.0
+        self._zoom_queued = False
+        self._zoom_lock = threading.Lock()
         self.setup_dpg()
         self.verbose = False
         self.verbose_menu_item = -1
@@ -336,6 +356,8 @@ class App:
         self.frame_padding = [4, 0]
         self.cell_padding = [4, 2]
         self.item_spacing = [5, 2]
+        self.item_inner_spacing = [4, 4]   # dpg's own default, stated so it can scale
+        self._node_core_styles = []        # (style item, value at 100%)
         self.setup_themes()
         self.node_factory_container = NodeFactoryContainer("Modifiers", 150, -1)
         self.side_panel = dpg.generate_uuid()
@@ -406,6 +428,9 @@ class App:
         self._pending_drag_snapshot = None  # (editor, positions_fingerprint) speculatively pushed on mouse-down
         self._pending_widget_edit = None    # (editor, widget_uuid, before_value) speculatively pushed on widget-activated
         self._pending_help_target = None    # (node, mouse_down_pos) captured on alt-mouse-down, fired on mouse-up
+        self._zoom_drag = None  # (editor, press position, zoom at press) during a Cmd-Shift-drag zoom
+        self._zoom_drag_level = None
+        self._zoom_drag_queued = False
         self.saving_to_lib = False
         self.project_name = os.path.basename(__file__).split('.')[0]
         self.currently_loading_patch_name = ''
@@ -469,7 +494,7 @@ class App:
         dpg.create_context()
         dpg.configure_app(manual_callback_management=True)
         if 'macOS' in platform_.platform():
-            with dpg.font_registry():
+            with dpg.font_registry() as self.font_registry:
                 if os.path.exists('Inconsolata-g.otf'):
                     self.font_24 = dpg.add_font("Inconsolata-g.otf", 24)
                     dpg.bind_font(self.font_24)
@@ -478,7 +503,7 @@ class App:
                     self.font_48 = dpg.add_font("Inconsolata-g.otf", 48)
                     self.font_36 = dpg.add_font("Inconsolata-g.otf", 36)
         else:
-            with dpg.font_registry():
+            with dpg.font_registry() as self.font_registry:
                 if os.path.exists('Inconsolata-g.otf'):
                     # self.font_24 = dpg.add_font("Inconsolata-g.otf", 12)
                     # dpg.bind_font(self.font_24)
@@ -487,8 +512,216 @@ class App:
                     self.font_48 = dpg.add_font("Inconsolata-g.otf", 24)
                     self.font_36 = dpg.add_font("Inconsolata-g.otf", 18)
         # handle other platforms...
+        for font in (self.font_24, self.font_30, self.font_36, self.font_48):
+            self._font_face(font)
+        # Built now, with the rest, so that zooming never rebuilds the atlas.
+        if self.font_registry is not None and os.path.exists(self.font_file):
+            for size in NodeEditor.ZOOM_FONT_SIZES:
+                key = (self.font_file, size)
+                if key not in self._zoom_fonts:
+                    font = dpg.add_font(self.font_file, size, parent=self.font_registry)
+                    self._zoom_fonts[key] = font
+                    self._font_sizes[font] = key
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
+
+    # ------------------------------------------------------------ zoom
+
+    def default_font(self):
+        """The font patchers are drawn in at 100%. None off macOS, where
+        nothing is bound and dpg's built-in font is used."""
+        return self.font_24
+
+    def _font_face(self, font):
+        """(file, size) of a loaded font, remembered so a zoom that lands on
+        a size already loaded reuses that font."""
+        if not font:
+            return None
+        known = self._font_sizes.get(font)
+        if known is None:
+            try:
+                config = dpg.get_item_configuration(font)
+                known = (config['file'], int(round(config['size'])))
+            except Exception:
+                return None
+            self._font_sizes[font] = known
+            self._zoom_fonts.setdefault(known, font)
+        return known
+
+    def zoomed_font(self, font, zoom):
+        """`font` as it should be drawn at `zoom`: the same face at the scaled
+        size, built on first use. `font` None means the default font. Main
+        thread only when it has to build one."""
+        if zoom == 1.0:
+            return font
+        if font:
+            known = self._font_face(font)
+            if known is None:
+                return font
+            file, size = known
+        else:
+            # dpg's built-in font is 13 px; Inconsolata stands in for it
+            file, size = self.font_file, 13
+        if self.font_registry is None or not os.path.exists(file):
+            return font
+        # the nearest size already built, if this face has them
+        wanted = size * zoom
+        sizes = [s for (f, s) in self._zoom_fonts if f == file] or [max(4, int(round(wanted)))]
+        size = min(sizes, key=lambda s: abs(math.log(s / wanted)))
+        key = (file, size)
+        if key not in self._zoom_fonts:
+            self._zoom_fonts[key] = dpg.add_font(file, size, parent=self.font_registry)
+            self._font_sizes[self._zoom_fonts[key]] = key
+        return self._zoom_fonts[key]
+
+    # Zoom per unit of scroll, as a factor. dpg reports scroll in whole units
+    # only, once a frame - a slow trackpad drag never reaches a whole unit and
+    # does nothing, a fast one sends a unit or more every frame - so this is
+    # kept low enough that a fast drag is not a rush.
+    zoom_wheel_rate = 1.04
+    # A pause this long ends a gesture, and what was left over from it.
+    zoom_gesture_gap = 0.25
+
+    def zoom_wheel_handler(self, sender, app_data):
+        """Cmd-scroll zooms the patcher about the pointer.
+
+        The scroll moves a continuous target zoom and the patcher shows the
+        level nearest it, so small trackpad movements accumulate evenly
+        rather than waiting to add up to a whole step. The target is clamped
+        to the levels, so scrolling on past the end stores nothing up that
+        has to be scrolled off again, and a fresh gesture starts from the
+        zoom as shown. Wheel events arrive off the main thread and faster
+        than a zoom can be redrawn, so the zoom is applied at most once a
+        frame."""
+        if not self.control_or_command_down():
+            return
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+        try:
+            amount = float(app_data)
+        except (TypeError, ValueError):
+            return
+        now = time.perf_counter()
+        levels = NodeEditor.ZOOM_LEVELS
+        with self._zoom_lock:
+            if (self._zoom_target is None or self._zoom_target_editor is not editor
+                    or now - self._zoom_last_wheel > self.zoom_gesture_gap):
+                self._zoom_target = math.log(editor.zoom)
+                self._zoom_target_editor = editor
+            self._zoom_last_wheel = now
+            self._zoom_target += amount * math.log(self.zoom_wheel_rate)
+            self._zoom_target = min(max(self._zoom_target, math.log(levels[0])), math.log(levels[-1]))
+            if self._zoom_queued:
+                return
+            self._zoom_queued = True
+        self.queue_main_thread_call(self._apply_wheel_zoom, editor)
+
+    def _apply_wheel_zoom(self, editor):
+        with self._zoom_lock:
+            target = math.exp(self._zoom_target)
+            self._zoom_queued = False
+        if editor not in self.node_editors:
+            return
+        level = min(NodeEditor.ZOOM_LEVELS, key=lambda z: abs(math.log(z / target)))
+        if level != editor.zoom:
+            editor.set_zoom(level, list(dpg.get_mouse_pos(local=False)))
+
+    # The menu items zoom about the middle of the patcher: the pointer is up on
+    # the menu when one is chosen. The keys zoom about the pointer.
+    def zoom_in(self, at_pointer=False):
+        self._zoom_current(1, at_pointer)
+
+    def zoom_out(self, at_pointer=False):
+        self._zoom_current(-1, at_pointer)
+
+    def zoom_reset(self, at_pointer=False):
+        self._zoom_current(None, at_pointer)
+
+    def _zoom_current(self, steps, at_pointer):
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+
+        def zoom():
+            anchor = self._pointer_in(editor) if at_pointer else None
+            if steps is None:
+                editor.set_zoom(1.0, anchor)
+            else:
+                editor.zoom_step(steps, anchor)
+
+        self.queue_main_thread_call(zoom)
+
+    def _pointer_in(self, editor):
+        """The pointer, if it is over the patcher; else None (the middle)."""
+        try:
+            x, y = dpg.get_mouse_pos(local=False)
+            left, top = dpg.get_item_rect_min(editor.uuid)
+            width, height = dpg.get_item_rect_size(editor.uuid)
+        except Exception:
+            return None
+        if left <= x <= left + width and top <= y <= top + height:
+            return [x, y]
+        return None
+
+    # Drag distance for a doubling (or halving) of the zoom.
+    zoom_drag_doubling = 200.0
+
+    def start_zoom_drag(self):
+        """Cmd-Shift-press on empty canvas: the zoom now follows how far the
+        pointer is above or below where it was pressed - not how fast it
+        moves - about the point pressed. Back at that point is back at the
+        zoom it started from."""
+        editor = self.get_current_editor()
+        if editor is None or self.node_under_mouse() is not None or self.patching_under_mouse():
+            return False
+        pressed = list(dpg.get_mouse_pos(local=False))
+        if self._pointer_in(editor) is None:
+            return False
+        self._zoom_drag = (editor, pressed, editor.zoom)
+        editor.hide_box_selector(True)
+        return True
+
+    def follow_zoom_drag(self):
+        if self._zoom_drag is None:
+            return
+        if not dpg.is_mouse_button_down(0):
+            self.end_zoom_drag()
+            return
+        editor, pressed, start_zoom = self._zoom_drag
+        rise = pressed[1] - dpg.get_mouse_pos(local=False)[1]
+        wanted = start_zoom * 2.0 ** (rise / self.zoom_drag_doubling)
+        self._zoom_drag_level = min(NodeEditor.ZOOM_LEVELS, key=lambda z: abs(math.log(z / wanted)))
+        if not self._zoom_drag_queued:
+            self._zoom_drag_queued = True
+            self.queue_main_thread_call(self._apply_zoom_drag)
+
+    def _apply_zoom_drag(self):
+        self._zoom_drag_queued = False
+        drag = self._zoom_drag
+        if drag is None or self._zoom_drag_level is None:
+            return
+        editor, pressed, _ = drag
+        if editor in self.node_editors and self._zoom_drag_level != editor.zoom:
+            editor.set_zoom(self._zoom_drag_level, list(pressed))
+
+    def end_zoom_drag(self):
+        if self._zoom_drag is None:
+            return
+        editor = self._zoom_drag[0]
+        self._zoom_drag = None
+        self._zoom_drag_level = None
+        # The press on empty canvas also started a box selection, drawn in
+        # nothing while the zoom ran; whatever it swept up is dropped here.
+        if editor in self.node_editors:
+            def finish():
+                dpg.clear_selected_nodes(editor.uuid)
+                editor.hide_box_selector(False)
+            self.queue_main_thread_call(finish)
+
+    def zero_handler(self):
+        if self.control_or_command_down():
+            self.zoom_reset(at_pointer=True)
 
     def register_patcher(self, name):
         self.patchers.append(name)
@@ -507,13 +740,53 @@ class App:
     def resize_viewport(self, width, height):
         dpg.configure_viewport(self.viewport, width=width, height=height)
 
+    def register_scalable_style(self, item, values):
+        """A spacing or padding inside a node, to follow the patcher's zoom."""
+        self._node_core_styles.append((item, list(values)))
+        return item
+
+    def core_styles(self, scaling=True):
+        """The spacing and padding a node is laid out with.
+
+        Fixed pixels between and inside widgets are what made nodes crowd
+        each other when zoomed out: the gaps between nodes shrank while the
+        space inside them did not. `scaling` False is the same set for the
+        app's own furniture - menus, dialogs - which stays put.
+        """
+        for style, values in ((dpg.mvStyleVar_WindowPadding, self.window_padding),
+                              (dpg.mvStyleVar_FramePadding, self.frame_padding),
+                              (dpg.mvStyleVar_CellPadding, self.cell_padding),
+                              (dpg.mvStyleVar_ItemSpacing, self.item_spacing),
+                              (dpg.mvStyleVar_ItemInnerSpacing, self.item_inner_spacing)):
+            item = dpg.add_theme_style(style, values[0], values[1], category=dpg.mvThemeCat_Core)
+            if scaling:
+                self.register_scalable_style(item, values)
+
+    def current_zoom(self):
+        editor = self.get_current_editor()
+        return getattr(editor, 'zoom', 1.0) if editor is not None else 1.0
+
+    def scale_node_styles(self, zoom):
+        """Set every such spacing to what it should be at `zoom`. They live in
+        themes shared by all the patchers, and only one patcher is shown at a
+        time, so this follows the tab in view."""
+        for item, values in self._node_core_styles:
+            dpg.set_value(item, [values[0] * zoom, values[1] * zoom])
+
     def setup_themes(self):
+        # What the main window is dressed in: the same look, but its spacing
+        # does not follow a patcher's zoom.
+        with dpg.theme() as self.chrome_theme:
+            with dpg.theme_component(dpg.mvAll):
+                self.core_styles(scaling=False)
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+
         with dpg.theme() as self.global_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
+                self.core_styles()
                 dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
@@ -523,38 +796,28 @@ class App:
 
         with dpg.theme() as self.do_not_delete_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
+                self.core_styles()
 
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (64, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (128, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (192, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
 
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
 
         with dpg.theme() as self.locked_position_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
+                self.core_styles()
 
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (32, 32, 32, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (64, 64, 64, 255), category=dpg.mvThemeCat_Nodes)
 
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
 
         with dpg.theme() as self.invisible_theme:
@@ -591,6 +854,7 @@ class App:
 
         with dpg.theme() as self.widget_only_theme:
             with dpg.theme_component(dpg.mvAll):
+                self.core_styles()
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
@@ -603,6 +867,7 @@ class App:
 
         with dpg.theme() as self.widget_only_node_theme:
             with dpg.theme_component(dpg.mvAll):
+                self.core_styles()
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
@@ -675,6 +940,84 @@ class App:
             if left <= x <= right and top <= y <= bottom:
                 return self._hovered_descendant(uuid)
         return None
+
+    # What imnodes counts as near enough to a cord or a pin to take the press
+    # (its LinkHoverDistance and PinHoverRadius), with a margin, so that no
+    # press is near enough for imnodes and far enough for the zoom.
+    patching_reach = 12.0
+
+    def patching_under_mouse(self):
+        """True if the pointer is on a patch cord or on a pin - where a
+        Cmd-Shift-drag re-patches rather than zooming.
+
+        Found by geometry, as node_under_mouse is, because imnodes stops
+        reporting hover once a click begins. A cord runs from its outlet's
+        pin, on the node's right edge at the outlet's height, to the inlet's
+        pin on the other node's left edge, as a cubic whose handles run a
+        quarter of its length out horizontally (imnodes' shape).
+        """
+        editor = self.get_current_editor()
+        if editor is None:
+            return False
+        x, y = dpg.get_mouse_pos(local=False)
+        reach = self.patching_reach * editor.zoom
+        pin_offset = 2 * editor.zoom
+
+        def pin(port, right):
+            # An inlet or outlet has no rectangle of its own in dpg; what it
+            # holds - its label, or its widget - has, and sits at the same
+            # height as the pin.
+            inside = getattr(port, 'label_uuid', None)
+            if inside is None or not dpg.does_item_exist(inside):
+                widget = getattr(port, 'widget', None)
+                inside = getattr(widget, 'uuid', None)
+            if inside is None or not dpg.does_item_exist(inside):
+                return None
+            node_uuid = port.node.uuid
+            top = dpg.get_item_rect_min(inside)[1]
+            bottom = dpg.get_item_rect_max(inside)[1]
+            px = (dpg.get_item_rect_max(node_uuid)[0] + pin_offset if right
+                  else dpg.get_item_rect_min(node_uuid)[0] - pin_offset)
+            return px, (top + bottom) / 2
+
+        for node in list(editor._nodes):
+            # Pins sit just outside the node's rectangle, so only a node the
+            # pointer is beside can have one under it.
+            try:
+                left, top = dpg.get_item_rect_min(node.uuid)
+                right, bottom = dpg.get_item_rect_max(node.uuid)
+            except Exception:
+                continue
+            span = reach + pin_offset
+            if left - span <= x <= right + span and top - span <= y <= bottom + span:
+                outputs = list(getattr(node, 'outputs', []))
+                for port in list(getattr(node, 'inputs', [])) + outputs:
+                    spot = pin(port, port in outputs)
+                    if spot is not None and math.hypot(x - spot[0], y - spot[1]) <= reach:
+                        return True
+            for output in getattr(node, 'outputs', []):
+                for inlet in list(getattr(output, '_children', [])):
+                    try:
+                        start, end = pin(output, True), pin(inlet, False)
+                    except Exception:
+                        continue
+                    if start is None or end is None:
+                        continue
+                    (x0, y0), (x3, y3) = start, end
+                    if not (min(x0, x3) - reach <= x <= max(x0, x3) + reach):
+                        continue
+                    handle = 0.25 * math.hypot(x3 - x0, y3 - y0)
+                    x1, x2 = x0 + handle, x3 - handle
+                    previous = (x0, y0)
+                    for i in range(1, 25):
+                        t = i / 24
+                        u = 1 - t
+                        point = (u * u * u * x0 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x3,
+                                 u * u * u * y0 + 3 * u * u * t * y0 + 3 * u * t * t * y3 + t * t * t * y3)
+                        if _distance_to_segment(x, y, previous, point) <= reach:
+                            return True
+                        previous = point
+        return False
 
     def node_under_mouse(self):
         """The visible node whose rectangle holds the mouse, or None.
@@ -934,8 +1277,8 @@ class App:
                 dpg.add_menu_item(label="Align Selected", callback=self.align_selected)
                 dpg.add_menu_item(label="Align Center and Distribute Selected (Y)", callback=self.align_distribute_selected)
                 dpg.add_menu_item(label="Align Edge and Distribute Selected", callback=self.align_distribute_selected_top)
-                dpg.add_menu_item(label="Space Out Selected (+)", callback=self.space_out_selected)
-                dpg.add_menu_item(label="Tighten Selected (-)", callback=self.tighten_selected)
+                dpg.add_menu_item(label="Space Out Selected (Cmd +)", callback=self.space_out_selected)
+                dpg.add_menu_item(label="Tighten Selected (Cmd -)", callback=self.tighten_selected)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Reset Origin", callback=self.reset_node_editor_origin)
             with dpg.menu(label='Visibility'):
@@ -951,6 +1294,11 @@ class App:
                 self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Home (H)", callback=self.home_current_editor)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Zoom In (Cmd + or Cmd-scroll)", callback=lambda: self.zoom_in())
+                dpg.add_menu_item(label="Zoom Out (Cmd - or Cmd-scroll)", callback=lambda: self.zoom_out())
+                dpg.add_menu_item(label="Actual Size (Cmd-0)", callback=lambda: self.zoom_reset())
+                dpg.add_menu_item(label="(Cmd-Shift-drag on empty canvas: up in, down out)", enabled=False)
 
 
             with dpg.menu(label='Options'):
@@ -1012,6 +1360,13 @@ class App:
                     node.custom_cleanup()
                 except Exception:
                     traceback.print_exc()
+        # Bonsai 2 runs in a llama-server child process holding several GB of
+        # weights; os._exit below skips atexit, so it is stopped here by hand.
+        try:
+            from dpg_system.bonsai_2_node import BonsaiServer
+            BonsaiServer.shutdown_all()
+        except Exception:
+            pass
         try:
             dpg.stop_dearpygui()
         except Exception:
@@ -1321,12 +1676,28 @@ class App:
                 self.comment_handler()
 
     def plus_handler(self):
+        # With nodes selected Cmd-+ spreads them; with none it zooms in.
         if self.control_or_command_down():
-            self.space_out_selected()
+            if self.nodes_are_selected():
+                self.space_out_selected()
+            else:
+                self.zoom_in(at_pointer=True)
 
     def minus_handler(self):
         if self.control_or_command_down():
-            self.tighten_selected()
+            if self.nodes_are_selected():
+                self.tighten_selected()
+            else:
+                self.zoom_out(at_pointer=True)
+
+    def nodes_are_selected(self):
+        editor = self.get_current_editor()
+        if editor is None:
+            return False
+        try:
+            return len(dpg.get_selected_nodes(editor.uuid)) > 0
+        except Exception:
+            return False
 
     def space_handler(self):
         pass
@@ -1632,6 +2003,13 @@ class App:
                 self.resize_start_size = (w, h)
                 dpg.bind_item_theme(rh.uuid, _get_resize_handle_dragging_theme())
                 return
+        if self.control_or_command_down() and self.shift_down() and dpg.is_mouse_button_down(0):
+            # Cmd-Shift-drag on empty canvas zooms (Cmd-click alone still
+            # switches modes). On a cord it belongs to the cord, which
+            # Cmd-Shift-drag moves to another outlet - and either way,
+            # holding shift is not a request to switch modes.
+            self.start_zoom_drag()
+            return
         if self.control_or_command_down():
             # Only a click on empty canvas switches modes; on a node the
             # modifier belongs to the node (selection, the widget itself).
@@ -1671,6 +2049,7 @@ class App:
         return tuple((n.uuid, *dpg.get_item_pos(n.uuid)) for n in editor._nodes)
 
     def mouse_up_handler(self, sender=None, app_data=None, user_data=None):
+        self.end_zoom_drag()
         if self._pending_help_target is not None:
             target, down_pos = self._pending_help_target
             self._pending_help_target = None
@@ -1704,6 +2083,9 @@ class App:
                 print(f'drag commit check failed: {e}')
 
     def drag_create_nodes(self):
+        if self._zoom_drag is not None:
+            self.follow_zoom_drag()
+            return
         if self.resize_drag is not None:
             if not dpg.is_mouse_button_down(0):
                 from dpg_system.node import _get_resize_handle_theme
@@ -1716,6 +2098,12 @@ class App:
                 dx = mp[0] - self.resize_start_mouse[0]
                 dy = mp[1] - self.resize_start_mouse[1]
                 rh = self.resize_drag
+                # The item is sized on screen, at the zoom; the option that
+                # remembers it - and is saved with the patch - is at 100%.
+                zoom = self.current_zoom() if rh.zoom_aware else 1.0
+                def remember(option, size):
+                    if option is not None:
+                        option.set(max(1, int(round(size / zoom))))
                 if dpg.does_item_exist(rh.target_uuid):
                     new_w = self.resize_start_size[0]
                     new_h = self.resize_start_size[1]
@@ -1734,8 +2122,7 @@ class App:
                             dpg.set_item_width(rh.uuid, new_size)
                         if rh.sync_height and dpg.does_item_exist(rh.uuid):
                             dpg.set_item_height(rh.uuid, new_size)
-                        if rh.width_option is not None:
-                            rh.width_option.set(new_size)
+                        remember(rh.width_option, new_size)
                     else:
                         if 'x' in rh.axis:
                             new_w = max(20, int(self.resize_start_size[0] + dx))
@@ -1745,8 +2132,7 @@ class App:
                                     dpg.set_item_width(extra_uuid, new_w)
                             if rh.sync_width and dpg.does_item_exist(rh.uuid):
                                 dpg.set_item_width(rh.uuid, new_w)
-                            if rh.width_option is not None:
-                                rh.width_option.set(new_w)
+                            remember(rh.width_option, new_w)
                         if 'y' in rh.axis:
                             new_h = max(20, int(self.resize_start_size[1] + dy))
                             dpg.set_item_height(rh.target_uuid, new_h)
@@ -1755,11 +2141,11 @@ class App:
                                     dpg.set_item_height(extra_uuid, new_h)
                             if rh.sync_height and dpg.does_item_exist(rh.uuid):
                                 dpg.set_item_height(rh.uuid, new_h)
-                            if rh.height_option is not None:
-                                rh.height_option.set(new_h)
+                            remember(rh.height_option, new_h)
                     if rh.on_resize is not None:
                         try:
-                            rh.on_resize(new_w, new_h)
+                            # at 100%, as the options are
+                            rh.on_resize(new_w / zoom, new_h / zoom)
                         except Exception as e:
                             print(f'resize handle on_resize failed: {e}')
         if self.dragging_created_nodes:
@@ -2321,6 +2707,7 @@ class App:
         self.current_node_editor = chosen_tab_index
         if self.get_current_editor() is not None:
             dpg.set_value(self.minimap_menu_item, self.get_current_editor().mini_map)
+            self.get_current_editor().bind_theme()
 
     def remove_node_editor(self, stale_editor):
         if stale_editor is None:
@@ -2408,7 +2795,7 @@ class App:
                 glfw.init()
                 self.window_context = glfw.get_current_context()
             self.main_window_id = main_window
-            dpg.bind_item_theme(main_window, self.global_theme)
+            dpg.bind_item_theme(main_window, self.chrome_theme)
             dpg.add_spacer(height=14)
             with dpg.tab_bar(callback=self.selected_tab) as self.tab_bar:
                 with dpg.tab(label='patch ' + str(self.new_patcher_index), user_data=len(self.tabs)) as tab:
@@ -2454,6 +2841,8 @@ class App:
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_0, callback=self.zero_handler)
+                            dpg.add_mouse_wheel_handler(callback=self.zoom_wheel_handler)
                             dpg.add_mouse_move_handler(callback=self.drag_create_nodes)
                             dpg.add_mouse_click_handler(callback=self.mouse_down_handler)
                             dpg.add_mouse_release_handler(callback=self.mouse_up_handler)
@@ -2493,6 +2882,7 @@ class App:
                     now = time.perf_counter()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
+                        node_editor.frame_shift_check()
                     self.trace_indent = ''
                     if self.trace:
                         print()

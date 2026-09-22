@@ -194,19 +194,23 @@ class BasePlotNode(Node):
             pass
 
     def submit_display(self):
-        with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
+        with dpg.plot(label='', tag=self.plot_tag, height=self.zoomed(self.height),
+                      width=self.zoomed(self.width), no_title=True) as self.plotter:
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
         self.install_plot_resize_handle()
 
     def install_plot_resize_handle(self):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
-        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.width, height=4)
+        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='',
+                                  width=self.zoomed(self.width), height=self.zoomed(4))
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
             width_option=self.width_option, height_option=self.height_option,
-            sync_width=True, sync_height=False
+            sync_width=True, sync_height=False, zoom_aware=True
         )
+        # The plot and its grab are the node's own drawing: they follow the zoom.
+        self.zoom_scaled_items += [self.plot_tag, btn_uuid]
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
@@ -218,15 +222,20 @@ class BasePlotNode(Node):
             self.y_data.release_buffer()
 
     def change_size(self):
+        # The options are the size at 100%; what is drawn follows the zoom.
         if self.width_option is not None:
-            dpg.set_item_width(self.plot_tag, self.width_option())
             self.width = self.width_option()
+            dpg.set_item_width(self.plot_tag, self.zoomed(self.width))
         if self.height_option is not None:
-            dpg.set_item_height(self.plot_tag, self.height_option())
             self.height = self.height_option()
+            dpg.set_item_height(self.plot_tag, self.zoomed(self.height))
         rh = getattr(self, 'resize_handle', None)
         if rh is not None and dpg.does_item_exist(rh.uuid):
-            dpg.set_item_width(rh.uuid, self.width)
+            dpg.set_item_width(rh.uuid, self.zoomed(self.width))
+
+    def custom_zoom(self, ratio, exact):
+        # Sized from the options rather than scaled, so every zoom is exact.
+        self.change_size()
 
     def change_range(self):
         self.max_y = self.max_y_option()
@@ -520,7 +529,8 @@ class HeatMapNode(BasePlotNode):
 
     def submit_display(self):
         # This is identical for both modes.
-        with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
+        with dpg.plot(label='', tag=self.plot_tag, height=self.zoomed(self.height),
+                      width=self.zoomed(self.width), no_title=True) as self.plotter:
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)

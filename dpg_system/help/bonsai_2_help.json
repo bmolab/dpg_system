@@ -1,0 +1,643 @@
+{
+    "height": 1292,
+    "width": 2026,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "bonsai_2_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/bonsai_2_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment bonsai_2 - a 27B model in seven gigabytes",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "bonsai_2 - a 27B model in seven gigabytes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "bonsai_2 - a 27B model in seven gigabytes"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1168,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A 27 billion parameter model on this machine, in 7.2 GB of weights.\n\nWHAT IT IS:\nBonsai 2 is PrismML's compression of Qwen3.8 27B down to ternary weights - a\nlittle over two bits each. A model this size normally needs 54 GB and a big\ngraphics card; this one fits in memory alongside everything else you are running\nand generates at about 20 tokens a second on an M1 Max.\n\nIT RUNS IN A SEPARATE PROCESS, AND NEEDS A PARTICULAR BINARY:\nUnlike gemma_4, which loads the model inside dpg_system, this node starts\nllama-server as a child process and talks to it over the local network. That is\nnot a design preference - Bonsai 2's weight format and its activation transform\nare not in stock llama.cpp, so the version dpg_system links against cannot read\nthese files at all.\n\nYou need a binary from PrismML's fork, unpacked into\n\n    ~/.cache/bonsai/llama.cpp-prism-<build>/\n\nor pointed at by the BONSAI_LLAMA_SERVER environment variable. Releases are at\ngithub.com/PrismML-Eng/llama.cpp. The node says so plainly if it cannot find\none.\n\nA stock llama.cpp build is worse than useless here: it reads an older ternary\nformat without complaining and produces fluent nonsense.\n\nThe model itself is downloaded on first use and cached - 7.2 GB, so the first\nrun takes a while. After that the server starts in a second or two. Nothing\nhappens until you switch the node on.\n\nSeveral nodes using the same model SHARE one server process. Deleting a node\ndoes not stop it; quitting dpg_system does.\n\nTHINKING IS ON BY DEFAULT IN THIS MODEL, AND WORTH UNDERSTANDING:\nBonsai 2 reasons before answering. The reasoning comes out of 'thinking' rather\nthan 'output' - keep them apart, since the thinking is often more interesting\nthan the answer and almost never what an audience should read.\n\nThe 'thinking' option does not ask the model nicely. With it off, the node hands\nthe model a thought block that is already closed, so there is nothing for it to\nreason into and it answers directly. That is faster and blunter.\n\n'reasoning_effort' sets how hard it thinks when thinking is on: xhigh is the\nmodel's own default, medium is shorter and quicker. low is offered because the\ntemplate accepts it, but this model largely ignores it.\n\nIT IS NOT A CHATBOT NODE, IT IS A GENERATION YOU CAN REACH INTO:\nEverything gemma_4 does for steering a generation while it happens is here and\nworks the same way.\n\nTHREE WAYS TO STOP, AND THEY ARE DIFFERENT:\n\npolite_stop     finish the current sentence and stop. The text ends properly.\ninterrupt       stop generating now, mid-word if need be.\nhard interrupt  abandon it entirely.\n\nUse polite_stop for anything an audience is reading.\n\n'target_length' NUDGES, IT DOES NOT CUT:\nIt makes the end of the turn progressively more likely as the text approaches\nthe length you asked for, and only at a sentence end, so the model finds its own\nway to finish at about the right size. 'stop_bias' is how hard that push is.\n'max_tokens' is the hard ceiling, and that one does cut.\n\nIt counts the ANSWER, not the reasoning, and it never pushes while the model is\nstill thinking. That matters here: at xhigh effort the thought alone runs past\nany modest target, and a nudge applied inside it ends the turn before the answer\nstarts - the model reasons and then says nothing.\n\n'separate_actions' - UNSPOKEN ASIDES, AND WHY IT IS OFF BY DEFAULT:\nAsked to, this model marks anything unspoken with a single asterisk at the start\nof the phrase - *Looks around the room.* - and 'separate_actions' sends those to\n'actions_out' instead of 'output', so a speech synthesiser on 'output' never says\nthem.\n\nThree things about how it reads the text, each of which was a bug first:\n\nThe closing asterisk usually arrives FUSED to punctuation, as '.*' or '*.'\nrather than on its own, so any token carrying a single asterisk closes an aside.\n\nAn aside also ends at the END OF ITS LINE. Without that, an aside the model never\nclosed swallowed the speech that followed it and handed it back one phrase later\n- the asides stayed silent until the next spoken phrase, then everything came out\nat once, a whole phrase out of step.\n\nDOUBLED asterisks never mark an aside. This model uses **bold** for emphasis on\nwords it IS speaking, and diverting those took words out of the speech. What it\ncannot tell apart is single-asterisk *italic*, which looks exactly like a\none-word aside and so goes unspoken.\n\nIt is off by default because with it on a markdown bulleted list reads as asides,\none line at a time - fine when you are working with a performer, wrong when you\njust want the text.\n\nSTALE REASONING IS DROPPED BETWEEN TURNS:\nEach new turn removes the previous turns' thinking from the context, which is\nwhat the model's own template does by default. Left in, several turns of visible\ndeliberation give the model its own earlier reasoning to imitate and it begins\nrestating the previous answer rather than writing a new one - and the context\nfills up several times faster: five turns came to 248 tokens with it dropped\nagainst 876 with it kept. 'keep thinking in context' turns that off if you want\nthe whole trace kept.\n\nTaking something out of the middle of the context costs the server a re-read of\neverything after the gap, because this model's attention cannot shift a cache.\nThat happens in the pause AFTER an answer rather than before the next one, so it\ndoes not show up as a wait before the model starts speaking. With thinking off\nthere is nothing to drop and nothing to pay.\n\n'read prompt as it arrives' - FOR SPEECH DRIVING THE PROMPT:\nWith this on, words arriving at 'streaming_prompt' are read into the model as\nthey come rather than all at once when you submit, so the model has already\nprocessed the sentence by the time you finish it. A spoken prompt of about forty\ntokens starts answering in 0.31s instead of 0.65s - a third of a second saved,\nand it grows with the length of what was said.\n\nNothing happens until the node is switched on; typing a character is not what\npulls seven gigabytes of weights into memory. The reading happens off the main\nthread, so the editor keeps drawing.\n\nThe real reason to use it is 'score_incoming_text': with both on, every word is\nscored AS IT ARRIVES, so 'input_token_score' reports how expected each word was\nwhile the person is still speaking, and 'input_cumulative_score' tracks the\nrunning average. That signal does not exist if you hand over the whole sentence\nat once.\n\nThree things it handles that are easy to get wrong. The whole utterance is\nre-tokenised on each read rather than the new words alone, because a byte-pair\nmerge can reach across a word boundary - the result is byte-identical to the\nsentence arriving whole. A recogniser that revises what it already said is fine:\nthe tokens back to the first difference are dropped and re-read. And an utterance\nabandoned before submitting is taken back out of the context entirely, system\nblock included.\n\nBear in mind that a spoken prompt commits the turn early, so the model is holding\nyour half-finished sentence. That is the point, but it means the one server slot\nis busy reading while you speak - reading and generating do not overlap.\n\nIT IS THE SMALLER SAVING, THOUGH:\nIf the wait before the model speaks matters, thinking costs far more than\nprefill. With thinking on the model spends 100 to 130 tokens reasoning before the\nfirst spoken word, which is five to seven seconds. Turning thinking off brings\nthat to about half a second. Do that first; this is worth a third of a second on\ntop.\n\n'stream_chunk' - HOW MANY TOKENS IT ASKS FOR AT A TIME:\nWhile it is free-running the node takes a short run of tokens per request rather\nthan one at a time, which is about 11% faster - asking per token spends around\n5 ms of round trip on every one. The default of 8 recovers effectively all of\nthat while still re-reading the sampling controls often enough that moving the\ntemperature mid-generation is felt within about half a second. Set it to 1 to\nhave every token re-read everything, at that 11%.\n\nIt applies only while free-running. Stepping takes one token at a time by\ndefinition, 'slowdown' is already spending far more than the round trip, and the\nlast stretch before target_length goes back to one at a time so the ending nudge\nkeeps working exactly as described above.\n\n'step' AND 'choice' - WRITING WITH IT RATHER THAN RECEIVING FROM IT:\n'step' generates ONE token, forward or back. 'choice' then walks the\nalternatives the model was weighing at that point and substitutes the one you\npick. Stepping back here costs nothing: the server keeps everything before the\npoint you stepped back to, so only the new tail is recomputed.\n\n'show_probs' has to be on for the alternatives to exist.\n\nTHE SAMPLING CONTROLS, IN THE ORDER WORTH TOUCHING:\n\ntemperature       flatness of the choice. Low is predictable and repetitive,\n                  high is surprising and eventually incoherent.\nmin_p             discards anything much less likely than the best candidate.\ntop_k / top_p     older ways of narrowing the field.\nrepeat_penalty    pushes against saying the same thing again.\nseed              the same seed and the same settings give the same text.\n\nThe model's own recommended settings are the defaults here: temperature 1.0,\ntop_p 0.95, top_k 20 for thinking, and temperature 0.7 with top_p 0.8 without.\n\nSCORING TEXT YOU PUT IN, RATHER THAN TEXT IT MAKES:\nWith 'score_incoming_text' on, text you send is run through the model and each\ntoken reported with how likely the model thought it was - 'input_token_score'\nper token, 'input_cumulative_score' as a running average. Ordinary prose scores\nhigh and something strange scores low, so it finds the unusual parts of a text\nwithout generating anything.\n\n'display_mode' picks what the layout display shows per token: temperature,\nentropy, probability, or unnormalised probability. Because the model is across a\nprocess boundary, those last three are worked out from the forty candidates the\nserver reports rather than the whole vocabulary - close to exact when the model\nis confident, a slight underestimate of entropy when it is not.\n\nSYNTAX:\nbonsai_2\nbonsai_2 27B_1bit      the smaller 5.95 GB pack\nbonsai_2 <path.gguf>   a particular file\n\nEXAMPLE:\nbonsai_2\n\nINPUTS and PARAMETERS:\n\non / off:\nStart the server and be ready. This is what takes the time.\n\nprompt / pre-prompt / streaming_prompt:\nWhat to answer, what to put before it, and text arriving a piece at a time.\n\nsystem_prompt:\nWho it is being. Set before starting.\n\npolite_stop / interrupt / hard interrupt:\nThe three stops, in increasing rudeness.\n\nstep (+-1) / choice (+-1):\nOne token at a time, and which of the alternatives.\n\ntemperature / top_k / top_p / min_p / repeat_penalty / seed:\nThe sampling.\n\ntarget_length / max_tokens / stop_bias:\nA length to aim at, a length not to exceed, and how hard the aim pushes.\n\nslowdown:\nPace the output for reading.\n\nread prompt as it arrives:\nRead words into the model as they arrive rather than on submit. On by default.\n\nstream_chunk:\nTokens taken per request while free-running. 8 by default, 1 for per-token.\n\nseparate_actions:\nSend unspoken asides - a single asterisk at the start of a phrase - to\n'actions_out' rather than 'output'. Off by default.\n\nkeep thinking in context:\nKeep earlier turns' reasoning in the context instead of dropping it.\n\nscore_incoming_text / reset_input_score:\nMeasure how predictable incoming text is.\n\nn_ctx / n_gpu_layers:\nHow much context, and how much runs on the GPU. The model will take 262144 of\ncontext; 8192 is a working default.\n\nthinking / reasoning_effort:\nWhether it reasons first, and how hard.\n\nserver_log:\nShow what the server process is saying, once it is past loading.\n\nOUTPUTS: \n\noutput:\nThe text, token by token as it comes.\n\nthinking:\nThe reasoning, if there was any.\n\ntoken_out / end / active:\nEach token, a signal at the end, and whether it is generating.\n\ninput_token_score / input_cumulative_score:\nHow predictable the text you sent was.\n\nlayout_out / actions_out:\nDisplay information, and anything marked as an action.\n\nRELATED:\ngemma_4 for a smaller model loaded in this process rather than beside it.\ntext_display to read the output in the patch.\ncontext_tracker and prompt_composer to turn what it says into something else.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A 27 billion parameter model on this machine, in 7.2 GB of weights.\n\nWHAT IT IS:\nBonsai 2 is PrismML's compression of Qwen3.8 27B down to ternary weights - a\nlittle over two bits each. A model this size normally needs 54 GB and a big\ngraphics card; this one fits in memory alongside everything else you are running\nand generates at about 20 tokens a second on an M1 Max.\n\nIT RUNS IN A SEPARATE PROCESS, AND NEEDS A PARTICULAR BINARY:\nUnlike gemma_4, which loads the model inside dpg_system, this node starts\nllama-server as a child process and talks to it over the local network. That is\nnot a design preference - Bonsai 2's weight format and its activation transform\nare not in stock llama.cpp, so the version dpg_system links against cannot read\nthese files at all.\n\nYou need a binary from PrismML's fork, unpacked into\n\n    ~/.cache/bonsai/llama.cpp-prism-<build>/\n\nor pointed at by the BONSAI_LLAMA_SERVER environment variable. Releases are at\ngithub.com/PrismML-Eng/llama.cpp. The node says so plainly if it cannot find\none.\n\nA stock llama.cpp build is worse than useless here: it reads an older ternary\nformat without complaining and produces fluent nonsense.\n\nThe model itself is downloaded on first use and cached - 7.2 GB, so the first\nrun takes a while. After that the server starts in a second or two. Nothing\nhappens until you switch the node on.\n\nSeveral nodes using the same model SHARE one server process. Deleting a node\ndoes not stop it; quitting dpg_system does.\n\nTHINKING IS ON BY DEFAULT IN THIS MODEL, AND WORTH UNDERSTANDING:\nBonsai 2 reasons before answering. The reasoning comes out of 'thinking' rather\nthan 'output' - keep them apart, since the thinking is often more interesting\nthan the answer and almost never what an audience should read.\n\nThe 'thinking' option does not ask the model nicely. With it off, the node hands\nthe model a thought block that is already closed, so there is nothing for it to\nreason into and it answers directly. That is faster and blunter.\n\n'reasoning_effort' sets how hard it thinks when thinking is on: xhigh is the\nmodel's own default, medium is shorter and quicker. low is offered because the\ntemplate accepts it, but this model largely ignores it.\n\nIT IS NOT A CHATBOT NODE, IT IS A GENERATION YOU CAN REACH INTO:\nEverything gemma_4 does for steering a generation while it happens is here and\nworks the same way.\n\nTHREE WAYS TO STOP, AND THEY ARE DIFFERENT:\n\npolite_stop     finish the current sentence and stop. The text ends properly.\ninterrupt       stop generating now, mid-word if need be.\nhard interrupt  abandon it entirely.\n\nUse polite_stop for anything an audience is reading.\n\n'target_length' NUDGES, IT DOES NOT CUT:\nIt makes the end of the turn progressively more likely as the text approaches\nthe length you asked for, and only at a sentence end, so the model finds its own\nway to finish at about the right size. 'stop_bias' is how hard that push is.\n'max_tokens' is the hard ceiling, and that one does cut.\n\nIt counts the ANSWER, not the reasoning, and it never pushes while the model is\nstill thinking. That matters here: at xhigh effort the thought alone runs past\nany modest target, and a nudge applied inside it ends the turn before the answer\nstarts - the model reasons and then says nothing.\n\n'separate_actions' - UNSPOKEN ASIDES, AND WHY IT IS OFF BY DEFAULT:\nAsked to, this model marks anything unspoken with a single asterisk at the start\nof the phrase - *Looks around the room.* - and 'separate_actions' sends those to\n'actions_out' instead of 'output', so a speech synthesiser on 'output' never says\nthem.\n\nThree things about how it reads the text, each of which was a bug first:\n\nThe closing asterisk usually arrives FUSED to punctuation, as '.*' or '*.'\nrather than on its own, so any token carrying a single asterisk closes an aside.\n\nAn aside also ends at the END OF ITS LINE. Without that, an aside the model never\nclosed swallowed the speech that followed it and handed it back one phrase later\n- the asides stayed silent until the next spoken phrase, then everything came out\nat once, a whole phrase out of step.\n\nDOUBLED asterisks never mark an aside. This model uses **bold** for emphasis on\nwords it IS speaking, and diverting those took words out of the speech. What it\ncannot tell apart is single-asterisk *italic*, which looks exactly like a\none-word aside and so goes unspoken.\n\nIt is off by default because with it on a markdown bulleted list reads as asides,\none line at a time - fine when you are working with a performer, wrong when you\njust want the text.\n\nSTALE REASONING IS DROPPED BETWEEN TURNS:\nEach new turn removes the previous turns' thinking from the context, which is\nwhat the model's own template does by default. Left in, several turns of visible\ndeliberation give the model its own earlier reasoning to imitate and it begins\nrestating the previous answer rather than writing a new one - and the context\nfills up several times faster: five turns came to 248 tokens with it dropped\nagainst 876 with it kept. 'keep thinking in context' turns that off if you want\nthe whole trace kept.\n\nTaking something out of the middle of the context costs the server a re-read of\neverything after the gap, because this model's attention cannot shift a cache.\nThat happens in the pause AFTER an answer rather than before the next one, so it\ndoes not show up as a wait before the model starts speaking. With thinking off\nthere is nothing to drop and nothing to pay.\n\n'read prompt as it arrives' - FOR SPEECH DRIVING THE PROMPT:\nWith this on, words arriving at 'streaming_prompt' are read into the model as\nthey come rather than all at once when you submit, so the model has already\nprocessed the sentence by the time you finish it. A spoken prompt of about forty\ntokens starts answering in 0.31s instead of 0.65s - a third of a second saved,\nand it grows with the length of what was said.\n\nNothing happens until the node is switched on; typing a character is not what\npulls seven gigabytes of weights into memory. The reading happens off the main\nthread, so the editor keeps drawing.\n\nThe real reason to use it is 'score_incoming_text': with both on, every word is\nscored AS IT ARRIVES, so 'input_token_score' reports how expected each word was\nwhile the person is still speaking, and 'input_cumulative_score' tracks the\nrunning average. That signal does not exist if you hand over the whole sentence\nat once.\n\nThree things it handles that are easy to get wrong. The whole utterance is\nre-tokenised on each read rather than the new words alone, because a byte-pair\nmerge can reach across a word boundary - the result is byte-identical to the\nsentence arriving whole. A recogniser that revises what it already said is fine:\nthe tokens back to the first difference are dropped and re-read. And an utterance\nabandoned before submitting is taken back out of the context entirely, system\nblock included.\n\nBear in mind that a spoken prompt commits the turn early, so the model is holding\nyour half-finished sentence. That is the point, but it means the one server slot\nis busy reading while you speak - reading and generating do not overlap.\n\nIT IS THE SMALLER SAVING, THOUGH:\nIf the wait before the model speaks matters, thinking costs far more than\nprefill. With thinking on the model spends 100 to 130 tokens reasoning before the\nfirst spoken word, which is five to seven seconds. Turning thinking off brings\nthat to about half a second. Do that first; this is worth a third of a second on\ntop.\n\n'stream_chunk' - HOW MANY TOKENS IT ASKS FOR AT A TIME:\nWhile it is free-running the node takes a short run of tokens per request rather\nthan one at a time, which is about 11% faster - asking per token spends around\n5 ms of round trip on every one. The default of 8 recovers effectively all of\nthat while still re-reading the sampling controls often enough that moving the\ntemperature mid-generation is felt within about half a second. Set it to 1 to\nhave every token re-read everything, at that 11%.\n\nIt applies only while free-running. Stepping takes one token at a time by\ndefinition, 'slowdown' is already spending far more than the round trip, and the\nlast stretch before target_length goes back to one at a time so the ending nudge\nkeeps working exactly as described above.\n\n'step' AND 'choice' - WRITING WITH IT RATHER THAN RECEIVING FROM IT:\n'step' generates ONE token, forward or back. 'choice' then walks the\nalternatives the model was weighing at that point and substitutes the one you\npick. Stepping back here costs nothing: the server keeps everything before the\npoint you stepped back to, so only the new tail is recomputed.\n\n'show_probs' has to be on for the alternatives to exist.\n\nTHE SAMPLING CONTROLS, IN THE ORDER WORTH TOUCHING:\n\ntemperature       flatness of the choice. Low is predictable and repetitive,\n                  high is surprising and eventually incoherent.\nmin_p             discards anything much less likely than the best candidate.\ntop_k / top_p     older ways of narrowing the field.\nrepeat_penalty    pushes against saying the same thing again.\nseed              the same seed and the same settings give the same text.\n\nThe model's own recommended settings are the defaults here: temperature 1.0,\ntop_p 0.95, top_k 20 for thinking, and temperature 0.7 with top_p 0.8 without.\n\nSCORING TEXT YOU PUT IN, RATHER THAN TEXT IT MAKES:\nWith 'score_incoming_text' on, text you send is run through the model and each\ntoken reported with how likely the model thought it was - 'input_token_score'\nper token, 'input_cumulative_score' as a running average. Ordinary prose scores\nhigh and something strange scores low, so it finds the unusual parts of a text\nwithout generating anything.\n\n'display_mode' picks what the layout display shows per token: temperature,\nentropy, probability, or unnormalised probability. Because the model is across a\nprocess boundary, those last three are worked out from the forty candidates the\nserver reports rather than the whole vocabulary - close to exact when the model\nis confident, a slight underestimate of entropy when it is not.\n\nSYNTAX:\nbonsai_2\nbonsai_2 27B_1bit      the smaller 5.95 GB pack\nbonsai_2 <path.gguf>   a particular file\n\nEXAMPLE:\nbonsai_2\n\nINPUTS and PARAMETERS:\n\non / off:\nStart the server and be ready. This is what takes the time.\n\nprompt / pre-prompt / streaming_prompt:\nWhat to answer, what to put before it, and text arriving a piece at a time.\n\nsystem_prompt:\nWho it is being. Set before starting.\n\npolite_stop / interrupt / hard interrupt:\nThe three stops, in increasing rudeness.\n\nstep (+-1) / choice (+-1):\nOne token at a time, and which of the alternatives.\n\ntemperature / top_k / top_p / min_p / repeat_penalty / seed:\nThe sampling.\n\ntarget_length / max_tokens / stop_bias:\nA length to aim at, a length not to exceed, and how hard the aim pushes.\n\nslowdown:\nPace the output for reading.\n\nread prompt as it arrives:\nRead words into the model as they arrive rather than on submit. On by default.\n\nstream_chunk:\nTokens taken per request while free-running. 8 by default, 1 for per-token.\n\nseparate_actions:\nSend unspoken asides - a single asterisk at the start of a phrase - to\n'actions_out' rather than 'output'. Off by default.\n\nkeep thinking in context:\nKeep earlier turns' reasoning in the context instead of dropping it.\n\nscore_incoming_text / reset_input_score:\nMeasure how predictable incoming text is.\n\nn_ctx / n_gpu_layers:\nHow much context, and how much runs on the GPU. The model will take 262144 of\ncontext; 8192 is a working default.\n\nthinking / reasoning_effort:\nWhether it reasons first, and how hard.\n\nserver_log:\nShow what the server process is saying, once it is past loading.\n\nOUTPUTS: \n\noutput:\nThe text, token by token as it comes.\n\nthinking:\nThe reasoning, if there was any.\n\ntoken_out / end / active:\nEach token, a signal at the end, and whether it is generating.\n\ninput_token_score / input_cumulative_score:\nHow predictable the text you sent was.\n\nlayout_out / actions_out:\nDisplay information, and anything marked as an action.\n\nRELATED:\ngemma_4 for a smaller model loaded in this process rather than beside it.\ntext_display to read the output in the patch.\ncontext_tracker and prompt_composer to turn what it says into something else."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 62,
+            "width": 268,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "switch on and WAIT - the server starts\nhere, and the 7.2 GB of weights are\ndownloaded the first time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "switch on and WAIT - the server starts\nhere, and the 7.2 GB of weights are\ndownloaded the first time"
+        },
+        "5": {
+            "name": "string",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 140,
+            "width": 550,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "You are a terse, concrete writer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 195,
+            "width": 550,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "Describe a room nobody has entered for a year.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "name": "bonsai_2",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 230,
+            "height": 546,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "n_ctx",
+                    "value": 8192,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 895,
+            "width": 298,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "target_length nudges it towards a size by\nmaking the ending more likely at a sentence\nend - it does not cut. max_tokens does cut",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "target_length nudges it towards a size by\nmaking the ending more likely at a sentence\nend - it does not cut. max_tokens does cut"
+        },
+        "9": {
+            "name": "text_display",
+            "id": 570,
+            "position_x": 460,
+            "position_y": 260,
+            "width": 354,
+            "height": 250,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment the answer, arriving token by token",
+            "name": "comment",
+            "id": 607,
+            "position_x": 840,
+            "position_y": 535,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the answer, arriving token by token",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the answer, arriving token by token"
+        },
+        "11": {
+            "name": "text_display",
+            "id": 644,
+            "position_x": 460,
+            "position_y": 580,
+            "width": 354,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 815,
+            "width": 298,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "thinking is a SEPARATE channel, and this\nmodel thinks by default - turn the thinking\noption off to get the answer straight",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "thinking is a SEPARATE channel, and this\nmodel thinks by default - turn the thinking\noption off to get the answer straight"
+        },
+        "13": {
+            "name": "toggle",
+            "id": 718,
+            "position_x": 460,
+            "position_y": 920,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment lit while it is generating",
+            "name": "comment",
+            "id": 755,
+            "position_x": 840,
+            "position_y": 957,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lit while it is generating",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lit while it is generating"
+        },
+        "15": {
+            "name": "plot",
+            "id": 792,
+            "position_x": 460,
+            "position_y": 980,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -8.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "16": {
+            "name": "text_block",
+            "id": 829,
+            "annotation": true,
+            "position_x": 840,
+            "position_y": 1170,
+            "width": 280,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "with score_incoming_text on, this is how\nPREDICTABLE your text was to it - low\nmeans unusual, and no generating needed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "with score_incoming_text on, this is how\nPREDICTABLE your text was to it - low\nmeans unusual, and no generating needed"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 1188,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on / off"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "system_prompt"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "prompt"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "thinking",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "input_token_score",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

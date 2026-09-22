@@ -20,7 +20,7 @@ import json
 
 from fuzzywuzzy import fuzz
 
-from dpg_system.node import Node
+from dpg_system.node import Node, scale_item_size
 from dpg_system.conversion_utils import *
 from dpg_system.synth_core import (
     VesselUnit, RattleUnit, StrikeUnit, FaderOutUnit,
@@ -580,6 +580,15 @@ class SynthNode(Node):
 
     def synth_frame_task(self):
         pass
+
+    def custom_zoom(self, ratio, exact):
+        super().custom_zoom(ratio, exact)
+        # The name column, and the captions standing over it, are measured in
+        # the font as drawn and nudged into place from where the widgets
+        # landed. At a new zoom both are measured again: the frame task is
+        # already the thing that settles them, so it is simply re-armed.
+        self._labels_aligned = False
+        self._align_attempts = 0
 
     def custom_cleanup(self):
         if self._registered:
@@ -1338,7 +1347,7 @@ class AdditiveNode(SynthNode):
                                        height=self.plot_height,
                                        on_change=self.spectrum_edited,
                                        line_color=(240, 170, 80),
-                                       name=label)
+                                       name=label, node=self)
         # The same spectrum, editable a partial at a time. A drawn curve
         # cannot single out the ninth harmonic without passing over the
         # eighth; one bar per partial can.
@@ -1349,7 +1358,7 @@ class AdditiveNode(SynthNode):
                               height=self.plot_height,
                               on_change=self.bars_edited,
                               bar_color=(240, 170, 80),
-                              name=label)
+                              name=label, node=self)
         self._shown_bars = self.bars.count
         # Which editor is live. Set before any option exists, since a widget
         # callback during creation or load can reach sync_options first.
@@ -3096,7 +3105,7 @@ class ShaperNode(SynthNode):
                                        width=self.plot_width,
                                        height=self.plot_height,
                                        on_change=self.curve_changed,
-                                       name=label)
+                                       name=label, node=self)
         # 'point 1 0.5 0.8' and friends, so the curve can be moved from a patch
         # rather than only by hand. See BreakpointEditor.handle_message.
         for name in BreakpointEditor.MESSAGES:
@@ -3372,6 +3381,7 @@ class VuNode(SynthNode):
         self.meter_display = self.add_display('')
         self.meter_display.submit_callback = self.submit_display
         self._bar_tags = []
+        self._drawlists = []
         self.db_property = self.add_property('dB', widget_type='label',
                                              default_value='-inf dB')
 
@@ -3380,11 +3390,22 @@ class VuNode(SynthNode):
         self._shown = (-999.0, -999.0, -999.0, -999.0)
 
     def submit_display(self):
-        width = VuNode.METER_WIDTH
-        height = VuNode.METER_HEIGHT
-        self._bar_tags = []
+        self._drawlists = []
         for _channel in range(2):
-            drawlist = dpg.add_drawlist(width=width, height=height)
+            self._drawlists.append(dpg.add_drawlist(
+                width=self.zoomed(VuNode.METER_WIDTH),
+                height=self.zoomed(VuNode.METER_HEIGHT)))
+        self._paint_meters()
+
+    def _paint_meters(self):
+        """Draw the two bars at whatever size their canvas is now."""
+        self._bar_tags = []
+        for drawlist in self._drawlists:
+            if not dpg.does_item_exist(drawlist):
+                continue
+            dpg.delete_item(drawlist, children_only=True)
+            width = dpg.get_item_width(drawlist) or VuNode.METER_WIDTH
+            height = dpg.get_item_height(drawlist) or VuNode.METER_HEIGHT
             fills = []
             for low, high, color in VuNode.ZONES:
                 x0 = self._bar_fraction(low) * width
@@ -3400,9 +3421,19 @@ class VuNode(SynthNode):
                     pmin=(x0, 1), pmax=(x0, height - 1), fill=color,
                     color=(0, 0, 0, 0), parent=drawlist))
             peak = dpg.draw_line((0, 0), (0, height),
-                                 color=(230, 230, 230, 0), thickness=2,
+                                 color=(230, 230, 230, 0),
+                                 thickness=max(1, self.zoomed(2)),
                                  parent=drawlist)
             self._bar_tags.append({'fills': fills, 'peak': peak})
+        self._shown = (-999.0, -999.0, -999.0, -999.0)
+
+    def custom_zoom(self, ratio, exact):
+        # The canvases are the node's own, so they are resized here; what is
+        # painted on them is in pixels, so it is painted again.
+        super().custom_zoom(ratio, exact)
+        for drawlist in getattr(self, '_drawlists', []):
+            scale_item_size(drawlist, ratio, exact)
+        self._paint_meters()
 
     @staticmethod
     def _to_db(value):
@@ -3421,9 +3452,10 @@ class VuNode(SynthNode):
         if all(abs(now - was) < 0.001 for now, was in zip(state, self._shown)):
             return
         self._shown = state
-        width = VuNode.METER_WIDTH
-        height = VuNode.METER_HEIGHT
         for channel, meter in enumerate(self._bar_tags):
+            drawlist = self._drawlists[channel] if channel < len(self._drawlists) else None
+            width = (dpg.get_item_width(drawlist) if drawlist else 0) or VuNode.METER_WIDTH
+            height = (dpg.get_item_height(drawlist) if drawlist else 0) or VuNode.METER_HEIGHT
             level_frac = self._bar_fraction(
                 self._to_db(self.unit.levels[channel]))
             for zone, (low, high, _color) in enumerate(VuNode.ZONES):
@@ -5194,7 +5226,7 @@ class ModeTableNode(SynthNode):
         self.editor = ModeEditor(width=self.plot_width,
                                  height=self.plot_height,
                                  on_change=self.modes_edited,
-                                 name=label)
+                                 name=label, node=self)
         self.editor.set_modes(MODAL_MATERIALS[material], notify=False)
         # What the material combo last actually applied, and the guards that
         # keep a load from re-applying it over the table being restored --
@@ -7730,13 +7762,23 @@ class FaderNode(SynthNode):
         span = VuNode.METER_CEIL_DB - VuNode.METER_FLOOR_DB
         return min(1.0, max(0.0, (db - VuNode.METER_FLOOR_DB) / span))
 
-    def _init_meters(self):
-        widget = self.fader_input.widget
+    def _meter_canvas(self):
+        """The lanes' canvas and the size it is drawn at now - which follows
+        the patcher's zoom, so it is read rather than assumed."""
+        widget = getattr(self.fader_input, 'widget', None)
         drawlist = getattr(widget, 'meter_drawlist', None)
         if drawlist is None or not dpg.does_item_exist(drawlist):
+            return None, 0, 0
+        lanes = max(1, getattr(widget, 'meter_count', 2))
+        width = dpg.get_item_width(drawlist) or 0
+        height = dpg.get_item_height(drawlist) or 0
+        return drawlist, (width - 2) / lanes, height
+
+    def _init_meters(self):
+        drawlist, lane, height = self._meter_canvas()
+        if drawlist is None or lane <= 0 or height <= 0:
             return False
-        lane = widget.meter_lane_width
-        height = widget.slider_height
+        dpg.delete_item(drawlist, children_only=True)
         self._meter_tags = []
         for channel in range(2):
             x0 = channel * lane + 1
@@ -7754,11 +7796,19 @@ class FaderNode(SynthNode):
                     pmin=(x0, ybot), pmax=(x1, ybot), fill=color,
                     color=(0, 0, 0, 0), parent=drawlist))
             peak = dpg.draw_line((x0, 0), (x1, 0),
-                                 color=(230, 230, 230, 0), thickness=2,
+                                 color=(230, 230, 230, 0),
+                                 thickness=max(1, self.zoomed(2)),
                                  parent=drawlist)
             self._meter_tags.append({'fills': fills, 'peak': peak,
                                      'x0': x0, 'x1': x1})
+        self._meter_shown = (-1.0, -1.0, -1.0, -1.0)
         return True
+
+    def custom_zoom(self, ratio, exact):
+        # The canvas belongs to the slider and has already been resized with
+        # it; the lanes on it are in pixels, so they are drawn again.
+        super().custom_zoom(ratio, exact)
+        self._meter_tags = None
 
     @staticmethod
     def _db_frac(db):
@@ -7774,7 +7824,9 @@ class FaderNode(SynthNode):
                for now, was in zip(state, self._meter_shown)):
             return
         self._meter_shown = state
-        height = self.fader_input.widget.slider_height
+        _drawlist, _lane, height = self._meter_canvas()
+        if height <= 0:
+            return
         for channel, meter in enumerate(self._meter_tags):
             level_frac = self._fraction(self.unit.levels[channel])
             for zone, (low, high, _color) in enumerate(VuNode.ZONES):
@@ -8299,7 +8351,7 @@ class ScopeNode(SynthNode):
                                     category=dpg.mvThemeCat_Plots)
 
         with dpg.plot(label='', tag=self.plot_tag,
-                      height=self.plot_height, width=self.plot_width,
+                      height=self.zoomed(self.plot_height), width=self.zoomed(self.plot_width),
                       no_title=True, no_menus=True, no_box_select=True,
                       no_mouse_pos=True):
             dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.x_axis_tag,
@@ -8320,13 +8372,14 @@ class ScopeNode(SynthNode):
     def install_resize_handle(self):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=self.scope_display.uuid, label='',
-                                  width=self.plot_width, height=4)
+                                  width=self.zoomed(self.plot_width), height=self.zoomed(4))
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
             width_option=self.width_option, height_option=self.height_option,
             sync_width=True, sync_height=False,
-            on_resize=self.handle_resized
+            on_resize=self.handle_resized, zoom_aware=True
         )
+        self.zoom_scaled_items += [self.plot_tag, btn_uuid]
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
@@ -8343,13 +8396,14 @@ class ScopeNode(SynthNode):
     def size_changed(self):
         if not self.plot_ready:
             return
+        # The options are the size at 100%; what is drawn follows the zoom.
         self.plot_width = any_to_int(self.width_option())
         self.plot_height = any_to_int(self.height_option())
-        dpg.set_item_width(self.plot_tag, self.plot_width)
-        dpg.set_item_height(self.plot_tag, self.plot_height)
+        dpg.set_item_width(self.plot_tag, self.zoomed(self.plot_width))
+        dpg.set_item_height(self.plot_tag, self.zoomed(self.plot_height))
         handle = getattr(self, 'resize_handle', None)
         if handle is not None and dpg.does_item_exist(handle.uuid):
-            dpg.set_item_width(handle.uuid, self.plot_width)
+            dpg.set_item_width(handle.uuid, self.zoomed(self.plot_width))
 
     def window_changed(self):
         samples = self._clamp_samples(any_to_int(self.samples_option()))

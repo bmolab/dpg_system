@@ -13,6 +13,63 @@ import textwrap
 from pathlib import Path
 
 
+def node_zoom(node) -> float:
+    """The zoom of the patcher a node sits in; 1.0 when it has none."""
+    editor = getattr(node, 'my_editor', None) if node is not None else None
+    return getattr(editor, 'zoom', 1.0) if editor is not None else 1.0
+
+
+def zoomed_size(node, size):
+    """A size given at 100%, as drawn in the node's patcher."""
+    zoom = node_zoom(node)
+    if zoom == 1.0 or size is None or size <= 0:
+        return size
+    return max(1, int(round(size * zoom)))
+
+
+def zoomed_font(node, font):
+    """A font given at 100%, as drawn in the node's patcher."""
+    app = getattr(node, 'app', None)
+    if app is None or not hasattr(app, 'zoomed_font'):
+        return font
+    return app.zoomed_font(font, node_zoom(node))
+
+
+def _tidy(value):
+    """A saved coordinate: whole when it is whole, else to a thousandth."""
+    value = round(float(value), 3)
+    return int(value) if value == int(value) else value
+
+
+def scale_item_size(uuid, ratio, exact, keys=('width', 'height')):
+    """Scale an item's configured size by `ratio`, for a patcher zoom change.
+
+    Each size is scaled from what the item has NOW, so a width a node set for
+    itself (a combo sized to its items, a text box the user widened) zooms as
+    faithfully as one that came from widget_width. `exact` keeps the unrounded
+    size between steps, so zooming in and back out lands where it started
+    rather than drifting a pixel a step; it is dropped for any size someone
+    else has changed in the meantime. Zero means 'automatic' and is left alone.
+    """
+    if uuid is None or not dpg.does_item_exist(uuid):
+        return
+    config = dpg.get_item_configuration(uuid)
+    remembered = exact.setdefault(uuid, {})
+    changes = {}
+    for key in keys:
+        current = config.get(key)
+        if not current or current <= 0:
+            continue
+        size = remembered.get(key)
+        if size is None or int(round(size)) != current:
+            size = float(current)
+        size *= ratio
+        remembered[key] = size
+        changes[key] = max(1, int(round(size)))
+    if changes:
+        dpg.configure_item(uuid, **changes)
+
+
 _tight_group_theme = None
 _resize_handle_theme = None
 _resize_handle_dragging_theme = None
@@ -21,9 +78,15 @@ _resize_handle_dragging_theme = None
 def _get_tight_group_theme():
     global _tight_group_theme
     if _tight_group_theme is None or not dpg.does_item_exist(_tight_group_theme):
+        spacing = [2, 4]
         with dpg.theme() as _tight_group_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, 2, 4, category=dpg.mvThemeCat_Core)
+                item = dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, spacing[0], spacing[1],
+                                           category=dpg.mvThemeCat_Core)
+        # Tight rows are inside nodes, so this spacing follows the zoom too.
+        if Node.app is not None and hasattr(Node.app, 'register_scalable_style'):
+            Node.app.register_scalable_style(item, spacing)
+            Node.app.scale_node_styles(Node.app.current_zoom())
     return _tight_group_theme
 
 
@@ -112,7 +175,7 @@ def _get_pin_active_bang_theme():
 class ResizeHandle:
     def __init__(self, uuid, target_uuid, axis='x', width_option=None, height_option=None,
                  sync_width=False, sync_height=True, square=False, extra_target_uuids=None,
-                 on_resize=None):
+                 on_resize=None, zoom_aware=False):
         self.uuid = uuid
         self.target_uuid = target_uuid
         self.axis = axis
@@ -123,6 +186,10 @@ class ResizeHandle:
         self.square = square
         self.extra_target_uuids = list(extra_target_uuids) if extra_target_uuids else []
         self.on_resize = on_resize
+        # Set where the owner draws at the patcher's zoom: the size it is
+        # told to remember is then the size at 100%, as a patch stores it.
+        # Families that have not been through that yet keep the old reading.
+        self.zoom_aware = zoom_aware
 
 
 class NodeOutput:
@@ -801,7 +868,7 @@ class BasePropertyWidget:
             return
 
         cb = self.trigger_callback if self.trigger_callback else self.trigger_value
-        self.trigger_widget = dpg.add_button(label='', width=14, callback=cb)
+        self.trigger_widget = dpg.add_button(label='', width=self._zoomed(14), callback=cb)
         if self.active_theme:
             dpg.bind_item_theme(self.trigger_widget, self.active_theme)
 
@@ -1002,7 +1069,7 @@ class BasePropertyWidget:
             return None
         try:
             size = dpg.get_text_size(self.prefix_label,
-                                     font=dpg.get_item_font(self.uuid))
+                                     font=self._effective_font())
         except Exception:
             return None
         if size is None:
@@ -1022,7 +1089,7 @@ class BasePropertyWidget:
         return True
 
     def _calculate_width(self, text, pad, minimum_width):
-        font_id = dpg.get_item_font(self.uuid)
+        font_id = self._effective_font()
         size = dpg.get_text_size(text, font=font_id)
         width = minimum_width
         if size is not None:
@@ -1041,7 +1108,40 @@ class BasePropertyWidget:
         return width
 
     def set_font(self, font: Any) -> None:
-        dpg.bind_item_font(self.uuid, font)
+        # The font asked for is the 100% one; what is bound follows the zoom.
+        self._base_font = font
+        dpg.bind_item_font(self.uuid, zoomed_font(self.node, font))
+
+    # --- Zoom ---
+
+    def _zoomed(self, size):
+        return zoomed_size(self.node, size)
+
+    def _effective_font(self):
+        """The font this widget is actually drawn in: its own if it has one,
+        otherwise the zoomed patcher's (None at 100%, meaning the default)."""
+        font_id = dpg.get_item_font(self.uuid)
+        if font_id:
+            return font_id
+        editor = getattr(self.node, 'my_editor', None)
+        return getattr(editor, 'zoom_font', None)
+
+    def zoom_items(self):
+        """The items whose size follows the patcher's zoom."""
+        items = list(self.uuids)
+        if self.trigger_widget is not None:
+            items.append(self.trigger_widget)
+        if self.prefix_spacer_uuid is not None:
+            items.append(self.prefix_spacer_uuid)
+        return items
+
+    def apply_zoom(self, ratio: float, exact: Dict) -> None:
+        """Follow a change of the patcher's zoom by `ratio`."""
+        for uuid in self.zoom_items():
+            scale_item_size(uuid, ratio, exact)
+        base_font = getattr(self, '_base_font', None)
+        if base_font and dpg.does_item_exist(self.uuid):
+            self.set_font(base_font)
 
     # --- Load / Save ---
 
@@ -1182,7 +1282,7 @@ class FloatWidget(NumericInteractionWidget):
 class DragFloat(FloatWidget):
     def _draw_widget(self):
         mn, mx = self._get_limits(-math.inf, math.inf)
-        dpg.add_drag_float(width=self.widget_width, clamped=True, label=self._label,
+        dpg.add_drag_float(width=self._zoomed(self.widget_width), clamped=True, label=self._label,
                            tag=self.uuid, max_value=mx, min_value=mn, user_data=self.node,
                            default_value=self.default_value, speed=self.speed)
 
@@ -1190,7 +1290,7 @@ class DragFloat(FloatWidget):
 class SliderFloat(FloatWidget):
     def _draw_widget(self):
         mn, mx = self._get_limits(0.0, 100.0)
-        dpg.add_slider_float(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_slider_float(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                              user_data=self.node, default_value=self.default_value,
                              min_value=mn, max_value=mx)
 
@@ -1204,6 +1304,15 @@ class VerticalSliderFloat(FloatWidget):
     and the slider draws that many empty meter lanes beside itself in a
     drawlist (meter_drawlist, meter_lane_width) for the node to paint --
     the widget owns the layout, the node owns the eyes."""
+    def zoom_items(self):
+        # The lanes' canvas goes with the slider; what is painted on it is
+        # the node's to redraw (custom_zoom).
+        items = super().zoom_items()
+        drawlist = getattr(self, 'meter_drawlist', None)
+        if drawlist is not None:
+            items.append(drawlist)
+        return items
+
     def _draw_widget(self):
         mn, mx = self._get_limits(0.0, 1.0)
         height = getattr(self, 'slider_height', 120)
@@ -1212,18 +1321,18 @@ class VerticalSliderFloat(FloatWidget):
             self.meter_lane_width = 7
             with dpg.group(horizontal=True):
                 dpg.add_slider_float(label=self._label, vertical=True,
-                                     width=min(self.widget_width, 32),
-                                     height=height,
+                                     width=self._zoomed(min(self.widget_width, 32)),
+                                     height=self._zoomed(height),
                                      tag=self.uuid, user_data=self.node,
                                      default_value=self.default_value,
                                      min_value=mn, max_value=mx)
                 self.meter_drawlist = dpg.add_drawlist(
-                    width=meters * self.meter_lane_width + 2,
-                    height=height)
+                    width=self._zoomed(meters * self.meter_lane_width + 2),
+                    height=self._zoomed(height))
         else:
             dpg.add_slider_float(label=self._label, vertical=True,
-                                 width=min(self.widget_width, 32),
-                                 height=height,
+                                 width=self._zoomed(min(self.widget_width, 32)),
+                                 height=self._zoomed(height),
                                  tag=self.uuid, user_data=self.node,
                                  default_value=self.default_value,
                                  min_value=mn, max_value=mx)
@@ -1233,7 +1342,7 @@ class KnobFloat(FloatWidget):
     def _draw_widget(self):
         if self.min is None: self.min = 0
         if self.max is None: self.max = 1.0
-        dpg.add_knob_float(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_knob_float(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                            user_data=self.node, default_value=self.default_value,
                            min_value=self.min, max_value=self.max)
 
@@ -1245,7 +1354,7 @@ class InputFloat(FloatWidget):
     def _draw_widget(self):
         if self.min is None: self.min = -sys.float_info.max
         if self.max is None: self.max = sys.float_info.max
-        dpg.add_input_float(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_input_float(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                             user_data=self.node, default_value=self.default_value,
                             step=self.step, min_value=self.min, max_value=self.max)
 
@@ -1279,7 +1388,7 @@ class IntWidget(NumericInteractionWidget):
 class DragInt(IntWidget):
     def _draw_widget(self):
         mn, mx = self._get_limits(-math.inf, math.inf)
-        dpg.add_drag_int(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_drag_int(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                          max_value=mx, min_value=mn, user_data=self.node,
                          default_value=self.default_value)
 
@@ -1289,7 +1398,7 @@ class SliderInt(IntWidget):
         # Original logic set default limits to 0-100 AND updated self.min/max
         if self.min is None: self.min = 0
         if self.max is None: self.max = 100
-        dpg.add_slider_int(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_slider_int(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                            user_data=self.node, default_value=self.default_value,
                            min_value=self.min, max_value=self.max)
 
@@ -1298,7 +1407,7 @@ class InputInt(IntWidget):
     def _draw_widget(self):
         if self.min is None: self.min = 0
         if self.max is None: self.max = 2 ** 31 - 1
-        dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_input_int(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                           user_data=self.node, default_value=self.default_value,
                           step=self.step, min_value=self.min, max_value=self.max)
 
@@ -1364,7 +1473,7 @@ class StringWidget(BasePropertyWidget):
 
 class TextInput(StringWidget):
     def _draw_widget(self):
-        dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_input_text(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                            user_data=self.node, default_value=self.default_value, on_enter=True,
                            callback=self.clickable_changed)
 
@@ -1391,7 +1500,7 @@ class TextEditor(StringWidget):
         self._shown = ''    # exactly what we last pushed into the widget
 
     def _draw_widget(self):
-        dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node,
+        dpg.add_input_text(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid, user_data=self.node,
                            default_value=self.default_value, on_enter=False, multiline=True)
         self._raw = self.default_value
         self._shown = self.default_value
@@ -1426,7 +1535,7 @@ class TextEditor(StringWidget):
         # Measured over a run because DPG rounds a single glyph to whole
         # pixels, which would cost ~6% of the usable width.
         run = 'M' * 64
-        font_id = dpg.get_item_font(self.uuid) or self._font
+        font_id = self._effective_font() or self._font
         try:
             if font_id:
                 size = dpg.get_text_size(run, font=font_id)
@@ -1491,6 +1600,10 @@ class TextEditor(StringWidget):
         super().set_font(font)
         self.rewrap()
 
+    def apply_zoom(self, ratio, exact):
+        super().apply_zoom(ratio, exact)
+        self.rewrap()
+
     def save(self, widget_container):
         # Save the unwrapped text -- otherwise display-only line breaks would
         # get baked into the patch file.
@@ -1519,14 +1632,14 @@ class TextDisplay(StringWidget):
     def _draw_widget(self):
         # The label is what restore_properties matches on at load time, so it
         # has to be carried even though a child_window never displays one.
-        with dpg.child_window(label=self._label, tag=self.uuid, width=self.widget_width,
-                              height=self.widget_height, user_data=self.node):
+        with dpg.child_window(label=self._label, tag=self.uuid, width=self._zoomed(self.widget_width),
+                              height=self._zoomed(self.widget_height), user_data=self.node):
             dpg.add_text(self.default_value, tag=self.text_uuid, wrap=self._wrap_px())
         self._raw = self.default_value
         self.value = self.default_value
 
     def _wrap_px(self):
-        width = self.widget_width
+        width = self._zoomed(self.widget_width)
         if dpg.does_item_exist(self.uuid):
             width = dpg.get_item_width(self.uuid) or width
         return max(32, width - 20)  # window padding + scrollbar
@@ -1603,8 +1716,14 @@ class TextDisplay(StringWidget):
         dpg.set_clipboard_text(self._raw)
 
     def set_font(self, font):
+        self._base_font = font
         if dpg.does_item_exist(self.text_uuid):
-            dpg.bind_item_font(self.text_uuid, font)
+            dpg.bind_item_font(self.text_uuid, zoomed_font(self.node, font))
+
+    def apply_zoom(self, ratio, exact):
+        super().apply_zoom(ratio, exact)
+        if dpg.does_item_exist(self.text_uuid):
+            dpg.configure_item(self.text_uuid, wrap=self._wrap_px())
 
     def save(self, widget_container):
         # self.uuid is a child_window; dpg.get_value on it returns None, so the
@@ -1650,7 +1769,7 @@ class SelectorWidget(StringWidget):
 
 class Combo(SelectorWidget):
     def _draw_widget(self):
-        dpg.add_combo(self.combo_items, label=self._label, width=self.widget_width,
+        dpg.add_combo(self.combo_items, label=self._label, width=self._zoomed(self.widget_width),
                       tag=self.uuid, user_data=self.node, default_value=self.default_value)
 
     def fit_to_items(self, pad: int = 12, minimum_width: int = 20):
@@ -1668,7 +1787,7 @@ class Combo(SelectorWidget):
         # the global font scale. Without a font argument it reports unscaled
         # metrics on the first rendered frame and scaled ones after, so the
         # app's default font stands in for an unbound widget.
-        font_id = dpg.get_item_font(self.uuid)
+        font_id = self._effective_font()
         if not font_id and self.node is not None:
             font_id = getattr(self.node.app, 'font_24', None)
         text_width = 0.0
@@ -1703,7 +1822,7 @@ class RadioGroup(SelectorWidget):
 
 class ListBox(SelectorWidget):
     def _draw_widget(self):
-        dpg.add_listbox(label=self._label, width=self.widget_width, tag=self.uuid,
+        dpg.add_listbox(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                         user_data=self.node, num_items=8)
 
 
@@ -1715,7 +1834,7 @@ class ColorPicker(BasePropertyWidget):
         self.default_value = tuple(any_to_list(data))
 
     def _draw_widget(self):
-        dpg.add_color_picker(label=self._label, width=self.widget_width, display_type=dpg.mvColorEdit_float,
+        dpg.add_color_picker(label=self._label, width=self._zoomed(self.widget_width), display_type=dpg.mvColorEdit_float,
                              tag=self.uuid, picker_mode=dpg.mvColorPicker_wheel, no_side_preview=False,
                              no_alpha=False, alpha_bar=True, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf,
                              user_data=self.node, no_inputs=True, default_value=self.default_value)
@@ -1734,7 +1853,7 @@ class ColorPicker(BasePropertyWidget):
 
 class Button(BasePropertyWidget):
     def _draw_widget(self):
-        btn = dpg.add_button(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node)
+        btn = dpg.add_button(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid, user_data=self.node)
         if self.active_theme:
             dpg.bind_item_theme(btn, self.active_theme)
 
@@ -1810,22 +1929,30 @@ class TableWidget(BasePropertyWidget):
     def _draw_widget(self):
         # The label is what a saved patch matches this inlet by (see
         # restore_properties); tables never draw theirs, so no ## is needed.
+        # Inside a node the content region is unbounded, so a table with no
+        # width of its own stretches without limit. Size it from the cells:
+        # each cell carries the theme's cell padding on both sides, plus the
+        # outer borders.
+        table_width = self._zoomed(self.columns * (self.cell_width + 8) + 2)
         with dpg.table(tag=self.uuid, label=self._label, header_row=False, user_data=self.node,
-                       policy=dpg.mvTable_SizingFixedFit,
+                       policy=dpg.mvTable_SizingFixedFit, width=table_width,
                        borders_innerH=True, borders_innerV=True,
                        borders_outerH=True, borders_outerV=True):
             for _ in range(self.columns):
-                dpg.add_table_column()
+                dpg.add_table_column(width_fixed=True, init_width_or_weight=self._zoomed(self.cell_width))
             self.cell_uuids = []
             for i in range(self.rows):
                 row_uuids = []
                 with dpg.table_row():
                     for j in range(self.columns):
                         row_uuids.append(dpg.add_input_text(
-                            default_value=self.default_value[i][j], width=self.cell_width,
+                            default_value=self.default_value[i][j], width=self._zoomed(self.cell_width),
                             on_enter=True, user_data=self, callback=self._cell_edited))
                 self.cell_uuids.append(row_uuids)
         self.value = [list(row) for row in self.default_value]
+
+    def zoom_items(self):
+        return super().zoom_items() + [uuid for row in self.cell_uuids for uuid in row]
 
     def _cell_edited(self, sender=None, app_data=None, user_data=None):
         hold_active_input = self.node.active_input if self.node else None
@@ -1955,7 +2082,7 @@ class DragFloatN(ScalarWidget):
             val = 0.0
             if self.default_value and i < len(self.default_value):
                 val = self.default_value[i]
-            dpg.add_drag_float(width=self.widget_width, clamped=True, label=self._column_label(i), tag=self.uuids[i],
+            dpg.add_drag_float(width=self._zoomed(self.widget_width), clamped=True, label=self._column_label(i), tag=self.uuids[i],
                                max_value=mx, min_value=mn, user_data=self.node,
                                default_value=val, speed=self.speed)
 
@@ -1998,7 +2125,7 @@ class DragFloatN(ScalarWidget):
             at = siblings.index(last) + 1
             if at < len(siblings):
                 before = siblings[at]
-        dpg.add_drag_float(tag=uuid, parent=self.h_group_uuid, before=before, width=self.widget_width,
+        dpg.add_drag_float(tag=uuid, parent=self.h_group_uuid, before=before, width=self._zoomed(self.widget_width),
                            clamped=True, label='', user_data=self, default_value=0.0, speed=self.speed,
                            callback=lambda s, a, u: self.value_changed(a))
 
@@ -2316,9 +2443,9 @@ class NodeInput:
                 with dpg.group(horizontal=self.widget_has_trigger):
                     if self.widget_has_trigger:
                         if self.trigger_callback is not None:
-                            self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_callback)
+                            self.trigger_widget = dpg.add_button(label='', width=zoomed_size(self.node, 14), callback=self.trigger_callback)
                         else:
-                            self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger)
+                            self.trigger_widget = dpg.add_button(label='', width=zoomed_size(self.node, 14), callback=self.trigger)
                         with dpg.theme() as item_theme:
                             with dpg.theme_component(dpg.mvAll):
                                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
@@ -2539,7 +2666,8 @@ class NodeInput:
             self.variable.set_value(data)
 
     def set_font(self, font: Any) -> None:
-        dpg.bind_item_font(self.uuid, font)
+        self._base_font = font
+        dpg.bind_item_font(self.uuid, zoomed_font(self.node, font))
         if self.widget:
             self.widget.set_font(font)
 
@@ -2837,6 +2965,11 @@ class Node:
         self.properties = []
         self.displays = []
         self.ordered_elements = []
+        # Items the node draws for itself - a plot, a canvas, an image - whose
+        # size is in pixels and so follows the patcher's zoom. A node puts
+        # them here as it makes them, at self.zoomed() size, and custom_zoom
+        # keeps them in step.
+        self.zoom_scaled_items = []
         self.message_handlers = {}
         self.message_handlers['set_preset'] = self.set_preset_state
         self.message_handlers['get_preset'] = self.get_preset_state
@@ -3085,7 +3218,68 @@ class Node:
         return bool(getattr(self.my_editor, 'presenting', False))
 
     def set_font(self, font: Any) -> None:
-        dpg.bind_item_font(self.uuid, font)
+        self._base_font = font
+        dpg.bind_item_font(self.uuid, zoomed_font(self, font))
+
+    def apply_zoom(self, ratio: float) -> None:
+        """Follow a change of the patcher's zoom by `ratio` (new zoom / old).
+
+        Text follows by itself - the patcher's font is inherited - so this is
+        for everything sized in pixels: the widgets' widths, and any font a
+        node or widget chose for itself. Anything a node draws on its own
+        (drawlists, plots, images) belongs to custom_zoom.
+        """
+        exact = self.__dict__.setdefault('_zoom_exact', {})
+        self.bind_zoom_font()
+        seen = set()
+        for element in self.inputs + self.properties + self.options + list(getattr(self, 'ordered_elements', [])):
+            widget = getattr(element, 'widget', None)
+            if widget is None or id(widget) in seen:
+                continue
+            seen.add(id(widget))
+            try:
+                widget.apply_zoom(ratio, exact)
+            except Exception as e:
+                print(f'zoom: {self.label} {getattr(widget, "_label", "")}: {type(e).__name__}: {e}')
+            element_font = getattr(element, '_base_font', None)
+            if element_font and element is not widget and dpg.does_item_exist(element.uuid):
+                dpg.bind_item_font(element.uuid, zoomed_font(self, element_font))
+        base_font = getattr(self, '_base_font', None)
+        if base_font:
+            self.set_font(base_font)
+        self.custom_zoom(ratio, exact)
+
+    def bind_zoom_font(self) -> None:
+        """Text follows the zoom through a font bound on the node - a font
+        bound on the patcher itself does not reach inside its nodes. A node
+        that chose a font of its own has it zoomed by set_font instead."""
+        if getattr(self, '_base_font', None) or not dpg.does_item_exist(self.uuid):
+            return
+        editor = getattr(self, 'my_editor', None)
+        font = getattr(editor, 'zoom_font', None)
+        if font or getattr(self, '_zoom_font_bound', False):
+            dpg.bind_item_font(self.uuid, font or 0)
+            self._zoom_font_bound = font is not None
+
+    def custom_zoom(self, ratio: float, exact: Dict) -> None:
+        """Scale what this node draws for itself. Anything in
+        zoom_scaled_items is resized; a node that has to redraw its contents
+        as well overrides this, calls super, and repaints from the size the
+        item has then (vu~ and fader~ do)."""
+        for uuid in self.zoom_scaled_items:
+            scale_item_size(uuid, ratio, exact)
+
+    def zoomed(self, size):
+        """A size given at 100%, in the units this patcher is drawn at."""
+        return zoomed_size(self, size)
+
+    def unzoomed(self, size):
+        """A size measured on screen, back at 100% - what an option that is
+        saved with the patch should hold."""
+        zoom = node_zoom(self)
+        if zoom == 1.0 or size is None:
+            return size
+        return max(1, int(round(size / zoom)))
 
     def set_title(self, title: str) -> None:
         dpg.configure_item(self.uuid, label=title)
@@ -3099,13 +3293,13 @@ class Node:
             output.send_internal()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
     def add_label(self, label: str = "") -> None:
-        new_property = NodeProperty(label, widget_type='label')
+        new_property = NodeProperty(label, node=self, widget_type='label')
         # self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         return new_property
 
     def add_spacer(self) -> None:
-        new_property = NodeProperty('', widget_type='spacer')
+        new_property = NodeProperty('', node=self, widget_type='spacer')
         # self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         return new_property
@@ -3389,7 +3583,8 @@ class Node:
             return new_output
         return None
 
-    def add_resize_handle(self, widget, axis='x', width_option=None, height_option=None, extra_targets=None, on_resize=None):
+    def add_resize_handle(self, widget, axis='x', width_option=None, height_option=None, extra_targets=None,
+                          on_resize=None, zoom_aware=False):
         parent = widget.h_group_uuid
         if parent is None:
             return None
@@ -3401,10 +3596,14 @@ class Node:
                     handle_height = int(v)
             except Exception as e:
                 print(f"add_resize_handle: height_option failed: {e}")
-        btn_uuid = dpg.add_button(parent=parent, label='', width=4, height=handle_height)
+        btn_uuid = dpg.add_button(parent=parent, label='', width=self.zoomed(4),
+                                  height=self.zoomed(handle_height))
         extra_uuids = [w.uuid for w in extra_targets] if extra_targets else None
         handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option,
-                              extra_target_uuids=extra_uuids, on_resize=on_resize)
+                              extra_target_uuids=extra_uuids, on_resize=on_resize,
+                              zoom_aware=zoom_aware)
+        if zoom_aware:
+            self.zoom_scaled_items.append(btn_uuid)
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         return handle
@@ -3683,12 +3882,17 @@ class Node:
             node_container['id'] = self.uuid
             if self.stable_id is not None:
                 node_container['sid'] = self.stable_id
-            pos = dpg.get_item_pos(self.uuid)
-            node_container['position_x'] = pos[0]
-            node_container['position_y'] = pos[1]
+            # Stored at 100%, whatever the patcher's zoom; load() puts it back.
+            zoom = node_zoom(self)
+            if self.my_editor is not None and hasattr(self.my_editor, 'exact_pos'):
+                pos = self.my_editor.exact_pos(self)
+            else:
+                pos = dpg.get_item_pos(self.uuid)
+            node_container['position_x'] = _tidy(pos[0] / zoom)
+            node_container['position_y'] = _tidy(pos[1] / zoom)
             size = dpg.get_item_rect_size(self.uuid)
-            node_container['width'] = size[0]
-            node_container['height'] = size[1]
+            node_container['width'] = _tidy(size[0] / zoom)
+            node_container['height'] = _tidy(size[1] / zoom)
             # While presenting the node wears its presentation look; the patch
             # stores what it is in edit mode.
             presenting = self.presenting()
@@ -3721,9 +3925,11 @@ class Node:
                     if self.my_editor is not None and self.stable_id >= self.my_editor._next_stable_id:
                         self.my_editor._next_stable_id = self.stable_id + 1
                 if 'position_x' in node_container and 'position_y' in node_container:
+                    # Saved at 100%; offset is already in the patcher's units.
+                    zoom = node_zoom(self)
                     pos = [0, 0]
-                    pos[0] = node_container['position_x'] + offset[0]
-                    pos[1] = node_container['position_y'] + offset[1]
+                    pos[0] = node_container['position_x'] * zoom + offset[0]
+                    pos[1] = node_container['position_y'] * zoom + offset[1]
                     dpg.set_item_pos(self.uuid, pos)
                 if 'protected' in node_container:
                     self.do_not_delete = True

@@ -6,7 +6,7 @@ import traceback
 import numpy as np
 import torch
 
-from dpg_system.node import Node, SaveDialog, LoadDialog
+from dpg_system.node import Node, SaveDialog, LoadDialog, zoomed_size
 import threading
 from dpg_system.conversion_utils import *
 from dpg_system.matrix_nodes import RollingBuffer
@@ -1507,7 +1507,8 @@ class ValueNode(Node):
 
         adjusted_width = self.input.widget.adjust_to_text_width()
         if self.width_option is not None:
-            self.width_option.widget.set(adjusted_width)
+            # Text is measured in the font as drawn, so at the zoom.
+            self.width_option.widget.set(self.unzoomed(adjusted_width))
 
         trigger = self.input.widget.trigger_widget
         if trigger:
@@ -1520,8 +1521,9 @@ class ValueNode(Node):
         # the node is dropped from the patch with only a console message.
         if self.width_option is None:
             return
+        # The option is the width at 100%; the widget is drawn at the zoom.
         width = self.width_option()
-        dpg.set_item_width(self.input.widget.uuid, width)
+        dpg.set_item_width(self.input.widget.uuid, self.zoomed(width))
 
     def binding_changed(self):
         binding = self.variable_binding_property()
@@ -1562,7 +1564,13 @@ class ValueNode(Node):
         self.install_resize_handle()
 
     def install_resize_handle(self):
-        self.add_resize_handle(self.input.widget, axis='x', width_option=self.width_option)
+        self.add_resize_handle(self.input.widget, axis='x', width_option=self.width_option,
+                               zoom_aware=True)
+
+    def custom_zoom(self, ratio, exact):
+        # Sized from the option rather than scaled, so every zoom is exact.
+        super().custom_zoom(ratio, exact)
+        self.options_changed()
 
     def custom_cleanup(self):
         if self.variable is not None:
@@ -1683,15 +1691,17 @@ class ValueNode(Node):
 
     def _handle_auto_grow(self):
         if self.grow_mode in ['grow_to_fit', 'grow_or_shrink_to_fit']:
+            # Measured in the font as drawn, so at the zoom; the option keeps
+            # the width at 100%.
             adjusted_width = self.input.widget.get_text_width()
             current_opt = self.width_option()
             if self.grow_mode == 'grow_to_fit':
-                if adjusted_width > current_opt:
+                if self.unzoomed(adjusted_width) > current_opt:
                     dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
-                    self.width_option.set(adjusted_width)
+                    self.width_option.set(self.unzoomed(adjusted_width))
             else:
                 dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
-                self.width_option.set(adjusted_width)
+                self.width_option.set(self.unzoomed(adjusted_width))
 
 
 class NumericValueNode(ValueNode):
@@ -1958,7 +1968,7 @@ class TextEditorNode(StringNode):
                                            callback=self.options_changed)
 
     def custom_create(self, from_file):
-        dpg.set_item_height(self.input.widget.uuid, self.height_option())
+        dpg.set_item_height(self.input.widget.uuid, self.zoomed(self.height_option()))
         super().custom_create(from_file)
         self.input.widget.rewrap()
 
@@ -1966,7 +1976,7 @@ class TextEditorNode(StringNode):
         self.resize_handle = self.add_resize_handle(
             self.input.widget, axis='xy',
             width_option=self.width_option, height_option=self.height_option,
-            on_resize=self.on_resized
+            on_resize=self.on_resized, zoom_aware=True
         )
 
     def on_resized(self, new_w, new_h):
@@ -1976,7 +1986,8 @@ class TextEditorNode(StringNode):
     def options_changed(self):
         super().options_changed()
         if self.height_option:
-            h = self.height_option()
+            # The option is the height at 100%; drawn at the zoom.
+            h = self.zoomed(self.height_option())
             dpg.set_item_height(self.input.widget.uuid, h)
             if getattr(self, 'resize_handle', None) and dpg.does_item_exist(self.resize_handle.uuid):
                 dpg.set_item_height(self.resize_handle.uuid, h)
@@ -3617,7 +3628,7 @@ class XYPadNode(Node):
     def submit_display(self):
         with dpg.plot(
             label='', tag=self.plot_tag,
-            height=self.pad_height, width=self.pad_width,
+            height=self.zoomed(self.pad_height), width=self.zoomed(self.pad_width),
             no_title=True, no_menus=True,
             no_mouse_pos=True
         ):
@@ -3648,12 +3659,14 @@ class XYPadNode(Node):
 
     def _install_resize_handle(self):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
-        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.pad_width, height=4)
+        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='',
+                                  width=self.zoomed(self.pad_width), height=self.zoomed(4))
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
             width_option=self.width_option, height_option=self.height_option,
-            sync_width=True, sync_height=False
+            sync_width=True, sync_height=False, zoom_aware=True
         )
+        self.zoom_scaled_items += [self.plot_tag, btn_uuid]
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
@@ -3706,13 +3719,18 @@ class XYPadNode(Node):
         dpg.set_axis_limits(self.y_axis_tag, -self.range_val, self.range_val)
 
     def _size_changed(self):
+        # The options are the size at 100%; what is drawn follows the zoom.
         self.pad_width = self.width_option()
         self.pad_height = self.height_option()
-        dpg.set_item_width(self.plot_tag, self.pad_width)
-        dpg.set_item_height(self.plot_tag, self.pad_height)
+        dpg.set_item_width(self.plot_tag, self.zoomed(self.pad_width))
+        dpg.set_item_height(self.plot_tag, self.zoomed(self.pad_height))
         rh = getattr(self, 'resize_handle', None)
         if rh is not None and dpg.does_item_exist(rh.uuid):
-            dpg.set_item_width(rh.uuid, self.pad_width)
+            dpg.set_item_width(rh.uuid, self.zoomed(self.pad_width))
+
+    def custom_zoom(self, ratio, exact):
+        # Sized from the options rather than scaled, so every zoom is exact.
+        self._size_changed()
 
     def _build_scatter_theme(self):
         if dpg.does_item_exist(self.scatter_theme_tag):
@@ -3874,7 +3892,8 @@ class BreakpointEditor:
 
     def __init__(self, x_max=1.0, y_min=0.0, y_max=1.0, width=200, height=100,
                  on_change=None, on_resize=None, line_color=(80, 140, 255),
-                 name='curve'):
+                 name='curve', node=None):
+        self.node = node        # whose patcher this is drawn in, for the zoom
         self.name = name        # only used to name the node in diagnostics
         self.x_max = float(x_max)
         self.y_min = float(y_min)
@@ -3909,6 +3928,10 @@ class BreakpointEditor:
 
     # -- construction --------------------------------------------------------
 
+    def _zoomed(self, size):
+        """A size given at 100%, in the units the host patcher is drawn at."""
+        return zoomed_size(self.node, size)
+
     def submit(self, display_uuid, width_option=None, height_option=None):
         """Build the plot. Call inside the host display's submit_callback."""
         with dpg.theme() as self.line_theme:
@@ -3919,7 +3942,7 @@ class BreakpointEditor:
                                     category=dpg.mvThemeCat_Plots)
 
         with dpg.plot(label='', tag=self.plot_tag,
-                      height=self.height, width=self.width,
+                      height=self._zoomed(self.height), width=self._zoomed(self.width),
                       no_title=True, no_menus=True, no_box_select=True,
                       no_mouse_pos=True):
             dpg.add_plot_axis(dpg.mvXAxis, label='', tag=self.x_axis_tag,
@@ -3938,16 +3961,19 @@ class BreakpointEditor:
     def install_resize_handle(self, display_uuid, width_option, height_option):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=display_uuid, label='',
-                                  width=self.width, height=4)
+                                  width=self._zoomed(self.width), height=self._zoomed(4))
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
             width_option=width_option, height_option=height_option,
             sync_width=True, sync_height=False,
-            on_resize=self.handle_resized
+            on_resize=self.handle_resized, zoom_aware=True
         )
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
+        if self.node is not None:
+            # The plot and its grab follow the patcher's zoom.
+            self.node.zoom_scaled_items += [self.plot_tag, btn_uuid]
 
     def handle_resized(self, new_w, new_h):
         # The handle sizes the plot itself but does not fire the size options'
@@ -3959,14 +3985,15 @@ class BreakpointEditor:
             self.on_resize(self.width, self.height)
 
     def set_size(self, width, height):
+        # The size asked for is at 100%; what is drawn follows the zoom.
         self.width = int(width)
         self.height = int(height)
         if not self.ready:
             return
-        dpg.set_item_width(self.plot_tag, self.width)
-        dpg.set_item_height(self.plot_tag, self.height)
+        dpg.set_item_width(self.plot_tag, self._zoomed(self.width))
+        dpg.set_item_height(self.plot_tag, self._zoomed(self.height))
         if self.resize_handle is not None and dpg.does_item_exist(self.resize_handle.uuid):
-            dpg.set_item_width(self.resize_handle.uuid, self.width)
+            dpg.set_item_width(self.resize_handle.uuid, self._zoomed(self.width))
         self.apply_axis_limits()
 
     def set_ranges(self, x_max=None, y_min=None, y_max=None, notify=True):
@@ -4371,7 +4398,8 @@ class BarEditor:
 
     def __init__(self, count=16, capacity=512, y_min=0.0, y_max=1.0,
                  width=220, height=96, on_change=None,
-                 bar_color=(240, 170, 80), name='bars'):
+                 bar_color=(240, 170, 80), name='bars', node=None):
+        self.node = node        # whose patcher this is drawn in, for the zoom
         self.name = name        # only used to name the node in diagnostics
         self.capacity = max(1, int(capacity))
         self.count = max(1, min(self.capacity, int(count)))
@@ -4396,6 +4424,10 @@ class BarEditor:
 
     # -- construction --------------------------------------------------------
 
+    def _zoomed(self, size):
+        """A size given at 100%, in the units the host patcher is drawn at."""
+        return zoomed_size(self.node, size)
+
     def submit(self, display_uuid, width_option=None, height_option=None):
         """Build the plot. Call inside the host display's submit_callback."""
         with dpg.theme() as self.bar_theme:
@@ -4406,7 +4438,7 @@ class BarEditor:
                                     category=dpg.mvThemeCat_Plots)
 
         with dpg.plot(label='', tag=self.plot_tag,
-                      height=self.height, width=self.width,
+                      height=self._zoomed(self.height), width=self._zoomed(self.width),
                       no_title=True, no_menus=True, no_box_select=True,
                       no_mouse_pos=True):
             # The x labels stay on here, unlike the curve editors: the whole
@@ -4428,16 +4460,19 @@ class BarEditor:
     def install_resize_handle(self, display_uuid, width_option, height_option):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=display_uuid, label='',
-                                  width=self.width, height=4)
+                                  width=self._zoomed(self.width), height=self._zoomed(4))
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
             width_option=width_option, height_option=height_option,
             sync_width=True, sync_height=False,
-            on_resize=self.handle_resized
+            on_resize=self.handle_resized, zoom_aware=True
         )
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
+        if self.node is not None:
+            # The plot and its grab follow the patcher's zoom.
+            self.node.zoom_scaled_items += [self.plot_tag, btn_uuid]
 
     def handle_resized(self, new_w, new_h):
         self.width = int(new_w)
@@ -4454,15 +4489,16 @@ class BarEditor:
         dpg.set_axis_limits(self.y_axis_tag, self.y_min, self.y_max)
 
     def set_size(self, width, height):
+        # The size asked for is at 100%; what is drawn follows the zoom.
         self.width = int(width)
         self.height = int(height)
         if not self.ready:
             return
-        dpg.set_item_width(self.plot_tag, self.width)
-        dpg.set_item_height(self.plot_tag, self.height)
+        dpg.set_item_width(self.plot_tag, self._zoomed(self.width))
+        dpg.set_item_height(self.plot_tag, self._zoomed(self.height))
         if self.resize_handle is not None \
                 and dpg.does_item_exist(self.resize_handle.uuid):
-            dpg.set_item_width(self.resize_handle.uuid, self.width)
+            dpg.set_item_width(self.resize_handle.uuid, self._zoomed(self.width))
 
     def set_count(self, count):
         """How many bars are drawn. The rest keep their values, unseen."""
@@ -4629,7 +4665,8 @@ class ModeEditor:
     REMOVE_THRESHOLD = 0.08
 
     def __init__(self, x_max=8.0, width=220, height=96, on_change=None,
-                 on_resize=None, stem_color=(240, 170, 80), name='modes'):
+                 on_resize=None, stem_color=(240, 170, 80), name='modes', node=None):
+        self.node = node        # whose patcher this is drawn in, for the zoom
         self.name = name        # only used to name the node in diagnostics
         self.x_max = float(x_max)
         self.width = int(width)
@@ -4657,6 +4694,10 @@ class ModeEditor:
 
     # -- construction --------------------------------------------------------
 
+    def _zoomed(self, size):
+        """A size given at 100%, in the units the host patcher is drawn at."""
+        return zoomed_size(self.node, size)
+
     def submit(self, display_uuid, width_option=None, height_option=None):
         """Build the plot. Call inside the host display's submit_callback."""
         with dpg.theme() as self.stem_theme:
@@ -4672,7 +4713,7 @@ class ModeEditor:
                                     category=dpg.mvThemeCat_Plots)
 
         with dpg.plot(label='', tag=self.plot_tag,
-                      height=self.height, width=self.width,
+                      height=self._zoomed(self.height), width=self._zoomed(self.width),
                       no_title=True, no_menus=True, no_box_select=True,
                       no_mouse_pos=True):
             # Tick labels stay on: where a stem stands is the reading.
@@ -4693,16 +4734,19 @@ class ModeEditor:
     def install_resize_handle(self, display_uuid, width_option, height_option):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=display_uuid, label='',
-                                  width=self.width, height=4)
+                                  width=self._zoomed(self.width), height=self._zoomed(4))
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
             width_option=width_option, height_option=height_option,
             sync_width=True, sync_height=False,
-            on_resize=self.handle_resized
+            on_resize=self.handle_resized, zoom_aware=True
         )
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
+        if self.node is not None:
+            # The plot and its grab follow the patcher's zoom.
+            self.node.zoom_scaled_items += [self.plot_tag, btn_uuid]
 
     def handle_resized(self, new_w, new_h):
         self.width = int(new_w)
@@ -4712,15 +4756,16 @@ class ModeEditor:
             self.on_resize(self.width, self.height)
 
     def set_size(self, width, height):
+        # The size asked for is at 100%; what is drawn follows the zoom.
         self.width = int(width)
         self.height = int(height)
         if not self.ready:
             return
-        dpg.set_item_width(self.plot_tag, self.width)
-        dpg.set_item_height(self.plot_tag, self.height)
+        dpg.set_item_width(self.plot_tag, self._zoomed(self.width))
+        dpg.set_item_height(self.plot_tag, self._zoomed(self.height))
         if self.resize_handle is not None \
                 and dpg.does_item_exist(self.resize_handle.uuid):
-            dpg.set_item_width(self.resize_handle.uuid, self.width)
+            dpg.set_item_width(self.resize_handle.uuid, self._zoomed(self.width))
         self.apply_axis_limits()
 
     def apply_axis_limits(self):
@@ -5107,7 +5152,7 @@ class EnvelopeNode(Node):
                                        width=self.plot_width,
                                        height=self.plot_height,
                                        on_change=self._send_points,
-                                       name=label)
+                                       name=label, node=self)
         # The classic default shape: a triangle across the range.
         self.editor.set_points([[0.0, y_min, 0.0],
                                 [x_max * 0.5, y_max, 0.0],
@@ -5347,7 +5392,7 @@ class ShapeSequencerNode(Node):
                                        height=self.plot_height,
                                        on_change=self._edited,
                                        on_resize=self._editor_resized,
-                                       name=label)
+                                       name=label, node=self)
         self.editor.set_points(self.shapes[0], notify=False)
         # 'point 1 0.5 0.8' and friends, acting on whichever step is being
         # edited -- 'edit step <n>' selects it, being an option label. See
@@ -5543,7 +5588,7 @@ class ShapeSequencerNode(Node):
 
         with dpg.plot(
             label='', tag=self.profile_tag,
-            height=self.profile_height, width=self.plot_width,
+            height=self.zoomed(self.profile_height), width=self.zoomed(self.plot_width),
             no_title=True, no_menus=True, no_box_select=True,
             no_mouse_pos=True
         ):
@@ -5640,7 +5685,7 @@ class ShapeSequencerNode(Node):
         self.plot_width = int(new_w)
         self.plot_height = int(new_h)
         if dpg.does_item_exist(self.profile_tag):
-            dpg.set_item_width(self.profile_tag, self.plot_width)
+            dpg.set_item_width(self.profile_tag, self.zoomed(self.plot_width))
 
     def _curve_message(self, message='', message_data=[]):
         self.editor.handle_message(message, message_data)
@@ -5888,8 +5933,8 @@ class ShapeSequencerNode(Node):
         # The profile sits under the shapes and reads as one panel with them,
         # so it takes its width from the same handle.
         if dpg.does_item_exist(self.profile_tag):
-            dpg.set_item_width(self.profile_tag, self.plot_width)
-            dpg.set_item_height(self.profile_tag, self.profile_height)
+            dpg.set_item_width(self.profile_tag, self.zoomed(self.plot_width))
+            dpg.set_item_height(self.profile_tag, self.zoomed(self.profile_height))
 
     # -- editing -------------------------------------------------------------
 

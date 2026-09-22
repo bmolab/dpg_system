@@ -4,7 +4,7 @@ import time
 import numpy as np
 import random
 import traceback
-from dpg_system.node import Node, OriginNode, PatcherNode
+from dpg_system.node import Node, OriginNode, PatcherNode, _tidy
 import json
 
 
@@ -59,6 +59,12 @@ class NodeEditor:
         self.is_first_frame = True
         self._editor_padding = [0, 0]
         self._next_stable_id = 1
+        # View zoom. Node positions and widget sizes in dpg are the zoomed
+        # ones; patches, the clipboard and undo snapshots hold 100% values.
+        self.zoom = 1.0
+        self.zoom_font = None  # bound on the editor when zoom != 1
+        self._pan = None          # where the view is: screen = pan + position + padding * zoom
+        self._moved_on_frame = -1  # when the nodes were last moved from here
 
     def set_name(self, name):
         old_name = getattr(self, 'patch_name', None)
@@ -459,6 +465,8 @@ class NodeEditor:
 
     def add_node(self, node: Node):
         self._nodes.append(node)
+        if self.zoom != 1.0:
+            node.bind_zoom_font()
         self.num_nodes = len(self._nodes)
         if node.stable_id is None:
             node.stable_id = self._next_stable_id
@@ -573,6 +581,7 @@ class NodeEditor:
 
         live_by_sid = {n.stable_id: n for n in self._nodes if n.stable_id is not None}
         origin_sid = self.origin.stable_id if self.origin is not None else None
+        origin_offset = self._origin_offset()
 
         snap_nodes = snap['nodes']
         snap_sids = set()
@@ -590,7 +599,7 @@ class NodeEditor:
             if live is not None:
                 # Update in place. node.load() handles position, visibility, properties.
                 try:
-                    live.load(nc)
+                    live.load(nc, offset=origin_offset)
                 except Exception as e:
                     print(f'apply_snapshot: load failed for {live.label} (sid={snap_sid}): '
                           f'{type(e).__name__}: {e}')
@@ -600,7 +609,8 @@ class NodeEditor:
                 # Recreate. node.load() will pick up sid from nc and re-establish stable_id.
                 if nc.get('name') == '':
                     continue  # origin node sentinel; never recreate
-                pos = [nc.get('position_x', 0), nc.get('position_y', 0)]
+                pos = [nc.get('position_x', 0) * self.zoom + origin_offset[0],
+                       nc.get('position_y', 0) * self.zoom + origin_offset[1]]
                 args = []
                 if 'init' in nc:
                     args = nc['init'].split(' ')
@@ -609,7 +619,7 @@ class NodeEditor:
                 try:
                     new_node = self.app.create_node_by_name_from_file(node_name, pos, node_args)
                     if new_node is not None:
-                        new_node.load(nc)
+                        new_node.load(nc, offset=origin_offset)
                         new_node.post_creation_callback()
                         sid_to_uuid[snap_sid] = new_node.uuid
                 except Exception as e:
@@ -696,20 +706,19 @@ class NodeEditor:
 
     def capture_snapshot(self):
         """Capture a snapshot dict suitable for apply_snapshot().
-        Positions are stored in absolute (un-origin-adjusted) form so undo doesn't
-        fight with intervening pans."""
-        snap = self.containerize({})
-        if self.origin is not None and 'nodes' in snap:
-            try:
-                origin_offset = dpg.get_item_pos(self.origin.uuid)
-                if abs(origin_offset[0]) > 0.5 or abs(origin_offset[1]) > 0.5:
-                    for nc in snap['nodes'].values():
-                        if 'position_x' in nc:
-                            nc['position_x'] += origin_offset[0]
-                            nc['position_y'] += origin_offset[1]
-            except Exception:
-                pass
-        return snap
+        Positions are stored as the patch file stores them - relative to the
+        origin and at 100% - and apply_snapshot() places them relative to where
+        the origin is then, at the zoom then, so undo doesn't fight with
+        intervening pans or zooms."""
+        return self.containerize({})
+
+    def _origin_offset(self):
+        if self.origin is None:
+            return [0, 0]
+        try:
+            return list(self.exact_pos(self.origin))
+        except Exception:
+            return [0, 0]
 
     def pan_nodes(self, dx, dy):
         """Shift every node by (dx, dy). Positive dx moves nodes right, positive dy moves nodes down."""
@@ -752,6 +761,131 @@ class NodeEditor:
                           f'(uuid={node.uuid}): {type(e).__name__}: {e}')
         except Exception as e:
             print(f'home_nodes error: {type(e).__name__}: {e}')
+
+    # Every font size a zoom can call for, all built at startup: a font added
+    # later makes dpg rebuild the whole atlas on the next frame, which takes
+    # longer the more fonts there are (70 ms at ten, 300 ms at twenty) and
+    # stalls the zoom mid-gesture. A font a node chose for itself is drawn at
+    # the nearest of these sizes.
+    ZOOM_FONT_SIZES = [8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 27, 30, 33, 36,
+                       40, 44, 48, 53, 58, 64, 72, 80, 88, 96]
+    # Each level puts the 24 px default font at one of those sizes exactly, so
+    # ordinary text always matches the widgets it sits in.
+    ZOOM_LEVELS = [size / 24 for size in ZOOM_FONT_SIZES if size <= 58]
+
+    def zoom_step(self, steps, anchor=None):
+        """Move `steps` zoom levels in (positive) or out, about `anchor`, a
+        point in viewport coordinates that stays put (default: the middle)."""
+        levels = self.ZOOM_LEVELS
+        here = min(range(len(levels)), key=lambda i: abs(levels[i] - self.zoom))
+        target = levels[max(0, min(len(levels) - 1, here + steps))]
+        self.set_zoom(target, anchor)
+
+    def node_padding(self):
+        for style, values in self.ZOOM_STYLES:
+            if style == dpg.mvNodeStyleVar_NodePadding:
+                return values
+        return [0, 0]
+
+    def pan(self):
+        """Where the view is: a node is drawn at pan + its position + the node
+        padding at the current zoom. That padding is why the two cannot be
+        rolled into one - it changes with the zoom, and anchoring as though it
+        did not walked the whole patch across the canvas a little at a time.
+
+        Held from frame to frame rather than measured on the spot, because a
+        node's rectangle is where it was DRAWN, a frame behind the position it
+        has been given. Panning is what changes it, and that is picked up on
+        the next frame drawn.
+        """
+        return self._pan
+
+    def frame_shift_check(self):
+        """Once a frame, before the next is drawn. A node's rectangle is only
+        worth reading when it was drawn where the node now is: the last frame
+        drawn is the one before this, so a zoom in either of them leaves the
+        rectangles behind the positions."""
+        if self.app.frame_number - self._moved_on_frame <= 1:
+            return
+        if self.origin is None or not dpg.does_item_exist(self.origin.uuid):
+            return
+        try:
+            screen = dpg.get_item_rect_min(self.origin.uuid)
+            grid = dpg.get_item_pos(self.origin.uuid)
+        except Exception:
+            return
+        if screen[0] == 0 and screen[1] == 0:
+            return  # not drawn yet
+        padding = self.node_padding()
+        measured = [screen[0] - grid[0] - padding[0] * self.zoom,
+                    screen[1] - grid[1] - padding[1] * self.zoom]
+        # Rectangles come back in whole pixels, so the same view measures a
+        # little differently at each zoom. Taking every reading would feed
+        # that jitter into the anchoring and creep across many zooms; only a
+        # real pan moves it by more than a pixel.
+        if self._pan is None or max(abs(measured[0] - self._pan[0]),
+                                    abs(measured[1] - self._pan[1])) > 1.5:
+            self._pan = measured
+
+    def exact_pos(self, node):
+        """A node's position without the rounding to whole pixels that dpg
+        does. Zooming out and back in, or saving while zoomed out, would
+        otherwise move nodes by a pixel or two each time. Once the node has
+        been moved by anything else, its dpg position is the truth again."""
+        pos = dpg.get_item_pos(node.uuid)
+        exact = getattr(self, '_zoom_exact', {}).get(node.uuid)
+        if exact is not None and abs(exact[0] - pos[0]) <= 0.5 and abs(exact[1] - pos[1]) <= 0.5:
+            return exact
+        return pos[0], pos[1]
+
+    def set_zoom(self, zoom, anchor=None):
+        """Show the patcher at `zoom`, keeping the patch point under `anchor`
+        (viewport coordinates) where it is on screen.
+
+        Everything dpg measures in pixels is rescaled: node positions, widget
+        sizes, fonts, the patcher's own padding and pins. Main thread only -
+        it builds fonts.
+        """
+        if self.app is None or zoom <= 0:
+            return
+        ratio = zoom / self.zoom
+        if abs(ratio - 1.0) < 1e-6:
+            return
+
+        pan = self.pan()
+        if anchor is None:
+            try:
+                top_left = dpg.get_item_rect_min(self.uuid)
+                size = dpg.get_item_rect_size(self.uuid)
+                anchor = [top_left[0] + size[0] / 2, top_left[1] + size[1] / 2]
+            except Exception:
+                anchor = [0, 0]
+        # Worked through in screen terms, with the padding in, so that the
+        # point under the anchor is the one that stays put.
+        padding = self.node_padding()
+        if pan is not None:
+            fixed = [anchor[0] - pan[0], anchor[1] - pan[1]]
+        else:
+            fixed = [0.0, 0.0]
+        was, now = self.zoom, zoom
+
+        self._moved_on_frame = self.app.frame_number
+        self.zoom = zoom
+        self.app.scale_node_styles(zoom)
+        self.zoom_font = self.app.zoomed_font(self.app.default_font(), zoom) if zoom != 1.0 else None
+        self._scale_styles(zoom)
+
+        exact = self.__dict__.setdefault('_zoom_exact', {})
+        for node in self._nodes:
+            try:
+                x, y = self.exact_pos(node)
+                x = fixed[0] + (x + padding[0] * was - fixed[0]) * ratio - padding[0] * now
+                y = fixed[1] + (y + padding[1] * was - fixed[1]) * ratio - padding[1] * now
+                exact[node.uuid] = (x, y)
+                dpg.set_item_pos(node.uuid, [int(round(x)), int(round(y))])
+                node.apply_zoom(ratio)
+            except Exception as e:
+                print(f'zoom: failed on node {getattr(node, "label", "?")}: {type(e).__name__}: {e}')
 
     def cut_selection(self):
         clip = self.copy_selection()
@@ -1095,7 +1229,7 @@ class NodeEditor:
                 node.edit_draggable = node.draggable
                 node.set_visibility(self.presented_visibility(node))
                 node.set_draggable(False)
-        dpg.bind_theme(self.node_presentation_theme)
+        self.bind_theme()
 
     def enter_edit_state(self):
         self.presenting = False
@@ -1104,7 +1238,7 @@ class NodeEditor:
                 # Draggable first: the show_all theme depends on it (locked look).
                 node.set_draggable(node.edit_draggable)
                 node.set_visibility(node.edit_visibility)
-        dpg.bind_theme(self.node_theme)
+        self.bind_theme()
 
     def patchify_selection(self):
         #  find centre of patch
@@ -1219,14 +1353,16 @@ class NodeEditor:
 
         # Correct saved positions to be relative to origin at [0, 0].
         # The origin node may have accumulated an offset from home_nodes().
+        # node.save() has already brought positions to 100%, so the offset
+        # is brought there too.
         if self.origin is not None:
-            origin_offset = dpg.get_item_pos(self.origin.uuid)
+            origin_offset = self.exact_pos(self.origin)
             if abs(origin_offset[0]) > 0.5 or abs(origin_offset[1]) > 0.5:
                 for node_key in nodes_container:
                     nc = nodes_container[node_key]
                     if 'position_x' in nc:
-                        nc['position_x'] -= origin_offset[0]
-                        nc['position_y'] -= origin_offset[1]
+                        nc['position_x'] = _tidy(nc['position_x'] - origin_offset[0] / self.zoom)
+                        nc['position_y'] = _tidy(nc['position_y'] - origin_offset[1] / self.zoom)
 
         patch_container['nodes'] = nodes_container
 
@@ -1353,9 +1489,9 @@ class NodeEditor:
                             self.app.currently_loading_node_name = node_name
                 pos = [0, 0]
                 if 'position_x' in node_container:
-                    pos[0] = node_container['position_x'] + offset[0]
+                    pos[0] = node_container['position_x'] * self.zoom + offset[0]
                 if 'position_y' in node_container:
-                    pos[1] = node_container['position_y'] + offset[1]
+                    pos[1] = node_container['position_y'] * self.zoom + offset[1]
                 args = []
                 if 'init' in node_container:
                     args_container = node_container['init']
@@ -1439,22 +1575,56 @@ class NodeEditor:
             print(f'exception occurred during load of {path}: {type(e).__name__}: {e}')
             traceback.print_exc()
 
+    # Pixel sizes of the patcher's own drawing: (style, 100% value(s)).
+    ZOOM_STYLES = [
+        (dpg.mvNodeStyleVar_GridSpacing, [16]),
+        (dpg.mvNodeStyleVar_NodePadding, [4, 1]),
+        (dpg.mvNodeStyleVar_PinOffset, [2]),
+    ]
+    # imnodes' own defaults, which the themes leave alone. They are stated
+    # only while zoomed, so that an unzoomed patcher looks exactly as it did.
+    ZOOM_DEFAULT_STYLES = [
+        (dpg.mvNodeStyleVar_NodeCornerRounding, [4]),
+        (dpg.mvNodeStyleVar_PinCircleRadius, [4]),
+        (dpg.mvNodeStyleVar_PinQuadSideLength, [7]),
+        (dpg.mvNodeStyleVar_PinTriangleSideLength, [9.5]),
+        (dpg.mvNodeStyleVar_PinHoverRadius, [10]),
+        (dpg.mvNodeStyleVar_LinkHoverDistance, [10]),
+    ]
+
+    def _add_zoom_styles(self, link_thickness):
+        for style, values in self.ZOOM_STYLES + [(dpg.mvNodeStyleVar_LinkThickness, [link_thickness])]:
+            item = dpg.add_theme_style(style, *values, category=dpg.mvThemeCat_Nodes)
+            self._zoom_styles.append((item, values))
+        self._zoom_components.append(dpg.top_container_stack())
+
+    def _scale_styles(self, zoom):
+        def scaled(values):
+            values = [v * zoom for v in values]
+            return values + [-1] * (2 - len(values))
+
+        for item, values in self._zoom_styles:
+            dpg.set_value(item, scaled(values))
+        for item in self._zoom_default_styles:
+            if dpg.does_item_exist(item):
+                dpg.delete_item(item)
+        self._zoom_default_styles = []
+        if zoom != 1.0:
+            for component in self._zoom_components:
+                for style, values in self.ZOOM_DEFAULT_STYLES:
+                    self._zoom_default_styles.append(dpg.add_theme_style(
+                        style, *scaled(values)[:len(values)], category=dpg.mvThemeCat_Nodes, parent=component))
+
     def setup_theme(self):
-        self.node_scalers = {}
+        self._zoom_styles = []
+        self._zoom_components = []
+        self._zoom_default_styles = []
+        self._box_selector_colors = []
         with dpg.theme() as self.node_theme:
             with dpg.theme_component(dpg.mvAll):
-                self.node_scalers[dpg.mvNodeStyleVar_GridSpacing] = 16
-                dpg.add_theme_style(dpg.mvNodeStyleVar_GridSpacing, self.node_scalers[dpg.mvNodeStyleVar_GridSpacing], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeCol_GridLine] = [60, 60, 60]
-                dpg.add_theme_color(dpg.mvNodeCol_GridLine, self.node_scalers[dpg.mvNodeCol_GridLine], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeStyleVar_NodePadding] = [4, 1]
-                dpg.add_theme_style(dpg.mvNodeStyleVar_NodePadding,  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][0],  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][1], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeStyleVar_PinOffset] = 2
-                dpg.add_theme_style(dpg.mvNodeStyleVar_PinOffset, self.node_scalers[dpg.mvNodeStyleVar_PinOffset], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] = 2
-                dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, self.node_scalers[dpg.mvNodeStyleVar_LinkThickness], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
+                self._add_zoom_styles(link_thickness=2)
+                dpg.add_theme_color(dpg.mvNodeCol_GridLine, [60, 60, 60], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, [30, 100, 150], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, [255, 255, 0, 255], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
@@ -1462,23 +1632,36 @@ class NodeEditor:
                 dpg.add_theme_color(dpg.mvNodeCol_Link, [66, 150, 250, 100], category=dpg.mvThemeCat_Nodes)
         with dpg.theme() as self.node_presentation_theme:
             with dpg.theme_component(dpg.mvAll):
-                self.node_scalers[dpg.mvNodeStyleVar_GridSpacing] = 16
-                dpg.add_theme_style(dpg.mvNodeStyleVar_GridSpacing, self.node_scalers[dpg.mvNodeStyleVar_GridSpacing], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeCol_GridLine] = [60, 60, 60]
+                self._add_zoom_styles(link_thickness=1)
                 dpg.add_theme_color(dpg.mvNodeCol_GridLine, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeStyleVar_NodePadding] = [4, 1]
-                dpg.add_theme_style(dpg.mvNodeStyleVar_NodePadding,  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][0],  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][1], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeStyleVar_PinOffset] = 2
-                dpg.add_theme_style(dpg.mvNodeStyleVar_PinOffset, self.node_scalers[dpg.mvNodeStyleVar_PinOffset], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_Link, [0.0, 0.0, 0.0, 0.0], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] = 1
-                dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, self.node_scalers[dpg.mvNodeStyleVar_LinkThickness], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, [255, 255, 0, 255], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
                 # Presenting shows controls, not patching: pins go with the links.
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_PinHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+
+    def hide_box_selector(self, hidden):
+        """While a zoom drag is running, the box selection the press also
+        started is drawn in nothing at all. imnodes has no way to turn the box
+        selector off, and its colours are its own, so they are only stated
+        while they are wanted away."""
+        for item in self._box_selector_colors:
+            if dpg.does_item_exist(item):
+                dpg.delete_item(item)
+        self._box_selector_colors = []
+        if hidden:
+            for component in self._zoom_components:
+                for colour in (dpg.mvNodeCol_BoxSelector, dpg.mvNodeCol_BoxSelectorOutline):
+                    self._box_selector_colors.append(dpg.add_theme_color(
+                        colour, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes, parent=component))
+
+    def bind_theme(self):
+        """Themes are bound globally, so the tab being shown must re-assert its
+        own: its zoom, and whether it is presenting."""
+        dpg.bind_theme(self.node_presentation_theme if self.presenting else self.node_theme)
+        self.app.scale_node_styles(self.zoom)
 
 
 ########################################################################################################################

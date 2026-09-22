@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment arguments: list of menu items",
+            "init": "comment arguments: optional rows [columns] for the starting shape",
             "name": "comment",
             "id": 1494,
             "position_x": 911,
             "position_y": 116,
-            "width": 310,
+            "width": 520,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "arguments: up to two dimension values to set size",
+                    "value": "arguments: optional rows [columns] for the starting shape",
                     "value_type": "string"
                 },
                 "1": {
@@ -51,7 +51,7 @@
                     "value_type": "string"
                 }
             },
-            "comment": "arguments: up to two dimension values to set size"
+            "comment": "arguments: optional rows [columns] for the starting shape"
         },
         "2": {
             "init": "comment arguments: list of menu items",
@@ -1580,6 +1580,106 @@
                     "value_type": "string"
                 }
             }
+        },
+        "20": {
+            "init": "comment options:",
+            "name": "comment",
+            "id": 5368,
+            "position_x": 911,
+            "position_y": 500,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "options:",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "options:"
+        },
+        "21": {
+            "init": "comment component count: rows shown (1-64)",
+            "name": "comment",
+            "id": 5468,
+            "position_x": 911,
+            "position_y": 540,
+            "width": 380,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "component count: rows shown (1-64)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "component count: rows shown (1-64)"
+        },
+        "22": {
+            "init": "comment column count: columns shown (1-8); wider data shows its first 8",
+            "name": "comment",
+            "id": 5568,
+            "position_x": 911,
+            "position_y": 580,
+            "width": 620,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "column count: columns shown (1-8); wider data shows its first 8",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "column count: columns shown (1-8); wider data shows its first 8"
+        },
+        "23": {
+            "init": "comment the shape follows the input and is saved with the patch",
+            "name": "comment",
+            "id": 5668,
+            "position_x": 911,
+            "position_y": 620,
+            "width": 560,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the shape follows the input and is saved with the patch",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the shape follows the input and is saved with the patch"
         }
     },
     "links": {

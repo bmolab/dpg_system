@@ -7,9 +7,13 @@ from dpg_system.synth_core import StreamUnit
 from elevenlabs.types import VoiceSettings
 from elevenlabs.client import ElevenLabs
 from queue import Queue, Empty, Full
+import base64
+import json
 import threading
 import traceback
 import time
+import websockets
+from websockets.sync.client import connect
 from typing import Iterator
 
 # create a file called elevenlabs_key.py and put in
@@ -31,7 +35,26 @@ def service_eleven_labs():
             except Exception as e:
                 print('service_eleven_labs:', e)
                 traceback.print_exception(e)
-        ElevenLabsNode._stop_event.wait(0.1)
+        # New text wakes the sweep rather than waiting out the tick: a
+        # hundred milliseconds is a lot of the delay before a voice starts.
+        ElevenLabsNode._work_event.wait(0.1)
+        ElevenLabsNode._work_event.clear()
+
+
+STREAM_END = object()       # marks the end of a phrase in a TextStream
+
+
+class TextStream:
+    """A phrase that is still being written.
+
+    A whole phrase goes into the queue as a string. A phrase arriving a
+    token at a time goes in as one of these instead, so it holds its place
+    in the queue while the rest of it is still being typed, and the session
+    that speaks it empties this queue into the socket.
+    """
+
+    def __init__(self):
+        self.queue = Queue()
 
 
 class ElevenLabsNode(SynthNode):
@@ -48,6 +71,20 @@ class ElevenLabsNode(SynthNode):
     the unit is set to keep everything rather than skip a backlog, and holds
     a tenth of a second before a phrase starts sounding so a slow first
     chunk does not stutter.
+
+    'text to speak' says a phrase that is already written. 'stream text'
+    says one that is still being written: hand it a language model's output
+    as each piece of it appears, bang 'end of response' when the model is
+    done, and the words go up to the service as they are made rather than
+    waiting for the sentence to finish. The service is asked over a socket
+    it can answer on continuously, so the voice starts after the first
+    'characters before speaking' worth of text instead of after a whole
+    phrase and a round trip, and the delivery carries across the whole
+    answer rather than restarting at every sentence. A phrase held back for
+    a word still being typed is never split mid-word, and a '<backspace>'
+    from a model that is re-choosing takes back a character that has not
+    been sent yet. Whole phrases and streamed ones share one queue, so they
+    are spoken in the order they were given.
 
     The service thread only ever pushes samples into the ring, which is
     single-producer / single-consumer and needs no lock. Everything the
@@ -68,11 +105,17 @@ class ElevenLabsNode(SynthNode):
 
     instances = []
     _stop_event = threading.Event()
+    _work_event = threading.Event()
     _service_thread = None
     _service_thread_lock = threading.Lock()
 
     RATE = 24000
     LATENCY = 0.1        # seconds held before a phrase starts sounding
+    STREAM_URL = 'wss://api.elevenlabs.io/v1/text-to-speech/%s/stream-input'
+    POLL = 0.01          # seconds spent listening for audio between sends
+    # Where a held-back piece of text may be cut. A chunk ends on a word or
+    # a mark, never in the middle of a word.
+    SPLITTERS = (' ', '\n', '.', ',', '?', '!', ';', ':', '-', '\u2014', ')', ']', '}')
 
     @classmethod
     def _ensure_service_thread(cls):
@@ -97,6 +140,11 @@ class ElevenLabsNode(SynthNode):
         self.unit.max_backlog = None     # speech must all be heard, in order
 
         self.text_input = self.add_input('text to speak', triggers_execution=True)
+        # A phrase as it is written: pieces in here, then a bang on
+        # 'end of response' to say that is all of it.
+        self.stream_text_input = self.add_input('stream text', triggers_execution=True)
+        self.end_stream_input = self.add_input('end of response', triggers_execution=True,
+                                               trigger_button=True)
 
         try:
             self.client = ElevenLabs(api_key=api_key)
@@ -151,6 +199,11 @@ class ElevenLabsNode(SynthNode):
         self.style = self.add_input('style exaggeration', widget_type='drag_float', default_value=0.5, callback=self.voice_changed)
         self.latency = self.add_input('latency', widget_type='combo', default_value='0')
         self.latency.widget.combo_items = ['0', '1', '2', '3', '4', '5']
+        # Streamed text only: how much of it the service gathers before it
+        # starts speaking. Less is sooner; more gives it more to read ahead
+        # into, which it delivers better. Fifty is the least it accepts.
+        self.stream_chunk = self.add_input('characters before speaking', widget_type='drag_int',
+                                           default_value=50, min=50, max=500)
         self.stop_streaming_input = self.add_input('stop', widget_type='button', callback=self.stop_streaming)
         self.hard_stop_input = self.add_input('hard stop', widget_type='button', callback=self.hard_stop_streaming)
         self.accept_input = self.add_input('accept input', widget_type='checkbox', default_value=True)
@@ -185,6 +238,10 @@ class ElevenLabsNode(SynthNode):
         self._pending_sends = deque()
         self.force_stop = False
         self._pending = b''
+        # The phrase being typed right now, and the piece of it held back
+        # because it may be half a word. Main thread only.
+        self.open_stream = None
+        self.stream_buffer = ''
         ElevenLabsNode.instances.append(self)
         ElevenLabsNode._ensure_service_thread()
 
@@ -195,6 +252,8 @@ class ElevenLabsNode(SynthNode):
         super().custom_cleanup()
         self.force_stop = True
         self.unit.deactivate()
+        self.open_stream = None
+        self.stream_buffer = ''
         while not self.phrase_queue.empty():
             try:
                 self.phrase_queue.get_nowait()
@@ -211,13 +270,18 @@ class ElevenLabsNode(SynthNode):
         # than anything the settings respond to.
         return min(high, max(low, round(any_to_float(value), 3)))
 
-    def _voice_settings(self, with_speed=False):
+    def _voice_settings_dict(self, with_speed=False):
         settings = dict(stability=self._clean(self.stability(), 0.0, 1.0),
                         similarity_boost=self._clean(self.similarity_boost(), 0.0, 1.0),
                         style=self._clean(self.style(), 0.0, 1.0))
         if with_speed:
             settings['speed'] = self._clean(self.speed(), 0.7, 1.2)
-        return VoiceSettings(**settings)
+        return settings
+
+    def _voice_settings(self, with_speed=False):
+        # The socket is sent the plain dict: VoiceSettings.dict() would put
+        # every setting the node does not touch in as a null.
+        return VoiceSettings(**self._voice_settings_dict(with_speed))
 
     def voice_changed(self):
         current_voice_name = self.voice_name_input()
@@ -231,20 +295,69 @@ class ElevenLabsNode(SynthNode):
             self.voice_settings = self._voice_settings()
 
     def execute(self):
-        if self.accept_input():
+        if self.active_input == self.end_stream_input:
+            # Let through whatever 'accept input' says: it does not bring in
+            # new text, it finishes a phrase that is already on its way.
+            self.end_stream_text()
+            return
+        if not self.accept_input():
+            return
+        if self.active_input == self.stream_text_input:
+            self.receive_stream_text(any_to_string(self.stream_text_input()))
+        else:
             self.text_to_speak = any_to_string(self.text_input())
             if len(self.text_to_speak) > 0:
-                try:
-                    self.phrase_queue.put_nowait(self.text_to_speak)
-                except Full:
-                    print('ElevenLabs: phrase queue full, dropping text')
-                    return
-                if self.phrase_queue.qsize() > 1:
-                    self.backlog = True
-                    self.backlog_out.send(self.backlog)
-                else:
-                    self.backlog = False
-                    self.backlog_out.send(self.backlog)
+                self.enqueue(self.text_to_speak)
+
+    def enqueue(self, item):
+        """A phrase, written or still being written, takes its place in line."""
+        try:
+            self.phrase_queue.put_nowait(item)
+        except Full:
+            print('ElevenLabs: phrase queue full, dropping text')
+            return False
+        self.backlog = self.phrase_queue.qsize() > 1
+        # Queued rather than sent: a language model hands its text over from
+        # its own generation thread, and this node says what it has to say
+        # from the frame task, on the main thread, like everything else here.
+        self._pending_sends.append((self.backlog_out, self.backlog))
+        ElevenLabsNode._work_event.set()
+        return True
+
+    def receive_stream_text(self, text):
+        """A piece of a phrase that is still being written."""
+        if len(text) == 0:
+            return
+        if text == '<backspace>':
+            # A model re-choosing a word takes back what has not gone up to
+            # the service yet; what it has already said cannot be unsaid.
+            self.stream_buffer = self.stream_buffer[:-1]
+            return
+        if self.open_stream is None:
+            # Only take the text once it has somewhere to go: a phrase that
+            # never reached the queue would collect words nobody speaks.
+            opening = TextStream()
+            if not self.enqueue(opening):
+                return
+            self.open_stream = opening
+            self.stream_buffer = ''
+        self.stream_buffer += text
+        # Send as far as the last word or mark and hold the rest, so a word
+        # is never cut in half across two messages.
+        cut = max(self.stream_buffer.rfind(splitter) for splitter in ElevenLabsNode.SPLITTERS)
+        if cut >= 0:
+            self.open_stream.queue.put(self.stream_buffer[:cut + 1])
+            self.stream_buffer = self.stream_buffer[cut + 1:]
+
+    def end_stream_text(self):
+        """That is the whole phrase: say the rest of it and close."""
+        if self.open_stream is None:
+            return
+        if len(self.stream_buffer) > 0:
+            self.open_stream.queue.put(self.stream_buffer)
+            self.stream_buffer = ''
+        self.open_stream.queue.put(STREAM_END)
+        self.open_stream = None
 
     def speaking(self):
         """True while queued speech is still sounding after the API is done."""
@@ -256,6 +369,8 @@ class ElevenLabsNode(SynthNode):
     def stop_streaming(self):
         self.force_stop = True
         self.unit.deactivate()
+        self.open_stream = None
+        self.stream_buffer = ''
         while not self.phrase_queue.empty():
             try:
                 self.phrase_queue.get_nowait()
@@ -266,46 +381,169 @@ class ElevenLabsNode(SynthNode):
     # -- service thread ---------------------------------------------------
 
     def service_queue(self):
-        if not self.active and not self.phrase_queue.empty() and self.client is not None and self.voice_id is not None:
-            self.active = True
+        if self.active or self.phrase_queue.empty():
+            return
+        if self.client is None or self.voice_id is None:
+            return
+        self.active = True
+        item = self.phrase_queue.get()
+        if self.phrase_queue.qsize() == 0:
+            self.backlog = False
+            self._pending_sends.append((self.backlog_out, False))
+        if isinstance(item, TextStream):
+            # A phrase still being typed is waited on, and this thread serves
+            # every eleven_labs node in the patch, so it gets a thread of its
+            # own. That thread is what clears 'active' when it is done.
+            threading.Thread(target=self.speak_stream, args=(item,), daemon=True).start()
+            return
+        try:
+            self.speak_phrase(item)
+        finally:
+            self.active = False
+
+    def model_for_request(self):
+        return self.model_dict.get(self.model_choice(), 'eleven_turbo_v2_5')
+
+    def latency_for_request(self, model):
+        latency = int(self.latency())
+        if latency > 0 and model.startswith('eleven_v3'):
+            # The v3 models refuse the request outright if this is present,
+            # at any value -- and 0 is the default anyway, so it is only ever
+            # sent when it says something.
+            print("ElevenLabs: 'latency' ignored -- " + model + ' does not take optimize_streaming_latency')
+            return 0
+        return latency
+
+    def speak_phrase(self, text):
+        """A phrase that is already written, asked for in one request."""
+        model = self.model_for_request()
+        extra = {}
+        latency = self.latency_for_request(model)
+        if latency > 0:
+            extra['optimize_streaming_latency'] = latency
+
+        try:
+            self.audio_stream = self.client.text_to_speech.stream(
+                voice_id=self.voice_id,
+                text=text,
+                model_id=model,
+                voice_settings=self._voice_settings(with_speed=True),
+                output_format='pcm_%d' % ElevenLabsNode.RATE,
+                **extra,
+            )
+        except Exception as e:
+            print('ElevenLabs API error:', self._api_error_text(e))
+            return
+
+        try:
+            self.stream(self.audio_stream)
+        except Exception as e:
+            print('ElevenLabs stream error:', self._api_error_text(e))
+
+    # -- a phrase while it is being written -------------------------------
+
+    def speak_stream(self, stream):
+        """Its own thread, for the length of one streamed phrase."""
+        try:
+            model = self.model_for_request()
+            if model.startswith('eleven_v3'):
+                # There is no socket to type into for these, so the only
+                # thing to do is wait for the phrase and send it whole.
+                print('ElevenLabs: ' + model + ' cannot be given text as it is written -- '
+                      'the phrase will be spoken once it ends')
+                text = self.collect_stream(stream)
+                if len(text) > 0 and not self.force_stop:
+                    self.speak_phrase(text)
+                return
+            self.stream_socket(stream, model)
+        except Exception as e:
+            print('ElevenLabs stream error:', self._api_error_text(e))
+        finally:
+            self.active = False
+
+    def collect_stream(self, stream, patience=60.0):
+        """Wait out a phrase that cannot be typed into, so it can be sent whole.
+
+        A minute of nothing written counts as the end of it: without that, a
+        response whose 'end of response' never arrives would leave the node
+        saying it was speaking and refusing every phrase after it.
+        """
+        text = ''
+        last = time.time()
+        while not self.force_stop and time.time() - last < patience:
             try:
-                text = self.phrase_queue.get()
-                if self.phrase_queue.qsize() == 0:
-                    self.backlog = False
-                    self._pending_sends.append((self.backlog_out, False))
-                model_name = self.model_choice()
-                model = self.model_dict.get(model_name, 'eleven_turbo_v2_5')
-                settings = self._voice_settings(with_speed=True)
-                extra = {}
-                latency = int(self.latency())
-                if latency > 0:
-                    # The v3 models refuse the request outright if this is
-                    # present, at any value -- and 0 is the default anyway,
-                    # so it is only ever sent when it says something.
-                    if model.startswith('eleven_v3'):
-                        print("ElevenLabs: 'latency' ignored -- " + model + ' does not take optimize_streaming_latency')
-                    else:
-                        extra['optimize_streaming_latency'] = latency
+                piece = stream.queue.get(timeout=0.1)
+            except Empty:
+                continue
+            last = time.time()
+            if piece is STREAM_END:
+                break
+            text += piece
+        return text
 
-                try:
-                    self.audio_stream = self.client.text_to_speech.stream(
-                        voice_id=self.voice_id,
-                        text=text,
-                        model_id=model,
-                        voice_settings=settings,
-                        output_format='pcm_%d' % ElevenLabsNode.RATE,
-                        **extra,
-                    )
-                except Exception as e:
-                    print('ElevenLabs API error:', self._api_error_text(e))
-                    return
+    def stream_socket(self, stream, model):
+        """Text up as it is written, audio down as it is made, one socket.
 
+        Sending and receiving take turns on this one thread rather than
+        running as a pair: audio that is ready is read every hundredth of a
+        second whether or not more text has arrived, so a model that stops
+        to think does not leave finished speech sitting in the socket.
+        """
+        url = ElevenLabsNode.STREAM_URL % self.voice_id
+        url += '?model_id=%s&output_format=pcm_%d' % (model, ElevenLabsNode.RATE)
+        latency = self.latency_for_request(model)
+        if latency > 0:
+            url += '&optimize_streaming_latency=%d' % latency
+        self.force_stop = False
+        self._pending = b''
+        chunk = max(50, any_to_int(self.stream_chunk()))
+        with connect(url, additional_headers={'xi-api-key': api_key}) as socket:
+            socket.send(json.dumps(dict(
+                text=' ',
+                voice_settings=self._voice_settings_dict(with_speed=True),
+                generation_config=dict(chunk_length_schedule=[chunk]),
+            )))
+            ended = False
+            while not self.force_stop:
+                if not ended:
+                    ended = self.send_stream_text(socket, stream)
                 try:
-                    self.stream(self.audio_stream)
-                except Exception as e:
-                    print('ElevenLabs stream error:', self._api_error_text(e))
-            finally:
-                self.active = False
+                    # Nothing more to send once the end has gone up, so the
+                    # wait can be a long one; force_stop is still answered.
+                    message = socket.recv(timeout=0.25 if ended else ElevenLabsNode.POLL)
+                except TimeoutError:
+                    continue
+                except websockets.exceptions.ConnectionClosed as closed:
+                    if closed.code not in (1000, 1005):
+                        print('ElevenLabs stream closed:', closed.reason or closed.code)
+                    break
+                if not self.receive_stream_audio(message):
+                    break
+        if self.force_stop:
+            self.unit.deactivate()
+        self.force_stop = False
+
+    def send_stream_text(self, socket, stream):
+        """Everything written since the last look. True once that is all."""
+        while True:
+            try:
+                piece = stream.queue.get_nowait()
+            except Empty:
+                return False
+            if piece is STREAM_END:
+                socket.send(json.dumps(dict(text='')))
+                return True
+            socket.send(json.dumps(dict(text=piece, try_trigger_generation=True)))
+
+    def receive_stream_audio(self, message):
+        """False when the phrase is finished, or the service objected."""
+        data = json.loads(message)
+        if data.get('audio'):
+            self.consume(base64.b64decode(data['audio']))
+        elif data.get('error') or data.get('message'):
+            print('ElevenLabs stream error:', data.get('message') or data.get('error'))
+            return False
+        return not data.get('isFinal')
 
     @staticmethod
     def _api_error_text(error):
@@ -319,6 +557,17 @@ class ElevenLabsNode(SynthNode):
             return str(detail)
         return str(error)
 
+    def consume(self, chunk):
+        """PCM bytes as they arrive: into the ring, and out as data."""
+        data = self._pending + chunk
+        usable = len(data) - (len(data) % 2)      # whole 16-bit samples only
+        self._pending = data[usable:]
+        if usable == 0:
+            return
+        samples = np.frombuffer(data[:usable], dtype='<i2').astype(np.float32) / 32768.0
+        self.unit.push(samples)
+        self._pending_sends.append((self.audio_out, samples))
+
     def stream(self, audio_stream: Iterator[bytes]):
         self.force_stop = False
         self._pending = b''
@@ -327,14 +576,7 @@ class ElevenLabsNode(SynthNode):
                 break
             if not chunk:
                 continue
-            data = self._pending + chunk
-            usable = len(data) - (len(data) % 2)      # whole 16-bit samples only
-            self._pending = data[usable:]
-            if usable == 0:
-                continue
-            samples = np.frombuffer(data[:usable], dtype='<i2').astype(np.float32) / 32768.0
-            self.unit.push(samples)
-            self._pending_sends.append((self.audio_out, samples))
+            self.consume(chunk)
         if self.force_stop:
             self.unit.deactivate()
         self.force_stop = False
