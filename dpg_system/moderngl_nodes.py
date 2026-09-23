@@ -488,6 +488,11 @@ class MGLContextNode(Node):
                 return
         self._push_dpg_ui_event(['mouse_move', x, y])
 
+    def scroll_items(self):
+        if self.display_mode_option() == 'node' and self.node_mouse_events_option():
+            return [self.image_item]
+        return []
+
     def _dpg_ui_mouse_wheel(self, sender, delta):
         win = self._dpg_ui_window()
         if win is None or not dpg.is_item_hovered(win):

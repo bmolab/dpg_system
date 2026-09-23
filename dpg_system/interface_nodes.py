@@ -555,7 +555,8 @@ class PanViewNode(_ViewButtonNodeMixin, Node):
         v = self.v_offset()
         if h == 0 and v == 0:
             return
-        editor.pan_nodes(-h, -v)
+        # The offsets are patch distances, as at 100%.
+        editor.pan_nodes(-h * editor.zoom, -v * editor.zoom)
 
 
 class HomeViewNode(_ViewButtonNodeMixin, Node):

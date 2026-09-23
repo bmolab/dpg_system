@@ -3269,6 +3269,13 @@ class Node:
         for uuid in self.zoom_scaled_items:
             scale_item_size(uuid, ratio, exact)
 
+    def scroll_items(self):
+        """Items in this node that take the scroll wheel themselves, beyond
+        the plots, scrolling child windows and listboxes that are found
+        without asking - a two-finger drag starting over one is theirs rather
+        than a pan of the patcher."""
+        return []
+
     def zoomed(self, size):
         """A size given at 100%, in the units this patcher is drawn at."""
         return zoomed_size(self, size)

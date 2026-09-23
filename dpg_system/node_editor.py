@@ -6,6 +6,7 @@ import random
 import traceback
 from dpg_system.node import Node, OriginNode, PatcherNode, _tidy
 import json
+import dpg_system.mac_gestures as mac_gestures
 
 
 class NodeEditor:
@@ -485,7 +486,7 @@ class NodeEditor:
         # so the difference in screen coords IS the padding.
         if self.origin is not None:
             try:
-                editor_screen = dpg.get_item_rect_min(self.uuid)
+                editor_screen = self.screen_rect()
                 origin_screen = dpg.get_item_rect_min(self.origin.uuid)
                 self._editor_padding = [
                     origin_screen[0] - editor_screen[0],
@@ -536,7 +537,7 @@ class NodeEditor:
                 self.active_pins.remove(output.uuid)
 
     def create(self, parent):
-        with dpg.child_window(width=0, parent=parent, user_data=self):
+        with dpg.child_window(width=0, parent=parent, user_data=self) as self.frame_uuid:
             with dpg.node_editor(tag=self.uuid, callback=NodeEditor._link_callback, height=self.height, width=self.width, delink_callback=NodeEditor._unlink_callback):
                 # i don;t think there are ever any nodes to create here?
                 for node in self._nodes:
@@ -721,46 +722,178 @@ class NodeEditor:
             return [0, 0]
 
     def pan_nodes(self, dx, dy):
-        """Shift every node by (dx, dy). Positive dx moves nodes right, positive dy moves nodes down."""
+        """Shift every node by (dx, dy). Positive dx moves nodes right, positive dy moves nodes down.
+
+        Whole pixels: the exact positions a zoom keeps are carried along
+        rather than rounded away. Marked as a move so that the view's pan is
+        not measured from rectangles drawn before it - moving the nodes does
+        not move the view, and a pinch during a pan anchors on the view."""
         if len(self._nodes) == 0 or (dx == 0 and dy == 0):
             return
+        self._moved_on_frame = self.app.frame_number if self.app is not None else self._moved_on_frame
+        exact = self.__dict__.setdefault('_zoom_exact', {})
         for node in self._nodes:
             try:
-                pos = dpg.get_item_pos(node.uuid)
-                dpg.set_item_pos(node.uuid, [pos[0] + dx, pos[1] + dy])
+                x, y = self.exact_pos(node)
+                exact[node.uuid] = (x + dx, y + dy)
+                dpg.set_item_pos(node.uuid, [int(round(x + dx)), int(round(y + dy))])
             except Exception as e:
                 print(f'pan_nodes: failed to move node {getattr(node, "label", "?")} '
                       f'(uuid={node.uuid}): {type(e).__name__}: {e}')
 
+    def screen_rect(self):
+        """Where the patcher's canvas is on screen: [left, top, width, height].
+
+        dpg reports the node editor's size but not its position - its
+        rect_min is always [0, 0], the top of the window, above the menu and
+        tab bars. The child window it sits in knows where it is; the canvas
+        is that less the child window's padding, which is whatever the size
+        difference between the two is.
+
+        Cut to what can be seen: to the window, and on macOS to the screen -
+        a patch can open the window partly off the bottom of the screen, and
+        a patch centred in what is down there sits too low."""
+        width, height = dpg.get_item_rect_size(self.uuid)
+        left = top = None
+        frame = getattr(self, 'frame_uuid', None)
+        if frame is not None and dpg.does_item_exist(frame):
+            state = dpg.get_item_state(frame)
+            pos, size = state.get('pos'), state.get('rect_size')
+            if pos is not None and size is not None:
+                left, top = pos[0] + (size[0] - width) / 2, pos[1] + (size[1] - height) / 2
+        if left is None:
+            left, top = dpg.get_item_rect_min(self.uuid)
+        try:
+            shown_width = dpg.get_viewport_client_width() - left
+            shown_height = dpg.get_viewport_client_height() - top
+            area = mac_gestures.window_screen_area()
+            if area is not None:
+                (s_left, s_top, s_width, s_height), _ = area
+                x, y = dpg.get_viewport_pos()
+                shown_width = min(shown_width, s_left + s_width - x - left)
+                shown_height = min(shown_height, s_top + s_height - y - top)
+            if shown_width > 0 and shown_height > 0:
+                width, height = min(width, shown_width), min(height, shown_height)
+        except Exception:
+            pass
+        return [left, top, width, height]
+
     def home_nodes(self):
-        """Shift all nodes so the origin node appears at the top-left of the editor.
-        All nodes keep their relative positions to each other."""
+        """The view the patch opened with: 100%, and the origin at the top
+        left of the patcher - the same whatever panning and zooming came
+        before.
+
+        Placed by arithmetic rather than by reading the origin's rectangle:
+        a rectangle is where the node was last DRAWN, a frame behind a zoom
+        or a move, and reading it too soon lands somewhere else (which is
+        how a home button could alternate between two views)."""
         if self.origin is None or len(self._nodes) == 0:
             return
-
+        self.set_zoom(1.0)
+        pan = self.pan()
+        if pan is None:
+            self._home_by_rects()
+            return
         try:
-            # Both are viewport screen coordinates — directly comparable
-            editor_screen = dpg.get_item_rect_min(self.uuid)
+            left, top = self.screen_rect()[:2]
+        except Exception:
+            return
+        # On the first frame the origin sat at [0, 0] with the view unpanned,
+        # _editor_padding in from the patcher's corner; a node is drawn at
+        # pan + position + node padding.
+        padding = self.node_padding()
+        target_x = left + self._editor_padding[0] - padding[0] - pan[0]
+        target_y = top + self._editor_padding[1] - padding[1] - pan[1]
+        x, y = self.exact_pos(self.origin)
+        if abs(target_x - x) < 0.5 and abs(target_y - y) < 0.5:
+            return
+        self.pan_nodes(target_x - x, target_y - y)
+
+    def _home_by_rects(self):
+        """Home as measured on screen, for before the view's pan is known."""
+        try:
+            editor_screen = self.screen_rect()
             origin_screen = dpg.get_item_rect_min(self.origin.uuid)
-
-            # How far the origin is from the editor content area
-            # _editor_padding accounts for internal padding between editor rect and content
-            shift_x = origin_screen[0] - editor_screen[0] - self._editor_padding[0]
-            shift_y = origin_screen[1] - editor_screen[1] - self._editor_padding[1]
-
-            if abs(shift_x) < 1 and abs(shift_y) < 1:
-                return  # Already home
-
-            # Move all nodes so origin lands at editor top-left
-            for node in self._nodes:
-                try:
-                    pos = dpg.get_item_pos(node.uuid)
-                    dpg.set_item_pos(node.uuid, [pos[0] - shift_x, pos[1] - shift_y])
-                except Exception as e:
-                    print(f'home_nodes: failed to move node {getattr(node, "label", "?")} '
-                          f'(uuid={node.uuid}): {type(e).__name__}: {e}')
         except Exception as e:
             print(f'home_nodes error: {type(e).__name__}: {e}')
+            return
+        shift_x = origin_screen[0] - editor_screen[0] - self._editor_padding[0]
+        shift_y = origin_screen[1] - editor_screen[1] - self._editor_padding[1]
+        if abs(shift_x) >= 1 or abs(shift_y) >= 1:
+            self.pan_nodes(-shift_x, -shift_y)
+
+    def rects_settled(self):
+        """Whether the nodes' rectangles are where the nodes are: they are
+        where each was last drawn, a frame behind a zoom or a move."""
+        return self.app is not None and self.app.frame_number - self._moved_on_frame > 1
+
+    def patch_box(self):
+        """[left, top, right, bottom] on screen around every visible node,
+        or None. Read from rectangles: see rects_settled."""
+        box = None
+        for node in self._nodes:
+            if node is self.origin or getattr(node, 'visibility', 'show_all') == 'hidden':
+                continue
+            try:
+                if not dpg.is_item_shown(node.uuid):
+                    continue
+                left, top = dpg.get_item_rect_min(node.uuid)
+                right, bottom = dpg.get_item_rect_max(node.uuid)
+            except Exception:
+                continue
+            if right <= left or bottom <= top:
+                continue
+            if box is None:
+                box = [left, top, right, bottom]
+            else:
+                box = [min(box[0], left), min(box[1], top), max(box[2], right), max(box[3], bottom)]
+        return box
+
+    # Space left around the patch by fit_nodes, in pixels.
+    fit_margin = 16
+
+    def fit_nodes(self, tries=3, refine=True):
+        """Zoom and pan so the whole patch shows, as large as fits, centred
+        in the patcher. The zoom is whatever fits exactly, not the nearest
+        level below it - those are 10% apart, which left a wide empty frame.
+
+        Measured from the nodes' rectangles, so it waits for a frame drawn
+        after the last zoom or move (up to `tries` frames). Nodes do not
+        scale in exact proportion (their text comes in whole font sizes), so
+        a second pass measures again once the first is drawn."""
+        if self.app is None:
+            return
+        if not self.rects_settled():
+            if tries > 0:
+                self.app.queue_main_thread_call(self.fit_nodes, tries - 1, refine)
+            return
+        box = self.patch_box()
+        if box is None:
+            self.home_nodes()
+            return
+        try:
+            e_left, e_top, e_width, e_height = self.screen_rect()
+        except Exception:
+            return
+        width, height = max(box[2] - box[0], 1), max(box[3] - box[1], 1)
+        room = min((e_width - 2 * self.fit_margin) / width,
+                   (e_height - 2 * self.fit_margin) / height)
+        # The patch's size scales with the zoom, so the zoom that fits is the
+        # present one times the room there is.
+        fits = self.zoom * room
+        level = min(max(fits, self.ZOOM_LEVELS[0]), self.ZOOM_LEVELS[-1])
+        if not refine and abs(level / self.zoom - 1.0) < 0.01:
+            level = self.zoom  # near enough: a rescale costs more than it gains
+        centre = [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2]
+        self.set_zoom(level, centre)
+        # The zoom kept the patch's centre where it was; now bring it to the
+        # middle of the patcher.
+        dx = e_left + e_width / 2 - centre[0]
+        dy = e_top + e_height / 2 - centre[1]
+        if abs(dx) >= 0.5 or abs(dy) >= 0.5:
+            self.pan_nodes(dx, dy)
+        if refine:
+            self.app.queue_main_thread_call(self.fit_nodes, 3, False)
 
     # Every font size a zoom can call for, all built at startup: a font added
     # later makes dpg rebuild the whole atlas on the next frame, which takes
@@ -855,9 +988,8 @@ class NodeEditor:
         pan = self.pan()
         if anchor is None:
             try:
-                top_left = dpg.get_item_rect_min(self.uuid)
-                size = dpg.get_item_rect_size(self.uuid)
-                anchor = [top_left[0] + size[0] / 2, top_left[1] + size[1] / 2]
+                left, top, width, height = self.screen_rect()
+                anchor = [left + width / 2, top + height / 2]
             except Exception:
                 anchor = [0, 0]
         # Worked through in screen terms, with the padding in, so that the

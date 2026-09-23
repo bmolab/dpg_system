@@ -21,6 +21,7 @@ import _thread
 import sys
 from pathlib import Path
 
+import dpg_system.mac_gestures as mac_gestures
 import dpg_system.basic_nodes as basic_nodes
 import dpg_system.math_nodes as math_nodes
 import dpg_system.signal_nodes as signal_nodes
@@ -343,8 +344,20 @@ class App:
         self._zoom_target = None  # log zoom the current scroll gesture is heading for
         self._zoom_target_editor = None
         self._zoom_last_wheel = 0.0
+        self._zoom_pending = 0.0  # log zoom scrolled or pinched, not yet shown
+        self._zoom_gesture_new = False
+        self._pan_pending = [0.0, 0.0]  # two-finger pan not yet applied
+        self._pan_carry = [0.0, 0.0]  # the part of a pixel left over
+        self._pan_last = 0.0
+        self._pan_gesture_new = False
+        self._pan_latched = None  # the editor this gesture pans, or None
+        self._pan_queued = False
+        self._zoom_respects_scroll_items = False  # set by the plain wheel off the Mac
+        self._zoom_gesture_blocked = False
+        self._space_pan = None  # (editor, last pointer, carry) while Space pans
         self._zoom_queued = False
         self._zoom_lock = threading.Lock()
+        self._pan_lock = threading.Lock()
         self.setup_dpg()
         self.verbose = False
         self.verbose_menu_item = -1
@@ -524,6 +537,10 @@ class App:
                     self._font_sizes[font] = key
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
+        # Exact trackpad scroll, and pinch, which dpg does not pass on.
+        if mac_gestures.install():
+            mac_gestures.add_scroll_listener(self.zoom_scroll_listener)
+            mac_gestures.add_magnify_listener(self.zoom_magnify_listener)
 
     # ------------------------------------------------------------ zoom
 
@@ -564,68 +581,249 @@ class App:
             file, size = self.font_file, 13
         if self.font_registry is None or not os.path.exists(file):
             return font
-        # the nearest size already built, if this face has them
+        # the nearest size already built, if this face has them. Between the
+        # zoom levels (a fit to the window lands anywhere) the widgets scale
+        # exactly and no font does, so the text takes the size below rather
+        # than risk being too big for its widget.
         wanted = size * zoom
         sizes = [s for (f, s) in self._zoom_fonts if f == file] or [max(4, int(round(wanted)))]
-        size = min(sizes, key=lambda s: abs(math.log(s / wanted)))
+        if any(abs(zoom - level) < 1e-6 for level in NodeEditor.ZOOM_LEVELS):
+            size = min(sizes, key=lambda s: abs(math.log(s / wanted)))
+        else:
+            below = [s for s in sizes if s <= wanted * 1.001]
+            size = max(below) if below else min(sizes)
         key = (file, size)
         if key not in self._zoom_fonts:
             self._zoom_fonts[key] = dpg.add_font(file, size, parent=self.font_registry)
             self._font_sizes[self._zoom_fonts[key]] = key
         return self._zoom_fonts[key]
 
-    # Zoom per unit of scroll, as a factor. dpg reports scroll in whole units
-    # only, once a frame - a slow trackpad drag never reaches a whole unit and
-    # does nothing, a fast one sends a unit or more every frame - so this is
-    # kept low enough that a fast drag is not a rush.
-    zoom_wheel_rate = 1.04
+    # Zoom per click of a scroll wheel, as a factor. Off the Mac this is all
+    # there is to go on: dpg's wheel handler reports whole units only, once
+    # a frame, so a touchpad there zooms in these steps too.
+    zoom_wheel_rate = 1.1
+    # With the exact scroll from mac_gestures: trackpad points of Cmd-scroll
+    # for a doubling (or halving) of the zoom, however slowly they come.
+    zoom_scroll_doubling = 120.0
+    # Pixels of pan per line of a scroll wheel (a trackpad reports pixels).
+    pan_wheel_line = 30.0
     # A pause this long ends a gesture, and what was left over from it.
     zoom_gesture_gap = 0.25
 
     def zoom_wheel_handler(self, sender, app_data):
-        """Cmd-scroll zooms the patcher about the pointer.
-
-        The scroll moves a continuous target zoom and the patcher shows the
-        level nearest it, so small trackpad movements accumulate evenly
-        rather than waiting to add up to a whole step. The target is clamped
-        to the levels, so scrolling on past the end stores nothing up that
-        has to be scrolled off again, and a fresh gesture starts from the
-        zoom as shown. Wheel events arrive off the main thread and faster
-        than a zoom can be redrawn, so the zoom is applied at most once a
-        frame."""
-        if not self.control_or_command_down():
-            return
-        editor = self.get_current_editor()
-        if editor is None:
+        """The scroll wheel, from dpg's wheel handler, used only where
+        mac_gestures could not hook the window - Windows and Linux. There
+        the wheel zooms, with or without Ctrl, as in most canvas and node
+        editors (and a Windows touchpad pinch arrives as Ctrl-wheel); panning
+        is Space-and-move or a middle-button drag. A plot or scrolling text
+        under the pointer keeps the wheel for itself."""
+        if mac_gestures.installed():
             return
         try:
             amount = float(app_data)
         except (TypeError, ValueError):
             return
+        self._nudge_zoom(amount * math.log(self.zoom_wheel_rate), respect_scroll_items=True)
+
+    def zoom_scroll_listener(self, dx, dy, precise, flags, momentum):
+        """Scroll, exactly, from mac_gestures: Cmd-scroll zooms, a plain
+        two-finger drag pans. Runs inside dpg's event polling: no dpg calls
+        here. The zoom leaves out the coasting after the fingers lift - it
+        stops when the fingers do - but the pan coasts, as scrolling does."""
+        if flags & mac_gestures.COMMAND:
+            if momentum or dy == 0:
+                return
+            if precise:
+                self._nudge_zoom(dy * math.log(2.0) / self.zoom_scroll_doubling)
+            else:
+                self._nudge_zoom(dy * math.log(self.zoom_wheel_rate))
+        elif not flags & (mac_gestures.OPTION | mac_gestures.CONTROL):
+            if not precise:
+                dx, dy = dx * self.pan_wheel_line, dy * self.pan_wheel_line
+            self._nudge_pan(dx, dy, momentum)
+
+    def _nudge_pan(self, dx, dy, momentum):
+        """Pan the patcher by (dx, dy) pixels. Any thread, no dpg; summed and
+        applied at most once a frame, like the zoom."""
         now = time.perf_counter()
-        levels = NodeEditor.ZOOM_LEVELS
+        with self._pan_lock:
+            # The coasting belongs to the gesture before it, however it goes.
+            if now - self._pan_last > self.zoom_gesture_gap and not momentum:
+                self._pan_gesture_new = True
+                self._pan_pending = [0.0, 0.0]
+            self._pan_last = now
+            self._pan_pending[0] += dx
+            self._pan_pending[1] += dy
+            if self._pan_queued:
+                return
+            self._pan_queued = True
+        self.queue_main_thread_call(self._apply_pan)
+
+    def _apply_pan(self):
+        with self._pan_lock:
+            dx, dy = self._pan_pending
+            new_gesture = self._pan_gesture_new
+            self._pan_pending = [0.0, 0.0]
+            self._pan_gesture_new = False
+            self._pan_queued = False
+        if new_gesture:
+            # Whose the gesture is, is settled where it starts: nodes slide
+            # under a still pointer as the patch pans, and a plot arriving
+            # there must not take over halfway.
+            editor = self.get_current_editor()
+            self._pan_latched = None
+            self._pan_carry = [0.0, 0.0]
+            if editor is not None and self._pointer_in(editor) is not None \
+                    and not self._scroll_taken_at_pointer():
+                self._pan_latched = editor
+        editor = self._pan_latched
+        if editor is None or editor not in self.node_editors:
+            return
+        self._pan_carry[0] += dx
+        self._pan_carry[1] += dy
+        step_x, step_y = int(self._pan_carry[0]), int(self._pan_carry[1])
+        if step_x or step_y:
+            self._pan_carry[0] -= step_x
+            self._pan_carry[1] -= step_y
+            editor.pan_nodes(step_x, step_y)
+
+    def follow_space_pan(self):
+        """Once a frame: while Space is held, moving the pointer pans the
+        patcher in both directions, the patch following the pointer. No
+        click is involved, so nothing imnodes does with a press - moving a
+        node, a box selection - can start. Starts only over the patcher and
+        not while a text field or other widget has the keys."""
+        try:
+            held = (dpg.is_key_down(dpg.mvKey_Spacebar) and not self.typing_in_widget()
+                    and not any(dpg.is_mouse_button_down(b) for b in (0, 1, 2)))
+        except Exception:
+            held = False
+        if not held:
+            self._space_pan = None
+            return
+        editor = self.get_current_editor()
+        pointer = dpg.get_mouse_pos(local=False)
+        if self._space_pan is None or self._space_pan[0] is not editor:
+            if editor is not None and self._pointer_in(editor) is not None:
+                self._space_pan = (editor, pointer, [0.0, 0.0])
+            else:
+                self._space_pan = None
+            return
+        _, last, carry = self._space_pan
+        carry[0] += pointer[0] - last[0]
+        carry[1] += pointer[1] - last[1]
+        step_x, step_y = int(carry[0]), int(carry[1])
+        if step_x or step_y:
+            carry[0] -= step_x
+            carry[1] -= step_y
+            editor.pan_nodes(step_x, step_y)
+        self._space_pan = (editor, pointer, carry)
+
+    # dpg item types that take the scroll wheel for themselves.
+    SCROLL_TAKING_TYPES = ('mvAppItemType::mvPlot', 'mvAppItemType::mvChildWindow',
+                           'mvAppItemType::mvListbox')
+
+    def _scroll_taken_at_pointer(self):
+        """Whether the pointer is over something in a node that scrolls
+        itself: a plot, a scrolling text display, a listbox, or whatever the
+        node names in scroll_items()."""
+        node = self.node_under_mouse()
+        if node is None:
+            return False
+        x, y = dpg.get_mouse_pos(local=False)
+        for uuid in self._scroll_items_of(node):
+            try:
+                if not dpg.does_item_exist(uuid) or not dpg.is_item_shown(uuid):
+                    continue
+                left, top = dpg.get_item_rect_min(uuid)
+                right, bottom = dpg.get_item_rect_max(uuid)
+            except Exception:
+                continue
+            if left <= x <= right and top <= y <= bottom:
+                return True
+        return False
+
+    def _scroll_items_of(self, node):
+        """Found by walking the node's items once and kept on the node:
+        dpg's item type and child lookups take longer the more items there
+        are in the whole app."""
+        found = getattr(node, '_scroll_items_found', None)
+        if found is None or not all(dpg.does_item_exist(uuid) for uuid in found):
+            found = []
+            pending = [node.uuid]
+            while pending:
+                item = pending.pop()
+                try:
+                    info = dpg.get_item_info(item)
+                except Exception:
+                    continue
+                if info.get('type') in self.SCROLL_TAKING_TYPES:
+                    found.append(item)
+                    continue
+                for children in info.get('children', {}).values():
+                    pending.extend(children)
+            node._scroll_items_found = found
+        try:
+            return list(found) + list(node.scroll_items())
+        except Exception:
+            return list(found)
+
+    def zoom_magnify_listener(self, amount, flags):
+        """Pinch, from mac_gestures. No dpg calls here either."""
+        if amount > -1.0:
+            self._nudge_zoom(math.log1p(amount))
+
+    def _nudge_zoom(self, amount, respect_scroll_items=False):
+        """Move the zoom by `amount` (log zoom), about the pointer.
+
+        The scroll or pinch moves a continuous target zoom and the patcher
+        shows the level nearest it, so small movements accumulate evenly
+        rather than waiting to add up to a whole step. The target is clamped
+        to the levels, so scrolling on past the end stores nothing up that
+        has to be scrolled off again, and a fresh gesture starts from the
+        zoom as shown. Callable from any thread and without dpg: events come
+        faster than a zoom can be redrawn, so they are summed here and the
+        zoom applied at most once a frame."""
+        now = time.perf_counter()
         with self._zoom_lock:
-            if (self._zoom_target is None or self._zoom_target_editor is not editor
-                    or now - self._zoom_last_wheel > self.zoom_gesture_gap):
-                self._zoom_target = math.log(editor.zoom)
-                self._zoom_target_editor = editor
+            if now - self._zoom_last_wheel > self.zoom_gesture_gap:
+                self._zoom_gesture_new = True
+                self._zoom_pending = 0.0
+                self._zoom_respects_scroll_items = respect_scroll_items
             self._zoom_last_wheel = now
-            self._zoom_target += amount * math.log(self.zoom_wheel_rate)
-            self._zoom_target = min(max(self._zoom_target, math.log(levels[0])), math.log(levels[-1]))
+            self._zoom_pending += amount
             if self._zoom_queued:
                 return
             self._zoom_queued = True
-        self.queue_main_thread_call(self._apply_wheel_zoom, editor)
+        self.queue_main_thread_call(self._apply_wheel_zoom)
 
-    def _apply_wheel_zoom(self, editor):
+    def _apply_wheel_zoom(self):
         with self._zoom_lock:
-            target = math.exp(self._zoom_target)
+            pending = self._zoom_pending
+            new_gesture = self._zoom_gesture_new
+            self._zoom_pending = 0.0
+            self._zoom_gesture_new = False
             self._zoom_queued = False
-        if editor not in self.node_editors:
+        editor = self.get_current_editor()
+        if editor is None:
             return
-        level = min(NodeEditor.ZOOM_LEVELS, key=lambda z: abs(math.log(z / target)))
+        if new_gesture:
+            # The plain wheel zooms only over the patcher, and not over what
+            # scrolls itself - settled once, where the gesture starts.
+            self._zoom_gesture_blocked = self._zoom_respects_scroll_items and (
+                self._pointer_in(editor) is None or self._scroll_taken_at_pointer())
+        if self._zoom_gesture_blocked:
+            return
+        levels = NodeEditor.ZOOM_LEVELS
+        if new_gesture or self._zoom_target is None or self._zoom_target_editor is not editor:
+            self._zoom_target = math.log(editor.zoom)
+            self._zoom_target_editor = editor
+        self._zoom_target += pending
+        self._zoom_target = min(max(self._zoom_target, math.log(levels[0])), math.log(levels[-1]))
+        target = math.exp(self._zoom_target)
+        level = min(levels, key=lambda z: abs(math.log(z / target)))
         if level != editor.zoom:
-            editor.set_zoom(level, list(dpg.get_mouse_pos(local=False)))
+            editor.set_zoom(level, self._pointer_in(editor))
 
     # The menu items zoom about the middle of the patcher: the pointer is up on
     # the menu when one is chosen. The keys zoom about the pointer.
@@ -656,8 +854,7 @@ class App:
         """The pointer, if it is over the patcher; else None (the middle)."""
         try:
             x, y = dpg.get_mouse_pos(local=False)
-            left, top = dpg.get_item_rect_min(editor.uuid)
-            width, height = dpg.get_item_rect_size(editor.uuid)
+            left, top, width, height = editor.screen_rect()
         except Exception:
             return None
         if left <= x <= left + width and top <= y <= top + height:
@@ -1293,7 +1490,9 @@ class App:
                 dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
                 self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
                 dpg.add_separator()
-                dpg.add_menu_item(label="Home (H)", callback=self.home_current_editor)
+                dpg.add_menu_item(label="Home: 100%, origin top left (H)", callback=self.home_current_editor)
+                dpg.add_menu_item(label="Fit Patch to Window (Shift-H)", callback=self.fit_current_editor)
+                dpg.add_menu_item(label="Fit Window to Patch (Cmd-Shift-H)", callback=self.fit_window_to_patch)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Zoom In (Cmd + or Cmd-scroll)", callback=lambda: self.zoom_in())
                 dpg.add_menu_item(label="Zoom Out (Cmd - or Cmd-scroll)", callback=lambda: self.zoom_out())
@@ -1547,7 +1746,21 @@ class App:
                 return [centre_acc[0] / centre_count, centre_acc[1] / centre_count]
 
     def not_focussed_on_widget(self):
+        # A widget deleted while it had the focus (its patch replaced by a
+        # load, say) is never deactivated, so the stale uuid is let go here.
+        if self.active_widget != -1 and not dpg.does_item_exist(self.active_widget):
+            self.active_widget = -1
         return self.active_widget == -1
+
+    def typing_in_widget(self):
+        """A widget has the keys right now - not merely the last one
+        activated, which a click on the canvas does not always clear."""
+        if self.not_focussed_on_widget():
+            return False
+        try:
+            return dpg.is_item_active(self.active_widget)
+        except Exception:
+            return False
     
     def del_handler(self):
         if self.not_focussed_on_widget():
@@ -1832,9 +2045,16 @@ class App:
             self.close_current_node_editor()
 
     def H_handler(self):
+        # H: back to the view the patch opened with. Shift-H: the whole patch
+        # in the window. Cmd-Shift-H: the window around the whole patch.
         if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                self.get_current_editor().home_nodes()
+                if self.shift_down() and self.control_or_command_down():
+                    self.fit_window_to_patch()
+                elif self.shift_down():
+                    self.get_current_editor().fit_nodes()
+                elif not self.control_or_command_down():
+                    self.get_current_editor().home_nodes()
 
     def _push_snapshot(self, stack):
         editor = self.get_current_editor()
@@ -1951,6 +2171,85 @@ class App:
     def home_current_editor(self):
         if self.get_current_editor() is not None:
             self.get_current_editor().home_nodes()
+
+    def fit_current_editor(self):
+        if self.get_current_editor() is not None:
+            self.get_current_editor().fit_nodes()
+
+    # The smallest window fit_window_to_patch will make, in pixels.
+    fit_window_minimum = (480, 320)
+
+    def fit_window_to_patch(self, tries=3):
+        """Size the window to the patch at the zoom it is at: the canvas
+        just holds the patch and the fit margin around it. Kept on the
+        screen - moved left or up if it would run off - and if the patch is
+        too big for the screen at this zoom, the window takes what the
+        screen allows and the patch is zoomed to fit it."""
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+        if not editor.rects_settled():
+            if tries > 0:
+                self.queue_main_thread_call(self.fit_window_to_patch, tries - 1)
+            return
+        box = editor.patch_box()
+        if box is None:
+            return
+        left, top, canvas_width, canvas_height = editor.screen_rect()
+        client_width = dpg.get_viewport_client_width()
+        client_height = dpg.get_viewport_client_height()
+        margin = editor.fit_margin
+        # Everything around the canvas - menu, tabs, borders - stays as it is.
+        width = box[2] - box[0] + 2 * margin + (client_width - canvas_width)
+        height = box[3] - box[1] + 2 * margin + (client_height - canvas_height)
+        width = max(width, self.fit_window_minimum[0])
+        height = max(height, self.fit_window_minimum[1])
+
+        x, y = dpg.get_viewport_pos()
+        cut = False
+        area = self._screen_area()
+        if area is not None:
+            (s_left, s_top, s_width, s_height), title = area
+            if width > s_width:
+                width, cut = s_width, True
+            if height > s_height - title:
+                height, cut = s_height - title, True
+            # dpg's viewport position is the top left of the content, under
+            # the title bar.
+            x = min(max(x, s_left), s_left + s_width - width)
+            y = min(max(y, s_top + title), s_top + s_height - height)
+        width, height = int(width), int(height)
+        dpg.set_viewport_width(width)
+        dpg.set_viewport_height(height)
+        dpg.set_viewport_pos([int(x), int(y)])
+
+        if cut:
+            # Once the new size is laid out, zoom the patch into it.
+            def later(frames):
+                if frames > 0:
+                    self.queue_main_thread_call(later, frames - 1)
+                elif editor in self.node_editors:
+                    editor.fit_nodes()
+            later(3)
+        else:
+            # The canvas's top left does not move with the window's size.
+            editor.pan_nodes(left + margin - box[0], top + margin - box[1])
+
+    def _screen_area(self):
+        """((left, top, width, height), title bar height) of the usable
+        screen the window is on, or None if it cannot be found."""
+        area = mac_gestures.window_screen_area()
+        if area is not None:
+            return area
+        try:
+            import glfw
+            monitor = glfw.get_primary_monitor()
+            if monitor:
+                s_left, s_top, s_width, s_height = glfw.get_monitor_workarea(monitor)
+                return (s_left, s_top, s_width, s_height), 30
+        except Exception:
+            pass
+        return None
 
     def V_handler(self):
         if self.control_or_command_down():
@@ -2883,6 +3182,7 @@ class App:
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
                         node_editor.frame_shift_check()
+                    self.follow_space_pan()
                     self.trace_indent = ''
                     if self.trace:
                         print()
