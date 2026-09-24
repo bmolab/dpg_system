@@ -2205,6 +2205,24 @@ class App:
         width = max(width, self.fit_window_minimum[0])
         height = max(height, self.fit_window_minimum[1])
 
+        cut = self.place_window(width, height)
+        if cut:
+            # Once the new size is laid out, zoom the patch into it.
+            def later(frames):
+                if frames > 0:
+                    self.queue_main_thread_call(later, frames - 1)
+                elif editor in self.node_editors:
+                    editor.fit_nodes()
+            later(3)
+        else:
+            # The canvas's top left does not move with the window's size.
+            editor.pan_nodes(left + margin - box[0], top + margin - box[1])
+
+    def place_window(self, width, height):
+        """Give the window content `width` x `height`, kept on the screen it
+        is on: made smaller if the screen is, and moved left or up if it
+        would run off the right or bottom. True if it had to be made smaller
+        than asked. Without a screen to go by, just the size."""
         x, y = dpg.get_viewport_pos()
         cut = False
         area = self._screen_area()
@@ -2218,22 +2236,11 @@ class App:
             # the title bar.
             x = min(max(x, s_left), s_left + s_width - width)
             y = min(max(y, s_top + title), s_top + s_height - height)
-        width, height = int(width), int(height)
-        dpg.set_viewport_width(width)
-        dpg.set_viewport_height(height)
-        dpg.set_viewport_pos([int(x), int(y)])
-
-        if cut:
-            # Once the new size is laid out, zoom the patch into it.
-            def later(frames):
-                if frames > 0:
-                    self.queue_main_thread_call(later, frames - 1)
-                elif editor in self.node_editors:
-                    editor.fit_nodes()
-            later(3)
-        else:
-            # The canvas's top left does not move with the window's size.
-            editor.pan_nodes(left + margin - box[0], top + margin - box[1])
+        dpg.set_viewport_width(int(width))
+        dpg.set_viewport_height(int(height))
+        if area is not None:
+            dpg.set_viewport_pos([int(x), int(y)])
+        return cut
 
     def _screen_area(self):
         """((left, top, width, height), title bar height) of the usable
@@ -2242,11 +2249,15 @@ class App:
         if area is not None:
             return area
         try:
+            # Elsewhere, the monitor whose work area holds the window's top
+            # left - never the primary by default, which would drag a window
+            # off a second screen.
             import glfw
-            monitor = glfw.get_primary_monitor()
-            if monitor:
+            x, y = dpg.get_viewport_pos()
+            for monitor in glfw.get_monitors() or []:
                 s_left, s_top, s_width, s_height = glfw.get_monitor_workarea(monitor)
-                return (s_left, s_top, s_width, s_height), 30
+                if s_left <= x < s_left + s_width and s_top <= y < s_top + s_height:
+                    return (s_left, s_top, s_width, s_height), 30
         except Exception:
             pass
         return None

@@ -1660,7 +1660,13 @@ class NodeEditor:
         if 'links' in file_container:
             self.app.links_containers[self.uuid] = file_container['links']
 
-        dpg.configure_viewport(0, height=height, width=width)
+        # The size the patch was saved at, but on the screen: a patch saved
+        # on a bigger screen, or low on this one, would otherwise open with
+        # its bottom out of sight.
+        if self.app is not None and hasattr(self.app, 'place_window'):
+            self.app.place_window(width, height)
+        else:
+            dpg.configure_viewport(0, height=height, width=width)
         # dpg.configure_viewport(0, height=height, width=width, x_pos=int(position[0]), y_pos=int(position[1]))
         # dpg.set_viewport_pos(position)
         self.modified = False
