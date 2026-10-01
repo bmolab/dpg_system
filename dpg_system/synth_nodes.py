@@ -30,7 +30,7 @@ from dpg_system.synth_core import (
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit, VuUnit,
     SnapshotUnit, ScalerUnit,
-    CaptureUnit, StreamUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
+    CaptureUnit, StreamUnit, RecordUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
     StringUnit, ModalUnit, WindUnit, BowUnit, RubUnit, BlowUnit, FaderUnit,
     StrokeUnit, ShakerUnit, BrassUnit, StrainUnit, WhooshUnit,
     plugin_hosting_available, installed_plugin_files, find_plugin_file,
@@ -41,6 +41,8 @@ from dpg_system.synth_core import (
 import os
 
 import numpy as np
+
+from dpg_system.audio_io import AudioSource, input_devices
 
 AUDIO_FILE_EXTENSIONS = ('.wav', '.aif', '.aiff', '.mp3', '.flac', '.ogg', '.m4a')
 
@@ -133,6 +135,9 @@ def register_synth_nodes():
     Node.app.register_node('array~', CaptureNode.factory)
     Node.app.register_node('stream~', StreamNode.factory)
     Node.app.register_node('audio_in~', StreamNode.factory)
+    Node.app.register_node('adc~', AdcNode.factory)
+    Node.app.register_node('mic~', AdcNode.factory)
+    Node.app.register_node('record~', RecordNode.factory)
     Node.app.register_node('scope~', ScopeNode.factory)
     if plugin_hosting_available():
         Node.app.register_node('vst~', VstNode.factory)
@@ -8190,6 +8195,431 @@ class StreamNode(SynthNode):
             if counts[0] != self._reported[0]:
                 self.underruns_output.send(counts[0])
             self._reported = counts
+
+
+# ----------------------------------------------------------------------------
+# adc~
+# ----------------------------------------------------------------------------
+
+class AdcNode(SynthNode):
+    """The microphone, or any audio input, as a signal.
+
+    t.audio_source into stream~ does the same job by way of the node world,
+    and that detour is the trouble: every chunk waits for a GUI frame, so a
+    stalled patch either drops audio or lets it fall behind. Here the input
+    device's callback writes straight into the unit's ring on PortAudio's
+    own thread, and the GUI never touches the audio at all. That is what
+    makes it safe to record from.
+
+    'channels' are the device inputs, counted from 1 the way an interface's
+    front panel counts them: '1 2' is a stereo pair, '1' is mono on both
+    outlets. 'device' blank means the system default input. The device is
+    opened at the engine's rate where it accepts that, so nothing is
+    converted; otherwise at its own rate, converted on the way in.
+
+    'latency' is the audio held in hand to absorb the two devices'
+    different block timing. It is where the hold starts: each time the
+    input runs dry the hold grows by half, up to 250 ms, so a device that
+    delivers in bursts settles by itself; the status line shows what it
+    is holding. Input and output on separate devices run on separate
+    clocks, so over minutes one gains on the other: the stream then skips
+    a little, or runs dry once and refills, counted on the status line.
+
+    Arguments: adc~ <channel> [<channel>], e.g. adc~ 1 2 or adc~ 3.
+    Also registered as mic~.
+    """
+
+    BLOCK = 256
+    MAX_BACKLOG_SECONDS = 0.1
+    MAX_ADAPTIVE_LATENCY = 0.25
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return AdcNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = StreamUnit(synth_graph.sample_rate)
+        self.unit.latency = 0.025
+        self.unit.max_backlog = AdcNode.MAX_BACKLOG_SECONDS
+
+        channels = []
+        if args is not None:
+            for arg in args:
+                value, arg_type = decode_arg([arg], 0)
+                if arg_type in (float, int):
+                    channels.append(max(1, int(value)))
+        channels = channels[:2] or [1, 2]
+
+        self.add_modulation_input('level', self.unit.level_in, default_value=1.0,
+                                  minimum=0.0, maximum=2.0)
+        self.left_output = self.add_signal_output('left out', self.unit.out)
+        self.right_output = self.add_signal_output('right out', self.unit.right)
+
+        self.status_property = self.add_property('in', widget_type='label',
+                                                 default_value='')
+        self.channels_option = self.add_option(
+            'channels', widget_type='text_input', width=110,
+            default_value=' '.join(str(channel) for channel in channels),
+            callback=self.parameters_changed)
+        if self.channels_option.widget is not None:
+            self.channels_option.widget.set_tooltip(
+                'device inputs, counted from 1: "1 2" for a stereo pair, '
+                '"1" for mono on both outlets')
+        self._devices = input_devices()
+        self.device_option = self.add_option('device', widget_type='combo',
+                                             default_value='',
+                                             callback=self.parameters_changed)
+        if self.device_option.widget is not None:
+            self.device_option.widget.combo_items = \
+                [''] + [device['name'] for device in self._devices]
+            self.device_option.widget.set_tooltip(
+                'blank: the system default input. The list is what was '
+                'connected at launch')
+        self.latency_option = self.add_option('latency', widget_type='drag_float',
+                                              default_value=25.0, min=1.0,
+                                              max=500.0,
+                                              callback=self.parameters_changed)
+
+        self._source = None
+        self._open_key = None
+        self._status_text = ''
+        self._reported = (0, 0)
+        self._latency_option_applied = None
+        self.add_switch()
+        self.finish_synth_node()
+
+    # -- device -------------------------------------------------------------
+
+    def _wanted(self):
+        """(device name, channel indices from 0) as the options say now."""
+        channels = []
+        for word in any_to_string(self.channels_option()).replace(',', ' ').split():
+            try:
+                channels.append(max(1, min(64, int(word))) - 1)
+            except (ValueError, TypeError):
+                continue
+        return (any_to_string(self.device_option()).strip(),
+                tuple(channels[:2]) or (0, 1))
+
+    def sync_options(self):
+        # Reopening stalls, so it waits for the frame task; and only when
+        # something about the stream itself has actually changed. Latency is
+        # applied only when the option itself moves, so turning the level
+        # knob does not undo what adaptation has learned.
+        if self.latency_option.widget is None:
+            return
+        wanted = max(1.0, any_to_float(self.latency_option())) / 1000.0
+        if wanted != self._latency_option_applied:
+            self._latency_option_applied = wanted
+            self._set_latency(wanted)
+
+    def _set_latency(self, seconds):
+        self.unit.latency = seconds
+        # The skip-ahead lands `latency` behind the head, so the backlog
+        # limit must sit well above it or a skip would move the cursor back.
+        self.unit.max_backlog = max(AdcNode.MAX_BACKLOG_SECONDS, 2.0 * seconds)
+
+    def _close(self):
+        if self._source is not None:
+            self._source.stop()
+            self._source = None
+        self._open_key = None
+
+    def _open(self, key):
+        self._close()
+        self._open_key = key
+        device_name, channels = key
+        source = AudioSource(channels=1, rate=int(synth_graph.sample_rate),
+                             chunk=AdcNode.BLOCK)
+        if source.device_index is None:
+            self._show('no input device')
+            return
+        if device_name and not source.change_source(device_name):
+            self._show('not connected: ' + device_name)
+            return
+        available = source.get_max_input_channels()
+        usable = tuple(channel for channel in channels if channel < available)
+        if not usable:
+            self._show('device has %d input%s' % (available,
+                                                  '' if available == 1 else 's'))
+            return
+        width = max(usable) + 1
+        rate = int(synth_graph.sample_rate)
+        if not source.check_format(rate, width):
+            rate = source.get_default_sample_rate()
+        source.samplerate = rate
+        source.channels = width
+
+        unit = self.unit
+        left = usable[0]
+        right = usable[1] if len(usable) > 1 else None
+
+        def deliver(indata, frames, time_info, status):
+            # PortAudio's thread: no exception may escape, or the stream dies.
+            try:
+                if right is None:
+                    unit.push(indata[:, left])
+                else:
+                    unit.push(np.stack((indata[:, left], indata[:, right])))
+            except Exception:
+                pass
+
+        source.set_callback(deliver)
+        unit.source_rate = float(rate)
+        unit.reset()
+        self._reported = (0, 0)
+        if self._latency_option_applied is not None:
+            self._set_latency(self._latency_option_applied)
+        if not source.start():
+            self._show('could not open input')
+            return
+        self._source = source
+        name = source.sources.get(source.device_index, '?')
+        listed = ' '.join(str(channel + 1) for channel in usable)
+        self._show('%s  ch %s  %d Hz' % (name, listed, rate))
+
+    def _show(self, text):
+        if text == self._status_text:
+            return
+        self._status_text = text
+        if self.status_property.widget is not None:
+            self.status_property.widget.set(text)
+
+    def synth_frame_task(self):
+        key = self._wanted()
+        if key != self._open_key:
+            self._open(key)
+        counts = (self.unit.underruns, self.unit.dropped)
+        if counts != self._reported and self._source is not None:
+            if counts[0] > self._reported[0]:
+                self._adapt()
+            self._reported = counts
+            base = self._status_text.split('  !', 1)[0]
+            self._show(base + '  !%d dry, %d skipped, holding %.0f ms' % (
+                counts[0], counts[1], self.unit.latency * 1000.0))
+
+    def _adapt(self):
+        """Ran dry: hold more. Some inputs are steady (a built-in mic ticks
+        every 10 ms) and some arrive in bursts (BlackHole goes quiet for
+        85 ms at a time), and a gap is worse than a little more delay --
+        especially in something being recorded. So the hold grows until
+        the device stops running dry, which for a bursty one is usually
+        within its first second, before anyone has pressed record."""
+        latency = self.unit.latency
+        if latency < AdcNode.MAX_ADAPTIVE_LATENCY:
+            self._set_latency(min(AdcNode.MAX_ADAPTIVE_LATENCY,
+                                  max(0.03, latency * 1.5)))
+
+    def custom_cleanup(self):
+        self._close()
+        super().custom_cleanup()
+
+
+# ----------------------------------------------------------------------------
+# record~
+# ----------------------------------------------------------------------------
+
+class RecordNode(SynthNode):
+    """Records whatever is patched in, and saves each take as a WAV file.
+
+    Tick 'record' to start and untick it to stop (or send 1 / 0). The
+    samples are taken on the audio thread into a buffer made at the start,
+    so nothing is lost however busy the patch gets; a take that reaches
+    'max seconds' stops by itself.
+
+    On stopping, the take is trimmed of the silence before the first sound
+    and after the last (anything under 'threshold', in dB), given a few ms
+    of fade at each end so it never starts or stops on a click, and written
+    to 'folder' as <name>_<date>_<time>.wav. Then 'rate', 'take' (the
+    array: 1-D for mono, (frames, 2) for stereo) and finally 'path' go out
+    -- path last, so it can drive a player's load inlet: sampler_osc~
+    'path', or polyphonic_sampler / granular_sampler 'load' (a bare path
+    loads into the inspected sound_id; [sid, path] into a chosen one).
+
+    Patch only 'left in' and the take is mono. Patch both and it is stereo.
+    For the microphone, patch adc~.
+
+    Arguments: record~ <max seconds>.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RecordNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.unit = RecordUnit(synth_graph.sample_rate)
+
+        max_seconds = 60.0
+        if args is not None:
+            for arg in args:
+                value, arg_type = decode_arg([arg], 0)
+                if arg_type in (float, int):
+                    max_seconds = max(0.1, float(value))
+
+        self.left_port = self.add_signal_input('left in', self.unit.signal_in)
+        self.right_port = self.add_signal_input('right in', self.unit.right_in)
+        self.record_input = self.add_input('record', widget_type='checkbox',
+                                           default_value=False,
+                                           callback=self.record_changed)
+        self.status_property = self.add_property('take', widget_type='label',
+                                                 default_value='')
+
+        self.path_output = self.add_output('path')
+        self.take_output = self.add_array_output('take')
+        self.rate_output = self.add_output('rate')
+
+        self.folder_option = self.add_option('folder', widget_type='text_input',
+                                             width=160, default_value='~/dpg_takes')
+        self.name_option = self.add_option('name', widget_type='text_input',
+                                           width=110, default_value='take')
+        self.max_option = self.add_option('max seconds', widget_type='drag_float',
+                                          default_value=max_seconds, min=0.1,
+                                          max=3600.0)
+        self.trim_option = self.add_option('trim silence', widget_type='checkbox',
+                                           default_value=True)
+        self.threshold_option = self.add_option('threshold', widget_type='drag_float',
+                                                default_value=-50.0, min=-120.0,
+                                                max=0.0)
+        if self.threshold_option.widget is not None:
+            self.threshold_option.widget.set_tooltip(
+                'dB: quieter than this at either end counts as silence')
+        self.fade_option = self.add_option('fade ms', widget_type='drag_float',
+                                           default_value=3.0, min=0.0, max=100.0)
+
+        self._frame_count = 0
+        self.finish_synth_node()
+
+    # -- recording ----------------------------------------------------------
+
+    def record_changed(self):
+        wanted = any_to_bool(self.record_input())
+        if getattr(self, 'in_loading_process', False):
+            # A patch saved mid-take must not start recording on load.
+            if wanted:
+                self.record_input.set(False)
+            return
+        if wanted and not self.unit.recording:
+            self.start_take()
+        elif not wanted and self.unit.recording:
+            self.finish_take()
+
+    def start_take(self):
+        rate = synth_graph.sample_rate
+        seconds = max(0.1, any_to_float(self.max_option()))
+        stereo = bool(self.right_port._parents)
+        self.unit.begin(int(seconds * rate), stereo)
+        self._show('recording')
+
+    def finish_take(self):
+        recorded = self.unit.end()
+        if any_to_bool(self.record_input()):
+            # Stopped by itself, at 'max seconds': the box follows.
+            self.record_input.set(False)
+        if recorded is None:
+            self._show('nothing recorded')
+            return
+        rate = int(synth_graph.sample_rate)
+        frames = recorded.T.copy()       # (frames, channels), as files hold it
+        if any_to_bool(self.trim_option()):
+            frames = trim_silence(frames, rate, any_to_float(self.threshold_option()))
+            if frames is None:
+                self._show('only silence: nothing saved')
+                return
+        fade_edges(frames, int(rate * max(0.0, any_to_float(self.fade_option())) / 1000.0))
+
+        path = self._write(frames, rate)
+        seconds = len(frames) / rate
+        if path is None:
+            return
+        self._show('%s  %.2f s' % (os.path.basename(path), seconds))
+        self.rate_output.send(rate)
+        self.take_output.send(frames[:, 0] if frames.shape[1] == 1 else frames)
+        self.path_output.send(path)
+
+    def _write(self, frames, rate):
+        try:
+            import soundfile
+        except ImportError:
+            self._show('soundfile not installed: cannot save')
+            return None
+        folder = os.path.expanduser(any_to_string(self.folder_option()).strip()
+                                    or '~/dpg_takes')
+        name = any_to_string(self.name_option()).strip() or 'take'
+        try:
+            os.makedirs(folder, exist_ok=True)
+        except OSError as error:
+            self._show('cannot make folder: ' + str(error))
+            return None
+        from datetime import datetime
+        stem = os.path.join(folder, name + '_'
+                            + datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        path = stem + '.wav'
+        suffix = 2
+        while os.path.exists(path):
+            path = '%s_%d.wav' % (stem, suffix)
+            suffix += 1
+        try:
+            soundfile.write(path, frames, rate, subtype='PCM_24')
+        except Exception as error:
+            self._show('could not save: ' + str(error))
+            return None
+        return os.path.abspath(path)
+
+    def _show(self, text):
+        if self.status_property.widget is not None:
+            self.status_property.widget.set(text)
+
+    def synth_frame_task(self):
+        take = self.unit.take
+        if take is None:
+            return
+        if take.full:
+            self.finish_take()
+            return
+        self._frame_count += 1
+        if self._frame_count % 6:
+            return
+        peak = take.peak
+        take.peak = 0.0
+        level = 20.0 * math.log10(peak) if peak > 1.0e-6 else -120.0
+        self._show('recording %.1f s  peak %.0f dB' % (
+            take.count / synth_graph.sample_rate, level))
+
+    def custom_cleanup(self):
+        # Deleting the node mid-take keeps the take: losing one is worse
+        # than an extra file.
+        if self.unit.recording:
+            self.finish_take()
+        super().custom_cleanup()
+
+
+def trim_silence(frames, rate, threshold_db, lead_seconds=0.005,
+                 tail_seconds=0.05):
+    """(frames, channels) cut to the sound, or None if it never sounds.
+
+    Keeps a few ms before the first sample over the threshold, so an onset
+    is not shaved, and more after the last, so a decay is not cut off as
+    it falls under the threshold.
+    """
+    threshold = 10.0 ** (threshold_db / 20.0)
+    loud = np.flatnonzero(np.max(np.abs(frames), axis=1) > threshold)
+    if loud.size == 0:
+        return None
+    start = max(0, int(loud[0]) - int(lead_seconds * rate))
+    end = min(len(frames), int(loud[-1]) + 1 + int(tail_seconds * rate))
+    return frames[start:end]
+
+
+def fade_edges(frames, length):
+    """Linear fade in and out over `length` frames, in place."""
+    length = min(int(length), len(frames) // 2)
+    if length <= 0:
+        return
+    ramp = np.linspace(0.0, 1.0, length, endpoint=False, dtype=np.float32)
+    frames[:length] *= ramp[:, np.newaxis]
+    frames[-length:] *= ramp[::-1, np.newaxis]
 
 
 # ----------------------------------------------------------------------------

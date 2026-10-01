@@ -16238,6 +16238,171 @@ class StreamUnit(Unit):
             self.right.data[:frames] *= level.data[:frames]
 
 
+class VoiceTapUnit(Unit):
+    """A block of sampler-engine voices, played through the graph.
+
+    The sampler nodes (polyphonic_sampler and the granular and scratch
+    samplers built on it) drive engine voices, which the engine renders
+    straight into its output mix ahead of the synth program. Once
+    anything in the graph takes this unit's outlets, its voices are
+    marked routed: the engine skips them and they are rendered here
+    instead, in the same callback and at the same block size -- so the
+    sampler sounds only through whatever it is patched into. With
+    nothing patched they are left to the engine, exactly as before.
+
+    Duck-typed on the engine's Voice (routed, active, process) so this
+    module needs nothing from the sampler.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.out = self.new_outlet()
+        self.right = self.new_outlet()
+        self._voices = ()
+        self.patched = False
+
+    # -- main thread ------------------------------------------------------
+
+    def set_voices(self, voices):
+        """The voices this unit owns, replacing the previous range."""
+        voices = tuple(voices)
+        for voice in self._voices:
+            if voice not in voices:
+                voice.routed = False
+        self._voices = voices
+        self._apply()
+
+    def set_patched(self, patched):
+        """Called by the compiler: does anything in the graph listen?"""
+        self.patched = bool(patched)
+        self._apply()
+
+    def release(self):
+        """Hand every voice back to the engine. For node deletion."""
+        self.patched = False
+        self._apply()
+
+    def _apply(self):
+        for voice in self._voices:
+            voice.routed = self.patched
+
+    # -- audio thread -----------------------------------------------------
+
+    def render(self, frames):
+        voices = self._voices
+        if not self.patched or not voices:
+            self.silence(frames)
+            return
+        left = self.out.data[:frames]
+        right = self.right.data[:frames]
+        left.fill(0.0)
+        right.fill(0.0)
+        for voice in voices:
+            # A voice not (or no longer) routed is the engine's to play;
+            # rendering it here too would advance it twice.
+            if not voice.routed:
+                continue
+            if not (voice.active or not voice._command_queue.empty()):
+                continue
+            try:
+                block = voice.process(frames, 2)
+            except Exception as error:
+                voice.active = False
+                print('sampler voice exception, voice disabled (' + str(error) + ')')
+                continue
+            left += block[:, 0]
+            right += block[:, 1]
+        self.out.constant = False
+        self.right.constant = False
+
+
+class _Take:
+    """One recording in progress: its buffer and how far it has got.
+
+    A fresh object per take rather than fields on the unit, so a block the
+    audio thread is still writing when a take is closed lands in the old
+    take's buffer and can never bump the count of the next one.
+    """
+
+    __slots__ = ('data', 'capacity', 'count', 'full', 'peak')
+
+    def __init__(self, channels, capacity):
+        # np.zeros is lazily backed, so a long maximum costs memory only as
+        # it is actually recorded into.
+        self.data = np.zeros((channels, capacity), dtype=np.float32)
+        self.capacity = capacity
+        self.count = 0
+        self.full = False
+        self.peak = 0.0
+
+
+class RecordUnit(Unit):
+    """Takes audio into memory, every sample, for record~ to save.
+
+    capture~ hands blocks to the GUI as they come, which is gapless only as
+    long as the GUI keeps up. This writes straight into a buffer allocated
+    up front, on the audio thread, so a stalled patch costs the take
+    nothing. The main thread opens a take with begin() and closes it with
+    end(); in between it only reads. A take that reaches its capacity stops
+    itself and sets `full` for the node to notice.
+    """
+
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+        super().__init__(sample_rate)
+        self.signal_in = self.new_inlet()
+        self.right_in = self.new_inlet()
+        self._take = None
+
+    @property
+    def recording(self):
+        return self._take is not None
+
+    @property
+    def take(self):
+        return self._take
+
+    def begin(self, capacity, stereo):
+        # Built completely, then published in one assignment.
+        self._take = _Take(2 if stereo else 1, max(1, int(capacity)))
+
+    def end(self):
+        """Close the take. Returns (channels, frames) recorded, or None."""
+        take = self._take
+        self._take = None
+        if take is None or take.count == 0:
+            return None
+        return take.data[:, :take.count]
+
+    def render(self, frames):
+        take = self._take
+        if take is None or take.full:
+            return
+        start = take.count
+        count = min(frames, take.capacity - start)
+        if count <= 0:
+            take.full = True
+            return
+        end = start + count
+        peak = take.peak
+        for channel, inlet in enumerate((self.signal_in, self.right_in)
+                                        [:take.data.shape[0]]):
+            signal = inlet.eval(frames)
+            target = take.data[channel, start:end]
+            if signal.constant:
+                target[:] = signal.value
+                level = abs(signal.value)
+            else:
+                np.copyto(target, signal.data[:count])
+                level = float(np.max(np.abs(target)))
+            if level > peak:
+                peak = level
+        take.peak = peak
+        # Publish last: everything below the new count is complete.
+        take.count = end
+        if end >= take.capacity:
+            take.full = True
+
+
 class SnapshotUnit(Unit):
     """Reads a signal back to the control layer for metering and display.
 
@@ -16955,6 +17120,14 @@ class SynthGraph:
                             and id(producer_unit) in by_id:
                         edges.add((id(producer_unit), id(unit)))
                 inlet.sources = sources
+
+        # A unit that only plays through the graph when something listens
+        # (VoiceTapUnit) is told whether anything does.
+        consumed = {producer_id for producer_id, _consumer in edges}
+        for unit in units:
+            set_patched = getattr(unit, 'set_patched', None)
+            if set_patched is not None:
+                set_patched(id(unit) in consumed)
 
         indegree = {key: 0 for key in by_id}
         outgoing = {key: [] for key in by_id}

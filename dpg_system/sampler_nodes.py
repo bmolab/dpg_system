@@ -1043,6 +1043,8 @@ class PolyphonicSamplerNode(Node):
 
         # Output
         self.active_out = self.add_output('active_voices')
+        # Last, so every older port keeps its link index.
+        self._add_signal_outlets()
 
     def add_additional_parameters(self):
         pass
@@ -1074,6 +1076,40 @@ class PolyphonicSamplerNode(Node):
     def on_config_change(self):
         self.start_voice_idx = self.voice_range_start()
         self.voice_count = self.voice_range_count()
+        self._sync_tap_voices()
+
+    # -- signal outlets ------------------------------------------------------
+    #
+    # 'left out' / 'right out' make this sampler a ~ source. Patch either into
+    # any ~ object (fader_out~, vcf~, vst~, record~ ...) and the graph compiler
+    # marks this node's voices routed: the engine leaves them out of its mix
+    # and the VoiceTapUnit renders them into these outlets instead. Unpatched,
+    # the voices play straight to the engine as they always have.
+
+    def _add_signal_outlets(self):
+        self.unit = None
+        self.signal_inputs = []
+        try:
+            from dpg_system.synth_core import VoiceTapUnit, synth_graph
+        except ImportError:
+            return
+        self.unit = VoiceTapUnit(synth_graph.sample_rate)
+        for label, signal in (('left out', self.unit.out),
+                              ('right out', self.unit.right)):
+            port = self.add_output(label)
+            port.synth_signal = signal
+            port.synth_unit = self.unit
+        self._sync_tap_voices()
+        synth_graph.register(self)
+
+    def _sync_tap_voices(self):
+        unit = getattr(self, 'unit', None)
+        engine = SamplerEngineNode.engine
+        if unit is None or engine is None:
+            return
+        start = max(0, int(self.start_voice_idx))
+        end = min(len(engine.voices), start + max(0, int(self.voice_count)))
+        unit.set_voices(engine.voices[start:end])
 
     def on_load(self):
         data = self.load_input()
@@ -1602,6 +1638,12 @@ class PolyphonicSamplerNode(Node):
 
     def on_trigger(self):
         data = self.trigger_input()
+        # A bang plays the sound shown in 'sound_id', as a bare path loads
+        # into it -- so a button on 'trigger' does something. The input
+        # replays its previous value on a bang (None before any), so the
+        # flag is what says a bang arrived, not the data.
+        if self.trigger_input.received_bang or data == 'bang' or data == ['bang']:
+            data = [self.current_inspect_id]
         # Format: sound_id, [pitch_mult], [velocity/vol]
         
         # Support bare int (trigger specific sound with default params)
@@ -2048,7 +2090,16 @@ class PolyphonicSamplerNode(Node):
             self.remove_frame_tasks()
         
     def custom_cleanup(self):
-        pass
+        unit = getattr(self, 'unit', None)
+        if unit is not None:
+            # Hand the voices back before the graph forgets this unit, or
+            # they would stay routed with nothing left to render them.
+            unit.release()
+            try:
+                from dpg_system.synth_core import synth_graph
+                synth_graph.unregister(self)
+            except ImportError:
+                pass
 
     def save_custom(self, container):
         sounds_data = {}
@@ -2195,6 +2246,12 @@ class GranularSamplerNode(PolyphonicSamplerNode):
 
     def on_trigger(self):
         data = self.trigger_input()
+        # A bang plays the sound shown in 'sound_id', as a bare path loads
+        # into it -- so a button on 'trigger' does something. The input
+        # replays its previous value on a bang (None before any), so the
+        # flag is what says a bang arrived, not the data.
+        if self.trigger_input.received_bang or data == 'bang' or data == ['bang']:
+            data = [self.current_inspect_id]
         
         if isinstance(data, (int, float, str)):
              data = [data]
@@ -2523,6 +2580,12 @@ class GranularSamplerNode(PolyphonicSamplerNode):
 
     def on_trigger(self):
         data = self.trigger_input()
+        # A bang plays the sound shown in 'sound_id', as a bare path loads
+        # into it -- so a button on 'trigger' does something. The input
+        # replays its previous value on a bang (None before any), so the
+        # flag is what says a bang arrived, not the data.
+        if self.trigger_input.received_bang or data == 'bang' or data == ['bang']:
+            data = [self.current_inspect_id]
         
         if isinstance(data, (int, float, str)):
              data = [data]
@@ -2766,6 +2829,12 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
             
     def on_trigger(self):
         data = self.trigger_input()
+        # A bang plays the sound shown in 'sound_id', as a bare path loads
+        # into it -- so a button on 'trigger' does something. The input
+        # replays its previous value on a bang (None before any), so the
+        # flag is what says a bang arrived, not the data.
+        if self.trigger_input.received_bang or data == 'bang' or data == ['bang']:
+            data = [self.current_inspect_id]
         
         if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
              self.handle_fader_list(data)

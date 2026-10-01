@@ -1037,6 +1037,11 @@
     "strike~",
     "string~"
   ],
+  "record~": [
+    "adc~",
+    "mic~",
+    "record~"
+  ],
   "shaper~": [
     "envelope~",
     "lookup~",

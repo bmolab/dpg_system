@@ -1,0 +1,396 @@
+{
+    "height": 1276,
+    "width": 1645,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "record~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/record~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment record~ - sound in, and takes kept",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 426,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "record~ - sound in, and takes kept",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "record~ - sound in, and takes kept"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 787,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These bring sound in from a microphone or interface, and keep what you play as a sample.\n\nTHE NODES:\n\nadc~     an audio input device, as a signal\nmic~     the same node\nrecord~  record any signal, and save each take as a WAV file\n\nadc~ IS THE MICROPHONE IN THE GRAPH:\nIts outlets are a signal like any other ~ outlet, so a voice can go straight\ninto vocoder~, vcf~, vst~, string~'s excite inlet - or record~.\n'channels' are the device inputs, counted from 1 the way an interface's front\npanel counts them: '1 2' is a stereo pair, '1' is mono on both outlets. A\nbuilt-in microphone has one input, so '1 2' falls back to mono by itself.\n\nNothing reaches the speakers unless you patch it there. With speakers rather\nthan headphones, patching adc~ to an output is a feedback loop.\n\nWHY NOT stream~?\nt.audio_source into stream~ also brings a microphone in, but every chunk waits\nfor a GUI frame on the way, so a busy patch either drops audio or lets it fall\nbehind. adc~'s device writes straight into the audio engine and the GUI never\ntouches the sound - which is what makes it safe to record from.\n\nTHE HOLD ADAPTS:\n'latency' is how much audio adc~ keeps in hand. A built-in microphone delivers\nevery 10 ms and 25 ms is plenty; some devices (BlackHole, for one) deliver in\nbursts with 85 ms gaps. Each time the input runs dry the hold grows by half, up\nto 250 ms, so a bursty device settles by itself within a second - usually\nbefore you have pressed record. The status line shows what it is holding.\n\nrecord~ KEEPS EVERY SAMPLE:\nTick 'record' to start and untick it to stop, or send 1 and 0. The take is\nwritten into a buffer made at the start, by the audio engine itself, so\nnothing is lost however busy the patch gets. At 'max seconds' it stops by\nitself.\n\nWHAT HAPPENS ON STOP:\nThe silence before the first sound and after the last is trimmed (anything\nunder 'threshold'), a few ms of fade go on each end so the sample never starts\nor stops on a click, and the take is saved to 'folder' as\n<name>_<date>_<time>.wav. Then the rate, the array and - last - the path go\nout.\n\nThe path is what makes it quick. Patch it into a player and each take is\nloaded the moment you stop: granular_sampler's or polyphonic_sampler's 'load'\n(into the sound shown in 'sound_id'; send [sound_id, path] to choose), or\nsampler_osc~'s 'path'. The players remember the file, so a saved patch keeps\nthe sound.\n\nMONO OR STEREO:\nPatch only 'left in' and the take is mono. Patch 'right in' as well and it is\nstereo.\n\nrecord~ RECORDS ANYTHING:\nNot only the microphone. Patch a synth voice, a granular_sampler's outlets or\na whole mix in, and the result becomes new material - resampling.\n\nSYNTAX:\nadc~ <channel> [<channel>]\nrecord~ <max seconds>\n\nEXAMPLE:\nadc~ 1 2\nrecord~ 30\n\nINPUTS and PARAMETERS:\n\nlevel (adc~):\nInput gain.\n\nchannels / device / latency (adc~):\nWhich inputs, which device (blank for the system default), and the starting\nhold in ms. The device list is what was connected when the app started.\n\nleft in / right in (record~):\nWhat to record.\n\nrecord (record~):\nOn to record, off to stop and save.\n\nfolder / name / max seconds (record~):\nWhere takes go (~/dpg_takes by default), how they are named, and the longest\ntake.\n\ntrim silence / threshold / fade ms (record~):\nThe clean-up on stop. Turn trimming off to keep a take exactly as recorded,\nroom tone and all.\n\nOUTPUTS:\n\nleft out / right out (adc~):\nThe input, as a signal.\n\npath (record~):\nThe saved file, sent last - ready for a player's load inlet.\n\ntake (record~):\nThe samples: one row per frame, 1-D for mono, two columns for stereo.\n\nrate (record~):\nThe sample rate of the take.\n\nRELATED:\ngranular_sampler, polyphonic_sampler and sampler_osc~ play what you record.\nstream~ and capture~ (on the snapshot~ help patch) are the general bridges\nbetween audio and arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These bring sound in from a microphone or interface, and keep what you play as a sample.\n\nTHE NODES:\n\nadc~     an audio input device, as a signal\nmic~     the same node\nrecord~  record any signal, and save each take as a WAV file\n\nadc~ IS THE MICROPHONE IN THE GRAPH:\nIts outlets are a signal like any other ~ outlet, so a voice can go straight\ninto vocoder~, vcf~, vst~, string~'s excite inlet - or record~.\n'channels' are the device inputs, counted from 1 the way an interface's front\npanel counts them: '1 2' is a stereo pair, '1' is mono on both outlets. A\nbuilt-in microphone has one input, so '1 2' falls back to mono by itself.\n\nNothing reaches the speakers unless you patch it there. With speakers rather\nthan headphones, patching adc~ to an output is a feedback loop.\n\nWHY NOT stream~?\nt.audio_source into stream~ also brings a microphone in, but every chunk waits\nfor a GUI frame on the way, so a busy patch either drops audio or lets it fall\nbehind. adc~'s device writes straight into the audio engine and the GUI never\ntouches the sound - which is what makes it safe to record from.\n\nTHE HOLD ADAPTS:\n'latency' is how much audio adc~ keeps in hand. A built-in microphone delivers\nevery 10 ms and 25 ms is plenty; some devices (BlackHole, for one) deliver in\nbursts with 85 ms gaps. Each time the input runs dry the hold grows by half, up\nto 250 ms, so a bursty device settles by itself within a second - usually\nbefore you have pressed record. The status line shows what it is holding.\n\nrecord~ KEEPS EVERY SAMPLE:\nTick 'record' to start and untick it to stop, or send 1 and 0. The take is\nwritten into a buffer made at the start, by the audio engine itself, so\nnothing is lost however busy the patch gets. At 'max seconds' it stops by\nitself.\n\nWHAT HAPPENS ON STOP:\nThe silence before the first sound and after the last is trimmed (anything\nunder 'threshold'), a few ms of fade go on each end so the sample never starts\nor stops on a click, and the take is saved to 'folder' as\n<name>_<date>_<time>.wav. Then the rate, the array and - last - the path go\nout.\n\nThe path is what makes it quick. Patch it into a player and each take is\nloaded the moment you stop: granular_sampler's or polyphonic_sampler's 'load'\n(into the sound shown in 'sound_id'; send [sound_id, path] to choose), or\nsampler_osc~'s 'path'. The players remember the file, so a saved patch keeps\nthe sound.\n\nMONO OR STEREO:\nPatch only 'left in' and the take is mono. Patch 'right in' as well and it is\nstereo.\n\nrecord~ RECORDS ANYTHING:\nNot only the microphone. Patch a synth voice, a granular_sampler's outlets or\na whole mix in, and the result becomes new material - resampling.\n\nSYNTAX:\nadc~ <channel> [<channel>]\nrecord~ <max seconds>\n\nEXAMPLE:\nadc~ 1 2\nrecord~ 30\n\nINPUTS and PARAMETERS:\n\nlevel (adc~):\nInput gain.\n\nchannels / device / latency (adc~):\nWhich inputs, which device (blank for the system default), and the starting\nhold in ms. The device list is what was connected when the app started.\n\nleft in / right in (record~):\nWhat to record.\n\nrecord (record~):\nOn to record, off to stop and save.\n\nfolder / name / max seconds (record~):\nWhere takes go (~/dpg_takes by default), how they are named, and the longest\ntake.\n\ntrim silence / threshold / fade ms (record~):\nThe clean-up on stop. Turn trimming off to keep a take exactly as recorded,\nroom tone and all.\n\nOUTPUTS:\n\nleft out / right out (adc~):\nThe input, as a signal.\n\npath (record~):\nThe saved file, sent last - ready for a player's load inlet.\n\ntake (record~):\nThe samples: one row per frame, 1-D for mono, two columns for stereo.\n\nrate (record~):\nThe sample rate of the take.\n\nRELATED:\ngranular_sampler, polyphonic_sampler and sampler_osc~ play what you record.\nstream~ and capture~ (on the snapshot~ help patch) are the general bridges\nbetween audio and arrays."
+        },
+        "3": {
+            "name": "adc~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 174,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "adc~ 1 2"
+        },
+        "4": {
+            "name": "meter~",
+            "id": 385,
+            "position_x": 330,
+            "position_y": 62,
+            "width": 158,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 514,
+            "position_y": 280,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the microphone, as a signal\nnot sent to the speakers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the microphone, as a signal\nnot sent to the speakers"
+        },
+        "6": {
+            "name": "record~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 61,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "record~ 30"
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 514,
+            "position_y": 330,
+            "width": 243,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "tick record, make a sound, untick\nthe take is saved and loaded below",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "tick record, make a sound, untick\nthe take is saved and loaded below"
+        },
+        "8": {
+            "name": "button",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "granular_sampler",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 339,
+            "height": 532,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 514,
+            "position_y": 610,
+            "width": 237,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click to hear the take as grains\nmove grain position to explore it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click to hear the take as grains\nmove grain position to explore it"
+        },
+        "11": {
+            "name": "fader_out~",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 700,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "12": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 681,
+            "position_x": 514,
+            "position_y": 930,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1172,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "path",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "load"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "right out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "right"
+        }
+    }
+}

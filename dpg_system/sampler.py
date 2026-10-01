@@ -90,6 +90,10 @@ class Voice:
     def __init__(self, sample_rate=44100):
         self.sample_rate = sample_rate
         self.active = False
+        # True while a sampler node's signal outlets are patched into the
+        # synth graph: the graph renders this voice (VoiceTapUnit) and the
+        # engine's own mix leaves it out.
+        self.routed = False
         self.sample = None
         self.position = 0.0
         self.looping = False
@@ -1237,6 +1241,8 @@ class SamplerEngine:
 
             # Optimization: Check if active before calling process (save function overhead)
             # BUT process() handles the command queue! We must call process() if there are pending commands!
+            if v.routed:
+                continue
             if v.active or not v._command_queue.empty():
                 try:
                     voice_out = v.process(frames, voice_channels)

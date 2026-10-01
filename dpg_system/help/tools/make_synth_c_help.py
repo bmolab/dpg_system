@@ -132,6 +132,10 @@ before starting: too little and a bursty source runs dry, counted on
 'dropped' - set it to 0 for speech or anything else that arrives faster than 
 it plays.
 
+For a microphone or interface, adc~ is the better route: its device writes 
+straight into the audio engine instead of waiting on GUI frames, so a busy 
+patch cannot drop or delay it. See the record~ help patch.
+
 place~ PUTS IT SOMEWHERE:
 One outlet per speaker, patched onward to audio_out~'s inputs. Several place~ 
 into one output sum at its inlets, which is how each source gets its own 

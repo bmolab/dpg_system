@@ -150,6 +150,20 @@ you move through rather than something that plays.
 
 Because the pitch follows the speed, the character comes from the gesture -
 which is exactly how a hand on a record behaves.
+
+INTO THE ~ GRAPH, OR STRAIGHT OUT:
+With nothing patched to 'left out' and 'right out', these play straight to the
+speakers. Patch either outlet into any ~ object - fader_out~, vcf~, vst~,
+record~ - and this node's voices leave the direct output and play only through
+what you patched, so the sampler can be filtered, put through a plugin, faded
+with the rest of the mix, or recorded. Pull the cord out and it plays straight
+out again.
+
+Give each sampler its own 'start_voice' range: two whose ranges overlap share
+voices, and patching one would take the shared voices from the other.
+
+The grain and scratch controls still arrive at frame rate. For grain position
+moved at audio rate, by an lfo~ say, use sampler_osc~ in granular mode.
 """ + FADE + """
 SYNTAX:
 polyphonic_sampler
@@ -162,10 +176,13 @@ polyphonic_sampler
 INPUTS and PARAMETERS:
 
 trigger / stop:
-Start and stop a sound.
+Start and stop a sound. A sound id plays that sound; a bang plays the one shown
+in 'sound_id'.
 
 load / load_set:
-One file, or a set of them at once.
+One file, or a set of them at once. A path sent to 'load' goes into the sound
+shown in 'sound_id'; [sound_id, path] chooses. record~'s path outlet patched
+here loads each new take as you stop recording.
 
 sound_id:
 Which loaded sound.
@@ -185,24 +202,37 @@ active_voices:
 How many are sounding. Worth watching - if it sits at the voice count, you have
 run out and new triggers are stealing from old ones.
 
+left out / right out:
+The sound as a signal, for the ~ graph. Patched, they take this node's voices
+off the direct output - see above.
+
 RELATED:
 The fader nodes produce fade lists from body data - see the effort_fader help
-patch. sampler_engine owns the voices these allocate from."""
+patch. sampler_engine owns the voices these allocate from. record~ makes new
+samples from a microphone or from anything in the ~ graph."""
 
 demo = [
     {'key': 'se', 'init': 'sampler_engine', 'pos': (30, 62), 'w': 260, 'h': 180},
     {'key': 'btn', 'init': 'button', 'pos': (30, 260), 'w': 88, 'h': 46},
     {'key': 'ps', 'init': 'polyphonic_sampler', 'pos': (30, 325), 'w': 300, 'h': 320},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 807), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 840), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c0', 'comment': True, 'text': 'load a set, then trigger sound ids\nactive_voices at the limit means\nnew triggers are stealing old ones',
-     'pos': (30, 862)},
-    {'key': 'gs', 'init': 'granular_sampler', 'pos': (380, 325), 'w': 300, 'h': 320},
+     'pos': (30, 895)},
+    {'key': 'btn2', 'init': 'button', 'pos': (410, 260), 'w': 88, 'h': 46},
+    {'key': 'gs', 'init': 'granular_sampler', 'pos': (410, 325), 'w': 300, 'h': 320},
     {'key': 'c3', 'comment': True, 'text': 'a short sample becomes a texture\nthat lasts as long as the movement',
-     'pos': (380, 807)},
+     'pos': (410, 880)},
+    {'key': 'vcf', 'init': 'vcf~', 'pos': (790, 325), 'w': 220, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (790, 520), 'w': 220, 'h': 220},
+    {'key': 'c4', 'comment': True, 'text': 'patched into ~ objects, the grains\nplay only through them\nraise the fader to hear it',
+     'pos': (790, 850)},
 ]
-links = [('btn', '', 'ps', 'trigger'), ('ps', 'active_voices', 'i1', '')]
+links = [('btn', '', 'ps', 'trigger'), ('ps', 'active_voices', 'i1', ''),
+         ('btn2', '', 'gs', 'trigger'),
+         ('gs', 'left out', 'vcf', 'left in'), ('gs', 'right out', 'vcf', 'right in'),
+         ('vcf', 'left out', 'fo', 'left'), ('vcf', 'right out', 'fo', 'right')]
 print(build('polyphonic_sampler', 'polyphonic_sampler - voices allocated for you',
-            body, demo, links, demo_width=720, text_width=800, text_height=740))
+            body, demo, links, demo_width=1060, text_width=800, text_height=740))
 
 # ---------------------------------------------------------------- effort_fader
 body = """These turn measurements of a moving body into sound levels.
