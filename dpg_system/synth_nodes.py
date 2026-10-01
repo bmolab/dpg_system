@@ -3915,19 +3915,29 @@ def load_sample_buffer(path, sample_rate):
     if not path or not os.path.exists(path):
         print('sampler_osc~: file not found: ' + str(path))
         return None
+    data = None
+    # soundfile first: torchaudio >= 2.9 decodes through torchcodec, which
+    # needs a working FFmpeg even for plain WAVs
     try:
-        import torchaudio
-    except ImportError:
-        print('sampler_osc~: torchaudio unavailable, cannot load audio')
-        return None
-    try:
-        waveform, source_rate = torchaudio.load(path)
-        if not waveform.is_cpu:
-            waveform = waveform.cpu()
-        data = waveform.numpy()
-    except Exception as error:
-        print('sampler_osc~: could not load ' + str(path) + ' (' + str(error) + ')')
-        return None
+        import soundfile
+        frames, source_rate = soundfile.read(path, dtype='float32', always_2d=True)
+        data = frames.T
+    except Exception:
+        pass
+    if data is None:
+        try:
+            import torchaudio
+        except ImportError:
+            print('sampler_osc~: torchaudio unavailable, cannot load audio')
+            return None
+        try:
+            waveform, source_rate = torchaudio.load(path)
+            if not waveform.is_cpu:
+                waveform = waveform.cpu()
+            data = waveform.numpy()
+        except Exception as error:
+            print('sampler_osc~: could not load ' + str(path) + ' (' + str(error) + ')')
+            return None
 
     if data.ndim == 1:
         return SamplerBuffer(data, None, source_rate, path)

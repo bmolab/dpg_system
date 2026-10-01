@@ -4,6 +4,10 @@ import queue
 import sounddevice as sd
 import os
 try:
+    import soundfile
+except ImportError:
+    soundfile = None
+try:
     import torchaudio
 except ImportError:
     torchaudio = None
@@ -50,6 +54,15 @@ class Sample:
             # Return silence or throw? Let's return a small silent buffer to avoid crashes
             print(f"File not found: {filepath}")
             return np.zeros((1024, 2), dtype=np.float32)
+        # soundfile first: torchaudio >= 2.9 decodes through torchcodec, which
+        # needs a working FFmpeg even for plain WAVs
+        if soundfile is not None:
+            try:
+                arr, sample_rate = soundfile.read(filepath, dtype='float32', always_2d=True)
+                self.sample_rate = int(sample_rate)
+                return arr
+            except Exception:
+                pass
         try:
             waveform, sample_rate = torchaudio.load(filepath)
             if not waveform.is_cpu:

@@ -1849,6 +1849,16 @@ class PolyphonicSamplerNode(Node):
 
     def _parse_fader_data(self, data):
         desired_state = {}
+        # Mixed shapes (e.g. pack nesting a list inlet: [[3], 0.5]) or a flat
+        # [sid, fade, sid, fade, ...]: flatten one level and read as pairs
+        if not all(isinstance(item, (list, tuple, np.ndarray)) for item in data):
+            flat = []
+            for item in data:
+                if isinstance(item, (list, tuple, np.ndarray)):
+                    flat.extend(item)
+                else:
+                    flat.append(item)
+            data = [flat[i:i + 2] for i in range(0, len(flat) - 1, 2)]
         for item in data:
             if len(item) >= 2:
                 try:
@@ -2260,7 +2270,7 @@ class GranularSamplerNode(PolyphonicSamplerNode):
         # Override to handle [id, vol, pos]
         desired_state = {}
         for item in data:
-            if len(item) >= 2:
+            if isinstance(item, (list, tuple, np.ndarray)) and len(item) >= 2:
                 try:
                     sid = int(item[0])
                     vol = float(item[1])
@@ -2356,7 +2366,7 @@ class GranularSamplerNode(PolyphonicSamplerNode):
         # Override to handle [id, vol, pos]
         desired_state = {}
         for item in data:
-            if len(item) >= 2:
+            if isinstance(item, (list, tuple, np.ndarray)) and len(item) >= 2:
                 try:
                     sid = int(item[0])
                     vol = float(item[1])
@@ -2824,7 +2834,7 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
         # Data: [[id, vol, pos], ...]
         desired_state = {}
         for item in data:
-            if len(item) >= 2:
+            if isinstance(item, (list, tuple, np.ndarray)) and len(item) >= 2:
                 try:
                     sid = int(item[0])
                     vol = float(item[1])
