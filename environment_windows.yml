@@ -1,4 +1,4 @@
-name: dpg_system
+name: dpg_system_2025
 channels:
   - defaults
   - conda-forge
@@ -132,4 +132,4 @@ dependencies:
     - scikit-learn
     - word2number
     - pycairo
-prefix: dpg_system
+prefix: dpg_system_2025
