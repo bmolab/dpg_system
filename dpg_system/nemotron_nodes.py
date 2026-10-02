@@ -39,6 +39,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 from dpg_system.node import Node
+from dpg_system.signal_tap import SignalTap
 from dpg_system.audio_io import AudioSource, RateConverter, input_devices, to_mono
 from dpg_system.conversion_utils import *
 
@@ -510,7 +511,7 @@ class NemotronEngine:
 # Node
 # ─────────────────────────────────────────────────────────────────────────────
 
-class NemotronNode(Node):
+class NemotronNode(SignalTap, Node):
     @staticmethod
     def factory(name, data, args=None):
         return NemotronNode(name, data, args)
@@ -552,9 +553,9 @@ class NemotronNode(Node):
         # ── Inputs ──
         self.on_off_input = self.add_input('on/off', widget_type='checkbox',
                                            default_value=False, triggers_execution=True)
-        self.audio_input = self.add_input('audio_in', triggers_execution=True)
-        self.sample_rate_in_prop = self.add_input('sample_rate_in', widget_type='drag_int',
-                                                  default_value=16000)
+        # A ~ signal (adc~, a voice, stream~ for audio held as an array),
+        # delivered at 16 kHz. Patched, it replaces the built-in device.
+        self.audio_input = self.add_signal_tap('in', rate=SAMPLE_RATE)
         self.model_property = self.add_input('model', widget_type='combo',
                                              default_value=model_name, widget_width=220,
                                              callback=self.model_changed)
@@ -563,7 +564,7 @@ class NemotronNode(Node):
         try:
             device_names = self.capture.get_device_list()
         except Exception as e:
-            print(f"nemotron: no audio hardware available ({e}), use audio_in instead")
+            print(f"nemotron: no audio hardware available ({e}), patch a signal to 'in' instead")
             device_names = []
         self.device_property = self.add_input('audio device', widget_type='combo',
                                               default_value=device_names[0] if device_names else 'none',
@@ -677,7 +678,7 @@ class NemotronNode(Node):
                                      and len(self.audio_input._parents) > 0)
         if not self.using_external_audio and not self.capture.devices:
             self.using_external_audio = True
-            print("nemotron: no audio devices found, using audio_in")
+            print("nemotron: no audio devices found, using the 'in' signal")
         if not self.using_external_audio:
             device_name = self.device_property()
             device_idx = 0
@@ -687,7 +688,7 @@ class NemotronNode(Node):
                     break
             if self.capture.current_device != device_idx or self.capture.source is None:
                 if not self.capture.init(device_idx):
-                    print("nemotron: mic init failed, falling back to audio_in")
+                    print("nemotron: mic init failed, falling back to the 'in' signal")
                     self.using_external_audio = True
         self.capture.drain()
         self.segmenter.reset()
@@ -842,26 +843,6 @@ class NemotronNode(Node):
     # ── node callbacks ──
 
     def execute(self):
-        if self.audio_input.fresh_input:
-            audio_data = self.audio_input()
-            if self.thread is None:
-                return
-            try:
-                if hasattr(audio_data, 'detach'):
-                    audio_np = audio_data.detach().cpu().numpy()
-                elif isinstance(audio_data, np.ndarray):
-                    audio_np = audio_data
-                elif isinstance(audio_data, (list, tuple)):
-                    audio_np = np.array(audio_data, dtype=np.float32)
-                else:
-                    audio_np = None
-                if audio_np is not None and audio_np.ndim > 0:
-                    self.capture.feed_external(audio_np, int(self.sample_rate_in_prop()))
-            except Exception as e:
-                if self.debug:
-                    print(f"nemotron: audio_in error: {e}")
-            return
-
         if self.on_off_input():
             if self.thread is None or not self.thread.is_alive():
                 self._start_processing()
@@ -869,7 +850,13 @@ class NemotronNode(Node):
             self._stop_processing()
 
     def frame_task(self):
-        """Main thread: hand the worker's events to the outputs."""
+        """Main thread: feed the tapped signal in, hand the worker's events
+        to the outputs."""
+        # Always drained, so audio patched while stopped is not delivered
+        # as a stale backlog when processing starts.
+        audio = self.read_signal_tap()
+        if audio is not None and self.thread is not None and self.using_external_audio:
+            self.capture.feed_external(audio, SAMPLE_RATE)
         while True:
             try:
                 kind, text = self.events.get_nowait()
@@ -890,3 +877,4 @@ class NemotronNode(Node):
     def custom_cleanup(self):
         self._stop_processing()
         self.capture.close()
+        self.release_signal_tap()

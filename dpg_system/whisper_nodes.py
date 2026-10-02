@@ -18,6 +18,7 @@ from typing import List, Optional, Callable, Tuple
 
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
+from dpg_system.signal_tap import SignalTap
 from dpg_system.audio_io import AudioSource, RateConverter, input_devices, to_mono
 from dpg_system.conversion_utils import *
 
@@ -1322,7 +1323,7 @@ def register_whisper_nodes():
     Node.app.register_node("whisper", WhisperNode.factory)
 
 
-class WhisperNode(Node):
+class WhisperNode(SignalTap, Node):
     @staticmethod
     def factory(name, data, args=None):
         node = WhisperNode(name, data, args)
@@ -1355,10 +1356,10 @@ class WhisperNode(Node):
         self.on_off_input = self.add_input('on/off', widget_type='checkbox',
                                            default_value=False,
                                            triggers_execution=True)
-        self.audio_input = self.add_input('audio_in', triggers_execution=True)
-        self.sample_rate_in_prop = self.add_input('sample_rate_in',
-                                                   widget_type='drag_int',
-                                                   default_value=16000)
+        # A ~ signal (adc~, a voice, stream~ for audio held as an array),
+        # delivered at whisper's own 16 kHz. Patched, it replaces the
+        # built-in device below.
+        self.audio_input = self.add_signal_tap('in', rate=WHISPER_SAMPLE_RATE)
 
         # ── Properties ──
         self.model_property = self.add_input('model', widget_type='combo',
@@ -1372,7 +1373,7 @@ class WhisperNode(Node):
         try:
             device_names = self.audio_capture.get_device_list()
         except Exception as e:
-            print(f"Whisper: no audio hardware available ({e}), use audio_in input instead")
+            print(f"Whisper: no audio hardware available ({e}), patch a signal to 'in' instead")
             device_names = []
         self.device_property = self.add_input('audio device', widget_type='combo',
                                               default_value=device_names[0] if device_names else 'none',
@@ -1605,35 +1606,8 @@ class WhisperNode(Node):
     # ── Callbacks ──
 
     def execute(self):
-        # Only treat this as an audio_in trigger when audio actually just
-        # arrived. NodeInput() returns the cached last value when not fresh,
-        # so testing the value alone made the on/off branch below unreachable
-        # once any audio had ever been received.
-        if self.audio_input.fresh_input:
-            audio_data = self.audio_input()
-            if self.processor is None:
-                return
-            # Feed external audio into the capture buffer
-            try:
-                if hasattr(audio_data, 'detach'):
-                    # Torch tensor
-                    audio_np = audio_data.detach().cpu().numpy()
-                elif isinstance(audio_data, np.ndarray):
-                    audio_np = audio_data
-                elif isinstance(audio_data, (list, tuple)):
-                    audio_np = np.array(audio_data, dtype=np.float32)
-                else:
-                    audio_np = None
-
-                if audio_np is not None:
-                    sr = int(self.sample_rate_in_prop())
-                    self.audio_capture.feed_external(audio_np, sample_rate=sr)
-            except Exception as e:
-                if self.processor and self.processor.debug:
-                    print(f"Whisper: audio_in error: {e}")
-            return
-
-        # On/off toggle
+        # On/off toggle. Audio arrives through the signal tap, read in
+        # frame_task, so this only ever answers the toggle.
         on = self.on_off_input()
         if on:
             if self.thread is None or not self.thread.is_alive():
@@ -1643,8 +1617,13 @@ class WhisperNode(Node):
 
     def frame_task(self):
         """Called every frame on the main thread — poll for results."""
+        # Always drain the tap, so audio patched while stopped is not
+        # delivered as a stale backlog when processing starts.
+        audio = self.read_signal_tap()
         if self.processor is None:
             return
+        if audio is not None and self.using_external_audio:
+            self.audio_capture.feed_external(audio, sample_rate=WHISPER_SAMPLE_RATE)
 
         phrases, in_progress, noise, has_data = self.processor.get_results()
 
@@ -1706,3 +1685,4 @@ class WhisperNode(Node):
         """Called when node is deleted."""
         self._stop_processing()
         self.audio_capture.close()
+        self.release_signal_tap()

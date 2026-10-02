@@ -15918,10 +15918,10 @@ class CaptureUnit(Unit):
 
     CAPACITY = 65536      # ~1.5 s at 44.1 kHz, 256 kB of float32
 
-    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE):
+    def __init__(self, sample_rate=DEFAULT_SAMPLE_RATE, capacity=None):
         super().__init__(sample_rate)
         self.signal_in = self.new_inlet()
-        self.capacity = CaptureUnit.CAPACITY
+        self.capacity = int(capacity or CaptureUnit.CAPACITY)
         # Largest readable window, and equally the largest backlog tolerated
         # before declaring an overrun. Leaves the other half as headroom.
         self.max_window = self.capacity // 2
@@ -15978,6 +15978,25 @@ class CaptureUnit(Unit):
         if count <= 0:
             return None
         return self._extract(write - count, count)
+
+    def read_since(self, last_read):
+        """Everything written since `last_read`, gapless and in order.
+
+        For a consumer that takes whatever has arrived rather than fixed
+        chunks -- a signal tap feeding an analyser. Returns (array_or_None,
+        new_last_read, dropped); `dropped` counts samples lost because the
+        reader fell more than max_window behind.
+        """
+        write = self._write
+        dropped = 0
+        available = write - last_read
+        if available > self.max_window:
+            dropped = available - self.max_window
+            last_read = write - self.max_window
+            available = self.max_window
+        if available <= 0:
+            return None, last_read, dropped
+        return self._extract(last_read, available), write, dropped
 
     def read_chunk(self, last_read, size):
         """Gapless, fixed length: exactly `size` samples, or nothing yet.

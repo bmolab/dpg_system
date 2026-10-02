@@ -7983,6 +7983,12 @@ class CaptureNode(SynthNode):
     blocks as the audio thread produced them; other values still work and
     stay gapless, the boundaries just fall inside blocks.
 
+    'format' is what the chunks are made of: numpy, or a torch tensor on
+    the CPU (no copy: the tensor shares the chunk's memory) or on the Mac's
+    GPU ('torch mps'). This is the one bridge from the ~ world into torch --
+    a live signal into t.rfft, t.cwt or a model -- so nothing upstream has
+    to carry tensors.
+
     Arguments: capture~ <size> and/or 'latest' | 'continuous'.
     Also registered as array~. To look at the signal rather than compute on
     it, use scope~, which draws the same ring buffer with a trigger.
@@ -7990,6 +7996,7 @@ class CaptureNode(SynthNode):
 
     MODES = ('latest', 'continuous')
     SEND_MODES = ('every frame', 'on bang')
+    FORMATS = ('numpy', 'torch cpu', 'torch mps')
 
     @staticmethod
     def factory(name, data, args=None):
@@ -8036,8 +8043,29 @@ class CaptureNode(SynthNode):
         self.send_option = self.add_option('send', widget_type='combo',
                                            default_value='every frame')
         self.send_option.widget.combo_items = list(CaptureNode.SEND_MODES)
+        self.format_option = self.add_option('format', widget_type='combo',
+                                             default_value='numpy')
+        self.format_option.widget.combo_items = list(CaptureNode.FORMATS)
+        self._format_warned = False
         self.add_switch()
         self.finish_synth_node()
+
+    def _deliver(self, data):
+        """Send a chunk in the chosen format."""
+        chosen = any_to_string(self.format_option())
+        if chosen != 'numpy' and chosen in CaptureNode.FORMATS:
+            try:
+                import torch
+                tensor = torch.from_numpy(data)
+                if chosen == 'torch mps':
+                    tensor = tensor.to('mps')
+                data = tensor
+            except Exception as error:
+                if not self._format_warned:
+                    self._format_warned = True
+                    print('capture~: cannot make ' + chosen + ' (' + str(error)
+                          + '); sending numpy')
+        self.array_output.send(data)
 
     # More than one block can land between GUI frames, so a frame may owe
     # several chunks. The cap stops a stalled patch from dumping an unbounded
@@ -8050,7 +8078,7 @@ class CaptureNode(SynthNode):
         if any_to_string(self.mode_option()) != 'continuous':
             data = self.unit.read_latest(size)
             if data is not None and data.size:
-                self.array_output.send(data)
+                self._deliver(data)
             return
 
         for _ in range(CaptureNode.MAX_CHUNKS_PER_FRAME):
@@ -8060,7 +8088,7 @@ class CaptureNode(SynthNode):
                 self.dropped_output.send(dropped)
             if data is None:
                 return
-            self.array_output.send(data)
+            self._deliver(data)
 
     def send_now(self):
         self._emit()
@@ -8084,10 +8112,11 @@ class CaptureNode(SynthNode):
 class StreamNode(SynthNode):
     """Audio from the node world into the graph. The reverse of capture~.
 
-    Patch a microphone (t.audio_source), a file streamer (t.audio.file_stream),
-    a capture~ from another part of the graph, or any numpy / torch chain
-    into 'audio in', and the audio comes out as a signal for vocoder~,
-    string~, vst~ or anything else that takes one. Chunks may be 1-D,
+    The one way arrays enter the ~ world, as capture~ is the one way out.
+    Patch a capture~ from another part of the graph, record~'s take, or any
+    numpy / torch chain into 'audio in', and the audio comes out as a signal
+    for vocoder~, string~, vst~, a speech node or anything else that takes
+    one. For a microphone, adc~ is the direct route. Chunks may be 1-D,
     (channels, frames) or (frames, channels); a stereo chunk fills both
     outlets, a mono one both alike.
 
@@ -8432,7 +8461,7 @@ class RecordNode(SynthNode):
     and after the last (anything under 'threshold', in dB), given a few ms
     of fade at each end so it never starts or stops on a click, and written
     to 'folder' as <name>_<date>_<time>.wav. Then 'rate', 'take' (the
-    array: 1-D for mono, (frames, 2) for stereo) and finally 'path' go out
+    array: 1-D for mono, 2 x frames for stereo) and finally 'path' go out
     -- path last, so it can drive a player's load inlet: sampler_osc~
     'path', or polyphonic_sampler / granular_sampler 'load' (a bare path
     loads into the inspected sound_id; [sid, path] into a chosen one).
@@ -8535,7 +8564,9 @@ class RecordNode(SynthNode):
             return
         self._show('%s  %.2f s' % (os.path.basename(path), seconds))
         self.rate_output.send(rate)
-        self.take_output.send(frames[:, 0] if frames.shape[1] == 1 else frames)
+        # The convention for sound as data: 1-D mono, channels x frames.
+        self.take_output.send(frames[:, 0].copy() if frames.shape[1] == 1
+                              else np.ascontiguousarray(frames.T))
         self.path_output.send(path)
 
     def _write(self, frames, rate):

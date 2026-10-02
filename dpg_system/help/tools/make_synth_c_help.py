@@ -121,12 +121,18 @@ plot, spectrum, numpy and torch nodes can work on the actual waveform.
 scope~ draws it directly, with a trigger, which is what you want when the 
 question is "what does this look like" rather than "what is this value".
 
+capture~ IS ALSO THE WAY INTO TORCH:
+Its 'format' option makes the chunks numpy arrays, or torch tensors on the CPU 
+('torch cpu' - no copy, the tensor shares the chunk's memory) or on the Mac's 
+GPU ('torch mps'). That is the bridge from any live signal to t.rfft, t.cwt or 
+a model, so nothing else in the patch has to carry tensors.
+
 stream~ GOES THE OTHER WAY:
-An array or tensor arriving on 'audio in' - from t.audio_source, 
-t.audio.file_stream, a capture~ elsewhere, any numpy or torch chain - comes out 
-as a signal, so a microphone can drive vocoder~, a recording excite string~, or 
-live input reach a vst~. Set 'rate' to the rate the chunks were made at; 
-file_stream's sample_rate outlet can drive it. 'latency' is how much to hold 
+An array arriving on 'audio in' - a capture~ elsewhere, record~'s take, any 
+numpy or torch chain - comes out as a signal, so data can drive vocoder~, 
+excite string~, or reach a vst~ or a speech node. It is the one way arrays 
+enter the ~ world, as capture~ is the one way out. Set 'rate' to the rate the 
+chunks were made at. 'latency' is how much to hold 
 before starting: too little and a bursty source runs dry, counted on 
 'underruns'; a backlog past the 'max backlog' option is skipped, counted on 
 'dropped' - set it to 0 for speech or anything else that arrives faster than 
@@ -173,7 +179,7 @@ being the honest way to follow an audio signal's LEVEL at frame rate,
 where following its value is meaningless.
 
 array (capture~, scope~):
-The samples.
+The samples - numpy, or a torch tensor if capture~'s 'format' says so.
 
 dropped (capture~):
 How many blocks were missed, so you know whether the patch is keeping up.

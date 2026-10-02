@@ -21,17 +21,21 @@ Each of these keeps an internal ring buffer, and runs its analysis at
 'analysis_fps' - measured against the wall clock. Audio arriving faster than
 that is buffered, not analysed.
 
-This is worth knowing because it means the outputs are NOT one-per-chunk. Push a
-file through as fast as it will go and you get far fewer analysis frames than
-chunks - the node is pacing itself in real time. It is built for a live stream,
-where that is exactly right.
+This is worth knowing because it means the outputs are NOT one per block of
+audio: whatever arrives between two analyses is buffered, and each analysis
+looks back over 'buffer_sec' of it. A higher 'analysis_fps' follows faster
+changes and costs more.
 """
 
 SOURCE = """
 FEEDING THEM:
-t.audio_source is the usual source - a live input, giving audio tensors. The
-demo here is wired that way, so it needs an actual input to show anything; with
-nothing arriving the outputs simply stay quiet.
+'in' takes a ~ signal: adc~ for a microphone, or any voice in the synth graph -
+eleven_labs' speech, a granular_sampler. Audio held as an array reaches them
+through stream~. The signal is gathered by the audio engine and converted to
+'sample_rate' (16 kHz) on the way in, so nothing is lost while the patch is busy
+and the analysis costs the same whatever rate the engine runs at. The demos here
+use adc~, so they need an actual input to show anything; with nothing arriving
+the outputs simply stay quiet.
 """
 
 # ---------------------------------------------------------------- speech_pitch
@@ -68,7 +72,7 @@ saying it has stopped. Longer release stops the flag chattering during the small
 gaps inside continuous speech.
 
 THREE BACKENDS, AND IT PICKS THE BEST ONE PRESENT:
-parselmouth (Praat) is preferred, then pyin (librosa), then kaldi (torchaudio).
+parselmouth (Praat) is preferred, then pyin (librosa).
 They differ in accuracy and cost rather than in what they mean, and the node
 falls back to whichever is installed. If none is, it produces nothing.
 
@@ -97,8 +101,8 @@ speech_pitch
 
 INPUTS and PARAMETERS:
 
-audio tensor in:
-The live audio.
+in:
+The voice, as a ~ signal.
 
 buffer_sec / analysis_fps:
 How much history to analyse, and how often - in real seconds.
@@ -131,7 +135,7 @@ speech_envelope for how loud rather than how high.
 speech_voice_quality for how clear the voice is - and it needs 'voiced' too."""
 
 demo = [
-    {'key': 'src', 'init': 't.audio_source', 'pos': (30, 62), 'w': 260, 'h': 180},
+    {'key': 'src', 'init': 'adc~', 'pos': (30, 62), 'w': 260, 'h': 180},
     {'key': 'pit', 'init': 'speech_pitch', 'pos': (30, 270), 'w': 280, 'h': 300},
     {'key': 'f1', 'init': 'float', 'pos': (340, 270), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c0', 'comment': True, 'text': 'f0 in Hz - but check voiced first',
@@ -154,7 +158,7 @@ demo = [
     {'key': 'c7', 'comment': True, 'text': 'intonation is a WORD: rising, falling,\nflat or unvoiced',
      'pos': (350, 825)},
 ]
-links = [('src', 'audio tensors', 'pit', 'audio tensor in'),
+links = [('src', 'left out', 'pit', 'in'),
          ('pit', 'f0', 'f1', ''), ('pit', 'voiced', 'f2', ''),
          ('pit', 'f0', 'pl', 'y'),
          ('pit', 'f0_raw', 'pro', 'f0_in'),
@@ -221,8 +225,8 @@ speech_envelope
 
 INPUTS and PARAMETERS:
 
-audio tensor in:
-The live audio.
+in:
+The voice, as a ~ signal.
 
 frame_hop:
 Samples per envelope frame - how finely the envelope is sampled.
@@ -256,7 +260,7 @@ Feeding onset to a counter or a sample_hold is the usual way to make something
 happen once per utterance."""
 
 demo = [
-    {'key': 'src', 'init': 't.audio_source', 'pos': (30, 62), 'w': 260, 'h': 180},
+    {'key': 'src', 'init': 'adc~', 'pos': (30, 62), 'w': 260, 'h': 180},
     {'key': 'env', 'init': 'speech_envelope', 'pos': (30, 270), 'w': 290, 'h': 300},
     {'key': 'pl', 'init': 'plot', 'pos': (360, 270), 'w': 300, 'h': 180,
      'props': PLOT(-60.0, 0.0, 200)},
@@ -280,7 +284,7 @@ demo = [
     {'key': 'c5', 'comment': True, 'text': 'onset fires when the fast one gets 6 dB\nclear of the slow one - so it adapts to\nthe room instead of a fixed threshold',
      'pos': (30, 1090)},
 ]
-links = [('src', 'audio tensors', 'env', 'audio tensor in'),
+links = [('src', 'left out', 'env', 'in'),
          ('env', 'envelope_db', 'pl', 'y'),
          ('env', 'volume_db', 'pl2', 'y'),
          ('env', 'crest_factor', 'f1', ''),
@@ -357,8 +361,8 @@ speech_spectral
 
 INPUTS and PARAMETERS:
 
-audio tensor in:
-The live audio.
+in:
+The voice, as a ~ signal.
 
 n_fft:
 The analysis window. Bigger means finer frequency detail and coarser timing.
@@ -385,10 +389,11 @@ Voice quality. Meaningless unless voiced.
 """ + SOURCE + """
 RELATED:
 speech_pitch, whose 'voiced' outlet is what should be gating this one.
-t.mfcc and the torchaudio nodes if you want the spectral machinery directly."""
+t.mfcc, fed by capture~ in a torch format, if you want the spectral machinery
+directly."""
 
 demo = [
-    {'key': 'src', 'init': 't.audio_source', 'pos': (30, 62), 'w': 260, 'h': 180},
+    {'key': 'src', 'init': 'adc~', 'pos': (30, 62), 'w': 260, 'h': 180},
     {'key': 'sp', 'init': 'speech_spectral', 'pos': (30, 270), 'w': 290, 'h': 280},
     {'key': 'pl', 'init': 'plot', 'pos': (360, 270), 'w': 300, 'h': 180,
      'props': PLOT(0.0, 5000.0, 200)},
@@ -409,10 +414,10 @@ demo = [
     {'key': 'c8', 'comment': True, 'text': "this is here for its 'voiced' outlet -\nnothing above should be believed without it",
      'pos': (30, 1200)},
 ]
-links = [('src', 'audio tensors', 'sp', 'audio tensor in'),
+links = [('src', 'left out', 'sp', 'in'),
          ('sp', 'centroid', 'pl', 'y'), ('sp', 'flatness', 'f1', ''),
-         ('src', 'audio tensors', 'vq', 'audio tensor in'),
+         ('src', 'left out', 'vq', 'in'),
          ('vq', 'hnr', 'f2', ''), ('vq', 'jitter', 'f3', ''),
-         ('src', 'audio tensors', 'pit', 'audio tensor in')]
+         ('src', 'left out', 'pit', 'in')]
 print(build('speech_spectral', 'speech_spectral and voice quality - timbre', body,
             demo, links, demo_width=700, text_width=810, text_height=790))

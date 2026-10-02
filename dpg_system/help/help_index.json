@@ -1407,24 +1407,8 @@
   "_torchaudio_nodes": [
     "--- torchaudio_nodes.py ---"
   ],
-  "t.audio.gain": [
-    "t.audio.gain",
-    "t.audio.contrast",
-    "t.audio.overdrive"
-  ],
-  "t.audio.loudness": [
-    "t.audio.loudness",
-    "t.audio.kaldi_pitch"
-  ],
-  "t.audio.play": [
-    "t.audio.play",
-    "t.audio.multiplayer",
-    "audio_mixer"
-  ],
   "t.audio_source": [
-    "t.audio_source",
-    "t.audio.file",
-    "t.audio.file_stream"
+    "t.audio_source"
   ],
   "_torchvision_nodes": [
     "--- torchvision_nodes.py ---"

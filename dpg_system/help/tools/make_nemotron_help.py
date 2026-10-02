@@ -101,9 +101,10 @@ nemotron
 
 INPUTS and PARAMETERS:
 
-on/off / audio device / audio_in / sample_rate_in:
-Start listening, and where from. Patch a signal into audio_in to use that
-instead of a device.
+on/off / audio device / in:
+Start listening, and where from. Patch a ~ signal into 'in' (adc~, a voice,
+stream~ for audio held as an array) to use that instead of a device - decided
+when it is switched on. It is converted to 16 kHz on the way in.
 
 model / look-ahead / language:
 Which build, how much future it hears, and what language to expect.

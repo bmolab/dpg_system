@@ -88,19 +88,16 @@ class ElevenLabsNode(SynthNode):
 
     The service thread only ever pushes samples into the ring, which is
     single-producer / single-consumer and needs no lock. Everything the
-    node says to the patch -- 'speaking', 'sounding', 'backlog' and the
-    'phrase samples' chunks -- is sent from the frame task, on the main
+    node says to the patch -- 'speaking', 'sounding' and 'backlog' -- is
+    sent from the frame task, on the main
     thread, so a node patched to an outlet runs where nodes are meant to run.
 
     'speaking' means busy, from the moment a phrase is handed to the service
     until the last of it has played, and is what to gate new text on.
     'sounding' means audio is leaving the outlets right now, and is what to
     hand a listener (whisper) that should not hear the node talk, or a face
-    that should move with it. 'phrase samples' is the phrase as data, 24 kHz
-    float32, delivered as it arrives -- the service sends a whole phrase in
-    a fraction of a second, so it is all out long before the sound -- for
-    recording or whole-phrase analysis; anything that should line up with
-    what is heard wants capture~ on the signal instead.
+    that should move with it. To keep what it says, patch the signal into
+    record~; to analyse it, into a speech node or capture~.
     """
 
     instances = []
@@ -220,12 +217,6 @@ class ElevenLabsNode(SynthNode):
         # be told to ignore, and what an animated mouth wants.
         self.sounding_out = self.add_output('sounding')
         self.backlog_out = self.add_output('backlog')
-        # The phrase as data: float32 chunks at 24 kHz, delivered as they
-        # arrive from the service (all of it within a fraction of a second),
-        # for recording or whole-phrase analysis. Named so that nobody
-        # patches it to hear the voice -- that is what the signal pair is.
-        self.audio_out = self.add_output('phrase samples')
-        self.audio_out.name_archive.append('audio')
 
         self.voice_record = None
         self.previously_active = False
@@ -558,7 +549,7 @@ class ElevenLabsNode(SynthNode):
         return str(error)
 
     def consume(self, chunk):
-        """PCM bytes as they arrive: into the ring, and out as data."""
+        """PCM bytes as they arrive: into the ring."""
         data = self._pending + chunk
         usable = len(data) - (len(data) % 2)      # whole 16-bit samples only
         self._pending = data[usable:]
@@ -566,7 +557,6 @@ class ElevenLabsNode(SynthNode):
             return
         samples = np.frombuffer(data[:usable], dtype='<i2').astype(np.float32) / 32768.0
         self.unit.push(samples)
-        self._pending_sends.append((self.audio_out, samples))
 
     def stream(self, audio_stream: Iterator[bytes]):
         self.force_stop = False

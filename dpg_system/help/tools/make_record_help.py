@@ -102,7 +102,8 @@ path (record~):
 The saved file, sent last - ready for a player's load inlet.
 
 take (record~):
-The samples: one row per frame, 1-D for mono, two columns for stereo.
+The samples: 1-D for mono, two rows (left, right) for stereo - the layout every
+sound array in the system uses.
 
 rate (record~):
 The sample rate of the take.

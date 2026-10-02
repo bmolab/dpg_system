@@ -1,6 +1,6 @@
 {
-    "height": 821,
-    "width": 1774,
+    "height": 822,
+    "width": 1713,
     "position": [
         100,
         100
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.audio sources - live input and files",
+            "init": "comment t.audio_source - the microphone as tensors",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 475,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.audio sources - live input and files",
+                    "value": "t.audio_source - the microphone as tensors",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.audio sources - live input and files"
+            "comment": "t.audio_source - the microphone as tensors"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 926,
+            "position_x": 865,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These bring audio in - from a live input, or from a file.\n\nTHE NODES:\n\nt.audio_source        a live input: microphone or interface\nt.audio.file          load a whole file at once, as one tensor\nt.audio.file_stream   play a file out in real-time chunks\n\nWHOLE FILE VERSUS STREAM, AND IT MATTERS:\nt.audio.file hands you the entire file as one tensor. That is what you want for \nANALYSIS - a whole recording you are going to measure, transform or search. \nEverything is available at once, nothing is real-time, and a long file is a \nlarge tensor.\n\nt.audio.file_stream plays the file out a chunk at a time, in real time, with \nplay, pause, rewind, looping and speed. Its output has the same shape as \nt.audio_source's - tensors of (channels, chunk_size) - so anything built for \nthe live input works unchanged on a file.\n\nThat interchangeability is the point. Build a patch against a recording where \nyou can repeat the same passage exactly, then swap in the live source with no \nother change.\n\nCHUNK SIZE IS THE TRADE:\nSmall chunks mean lower latency and more frames per second for the patch to \nhandle. Large chunks mean the opposite, and they also set the shortest event \nanything downstream can resolve. For analysis that is looking at a spectrum, a \nlarger chunk is usually better; for anything responding to a transient, smaller.\n\nTWO AUDIO SYSTEMS, AND WHICH IS WHICH:\nThis is not the synth. The ~ nodes are a real-time DSP graph compiled into the\naudio callback; these carry audio as TENSORS through ordinary patch cords, a\nblock at a time.\n\nUse the ~ nodes when the audio is being made or heard live, and these when the\naudio is DATA - to be analysed, transformed by a torch operation, fed to\nwhisper or a pitch tracker, or read from a file for something other than\nlistening.\n\ncapture~ is the bridge from the synth world into this one: it hands whole\nblocks of a live signal out as arrays.\n\nSYNTAX:\nt.audio_source\nt.audio.file\nt.audio.file_stream\n\nEXAMPLE:\nt.audio.file_stream\n\nINPUTS and PARAMETERS:\n\nstream / play:\nStart and stop.\n\npath in / load file:\nThe file. 'load file' opens a dialog.\n\nsource / channels / sample_rate / sample format:\nWhich input, and its format.\n\nchunk_size:\nHow many samples per block. See above.\n\nrewind:\nBack to the start.\n\nOUTPUTS: \n\naudio tensors:\nBlocks of shape (channels, chunk_size).\n\nsample_rate (t.audio_source, t.audio.file_stream):\nThe rate the stream is really running at, sent when it starts or changes. Patch \nit into speech_pitch, stream~ or whisper's rate inlet so they agree with the \nsource instead of assuming.\n\ndropped (t.audio_source):\nBlocks are handed on from the main thread, one frame behind the device, so \nnothing downstream runs on the audio thread. If the patch stalls and blocks \npile up past a few seconds, the newest are dropped and counted here.\n\naudio data out / sample_rate (t.audio.file):\nThe whole file, and the rate it was recorded at.\n\nposition / done (t.audio.file_stream):\nWhere playback has got to, and when it finishes.\n\nA NOTE ON SAMPLE RATE:\nNothing here resamples for you. A 44100 file into an analysis node configured \nfor 16000 gives an answer that is wrong by the ratio - a pitch tracker will \nreport pitches almost three times too high and look plausible doing it. \nCheck that the rate coming out of the source matches what the analysis expects.",
+                    "value": "This brings a live input into the patch as torch tensors, for torch analysis.\n\nTHE NODES:\n\nt.audio_source  a microphone or interface, as tensors\n\nSOUND IS A ~ SIGNAL; TENSORS ARE FOR TORCH:\nEverywhere else in the system, sound travels between nodes as a ~ signal:\nadc~ for a microphone, the sampler and synth nodes for everything made here,\nand the speech nodes, whisper, nemotron and record~ all listen to signals.\nArrays and tensors appear only where audio becomes DATA for something that\nwants it that way.\n\nt.audio_source is for one such job: live input straight to torch analysis -\nt.rfft, t.cwt, t.energy, a model. Its blocks are tensors of\n(channels, chunk_size).\n\nTHE GENERAL ROUTE IS capture~:\nadc~ -> capture~ with 'format' set to 'torch cpu' (or 'torch mps' for the\nMac's GPU) does the same for ANY ~ signal - the microphone, a synth voice, a\ngranular_sampler, the whole mix - and its audio is gathered by the audio engine\nitself, so a busy patch does not drop it. 'torch cpu' costs no copy: the tensor\nshares the chunk's memory. Prefer it for new work; t.audio_source stays for the\npatches already built on it.\n\nCHUNK SIZE IS THE TRADE:\nSmall chunks mean lower latency and more frames per second for the patch to\nhandle. Large chunks mean the opposite, and they also set the shortest event\nanything downstream can resolve. For analysis that is looking at a spectrum, a\nlarger chunk is usually better; for anything responding to a transient, smaller.\n\nSYNTAX:\nt.audio_source\n\nEXAMPLE:\nt.audio_source\n\nINPUTS and PARAMETERS:\n\nstream:\nStart and stop.\n\nsource / channels / sample_rate / sample format:\nWhich input, and its format.\n\nchunk_size:\nHow many samples per block. See above.\n\nOUTPUTS:\n\naudio tensors:\nBlocks of shape (channels, chunk_size).\n\nsample_rate:\nThe rate the stream is really running at, sent when it starts or changes.\nAnalysis that depends on time - a spectrum's frequency axis, a pitch - needs\nit, since nothing here resamples for you.\n\ndropped:\nBlocks are handed on from the main thread, one frame behind the device. If the\npatch stalls and blocks pile up past a few seconds, the newest are dropped and\ncounted here.\n\nRELATED:\nadc~ (record~ help patch) is the microphone as a signal; capture~ (snapshot~\nhelp patch) turns any signal into arrays or tensors.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,35 +90,117 @@
                     "value_type": "str"
                 }
             },
-            "text": "These bring audio in - from a live input, or from a file.\n\nTHE NODES:\n\nt.audio_source        a live input: microphone or interface\nt.audio.file          load a whole file at once, as one tensor\nt.audio.file_stream   play a file out in real-time chunks\n\nWHOLE FILE VERSUS STREAM, AND IT MATTERS:\nt.audio.file hands you the entire file as one tensor. That is what you want for \nANALYSIS - a whole recording you are going to measure, transform or search. \nEverything is available at once, nothing is real-time, and a long file is a \nlarge tensor.\n\nt.audio.file_stream plays the file out a chunk at a time, in real time, with \nplay, pause, rewind, looping and speed. Its output has the same shape as \nt.audio_source's - tensors of (channels, chunk_size) - so anything built for \nthe live input works unchanged on a file.\n\nThat interchangeability is the point. Build a patch against a recording where \nyou can repeat the same passage exactly, then swap in the live source with no \nother change.\n\nCHUNK SIZE IS THE TRADE:\nSmall chunks mean lower latency and more frames per second for the patch to \nhandle. Large chunks mean the opposite, and they also set the shortest event \nanything downstream can resolve. For analysis that is looking at a spectrum, a \nlarger chunk is usually better; for anything responding to a transient, smaller.\n\nTWO AUDIO SYSTEMS, AND WHICH IS WHICH:\nThis is not the synth. The ~ nodes are a real-time DSP graph compiled into the\naudio callback; these carry audio as TENSORS through ordinary patch cords, a\nblock at a time.\n\nUse the ~ nodes when the audio is being made or heard live, and these when the\naudio is DATA - to be analysed, transformed by a torch operation, fed to\nwhisper or a pitch tracker, or read from a file for something other than\nlistening.\n\ncapture~ is the bridge from the synth world into this one: it hands whole\nblocks of a live signal out as arrays.\n\nSYNTAX:\nt.audio_source\nt.audio.file\nt.audio.file_stream\n\nEXAMPLE:\nt.audio.file_stream\n\nINPUTS and PARAMETERS:\n\nstream / play:\nStart and stop.\n\npath in / load file:\nThe file. 'load file' opens a dialog.\n\nsource / channels / sample_rate / sample format:\nWhich input, and its format.\n\nchunk_size:\nHow many samples per block. See above.\n\nrewind:\nBack to the start.\n\nOUTPUTS: \n\naudio tensors:\nBlocks of shape (channels, chunk_size).\n\nsample_rate (t.audio_source, t.audio.file_stream):\nThe rate the stream is really running at, sent when it starts or changes. Patch \nit into speech_pitch, stream~ or whisper's rate inlet so they agree with the \nsource instead of assuming.\n\ndropped (t.audio_source):\nBlocks are handed on from the main thread, one frame behind the device, so \nnothing downstream runs on the audio thread. If the patch stalls and blocks \npile up past a few seconds, the newest are dropped and counted here.\n\naudio data out / sample_rate (t.audio.file):\nThe whole file, and the rate it was recorded at.\n\nposition / done (t.audio.file_stream):\nWhere playback has got to, and when it finishes.\n\nA NOTE ON SAMPLE RATE:\nNothing here resamples for you. A 44100 file into an analysis node configured \nfor 16000 gives an answer that is wrong by the ratio - a pitch tracker will \nreport pitches almost three times too high and look plausible doing it. \nCheck that the rate coming out of the source matches what the analysis expects."
+            "text": "This brings a live input into the patch as torch tensors, for torch analysis.\n\nTHE NODES:\n\nt.audio_source  a microphone or interface, as tensors\n\nSOUND IS A ~ SIGNAL; TENSORS ARE FOR TORCH:\nEverywhere else in the system, sound travels between nodes as a ~ signal:\nadc~ for a microphone, the sampler and synth nodes for everything made here,\nand the speech nodes, whisper, nemotron and record~ all listen to signals.\nArrays and tensors appear only where audio becomes DATA for something that\nwants it that way.\n\nt.audio_source is for one such job: live input straight to torch analysis -\nt.rfft, t.cwt, t.energy, a model. Its blocks are tensors of\n(channels, chunk_size).\n\nTHE GENERAL ROUTE IS capture~:\nadc~ -> capture~ with 'format' set to 'torch cpu' (or 'torch mps' for the\nMac's GPU) does the same for ANY ~ signal - the microphone, a synth voice, a\ngranular_sampler, the whole mix - and its audio is gathered by the audio engine\nitself, so a busy patch does not drop it. 'torch cpu' costs no copy: the tensor\nshares the chunk's memory. Prefer it for new work; t.audio_source stays for the\npatches already built on it.\n\nCHUNK SIZE IS THE TRADE:\nSmall chunks mean lower latency and more frames per second for the patch to\nhandle. Large chunks mean the opposite, and they also set the shortest event\nanything downstream can resolve. For analysis that is looking at a spectrum, a\nlarger chunk is usually better; for anything responding to a transient, smaller.\n\nSYNTAX:\nt.audio_source\n\nEXAMPLE:\nt.audio_source\n\nINPUTS and PARAMETERS:\n\nstream:\nStart and stop.\n\nsource / channels / sample_rate / sample format:\nWhich input, and its format.\n\nchunk_size:\nHow many samples per block. See above.\n\nOUTPUTS:\n\naudio tensors:\nBlocks of shape (channels, chunk_size).\n\nsample_rate:\nThe rate the stream is really running at, sent when it starts or changes.\nAnalysis that depends on time - a spectrum's frequency axis, a pitch - needs\nit, since nothing here resamples for you.\n\ndropped:\nBlocks are handed on from the main thread, one frame behind the device. If the\npatch stalls and blocks pile up past a few seconds, the newest are dropped and\ncounted here.\n\nRELATED:\nadc~ (record~ help patch) is the microphone as a signal; capture~ (snapshot~\nhelp patch) turns any signal into arrays or tensors."
         },
         "3": {
-            "name": "t.audio.file_stream",
+            "name": "adc~",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 160,
-            "height": 238,
+            "width": 174,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "name": "text_block",
+            "name": "capture~",
             "id": 385,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "torch cpu",
+                    "value_type": "str"
+                }
+            },
+            "init": "capture~ 1024 continuous"
+        },
+        "5": {
+            "name": "plot",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1024,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 1024.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
             "annotation": true,
             "position_x": 635,
-            "position_y": 375,
-            "width": 261,
-            "height": 52,
+            "position_y": 700,
+            "width": 181,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "load a file, then click play\nsame output shape as the live source,\nso they are interchangeable",
+                    "value": "any ~ signal as tensors:\nthe route for new work",
                     "value_type": "str"
                 },
                 "1": {
@@ -128,12 +210,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 253,
+                    "value": 173,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -142,11 +224,11 @@
                     "value_type": "str"
                 }
             },
-            "text": "load a file, then click play\nsame output shape as the live source,\nso they are interchangeable"
+            "text": "any ~ signal as tensors:\nthe route for new work"
         },
-        "5": {
+        "7": {
             "name": "t.audio_source",
-            "id": 422,
+            "id": 496,
             "position_x": 380,
             "position_y": 62,
             "width": 229,
@@ -156,101 +238,114 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
-            "init": "comment the live input, same tensors out",
-            "name": "comment",
-            "id": 459,
-            "position_x": 635,
-            "position_y": 315,
-            "width": 205,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the live input, same tensors out",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the live input, same tensors out"
-        },
-        "7": {
-            "name": "t.audio.loudness",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 480,
-            "width": 160,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
         "8": {
-            "name": "float",
+            "name": "plot",
             "id": 533,
-            "position_x": 30,
-            "position_y": 615,
-            "width": 130,
-            "height": 42,
+            "position_x": 380,
+            "position_y": 330,
+            "width": 208,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%.3f",
+                    "name": "color",
+                    "value": "none",
                     "value_type": "str"
                 },
                 "1": {
                     "name": "width",
-                    "value": 100,
+                    "value": 200,
                     "value_type": "int"
                 },
                 "2": {
-                    "name": "font size",
-                    "value": "24",
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
                     "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1024,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 1024.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.5,
+                    "value_type": "float"
                 }
             }
         },
         "9": {
-            "init": "comment check the sample rates agree",
-            "name": "comment",
+            "name": "text_block",
             "id": 570,
+            "annotation": true,
             "position_x": 635,
-            "position_y": 665,
-            "width": 181,
-            "height": 30,
+            "position_y": 520,
+            "width": 200,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "check the sample rates agree",
+                    "name": "block",
+                    "value": "tick stream: the microphone\nalone, as tensors",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "check the sample rates agree"
+            "text": "tick stream: the microphone\nalone, as tensors"
         },
         "10": {
             "name": "close",
             "id": 607,
             "position_x": 24,
-            "position_y": 687,
+            "position_y": 718,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -270,21 +365,31 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "audio tensors",
-            "dest_node": 496,
+            "source_output_name": "left out",
+            "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "audio tensor in"
+            "dest_input_name": "in"
         },
         "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "loudness out",
+            "source_output_name": "audio tensors",
             "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "y"
         }
     }
 }

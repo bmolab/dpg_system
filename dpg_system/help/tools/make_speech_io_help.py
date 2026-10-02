@@ -128,8 +128,10 @@ whisper
 
 INPUTS and PARAMETERS:
 
-on/off / audio device / audio_in:
-Start listening, and where from.
+on/off / audio device / in:
+Start listening, and where from. With a ~ signal patched to 'in' (adc~, a
+voice, stream~ for audio held as an array), whisper listens to that instead
+of 'audio device' - decided when it is switched on.
 
 model / language / translate:
 Which model, what language, and whether to render English.
@@ -180,12 +182,8 @@ queued.
 left out / right out:
 The speech as a signal. Patch to fader_out~ or audio_out~ to hear it.
 
-phrase samples:
-The same speech as data, not sound: chunks of 24 kHz samples, delivered as they
-arrive from the service - a whole phrase in a fraction of a second, so it is
-all out long before the voice has finished. For recording, or analysis of a
-whole phrase. Not for hearing it, and anything that should line up with what
-is heard wants capture~ on the signal instead.
+To keep what it says, patch the signal into record~; to analyse it, into a
+speech node or capture~.
 
 RELATED:
 translate to move between languages in between.

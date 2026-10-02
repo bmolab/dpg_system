@@ -2,7 +2,7 @@
 speech_analysis_nodes.py
 Non-semantic speech analysis nodes for dpg_system.
 
-SpeechPitchNode  — real-time F0 extraction (PYIN / Parselmouth / Kaldi backends)
+SpeechPitchNode  — real-time F0 extraction (PYIN / Parselmouth backends)
 SpeechProsodyNode — windowed prosody statistics derived from an F0 contour
 
 Created 2026-03-29.
@@ -12,8 +12,9 @@ import numpy as np
 import time
 import traceback
 
-from dpg_system.torch_base_nodes import *
-from dpg_system.audio_io import to_mono
+from dpg_system.node import Node
+from dpg_system.conversion_utils import *
+from dpg_system.signal_tap import SignalTap
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Optional backend availability
@@ -33,16 +34,6 @@ try:
 except ImportError:
     pass
 
-# The kaldi backend needs torchaudio.functional.compute_kaldi_pitch, which
-# torchaudio removed in 2.1. Only offer it where the function still exists.
-_torchaudio_available = False
-try:
-    import torchaudio
-    import torchaudio.functional
-    _torchaudio_available = hasattr(torchaudio.functional, 'compute_kaldi_pitch')
-except ImportError:
-    pass
-
 _scipy_available = False
 try:
     from scipy.signal import savgol_filter
@@ -57,8 +48,6 @@ def _best_available_backend():
         return 'parselmouth'
     if _librosa_available:
         return 'pyin'
-    if _torchaudio_available:
-        return 'kaldi'
     return 'none'
 
 
@@ -207,27 +196,6 @@ class F0RingBuffer:
 # Node registration
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _incoming_mono(port):
-    """Whatever arrived on an audio input, as 1-D float32 mono.
-
-    Tensors from t.audio_source / t.audio.file_stream, numpy arrays from
-    capture~ (so synth audio can be analysed too), or plain lists. Channels
-    are averaged, the same downmix whisper uses.
-    """
-    data = port()
-    if data is None:
-        return None
-    if hasattr(data, 'detach'):
-        data = data.detach().cpu().numpy()
-    elif not isinstance(data, np.ndarray):
-        data = any_to_array(data, validate=True)
-        if data is None:
-            return None
-    if data.size == 0:
-        return None
-    return np.ascontiguousarray(to_mono(data), dtype=np.float32)
-
-
 def register_speech_analysis_nodes():
     Node.app.register_node('speech_pitch', SpeechPitchNode.factory)
     Node.app.register_node('speech_prosody', SpeechProsodyNode.factory)
@@ -240,16 +208,15 @@ def register_speech_analysis_nodes():
 # SpeechPitchNode
 # ─────────────────────────────────────────────────────────────────────────────
 
-class SpeechPitchNode(TorchNode):
+class SpeechPitchNode(SignalTap, Node):
     """
-    Real-time F0 (pitch) extraction from streaming audio tensors.
+    Real-time F0 (pitch) extraction from a streaming audio signal.
 
     Backends (in fallback order):
       1. PYIN   — librosa.pyin (probabilistic YIN, best for speech)
       2. Praat  — parselmouth  (autocorrelation-based, rich voice quality)
-      3. Kaldi  — torchaudio.functional.compute_kaldi_pitch (GPU-capable)
 
-    Usage: t.audio_source → speech_pitch → [f0, voiced_prob, voiced]
+    Usage: adc~ → speech_pitch → [f0, voiced_prob, voiced]
     """
 
     @staticmethod
@@ -266,17 +233,17 @@ class SpeechPitchNode(TorchNode):
             self._available_backends.append('pyin')
         if _parselmouth_available:
             self._available_backends.append('parselmouth')
-        if _torchaudio_available:
-            self._available_backends.append('kaldi')
         if not self._available_backends:
             self._available_backends.append('none')
 
         # Inputs
-        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        # A ~ signal: patch adc~, a voice, or stream~ for audio held as an
+        # array. Delivered at 'sample_rate', the rate the analysis runs at.
+        self.input = self.add_signal_tap('in', rate=16000)
 
         # Properties
-        # An input rather than a property so a source's rate outlet
-        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        # The rate the analysis runs at; the signal is converted to it on
+        # the way in, so speech work costs the same at any engine rate.
         self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
                                                default_value=16000, min=1000, max=384000,
                                                callback=self._rate_changed)
@@ -330,6 +297,7 @@ class SpeechPitchNode(TorchNode):
         self._ring.resize(new_size)
 
     def _rate_changed(self):
+        self.signal_tap_rate = int(self.sample_rate_prop())
         # Frames stay 10 ms apart whatever the rate, which is what
         # speech_prosody's hop_time_ms assumes downstream.
         sr = int(self.sample_rate_prop())
@@ -347,7 +315,7 @@ class SpeechPitchNode(TorchNode):
             self.status_label.set(f'backend: {fallback} (fallback)')
 
     def execute(self):
-        audio_np = _incoming_mono(self.input)
+        audio_np = self.take_signal_tap_audio()
         if audio_np is None:
             return
 
@@ -474,16 +442,12 @@ class SpeechPitchNode(TorchNode):
             return self._pyin(audio, sr, fmin, fmax)
         elif backend == 'parselmouth' and _parselmouth_available:
             return self._parselmouth(audio, sr, fmin, fmax)
-        elif backend == 'kaldi' and _torchaudio_available:
-            return self._kaldi(audio, sr, fmin, fmax)
         else:
             # Try all backends in priority order
             if _librosa_available:
                 return self._pyin(audio, sr, fmin, fmax)
             if _parselmouth_available:
                 return self._parselmouth(audio, sr, fmin, fmax)
-            if _torchaudio_available:
-                return self._kaldi(audio, sr, fmin, fmax)
             return None, None, None
 
     def _pyin(self, audio, sr, fmin, fmax):
@@ -541,32 +505,6 @@ class SpeechPitchNode(TorchNode):
             return f0, voiced_prob, voiced_flag
         except Exception as e:
             print(f'speech_pitch Parselmouth error: {e}')
-            traceback.print_exc()
-            return None, None, None
-
-    def _kaldi(self, audio, sr, fmin, fmax):
-        """Kaldi pitch tracking via torchaudio."""
-        try:
-            import torch
-            audio_tensor = torch.from_numpy(audio).unsqueeze(0)  # (1, samples)
-            pitch_feature = torchaudio.functional.compute_kaldi_pitch(
-                audio_tensor, sr,
-                min_f0=fmin, max_f0=fmax,
-                frame_shift=self._hop_length / sr * 1000  # in ms
-            )
-            # pitch_feature shape: (1, n_frames, 2) — [nccf, pitch]
-            nccf = pitch_feature[0, :, 0].numpy().astype(np.float32)
-            f0 = pitch_feature[0, :, 1].numpy().astype(np.float32)
-
-            # Use NCCF as voiced probability proxy (higher = more periodic)
-            voiced_prob = np.clip(nccf, 0, 1)
-            voiced_flag = (voiced_prob > 0.3).astype(np.float32)
-
-            # Zero out f0 where unvoiced
-            f0[voiced_flag < 0.5] = 0.0
-            return f0, voiced_prob, voiced_flag
-        except Exception as e:
-            print(f'speech_pitch Kaldi error: {e}')
             traceback.print_exc()
             return None, None, None
 
@@ -791,7 +729,7 @@ class SpeechProsodyNode(Node):
 # SpeechEnvelopeNode
 # ─────────────────────────────────────────────────────────────────────────────
 
-class SpeechEnvelopeNode(TorchNode):
+class SpeechEnvelopeNode(SignalTap, Node):
     """
     Combined adaptive envelope follower and slow volume tracker.
 
@@ -802,7 +740,7 @@ class SpeechEnvelopeNode(TorchNode):
     Onset:     one-shot trigger when envelope exceeds slow volume
                by more than onset_threshold_db.
 
-    Usage: t.audio_source → speech_envelope → [envelope, envelope_db, volume_db, crest_factor, onset]
+    Usage: adc~ → speech_envelope → [envelope, envelope_db, volume_db, crest_factor, onset]
     """
 
     @staticmethod
@@ -816,11 +754,13 @@ class SpeechEnvelopeNode(TorchNode):
         from dpg_system.one_euro_filter import OneEuroFilter
 
         # Inputs
-        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        # A ~ signal: patch adc~, a voice, or stream~ for audio held as an
+        # array. Delivered at 'sample_rate', the rate the analysis runs at.
+        self.input = self.add_signal_tap('in', rate=16000)
 
         # Properties
-        # An input rather than a property so a source's rate outlet
-        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        # The rate the analysis runs at; the signal is converted to it on
+        # the way in, so speech work costs the same at any engine rate.
         self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
                                                default_value=16000, min=1000, max=384000,
                                                callback=self._rate_changed)
@@ -861,10 +801,11 @@ class SpeechEnvelopeNode(TorchNode):
         self._prev_time = None
 
     def _rate_changed(self):
+        self.signal_tap_rate = int(self.sample_rate_prop())
         self._leftover = np.zeros(0, dtype=np.float32)
 
     def execute(self):
-        audio_np = _incoming_mono(self.input)
+        audio_np = self.take_signal_tap_audio()
         if audio_np is None:
             return
 
@@ -961,9 +902,9 @@ class SpeechEnvelopeNode(TorchNode):
 # SpeechSpectralNode — spectral shape descriptors for tonal quality
 # ─────────────────────────────────────────────────────────────────────────────
 
-class SpeechSpectralNode(TorchNode):
+class SpeechSpectralNode(SignalTap, Node):
     """
-    Real-time spectral shape analysis from streaming audio tensors.
+    Real-time spectral shape analysis from a streaming audio signal.
 
     Outputs characterise *where energy sits* in the spectrum:
       - centroid   — brightness (Hz)
@@ -984,11 +925,13 @@ class SpeechSpectralNode(TorchNode):
         super().__init__(label, data, args)
 
         # Inputs
-        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        # A ~ signal: patch adc~, a voice, or stream~ for audio held as an
+        # array. Delivered at 'sample_rate', the rate the analysis runs at.
+        self.input = self.add_signal_tap('in', rate=16000)
 
         # Properties
-        # An input rather than a property so a source's rate outlet
-        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        # The rate the analysis runs at; the signal is converted to it on
+        # the way in, so speech work costs the same at any engine rate.
         self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
                                                default_value=16000, min=1000, max=384000,
                                                callback=self._rate_changed)
@@ -1028,10 +971,11 @@ class SpeechSpectralNode(TorchNode):
         self._ring.resize(new_size)
 
     def _rate_changed(self):
+        self.signal_tap_rate = int(self.sample_rate_prop())
         self._buffer_size_changed()
 
     def execute(self):
-        audio_np = _incoming_mono(self.input)
+        audio_np = self.take_signal_tap_audio()
         if audio_np is None:
             return
 
@@ -1163,7 +1107,7 @@ class SpeechSpectralNode(TorchNode):
 # SpeechVoiceQualityNode — HNR, jitter, shimmer
 # ─────────────────────────────────────────────────────────────────────────────
 
-class SpeechVoiceQualityNode(TorchNode):
+class SpeechVoiceQualityNode(SignalTap, Node):
     """
     Clinical voice quality measures from streaming audio.
 
@@ -1185,11 +1129,13 @@ class SpeechVoiceQualityNode(TorchNode):
         super().__init__(label, data, args)
 
         # Inputs
-        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        # A ~ signal: patch adc~, a voice, or stream~ for audio held as an
+        # array. Delivered at 'sample_rate', the rate the analysis runs at.
+        self.input = self.add_signal_tap('in', rate=16000)
 
         # Properties
-        # An input rather than a property so a source's rate outlet
-        # (t.audio_source, t.audio.file_stream, capture~) can drive it.
+        # The rate the analysis runs at; the signal is converted to it on
+        # the way in, so speech work costs the same at any engine rate.
         self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
                                                default_value=16000, min=1000, max=384000,
                                                callback=self._rate_changed)
@@ -1228,10 +1174,11 @@ class SpeechVoiceQualityNode(TorchNode):
         self._ring.resize(max(int(buf_sec * sr), sr))
 
     def _rate_changed(self):
+        self.signal_tap_rate = int(self.sample_rate_prop())
         self._buffer_size_changed()
 
     def execute(self):
-        audio_np = _incoming_mono(self.input)
+        audio_np = self.take_signal_tap_audio()
         if audio_np is None:
             return
 
