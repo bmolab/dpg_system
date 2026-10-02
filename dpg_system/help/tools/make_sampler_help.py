@@ -121,9 +121,9 @@ body = """These play sounds without you deciding which voice each one goes into.
 
 THE NODES:
 
-polyphonic_sampler  allocate a voice per triggered sound
-granular_sampler    play a sound as a cloud of short grains
-scratch_sampler     play with the position under direct control
+polyphonic_sampler~  allocate a voice per triggered sound
+granular_sampler~    play a sound as a cloud of short grains
+scratch_sampler~     play with the position under direct control
 
 VOICE ALLOCATION IS THE POINT:
 Trigger a sound and one of these finds a free voice for it. Trigger another
@@ -165,13 +165,13 @@ voices, and patching one would take the shared voices from the other.
 The grain and scratch controls still arrive at frame rate. For grain position
 moved at audio rate, by an lfo~ say, use sampler_osc~ in granular mode.
 """ + FADE + """
-SYNTAX:
-polyphonic_sampler
-granular_sampler
-scratch_sampler
+SYNTAX (the plain name, without ~, still works for older patches):
+polyphonic_sampler~
+granular_sampler~
+scratch_sampler~
 
 EXAMPLE:
-polyphonic_sampler
+polyphonic_sampler~
 
 INPUTS and PARAMETERS:
 
@@ -214,12 +214,12 @@ samples from a microphone or from anything in the ~ graph."""
 demo = [
     {'key': 'se', 'init': 'sampler_engine', 'pos': (30, 62), 'w': 260, 'h': 180},
     {'key': 'btn', 'init': 'button', 'pos': (30, 260), 'w': 88, 'h': 46},
-    {'key': 'ps', 'init': 'polyphonic_sampler', 'pos': (30, 325), 'w': 300, 'h': 320},
+    {'key': 'ps', 'init': 'polyphonic_sampler~', 'pos': (30, 325), 'w': 300, 'h': 320},
     {'key': 'i1', 'init': 'int', 'pos': (30, 840), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c0', 'comment': True, 'text': 'load a set, then trigger sound ids\nactive_voices at the limit means\nnew triggers are stealing old ones',
      'pos': (30, 895)},
     {'key': 'btn2', 'init': 'button', 'pos': (410, 260), 'w': 88, 'h': 46},
-    {'key': 'gs', 'init': 'granular_sampler', 'pos': (410, 325), 'w': 300, 'h': 320},
+    {'key': 'gs', 'init': 'granular_sampler~', 'pos': (410, 325), 'w': 300, 'h': 320},
     {'key': 'c3', 'comment': True, 'text': 'a short sample becomes a texture\nthat lasts as long as the movement',
      'pos': (410, 880)},
     {'key': 'vcf', 'init': 'vcf~', 'pos': (790, 325), 'w': 220, 'h': 220},
@@ -231,7 +231,7 @@ links = [('btn', '', 'ps', 'trigger'), ('ps', 'active_voices', 'i1', ''),
          ('btn2', '', 'gs', 'trigger'),
          ('gs', 'left out', 'vcf', 'left in'), ('gs', 'right out', 'vcf', 'right in'),
          ('vcf', 'left out', 'fo', 'left'), ('vcf', 'right out', 'fo', 'right')]
-print(build('polyphonic_sampler', 'polyphonic_sampler - voices allocated for you',
+print(build('polyphonic_sampler', 'polyphonic_sampler~ - voices allocated for you',
             body, demo, links, demo_width=1060, text_width=800, text_height=740))
 
 # ---------------------------------------------------------------- effort_fader
@@ -342,7 +342,7 @@ demo = [
     {'key': 'c0', 'comment': True, 'text': 'set threshold above what a still body gives\notherwise everything sounds, always',
      'pos': (30, 1385)},
     {'key': 'se', 'init': 'sampler_engine', 'pos': (380, 560), 'w': 260, 'h': 180},
-    {'key': 'ps', 'init': 'polyphonic_sampler', 'pos': (380, 760), 'w': 300, 'h': 320},
+    {'key': 'ps', 'init': 'polyphonic_sampler~', 'pos': (380, 760), 'w': 300, 'h': 320},
     {'key': 'c2', 'comment': True, 'text': 'the fade list plays the whole texture\nin one message',
      'pos': (380, 1245)},
 ]

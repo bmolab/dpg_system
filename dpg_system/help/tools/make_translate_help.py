@@ -100,7 +100,7 @@ The translated text, when it arrives - which is not on the same frame it went
 out.
 
 RELATED:
-The whisper nodes to get text out of speech in the first place.
+The whisper~ nodes to get text out of speech in the first place.
 text_display or cairo_layout to show the result.
 gemma_4 will also translate, locally and without sending anything anywhere,
 though less reliably for the languages it saw little of."""

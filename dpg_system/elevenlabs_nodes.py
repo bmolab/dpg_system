@@ -24,6 +24,7 @@ from dpg_system.elevenlabs_key import api_key
 
 def register_elevenlabs_nodes():
     Node.app.register_node("eleven_labs", ElevenLabsNode.factory)
+    Node.app.register_node("eleven_labs~", ElevenLabsNode.factory)
 
 
 def service_eleven_labs():

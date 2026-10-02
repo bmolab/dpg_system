@@ -14,7 +14,7 @@ t.audio_source  a microphone or interface, as tensors
 SOUND IS A ~ SIGNAL; TENSORS ARE FOR TORCH:
 Everywhere else in the system, sound travels between nodes as a ~ signal:
 adc~ for a microphone, the sampler and synth nodes for everything made here,
-and the speech nodes, whisper, nemotron and record~ all listen to signals.
+and the speech nodes, whisper~, nemotron~ and record~ all listen to signals.
 Arrays and tensors appear only where audio becomes DATA for something that
 wants it that way.
 
@@ -25,7 +25,7 @@ t.rfft, t.cwt, t.energy, a model. Its blocks are tensors of
 THE GENERAL ROUTE IS capture~:
 adc~ -> capture~ with 'format' set to 'torch cpu' (or 'torch mps' for the
 Mac's GPU) does the same for ANY ~ signal - the microphone, a synth voice, a
-granular_sampler, the whole mix - and its audio is gathered by the audio engine
+granular_sampler~, the whole mix - and its audio is gathered by the audio engine
 itself, so a busy patch does not drop it. 'torch cpu' costs no copy: the tensor
 shares the chunk's memory. Prefer it for new work; t.audio_source stays for the
 patches already built on it.

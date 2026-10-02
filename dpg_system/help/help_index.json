@@ -549,7 +549,8 @@
     "--- nemotron_nodes.py ---"
   ],
   "nemotron": [
-    "nemotron"
+    "nemotron",
+    "nemotron~"
   ],
   "_node": [
     "--- node.py ---"
@@ -813,7 +814,10 @@
   "polyphonic_sampler": [
     "polyphonic_sampler",
     "granular_sampler",
-    "scratch_sampler"
+    "scratch_sampler",
+    "polyphonic_sampler~",
+    "granular_sampler~",
+    "scratch_sampler~"
   ],
   "sampler_engine": [
     "sampler_engine",
@@ -960,15 +964,19 @@
     "--- speech_analysis_nodes.py ---"
   ],
   "speech_envelope": [
-    "speech_envelope"
+    "speech_envelope",
+    "speech_envelope~"
   ],
   "speech_pitch": [
     "speech_pitch",
-    "speech_prosody"
+    "speech_prosody",
+    "speech_pitch~"
   ],
   "speech_spectral": [
     "speech_spectral",
-    "speech_voice_quality"
+    "speech_voice_quality",
+    "speech_spectral~",
+    "speech_voice_quality~"
   ],
   "_synth_nodes": [
     "--- synth_nodes.py ---"
@@ -1473,6 +1481,8 @@
   ],
   "whisper": [
     "whisper",
-    "eleven_labs"
+    "eleven_labs",
+    "whisper~",
+    "eleven_labs~"
   ]
 }

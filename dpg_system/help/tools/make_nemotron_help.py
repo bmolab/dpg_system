@@ -8,18 +8,18 @@ body = """Speech into text, with no guessing stage.
 
 THE NODE:
 
-nemotron   listens, and gives you each word the moment it is decided
+nemotron~  listens, and gives you each word the moment it is decided
 
-HOW IT DIFFERS FROM whisper:
-whisper re-reads the last thirty seconds many times a second and works out what
+HOW IT DIFFERS FROM whisper~:
+whisper~ re-reads the last thirty seconds many times a second and works out what
 has stopped changing; that is where its in_progress guesses and its confirmation
-delay come from. nemotron is a streaming transducer: sound goes in once, and
+delay come from. nemotron~ is a streaming transducer: sound goes in once, and
 every token it emits is final. Nothing is ever withdrawn. Words arrive about a
 tenth of a second behind the speaker, and the cost is the same whether a phrase
 has been open for one second or thirty.
 
 The price is that there is no second look. If it hears a word wrong, that word
-stays wrong. whisper's revisions were often corrections; here there are none.
+stays wrong. whisper~'s revisions were often corrections; here there are none.
 
 It runs on this machine, on the GPU through MLX. The first switch-on downloads
 the model (about 1.2 GB) and takes a few seconds to load; after that it starts
@@ -91,13 +91,13 @@ token with its time, to ~/nemotron_debug. For when words go missing: if they
 are in the recording but not the log, the model lost them; if they are not in
 the recording, something before the node did.
 
-SYNTAX:
-nemotron
-nemotron 8bit
-nemotron 560 ms fr-FR
+SYNTAX (the plain name, without ~, still works for older patches):
+nemotron~
+nemotron~ 8bit
+nemotron~ 560 ms fr-FR
 
 EXAMPLE:
-nemotron
+nemotron~
 
 INPUTS and PARAMETERS:
 
@@ -142,13 +142,13 @@ sentence:
 A closed sentence. context_tracker 'text in'.
 
 RELATED:
-whisper, which guesses and revises, and hears noise as words.
+whisper~, which guesses and revises, and hears noise as words.
 context_tracker, which this was shaped to feed.
 fifo_string, for the last few phrases as a rolling window."""
 
 demo = [
     {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
-    {'key': 'nm', 'init': 'nemotron', 'pos': (30, 120), 'w': 340, 'h': 300},
+    {'key': 'nm', 'init': 'nemotron~', 'pos': (30, 120), 'w': 340, 'h': 300},
     {'key': 'c0', 'comment': True, 'text': 'every word is final when it appears -\nnothing is revised, and nothing is\nre-read',
      'pos': (30, 435)},
 
@@ -184,5 +184,5 @@ links = [('tog', '', 'nm', 'on/off'),
          ('nm', 'phrase', 'td2', '###text in'),
          ('nm', 'sentence_in_progress', 'td3', '###text in'),
          ('nm', 'sentence', 'td4', '###text in')]
-print(build('nemotron', 'nemotron - streaming speech to text, final as it arrives', body,
+print(build('nemotron', 'nemotron~ - streaming speech to text, final as it arrives', body,
             demo, links, demo_width=840, text_width=810, text_height=1700))

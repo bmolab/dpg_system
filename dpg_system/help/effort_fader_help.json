@@ -205,12 +205,12 @@
             "properties": {}
         },
         "10": {
-            "name": "polyphonic_sampler",
+            "name": "polyphonic_sampler~",
             "id": 607,
             "position_x": 380,
             "position_y": 760,
             "width": 345,
-            "height": 462,
+            "height": 490,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -260,7 +260,7 @@
             "name": "close",
             "id": 681,
             "position_x": 24,
-            "position_y": 1254,
+            "position_y": 1280,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

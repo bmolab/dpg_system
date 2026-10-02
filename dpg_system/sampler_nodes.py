@@ -27,6 +27,10 @@ def register_sampler_nodes():
     Node.app.register_node('polyphonic_sampler', PolyphonicSamplerNode.factory)
     Node.app.register_node('granular_sampler', GranularSamplerNode.factory)
     Node.app.register_node('scratch_sampler', ScratchSamplerNode.factory)
+    # ~ names for the ones with signal outlets; plain names stay for old patches.
+    Node.app.register_node('polyphonic_sampler~', PolyphonicSamplerNode.factory)
+    Node.app.register_node('granular_sampler~', GranularSamplerNode.factory)
+    Node.app.register_node('scratch_sampler~', ScratchSamplerNode.factory)
     Node.app.register_node('crossfade_scanner', CrossfadeScannerNode.factory)
     Node.app.register_node('muscle_activation_fader', MuscleActivationFaderNode.factory)
     Node.app.register_node('effort_fader', EffortFaderNode.factory)

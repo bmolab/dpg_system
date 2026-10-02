@@ -202,6 +202,12 @@ def register_speech_analysis_nodes():
     Node.app.register_node('speech_envelope', SpeechEnvelopeNode.factory)
     Node.app.register_node('speech_spectral', SpeechSpectralNode.factory)
     Node.app.register_node('speech_voice_quality', SpeechVoiceQualityNode.factory)
+    # The ~ names say what they listen to: a signal. The plain names stay
+    # so existing patches load.
+    Node.app.register_node('speech_pitch~', SpeechPitchNode.factory)
+    Node.app.register_node('speech_envelope~', SpeechEnvelopeNode.factory)
+    Node.app.register_node('speech_spectral~', SpeechSpectralNode.factory)
+    Node.app.register_node('speech_voice_quality~', SpeechVoiceQualityNode.factory)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

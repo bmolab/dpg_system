@@ -191,11 +191,11 @@ What it just recognised, which is how you see it working.
 
 RELATED:
 prompt_composer, which is what 'context out' is shaped for.
-whisper to supply the text.
+whisper~ to supply the text.
 spacy_vector and the spacy nodes for the model underneath."""
 
 demo = [
-    {'key': 'wh', 'init': 'whisper', 'pos': (30, 62), 'w': 300, 'h': 260},
+    {'key': 'wh', 'init': 'whisper~', 'pos': (30, 62), 'w': 300, 'h': 260},
     {'key': 'c0', 'comment': True, 'text': 'phrases, as they settle', 'pos': (30, 340)},
 
     {'key': 'ct', 'init': 'context_tracker', 'pos': (30, 390), 'w': 340, 'h': 520},

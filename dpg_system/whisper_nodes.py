@@ -1321,6 +1321,7 @@ class WhisperProcessor:
 
 def register_whisper_nodes():
     Node.app.register_node("whisper", WhisperNode.factory)
+    Node.app.register_node("whisper~", WhisperNode.factory)
 
 
 class WhisperNode(SignalTap, Node):

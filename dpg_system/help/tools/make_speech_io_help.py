@@ -8,18 +8,18 @@ body = """Speech into text, and text back into speech.
 
 THE NODES:
 
-whisper       listens, and gives you what was said
-eleven_labs   takes text, and says it aloud
+whisper~      listens, and gives you what was said
+eleven_labs~  takes text, and says it aloud
 
-whisper RUNS HERE; eleven_labs DOES NOT:
-whisper transcribes on this machine - nothing leaves it, there is no account,
-and it keeps working with the network unplugged. eleven_labs sends your text to
+whisper~ RUNS HERE; eleven_labs~ DOES NOT:
+whisper~ transcribes on this machine - nothing leaves it, there is no account,
+and it keeps working with the network unplugged. eleven_labs~ sends your text to
 a service and needs an API key in dpg_system/elevenlabs_key.py.
 
 That difference decides where each belongs. Anything an audience says in
-confidence can go through whisper and must not go through eleven_labs.
+confidence can go through whisper~ and must not go through eleven_labs.
 
-whisper GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:
+whisper~ GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:
 
 in_progress   what it thinks is being said RIGHT NOW. It changes as more sound
               arrives - words appear, then get revised, then settle.
@@ -70,7 +70,7 @@ performance than a better one that lags.
 'language' can be set or left to detect, and 'translate' asks for English out
 regardless of what went in.
 
-eleven_labs SPEAKS, AND QUEUES:
+eleven_labs~ SPEAKS, AND QUEUES:
 Send text and it says it - out of 'left out' / 'right out', as a signal, so it
 sounds through whatever fader_out~ or audio_out~ it is patched to and can go
 through vocoder~, vst~ or a filter on the way, like any other source. Unpatched,
@@ -79,7 +79,7 @@ whether it is busy - from the moment a line is sent off until the last of it
 has played - which is what to gate on, because sending a second line while the
 first is still going stacks them up rather than interrupting. 'sounding' is
 narrower: true only while sound is actually coming out, not during the pause
-before a phrase starts. That is the one to hand whisper, so it does not
+before a phrase starts. That is the one to hand whisper~, so it does not
 transcribe the node talking, or a face that should move with the voice.
 
 'stop' finishes the current phrase and stops; 'hard stop' cuts immediately.
@@ -119,18 +119,18 @@ of the voice. 'similarity_boost' holds it closer to the original recording.
 delay before it starts is a problem, because the cost is audible. The v3
 models do not take it at all, so it is left out of the request for them.
 
-SYNTAX:
-whisper
-eleven_labs
+SYNTAX (the plain name, without ~, still works for older patches):
+whisper~
+eleven_labs~
 
 EXAMPLE:
-whisper
+whisper~
 
 INPUTS and PARAMETERS:
 
 on/off / audio device / in:
 Start listening, and where from. With a ~ signal patched to 'in' (adc~, a
-voice, stream~ for audio held as an array), whisper listens to that instead
+voice, stream~ for audio held as an array), whisper~ listens to that instead
 of 'audio device' - decided when it is switched on.
 
 model / language / translate:
@@ -192,7 +192,7 @@ cairo_layout to put the words on a screen."""
 
 demo = [
     {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
-    {'key': 'wh', 'init': 'whisper', 'pos': (30, 120), 'w': 340, 'h': 480},
+    {'key': 'wh', 'init': 'whisper~', 'pos': (30, 120), 'w': 340, 'h': 480},
     {'key': 'c0', 'comment': True, 'text': 'runs on this machine - no account, and\nnothing leaves the room',
      'pos': (30, 615)},
 
@@ -219,7 +219,7 @@ demo = [
     {'key': 'c9', 'comment': True, 'text': 'energy - use it to set silence_threshold',
      'pos': (30, 880)},
 
-    {'key': 'el', 'init': 'eleven_labs', 'pos': (30, 930), 'w': 340, 'h': 420},
+    {'key': 'el', 'init': 'eleven_labs~', 'pos': (30, 930), 'w': 340, 'h': 420},
     {'key': 'c10', 'comment': True, 'text': 'this one SENDS YOUR TEXT to a service\nand needs an API key. Nothing private\nshould go through it',
      'pos': (30, 1365)},
 
@@ -244,5 +244,5 @@ links = [('tog', '', 'wh', 'on/off'),
          ('el', 'backlog', 'i1', ''),
          ('el', 'left out', 'fo', 'left', 0, 0),
          ('el', 'right out', 'fo', 'right', 1, 1)]
-print(build('whisper', 'whisper and eleven_labs - speech in and out', body,
+print(build('whisper', 'whisper~ and eleven_labs~ - speech in and out', body,
             demo, links, demo_width=840, text_width=810, text_height=790))

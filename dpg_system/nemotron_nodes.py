@@ -62,6 +62,7 @@ BARE_PUNCT = {'.', ',', '?', '!', ';', ':'}
 
 def register_nemotron_nodes():
     Node.app.register_node('nemotron', NemotronNode.factory)
+    Node.app.register_node('nemotron~', NemotronNode.factory)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

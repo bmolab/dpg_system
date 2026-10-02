@@ -6,11 +6,11 @@ from help_common import SIG, PLOT, INT, FLT, starter
 
 SUITE = """
 THE FAMILY, AND WHAT EACH ONE HEARS:
-speech_pitch          the note being spoken - f0, and whether there is a voice
-speech_prosody        the shape of that pitch over a window - the melody
-speech_envelope       loudness, on two time scales, and onsets
-speech_spectral       where the energy sits - bright or dark, tonal or noisy
-speech_voice_quality  how clear the voice is - breathy, rough, or clean
+speech_pitch~          the note being spoken - f0, and whether there is a voice
+speech_prosody         the shape of that pitch over a window - the melody
+speech_envelope~       loudness, on two time scales, and onsets
+speech_spectral~       where the energy sits - bright or dark, tonal or noisy
+speech_voice_quality~  how clear the voice is - breathy, rough, or clean
 
 None of these know what is being said. They measure HOW, which is the part that
 carries urgency, hesitation and effort - and the part a patch can respond to
@@ -30,7 +30,7 @@ changes and costs more.
 SOURCE = """
 FEEDING THEM:
 'in' takes a ~ signal: adc~ for a microphone, or any voice in the synth graph -
-eleven_labs' speech, a granular_sampler. Audio held as an array reaches them
+eleven_labs~' speech, a granular_sampler. Audio held as an array reaches them
 through stream~. The signal is gathered by the audio engine and converted to
 'sample_rate' (16 kHz) on the way in, so nothing is lost while the patch is busy
 and the analysis costs the same whatever rate the engine runs at. The demos here
@@ -43,7 +43,7 @@ body = """These follow the pitch of a voice, and the melody it traces.
 
 THE NODES:
 
-speech_pitch    the note being spoken, right now
+speech_pitch~   the note being spoken, right now
 speech_prosody  what that note has been doing over the last second
 """ + SUITE + """
 f0 IS THE NOTE, voiced IS WHETHER THERE IS ONE:
@@ -92,12 +92,12 @@ intonation is a string, not a number - it is the slope already judged for you,
 flat meaning under 5 Hz per second either way. A question rising at the end, a
 statement falling: that is what this outlet is for.
 
-SYNTAX:
-speech_pitch
+SYNTAX (the plain name, without ~, still works for older patches):
+speech_pitch~
 speech_prosody
 
 EXAMPLE:
-speech_pitch
+speech_pitch~
 
 INPUTS and PARAMETERS:
 
@@ -131,12 +131,12 @@ intonation:
 The melody, as a word.
 """ + SOURCE + """
 RELATED:
-speech_envelope for how loud rather than how high.
-speech_voice_quality for how clear the voice is - and it needs 'voiced' too."""
+speech_envelope~ for how loud rather than how high.
+speech_voice_quality~ for how clear the voice is - and it needs 'voiced' too."""
 
 demo = [
     {'key': 'src', 'init': 'adc~', 'pos': (30, 62), 'w': 260, 'h': 180},
-    {'key': 'pit', 'init': 'speech_pitch', 'pos': (30, 270), 'w': 280, 'h': 300},
+    {'key': 'pit', 'init': 'speech_pitch~', 'pos': (30, 270), 'w': 280, 'h': 300},
     {'key': 'f1', 'init': 'float', 'pos': (340, 270), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c0', 'comment': True, 'text': 'f0 in Hz - but check voiced first',
      'pos': (340, 320)},
@@ -164,7 +164,7 @@ links = [('src', 'left out', 'pit', 'in'),
          ('pit', 'f0_raw', 'pro', 'f0_in'),
          ('pro', 'pitch_slope', 'f3', ''),
          ('pro', 'intonation', 'l1', '')]
-print(build('speech_pitch', 'speech_pitch and speech_prosody - the melody', body,
+print(build('speech_pitch', 'speech_pitch~ and speech_prosody - the melody', body,
             demo, links, demo_width=680, text_width=810, text_height=780))
 
 # ------------------------------------------------------------- speech_envelope
@@ -172,7 +172,7 @@ body = """Loudness, followed on two time scales at once - and the onsets between
 
 THE NODE:
 
-speech_envelope   envelope, slow volume, crest factor, and an onset trigger
+speech_envelope~  envelope, slow volume, crest factor, and an onset trigger
 """ + SUITE + """
 THE TWO TIME SCALES ARE THE WHOLE IDEA:
 'envelope' is fast. It follows the actual shape of speech - each syllable rising
@@ -217,11 +217,11 @@ Consonants and plosives are peaky, sustained vowels are not. A rising crest
 factor with the envelope steady means the character of the sound changed without
 the loudness changing.
 
-SYNTAX:
-speech_envelope
+SYNTAX (the plain name, without ~, still works for older patches):
+speech_envelope~
 
 EXAMPLE:
-speech_envelope
+speech_envelope~
 
 INPUTS and PARAMETERS:
 
@@ -255,13 +255,13 @@ onset:
 A one-shot trigger when the envelope jumps clear of the baseline.
 """ + SOURCE + """
 RELATED:
-speech_pitch for how high rather than how loud.
+speech_pitch~ for how high rather than how loud.
 Feeding onset to a counter or a sample_hold is the usual way to make something
 happen once per utterance."""
 
 demo = [
     {'key': 'src', 'init': 'adc~', 'pos': (30, 62), 'w': 260, 'h': 180},
-    {'key': 'env', 'init': 'speech_envelope', 'pos': (30, 270), 'w': 290, 'h': 300},
+    {'key': 'env', 'init': 'speech_envelope~', 'pos': (30, 270), 'w': 290, 'h': 300},
     {'key': 'pl', 'init': 'plot', 'pos': (360, 270), 'w': 300, 'h': 180,
      'props': PLOT(-60.0, 0.0, 200)},
     {'key': 'c0', 'comment': True, 'text': 'the fast one: syllables', 'pos': (360, 460)},
@@ -290,7 +290,7 @@ links = [('src', 'left out', 'env', 'in'),
          ('env', 'crest_factor', 'f1', ''),
          ('env', 'onset', 'trg', 'input'), ('trg', 'out', 'cnt', 'input'),
          ('cnt', 'count out', 'i1', '')]
-print(build('speech_envelope', 'speech_envelope - loudness on two time scales', body,
+print(build('speech_envelope', 'speech_envelope~ - loudness on two time scales', body,
             demo, links, demo_width=700, text_width=810, text_height=780))
 
 # ------------------------------------------------------------- speech_spectral
@@ -298,8 +298,8 @@ body = """Where the energy sits in the sound, and how clear the voice producing 
 
 THE NODES:
 
-speech_spectral       bright or dark, tonal or noisy
-speech_voice_quality  breathy, rough, or clean
+speech_spectral~       bright or dark, tonal or noisy
+speech_voice_quality~  breathy, rough, or clean
 """ + SUITE + """
 THE SPECTRAL MEASURES, IN PLAIN TERMS:
 
@@ -349,15 +349,15 @@ node reports jitter of exactly 0.0 - not because the voice is perfect, but
 because there is no periodicity to measure the variation of. HNR gives the game
 away in that case, at about -6 dB.
 
-So gate on speech_pitch's 'voiced' before believing jitter or shimmer. A zero
+So gate on speech_pitch~'s 'voiced' before believing jitter or shimmer. A zero
 during silence is not a clean voice.
 
-SYNTAX:
-speech_spectral
-speech_voice_quality
+SYNTAX (the plain name, without ~, still works for older patches):
+speech_spectral~
+speech_voice_quality~
 
 EXAMPLE:
-speech_spectral
+speech_spectral~
 
 INPUTS and PARAMETERS:
 
@@ -370,7 +370,7 @@ The analysis window. Bigger means finer frequency detail and coarser timing.
 rolloff_pct / n_mfcc:
 Where to put the rolloff point, and how many coefficients to report.
 
-min_freq / max_freq (speech_voice_quality):
+min_freq / max_freq (speech_voice_quality~):
 The speaker's range again - the same reasoning as speech_pitch.
 
 smoothing_sec:
@@ -388,13 +388,13 @@ hnr / hnr_smooth / jitter / shimmer:
 Voice quality. Meaningless unless voiced.
 """ + SOURCE + """
 RELATED:
-speech_pitch, whose 'voiced' outlet is what should be gating this one.
+speech_pitch~, whose 'voiced' outlet is what should be gating this one.
 t.mfcc, fed by capture~ in a torch format, if you want the spectral machinery
 directly."""
 
 demo = [
     {'key': 'src', 'init': 'adc~', 'pos': (30, 62), 'w': 260, 'h': 180},
-    {'key': 'sp', 'init': 'speech_spectral', 'pos': (30, 270), 'w': 290, 'h': 280},
+    {'key': 'sp', 'init': 'speech_spectral~', 'pos': (30, 270), 'w': 290, 'h': 280},
     {'key': 'pl', 'init': 'plot', 'pos': (360, 270), 'w': 300, 'h': 180,
      'props': PLOT(0.0, 5000.0, 200)},
     {'key': 'c0', 'comment': True, 'text': 'centroid: brightness. An s is bright,\na vowel is dark',
@@ -403,14 +403,14 @@ demo = [
     {'key': 'c2', 'comment': True, 'text': 'flatness: 0 tonal. White noise reads\nonly about 0.56, so read it relatively',
      'pos': (360, 585)},
 
-    {'key': 'vq', 'init': 'speech_voice_quality', 'pos': (30, 590), 'w': 290, 'h': 240},
+    {'key': 'vq', 'init': 'speech_voice_quality~', 'pos': (30, 590), 'w': 290, 'h': 240},
     {'key': 'f2', 'init': 'float', 'pos': (360, 680), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c4', 'comment': True, 'text': 'HNR in dB: real speech is about 10-25.\nWhite noise reads about -6',
      'pos': (360, 730)},
     {'key': 'f3', 'init': 'float', 'pos': (360, 805), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c6', 'comment': True, 'text': 'jitter - but a 0 here can mean NO VOICE,\nnot a perfect one. Gate on voiced.',
      'pos': (360, 855)},
-    {'key': 'pit', 'init': 'speech_pitch', 'pos': (30, 870), 'w': 280, 'h': 300},
+    {'key': 'pit', 'init': 'speech_pitch~', 'pos': (30, 870), 'w': 280, 'h': 300},
     {'key': 'c8', 'comment': True, 'text': "this is here for its 'voiced' outlet -\nnothing above should be believed without it",
      'pos': (30, 1200)},
 ]
@@ -419,5 +419,5 @@ links = [('src', 'left out', 'sp', 'in'),
          ('src', 'left out', 'vq', 'in'),
          ('vq', 'hnr', 'f2', ''), ('vq', 'jitter', 'f3', ''),
          ('src', 'left out', 'pit', 'in')]
-print(build('speech_spectral', 'speech_spectral and voice quality - timbre', body,
+print(build('speech_spectral', 'speech_spectral~ and voice quality - timbre', body,
             demo, links, demo_width=700, text_width=810, text_height=790))

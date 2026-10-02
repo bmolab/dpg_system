@@ -8,8 +8,8 @@ body = """These bring sound in from a microphone or interface, and keep what you
 
 THE NODES:
 
-adc~     an audio input device, as a signal
-mic~     the same node
+adc~    an audio input device, as a signal
+mic~    the same node
 record~  record any signal, and save each take as a WAV file
 
 adc~ IS THE MICROPHONE IN THE GRAPH:
@@ -49,7 +49,7 @@ or stops on a click, and the take is saved to 'folder' as
 out.
 
 The path is what makes it quick. Patch it into a player and each take is
-loaded the moment you stop: granular_sampler's or polyphonic_sampler's 'load'
+loaded the moment you stop: granular_sampler~'s or polyphonic_sampler~'s 'load'
 (into the sound shown in 'sound_id'; send [sound_id, path] to choose), or
 sampler_osc~'s 'path'. The players remember the file, so a saved patch keeps
 the sound.
@@ -59,7 +59,7 @@ Patch only 'left in' and the take is mono. Patch 'right in' as well and it is
 stereo.
 
 record~ RECORDS ANYTHING:
-Not only the microphone. Patch a synth voice, a granular_sampler's outlets or
+Not only the microphone. Patch a synth voice, a granular_sampler~'s outlets or
 a whole mix in, and the result becomes new material - resampling.
 
 SYNTAX:
@@ -109,7 +109,7 @@ rate (record~):
 The sample rate of the take.
 
 RELATED:
-granular_sampler, polyphonic_sampler and sampler_osc~ play what you record.
+granular_sampler~, polyphonic_sampler~ and sampler_osc~ play what you record.
 stream~ and capture~ (on the snapshot~ help patch) are the general bridges
 between audio and arrays."""
 
@@ -122,7 +122,7 @@ demo = [
     {'key': 'c1', 'comment': True, 'text': 'tick record, make a sound, untick\nthe take is saved and loaded below',
      'pos': (330, 330)},
     {'key': 'btn', 'init': 'button', 'pos': (30, 540), 'w': 88, 'h': 46},
-    {'key': 'gs', 'init': 'granular_sampler', 'pos': (30, 610), 'w': 300, 'h': 320},
+    {'key': 'gs', 'init': 'granular_sampler~', 'pos': (30, 610), 'w': 300, 'h': 320},
     {'key': 'c2', 'comment': True, 'text': 'click to hear the take as grains\nmove grain position to explore it',
      'pos': (380, 610)},
     {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (380, 700), 'w': 220, 'h': 220},
