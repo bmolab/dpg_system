@@ -1,0 +1,1551 @@
+{
+    "height": 834,
+    "width": 1628,
+    "position": [
+        100,
+        100
+    ],
+    "id": 2276,
+    "name": "nodes_signal",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_signal.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Signals and filters",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 249,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Signals and filters",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Signals and filters",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes < dpg_system nodes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< dpg_system nodes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 198,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 434,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Streams of values: making them, smoothing them, reacting to them.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 426,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Streams of values: making them, smoothing them, reacting to them.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment Sources and streams",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 161,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Sources and streams",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Sources and streams",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link signal signal",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "signal",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 188,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a free-running waveform",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a free-running waveform",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link random random",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "random",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 240,
+            "width": 563,
+            "height": 64,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one new number each time you ask\n(random, random.betavariate, random.expovariate, random.gammavariate, random.gauss,\n random.lognormvariate, random.normalvariate, random.paretovariate, random.triangular,\n random.vonmisesvariate, random.weibullvariate)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 555,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one new number each time you ask\n(random, random.betavariate, random.expovariate, random.gammavariate, random.gauss,\n random.lognormvariate, random.normalvariate, random.paretovariate, random.triangular,\n random.vonmisesvariate, random.weibullvariate)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link stream stream / subsample",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 308,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "stream / subsample",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 312,
+            "width": 200,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "change how often data moves\n(stream, subsample)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "change how often data moves\n(stream, subsample)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link sample_hold sample_hold",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 360,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "sample_hold",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 364,
+            "width": 298,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pass values through, or freeze the last one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "pass values through, or freeze the last one",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link register register",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 412,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "register",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 416,
+            "width": 231,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hold a value, send it when asked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hold a value, send it when asked",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "comment Events and ranges",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 482,
+            "width": 146,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Events and ranges",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Events and ranges",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link togedge togedge",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 516,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "togedge",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 520,
+            "width": 274,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "report the moment a signal crosses zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "report the moment a signal crosses zero",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link trigger trigger / hysteresis",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 568,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "trigger / hysteresis",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 572,
+            "width": 298,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "fire on the way up, release on the way down\n(hysteresis, trigger)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "fire on the way up, release on the way down\n(hysteresis, trigger)",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link diff diff",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 620,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "diff",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 624,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how much did it change?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how much did it change?",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link ranger ranger",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 672,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "ranger",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 676,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "map a signal into the range you need",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "map a signal into the range you need",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link noise_gate noise_gate",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 724,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "noise_gate",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 728,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "silence the small stuff",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "silence the small stuff",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "comment Filters",
+            "name": "comment",
+            "position_x": 910,
+            "position_y": 150,
+            "width": 69,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Filters",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Filters",
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "init": "help_link filter filter / smooth",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 184,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "filter / smooth",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 188,
+            "width": 175,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smooth a jittery stream\n(filter, smooth)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "smooth a jittery stream\n(filter, smooth)",
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "init": "help_link multi_filter multi / diff filters",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 236,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "multi / diff filters",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 240,
+            "width": 311,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "many timescales at once\n(diff_filter, diff_filter_bank, multi_filter)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "many timescales at once\n(diff_filter, diff_filter_bank, multi_filter)",
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "init": "help_link band_pass band_pass / filter_bank / spectrum",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 288,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "band_pass / filter_bank / spectrum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 292,
+            "width": 243,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "select by frequency, not by size\n(band_pass, filter_bank, spectrum)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "select by frequency, not by size\n(band_pass, filter_bank, spectrum)",
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "init": "help_link adaptive_filter adaptive / one_euro filters",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 340,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "adaptive / one_euro filters",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 344,
+            "width": 415,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smooth when still, quick when moving\n(adaptive_filter, adaptive_quaternion_filter, one_euro_filter)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 407,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "smooth when still, quick when moving\n(adaptive_filter, adaptive_quaternion_filter, one_euro_filter)",
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "init": "help_link kalman_filter kalman_filter",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 392,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "kalman_filter",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1869,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "37": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 396,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "predict, then correct",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "predict, then correct",
+            "id": 1906,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "38": {
+            "init": "help_link physics_filter physics_filter / kinetic_filter",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 444,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "physics_filter / kinetic_filter",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1943,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "39": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 448,
+            "width": 231,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smooth by obeying physics\n(kinetic_filter, physics_filter)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "smooth by obeying physics\n(kinetic_filter, physics_filter)",
+            "id": 1980,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "40": {
+            "init": "comment History and analysis",
+            "name": "comment",
+            "position_x": 910,
+            "position_y": 514,
+            "width": 169,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "History and analysis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "History and analysis",
+            "id": 2017,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "41": {
+            "init": "help_link buffer buffer / rolling_buffer",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 548,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "buffer / rolling_buffer",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 2054,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "42": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 552,
+            "width": 181,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "keeping a history\n(buffer, rolling_buffer)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 173,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "keeping a history\n(buffer, rolling_buffer)",
+            "id": 2091,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "43": {
+            "init": "help_link cwt cwt",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 600,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cwt",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 2128,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "44": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 604,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "where the frequencies are, and when",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "where the frequencies are, and when",
+            "id": 2165,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "init": "help_link confusion confusion",
+            "name": "help_link",
+            "position_x": 910,
+            "position_y": 652,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "confusion",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 2202,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "46": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1173,
+            "position_y": 656,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "where two lists agree",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "where two lists agree",
+            "id": 2239,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

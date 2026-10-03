@@ -1,0 +1,1012 @@
+{
+    "height": 948,
+    "width": 613,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1721,
+    "name": "nodes",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment dpg_system nodes",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 212,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dpg_system nodes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dpg_system nodes",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "name": "close",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 662,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Blue buttons open a category in place of this page. Green buttons open the help patch for those nodes.\nRight-click any node in a patch for its help directly.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 654,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Blue buttons open a category in place of this page. Green buttons open the help patch for those nodes.\nRight-click any node in a patch for its help directly.",
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "init": "help_link nodes_patching Patching",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 162,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Patching",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 166,
+            "width": 342,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "building patches, lists, messages and dictionaries",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 334,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "building patches, lists, messages and dictionaries",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link nodes_flow Control flow",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 214,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Control flow",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 218,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "timing, triggers, routing and counting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "timing, triggers, routing and counting",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link nodes_interface Interface",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 266,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Interface",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 270,
+            "width": 342,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "buttons, sliders, numbers, menus, tables and plots",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 334,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "buttons, sliders, numbers, menus, tables and plots",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link nodes_math Math",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 318,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Math",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 322,
+            "width": 342,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "arithmetic, comparison, trigonometry and rotations",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 334,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "arithmetic, comparison, trigonometry and rotations",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link nodes_signal Signals and filters",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 370,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Signals and filters",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 374,
+            "width": 348,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "waveforms, smoothing, filtering and event detection",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "waveforms, smoothing, filtering and event detection",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link nodes_text Text and language",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 422,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Text and language",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 426,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "strings, words, grammar and prompts",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "strings, words, grammar and prompts",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "help_link nodes_sound Sound",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 474,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Sound",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 478,
+            "width": 323,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the ~ synth graph, samplers and speech analysis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the ~ synth graph, samplers and speech analysis",
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "init": "help_link nodes_body Body and motion",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 526,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Body and motion",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 530,
+            "width": 311,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "motion capture, poses, SMPL bodies and effort",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "motion capture, poses, SMPL bodies and effort",
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "init": "help_link nodes_graphics 3D graphics",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 578,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "3D graphics",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 582,
+            "width": 354,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "ModernGL scenes, point clouds and the older GL nodes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 346,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "ModernGL scenes, point clouds and the older GL nodes",
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "init": "help_link nodes_video Video and images",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 630,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Video and images",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 634,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "cameras, movies and image processing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "cameras, movies and image processing",
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "init": "help_link nodes_numpy NumPy",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 682,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "NumPy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 686,
+            "width": 335,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "arrays: making, reshaping, selecting and reducing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 327,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "arrays: making, reshaping, selecting and reducing",
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "init": "help_link nodes_torch PyTorch",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 734,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "PyTorch",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 738,
+            "width": 372,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "tensors, calculation, activations and signal processing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 364,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "tensors, calculation, activations and signal processing",
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "init": "help_link nodes_ai AI models",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 786,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "AI models",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 790,
+            "width": 243,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "language, vision and speech models",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "language, vision and speech models",
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "init": "help_link nodes_devices Devices and networks",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 838,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Devices and networks",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                }
+            },
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 842,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "MIDI, OSC, sockets and show control",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "MIDI, OSC, sockets and show control",
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

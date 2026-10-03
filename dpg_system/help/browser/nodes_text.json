@@ -1,0 +1,1018 @@
+{
+    "height": 918,
+    "width": 681,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1684,
+    "name": "nodes_text",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_text.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Text and language",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 224,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Text and language",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Text and language",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes < dpg_system nodes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< dpg_system nodes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 198,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 231,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Characters, words and sentences.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Characters, words and sentences.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment Text",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 46,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Text",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Text",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link ascii characters as numbers",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "characters as numbers",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 188,
+            "width": 212,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "characters as numbers\n(ascii, char, character, ord)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "characters as numbers\n(ascii, char, character, ord)",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link combine combine / join / split",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "combine / join / split",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 240,
+            "width": 224,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "assembling and taking apart\n(combine, join, kombine, split)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "assembling and taking apart\n(combine, join, kombine, split)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link gather_sentence building text",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 288,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "building text",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 292,
+            "width": 397,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "assembling text over time\n(fifo_string, gather_sentence, string_builder, text_change)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 389,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "assembling text over time\n(fifo_string, gather_sentence, string_builder, text_change)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link string_replace string replacement",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 340,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "string replacement",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 344,
+            "width": 378,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "substituting and cleaning up\n(printable, string_replace, unescape_text, word_replace)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 370,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "substituting and cleaning up\n(printable, string_replace, unescape_text, word_replace)",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link text_file text_file / text_editor",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 392,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "text_file / text_editor",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 396,
+            "width": 200,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a body of text in the patch\n(text_editor, text_file)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a body of text in the patch\n(text_editor, text_file)",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "help_link word_trigger word triggers",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 444,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "word triggers",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 448,
+            "width": 403,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "reacting to what was said\n(first_letter_trigger, fuzzy_match, word_gate, word_trigger)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 395,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "reacting to what was said\n(first_letter_trigger, fuzzy_match, word_gate, word_trigger)",
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "init": "comment Language",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 514,
+            "width": 77,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Language",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Language",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link rephrase rephrase / lemma",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 548,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "rephrase / lemma",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 552,
+            "width": 157,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "working from grammar\n(lemma, rephrase)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 149,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "working from grammar\n(lemma, rephrase)",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link spacy_vector spacy vectors / similarity",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 600,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "spacy vectors / similarity",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 604,
+            "width": 335,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "meaning as a measurable quantity\n(spacy_confusion, spacy_similarity, spacy_vector)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 327,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "meaning as a measurable quantity\n(spacy_confusion, spacy_similarity, spacy_vector)",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link translate translate / translate_api",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 652,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "translate / translate_api",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 656,
+            "width": 194,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "free and official routes\n(translate, translate_api)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "free and official routes\n(translate, translate_api)",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link context_tracker context_tracker",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 704,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "context_tracker",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 708,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the world the words build",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the world the words build",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link weighted_prompt weighted / ambient prompts",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 756,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "weighted / ambient prompts",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 760,
+            "width": 342,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "balance you can move\n(ambient_prompt, prompt_composer, weighted_prompt)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 334,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "balance you can move\n(ambient_prompt, prompt_composer, weighted_prompt)",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link cairo_layout cairo_layout / llm_layout",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 808,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cairo_layout / llm_layout",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 812,
+            "width": 194,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "text as a picture\n(cairo_layout, llm_layout)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "text as a picture\n(cairo_layout, llm_layout)",
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

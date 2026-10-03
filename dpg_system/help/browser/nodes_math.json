@@ -1,0 +1,1294 @@
+{
+    "height": 778,
+    "width": 1808,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1980,
+    "name": "nodes_math",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Math",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 65,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Math",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Math",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes < dpg_system nodes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< dpg_system nodes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 198,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Numbers, lists and arrays in; results out.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Numbers, lists and arrays in; results out.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment Arithmetic",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 92,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Arithmetic",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Arithmetic",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link arithmetic arithmetic + - * /",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "arithmetic + - * /",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 188,
+            "width": 459,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one calculation, one operand\n(!-, !/, %, *, +, -, /, //, ^, combination, max, min, mod, perm, pow)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 451,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one calculation, one operand\n(!-, !/, %, *, +, -, /, //, ^, combination, max, min, mod, perm, pow)",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link math_single single-input math",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "single-input math",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 240,
+            "width": 588,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one function, no operand\n(abs, ceil, exp, floor, inverse, log10, log2, norm, np.ceil, np.floor, np.round, np.trunc,\n round, sqrt, trunc)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 580,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one function, no operand\n(abs, ceil, exp, floor, inverse, log10, log2, norm, np.ceil, np.floor, np.round, np.trunc,\n round, sqrt, trunc)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link trig trigonometry",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 296,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "trigonometry",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 300,
+            "width": 268,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "angles in, ratios out (and back again)\n(acos, asin, atan, cos, sin, tan)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "angles in, ratios out (and back again)\n(acos, asin, atan, cos, sin, tan)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link comparison comparison == < >",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 348,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "comparison == < >",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 352,
+            "width": 243,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "test a value, report true or false\n(!=, <, <=, ==, >, >=)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "test a value, report true or false\n(!=, <, <=, ==, >, >=)",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link clamp clamp",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 400,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "clamp",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 404,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "clamp the input values to a range and send",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "clamp the input values to a range and send",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "help_link accumulate accumulate",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 452,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "accumulate",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 456,
+            "width": 126,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a running total",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 118,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a running total",
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "init": "help_link change change / increasing / decreasing",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 504,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "change / increasing / decreasing",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 508,
+            "width": 268,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pass a value on only when it has moved\n(change, decreasing, increasing, pass)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "pass a value on only when it has moved\n(change, decreasing, increasing, pass)",
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "init": "help_link crossfade crossfade / lerp",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 556,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "crossfade / lerp",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 560,
+            "width": 181,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "blend between two inputs\n(crossfade, lerp)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 173,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "blend between two inputs\n(crossfade, lerp)",
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "init": "help_link continuous_rotation continuous_rotation",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 608,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "continuous_rotation",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 612,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "undo the wrap in an angle",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "undo the wrap in an angle",
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "init": "help_link color_convert colour conversion",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 660,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "colour conversion",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 664,
+            "width": 569,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the same colour, described differently\n(cmy_to_hsl, cmy_to_hsv, cmy_to_rgb, color_convert, hsl_to_cmy, hsl_to_hsv, hsl_to_rgb,\n hsv_to_cmy, hsv_to_hsl, hsv_to_rgb, rgb_to_cmy, rgb_to_hsl, rgb_to_hsv)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 561,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the same colour, described differently\n(cmy_to_hsl, cmy_to_hsv, cmy_to_rgb, color_convert, hsl_to_cmy, hsl_to_hsv, hsl_to_rgb,\n hsv_to_cmy, hsv_to_hsl, hsv_to_rgb, rgb_to_cmy, rgb_to_hsl, rgb_to_hsv)",
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "init": "comment Rotations",
+            "name": "comment",
+            "position_x": 923,
+            "position_y": 150,
+            "width": 85,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Rotations",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Rotations",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link quaternion_to_euler rotation conversions",
+            "name": "help_link",
+            "position_x": 923,
+            "position_y": 184,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "rotation conversions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1174,
+            "position_y": 188,
+            "width": 594,
+            "height": 64,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "four ways to say one thing\n(axis_angle_to_quaternion, euler_to_quaternion, matrix_to_axis_angle, matrix_to_quaternion,\n matrix_to_rotvec, quaternion_to_axis_angle, quaternion_to_euler, quaternion_to_matrix,\n quaternion_to_rotvec, rotvec_to_quaternion)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 586,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "four ways to say one thing\n(axis_angle_to_quaternion, euler_to_quaternion, matrix_to_axis_angle, matrix_to_quaternion,\n matrix_to_rotvec, quaternion_to_axis_angle, quaternion_to_euler, quaternion_to_matrix,\n quaternion_to_rotvec, rotvec_to_quaternion)",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link quaternion_to_6d 6D rotations",
+            "name": "help_link",
+            "position_x": 923,
+            "position_y": 256,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "6D rotations",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1174,
+            "position_y": 260,
+            "width": 514,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the form that does not jump\n(6d_to_axis_angle, 6d_to_matrix, 6d_to_rotvec, matrix_to_6d, quaternion_to_6d)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 506,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the form that does not jump\n(6d_to_axis_angle, 6d_to_matrix, 6d_to_rotvec, matrix_to_6d, quaternion_to_6d)",
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "init": "help_link quaternion_diff comparing rotations",
+            "name": "help_link",
+            "position_x": 923,
+            "position_y": 308,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "comparing rotations",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1174,
+            "position_y": 312,
+            "width": 532,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how much, and relative to what\n(quaternion_diff, quaternion_distance, quaternion_relative, rotation_matrix_diff)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 524,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how much, and relative to what\n(quaternion_diff, quaternion_distance, quaternion_relative, rotation_matrix_diff)",
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "init": "help_link quaternion_norm quaternion_norm",
+            "name": "help_link",
+            "position_x": 923,
+            "position_y": 360,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "quaternion_norm",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1174,
+            "position_y": 364,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "keeping rotations unit length",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "keeping rotations unit length",
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "init": "help_link tracker_align tracker_align",
+            "name": "help_link",
+            "position_x": 923,
+            "position_y": 412,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "tracker_align",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1174,
+            "position_y": 416,
+            "width": 261,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "putting a tracker in the suit's world",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "putting a tracker in the suit's world",
+            "id": 1869,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "37": {
+            "init": "help_link swing_twist swing_twist",
+            "name": "help_link",
+            "position_x": 923,
+            "position_y": 464,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "swing_twist",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1906,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "38": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1174,
+            "position_y": 468,
+            "width": 305,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pointing direction and turn about the device",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "pointing direction and turn about the device",
+            "id": 1943,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

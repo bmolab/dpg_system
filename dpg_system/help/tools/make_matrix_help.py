@@ -143,19 +143,14 @@ print(build('buffer', 'buffer and rolling_buffer - keeping a history', body,
             demo, links, demo_width=760, text_width=800, text_height=770))
 
 # ------------------------------------------------------------------------ cwt
-body = """Two nodes that turn what you send them into a matrix to look at.
+body = """cwt - a continuous wavelet transform: where the frequencies are, and when.
 
-THE NODES:
+THE NODE:
+It takes a window of signal and gives back a matrix, frequency down one axis and
+time along the other, meant for a heat_map - where a pattern you would never
+find in a column of numbers is obvious at a glance.
 
-cwt        a signal, spread out into time against frequency
-confusion  two lists, compared item by item
-
-They have nothing to do with each other mathematically. What they share is the
-shape of the answer: both take something one-dimensional and give back a grid,
-and both are meant for a heat_map, where a pattern you would never find in a
-column of numbers is obvious at a glance.
-
-cwt: WHERE THE FREQUENCIES ARE, AND WHEN:
+WHERE THE FREQUENCIES ARE, AND WHEN:
 A Fourier transform tells you which frequencies are present in a signal, and
 throws away when they happened. A wavelet transform keeps both: the output is a
 matrix, frequency down one axis and time along the other, so you can see a pitch
@@ -171,76 +166,56 @@ looking and not what you want for reconstructing.
 'octaves' IS REALLY VOICES PER OCTAVE:
 It sets how finely the frequency axis is sampled, not how many octaves are
 covered. Higher gives more rows and a smoother picture, at proportionally more
-work. Measured on a 512-sample input:
+work. Measured on a 512-sample input with the morlet wavelet:
 
 octaves 2   ->  17 rows by 512 columns
 octaves 8   ->  65 rows by 512 columns
 
-The columns always match the input length, so the time axis is simply the signal
-you sent. Feed it from a buffer or rolling_buffer to give it a window to work on
-- a single sample has no time in it to analyse.
+The number of rows also grows a little with the length of the input, and varies
+slightly from one wavelet to another. The columns always match the input length,
+so the time axis is simply the signal you sent.
+
+GIVE IT A WINDOW:
+Everything it receives is flattened into one long signal and analysed as a
+whole. Feed it from a buffer or rolling_buffer to give it a window to work on -
+a single sample has no time in it to analyse, and the transform fails (a
+message is printed in the console and nothing is sent).
 
 'wavelet' chooses the shape being matched against the signal. They trade
 sharpness in time against sharpness in frequency, and you cannot have both -
 that is a property of the world, not of the software. morlet is the familiar
 general-purpose choice; the others differ in where they sit on that trade.
+The choices are cmhat, gmw, bump, hhhat and morlet; the default is gmw.
 
-confusion: WHERE TWO LISTS AGREE:
-It takes two lists and marks every place an item in one EXACTLY equals an item
-in the other - one row per item in the second list, one column per item in the
-first, 1.0 where they match and 0 everywhere else.
-
-Sending ['apple','pear','engine'] and ['fruit','apple','engine','apple']:
-
-              fruit  apple  engine  apple
-    apple       0      1       0      1
-    pear        0      0       0      0
-    engine      0      0       1      0
-
-Note 'pear' is an empty row: it appears in neither. That is the useful part -
-the gaps show you what one list has that the other does not, and repeats show up
-as repeated marks along a row.
-
-IT IS EQUALITY, NOT SIMILARITY:
-Worth being clear about, because there is a node that looks almost identical and
-does something quite different. This one asks "are these the same thing"; it has
-no notion of two things being nearly alike, and 'apple' against 'apples' scores
-zero.
-
-spacy_confusion has the same shape of output and compares MEANING, so 'apple'
-against 'fruit' scores well there and nothing at all here. Use this one for
-tokens, labels and categories; use that one for words.
+The node only exists if the ssqueezepy library is installed - without it, 'cwt'
+is not a node name at all.
 
 SYNTAX:
 cwt
-confusion
 
 EXAMPLE:
 cwt
 
 INPUTS and PARAMETERS:
 
-input (cwt):
-A window of signal. Receiving it does the transform.
+input:
+A window of signal - a list or array. Receiving it does the transform.
 
-octaves / wavelet:
-How finely to sample frequency, and which wavelet shape to use.
+octaves:
+How finely to sample frequency (voices per octave). Default 2.
 
-input / input2 (confusion):
-The two lists. input2 becomes the rows, input the columns.
+wavelet:
+Which wavelet shape to use: cmhat, gmw, bump, hhhat or morlet. Default gmw.
 
 OUTPUTS: 
 
-output (cwt):
-A matrix, frequency by time.
-
-output (confusion):
-A matrix of ones and zeros, rows by columns.
+output:
+A matrix of magnitudes, frequency by time.
 
 RELATED:
 rolling_buffer is the usual way to give cwt a window.
-spacy_confusion for meaning rather than equality.
-heat_map is where either of these wants to end up."""
+confusion is the other node here that makes a matrix to look at.
+heat_map is where the output wants to end up."""
 
 demo = [
     {'key': 'sig', 'init': 'signal', 'pos': (30, 62), 'w': 129, 'h': 78,
@@ -255,21 +230,96 @@ demo = [
      'props': HM(256, 0.0, 0.5)},
     {'key': 'c2', 'comment': True, 'text': 'frequency down, time across - an FFT\nwould tell you which frequencies but\nnot when they happened',
      'pos': (30, 780)},
-
-    {'key': 'm1', 'init': 'message', 'pos': (400, 62), 'w': 300, 'h': 42,
-     'props': MSG('apple pear engine')},
-    {'key': 'm2', 'init': 'message', 'pos': (400, 120), 'w': 360, 'h': 42,
-     'props': MSG('fruit apple engine apple')},
-    {'key': 'cf', 'init': 'confusion', 'pos': (400, 180), 'w': 220, 'h': 110},
-    {'key': 'hm2', 'init': 'heat_map', 'pos': (400, 305), 'w': 208, 'h': 148,
-     'props': HM(4, 0.0, 1.0, '%.0f')},
-    {'key': 'c5', 'comment': True, 'text': 'EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead',
-     'pos': (400, 465)},
 ]
 links = [('sig', '', 'rb', 'input'), ('rb', 'output', 'cw', 'input'),
-         ('cw', 'output', 'hm', 'y'),
-         ('m1', 'message out', 'cf', 'input2'),
+         ('cw', 'output', 'hm', 'y')]
+print(build('cwt', 'cwt - where the frequencies are, and when', body,
+            demo, links, demo_width=520, text_width=800, text_height=770))
+
+# ------------------------------------------------------------------ confusion
+body = """confusion - two lists, compared item by item.
+
+THE NODE:
+It takes two lists and marks every place an item in one EXACTLY equals an item
+in the other. The answer is a matrix - one row per item of the list sent to
+input2, one column per item of the list sent to input - with 1.0 where the two
+items match and 0 everywhere else. It is meant for a heat_map, where the pattern
+of agreement is obvious at a glance.
+
+ORDER MATTERS - input2 FIRST:
+input2 only stores its list. The matrix is computed and sent when a list arrives
+at input, compared against whatever input2 last received. If input2 has not
+received anything yet, nothing happens. So send the rows first, then the
+columns; after that, each new list at input is compared against the same rows.
+
+AN EXAMPLE:
+Sending ['apple','pear','engine'] to input2, then
+['fruit','apple','engine','apple'] to input:
+
+              fruit  apple  engine  apple
+    apple       0      1       0      1
+    pear        0      0       0      0
+    engine      0      0       1      0
+
+Note 'pear' is an empty row: it is not in the other list at all. That is the
+useful part - the gaps show you what one list has that the other does not, and
+repeats show up as repeated marks along a row.
+
+Items are compared with plain equality, so numbers work as well as words - 3
+matches 3.0, but '3' as text does not match the number 3.
+
+IT IS EQUALITY, NOT SIMILARITY:
+Worth being clear about, because there is a node that looks almost identical and
+does something quite different. This one asks "are these the same thing"; it has
+no notion of two things being nearly alike, and 'apple' against 'apples' scores
+zero.
+
+spacy_confusion has the same shape of output and compares MEANING, so 'apple'
+against 'fruit' scores well there and nothing at all here. Use this one for
+tokens, labels and categories; use that one for words.
+
+SYNTAX:
+confusion
+
+EXAMPLE:
+confusion
+
+INPUTS and PARAMETERS:
+
+input:
+The list that becomes the columns. Receiving it computes and sends the matrix.
+
+input2:
+The list that becomes the rows. It is stored, and used by every following
+list at input.
+
+OUTPUTS: 
+
+output:
+A matrix of ones and zeros, one row per input2 item by one column per input item.
+
+RELATED:
+spacy_confusion for meaning rather than equality.
+cwt is the other node here that makes a matrix to look at.
+heat_map is where the output wants to end up."""
+
+demo = [
+    {'key': 'm1', 'init': 'message', 'pos': (30, 62), 'w': 300, 'h': 42,
+     'props': MSG('apple pear engine')},
+    {'key': 'c0', 'comment': True, 'text': 'click this first - the rows, into input2',
+     'pos': (30, 112)},
+    {'key': 'm2', 'init': 'message', 'pos': (30, 145), 'w': 360, 'h': 42,
+     'props': MSG('fruit apple engine apple')},
+    {'key': 'c1', 'comment': True, 'text': 'then this - the columns, into input',
+     'pos': (30, 195)},
+    {'key': 'cf', 'init': 'confusion', 'pos': (30, 230), 'w': 220, 'h': 110},
+    {'key': 'hm2', 'init': 'heat_map', 'pos': (30, 355), 'w': 208, 'h': 148,
+     'props': HM(4, 0.0, 1.0, '%.0f')},
+    {'key': 'c5', 'comment': True, 'text': 'EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead',
+     'pos': (30, 515)},
+]
+links = [('m1', 'message out', 'cf', 'input2'),
          ('m2', 'message out', 'cf', 'input'),
          ('cf', 'output', 'hm2', 'y')]
-print(build('cwt', 'cwt and confusion - making a matrix to look at', body,
-            demo, links, demo_width=800, text_width=800, text_height=770))
+print(build('confusion', 'confusion - where two lists agree', body,
+            demo, links, demo_width=520, text_width=800, text_height=700))

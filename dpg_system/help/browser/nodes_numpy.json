@@ -1,0 +1,880 @@
+{
+    "height": 854,
+    "width": 860,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1536,
+    "name": "nodes_numpy",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment NumPy",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 77,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "NumPy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "NumPy",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes < dpg_system nodes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< dpg_system nodes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 198,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np. nodes work on numpy arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np. nodes work on numpy arrays.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment Making and shaping",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 154,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Making and shaping",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Making and shaping",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link np_generator np generators",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np generators",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 188,
+            "width": 422,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "arrays out of nothing\n(np.grid, np.linspace, np.ones, np.rand, np.sequence, np.zeros)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 414,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "arrays out of nothing\n(np.grid, np.linspace, np.ones, np.rand, np.sequence, np.zeros)",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link np_reshape np reshaping",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np reshaping",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 240,
+            "width": 545,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the same numbers, arranged differently\n(flatten, np.expand_dims, np.ravel, np.reshape, np.shape, np.squeeze, np.transpose,\n np.unsqueeze)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 537,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the same numbers, arranged differently\n(flatten, np.expand_dims, np.ravel, np.reshape, np.shape, np.squeeze, np.transpose,\n np.unsqueeze)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link np_rearrange np rearranging",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 296,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np rearranging",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 300,
+            "width": 569,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "reorder, join, split\n(np.argsort, np.concatenate, np.flip, np.repeat, np.roll, np.rot90, np.rotate, np.sort,\n np.split, np.stack)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 561,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "reorder, join, split\n(np.argsort, np.concatenate, np.flip, np.repeat, np.roll, np.rot90, np.rotate, np.sort,\n np.split, np.stack)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link np_select np selecting",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 356,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np selecting",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 360,
+            "width": 274,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "which part of the array\n(np.[], np.argwhere, np.crop, np.where)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "which part of the array\n(np.[], np.argwhere, np.crop, np.where)",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link np_util np utilities",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 408,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np utilities",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 412,
+            "width": 298,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "types, editing, loading\n(np.add_alpha, np.astype, np.edit, np.load)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "types, editing, loading\n(np.add_alpha, np.astype, np.edit, np.load)",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "comment Calculating",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 478,
+            "width": 100,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Calculating",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Calculating",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link np_clip np.clip / np.max / np.min",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 512,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.clip / np.max / np.min",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 516,
+            "width": 188,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hold values inside limits\n(np.clip, np.max, np.min)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hold values inside limits\n(np.clip, np.max, np.min)",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link np_stats np statistics",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 564,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np statistics",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 568,
+            "width": 576,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "reduce an array to an answer\n(np.all, np.amax, np.amin, np.any, np.argmax, np.argmin, np.mean, np.median, np.nanmean,\n np.nanmedian, np.nansum, np.robust_mean, np.std, np.sum, np.var)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 568,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "reduce an array to an answer\n(np.all, np.amax, np.amin, np.any, np.argmax, np.argmin, np.mean, np.median, np.nanmean,\n np.nanmedian, np.nansum, np.robust_mean, np.std, np.sum, np.var)",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link np_cumulative np cumulative",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 624,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np cumulative",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 628,
+            "width": 348,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the running story, not the total\n(np.cumprod, np.cumsum, np.diff, np.rolling_buffer)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the running story, not the total\n(np.cumprod, np.cumsum, np.diff, np.rolling_buffer)",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link np_linalg np linear algebra",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 676,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np linear algebra",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 680,
+            "width": 514,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "vectors and matrices\n(euclidean_distance, np.cross, np.dot, np.inner, np.linalg.det, np.linalg.inv,\n np.linalg.matrix_rank, np.linalg.norm, np.linalg.solve, np.matmul, np.outer)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 506,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "vectors and matrices\n(euclidean_distance, np.cross, np.dot, np.inner, np.linalg.det, np.linalg.inv,\n np.linalg.matrix_rank, np.linalg.norm, np.linalg.solve, np.matmul, np.outer)",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link np_target np targets",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 736,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np targets",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 740,
+            "width": 588,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how near is this to that\n(np.distance_from_target, np.line_intersection, np.proximity_to_target, proximity_trigger,\n rotate_position)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 580,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how near is this to that\n(np.distance_from_target, np.line_intersection, np.proximity_to_target, proximity_trigger,\n rotate_position)",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

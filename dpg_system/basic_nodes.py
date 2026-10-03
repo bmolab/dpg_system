@@ -77,6 +77,7 @@ def register_basic_nodes():
     Node.app.register_node('clamp', ClampNode.factory)
     Node.app.register_node('save', SaveNode.factory)
     Node.app.register_node('close', ClosePatchNode.factory)
+    Node.app.register_node('help_link', HelpLinkNode.factory)
     Node.app.register_node('active_widget', ActiveWidgetNode.factory)
     Node.app.register_node('pass_with_triggers', TriggerBeforeAndAfterNode.factory)
     Node.app.register_node('micro_metro', MicrosecondTimerNode.factory)
@@ -402,8 +403,164 @@ class ClosePatchNode(Node):
     def close_call(self):
         Node.app.close_current_node_editor()
 
+    def post_load_callback(self):
+        # Closing returns to the patch you came from, so in a help patch this
+        # button is a back button and says so. A browser page already has a
+        # '< parent' link, so there it says what it closes instead. Only the
+        # shown label changes: the property is still saved as 'close patch'.
+        folders = os.path.normpath(str(self.my_editor.file_path)).split(os.sep) if self.my_editor else []
+        if len(folders) >= 3 and folders[-3:-1] == ['help', 'browser']:
+            shown = 'close browser'
+        elif len(folders) >= 2 and folders[-2] == 'help':
+            shown = '< back'
+        else:
+            return
+        if dpg.does_item_exist(self.input.widget.uuid):
+            dpg.configure_item(self.input.widget.uuid, label=shown)
+
     def save_custom(self, container):
         container['name'] = 'close'
+
+    def load_custom(self, container):
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def set_custom_visibility(self):
+        dpg.configure_item(self.uuid, label='')
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+
+
+class HelpLinkNode(Node):
+    """A button that walks the node browser: help_link <target> [label words].
+
+    <target> is either a browser page (help/browser/<target>.json) or a help
+    file stem (help/<target>_help.json). Following a page link REPLACES the
+    page holding the button, and opening a help patch closes the one the
+    browser opened before -- so browsing leaves at most one page and one help
+    patch open, however far you go. A tab the user has edited (editor.modified)
+    is never closed this way: closing it would pop a Save dialog, or lose work.
+    """
+    last_help_name = None     # patch name of the help patch the browser opened
+
+    # Section colours for help links: button, hovered, text. Blue stays for
+    # page links and yellow for close, so neither is in the set.
+    palette = {
+        'green': ((0, 208, 0), (0, 255, 0), (0, 0, 0)),
+        'orange': ((235, 140, 0), (255, 175, 60), (0, 0, 0)),
+        'violet': ((140, 90, 220), (175, 130, 255), (255, 255, 255)),
+        'teal': ((0, 170, 170), (60, 215, 215), (0, 0, 0)),
+        'pink': ((205, 60, 150), (240, 100, 190), (255, 255, 255)),
+        'olive': ((170, 170, 60), (210, 210, 90), (0, 0, 0)),
+    }
+    palette_themes = {}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = HelpLinkNode(name, data, args)
+        return node
+
+    @staticmethod
+    def colour_theme(colour):
+        if colour not in HelpLinkNode.palette:
+            return None
+        if colour not in HelpLinkNode.palette_themes:
+            button, hovered, text = HelpLinkNode.palette[colour]
+            with dpg.theme() as theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvThemeCol_Button, button, category=dpg.mvThemeCat_Core)
+                    dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 255), category=dpg.mvThemeCat_Core)
+                    dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, hovered, category=dpg.mvThemeCat_Core)
+                    dpg.add_theme_color(dpg.mvThemeCol_Text, text, category=dpg.mvThemeCat_Core)
+            HelpLinkNode.palette_themes[colour] = theme
+        return HelpLinkNode.palette_themes[colour]
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.target = args[0] if args is not None and len(args) > 0 else 'nodes'
+        link_label = ' '.join(args[1:]) if args is not None and len(args) > 1 else self.target
+        self.input = self.add_input(link_label, widget_type='button', callback=self.follow)
+        self.width_option = self.add_option('width', widget_type='drag_int', default_value=0,
+                                            callback=self.width_changed)
+        self.colour_option = self.add_option('colour', widget_type='combo', default_value='auto',
+                                             callback=self.colour_changed)
+        self.colour_option.widget.combo_items = ['auto'] + list(HelpLinkNode.palette)
+
+    def custom_create(self, from_file):
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        dpg.configure_item(self.uuid, label='')
+        self.colour_changed()
+        dpg.set_item_height(self.input.widget.uuid, 28)
+        self.width_changed()
+
+    def colour_changed(self):
+        # 'auto': blue for a page, green for a help patch. The browser colours
+        # help links by section, so a page's groups read apart at a glance.
+        colour = self.colour_option() if self.colour_option is not None else 'auto'
+        theme = HelpLinkNode.colour_theme(colour)
+        if theme is None:
+            theme = Node.active_theme_blue if self.is_page() else Node.active_theme_green
+        if self.input.widget is not None and dpg.does_item_exist(self.input.widget.uuid):
+            self.input.widget.set_active_theme(theme)
+
+    def width_changed(self):
+        # 0 sizes the button to its label; the browser pages set one width per
+        # page so the buttons line up as a column.
+        width = self.width_option() if self.width_option is not None else 0
+        widget = self.input.widget
+        if widget is not None and dpg.does_item_exist(widget.uuid):
+            dpg.set_item_width(widget.uuid, widget._zoomed(width) if width and width > 0 else 0)
+
+    @staticmethod
+    def help_dir():
+        return os.path.join('dpg_system', 'help')
+
+    def page_path(self):
+        return os.path.join(HelpLinkNode.help_dir(), 'browser', self.target + '.json')
+
+    def is_page(self):
+        return os.path.exists(self.page_path())
+
+    def follow(self):
+        if self.is_page():
+            HelpLinkNode.open_page(self.target, leaving=self.my_editor)
+        else:
+            self.open_help()
+
+    @staticmethod
+    def open_page(page, leaving=None):
+        app = Node.app
+        path = os.path.join(HelpLinkNode.help_dir(), 'browser', page + '.json')
+        if not os.path.exists(path):
+            return
+        editor = app.find_editor(page)
+        if editor is None:
+            app.fresh_patcher = True
+            app.load_from_file(os.path.abspath(path))
+            editor = app.find_editor(page)
+        if leaving is not None and leaving is not editor and not leaving.modified:
+            app.remove_node_editor(leaving)
+        app.select_editor(editor)
+
+    def open_help(self):
+        app = Node.app
+        stem = self.target[:-len('_help')] if self.target.endswith('_help') else self.target
+        name = stem + '_help'
+        path = os.path.join(HelpLinkNode.help_dir(), name + '.json')
+        if not os.path.exists(path):
+            print('help_link: no help patch', path)
+            return
+        editor = app.find_editor(name)
+        if editor is None:
+            previous = HelpLinkNode.last_help_name
+            if previous is not None and previous != name:
+                stale = app.find_editor(previous)
+                if stale is not None and not stale.modified:
+                    app.remove_node_editor(stale)
+            app.fresh_patcher = True
+            app.load_from_file(os.path.abspath(path))
+            editor = app.find_editor(name)
+            HelpLinkNode.last_help_name = name
+        app.select_editor(editor)
 
     def load_custom(self, container):
         dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
@@ -3853,7 +4010,8 @@ class PositionPatchesNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        top, left = dpg.get_viewport_pos()
+        # get_viewport_pos() is (x, y): x is the distance from the left edge
+        left, top = dpg.get_viewport_pos()
         width = dpg.get_viewport_width()
         height = dpg.get_viewport_height()
         self.top_input = self.add_int_input('top', widget_type='drag_int', default_value=top, callback=self.reposition)
@@ -3865,7 +4023,7 @@ class PositionPatchesNode(Node):
         self.execute()
 
     def execute(self):
-        Node.app.position_viewport(self.top_input(), self.left_input())
+        Node.app.position_viewport(self.left_input(), self.top_input())
         Node.app.resize_viewport(self.width_input(), self.height_input())
 
     def post_load_callback(self):
@@ -4129,7 +4287,9 @@ class ListBoxNode(Node):
 
     def list_received(self):
         new_list = self.input()
-        self.list = any_to_list(new_list)
+        # As text: the box shows text, and the search below tests
+        # 'search_name in item', which raises on a number.
+        self.list = [any_to_string(item) for item in any_to_list(new_list)]
         search_name = dpg.get_value(self.search_property.widget.uuid)
         self.build_box_list(search_name)
 

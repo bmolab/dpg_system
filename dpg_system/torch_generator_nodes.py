@@ -196,7 +196,7 @@ class TorchDistributionNode(TorchNode):
         self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.add_shape_input()
         self.distribution = None
-        self.help_file_name = 't.dist_help'
+        self.help_file_name = 't.dist.distributions_help'
 
     def add_shape_input(self):
         self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape),

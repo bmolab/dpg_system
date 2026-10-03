@@ -1,0 +1,167 @@
+{
+    "height": 721,
+    "width": 1295,
+    "position": [
+        100,
+        100
+    ],
+    "id": 459,
+    "name": "patch_window_position_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/patch_window_position_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment patch_window_position - place the app window",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "patch_window_position - place the app window",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "patch_window_position - place the app window"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 467,
+            "position_y": 45,
+            "width": 788,
+            "height": 616,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The patch_window_position node moves and resizes the app's window.\n\nUse it to bring a patch up at a known size on a particular screen, or to fit\na projector. It acts on the whole app window, not just this patch's tab.\n\nWhen the node is made it fills in the window's current place and size,\nso it starts out describing where the window already is. Change a number -\ndrag it, or send one in - and the window moves or resizes at once.\nThe four values are saved with the patch, and the node applies them again\nwhenever the patch is loaded, which is how a patch puts its window where it\nbelongs when it opens.\n\nSYNTAX:\npatch_window_position\n\nEXAMPLE:\npatch_window_position\n\nINPUTS and PARAMETERS:\n\ntop:\nThe vertical position of the window, in pixels from the top of the screen.\n\nleft:\nThe horizontal position of the window, in pixels from the left edge of the\nscreen.\n\nwidth / height:\nThe size of the window, in pixels.\n\nEach of the four acts the moment it changes, and all four are applied\ntogether, so the window is always set to the whole of what the node shows.\n\nOUTPUTS:\n\nNone - the node acts on the window rather than passing data on.\n\nRELATED:\npresent switches the patch into presentation mode, and display_info\nreports the screens available to put the window on.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 600,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The patch_window_position node moves and resizes the app's window.\n\nUse it to bring a patch up at a known size on a particular screen, or to fit\na projector. It acts on the whole app window, not just this patch's tab.\n\nWhen the node is made it fills in the window's current place and size,\nso it starts out describing where the window already is. Change a number -\ndrag it, or send one in - and the window moves or resizes at once.\nThe four values are saved with the patch, and the node applies them again\nwhenever the patch is loaded, which is how a patch puts its window where it\nbelongs when it opens.\n\nSYNTAX:\npatch_window_position\n\nEXAMPLE:\npatch_window_position\n\nINPUTS and PARAMETERS:\n\ntop:\nThe vertical position of the window, in pixels from the top of the screen.\n\nleft:\nThe horizontal position of the window, in pixels from the left edge of the\nscreen.\n\nwidth / height:\nThe size of the window, in pixels.\n\nEach of the four acts the moment it changes, and all four are applied\ntogether, so the window is always set to the whole of what the node shows.\n\nOUTPUTS:\n\nNone - the node acts on the window rather than passing data on.\n\nRELATED:\npresent switches the patch into presentation mode, and display_info\nreports the screens available to put the window on."
+        },
+        "3": {
+            "name": "patch_window_position",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 138,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 194,
+            "position_y": 215,
+            "width": 243,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "starts at where the window is now\ndrag a number to move or resize it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "starts at where the window is now\ndrag a number to move or resize it"
+        },
+        "5": {
+            "name": "close",
+            "id": 422,
+            "position_x": 24,
+            "position_y": 162,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

@@ -1,11 +1,11 @@
 {
     "height": 904,
-    "width": 1767,
+    "width": 1397,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 607,
     "name": "cwt_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/cwt_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment cwt and confusion - making a matrix to look at",
+            "init": "comment cwt - where the frequencies are, and when",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 574,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "cwt and confusion - making a matrix to look at",
+                    "value": "cwt - where the frequencies are, and when",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "cwt and confusion - making a matrix to look at"
+            "comment": "cwt - where the frequencies are, and when"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 919,
+            "position_x": 549,
             "position_y": 45,
             "width": 808,
             "height": 786,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two nodes that turn what you send them into a matrix to look at.\n\nTHE NODES:\n\ncwt        a signal, spread out into time against frequency\nconfusion  two lists, compared item by item\n\nThey have nothing to do with each other mathematically. What they share is the\nshape of the answer: both take something one-dimensional and give back a grid,\nand both are meant for a heat_map, where a pattern you would never find in a\ncolumn of numbers is obvious at a glance.\n\ncwt: WHERE THE FREQUENCIES ARE, AND WHEN:\nA Fourier transform tells you which frequencies are present in a signal, and\nthrows away when they happened. A wavelet transform keeps both: the output is a\nmatrix, frequency down one axis and time along the other, so you can see a pitch\nrise, a thump arrive, or a tremor start and stop.\n\nThat is the whole reason to reach for it over an FFT. If the question has the\nword \"when\" in it, you want this.\n\nThe output is the MAGNITUDE of the coefficients - how much of each frequency was\npresent at each moment. The phase is discarded, which is what you want for\nlooking and not what you want for reconstructing.\n\n'octaves' IS REALLY VOICES PER OCTAVE:\nIt sets how finely the frequency axis is sampled, not how many octaves are\ncovered. Higher gives more rows and a smoother picture, at proportionally more\nwork. Measured on a 512-sample input:\n\noctaves 2   ->  17 rows by 512 columns\noctaves 8   ->  65 rows by 512 columns\n\nThe columns always match the input length, so the time axis is simply the signal\nyou sent. Feed it from a buffer or rolling_buffer to give it a window to work on\n- a single sample has no time in it to analyse.\n\n'wavelet' chooses the shape being matched against the signal. They trade\nsharpness in time against sharpness in frequency, and you cannot have both -\nthat is a property of the world, not of the software. morlet is the familiar\ngeneral-purpose choice; the others differ in where they sit on that trade.\n\nconfusion: WHERE TWO LISTS AGREE:\nIt takes two lists and marks every place an item in one EXACTLY equals an item\nin the other - one row per item in the second list, one column per item in the\nfirst, 1.0 where they match and 0 everywhere else.\n\nSending ['apple','pear','engine'] and ['fruit','apple','engine','apple']:\n\n              fruit  apple  engine  apple\n    apple       0      1       0      1\n    pear        0      0       0      0\n    engine      0      0       1      0\n\nNote 'pear' is an empty row: it appears in neither. That is the useful part -\nthe gaps show you what one list has that the other does not, and repeats show up\nas repeated marks along a row.\n\nIT IS EQUALITY, NOT SIMILARITY:\nWorth being clear about, because there is a node that looks almost identical and\ndoes something quite different. This one asks \"are these the same thing\"; it has\nno notion of two things being nearly alike, and 'apple' against 'apples' scores\nzero.\n\nspacy_confusion has the same shape of output and compares MEANING, so 'apple'\nagainst 'fruit' scores well there and nothing at all here. Use this one for\ntokens, labels and categories; use that one for words.\n\nSYNTAX:\ncwt\nconfusion\n\nEXAMPLE:\ncwt\n\nINPUTS and PARAMETERS:\n\ninput (cwt):\nA window of signal. Receiving it does the transform.\n\noctaves / wavelet:\nHow finely to sample frequency, and which wavelet shape to use.\n\ninput / input2 (confusion):\nThe two lists. input2 becomes the rows, input the columns.\n\nOUTPUTS: \n\noutput (cwt):\nA matrix, frequency by time.\n\noutput (confusion):\nA matrix of ones and zeros, rows by columns.\n\nRELATED:\nrolling_buffer is the usual way to give cwt a window.\nspacy_confusion for meaning rather than equality.\nheat_map is where either of these wants to end up.",
+                    "value": "cwt - a continuous wavelet transform: where the frequencies are, and when.\n\nTHE NODE:\nIt takes a window of signal and gives back a matrix, frequency down one axis and\ntime along the other, meant for a heat_map - where a pattern you would never\nfind in a column of numbers is obvious at a glance.\n\nWHERE THE FREQUENCIES ARE, AND WHEN:\nA Fourier transform tells you which frequencies are present in a signal, and\nthrows away when they happened. A wavelet transform keeps both: the output is a\nmatrix, frequency down one axis and time along the other, so you can see a pitch\nrise, a thump arrive, or a tremor start and stop.\n\nThat is the whole reason to reach for it over an FFT. If the question has the\nword \"when\" in it, you want this.\n\nThe output is the MAGNITUDE of the coefficients - how much of each frequency was\npresent at each moment. The phase is discarded, which is what you want for\nlooking and not what you want for reconstructing.\n\n'octaves' IS REALLY VOICES PER OCTAVE:\nIt sets how finely the frequency axis is sampled, not how many octaves are\ncovered. Higher gives more rows and a smoother picture, at proportionally more\nwork. Measured on a 512-sample input with the morlet wavelet:\n\noctaves 2   ->  17 rows by 512 columns\noctaves 8   ->  65 rows by 512 columns\n\nThe number of rows also grows a little with the length of the input, and varies\nslightly from one wavelet to another. The columns always match the input length,\nso the time axis is simply the signal you sent.\n\nGIVE IT A WINDOW:\nEverything it receives is flattened into one long signal and analysed as a\nwhole. Feed it from a buffer or rolling_buffer to give it a window to work on -\na single sample has no time in it to analyse, and the transform fails (a\nmessage is printed in the console and nothing is sent).\n\n'wavelet' chooses the shape being matched against the signal. They trade\nsharpness in time against sharpness in frequency, and you cannot have both -\nthat is a property of the world, not of the software. morlet is the familiar\ngeneral-purpose choice; the others differ in where they sit on that trade.\nThe choices are cmhat, gmw, bump, hhhat and morlet; the default is gmw.\n\nThe node only exists if the ssqueezepy library is installed - without it, 'cwt'\nis not a node name at all.\n\nSYNTAX:\ncwt\n\nEXAMPLE:\ncwt\n\nINPUTS and PARAMETERS:\n\ninput:\nA window of signal - a list or array. Receiving it does the transform.\n\noctaves:\nHow finely to sample frequency (voices per octave). Default 2.\n\nwavelet:\nWhich wavelet shape to use: cmhat, gmw, bump, hhhat or morlet. Default gmw.\n\nOUTPUTS: \n\noutput:\nA matrix of magnitudes, frequency by time.\n\nRELATED:\nrolling_buffer is the usual way to give cwt a window.\nconfusion is the other node here that makes a matrix to look at.\nheat_map is where the output wants to end up.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two nodes that turn what you send them into a matrix to look at.\n\nTHE NODES:\n\ncwt        a signal, spread out into time against frequency\nconfusion  two lists, compared item by item\n\nThey have nothing to do with each other mathematically. What they share is the\nshape of the answer: both take something one-dimensional and give back a grid,\nand both are meant for a heat_map, where a pattern you would never find in a\ncolumn of numbers is obvious at a glance.\n\ncwt: WHERE THE FREQUENCIES ARE, AND WHEN:\nA Fourier transform tells you which frequencies are present in a signal, and\nthrows away when they happened. A wavelet transform keeps both: the output is a\nmatrix, frequency down one axis and time along the other, so you can see a pitch\nrise, a thump arrive, or a tremor start and stop.\n\nThat is the whole reason to reach for it over an FFT. If the question has the\nword \"when\" in it, you want this.\n\nThe output is the MAGNITUDE of the coefficients - how much of each frequency was\npresent at each moment. The phase is discarded, which is what you want for\nlooking and not what you want for reconstructing.\n\n'octaves' IS REALLY VOICES PER OCTAVE:\nIt sets how finely the frequency axis is sampled, not how many octaves are\ncovered. Higher gives more rows and a smoother picture, at proportionally more\nwork. Measured on a 512-sample input:\n\noctaves 2   ->  17 rows by 512 columns\noctaves 8   ->  65 rows by 512 columns\n\nThe columns always match the input length, so the time axis is simply the signal\nyou sent. Feed it from a buffer or rolling_buffer to give it a window to work on\n- a single sample has no time in it to analyse.\n\n'wavelet' chooses the shape being matched against the signal. They trade\nsharpness in time against sharpness in frequency, and you cannot have both -\nthat is a property of the world, not of the software. morlet is the familiar\ngeneral-purpose choice; the others differ in where they sit on that trade.\n\nconfusion: WHERE TWO LISTS AGREE:\nIt takes two lists and marks every place an item in one EXACTLY equals an item\nin the other - one row per item in the second list, one column per item in the\nfirst, 1.0 where they match and 0 everywhere else.\n\nSending ['apple','pear','engine'] and ['fruit','apple','engine','apple']:\n\n              fruit  apple  engine  apple\n    apple       0      1       0      1\n    pear        0      0       0      0\n    engine      0      0       1      0\n\nNote 'pear' is an empty row: it appears in neither. That is the useful part -\nthe gaps show you what one list has that the other does not, and repeats show up\nas repeated marks along a row.\n\nIT IS EQUALITY, NOT SIMILARITY:\nWorth being clear about, because there is a node that looks almost identical and\ndoes something quite different. This one asks \"are these the same thing\"; it has\nno notion of two things being nearly alike, and 'apple' against 'apples' scores\nzero.\n\nspacy_confusion has the same shape of output and compares MEANING, so 'apple'\nagainst 'fruit' scores well there and nothing at all here. Use this one for\ntokens, labels and categories; use that one for words.\n\nSYNTAX:\ncwt\nconfusion\n\nEXAMPLE:\ncwt\n\nINPUTS and PARAMETERS:\n\ninput (cwt):\nA window of signal. Receiving it does the transform.\n\noctaves / wavelet:\nHow finely to sample frequency, and which wavelet shape to use.\n\ninput / input2 (confusion):\nThe two lists. input2 becomes the rows, input the columns.\n\nOUTPUTS: \n\noutput (cwt):\nA matrix, frequency by time.\n\noutput (confusion):\nA matrix of ones and zeros, rows by columns.\n\nRELATED:\nrolling_buffer is the usual way to give cwt a window.\nspacy_confusion for meaning rather than equality.\nheat_map is where either of these wants to end up."
+            "text": "cwt - a continuous wavelet transform: where the frequencies are, and when.\n\nTHE NODE:\nIt takes a window of signal and gives back a matrix, frequency down one axis and\ntime along the other, meant for a heat_map - where a pattern you would never\nfind in a column of numbers is obvious at a glance.\n\nWHERE THE FREQUENCIES ARE, AND WHEN:\nA Fourier transform tells you which frequencies are present in a signal, and\nthrows away when they happened. A wavelet transform keeps both: the output is a\nmatrix, frequency down one axis and time along the other, so you can see a pitch\nrise, a thump arrive, or a tremor start and stop.\n\nThat is the whole reason to reach for it over an FFT. If the question has the\nword \"when\" in it, you want this.\n\nThe output is the MAGNITUDE of the coefficients - how much of each frequency was\npresent at each moment. The phase is discarded, which is what you want for\nlooking and not what you want for reconstructing.\n\n'octaves' IS REALLY VOICES PER OCTAVE:\nIt sets how finely the frequency axis is sampled, not how many octaves are\ncovered. Higher gives more rows and a smoother picture, at proportionally more\nwork. Measured on a 512-sample input with the morlet wavelet:\n\noctaves 2   ->  17 rows by 512 columns\noctaves 8   ->  65 rows by 512 columns\n\nThe number of rows also grows a little with the length of the input, and varies\nslightly from one wavelet to another. The columns always match the input length,\nso the time axis is simply the signal you sent.\n\nGIVE IT A WINDOW:\nEverything it receives is flattened into one long signal and analysed as a\nwhole. Feed it from a buffer or rolling_buffer to give it a window to work on -\na single sample has no time in it to analyse, and the transform fails (a\nmessage is printed in the console and nothing is sent).\n\n'wavelet' chooses the shape being matched against the signal. They trade\nsharpness in time against sharpness in frequency, and you cannot have both -\nthat is a property of the world, not of the software. morlet is the familiar\ngeneral-purpose choice; the others differ in where they sit on that trade.\nThe choices are cmhat, gmw, bump, hhhat and morlet; the default is gmw.\n\nThe node only exists if the ssqueezepy library is installed - without it, 'cwt'\nis not a node name at all.\n\nSYNTAX:\ncwt\n\nEXAMPLE:\ncwt\n\nINPUTS and PARAMETERS:\n\ninput:\nA window of signal - a list or array. Receiving it does the transform.\n\noctaves:\nHow finely to sample frequency (voices per octave). Default 2.\n\nwavelet:\nWhich wavelet shape to use: cmhat, gmw, bump, hhhat or morlet. Default gmw.\n\nOUTPUTS: \n\noutput:\nA matrix of magnitudes, frequency by time.\n\nRELATED:\nrolling_buffer is the usual way to give cwt a window.\nconfusion is the other node here that makes a matrix to look at.\nheat_map is where the output wants to end up."
         },
         "3": {
             "name": "signal",
@@ -163,7 +163,7 @@
             "name": "text_block",
             "id": 422,
             "annotation": true,
-            "position_x": 634,
+            "position_x": 264,
             "position_y": 370,
             "width": 255,
             "height": 40,
@@ -279,7 +279,7 @@
             "name": "text_block",
             "id": 533,
             "annotation": true,
-            "position_x": 634,
+            "position_x": 264,
             "position_y": 780,
             "width": 255,
             "height": 52,
@@ -316,159 +316,8 @@
             "text": "frequency down, time across - an FFT\nwould tell you which frequencies but\nnot when they happened"
         },
         "9": {
-            "name": "message",
-            "id": 570,
-            "position_x": 400,
-            "position_y": 62,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "apple pear engine",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "10": {
-            "name": "message",
-            "id": 607,
-            "position_x": 400,
-            "position_y": 120,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "fruit apple engine apple",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "11": {
-            "name": "confusion",
-            "id": 644,
-            "position_x": 400,
-            "position_y": 180,
-            "width": 64,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "12": {
-            "name": "heat_map",
-            "id": 681,
-            "position_x": 400,
-            "position_y": 305,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 4,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.0f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "13": {
-            "name": "text_block",
-            "id": 718,
-            "annotation": true,
-            "position_x": 634,
-            "position_y": 465,
-            "width": 249,
-            "height": 64,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 241,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 48,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead"
-        },
-        "14": {
             "name": "close",
-            "id": 755,
+            "id": 570,
             "position_x": 24,
             "position_y": 800,
             "width": 88,
@@ -512,36 +361,6 @@
             "source_output_index": 0,
             "source_output_name": "output",
             "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "3": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "input2"
-        },
-        "4": {
-            "source_node": 607,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "input"
-        },
-        "5": {
-            "source_node": 644,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

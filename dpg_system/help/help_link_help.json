@@ -1,0 +1,191 @@
+{
+    "height": 741,
+    "width": 1236,
+    "position": [
+        100,
+        100
+    ],
+    "id": 533,
+    "name": "help_link_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/help_link_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment help_link - a door to another page",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 426,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "help_link - a door to another page",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "help_link - a door to another page"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 548,
+            "position_y": 45,
+            "width": 648,
+            "height": 636,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A button that opens a page of the node browser, or a help patch.\n\nTHE NODE:\n\nhelp_link   one button, one destination\n\nThe node browser (Help > Node Browser) is built from these. You can also put\nthem in your own patches to point at documentation.\n\nSYNTAX:\nhelp_link <target> [label]\n\nEXAMPLES:\nhelp_link nodes_math Math\nhelp_link trig\n\n<target> is either a browser page - a file in dpg_system/help/browser - or a\nhelp patch, named without its _help suffix ('trig' opens trig_help.json). The\nlabel is optional; without one the button shows the target.\n\nA PAGE LINK REPLACES THE PATCH IT IS IN:\nA blue button opens its page and closes the patch holding the button. Walking\nthe browser therefore leaves one page open, however deep you go. Each page has\na link back up to its parent at the top.\n\nA HELP LINK REPLACES THE LAST HELP IT OPENED:\nAny other colour opens a help patch, and closes the help patch the browser\nopened before it. The browser colours these by section, so the groups on a\npage read apart at a glance. Browsing leaves at most one page and one help patch open.\n\nNOTHING YOU HAVE EDITED IS CLOSED:\nA patch you have changed - added a node, moved one, made a connection - is left\nopen rather than closed, so you never lose work or get asked to save.\n\nINPUTS and PARAMETERS:\n\n<label>:\nThe button. Click it to go.\n\nwidth (option):\nThe button's width in pixels. 0 sizes it to its label. The browser pages set\none width per page so the buttons form a column.\n\ncolour (option):\nauto, green, orange, violet, teal, pink or olive. auto is blue for a page and\ngreen for a help patch.\n\nThe browser pages are generated: edit help/tools/make_browser.py and rerun it,\nrather than editing the pages themselves.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 620,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A button that opens a page of the node browser, or a help patch.\n\nTHE NODE:\n\nhelp_link   one button, one destination\n\nThe node browser (Help > Node Browser) is built from these. You can also put\nthem in your own patches to point at documentation.\n\nSYNTAX:\nhelp_link <target> [label]\n\nEXAMPLES:\nhelp_link nodes_math Math\nhelp_link trig\n\n<target> is either a browser page - a file in dpg_system/help/browser - or a\nhelp patch, named without its _help suffix ('trig' opens trig_help.json). The\nlabel is optional; without one the button shows the target.\n\nA PAGE LINK REPLACES THE PATCH IT IS IN:\nA blue button opens its page and closes the patch holding the button. Walking\nthe browser therefore leaves one page open, however deep you go. Each page has\na link back up to its parent at the top.\n\nA HELP LINK REPLACES THE LAST HELP IT OPENED:\nAny other colour opens a help patch, and closes the help patch the browser\nopened before it. The browser colours these by section, so the groups on a\npage read apart at a glance. Browsing leaves at most one page and one help patch open.\n\nNOTHING YOU HAVE EDITED IS CLOSED:\nA patch you have changed - added a node, moved one, made a connection - is left\nopen rather than closed, so you never lose work or get asked to save.\n\nINPUTS and PARAMETERS:\n\n<label>:\nThe button. Click it to go.\n\nwidth (option):\nThe button's width in pixels. 0 sizes it to its label. The browser pages set\none width per page so the buttons form a column.\n\ncolour (option):\nauto, green, orange, violet, teal, pink or olive. auto is blue for a page and\ngreen for a help patch.\n\nThe browser pages are generated: edit help/tools/make_browser.py and rerun it,\nrather than editing the pages themselves."
+        },
+        "3": {
+            "init": "comment opens the top page of the browser, in place of this one:",
+            "name": "comment",
+            "id": 348,
+            "position_x": 165,
+            "position_y": 70,
+            "width": 353,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "opens the top page of the browser, in place of this one:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "opens the top page of the browser, in place of this one:"
+        },
+        "4": {
+            "name": "help_link",
+            "id": 385,
+            "position_x": 24,
+            "position_y": 100,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link nodes dpg_system nodes"
+        },
+        "5": {
+            "init": "comment opens a help patch:",
+            "name": "comment",
+            "id": 422,
+            "position_x": 165,
+            "position_y": 170,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "opens a help patch:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "opens a help patch:"
+        },
+        "6": {
+            "name": "help_link",
+            "id": 459,
+            "position_x": 24,
+            "position_y": 200,
+            "width": 41,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link trig"
+        },
+        "7": {
+            "name": "close",
+            "id": 496,
+            "position_x": 24,
+            "position_y": 274,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

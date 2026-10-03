@@ -1685,11 +1685,11 @@ class NodeEditor:
 
     def _patch_name_from_path(self, path):
         # Strip directory and a trailing .json extension to produce the display name.
+        # Only the extension: a stem may hold dots of its own (t.mean_help.json),
+        # and splitting on every dot left those names as 't.mean_help.json'.
         name = path.split('/')[-1]
-        if '.' in name:
-            parts = name.split('.')
-            if len(parts) == 2 and parts[1] == 'json':
-                name = parts[0]
+        if name.endswith('.json'):
+            name = name[:-len('.json')]
         return name
 
     def load(self, path=''):

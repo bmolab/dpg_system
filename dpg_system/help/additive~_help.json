@@ -1,6 +1,6 @@
 {
-    "height": 1303,
-    "width": 1814,
+    "height": 2102,
+    "width": 1463,
     "position": [
         100,
         100
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment additive~, shape_modes, vst~ - built from a description",
+            "init": "comment additive~ and shape_modes - built from a description",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 684,
+            "width": 647,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "additive~, shape_modes, vst~ - built from a description",
+                    "value": "additive~ and shape_modes - built from a description",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "additive~, shape_modes, vst~ - built from a description"
+            "comment": "additive~ and shape_modes - built from a description"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 956,
+            "position_x": 605,
             "position_y": 45,
             "width": 818,
             "height": 776,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Three nodes that each build something from a description rather than a preset.\n\nadditive~ - AN OSCILLATOR FROM A DRAWN SPECTRUM:\nDraw the amplitude of each partial against its index - partial 1 is the \nfundamental, 2 the octave above, 3 the twelfth - and the node sounds their sum. \nThe gestures are shaper~'s: drag a point, right-click to add or remove one, \nshift and left-drag to bend a segment.\n\n'stretch' pulls the partials away from whole-number ratios, which is the \ndifference between a harmonic tone and a bell. 'odd/even' fades between the two \nfamilies - all odd partials is a clarinet, both is a saw. spectrum~ is the same \nnode.\n\nshape_modes - A MODE TABLE FROM A SHAPE:\nPatch its 'modes' outlet into modal~, rub~ or blow~ and their table stops being \na preset and becomes whatever you described. Give it an outline - a list of \nhalf-widths along the length - say how that outline is swept into a volume, \nand say what it is made of, and it solves for the modes.\n\nThat is what makes an object you invented playable. A bar, a bowl, a bell, a \ntube of a shape nobody makes: describe the geometry and the material, and the \nthree model nodes will strike it, bow it and blow it.\n\nvst~ - SOMEBODY ELSE'S EFFECT:\nA VST3 or AudioUnit plugin, patched like any other unit. The argument is part \nof a plugin's filename - 'valhalla', 'waveshell'. A file holding several \nplugins offers them in the 'plugin' option; pick one and it reloads. \nplugin~ is the same node.\n\nSYNTAX:\nadditive~ <frequency>\nshape_modes\nvst~ <part of a filename>\n\nEXAMPLE:\nvst~ valhalla\n\nINPUTS and PARAMETERS:\n\nfrequency / pitch (additive~):\nWhere the fundamental sits, and exponential transposition.\n\npartials / tilt / odd-even / stretch / spread (additive~):\nHow many partials, how the level falls across them, which family, how far from \nharmonic, and how much they are detuned from each other.\n\nspectrum (additive~):\nThe drawn shape, as data - so a spectrum can be stored or sent.\n\nprofile / sweep / mirror / carve (shape_modes):\nThe outline, and how it becomes a volume.\n\nmaterial / length / width / depth / wall (shape_modes):\nWhat it is made of and how big it is.\n\nsolve / compute / count (shape_modes):\nWork the modes out, and how many to find.\n\nleft in / right in / mix (vst~):\nThe signal and the wet-dry balance.\n\nOUTPUTS: \n\nsignal / out:\nThe sound.\n\nmodes (shape_modes):\nThe mode table, for modal~, rub~ or blow~.\n\nreport / frequency / decay / mesh (shape_modes):\nWhat it found, and the geometry it solved.\n\nspectrum out (additive~):\nThe drawn spectrum.",
+                    "value": "Two nodes that each build something from a description rather than a preset.\n\nTHE NODES:\n\nadditive~    an oscillator whose spectrum you draw\nspectrum~    the same node\nshape_modes  a mode table for modal~, rub~ or blow~, solved from a shape\n\nadditive~ - AN OSCILLATOR FROM A DRAWN SPECTRUM:\nDraw the amplitude of each partial against its index - partial 1 is the\nfundamental, 2 the octave above, 3 the twelfth - and the node sounds their sum.\nThe gestures are shaper~'s: drag a point, right-click to add or remove one,\nshift and left-drag to bend a segment. Set the 'edit' option to 'bars' to set\nthe partials one at a time instead - bar 9 is partial 9 exactly, for a tone\nthat is a particular handful of harmonics and nothing else.\n\nThe drawing is the character; the inlets are the ways it moves, all at audio\nrate. Sweeping 'tilt' with an envelope is the workhorse gesture: a filter\nsweep that cannot ring or lose the fundamental, because nothing is filtered.\n'stretch' pulls the partials off whole-number ratios, which is the difference\nbetween a harmonic tone and a bell. At exactly 0 the partials are baked into\na wavetable and five hundred cost what one does; off 0 it becomes a real bank\nof oscillators, capped at 64 partials. The small button beside tilt, odd/even\nand stretch puts that control exactly back on its default.\n\nshape_modes - A MODE TABLE FROM A SHAPE:\nPatch its 'modes' outlet into modal~, rub~ or blow~ and their table stops\nbeing a preset and becomes whatever you described. Give it an outline - a list\nof half-widths along the length - say how that outline is swept into a volume,\nand say what it is made of, and it solves for the modes. A bar, a bead, a\ntube of a shape nobody makes: describe it and the model nodes will strike it,\nbow it and blow it.\n\nAnything you CLICK re-solves at once, and so does a profile arriving on the\ncord. Anything you DRAG - length, width, depth, detail - waits for 'compute',\nbecause a solve takes tens to hundreds of milliseconds. The mallet controls\n(strike, direction, damping, count) are free: they only reweigh modes\nalready solved.\n\nMaterial and size barely change the table - every mode moves together, so\nthey cancel out of a ratio. What they change is the PITCH and the ring, so\npatch the 'frequency' and 'decay' outlets into the inlets of the same name.\n\nSYNTAX:\nadditive~ <frequency> <partials> <tilt>\nadditive~ <preset>\nshape_modes\n\nEXAMPLE:\nadditive~ 110 bell\n\nThe presets are saw, square, triangle, pulse, sine, organ, vocal, bell and\ngong, and can be mixed with the numbers: additive~ 220 organ.\n\nINPUTS and PARAMETERS (additive~):\n\nfrequency / pitch / linear fm:\nWhere the fundamental sits (default 110 Hz), transposition in octaves, and\nfrequency modulation in Hz.\n\ntilt:\nA slope across the spectrum in dB per octave - its brightness. Default -6,\nwhich makes a row of equal partials a saw.\n\npartials:\nHow many sound, 1 to 512 (default 32). Fractional: the top one fades in.\n\nodd/even:\n0 is the odd partials alone (hollow - a square, a clarinet), 0.5 all of them,\n1 the even alone.\n\nstretch:\n0 is harmonic. A few thousandths is a stiff string, more is a bell, negative\nsqueezes the partials together towards a gong.\n\nspread / phase:\nHow the partials' starting phases are spread across the cycle. At 0 they all\nstart together: one narrow spike a cycle, which reads as a buzz and costs\nlevel. Opened up, the same spectrum smears into a smoother tone. 'phase'\n(aligned, random, schroeder) chooses what it spreads towards. Changes glide\nover the 'phase glide' option rather than clicking.\n\nphase mod / sync:\nPhase modulation in cycles, and a rising edge that restarts the cycle.\n\nspectrum:\nA list of amplitudes, to load a spectrum from elsewhere - an analysis,\nanother node's 'spectrum out'.\n\npreset:\nLoad one of the presets.\n\noptions:\nnormalize (none, rms, peak), edit (curve, bars), span (whether the curve\nstretches to the partial count or covers all 512), phase glide, start phase,\nreset phase, flatten, clear bars, and the drawing's width and height.\n\nINPUTS and PARAMETERS (shape_modes):\n\nprofile:\nThe outline, as a list of at least two numbers, taken as proportions and\nscaled to 'width'.\n\nsolve / open:\nSolve the 'body' (the thing itself) or the 'cavity' (the air inside it), and\nfor a cavity, which ends are open.\n\nsweep / mirror / carve / wall:\nHow the outline becomes a volume: revolved as a radius or extruded as a\nhalf-width; mirrored from a half outline; for an extrude, whether it is cut\ninto the depth or the width; and how far it is hollowed (1 is solid).\n\nmaterial / length / width / depth:\nWhat it is made of, and its size in metres.\n\ndetail / compute:\nHow finely it is meshed, and the button that solves it.\n\nstrike / direction / damping / count:\nWhere along it the mallet lands (0 to 1), which way, how much faster the upper\nmodes die, and how many modes to send.\n\nshow / swell:\nWhich mode the 'mesh' outlet shows (0 is the shape itself), and how far.\n\nOUTPUTS (additive~):\n\nsignal:\nThe sound.\n\nspectrum out:\nThe drawn spectrum, whenever it is edited.\n\nOUTPUTS (shape_modes):\n\nreport:\nWhat it found, or why it could not.\n\nfrequency / decay / modes:\nThe pitch and ring time the material implies, and the mode table - three\ncords into the inlets of the same names on modal~, rub~ or blow~.\n\nmesh:\nThe solved geometry, for looking at.\n\nRELATED:\nmodal~, rub~, blow~, shaper~, vco~, vst~",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Three nodes that each build something from a description rather than a preset.\n\nadditive~ - AN OSCILLATOR FROM A DRAWN SPECTRUM:\nDraw the amplitude of each partial against its index - partial 1 is the \nfundamental, 2 the octave above, 3 the twelfth - and the node sounds their sum. \nThe gestures are shaper~'s: drag a point, right-click to add or remove one, \nshift and left-drag to bend a segment.\n\n'stretch' pulls the partials away from whole-number ratios, which is the \ndifference between a harmonic tone and a bell. 'odd/even' fades between the two \nfamilies - all odd partials is a clarinet, both is a saw. spectrum~ is the same \nnode.\n\nshape_modes - A MODE TABLE FROM A SHAPE:\nPatch its 'modes' outlet into modal~, rub~ or blow~ and their table stops being \na preset and becomes whatever you described. Give it an outline - a list of \nhalf-widths along the length - say how that outline is swept into a volume, \nand say what it is made of, and it solves for the modes.\n\nThat is what makes an object you invented playable. A bar, a bowl, a bell, a \ntube of a shape nobody makes: describe the geometry and the material, and the \nthree model nodes will strike it, bow it and blow it.\n\nvst~ - SOMEBODY ELSE'S EFFECT:\nA VST3 or AudioUnit plugin, patched like any other unit. The argument is part \nof a plugin's filename - 'valhalla', 'waveshell'. A file holding several \nplugins offers them in the 'plugin' option; pick one and it reloads. \nplugin~ is the same node.\n\nSYNTAX:\nadditive~ <frequency>\nshape_modes\nvst~ <part of a filename>\n\nEXAMPLE:\nvst~ valhalla\n\nINPUTS and PARAMETERS:\n\nfrequency / pitch (additive~):\nWhere the fundamental sits, and exponential transposition.\n\npartials / tilt / odd-even / stretch / spread (additive~):\nHow many partials, how the level falls across them, which family, how far from \nharmonic, and how much they are detuned from each other.\n\nspectrum (additive~):\nThe drawn shape, as data - so a spectrum can be stored or sent.\n\nprofile / sweep / mirror / carve (shape_modes):\nThe outline, and how it becomes a volume.\n\nmaterial / length / width / depth / wall (shape_modes):\nWhat it is made of and how big it is.\n\nsolve / compute / count (shape_modes):\nWork the modes out, and how many to find.\n\nleft in / right in / mix (vst~):\nThe signal and the wet-dry balance.\n\nOUTPUTS: \n\nsignal / out:\nThe sound.\n\nmodes (shape_modes):\nThe mode table, for modal~, rub~ or blow~.\n\nreport / frequency / decay / mesh (shape_modes):\nWhat it found, and the geometry it solved.\n\nspectrum out (additive~):\nThe drawn spectrum."
+            "text": "Two nodes that each build something from a description rather than a preset.\n\nTHE NODES:\n\nadditive~    an oscillator whose spectrum you draw\nspectrum~    the same node\nshape_modes  a mode table for modal~, rub~ or blow~, solved from a shape\n\nadditive~ - AN OSCILLATOR FROM A DRAWN SPECTRUM:\nDraw the amplitude of each partial against its index - partial 1 is the\nfundamental, 2 the octave above, 3 the twelfth - and the node sounds their sum.\nThe gestures are shaper~'s: drag a point, right-click to add or remove one,\nshift and left-drag to bend a segment. Set the 'edit' option to 'bars' to set\nthe partials one at a time instead - bar 9 is partial 9 exactly, for a tone\nthat is a particular handful of harmonics and nothing else.\n\nThe drawing is the character; the inlets are the ways it moves, all at audio\nrate. Sweeping 'tilt' with an envelope is the workhorse gesture: a filter\nsweep that cannot ring or lose the fundamental, because nothing is filtered.\n'stretch' pulls the partials off whole-number ratios, which is the difference\nbetween a harmonic tone and a bell. At exactly 0 the partials are baked into\na wavetable and five hundred cost what one does; off 0 it becomes a real bank\nof oscillators, capped at 64 partials. The small button beside tilt, odd/even\nand stretch puts that control exactly back on its default.\n\nshape_modes - A MODE TABLE FROM A SHAPE:\nPatch its 'modes' outlet into modal~, rub~ or blow~ and their table stops\nbeing a preset and becomes whatever you described. Give it an outline - a list\nof half-widths along the length - say how that outline is swept into a volume,\nand say what it is made of, and it solves for the modes. A bar, a bead, a\ntube of a shape nobody makes: describe it and the model nodes will strike it,\nbow it and blow it.\n\nAnything you CLICK re-solves at once, and so does a profile arriving on the\ncord. Anything you DRAG - length, width, depth, detail - waits for 'compute',\nbecause a solve takes tens to hundreds of milliseconds. The mallet controls\n(strike, direction, damping, count) are free: they only reweigh modes\nalready solved.\n\nMaterial and size barely change the table - every mode moves together, so\nthey cancel out of a ratio. What they change is the PITCH and the ring, so\npatch the 'frequency' and 'decay' outlets into the inlets of the same name.\n\nSYNTAX:\nadditive~ <frequency> <partials> <tilt>\nadditive~ <preset>\nshape_modes\n\nEXAMPLE:\nadditive~ 110 bell\n\nThe presets are saw, square, triangle, pulse, sine, organ, vocal, bell and\ngong, and can be mixed with the numbers: additive~ 220 organ.\n\nINPUTS and PARAMETERS (additive~):\n\nfrequency / pitch / linear fm:\nWhere the fundamental sits (default 110 Hz), transposition in octaves, and\nfrequency modulation in Hz.\n\ntilt:\nA slope across the spectrum in dB per octave - its brightness. Default -6,\nwhich makes a row of equal partials a saw.\n\npartials:\nHow many sound, 1 to 512 (default 32). Fractional: the top one fades in.\n\nodd/even:\n0 is the odd partials alone (hollow - a square, a clarinet), 0.5 all of them,\n1 the even alone.\n\nstretch:\n0 is harmonic. A few thousandths is a stiff string, more is a bell, negative\nsqueezes the partials together towards a gong.\n\nspread / phase:\nHow the partials' starting phases are spread across the cycle. At 0 they all\nstart together: one narrow spike a cycle, which reads as a buzz and costs\nlevel. Opened up, the same spectrum smears into a smoother tone. 'phase'\n(aligned, random, schroeder) chooses what it spreads towards. Changes glide\nover the 'phase glide' option rather than clicking.\n\nphase mod / sync:\nPhase modulation in cycles, and a rising edge that restarts the cycle.\n\nspectrum:\nA list of amplitudes, to load a spectrum from elsewhere - an analysis,\nanother node's 'spectrum out'.\n\npreset:\nLoad one of the presets.\n\noptions:\nnormalize (none, rms, peak), edit (curve, bars), span (whether the curve\nstretches to the partial count or covers all 512), phase glide, start phase,\nreset phase, flatten, clear bars, and the drawing's width and height.\n\nINPUTS and PARAMETERS (shape_modes):\n\nprofile:\nThe outline, as a list of at least two numbers, taken as proportions and\nscaled to 'width'.\n\nsolve / open:\nSolve the 'body' (the thing itself) or the 'cavity' (the air inside it), and\nfor a cavity, which ends are open.\n\nsweep / mirror / carve / wall:\nHow the outline becomes a volume: revolved as a radius or extruded as a\nhalf-width; mirrored from a half outline; for an extrude, whether it is cut\ninto the depth or the width; and how far it is hollowed (1 is solid).\n\nmaterial / length / width / depth:\nWhat it is made of, and its size in metres.\n\ndetail / compute:\nHow finely it is meshed, and the button that solves it.\n\nstrike / direction / damping / count:\nWhere along it the mallet lands (0 to 1), which way, how much faster the upper\nmodes die, and how many modes to send.\n\nshow / swell:\nWhich mode the 'mesh' outlet shows (0 is the shape itself), and how far.\n\nOUTPUTS (additive~):\n\nsignal:\nThe sound.\n\nspectrum out:\nThe drawn spectrum, whenever it is edited.\n\nOUTPUTS (shape_modes):\n\nreport:\nWhat it found, or why it could not.\n\nfrequency / decay / modes:\nThe pitch and ring time the material implies, and the mode table - three\ncords into the inlets of the same names on modal~, rub~ or blow~.\n\nmesh:\nThe solved geometry, for looking at.\n\nRELATED:\nmodal~, rub~, blow~, shaper~, vco~, vst~"
         },
         "3": {
             "name": "shape_modes",
@@ -105,35 +105,50 @@
             "properties": {}
         },
         "4": {
-            "init": "comment describe a shape, then click solve",
-            "name": "comment",
+            "name": "text_block",
             "id": 385,
-            "position_x": 659,
-            "position_y": 415,
-            "width": 217,
-            "height": 30,
+            "annotation": true,
+            "position_x": 289,
+            "position_y": 420,
+            "width": 255,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "describe a shape, then click solve",
+                    "name": "block",
+                    "value": "describe a shape, then click compute\nto send the table",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "describe a shape, then click solve"
+            "text": "describe a shape, then click compute\nto send the table"
         },
         "5": {
             "name": "modal~",
             "id": 422,
             "position_x": 30,
-            "position_y": 455,
+            "position_y": 470,
             "width": 228,
             "height": 386,
             "visibility": "show_all",
@@ -142,60 +157,63 @@
             "properties": {}
         },
         "6": {
-            "init": "comment its table is now your shape, not a preset",
-            "name": "comment",
+            "name": "text_block",
             "id": 459,
-            "position_x": 659,
-            "position_y": 765,
-            "width": 260,
-            "height": 30,
+            "annotation": true,
+            "position_x": 289,
+            "position_y": 865,
+            "width": 286,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "its table is now your shape, not a preset",
+                    "name": "block",
+                    "value": "its table is now your shape, not a preset\nclick strike to hear it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "its table is now your shape, not a preset"
+            "text": "its table is now your shape, not a preset\nclick strike to hear it"
         },
         "7": {
-            "name": "clock~",
+            "name": "fader_out~",
             "id": 496,
-            "position_x": 400,
-            "position_y": 62,
-            "width": 157,
-            "height": 126,
+            "position_x": 30,
+            "position_y": 910,
+            "width": 70,
+            "height": 308,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "clock~ 0.7"
+            "init": "fader_out~ 1 2"
         },
         "8": {
-            "name": "strike~",
-            "id": 533,
-            "position_x": 400,
-            "position_y": 280,
-            "width": 193,
-            "height": 154,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
             "name": "additive~",
-            "id": 570,
-            "position_x": 400,
-            "position_y": 500,
+            "id": 533,
+            "position_x": 30,
+            "position_y": 1250,
             "width": 233,
             "height": 356,
             "visibility": "show_all",
@@ -204,12 +222,12 @@
             "properties": {},
             "init": "additive~ 220"
         },
-        "10": {
+        "9": {
             "init": "comment draw the partials; stretch makes it a bell",
             "name": "comment",
-            "id": 607,
-            "position_x": 659,
-            "position_y": 866,
+            "id": 570,
+            "position_x": 289,
+            "position_y": 1615,
             "width": 267,
             "height": 30,
             "visibility": "show_all",
@@ -229,11 +247,11 @@
             },
             "comment": "draw the partials; stretch makes it a bell"
         },
-        "11": {
+        "10": {
             "name": "fader_out~",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
-            "position_y": 861,
+            "position_y": 1660,
             "width": 70,
             "height": 308,
             "visibility": "show_all",
@@ -242,11 +260,36 @@
             "properties": {},
             "init": "fader_out~ 1 2"
         },
+        "11": {
+            "init": "comment raise a fader to hear it",
+            "name": "comment",
+            "id": 644,
+            "position_x": 289,
+            "position_y": 1985,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise a fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise a fader to hear it"
+        },
         "12": {
             "name": "close",
             "id": 681,
             "position_x": 24,
-            "position_y": 1199,
+            "position_y": 1998,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -273,31 +316,41 @@
             "dest_input_name": "modes"
         },
         "1": {
-            "source_node": 496,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "trigger",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "hit"
-        },
-        "2": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
+            "source_output_name": "frequency",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "excite in"
+            "dest_input_name": "frequency"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "decay",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "decay"
         },
         "3": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 644,
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"

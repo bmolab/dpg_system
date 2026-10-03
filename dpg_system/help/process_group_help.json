@@ -1,11 +1,11 @@
 {
-    "height": 821,
-    "width": 1340,
+    "height": 881,
+    "width": 1342,
     "position": [
         100,
         100
     ],
-    "id": 533,
+    "id": 496,
     "name": "process_group_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/process_group_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment process_group and ip_address - across machines",
+            "init": "comment process_group - one computation across machines",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 574,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "process_group and ip_address - across machines",
+                    "value": "process_group - one computation across machines",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "process_group and ip_address - across machines"
+            "comment": "process_group - one computation across machines"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 502,
+            "position_x": 504,
             "position_y": 45,
             "width": 798,
-            "height": 716,
+            "height": 776,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two nodes for working across machines: distributed torch, and finding your address.\n\nTHE NODES:\n\nprocess_group  a torch distributed process group\nip_address     what addresses this machine has\n\nprocess_group IS NOT THE SAME AS SENDING AN ARRAY:\nThe socket nodes move data between two patches that each do their own work.\nThis joins several processes into ONE computation - torch's own distributed\nmachinery, with every participant given a RANK and the group knowing its\nWORLD SIZE.\n\nThat is what you want when a model is too large for one GPU, or when the same\ncomputation should run across several machines with tensors moving between them\nas part of the calculation rather than as messages.\n\n'backend' selects how they talk - the right choice depends on whether the\nparticipants are GPUs on one machine or separate machines on a network.\n\nEvery participant must agree on the ip, the port and the world size, and each\nmust have a different rank. Rank 0 is conventionally the coordinator.\n\n'expected_tensor_example' is how the receiving side knows what shape and dtype\nto expect, because a distributed receive has to allocate before it knows what is\ncoming.\n\nCREATING THE NODE STARTS THE RENDEZVOUS:\nA process group is not something you set up and then connect. The moment the\nnode exists it begins looking for the other participants, and it waits until all\nof them have arrived - which, if you are still building the other end, is a\nwhile, and if you mistyped the world size, is forever.\n\nThat is why there is no live process_group in this patch: opening a help file\nshould not go looking for machines. Build the other participants first, then\nmake this node last.\n\nip_address IS THE SMALL USEFUL ONE:\nIt reports the addresses this machine is reachable at. That is what you tell the\nother end to send to, and it saves going to look it up in a system panel - which\nmatters when the address changes, as it does on a network you do not control.\n\nA machine usually has several. The one to use is on the same network as the\nother machine; the loopback address 127.0.0.1 only ever reaches this machine\nitself, which is the right choice for testing two patches on one computer and\nuseless for anything else.\n\nSYNTAX:\nprocess_group\nip_address\n\nEXAMPLE:\nip_address\n\nINPUTS and PARAMETERS:\n\nip / port:\nWhere the group coordinates.\n\nrank / world_size:\nWhich participant this is, and how many there are altogether.\n\nbackend:\nHow the participants communicate.\n\ndata_to_send / destination_rank:\nThe tensor and who gets it.\n\nexpected_tensor_example:\nThe shape and dtype to expect on receive.\n\nget_ip:\nAsk for the addresses.\n\nOUTPUTS: \n\nsending_complete / received_data:\nThe distributed exchange.\n\nip_addresses_out:\nThis machine's addresses.\n\nWHEN NOT TO REACH FOR process_group:\nIf two patches are exchanging results, the socket nodes are simpler and more\nrobust - they tolerate one end restarting, which a process group does not.\nDistributed torch is for one computation spread across participants, and it\nexpects all of them to be present and healthy.",
+                    "value": "process_group - joining a torch distributed process group.\n\nTHE NODE:\nIt makes this patch one participant in torch's own distributed machinery, with\nevery participant given a RANK and the group knowing its WORLD SIZE, and sends\ntensors to another participant as part of that group.\n\nprocess_group IS NOT THE SAME AS SENDING AN ARRAY:\nThe socket nodes move data between two patches that each do their own work.\nThis joins several processes into ONE computation - what you want when a model\nis too large for one GPU, or when the same computation should run across several\nmachines with tensors moving between them as part of the calculation rather than\nas messages.\n\nSETTINGS COME FROM THE ARGUMENTS, IN ORDER:\nip, port, rank, world size, backend. Anything left out takes its default:\n127.0.0.1, 29500, rank 0, world size 2, backend gloo.\n\nThe group is formed from these arguments the moment the node is created. The\nip, port, rank, backend and world_size fields on the node show those values,\nbut changing them afterwards does NOT change the group - to change a setting,\nretype the node with new arguments.\n\nEvery participant must agree on the ip, the port and the world size, and each\nmust have a different rank. Rank 0 is the coordinator, and the ip and port are\nwhere it can be found - on rank 0 itself that is its own address. 'backend'\nselects how they talk: gloo works on any machine; nccl is for NVIDIA GPUs.\n\nCREATING THE NODE STARTS THE RENDEZVOUS:\nA process group is not something you set up and then connect. The moment the\nnode exists it begins looking for the other participants, and it waits until all\nof them have arrived - which, if you are still building the other end, is a\nwhile, and if you mistyped the world size, is forever. The waiting happens in\nthe background, so the patch keeps running meanwhile.\n\nThat is why there is no live process_group in this patch: opening a help file\nshould not go looking for machines. Build the other participants first, then\nmake this node last. One patch can only belong to one group, so there is no\npoint in making two of these in the same patch.\n\nSENDING:\nA tensor (or anything that converts to one) arriving at data_to_send is sent to\nrank 1. The destination_rank field is there, but in the current version it is\nnot read - sends always go to rank 1. Only one send can be in flight at a time.\n\nWHAT DOES NOT WORK YET:\nBe warned that this node is unfinished. The node never checks whether a send\nhas finished, so sending_complete never sends anything - and since the node\nalso never clears its \"already sending\" flag, only the first tensor sent ever\ngoes out. Nothing starts a receive either, so received_data never sends\nanything, and expected_tensor_example only prepares the space a receive would\nuse. Treat it as a starting point rather than a working link.\n\nSYNTAX:\nprocess_group [ip] [port] [rank] [world size] [backend]\n\nEXAMPLE:\nprocess_group 192.168.1.20 29500 1 2 gloo\n\nINPUTS and PARAMETERS:\n\ndata_to_send:\nA tensor to send to rank 1.\n\ndestination_rank:\nMeant to choose who gets the tensor; currently ignored.\n\nexpected_tensor_example:\nA tensor with the shape and dtype a receive should expect, because a\ndistributed receive has to allocate before it knows what is coming.\n\nip / port / rank / backend / world_size:\nShow the settings the group was made with. Set them with the arguments.\n\nOUTPUTS: \n\nsending_complete:\nMeant to send a bang when a send finishes; currently never fires.\n\nreceived_data:\nMeant to send a received tensor; currently never fires.\n\nWHEN NOT TO REACH FOR process_group:\nIf two patches are exchanging results, the socket nodes are simpler and more\nrobust - they tolerate one end restarting, which a process group does not.\nDistributed torch is for one computation spread across participants, and it\nexpects all of them to be present and healthy.\n\nRELATED:\nip_address tells you what address to give the other participants.\nudp_numpy_send and tcp_numpy_send for passing arrays between patches.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 700,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,70 +90,23 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two nodes for working across machines: distributed torch, and finding your address.\n\nTHE NODES:\n\nprocess_group  a torch distributed process group\nip_address     what addresses this machine has\n\nprocess_group IS NOT THE SAME AS SENDING AN ARRAY:\nThe socket nodes move data between two patches that each do their own work.\nThis joins several processes into ONE computation - torch's own distributed\nmachinery, with every participant given a RANK and the group knowing its\nWORLD SIZE.\n\nThat is what you want when a model is too large for one GPU, or when the same\ncomputation should run across several machines with tensors moving between them\nas part of the calculation rather than as messages.\n\n'backend' selects how they talk - the right choice depends on whether the\nparticipants are GPUs on one machine or separate machines on a network.\n\nEvery participant must agree on the ip, the port and the world size, and each\nmust have a different rank. Rank 0 is conventionally the coordinator.\n\n'expected_tensor_example' is how the receiving side knows what shape and dtype\nto expect, because a distributed receive has to allocate before it knows what is\ncoming.\n\nCREATING THE NODE STARTS THE RENDEZVOUS:\nA process group is not something you set up and then connect. The moment the\nnode exists it begins looking for the other participants, and it waits until all\nof them have arrived - which, if you are still building the other end, is a\nwhile, and if you mistyped the world size, is forever.\n\nThat is why there is no live process_group in this patch: opening a help file\nshould not go looking for machines. Build the other participants first, then\nmake this node last.\n\nip_address IS THE SMALL USEFUL ONE:\nIt reports the addresses this machine is reachable at. That is what you tell the\nother end to send to, and it saves going to look it up in a system panel - which\nmatters when the address changes, as it does on a network you do not control.\n\nA machine usually has several. The one to use is on the same network as the\nother machine; the loopback address 127.0.0.1 only ever reaches this machine\nitself, which is the right choice for testing two patches on one computer and\nuseless for anything else.\n\nSYNTAX:\nprocess_group\nip_address\n\nEXAMPLE:\nip_address\n\nINPUTS and PARAMETERS:\n\nip / port:\nWhere the group coordinates.\n\nrank / world_size:\nWhich participant this is, and how many there are altogether.\n\nbackend:\nHow the participants communicate.\n\ndata_to_send / destination_rank:\nThe tensor and who gets it.\n\nexpected_tensor_example:\nThe shape and dtype to expect on receive.\n\nget_ip:\nAsk for the addresses.\n\nOUTPUTS: \n\nsending_complete / received_data:\nThe distributed exchange.\n\nip_addresses_out:\nThis machine's addresses.\n\nWHEN NOT TO REACH FOR process_group:\nIf two patches are exchanging results, the socket nodes are simpler and more\nrobust - they tolerate one end restarting, which a process group does not.\nDistributed torch is for one computation spread across participants, and it\nexpects all of them to be present and healthy."
+            "text": "process_group - joining a torch distributed process group.\n\nTHE NODE:\nIt makes this patch one participant in torch's own distributed machinery, with\nevery participant given a RANK and the group knowing its WORLD SIZE, and sends\ntensors to another participant as part of that group.\n\nprocess_group IS NOT THE SAME AS SENDING AN ARRAY:\nThe socket nodes move data between two patches that each do their own work.\nThis joins several processes into ONE computation - what you want when a model\nis too large for one GPU, or when the same computation should run across several\nmachines with tensors moving between them as part of the calculation rather than\nas messages.\n\nSETTINGS COME FROM THE ARGUMENTS, IN ORDER:\nip, port, rank, world size, backend. Anything left out takes its default:\n127.0.0.1, 29500, rank 0, world size 2, backend gloo.\n\nThe group is formed from these arguments the moment the node is created. The\nip, port, rank, backend and world_size fields on the node show those values,\nbut changing them afterwards does NOT change the group - to change a setting,\nretype the node with new arguments.\n\nEvery participant must agree on the ip, the port and the world size, and each\nmust have a different rank. Rank 0 is the coordinator, and the ip and port are\nwhere it can be found - on rank 0 itself that is its own address. 'backend'\nselects how they talk: gloo works on any machine; nccl is for NVIDIA GPUs.\n\nCREATING THE NODE STARTS THE RENDEZVOUS:\nA process group is not something you set up and then connect. The moment the\nnode exists it begins looking for the other participants, and it waits until all\nof them have arrived - which, if you are still building the other end, is a\nwhile, and if you mistyped the world size, is forever. The waiting happens in\nthe background, so the patch keeps running meanwhile.\n\nThat is why there is no live process_group in this patch: opening a help file\nshould not go looking for machines. Build the other participants first, then\nmake this node last. One patch can only belong to one group, so there is no\npoint in making two of these in the same patch.\n\nSENDING:\nA tensor (or anything that converts to one) arriving at data_to_send is sent to\nrank 1. The destination_rank field is there, but in the current version it is\nnot read - sends always go to rank 1. Only one send can be in flight at a time.\n\nWHAT DOES NOT WORK YET:\nBe warned that this node is unfinished. The node never checks whether a send\nhas finished, so sending_complete never sends anything - and since the node\nalso never clears its \"already sending\" flag, only the first tensor sent ever\ngoes out. Nothing starts a receive either, so received_data never sends\nanything, and expected_tensor_example only prepares the space a receive would\nuse. Treat it as a starting point rather than a working link.\n\nSYNTAX:\nprocess_group [ip] [port] [rank] [world size] [backend]\n\nEXAMPLE:\nprocess_group 192.168.1.20 29500 1 2 gloo\n\nINPUTS and PARAMETERS:\n\ndata_to_send:\nA tensor to send to rank 1.\n\ndestination_rank:\nMeant to choose who gets the tensor; currently ignored.\n\nexpected_tensor_example:\nA tensor with the shape and dtype a receive should expect, because a\ndistributed receive has to allocate before it knows what is coming.\n\nip / port / rank / backend / world_size:\nShow the settings the group was made with. Set them with the arguments.\n\nOUTPUTS: \n\nsending_complete:\nMeant to send a bang when a send finishes; currently never fires.\n\nreceived_data:\nMeant to send a received tensor; currently never fires.\n\nWHEN NOT TO REACH FOR process_group:\nIf two patches are exchanging results, the socket nodes are simpler and more\nrobust - they tolerate one end restarting, which a process group does not.\nDistributed torch is for one computation spread across participants, and it\nexpects all of them to be present and healthy.\n\nRELATED:\nip_address tells you what address to give the other participants.\nudp_numpy_send and tcp_numpy_send for passing arrays between patches."
         },
         "3": {
-            "name": "button",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "ip_address",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 107,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "list",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 255,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
             "name": "text_block",
-            "id": 459,
+            "id": 348,
             "annotation": true,
-            "position_x": 186,
-            "position_y": 305,
-            "width": 286,
-            "height": 112,
+            "position_x": 163,
+            "position_y": 62,
+            "width": 311,
+            "height": 148,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "tell the other end this address\n127.0.0.1 only reaches this machine -\nright for testing, useless otherwise\nprocess_group is deliberately NOT in this\npatch: creating one starts a rendezvous\nthat waits for its other participants\nevery participant agrees on ip, port\nand world_size; each has its own rank",
+                    "value": "process_group is deliberately NOT in this\npatch: creating one starts a rendezvous\nthat waits for its other participants\n\nmake it with all its arguments, last,\nonce the other participants exist:\n\n    process_group 192.168.1.20 29500 1 2 gloo\n\nevery participant agrees on ip, port\nand world size; each has its own rank",
                     "value_type": "str"
                 },
                 "1": {
@@ -163,12 +116,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 278,
+                    "value": 303,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 96,
+                    "value": 132,
                     "value_type": "int"
                 },
                 "4": {
@@ -177,13 +130,65 @@
                     "value_type": "str"
                 }
             },
-            "text": "tell the other end this address\n127.0.0.1 only reaches this machine -\nright for testing, useless otherwise\nprocess_group is deliberately NOT in this\npatch: creating one starts a rendezvous\nthat waits for its other participants\nevery participant agrees on ip, port\nand world_size; each has its own rank"
+            "text": "process_group is deliberately NOT in this\npatch: creating one starts a rendezvous\nthat waits for its other participants\n\nmake it with all its arguments, last,\nonce the other participants exist:\n\n    process_group 192.168.1.20 29500 1 2 gloo\n\nevery participant agrees on ip, port\nand world size; each has its own rank"
         },
-        "7": {
+        "4": {
+            "name": "ip_address",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 107,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 163,
+            "position_y": 385,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "ip_address: the address to give the\nother participants",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "ip_address: the address to give the\nother participants"
+        },
+        "6": {
             "name": "close",
-            "id": 496,
+            "id": 459,
             "position_x": 24,
-            "position_y": 327,
+            "position_y": 350,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -198,26 +203,5 @@
             }
         }
     },
-    "links": {
-        "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "get_ip"
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "ip_addresses_out",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        }
-    }
+    "links": {}
 }

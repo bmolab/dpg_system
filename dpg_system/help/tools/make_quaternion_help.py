@@ -1,4 +1,4 @@
-"""rotation representations, 6D, comparing rotations, normalising and aligning."""
+"""rotation representations, 6D, comparing rotations, normalising, aligning a tracker."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -320,84 +320,50 @@ print(build('quaternion_diff', 'comparing rotations - how much, and relative to 
             body, demo, links, demo_width=560, text_width=810, text_height=760))
 
 # -------------------------------------------------------------- quaternion_norm
-body = """Two nodes for keeping rotations valid and putting them in the right frame.
+body = """quaternion_norm scales quaternions back to unit length, without changing the 
+rotation they describe.
 
-THE NODES:
-
-quaternion_norm  scale a quaternion back to unit length
-tracker_align    align an inertial body with an external tracker's world
-
-quaternion_norm AND WHY DRIFT HAPPENS:
+WHY DRIFT HAPPENS:
 Only unit-length quaternions represent rotations. Composing many of them, or 
 interpolating, or simply accumulating floating point error over a long run, 
-lets the length wander away from 1 - and a quaternion that is not unit length 
-scales as well as rotates, so things slowly grow or shrink.
+lets the length wander away from 1. Anything that uses a quaternion directly 
+as a rotation then scales as well as rotates, so things slowly grow or shrink.
 
 The symptom is a body that gradually inflates or deflates over minutes rather 
 than anything obviously wrong. Normalising in the chain costs nothing and 
 removes the possibility.
 
-tracker_align AND THE TWO WORLDS PROBLEM:
-An inertial suit knows which way is down, and takes its heading from the 
-magnetic field. An external tracker knows where things are in ITS room 
-coordinates. Neither is wrong, and they disagree about which way is north - so 
-the suit's body faces one way and the tracker's position moves in another, and 
-the two drift apart as the performer turns.
+WHAT IT ACCEPTS:
+A single quaternion (four numbers), or a whole pose as a table of quaternions, 
+one row of four per joint - as a list, a numpy array or a torch tensor. Each 
+row is divided by its own length. The order of the four numbers does not 
+matter, so scalar-first and scalar-last quaternions both come out right.
 
-This node measures that disagreement as a yaw offset and corrects it. 
-'calibrate' captures the current offset. 'continuous' keeps tracking it, which 
-matters because magnetometer heading drifts over a session rather than staying 
-put. 'smoothing' controls how fast the correction follows - high enough that a 
-momentary disagreement does not swing the body, low enough that real drift is 
-followed.
+Anything else - a flat list holding a whole pose end to end, or a batch of 
+poses with more than two dimensions - passes nothing at all. A quaternion of 
+all zeros has no direction to keep and comes out as not-a-number.
 
 SYNTAX:
 quaternion_norm
-tracker_align
 
 EXAMPLE:
 quaternion_norm
 
 INPUTS and PARAMETERS:
 
-quaternions (quaternion_norm):
-One quaternion or a whole pose. All of them are normalised.
+quaternions:
+One quaternion, or a table of them with four numbers per row.
 
-imu root quat (tracker_align):
-The suit's root orientation - a single quaternion, or a full 37-joint Shadow 
-pose, or a 20-joint active pose, from which the root is taken.
-
-tracker pos / tracker quat:
-What the external tracker reports.
-
-body offset:
-Where the tracker sits relative to the suit's root, in body-local coordinates.
-
-calibrate:
-Capture the current yaw disagreement as the offset.
-
-continuous:
-Keep following it. On by default.
-
-smoothing:
-How quickly the correction follows. Default 0.88.
-
-OUTPUTS: 
+OUTPUTS:
 
 normalized:
-Unit-length quaternions.
-
-corrected pos:
-The tracker position, brought into the suit's world.
-
-correction quat / yaw offset:
-The correction being applied, and its size - worth watching, because a yaw 
-offset that keeps growing means the magnetometer heading is drifting, which is 
-a sensor problem rather than something to keep correcting.
+The same quaternions at unit length, in the same shape. A list comes back as a 
+numpy array; a torch tensor stays a tensor.
 
 RELATED:
-mag_yaw_correct addresses the same magnetic heading error at the sensor level, 
-per limb. This one reconciles a whole body with an external reference."""
+quaternion_diff and quaternion_relative normalise their own results. 
+tracker_align, which also works on a suit's root orientation, has its own 
+help page."""
 
 demo = starter() + [
     {'key': 'sig', 'init': 'signal 4.0 saw', 'pos': (30, 132), 'w': 129, 'h': 78,
@@ -414,18 +380,157 @@ demo = starter() + [
      'props': {'text in': '', 'font size': '24'}},
     {'key': 'c1', 'comment': True, 'text': 'back to length 1, same rotation',
      'pos': (30, 765)},
-    {'key': 'ta', 'init': 'tracker_align', 'pos': (30, 810), 'w': 280, 'h': 240},
-    {'key': 'c2', 'comment': True, 'text': 'reconciles the suit and a tracker',
-     'pos': (30, 1065)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('sig', '', 'pk', 'in 1'), ('pk', 'out', 'eq', 'xyz rotation'),
          ('eq', 'quaternion rotation', 'mul', 'in'),
          ('mul', 'result', 'qn', 'quaternions'),
-         ('qn', 'normalized', 'l1', ''),
-         ('eq', 'quaternion rotation', 'ta', 'imu root quat')]
-print(build('quaternion_norm', 'quaternion_norm and tracker_align - staying valid',
-            body, demo, links, demo_width=580, text_width=800, text_height=740))
+         ('qn', 'normalized', 'l1', '')]
+print(build('quaternion_norm', 'quaternion_norm - keeping rotations unit length',
+            body, demo, links, demo_width=580, text_width=800, text_height=640))
+
+
+# ---------------------------------------------------------------- tracker_align
+body = """tracker_align brings an external tracker's position into the world of an 
+inertial suit, by measuring how far the two disagree about which way is north.
+
+THE TWO WORLDS PROBLEM:
+An inertial suit knows which way is down, and takes its heading from the 
+magnetic field. An external tracker knows where things are in ITS room 
+coordinates. Neither is wrong, and they disagree about which way is north - so 
+the suit's body faces one way and the tracker's position moves in another, and 
+the two drift apart as the performer turns.
+
+HOW IT MEASURES THE DISAGREEMENT:
+The tracker rides on the body, so it turns when the suit's root turns. The 
+node compares the tracker's orientation with the suit's root orientation; 
+whatever lean and tilt they share cancels, and what is left is a turn about 
+the vertical - the yaw offset between the two worlds. It then turns the 
+tracker's position back by that offset, so the position lands in the suit's 
+world.
+
+This assumes both worlds have y up, and that the tracker is mounted facing the 
+same way as the suit's root sensor - any fixed turn between the two mountings 
+is measured as part of the offset.
+
+The offset it can measure is limited to 90 degrees either way. A larger 
+disagreement reads as its mirror image - 100 degrees comes out as 80 - so the 
+two systems need to be set up roughly facing the same way to begin with.
+
+FOLLOWING OR HOLDING:
+With 'continuous' on (the default) the correction keeps following the 
+measured offset, which matters because magnetometer heading drifts over a 
+session rather than staying put. 'smoothing' sets how slowly it follows: each 
+new frame moves the correction only part of the way towards the newly 
+measured offset - the higher the smoothing, the smaller that part. High enough 
+that a momentary disagreement does not swing the body, low enough that real 
+drift is followed. The very first frame sets the correction directly.
+
+'calibrate' captures the current offset, switches 'continuous' off, and holds 
+that correction fixed from then on. Switching 'continuous' back on resumes 
+following. With 'continuous' off and no calibration taken yet, it keeps 
+following anyway.
+
+NOTHING COMES OUT until 'tracker pos' and 'tracker quat' have each received 
+something. Only 'imu root quat' triggers the node, so feed the tracker inlets 
+first and the suit last in each frame.
+
+SYNTAX:
+tracker_align
+
+EXAMPLE:
+tracker_align
+
+INPUTS and PARAMETERS:
+
+imu root quat:
+The suit's root orientation, scalar first - a single quaternion, a full 
+37-joint Shadow pose (the root is joint 4) or a 20-joint active pose (the root 
+is joint 5). Any other number of quaternions uses the first one. This inlet 
+triggers the node.
+
+tracker pos:
+The position the external tracker reports, x y z.
+
+tracker quat:
+The tracker's orientation, scalar first.
+
+body offset:
+Optional. Where the tracker sits relative to the suit's root, in the body's 
+own coordinates and the same units as the position. When given, it is turned 
+with the suit's root orientation and subtracted, so 'corrected pos' becomes the 
+position of the suit's root rather than of the tracker.
+
+calibrate:
+Capture the current offset and hold it.
+
+continuous:
+Keep following the offset. On by default.
+
+smoothing:
+0 to 0.999. How slowly the correction follows. Default 0.88.
+
+OUTPUTS:
+
+corrected pos:
+The tracker position, brought into the suit's world.
+
+correction quat:
+The correction being applied: a turn about y, scalar first.
+
+yaw offset:
+The size of the correction, in degrees. Worth watching - an offset that keeps 
+growing means the magnetometer heading is drifting, which is a sensor problem 
+rather than something to keep correcting.
+
+RELATED:
+mag_yaw_correct addresses magnetic heading error at the sensor level, per 
+limb. This node reconciles a whole body with an external reference. 
+quaternion_norm, its former partner on a shared page, keeps quaternions at 
+unit length."""
+
+demo = starter() + [
+    {'key': 'sig', 'init': 'signal 8.0 sin', 'pos': (30, 132), 'w': 129, 'h': 78,
+     'props': SIG('sin', 8.0, 90.0, True)},
+    {'key': 'c0', 'comment': True, 'text': 'the performer turning: yaw in degrees',
+     'pos': (30, 215)},
+    {'key': 'add', 'init': '+ 30', 'pos': (30, 250), 'w': 140, 'h': 70,
+     'props': {'operand': 30.0}},
+    {'key': 'c1', 'comment': True, 'text': "the tracker's world is 30 degrees round from the suit's",
+     'pos': (30, 325)},
+    {'key': 'pkt', 'init': 'pak 3', 'pos': (30, 360), 'w': 140, 'h': 100},
+    {'key': 'eqt', 'init': 'euler_to_quaternion', 'pos': (30, 475), 'w': 260, 'h': 120,
+     'props': {'degrees': True}},
+    {'key': 'c2', 'comment': True, 'text': 'tracker orientation', 'pos': (30, 600)},
+    {'key': 'pki', 'init': 'pak 3', 'pos': (30, 635), 'w': 140, 'h': 100},
+    {'key': 'eqi', 'init': 'euler_to_quaternion', 'pos': (30, 750), 'w': 260, 'h': 120,
+     'props': {'degrees': True}},
+    {'key': 'c3', 'comment': True, 'text': "suit root orientation", 'pos': (30, 875)},
+    {'key': 'pkp', 'init': 'pak 3', 'pos': (30, 910), 'w': 140, 'h': 100},
+    {'key': 'c4', 'comment': True, 'text': 'tracker position 0 0 1, set once at load',
+     'pos': (30, 1015)},
+    {'key': 'ta', 'init': 'tracker_align', 'pos': (30, 1050), 'w': 280, 'h': 240},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 1305), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c5', 'comment': True, 'text': 'yaw offset: 30, however the performer turns',
+     'pos': (30, 1355)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 1390), 'w': 320, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c6', 'comment': True, 'text': 'corrected pos: 0 0 1 turned back by 30 degrees',
+     'pos': (30, 1440)},
+]
+# Link order is send order: the position and the tracker orientation reach
+# tracker_align before the suit orientation that triggers it.
+links = [('lb', 'out', 'tt', ''),
+         ('tt', '1', 'pkp', 'in 3'), ('tt', '1', 'sig', 'on'),
+         ('sig', '', 'add', 'in'), ('add', 'result', 'pkt', 'in 2'),
+         ('pkt', 'out', 'eqt', 'xyz rotation'),
+         ('eqt', 'quaternion rotation', 'ta', 'tracker quat'),
+         ('sig', '', 'pki', 'in 2'), ('pki', 'out', 'eqi', 'xyz rotation'),
+         ('eqi', 'quaternion rotation', 'ta', 'imu root quat'),
+         ('pkp', 'out', 'ta', 'tracker pos'),
+         ('ta', 'yaw offset', 'f1', ''), ('ta', 'corrected pos', 'l1', '')]
+print(build('tracker_align', 'tracker_align - putting a tracker in the suit\'s world',
+            body, demo, links, demo_width=580, text_width=800, text_height=760))
 
 
 # ------------------------------------------------------------------ swing_twist

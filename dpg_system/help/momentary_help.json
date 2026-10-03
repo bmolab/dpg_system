@@ -1,11 +1,11 @@
 {
-    "height": 821,
-    "width": 1638,
+    "height": 781,
+    "width": 1383,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 644,
     "name": "momentary_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/momentary_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment momentary - a control that springs back",
+            "init": "comment momentary - a slider that springs back",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 488,
+            "width": 475,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "momentary - a control that springs back",
+                    "value": "momentary - a slider that springs back",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "momentary - a control that springs back"
+            "comment": "momentary - a slider that springs back"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 790,
+            "position_x": 535,
             "position_y": 45,
             "width": 808,
-            "height": 716,
+            "height": 676,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These controls spring back to the middle the moment you let go.\n\nAn ordinary slider stays where you leave it. A momentary one does not - release \nit and it returns to zero on its own. That makes it a control for RATE rather \nthan position: while you hold it away from centre you are saying \"keep going, \nthis fast, this way\", and letting go means stop.\n\nIt is the difference between a throttle and a dial. For nudging a value, \nsteering a view, jogging through time, or anything where you want to push and \nthen have things settle, this is the shape of control you want - and it cannot \nbe left switched on by accident, which matters when the thing at the far end \nkeeps moving as long as the control is off centre.\n\nTHE NODES:\n\nmomentary               one float slider, -1 to 1\nmomentary_slider        the same thing\nmomentary_int           whole numbers instead, -20 to 20\nmomentary_slider_int    the same thing\nmomentary_xy            a two-dimensional pad, springing back to the centre\njoy_stick               the same pad, with the spring optional\n\nSYNTAX:\nmomentary                     one slider\nmomentary <count: int>        that many sliders, if between 1 and 10\nmomentary <range: int>        one slider with that range\nmomentary <name> <name> ...   one named slider per name\n\nEXAMPLE:\nmomentary pan tilt\n\nGiving names is worth doing whenever there is more than one - a row of unlabelled \nsliders is unreadable a week later.\n\nINPUTS and PARAMETERS:\n\n<one inlet per slider>:\nSets that slider from the patch. It still springs back when released.\n\nrange:\nHow far the slider travels either side of centre. \nDefaults to 1.0, or 20 for the int versions.\n\nwidth / height / marker size:\nThe size of the control, and of the dot on the xy pad.\n\nmomentary (joy_stick):\nWhether the pad springs back at all. Unchecked, joy_stick keeps its position \nlike an ordinary xy pad - which is the only thing separating it from \nmomentary_xy.\n\nOUTPUTS: \n\n<one outlet per slider>:\nThe current value, sent as you move it and again as it springs back - \nso the last thing you receive is always the zero.\n\nx out / y out (the pads):\nThe two axes, on separate outlets.\n\nA NOTE ON WHAT THE SPRING MEANS:\nBecause releasing sends a zero, whatever you drive with this must treat zero as \n\"stop\" rather than as a position. Send it to accumulate to turn the push into \nmovement; send it straight to a position and the thing will snap back to the \norigin every time you let go.",
+                    "value": "These sliders spring back to the middle the moment you let go.\n\nAn ordinary slider stays where you leave it. A momentary one does not - release \nit and it returns to zero on its own. That makes it a control for RATE rather \nthan position: while you hold it away from centre you are saying \"keep going, \nthis fast, this way\", and letting go means stop.\n\nIt is the difference between a throttle and a dial. For nudging a value, \nsteering a view, jogging through time, or anything where you want to push and \nthen have things settle, this is the shape of control you want - and it cannot \nbe left switched on by accident, which matters when the thing at the far end \nkeeps moving as long as the control is off centre.\n\nTHE NODES:\n\nmomentary               one float slider, -1 to 1\nmomentary_slider        the same thing\nmomentary_int           whole numbers instead, -20 to 20\nmomentary_slider_int    the same thing\n\nFor the same idea in two dimensions, see joy_stick and momentary_xy.\n\nSYNTAX:\nmomentary                     one slider\nmomentary <count: int>        that many sliders, if between 1 and 10\nmomentary <range: int>        one slider with that range\nmomentary <name> <name> ...   one named slider per name\n\nEXAMPLE:\nmomentary pan tilt\n\nGiving names is worth doing whenever there is more than one - a row of unlabelled \nsliders is unreadable a week later.\n\nINPUTS and PARAMETERS:\n\n<one inlet per slider>:\nSets that slider from the patch. It still springs back when released.\n\nrange:\nHow far the slider travels either side of centre. \nDefaults to 1.0, or 20 for the int versions.\n\nwidth:\nThe length of the sliders.\n\nOUTPUTS: \n\n<one outlet per slider>:\nThe current value, sent as you move it and again as it springs back - \nso the last thing you receive is always the zero.\n\nA NOTE ON WHAT THE SPRING MEANS:\nBecause releasing sends a zero, whatever you drive with this must treat zero as \n\"stop\" rather than as a position. Send it to accumulate to turn the push into \nmovement; send it straight to a position and the thing will snap back to the \norigin every time you let go.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 700,
+                    "value": 660,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These controls spring back to the middle the moment you let go.\n\nAn ordinary slider stays where you leave it. A momentary one does not - release \nit and it returns to zero on its own. That makes it a control for RATE rather \nthan position: while you hold it away from centre you are saying \"keep going, \nthis fast, this way\", and letting go means stop.\n\nIt is the difference between a throttle and a dial. For nudging a value, \nsteering a view, jogging through time, or anything where you want to push and \nthen have things settle, this is the shape of control you want - and it cannot \nbe left switched on by accident, which matters when the thing at the far end \nkeeps moving as long as the control is off centre.\n\nTHE NODES:\n\nmomentary               one float slider, -1 to 1\nmomentary_slider        the same thing\nmomentary_int           whole numbers instead, -20 to 20\nmomentary_slider_int    the same thing\nmomentary_xy            a two-dimensional pad, springing back to the centre\njoy_stick               the same pad, with the spring optional\n\nSYNTAX:\nmomentary                     one slider\nmomentary <count: int>        that many sliders, if between 1 and 10\nmomentary <range: int>        one slider with that range\nmomentary <name> <name> ...   one named slider per name\n\nEXAMPLE:\nmomentary pan tilt\n\nGiving names is worth doing whenever there is more than one - a row of unlabelled \nsliders is unreadable a week later.\n\nINPUTS and PARAMETERS:\n\n<one inlet per slider>:\nSets that slider from the patch. It still springs back when released.\n\nrange:\nHow far the slider travels either side of centre. \nDefaults to 1.0, or 20 for the int versions.\n\nwidth / height / marker size:\nThe size of the control, and of the dot on the xy pad.\n\nmomentary (joy_stick):\nWhether the pad springs back at all. Unchecked, joy_stick keeps its position \nlike an ordinary xy pad - which is the only thing separating it from \nmomentary_xy.\n\nOUTPUTS: \n\n<one outlet per slider>:\nThe current value, sent as you move it and again as it springs back - \nso the last thing you receive is always the zero.\n\nx out / y out (the pads):\nThe two axes, on separate outlets.\n\nA NOTE ON WHAT THE SPRING MEANS:\nBecause releasing sends a zero, whatever you drive with this must treat zero as \n\"stop\" rather than as a position. Send it to accumulate to turn the push into \nmovement; send it straight to a position and the thing will snap back to the \norigin every time you let go."
+            "text": "These sliders spring back to the middle the moment you let go.\n\nAn ordinary slider stays where you leave it. A momentary one does not - release \nit and it returns to zero on its own. That makes it a control for RATE rather \nthan position: while you hold it away from centre you are saying \"keep going, \nthis fast, this way\", and letting go means stop.\n\nIt is the difference between a throttle and a dial. For nudging a value, \nsteering a view, jogging through time, or anything where you want to push and \nthen have things settle, this is the shape of control you want - and it cannot \nbe left switched on by accident, which matters when the thing at the far end \nkeeps moving as long as the control is off centre.\n\nTHE NODES:\n\nmomentary               one float slider, -1 to 1\nmomentary_slider        the same thing\nmomentary_int           whole numbers instead, -20 to 20\nmomentary_slider_int    the same thing\n\nFor the same idea in two dimensions, see joy_stick and momentary_xy.\n\nSYNTAX:\nmomentary                     one slider\nmomentary <count: int>        that many sliders, if between 1 and 10\nmomentary <range: int>        one slider with that range\nmomentary <name> <name> ...   one named slider per name\n\nEXAMPLE:\nmomentary pan tilt\n\nGiving names is worth doing whenever there is more than one - a row of unlabelled \nsliders is unreadable a week later.\n\nINPUTS and PARAMETERS:\n\n<one inlet per slider>:\nSets that slider from the patch. It still springs back when released.\n\nrange:\nHow far the slider travels either side of centre. \nDefaults to 1.0, or 20 for the int versions.\n\nwidth:\nThe length of the sliders.\n\nOUTPUTS: \n\n<one outlet per slider>:\nThe current value, sent as you move it and again as it springs back - \nso the last thing you receive is always the zero.\n\nA NOTE ON WHAT THE SPRING MEANS:\nBecause releasing sends a zero, whatever you drive with this must treat zero as \n\"stop\" rather than as a position. Send it to accumulate to turn the push into \nmovement; send it straight to a position and the thing will snap back to the \norigin every time you let go."
         },
         "3": {
             "name": "momentary",
@@ -119,7 +119,7 @@
             "init": "comment drag it, then let go",
             "name": "comment",
             "id": 385,
-            "position_x": 474,
+            "position_x": 219,
             "position_y": 145,
             "width": 131,
             "height": 30,
@@ -172,7 +172,7 @@
             "init": "comment it comes back to zero by itself",
             "name": "comment",
             "id": 459,
-            "position_x": 474,
+            "position_x": 219,
             "position_y": 235,
             "width": 199,
             "height": 30,
@@ -237,7 +237,7 @@
             "name": "text_block",
             "id": 570,
             "annotation": true,
-            "position_x": 474,
+            "position_x": 219,
             "position_y": 445,
             "width": 286,
             "height": 40,
@@ -274,71 +274,8 @@
             "text": "through accumulate it becomes a throttle:\nhold to travel, release to stop"
         },
         "10": {
-            "name": "joy_stick",
-            "id": 607,
-            "position_x": 280,
-            "position_y": 62,
-            "width": 168,
-            "height": 210,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "momentary",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "range",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 160,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 160,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "marker size",
-                    "value": 6,
-                    "value_type": "int"
-                }
-            }
-        },
-        "11": {
-            "init": "comment two axes at once",
-            "name": "comment",
-            "id": 644,
-            "position_x": 474,
-            "position_y": 295,
-            "width": 107,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "two axes at once",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "two axes at once"
-        },
-        "12": {
             "name": "close",
-            "id": 681,
+            "id": 607,
             "position_x": 24,
             "position_y": 467,
             "width": 88,

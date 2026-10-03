@@ -1,4 +1,4 @@
-"""print, text/text_display, table, color, mouse/keys, pan_view, load_bang."""
+"""print, text/text_display, table, color, mouse, keys, pan_view, load_bang."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -259,82 +259,128 @@ links = [('co', '', 'l1', ''), ('co', '', 'cc', 'in'), ('cc', 'out', 'l2', '')]
 print(build('color', 'color - pick a colour by eye', body, demo, links,
             demo_width=420, text_width=780, text_height=620))
 
-# --------------------------------------------------------------- mouse, keys
-body = """These two nodes let the patch respond to the mouse and the keyboard directly.
+# ---------------------------------------------------------------------- mouse
+body = """mouse reports where the pointer is, continuously, while it is switched on.
 
-mouse reports where the pointer is, continuously. 
-keys reports which keys are down, and what was typed.
+It is how a patch becomes playable without building an interface for it - 
+the whole window becomes a two-dimensional control, useful for performance, for 
+testing something quickly, and for anything where a widget would be in the way 
+of what you are doing with your hand.
 
-They are how a patch becomes playable without building an interface for it - 
-useful for performance, for testing something quickly, and for anything where 
-a widget would be in the way of what you are doing with your hands.
+TO USE IT:
+Tick the box. From then on the position is sent every frame, about 60 times a 
+second, until you untick it. Unticked, it sends nothing at all.
 
 SYNTAX:
 mouse
+
+INPUTS and PARAMETERS:
+
+on (the checkbox):
+Switches the stream on and off.
+
+OUTPUTS:
+
+x / y:
+The pointer position in pixels, measured from the top left of the window, on 
+separate outlets. It is sent wherever the pointer is - over a node, over empty 
+patch, or outside the window altogether - so the numbers can run negative or 
+past the window's size.
+
+To use it as a control, scale it into the range you need: ranger, or a 
+division by the window size, turns pixels into 0 to 1.
+
+RELATED:
+keys reports the keyboard. 
+joy_stick is an x and y control that lives in a patch, with a range you set."""
+
+demo = [
+    {'key': 'mo', 'init': 'mouse', 'pos': (30, 62), 'w': 130, 'h': 70,
+     'props': {'': True}},
+    {'key': 'c0', 'comment': True, 'text': 'ticked: move the mouse anywhere', 'pos': (30, 145)},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 185), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'f2', 'init': 'float', 'pos': (190, 185), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c1', 'comment': True, 'text': 'x and y, in pixels', 'pos': (30, 235)},
+]
+links = [('mo', 'x', 'f1', ''), ('mo', 'y', 'f2', '')]
+print(build('mouse', 'mouse - the pointer as a control', body, demo, links,
+            demo_width=420, text_width=790, text_height=560))
+
+# ----------------------------------------------------------------------- keys
+body = """keys reports which keys are down, and what was typed.
+
+It is how a patch becomes playable from the keyboard - a key to start a cue, 
+a modifier to change what the next key does - without building an interface 
+for it.
+
+SYNTAX:
+keys
 keys <key name> <key name> ...
 
 EXAMPLE:
 keys space a s d f
 
+TWO WAYS TO USE IT:
+Without arguments, keys reports EVERYTHING typed: the character on one outlet, 
+its key code on another. 
+With arguments, it watches just the keys you name, each on an outlet of its 
+own that reports whether it is held - and the character and code outlets are 
+not made. Use two keys nodes if you want both. 
+Either way you get the four modifier outlets.
+
 INPUTS and PARAMETERS:
 
-in (mouse):
-Anything here asks for the current position.
-
-list keys (keys):
+list keys:
 A button that prints every key name the node recognises, to the console. 
 Click it when you are not sure what a key is called - the names are what you 
 give as arguments.
 
-Arguments to keys name the keys you want their own outlets for. 
-Without arguments you still get the modifier outlets and the general 
-character and code outlets.
+OUTPUTS:
 
-OUTPUTS - mouse:
-
-x / y:
-The pointer position, on separate outlets.
-
-OUTPUTS - keys:
-
-shift / control / command / alt:
+shift / control / command / window / alt / option:
 The modifier keys, each reporting 1 while held and 0 when released. 
 Having them separately is what lets you use a modifier to change what an 
 ordinary key does.
 
-character out:
+character out (no arguments):
 The character typed.
 
-key code out:
+key code out (no arguments):
 Its numeric code, for keys that produce no character.
 
-<one outlet per named key>:
+<one outlet per named key> (with arguments):
 1 while that key is held, 0 when released.
 
 A NOTE ON FOCUS:
-These read the keyboard and mouse for the application, so they pick up 
-everything - including keys you press while editing a patch. Bear that in mind 
-when a key is wired to something destructive, and consider gating it behind a 
-toggle you can switch off while working."""
+keys reads the keyboard for the whole application, so it picks up everything - 
+including keys you press while editing a patch. Bear that in mind when a key is 
+wired to something destructive, and consider gating it behind a toggle you can 
+switch off while working.
+
+RELATED:
+mouse reports the pointer."""
 
 demo = [
-    {'key': 'mo', 'init': 'mouse', 'pos': (30, 62), 'w': 130, 'h': 70},
-    {'key': 'f1', 'init': 'float', 'pos': (30, 150), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'f2', 'init': 'float', 'pos': (190, 150), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c0', 'comment': True, 'text': 'move the mouse over the patch',
-     'pos': (30, 200)},
-    {'key': 'ky', 'init': 'keys space', 'pos': (30, 245), 'w': 200, 'h': 200},
-    {'key': 'c1', 'comment': True, 'text': 'hold shift, or press space', 'pos': (30, 460)},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 500), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 's1', 'init': 'string', 'pos': (30, 555), 'w': 180, 'h': 42,
+    {'key': 'k1', 'init': 'keys', 'pos': (30, 62), 'w': 200, 'h': 200},
+    {'key': 'c1', 'comment': True, 'text': 'keys, no arguments: everything typed',
+     'pos': (30, 62)},
+    {'key': 'c3', 'comment': True, 'text': 'click "list keys" for every key name',
+     'pos': (30, 110)},
+    {'key': 's1', 'init': 'string', 'pos': (30, 277), 'w': 180, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'click "list keys" for every name',
-     'pos': (30, 605)},
+    {'key': 'c4', 'comment': True, 'text': 'the character typed', 'pos': (30, 277)},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 332), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c5', 'comment': True, 'text': '1 while shift is held', 'pos': (30, 332)},
+    {'key': 'k2', 'init': 'keys space', 'pos': (30, 430), 'w': 200, 'h': 180},
+    {'key': 'c2', 'comment': True, 'text': 'keys space: just the keys you name',
+     'pos': (30, 430)},
+    {'key': 'i2', 'init': 'int', 'pos': (30, 625), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c6', 'comment': True, 'text': '1 while space is held', 'pos': (30, 625)},
 ]
-links = [('mo', 'x', 'f1', ''), ('mo', 'y', 'f2', ''),
-         ('ky', 'shift', 'i1', ''), ('ky', 'character out', 's1', '')]
-print(build('mouse', 'mouse and keys - play the patch directly', body, demo, links,
-            demo_width=420, text_width=790, text_height=620))
+links = [('k1', 'character out', 's1', ''), ('k1', 'shift', 'i1', ''),
+         ('k2', 'space', 'i2', '')]
+print(build('keys', 'keys - play the patch from the keyboard', body, demo, links,
+            demo_width=300, text_width=790, text_height=640))
 
 # ------------------------------------------------------------ pan_view, home
 body = """These two put navigation buttons into the patch itself.

@@ -1,0 +1,270 @@
+{
+    "height": 841,
+    "width": 1494,
+    "position": [
+        100,
+        100
+    ],
+    "id": 570,
+    "name": "depth_anything_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/depth_anything_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment depth_anything - depth from one picture",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "depth_anything - depth from one picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "depth_anything - depth from one picture"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 646,
+            "position_y": 45,
+            "width": 808,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Depth from an ordinary photograph.\n\ndepth_anything GUESSES DEPTH FROM ONE IMAGE:\nGive it an ordinary picture and it returns a depth image - an estimate, per\npixel, of how far away things are. No depth camera, no stereo pair, no\ncalibration. It works from the same cues a person uses: perspective, occlusion,\ntexture getting finer with distance, the way light falls.\n\nTHE NUMBERS ARE METRES, BUT THEY ARE GUESSES:\nIt uses the metric version of the Depth Anything V2 model, trained on indoor\nscenes, so each pixel is an estimate in metres, from 0 up to a ceiling of 20.\nTrust the ordering more than the numbers. What is nearer and what is further is\nreliable; how many metres is plausible in a room and drifts outdoors, where\nanything beyond 20 metres is simply 20. It is excellent for separating\nforeground from background, for masking, for driving something by depth-order -\nand it is not a substitute for femto when the measurement itself matters.\n\nFed a video it works frame by frame with no memory, so the depth of a static\nobject can shimmer slightly between frames even when nothing moved. Smooth it if\nthat matters.\n\nWHAT TO GIVE IT:\nA colour picture as a numpy array of height by width by 3. It reads the\nchannels in OpenCV's blue-green-red order; a picture in red-green-blue order\nworks too, with little change to the depth. A four-channel picture, such as\nndi_receiver sends, needs its alpha channel dropped first.\n\nThe depth image comes back at the size of the picture that went in, as\nfloating point numbers.\n\nIT IS HEAVY:\nThe model is loaded the first time a picture arrives, which takes some seconds,\nand each frame is a full pass of a large network - on the graphics processor if\nthere is one. 'small' loads a much lighter model that is faster and coarser.\n\nIt needs the Depth Anything V2 code and its checkpoint, in\ndpg_system/depth_anything_v2 (the checkpoint goes in its 'checkpoints' folder).\nIf either is missing it says so in the console the first time it is asked, and\nsends nothing.\n\nWHEN TO USE IT:\nfemto gives you measured metres and a point cloud, and needs a depth camera in\nthe room. depth_anything gives you estimated depth from any picture at all -\nincluding one arriving over NDI from another building, or a film from 1974.\n\nSYNTAX:\ndepth_anything [small]\n\nWith no argument it uses the large model\n(depth_anything_v2_metric_hypersim_vitl.pth); 'small' uses the small one\n(depth_anything_v2_metric_hypersim_vits.pth).\n\nEXAMPLE:\ndepth_anything small\n\nINPUTS:\n\ninput_image:\nA colour picture, height by width by 3. Receiving it estimates depth.\n\nOUTPUTS:\n\ndepth_image:\nEstimated depth in metres, one number per pixel, the size of the input.\n\nRELATED:\nfemto for real depth in metres, from a depth camera.\ncv_camera for a picture from a camera on this machine.\nndi_receiver for a picture from another machine.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Depth from an ordinary photograph.\n\ndepth_anything GUESSES DEPTH FROM ONE IMAGE:\nGive it an ordinary picture and it returns a depth image - an estimate, per\npixel, of how far away things are. No depth camera, no stereo pair, no\ncalibration. It works from the same cues a person uses: perspective, occlusion,\ntexture getting finer with distance, the way light falls.\n\nTHE NUMBERS ARE METRES, BUT THEY ARE GUESSES:\nIt uses the metric version of the Depth Anything V2 model, trained on indoor\nscenes, so each pixel is an estimate in metres, from 0 up to a ceiling of 20.\nTrust the ordering more than the numbers. What is nearer and what is further is\nreliable; how many metres is plausible in a room and drifts outdoors, where\nanything beyond 20 metres is simply 20. It is excellent for separating\nforeground from background, for masking, for driving something by depth-order -\nand it is not a substitute for femto when the measurement itself matters.\n\nFed a video it works frame by frame with no memory, so the depth of a static\nobject can shimmer slightly between frames even when nothing moved. Smooth it if\nthat matters.\n\nWHAT TO GIVE IT:\nA colour picture as a numpy array of height by width by 3. It reads the\nchannels in OpenCV's blue-green-red order; a picture in red-green-blue order\nworks too, with little change to the depth. A four-channel picture, such as\nndi_receiver sends, needs its alpha channel dropped first.\n\nThe depth image comes back at the size of the picture that went in, as\nfloating point numbers.\n\nIT IS HEAVY:\nThe model is loaded the first time a picture arrives, which takes some seconds,\nand each frame is a full pass of a large network - on the graphics processor if\nthere is one. 'small' loads a much lighter model that is faster and coarser.\n\nIt needs the Depth Anything V2 code and its checkpoint, in\ndpg_system/depth_anything_v2 (the checkpoint goes in its 'checkpoints' folder).\nIf either is missing it says so in the console the first time it is asked, and\nsends nothing.\n\nWHEN TO USE IT:\nfemto gives you measured metres and a point cloud, and needs a depth camera in\nthe room. depth_anything gives you estimated depth from any picture at all -\nincluding one arriving over NDI from another building, or a film from 1974.\n\nSYNTAX:\ndepth_anything [small]\n\nWith no argument it uses the large model\n(depth_anything_v2_metric_hypersim_vitl.pth); 'small' uses the small one\n(depth_anything_v2_metric_hypersim_vits.pth).\n\nEXAMPLE:\ndepth_anything small\n\nINPUTS:\n\ninput_image:\nA colour picture, height by width by 3. Receiving it estimates depth.\n\nOUTPUTS:\n\ndepth_image:\nEstimated depth in metres, one number per pixel, the size of the input.\n\nRELATED:\nfemto for real depth in metres, from a depth camera.\ncv_camera for a picture from a camera on this machine.\nndi_receiver for a picture from another machine."
+        },
+        "3": {
+            "name": "text_block",
+            "id": 348,
+            "annotation": true,
+            "position_x": 336,
+            "position_y": 62,
+            "width": 280,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "patch a colour picture (height by width\nby 3) into input_image - from cv_camera,\nfor instance",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "patch a colour picture (height by width\nby 3) into input_image - from cv_camera,\nfor instance"
+        },
+        "4": {
+            "name": "depth_anything",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 280,
+            "height": 80,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "info",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 235,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 336,
+            "position_y": 200,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "depth_image: estimated metres per pixel,\nthe same size as the picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "depth_image: estimated metres per pixel,\nthe same size as the picture"
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 336,
+            "position_y": 270,
+            "width": 261,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "trust what is nearer and further more\nthan the numbers. No memory between\nframes, so a still object can shimmer\nslightly - smooth it if that matters",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "trust what is nearer and further more\nthan the numbers. No memory between\nframes, so a still object can shimmer\nslightly - smooth it if that matters"
+        },
+        "8": {
+            "name": "close",
+            "id": 533,
+            "position_x": 24,
+            "position_y": 272,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "depth_image",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

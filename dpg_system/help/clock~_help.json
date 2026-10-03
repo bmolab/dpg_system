@@ -1,0 +1,358 @@
+{
+    "height": 1512,
+    "width": 1397,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "clock~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/clock~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment clock~ - a beat exact to the sample",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "clock~ - a beat exact to the sample",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "clock~ - a beat exact to the sample"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 539,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "clock~ is a master clock: a pulse train for the audio graph, and bangs for\nthe patch, from one phase so the two never drift apart.\n\nTHE NODES:\n\nclock~  a clock, as a sample-accurate signal and as ordinary bangs\nmetro~  the same node\n\nclock~ IS EXACT:\nIts 'trigger' outlet is a signal whose rising edge is accurate to the sample,\nso patching it into an adsr~ trigger (or a modal~ strike) fires it with no\nblock quantization - which is audible as a loose feel when timing comes\nthrough the ordinary node world. The 'bang' outlet is the same clock as\nordinary messages, for sequencers and counters that do not need that\nprecision. A 20 Hz clock still delivers 20 bangs a second; they arrive one or\ntwo per frame.\n\nSTARTING AND STOPPING:\nNothing happens until 'run' is ticked. Starting puts the clock on a downbeat\nand ticks at once rather than waiting out a period. Stopping holds the phase\nwhere it was, so stopping and starting without a reset resumes mid-bar.\n\nRATE:\nThe 'units' option reads the rate knob as hz, bpm, a period in ms, or a period\nin seconds. A signal patched into 'rate' is always in hz and adds to the knob,\nscaled by the 'rate depth' option - patch an lfo~ or an envelope there for\naccelerando and rubato. The phase runs per sample, so a sweep is smooth.\n\nAFTER A STALL:\nIf the patch stalls - a load, a heavy node - only the most recent 32 bangs of\nthe backlog are sent; the rest are not heard. 'count' still advances by the\nwhole backlog, so a sequencer stays in the right bar.\n\nSYNTAX:\nclock~ <rate> <units>\n\nEXAMPLE:\nclock~ 120 bpm\n\nBoth arguments are optional; the default is 2 hz.\n\nINPUTS and PARAMETERS:\n\nrun:\nWhether it is running. Off at first.\n\nrate:\nHow fast, in the units the 'units' option names.\n\npulse width:\nHow long each pulse stays up, as a fraction of the period (default 0.5).\n\nreset:\nBack to the downbeat, ticking immediately. Click it or patch a signal.\n\nenable:\nUntick to stop it rendering altogether.\n\noptions:\nunits (hz, bpm, ms, seconds), rate depth.\n\nOUTPUTS:\n\ntrigger:\nThe sample-accurate pulse, as an audio signal.\n\nbang:\nA bang on every tick.\n\ncount:\nWhich tick this is, counting from when the node was made.\n\nRELATED:\nadsr~, lfo~, phasor~, modal~",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "clock~ is a master clock: a pulse train for the audio graph, and bangs for\nthe patch, from one phase so the two never drift apart.\n\nTHE NODES:\n\nclock~  a clock, as a sample-accurate signal and as ordinary bangs\nmetro~  the same node\n\nclock~ IS EXACT:\nIts 'trigger' outlet is a signal whose rising edge is accurate to the sample,\nso patching it into an adsr~ trigger (or a modal~ strike) fires it with no\nblock quantization - which is audible as a loose feel when timing comes\nthrough the ordinary node world. The 'bang' outlet is the same clock as\nordinary messages, for sequencers and counters that do not need that\nprecision. A 20 Hz clock still delivers 20 bangs a second; they arrive one or\ntwo per frame.\n\nSTARTING AND STOPPING:\nNothing happens until 'run' is ticked. Starting puts the clock on a downbeat\nand ticks at once rather than waiting out a period. Stopping holds the phase\nwhere it was, so stopping and starting without a reset resumes mid-bar.\n\nRATE:\nThe 'units' option reads the rate knob as hz, bpm, a period in ms, or a period\nin seconds. A signal patched into 'rate' is always in hz and adds to the knob,\nscaled by the 'rate depth' option - patch an lfo~ or an envelope there for\naccelerando and rubato. The phase runs per sample, so a sweep is smooth.\n\nAFTER A STALL:\nIf the patch stalls - a load, a heavy node - only the most recent 32 bangs of\nthe backlog are sent; the rest are not heard. 'count' still advances by the\nwhole backlog, so a sequencer stays in the right bar.\n\nSYNTAX:\nclock~ <rate> <units>\n\nEXAMPLE:\nclock~ 120 bpm\n\nBoth arguments are optional; the default is 2 hz.\n\nINPUTS and PARAMETERS:\n\nrun:\nWhether it is running. Off at first.\n\nrate:\nHow fast, in the units the 'units' option names.\n\npulse width:\nHow long each pulse stays up, as a fraction of the period (default 0.5).\n\nreset:\nBack to the downbeat, ticking immediately. Click it or patch a signal.\n\nenable:\nUntick to stop it rendering altogether.\n\noptions:\nunits (hz, bpm, ms, seconds), rate depth.\n\nOUTPUTS:\n\ntrigger:\nThe sample-accurate pulse, as an audio signal.\n\nbang:\nA bang on every tick.\n\ncount:\nWhich tick this is, counting from when the node was made.\n\nRELATED:\nadsr~, lfo~, phasor~, modal~"
+        },
+        "3": {
+            "name": "clock~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 157,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "clock~ 2"
+        },
+        "4": {
+            "init": "comment tick run: two beats a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 255,
+            "position_y": 272,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick run: two beats a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick run: two beats a second"
+        },
+        "5": {
+            "name": "int",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment count: which beat this is",
+            "name": "comment",
+            "id": 459,
+            "position_x": 255,
+            "position_y": 370,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "count: which beat this is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "count: which beat this is"
+        },
+        "7": {
+            "name": "adsr~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 410,
+            "width": 187,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "adsr~ 0.005 0.15 0 0.2"
+        },
+        "8": {
+            "init": "comment the clock trigger is exact to the sample",
+            "name": "comment",
+            "id": 533,
+            "position_x": 255,
+            "position_y": 640,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the clock trigger is exact to the sample",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the clock trigger is exact to the sample"
+        },
+        "9": {
+            "name": "vco~",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 199,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "10": {
+            "name": "vca~",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 895,
+            "width": 168,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "fader_out~",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 1070,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "12": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 681,
+            "position_x": 255,
+            "position_y": 1305,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1408,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trigger",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gain"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

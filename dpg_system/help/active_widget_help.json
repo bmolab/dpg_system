@@ -1,0 +1,189 @@
+{
+    "height": 641,
+    "width": 1353,
+    "position": [
+        100,
+        100
+    ],
+    "id": 533,
+    "name": "active_widget_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/active_widget_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment active_widget - which widget is being worked",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "active_widget - which widget is being worked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "active_widget - which widget is being worked"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 525,
+            "position_y": 45,
+            "width": 788,
+            "height": 536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The active_widget node shows which widget is being worked right now.\n\nWhile you hold down a slider, drag a number box or type into a text field,\nthat widget is \"active\", and active_widget shows its identifying number.\nAs soon as you let go, or click away, it goes back to -1.\n\nThe number is the widget's internal item number in the interface,\nso it is mostly useful for finding your way around the program itself -\nseeing whether a click is landing on the widget you think it is.\nIt is not a hover detector: merely pointing at a widget does not count,\nand buttons and drop-down menus always report -1.\n\nSYNTAX:\nactive_widget\n\nEXAMPLE:\nactive_widget\n\nINPUTS and PARAMETERS:\n\nactive_widget:\nThe display. It is refreshed every frame from the app; typing into it has no\nlasting effect.\n\nOUTPUTS:\n\nNone - the number is shown on the node, not sent on.\n\nRELATED:\npresent switches the patch into presentation mode, and patch_window_position\nsets the window's place and size.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The active_widget node shows which widget is being worked right now.\n\nWhile you hold down a slider, drag a number box or type into a text field,\nthat widget is \"active\", and active_widget shows its identifying number.\nAs soon as you let go, or click away, it goes back to -1.\n\nThe number is the widget's internal item number in the interface,\nso it is mostly useful for finding your way around the program itself -\nseeing whether a click is landing on the widget you think it is.\nIt is not a hover detector: merely pointing at a widget does not count,\nand buttons and drop-down menus always report -1.\n\nSYNTAX:\nactive_widget\n\nEXAMPLE:\nactive_widget\n\nINPUTS and PARAMETERS:\n\nactive_widget:\nThe display. It is refreshed every frame from the app; typing into it has no\nlasting effect.\n\nOUTPUTS:\n\nNone - the number is shown on the node, not sent on.\n\nRELATED:\npresent switches the patch into presentation mode, and patch_window_position\nsets the window's place and size."
+        },
+        "3": {
+            "name": "active_widget",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 172,
+            "height": 28,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment -1 when nothing is being worked",
+            "name": "comment",
+            "id": 385,
+            "position_x": 228,
+            "position_y": 130,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "-1 when nothing is being worked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "-1 when nothing is being worked"
+        },
+        "5": {
+            "name": "slider",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 175,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment hold this slider down and watch the number",
+            "name": "comment",
+            "id": 459,
+            "position_x": 228,
+            "position_y": 245,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hold this slider down and watch the number",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hold this slider down and watch the number"
+        },
+        "7": {
+            "name": "close",
+            "id": 496,
+            "position_x": 24,
+            "position_y": 247,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

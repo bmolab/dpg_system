@@ -1,0 +1,266 @@
+{
+    "height": 761,
+    "width": 1431,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "list_box_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/list_box_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment list_box - choose from a list by typing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "list_box - choose from a list by typing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "list_box - choose from a list by typing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 593,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The list_box node lets you choose one item from a list by typing at it.\n\nIt shows a search field with a scrolling list under it. Send it a list, and\nevery item appears. Type, and the list narrows to the items that contain what\nyou typed. Click an entry, and it is sent out.\n\nIt exists because a list of every file in a directory, or every preset name,\nis not something you navigate with patch cords. You need to look at it.\n\nSYNTAX:\nlist_box\n\nEXAMPLE:\nlist_box\n\nINPUTS and PARAMETERS:\n\nlist in:\nThe items to choose from. A new list replaces the old one and is filtered\nstraight away by whatever is in the search field. Every item is shown, searched\nand sent as text - a number arrives as its text form, so 2.5 reads 2.500 and\ncomes out as the text '2.500', not a number.\n\nsearch field:\nTyping filters as you go. The match is \"contains\", not \"begins with\",\nand capitals count: \"re\" finds red and green, \"Re\" finds neither.\nLeave it empty to see everything. Pressing return, or clicking away from the\nfield, sends the highlighted entry. Text can also be sent into this inlet;\nit sends the highlighted entry, and filters the next list that arrives.\n\nlist:\nThe items that match. When the list is refilled, the entry that was\nhighlighted stays highlighted if it is still there; otherwise the first entry is.\nClicking an entry sends it.\n\nOUTPUTS:\n\nresults out:\nThe chosen item, as a string. Nothing is sent just because the list changed -\nonly when a choice is made.\n\nRELATED:\ndict_search is the same interface for finding a branch of a nested dictionary\nby its path.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The list_box node lets you choose one item from a list by typing at it.\n\nIt shows a search field with a scrolling list under it. Send it a list, and\nevery item appears. Type, and the list narrows to the items that contain what\nyou typed. Click an entry, and it is sent out.\n\nIt exists because a list of every file in a directory, or every preset name,\nis not something you navigate with patch cords. You need to look at it.\n\nSYNTAX:\nlist_box\n\nEXAMPLE:\nlist_box\n\nINPUTS and PARAMETERS:\n\nlist in:\nThe items to choose from. A new list replaces the old one and is filtered\nstraight away by whatever is in the search field. Every item is shown, searched\nand sent as text - a number arrives as its text form, so 2.5 reads 2.500 and\ncomes out as the text '2.500', not a number.\n\nsearch field:\nTyping filters as you go. The match is \"contains\", not \"begins with\",\nand capitals count: \"re\" finds red and green, \"Re\" finds neither.\nLeave it empty to see everything. Pressing return, or clicking away from the\nfield, sends the highlighted entry. Text can also be sent into this inlet;\nit sends the highlighted entry, and filters the next list that arrives.\n\nlist:\nThe items that match. When the list is refilled, the entry that was\nhighlighted stays highlighted if it is still there; otherwise the first entry is.\nClicking an entry sends it.\n\nOUTPUTS:\n\nresults out:\nThe chosen item, as a string. Nothing is sent just because the list changed -\nonly when a choice is made.\n\nRELATED:\ndict_search is the same interface for finding a branch of a nested dictionary\nby its path."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click to load the list",
+            "name": "comment",
+            "id": 385,
+            "position_x": 364,
+            "position_y": 115,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to load the list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to load the list"
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "red orange yellow green blue indigo violet",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "list_box",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 215,
+            "width": 308,
+            "height": 173,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment type to narrow, click to choose",
+            "name": "comment",
+            "id": 496,
+            "position_x": 364,
+            "position_y": 430,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "type to narrow, click to choose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "type to narrow, click to choose"
+        },
+        "8": {
+            "name": "string",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 542,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "list in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "results out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,11 +1,11 @@
 {
     "height": 841,
-    "width": 1813,
+    "width": 1430,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 607,
     "name": "ndi_receiver_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/ndi_receiver_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment ndi_receiver and depth_anything - other pictures",
+            "init": "comment ndi_receiver - video over the network",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 598,
+            "width": 463,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "ndi_receiver and depth_anything - other pictures",
+                    "value": "ndi_receiver - video over the network",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "ndi_receiver and depth_anything - other pictures"
+            "comment": "ndi_receiver - video over the network"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 965,
+            "position_x": 582,
             "position_y": 45,
             "width": 808,
             "height": 736,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two other ways to get a picture into a patch.\n\nTHE NODES:\n\nndi_receiver     video over the network, from another machine\ndepth_anything   depth from an ordinary photograph\n\nndi_receiver TAKES VIDEO OFF THE NETWORK:\nNDI is how video moves between machines on a local network - one computer sends,\nothers receive, with no capture card and no cable beyond the ethernet already\nthere. Anything producing NDI on the network appears in the 'source' list.\n\n'refresh sources' looks again, which you need after something is switched on.\n'bandwidth' trades quality for network load: the low setting sends a much\nsmaller proxy stream, which is enough for analysis and not enough to project.\n\nThat is the useful distinction. If the picture is going to a vision model or a\nfilter, take the proxy and leave the network alone. If it is going on a screen,\ntake the full stream and expect it to cost you.\n\n'output_type' sets the form the frames arrive in.\n\ndepth_anything GUESSES DEPTH FROM ONE IMAGE:\nGive it an ordinary picture and it returns a depth image - an estimate, per\npixel, of how far away things are. No depth camera, no stereo pair, no\ncalibration. It works from the same cues a person uses: perspective, occlusion,\ntexture getting finer with distance, the way light falls.\n\nThe catch is that it is RELATIVE. It tells you what is nearer and further, not\nhow many metres away anything is, and the scale can shift between frames. So it\nis excellent for separating foreground from background, for masking, for\ndriving something by depth-order - and it is not a substitute for femto when the\nquestion has a unit in it.\n\nFed a video it works frame by frame with no memory, so the depth of a static\nobject can shimmer slightly between frames even when nothing moved. Smooth it if\nthat matters.\n\nWHEN TO USE WHICH:\nfemto gives you real metres and a point cloud, and needs a depth camera in the\nroom. depth_anything gives you relative depth from any picture at all -\nincluding one arriving over NDI from another building, or a film from 1974.\n\nSYNTAX:\nndi_receiver\ndepth_anything\n\nEXAMPLE:\nndi_receiver\n\nINPUTS and PARAMETERS:\n\non/off:\nStart receiving.\n\nsource / refresh sources:\nWhich NDI sender, and look for more.\n\nbandwidth:\nFull stream, or the small proxy. Proxy for analysis, full for projection.\n\noutput_type:\nThe form the frames take.\n\ninput_image:\nA picture. Receiving it estimates depth.\n\nOUTPUTS: \n\nimage:\nThe received video.\n\ndepth_image:\nRelative depth, per pixel.\n\nRELATED:\nfemto for real depth in metres, from a depth camera.\ncv_camera for a camera attached to this machine.\nThe k. and tv. nodes for filtering whatever arrives.",
+                    "value": "Video over the network, from another machine.\n\nndi_receiver TAKES VIDEO OFF THE NETWORK:\nNDI is how video moves between machines on a local network - one computer sends,\nothers receive, with no capture card and no cable beyond the ethernet already\nthere. Anything producing NDI on the network can appear in the 'source' list.\n\nFIND A SOURCE FIRST:\nThe list starts empty. 'refresh sources' looks for senders - it listens for\nabout two seconds, and the patch waits while it does - and fills the 'source'\nmenu. Press it again after a sender is switched on. Choosing a source connects\nto it; switching 'on/off' on also connects to whatever the menu shows, if\nnothing is connected yet.\n\nBANDWIDTH IS THE TRADE:\n'highest' (the default) takes the full stream. 'lowest' takes a much smaller\nproxy stream the sender makes alongside it, which is enough for analysis and\nnot enough to project. 'audio only' takes no picture at all. 'active' is listed\nbut currently changes nothing.\n\nThat is the useful distinction. If the picture is going to a vision model or a\nfilter, take the proxy and leave the network alone. If it is going on a screen,\ntake the full stream and expect it to cost you.\n\nWHAT ARRIVES:\nFrames come out of 'image' once per frame of the patch while it is on,\nrepeating the last picture until a new one arrives. Each is four channels -\nred, green, blue and alpha, as bytes from 0 to 255. 'output_type' sets the\nform: numpy gives an array of height by width by 4, torch a tensor of 4 by\nheight by width.\n\nFour channels matters: a node that expects an ordinary three-channel colour\npicture needs the alpha channel dropped first.\n\nSYNTAX:\nndi_receiver\n\nEXAMPLE:\nndi_receiver\n\nINPUTS and PARAMETERS:\n\non/off:\nStart and stop receiving.\n\nsource / refresh sources:\nWhich NDI sender, and look again for more.\n\noutput_type:\nnumpy (height by width by 4) or torch (4 by height by width).\n\nbandwidth:\nhighest for the full stream, lowest for the small proxy, audio only for no\npicture. Proxy for analysis, full for projection.\n\nOUTPUTS:\n\nimage:\nThe received video, four channels.\n\nRELATED:\ncv_camera for a camera attached to this machine.\ndepth_anything to estimate depth from what arrives.\nfemto for a depth camera.\nThe k. and tv. nodes for filtering whatever arrives.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two other ways to get a picture into a patch.\n\nTHE NODES:\n\nndi_receiver     video over the network, from another machine\ndepth_anything   depth from an ordinary photograph\n\nndi_receiver TAKES VIDEO OFF THE NETWORK:\nNDI is how video moves between machines on a local network - one computer sends,\nothers receive, with no capture card and no cable beyond the ethernet already\nthere. Anything producing NDI on the network appears in the 'source' list.\n\n'refresh sources' looks again, which you need after something is switched on.\n'bandwidth' trades quality for network load: the low setting sends a much\nsmaller proxy stream, which is enough for analysis and not enough to project.\n\nThat is the useful distinction. If the picture is going to a vision model or a\nfilter, take the proxy and leave the network alone. If it is going on a screen,\ntake the full stream and expect it to cost you.\n\n'output_type' sets the form the frames arrive in.\n\ndepth_anything GUESSES DEPTH FROM ONE IMAGE:\nGive it an ordinary picture and it returns a depth image - an estimate, per\npixel, of how far away things are. No depth camera, no stereo pair, no\ncalibration. It works from the same cues a person uses: perspective, occlusion,\ntexture getting finer with distance, the way light falls.\n\nThe catch is that it is RELATIVE. It tells you what is nearer and further, not\nhow many metres away anything is, and the scale can shift between frames. So it\nis excellent for separating foreground from background, for masking, for\ndriving something by depth-order - and it is not a substitute for femto when the\nquestion has a unit in it.\n\nFed a video it works frame by frame with no memory, so the depth of a static\nobject can shimmer slightly between frames even when nothing moved. Smooth it if\nthat matters.\n\nWHEN TO USE WHICH:\nfemto gives you real metres and a point cloud, and needs a depth camera in the\nroom. depth_anything gives you relative depth from any picture at all -\nincluding one arriving over NDI from another building, or a film from 1974.\n\nSYNTAX:\nndi_receiver\ndepth_anything\n\nEXAMPLE:\nndi_receiver\n\nINPUTS and PARAMETERS:\n\non/off:\nStart receiving.\n\nsource / refresh sources:\nWhich NDI sender, and look for more.\n\nbandwidth:\nFull stream, or the small proxy. Proxy for analysis, full for projection.\n\noutput_type:\nThe form the frames take.\n\ninput_image:\nA picture. Receiving it estimates depth.\n\nOUTPUTS: \n\nimage:\nThe received video.\n\ndepth_image:\nRelative depth, per pixel.\n\nRELATED:\nfemto for real depth in metres, from a depth camera.\ncv_camera for a camera attached to this machine.\nThe k. and tv. nodes for filtering whatever arrives."
+            "text": "Video over the network, from another machine.\n\nndi_receiver TAKES VIDEO OFF THE NETWORK:\nNDI is how video moves between machines on a local network - one computer sends,\nothers receive, with no capture card and no cable beyond the ethernet already\nthere. Anything producing NDI on the network can appear in the 'source' list.\n\nFIND A SOURCE FIRST:\nThe list starts empty. 'refresh sources' looks for senders - it listens for\nabout two seconds, and the patch waits while it does - and fills the 'source'\nmenu. Press it again after a sender is switched on. Choosing a source connects\nto it; switching 'on/off' on also connects to whatever the menu shows, if\nnothing is connected yet.\n\nBANDWIDTH IS THE TRADE:\n'highest' (the default) takes the full stream. 'lowest' takes a much smaller\nproxy stream the sender makes alongside it, which is enough for analysis and\nnot enough to project. 'audio only' takes no picture at all. 'active' is listed\nbut currently changes nothing.\n\nThat is the useful distinction. If the picture is going to a vision model or a\nfilter, take the proxy and leave the network alone. If it is going on a screen,\ntake the full stream and expect it to cost you.\n\nWHAT ARRIVES:\nFrames come out of 'image' once per frame of the patch while it is on,\nrepeating the last picture until a new one arrives. Each is four channels -\nred, green, blue and alpha, as bytes from 0 to 255. 'output_type' sets the\nform: numpy gives an array of height by width by 4, torch a tensor of 4 by\nheight by width.\n\nFour channels matters: a node that expects an ordinary three-channel colour\npicture needs the alpha channel dropped first.\n\nSYNTAX:\nndi_receiver\n\nEXAMPLE:\nndi_receiver\n\nINPUTS and PARAMETERS:\n\non/off:\nStart and stop receiving.\n\nsource / refresh sources:\nWhich NDI sender, and look again for more.\n\noutput_type:\nnumpy (height by width by 4) or torch (4 by height by width).\n\nbandwidth:\nhighest for the full stream, lowest for the small proxy, audio only for no\npicture. Proxy for analysis, full for projection.\n\nOUTPUTS:\n\nimage:\nThe received video, four channels.\n\nRELATED:\ncv_camera for a camera attached to this machine.\ndepth_anything to estimate depth from what arrives.\nfemto for a depth camera.\nThe k. and tv. nodes for filtering whatever arrives."
         },
         "3": {
             "name": "toggle",
@@ -105,8 +105,33 @@
             "properties": {}
         },
         "4": {
-            "name": "ndi_receiver",
+            "init": "comment on/off",
+            "name": "comment",
             "id": 385,
+            "position_x": 291,
+            "position_y": 62,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "on/off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "on/off"
+        },
+        "5": {
+            "name": "ndi_receiver",
+            "id": 422,
             "position_x": 30,
             "position_y": 120,
             "width": 160,
@@ -116,21 +141,21 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "5": {
+        "6": {
             "name": "text_block",
-            "id": 422,
+            "id": 459,
             "annotation": true,
-            "position_x": 661,
-            "position_y": 355,
-            "width": 274,
-            "height": 52,
+            "position_x": 291,
+            "position_y": 120,
+            "width": 261,
+            "height": 64,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "'refresh sources' after switching a\nsender on. Take the PROXY for analysis,\nthe full stream only for projection",
+                    "value": "'refresh sources' first, and after\nswitching a sender on. Take the PROXY\nfor analysis, the full stream only\nfor projection",
                     "value_type": "str"
                 },
                 "1": {
@@ -140,12 +165,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 266,
+                    "value": 253,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 48,
                     "value_type": "int"
                 },
                 "4": {
@@ -154,62 +179,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "'refresh sources' after switching a\nsender on. Take the PROXY for analysis,\nthe full stream only for projection"
-        },
-        "6": {
-            "name": "info",
-            "id": 459,
-            "position_x": 400,
-            "position_y": 120,
-            "width": 235,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
+            "text": "'refresh sources' first, and after\nswitching a sender on. Take the PROXY\nfor analysis, the full stream only\nfor projection"
         },
         "7": {
-            "init": "comment frames arrive as arrays, like a camera",
-            "name": "comment",
-            "id": 496,
-            "position_x": 661,
-            "position_y": 215,
-            "width": 242,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "frames arrive as arrays, like a camera",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "frames arrive as arrays, like a camera"
-        },
-        "8": {
-            "name": "depth_anything",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 470,
-            "width": 280,
-            "height": 80,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
             "name": "info",
-            "id": 570,
-            "position_x": 400,
-            "position_y": 470,
+            "id": 496,
+            "position_x": 30,
+            "position_y": 270,
             "width": 235,
             "height": 42,
             "visibility": "show_all",
@@ -217,13 +193,13 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "8": {
             "name": "text_block",
-            "id": 607,
+            "id": 533,
             "annotation": true,
-            "position_x": 661,
-            "position_y": 565,
-            "width": 274,
+            "position_x": 291,
+            "position_y": 270,
+            "width": 237,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -231,7 +207,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "depth from an ordinary picture - no\ndepth camera, no stereo, no calibration",
+                    "value": "frames arrive as arrays of four\nchannels: red, green, blue, alpha",
                     "value_type": "str"
                 },
                 "1": {
@@ -241,7 +217,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 266,
+                    "value": 229,
                     "value_type": "int"
                 },
                 "3": {
@@ -255,53 +231,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "depth from an ordinary picture - no\ndepth camera, no stereo, no calibration"
+            "text": "frames arrive as arrays of four\nchannels: red, green, blue, alpha"
         },
-        "11": {
-            "name": "text_block",
-            "id": 644,
-            "annotation": true,
-            "position_x": 661,
-            "position_y": 615,
-            "width": 274,
-            "height": 100,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "but it is RELATIVE: nearer and further,\nnot metres, and the scale can shift\nbetween frames. Good for masking and\ndepth-order, not for measuring\nno memory between frames, so a still\nobject can shimmer slightly - smooth it\nif that matters",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 266,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 84,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "but it is RELATIVE: nearer and further,\nnot metres, and the scale can shift\nbetween frames. Good for masking and\ndepth-order, not for measuring\nno memory between frames, so a still\nobject can shimmer slightly - smooth it\nif that matters"
-        },
-        "12": {
+        "9": {
             "name": "close",
-            "id": 681,
+            "id": 570,
             "position_x": 24,
-            "position_y": 580,
+            "position_y": 342,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -322,37 +258,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "on/off"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "image",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "image",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "input_image"
-        },
-        "3": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "depth_image",
-            "dest_node": 570,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

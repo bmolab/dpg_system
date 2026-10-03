@@ -1,0 +1,2015 @@
+{
+    "height": 1038,
+    "width": 1851,
+    "position": [
+        100,
+        100
+    ],
+    "id": 2794,
+    "name": "nodes_body",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_body.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Body and motion",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 200,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Body and motion",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Body and motion",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes < dpg_system nodes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< dpg_system nodes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 198,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 459,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Capturing a moving body, cleaning it up, and asking what it is doing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 451,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Capturing a moving body, cleaning it up, and asking what it is doing.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment Sensors",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 69,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Sensors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Sensors",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link shadow shadow suit",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "shadow suit",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 188,
+            "width": 255,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "live data from the suit\n(shadow, shadow_pose, shadow_sensor)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "live data from the suit\n(shadow, shadow_pose, shadow_sensor)",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link movesense movesense",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "movesense",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 240,
+            "width": 120,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a wireless IMU",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 112,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a wireless IMU",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link pipo_motion pipo_motion / pipo_range",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 288,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "pipo_motion / pipo_range",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 292,
+            "width": 188,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a small wireless sensor\n(pipo_motion, pipo_range)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a small wireless sensor\n(pipo_motion, pipo_range)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link vive_tracker vive_tracker / vive_base_stations",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 340,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "vive_tracker / vive_base_stations",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 344,
+            "width": 243,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a point in the room (Linux only)\n(vive_base_stations, vive_tracker)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a point in the room (Linux only)\n(vive_base_stations, vive_tracker)",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "comment Cleaning and correcting",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 192,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Cleaning and correcting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Cleaning and correcting",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link mag_offset magnetometer corrections",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 444,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "magnetometer corrections",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 448,
+            "width": 335,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "measuring and correcting the field\n(mag_offset, mag_yaw_correct, shadow_arm_correct)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 327,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "measuring and correcting the field\n(mag_offset, mag_yaw_correct, shadow_arm_correct)",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link cadence_filter cadence_filter / check_burst",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 496,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cadence_filter / check_burst",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 500,
+            "width": 212,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "artefacts, not movement\n(cadence_filter, check_burst)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "artefacts, not movement\n(cadence_filter, check_burst)",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link sensor_to_root sensor_to_root / root inference",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 548,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "sensor_to_root / root inference",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 552,
+            "width": 440,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "where the body actually is\n(quaternion_diff_and_axis, sensor_to_root, tracker_root_inference)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 432,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "where the body actually is\n(quaternion_diff_and_axis, sensor_to_root, tracker_root_inference)",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link tracker_align tracker_align",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 600,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "tracker_align",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 604,
+            "width": 261,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "putting a tracker in the suit's world",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "putting a tracker in the suit's world",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link noise_review noise_review",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 652,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "noise_review",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 656,
+            "width": 200,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "looking at what was flagged",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "looking at what was flagged",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "comment Poses and joints",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 722,
+            "width": 138,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Poses and joints",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Poses and joints",
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "init": "help_link pose poses",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 756,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "poses",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 760,
+            "width": 502,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "carrying, editing and comparing poses\n(active_joints, active_pose, calibrate_pose, pose, pose_adjust, target_pose)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 494,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "carrying, editing and comparing poses\n(active_joints, active_pose, calibrate_pose, pose, pose_adjust, target_pose)",
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "init": "help_link body_to_joints body / joints",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 808,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "body / joints",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 812,
+            "width": 613,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "local, global, and per joint\n(body_to_joints, global_to_local_body, limb_size, local_to_global_body, shadow_body_to_joints)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 605,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "local, global, and per joint\n(body_to_joints, global_to_local_body, limb_size, local_to_global_body, shadow_body_to_joints)",
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "init": "help_link take take / take_dict / picker",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 860,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "take / take_dict / picker",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 864,
+            "width": 280,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "recording, playing back, reviewing\n(json_npz_frame_picker, take, take_dict)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "recording, playing back, reviewing\n(json_npz_frame_picker, take, take_dict)",
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "init": "comment SMPL bodies",
+            "name": "comment",
+            "position_x": 954,
+            "position_y": 150,
+            "width": 100,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SMPL bodies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SMPL bodies",
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "init": "help_link shadow_to_smpl shadow / smpl conversions",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 184,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "shadow / smpl conversions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 188,
+            "width": 520,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "joint order, format, up axis\n(active_to_smpl, quats_flip_y_z, shadow_to_smpl, smpl_to_active, smpl_to_quats,\n smpl_trans_to_y_up)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "joint order, format, up axis\n(active_to_smpl, quats_flip_y_z, shadow_to_smpl, smpl_to_active, smpl_to_quats,\n smpl_trans_to_y_up)",
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "init": "help_link smpl_pose smpl_pose / body / take",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 244,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_pose / body / take",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 248,
+            "width": 348,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the body, its shape and its posture\n(smpl_beta_editor, smpl_body, smpl_pose, smpl_take)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the body, its shape and its posture\n(smpl_beta_editor, smpl_body, smpl_pose, smpl_take)",
+            "id": 1869,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "37": {
+            "init": "help_link smpl_pose_adjust smpl corrections",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 296,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl corrections",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 1906,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "38": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 300,
+            "width": 354,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "frames, yaw and the floor\n(floor_zero, smpl_mag_yaw_correct, smpl_pose_adjust)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 346,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "frames, yaw and the floor\n(floor_zero, smpl_mag_yaw_correct, smpl_pose_adjust)",
+            "id": 1943,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "39": {
+            "init": "help_link smpl_pose_to_joints smpl pose / quats to joints",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 348,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl pose / quats to joints",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 1980,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "40": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 352,
+            "width": 298,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one outlet per joint\n(smpl_pose_to_joints, smpl_quats_to_joints)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one outlet per joint\n(smpl_pose_to_joints, smpl_quats_to_joints)",
+            "id": 2017,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "41": {
+            "init": "comment Effort and dynamics",
+            "name": "comment",
+            "position_x": 954,
+            "position_y": 418,
+            "width": 161,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Effort and dynamics",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Effort and dynamics",
+            "id": 2054,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "42": {
+            "init": "help_link smpl_torque smpl_torque",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 452,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_torque",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2091,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "43": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 456,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "what the body had to do",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "what the body had to do",
+            "id": 2128,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "44": {
+            "init": "help_link torque_gang torque gangs",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 504,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "torque gangs",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2165,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 508,
+            "width": 255,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "joints heard as one\n(gang, torque_gang, torque_residual)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "joints heard as one\n(gang, torque_gang, torque_residual)",
+            "id": 2202,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "46": {
+            "init": "help_link smpl_ragdoll smpl_ragdoll / ragdoll_blend_ui",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 556,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_ragdoll / ragdoll_blend_ui",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2239,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "47": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 560,
+            "width": 231,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "letting go of part of the body\n(ragdoll_blend_ui, smpl_ragdoll)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "letting go of part of the body\n(ragdoll_blend_ui, smpl_ragdoll)",
+            "id": 2276,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "48": {
+            "init": "help_link smpl_resist smpl_resist",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 608,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_resist",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2313,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "49": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 612,
+            "width": 274,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a body that resists going with the flow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a body that resists going with the flow",
+            "id": 2350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "50": {
+            "init": "help_link pybullet_body pybullet_body",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 660,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "pybullet_body",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2387,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "51": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 664,
+            "width": 169,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a body that falls over",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 161,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a body that falls over",
+            "id": 2424,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "52": {
+            "init": "help_link effort_fader effort / muscle faders",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 712,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "effort / muscle faders",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2461,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "53": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 716,
+            "width": 391,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a moving body playing sounds\n(crossfade_scanner, effort_fader, muscle_activation_fader)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 383,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a moving body playing sounds\n(crossfade_scanner, effort_fader, muscle_activation_fader)",
+            "id": 2498,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "54": {
+            "init": "comment Drawing bodies",
+            "name": "comment",
+            "position_x": 954,
+            "position_y": 782,
+            "width": 123,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Drawing bodies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Drawing bodies",
+            "id": 2535,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "55": {
+            "init": "help_link mgl_body mgl body drawing",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 816,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl body drawing",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "olive",
+                    "value_type": "str"
+                }
+            },
+            "id": 2572,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "56": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 820,
+            "width": 600,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drawing a body, and what it is doing\n(body_proportions, mgl_body, mgl_body_orientation, mgl_contact_disks, mgl_orientation_disks,\n mgl_torque_arc)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 592,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drawing a body, and what it is doing\n(body_proportions, mgl_body, mgl_body_orientation, mgl_contact_disks, mgl_orientation_disks,\n mgl_torque_arc)",
+            "id": 2609,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "57": {
+            "init": "help_link mgl_smpl_mesh mgl_smpl_mesh / mgl_smpl_heatmap",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 876,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_smpl_mesh / mgl_smpl_heatmap",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "olive",
+                    "value_type": "str"
+                }
+            },
+            "id": 2646,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "58": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 880,
+            "width": 237,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the figure and its effort\n(mgl_smpl_heatmap, mgl_smpl_mesh)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the figure and its effort\n(mgl_smpl_heatmap, mgl_smpl_mesh)",
+            "id": 2683,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "59": {
+            "init": "help_link gl_body gl_body (alt, simple)",
+            "name": "help_link",
+            "position_x": 954,
+            "position_y": 928,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl_body (alt, simple)",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "olive",
+                    "value_type": "str"
+                }
+            },
+            "id": 2720,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "60": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 932,
+            "width": 268,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drawing a skeleton, the older way\n(gl_alt_body, gl_body, gl_simple_body)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drawing a skeleton, the older way\n(gl_alt_body, gl_body, gl_simple_body)",
+            "id": 2757,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

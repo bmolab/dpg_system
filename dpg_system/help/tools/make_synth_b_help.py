@@ -1,101 +1,233 @@
-"""adsr~ and timing, delay~, the nonlinear nodes, the mapping nodes."""
+"""adsr~ and ramp~, clock~, delay~, the nonlinear nodes, the mapping nodes."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
-# ------------------------------------------------------- adsr~ / ramp~ / clock~
-body = """These make things happen over time, at audio rate rather than frame rate.
+# ---------------------------------------------------------- adsr~ / ramp~
+body = """These make shapes in time, at audio rate rather than frame rate.
 
 THE NODES:
 
 adsr~   an envelope generator, with both a gate and a one-shot trigger
-ramp~   a linear ramp to a target over a set time
+ramp~   a straight line to a target over a set time
 line~   the same node
-clock~  a master clock: a pulse train for the audio graph, bangs for the patch
-metro~  the same node
 
 GATE VERSUS TRIGGER:
-adsr~ has both, and they are different gestures. The 'gate' inlet SUSTAINS: 
-hold it up and the envelope goes attack, decay, then sits at sustain until it 
-is let go, at which point it releases. The 'trigger' inlet is a one-shot - it 
-fires the whole shape and lets go by itself.
+adsr~ has both, and they are different gestures. The 'gate' inlet SUSTAINS:
+hold it up and the envelope goes attack, decay, then sits at sustain until it
+is let go, at which point it releases. The 'trigger' inlet is a one-shot -
+attack, decay, then straight on into release, with nothing held. On a
+trigger, sustain is just the level the two falling stages meet at: set it to
+0 for a plain percussive shape.
 
-Tick the gate by hand, send it 0 and 1 from the patch, or drive it from a sig~ 
-carrying thresholded effort - so that moving past a threshold holds the note 
-and dropping back releases it.
+Tick the gate by hand, send it 0 and 1 from the patch, or drive it from a sig~
+carrying thresholded effort - so that moving past a threshold holds the note
+and dropping back releases it. Click the trigger, send it a bang, or patch a
+signal into it - a clock~ 'trigger' fires it exactly on the sample. Gate and
+trigger edges are both acted on at the sample they happen, not at the next
+block.
 
 ramp~ NEVER STEPS:
-Send a value to 'target' and the output leaves where it currently is and 
-arrives at the new value exactly 'time' seconds later. Re-aim it mid-move and 
-it starts a fresh line from wherever it had got to. That is what makes it safe 
-to feed a stream of targets - it can never jump, however often the target 
-changes.
+Send a value to 'target' and the output leaves where it currently is and
+arrives at the new value exactly 'time' seconds later. Re-aim it mid-move and
+it starts a fresh line from wherever it had got to. That is what makes it safe
+to feed a stream of targets - it can never jump, however often the target
+changes. 'time' is read when a move begins, so changing it affects the next
+move, not the one in flight.
 
-clock~ IS EXACT:
-Its 'trigger' outlet is a signal whose rising edge is accurate to the sample, 
-so patching it into an adsr~ trigger fires the envelope with no block 
-quantization - which is audible as a loose feel when timing comes through the 
-ordinary node world. The 'bang' outlet is the same clock as ordinary messages, 
-for sequencers and counters that do not need that precision.
+Set the 'time source' option to 'measured' and each move takes as long as the
+gap between values arriving: a stream of effort data at 60 frames a second
+becomes a continuous signal that reaches each value just as the next one
+lands. 'stretch' scales that measured time; a little over 1 is best, since
+arriving early means sitting still until the next value - the steps you were
+trying to be rid of.
 
 SYNTAX:
-adsr~
-ramp~ <time>
-clock~ <rate>
+adsr~ <attack> <decay> <sustain> <release>
+ramp~ <time> <starting value>
 
 EXAMPLE:
-adsr~
+ramp~ 0.5
 
-INPUTS and PARAMETERS:
+All the arguments are optional. Times are in seconds; sustain is a level from
+0 to 1. adsr~ defaults to 0.01, 0.1, 0.7, 0.3, and ramp~ to 0.1 seconds
+starting from 0.
 
-gate (adsr~):
-Hold it up to sustain.
+INPUTS and PARAMETERS (adsr~):
 
-trigger (adsr~):
+gate:
+Hold it up to sustain. Up means at or over the 'gate threshold' option
+(default 0.5).
+
+trigger:
 Fire the whole shape once.
 
 attack / decay / sustain / release:
-The four stages. Attack and decay are times, sustain is a level, release is a 
-time.
+The four stages. Attack, decay and release are times in seconds; sustain is a
+level.
 
-target / time (ramp~):
-Where to go and how long to take.
+enable:
+Untick to fade out and stop.
 
-run / rate / pulse width / reset (clock~):
-Whether it is running, how fast, how long each pulse stays up, and a restart.
+options:
+retrigger (on: a new gate restarts the attack from wherever the level is;
+off: a new gate is ignored until the envelope has finished), legato (a new
+gate during attack, decay or sustain is ignored), gate threshold.
 
-OUTPUTS: 
+INPUTS and PARAMETERS (ramp~):
+
+target:
+Where to go.
+
+time:
+How long to take, in seconds.
+
+trigger:
+Run the move again from where the output now is, towards the target. 'done'
+fires 'time' seconds later.
+
+bypass:
+Pass the target straight through, unsmoothed.
+
+options:
+jump to target (arrive at once), time source (manual or measured), stretch.
+
+stream:
+The measured rate of the incoming values, in 'measured' mode.
+
+OUTPUTS:
 
 signal:
 The envelope or ramp, as an audio signal.
 
 done:
-Fires when the envelope or ramp finishes - use it to chain one into the next.
+A bang when the envelope's release reaches silence, or when the ramp arrives -
+use it to chain one into the next.
 
-trigger / bang / count (clock~):
-The sample-accurate pulse, the ordinary bang, and how many have passed."""
+RELATED:
+clock~, sig~, vca~, lfo~, shaper~"""
 
 demo = [
-    {'key': 'ck', 'init': 'clock~ 2', 'pos': (30, 62), 'w': 220, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'tick run: two beats a second', 'pos': (30, 272)},
-    {'key': 'ad', 'init': 'adsr~', 'pos': (30, 315), 'w': 220, 'h': 220},
-    {'key': 'c1', 'comment': True, 'text': 'the clock trigger is exact to the sample',
+    {'key': 'ad', 'init': 'adsr~', 'pos': (30, 62), 'w': 220, 'h': 220},
+    {'key': 'c0', 'comment': True,
+     'text': 'click trigger for one note\ntick gate to hold it, untick to release',
+     'pos': (30, 295)},
+    {'key': 'rp', 'init': 'ramp~ 0.5', 'pos': (30, 350), 'w': 220, 'h': 180},
+    {'key': 'c1', 'comment': True,
+     'text': 'set target to 1: up an octave in half a second',
      'pos': (30, 545)},
-    {'key': 'vco', 'init': 'vco~ 220', 'pos': (300, 315), 'w': 220, 'h': 200},
-    {'key': 'vca', 'init': 'vca~', 'pos': (30, 585), 'w': 220, 'h': 160},
-    {'key': 'sc', 'init': 'scope~', 'pos': (300, 545), 'w': 260, 'h': 220},
-    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 765), 'w': 220, 'h': 220},
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 585), 'w': 220, 'h': 200},
+    {'key': 'vca', 'init': 'vca~', 'pos': (30, 790), 'w': 220, 'h': 160},
+    {'key': 'sc', 'init': 'scope~', 'pos': (30, 945), 'w': 260, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 1220), 'w': 220, 'h': 220},
     {'key': 'c2', 'comment': True, 'text': 'the envelope shapes each note',
-     'pos': (30, 1000)},
+     'pos': (30, 1545)},
 ]
-links = [('ck', 'trigger', 'ad', 'trigger'),
+links = [('rp', 'signal', 'vco', 'pitch'),
          ('vco', 'left out', 'vca', 'left in'),
          ('ad', 'signal', 'vca', 'gain'),
          ('vca', 'left out', 'sc', 'in'),
          ('vca', 'left out', 'fo', 'left')]
-print(build('adsr~', 'adsr~ - shapes in time, at audio rate', body, demo, links,
-            demo_width=590, text_width=810, text_height=760))
+print(build('adsr~', 'adsr~ and ramp~ - shapes in time, at audio rate', body,
+            demo, links, demo_width=420, text_width=810, text_height=760))
+
+# ------------------------------------------------------------- clock~ / metro~
+body = """clock~ is a master clock: a pulse train for the audio graph, and bangs for
+the patch, from one phase so the two never drift apart.
+
+THE NODES:
+
+clock~  a clock, as a sample-accurate signal and as ordinary bangs
+metro~  the same node
+
+clock~ IS EXACT:
+Its 'trigger' outlet is a signal whose rising edge is accurate to the sample,
+so patching it into an adsr~ trigger (or a modal~ strike) fires it with no
+block quantization - which is audible as a loose feel when timing comes
+through the ordinary node world. The 'bang' outlet is the same clock as
+ordinary messages, for sequencers and counters that do not need that
+precision. A 20 Hz clock still delivers 20 bangs a second; they arrive one or
+two per frame.
+
+STARTING AND STOPPING:
+Nothing happens until 'run' is ticked. Starting puts the clock on a downbeat
+and ticks at once rather than waiting out a period. Stopping holds the phase
+where it was, so stopping and starting without a reset resumes mid-bar.
+
+RATE:
+The 'units' option reads the rate knob as hz, bpm, a period in ms, or a period
+in seconds. A signal patched into 'rate' is always in hz and adds to the knob,
+scaled by the 'rate depth' option - patch an lfo~ or an envelope there for
+accelerando and rubato. The phase runs per sample, so a sweep is smooth.
+
+AFTER A STALL:
+If the patch stalls - a load, a heavy node - only the most recent 32 bangs of
+the backlog are sent; the rest are not heard. 'count' still advances by the
+whole backlog, so a sequencer stays in the right bar.
+
+SYNTAX:
+clock~ <rate> <units>
+
+EXAMPLE:
+clock~ 120 bpm
+
+Both arguments are optional; the default is 2 hz.
+
+INPUTS and PARAMETERS:
+
+run:
+Whether it is running. Off at first.
+
+rate:
+How fast, in the units the 'units' option names.
+
+pulse width:
+How long each pulse stays up, as a fraction of the period (default 0.5).
+
+reset:
+Back to the downbeat, ticking immediately. Click it or patch a signal.
+
+enable:
+Untick to stop it rendering altogether.
+
+options:
+units (hz, bpm, ms, seconds), rate depth.
+
+OUTPUTS:
+
+trigger:
+The sample-accurate pulse, as an audio signal.
+
+bang:
+A bang on every tick.
+
+count:
+Which tick this is, counting from when the node was made.
+
+RELATED:
+adsr~, lfo~, phasor~, modal~"""
+
+demo = [
+    {'key': 'ck', 'init': 'clock~ 2', 'pos': (30, 62), 'w': 220, 'h': 200},
+    {'key': 'c0', 'comment': True, 'text': 'tick run: two beats a second', 'pos': (30, 272)},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 315), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c1', 'comment': True, 'text': 'count: which beat this is', 'pos': (30, 370)},
+    {'key': 'ad', 'init': 'adsr~ 0.005 0.15 0 0.2', 'pos': (30, 410), 'w': 220, 'h': 220},
+    {'key': 'c2', 'comment': True, 'text': 'the clock trigger is exact to the sample',
+     'pos': (30, 640)},
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 680), 'w': 220, 'h': 200},
+    {'key': 'vca', 'init': 'vca~', 'pos': (30, 895), 'w': 220, 'h': 160},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 1070), 'w': 220, 'h': 220},
+    {'key': 'c3', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 1305)},
+]
+links = [('ck', 'count', 'i1', ''),
+         ('ck', 'trigger', 'ad', 'trigger'),
+         ('vco', 'left out', 'vca', 'left in'),
+         ('ad', 'signal', 'vca', 'gain'),
+         ('vca', 'left out', 'fo', 'left')]
+print(build('clock~', 'clock~ - a beat exact to the sample', body, demo, links,
+            demo_width=420, text_width=810, text_height=760))
 
 # --------------------------------------------------------------------- delay~
 body = """delay~ is a delay line with damped feedback and an audio-rate delay time.

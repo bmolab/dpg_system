@@ -364,63 +364,149 @@ print(build('start_trace', 'start_trace - watch what the patch actually does', b
             demo, links, demo_width=400, text_width=780, text_height=560))
 
 # --------------------------------------------------------- patcher utilities
-body = """These three nodes let a patch arrange its own window and interface.
+body = """The present node switches its patch between editing and presentation mode.
 
-They are for finishing a patch - turning something you built into something 
+It is for finishing a patch - turning something you built into something
 someone can use, without them seeing the wiring.
 
-THE NODES:
+Every node has a presentation state as well as its ordinary visibility.
+In presentation mode each node shows only what its presentation state allows,
+so nodes set to hidden disappear, and nothing can be dragged. You can lay out a
+clean panel of just the controls, on top of the working patch, and switch
+between the two.
 
-present                  switch the patch into presentation mode
-active_widget            report which widget the mouse is over
-patch_window_position    set the window's position and size
-
-Presentation mode is the important one. Every node has a presentation state, 
-and nodes set to hidden disappear when the patch is presented - so you can lay 
-out a clean panel of just the controls, on top of the working patch, and switch 
-between the two. The "open as presentation" option makes a patch open that way 
-from the start, which is how you hand it to someone who should not be looking 
-at the machinery.
+Because the checkbox is saved with the patch, ticking it and saving is how you
+make a patch OPEN presented - which is how you hand it to someone who should
+not be looking at the machinery.
 
 SYNTAX:
 present
+
+EXAMPLE:
+present
+
+INPUTS and PARAMETERS:
+
+open as presentation:
+Ticking it switches the patch into presentation mode straight away; unticking
+it switches back to editing. The setting is saved with the patch, so a patch
+saved with it ticked comes up presented when it is opened.
+
+Leave the present node itself visible in presentation mode (its presentation
+state at show all), or there is no checkbox left on screen to untick.
+
+OUTPUTS:
+
+None - present acts on the patch itself rather than passing data on.
+
+RELATED:
+active_widget reports which widget is being worked, and patch_window_position
+sets the window's place and size - the other two nodes for arranging a patch
+for someone else."""
+
+demo = [
+    {'key': 'pr', 'init': 'present', 'pos': (30, 62), 'w': 190, 'h': 60},
+    {'key': 'c0', 'comment': True,
+     'text': 'tick to present this patch, untick to edit again\nhidden nodes vanish while it is presented',
+     'pos': (30, 130)},
+]
+print(build('present', 'present - arrange the patch for someone else', body,
+            demo, [], demo_width=420, text_width=780, text_height=560))
+
+# ------------------------------------------------------------- active_widget
+body = """The active_widget node shows which widget is being worked right now.
+
+While you hold down a slider, drag a number box or type into a text field,
+that widget is "active", and active_widget shows its identifying number.
+As soon as you let go, or click away, it goes back to -1.
+
+The number is the widget's internal item number in the interface,
+so it is mostly useful for finding your way around the program itself -
+seeing whether a click is landing on the widget you think it is.
+It is not a hover detector: merely pointing at a widget does not count,
+and buttons and drop-down menus always report -1.
+
+SYNTAX:
 active_widget
+
+EXAMPLE:
+active_widget
+
+INPUTS and PARAMETERS:
+
+active_widget:
+The display. It is refreshed every frame from the app; typing into it has no
+lasting effect.
+
+OUTPUTS:
+
+None - the number is shown on the node, not sent on.
+
+RELATED:
+present switches the patch into presentation mode, and patch_window_position
+sets the window's place and size."""
+
+demo = [
+    {'key': 'aw', 'init': 'active_widget', 'pos': (30, 62), 'w': 190, 'h': 60},
+    {'key': 'c0', 'comment': True, 'text': '-1 when nothing is being worked',
+     'pos': (30, 130)},
+    {'key': 'sl', 'init': 'slider', 'pos': (30, 175), 'w': 160, 'h': 60},
+    {'key': 'c1', 'comment': True, 'text': 'hold this slider down and watch the number',
+     'pos': (30, 245)},
+]
+print(build('active_widget', 'active_widget - which widget is being worked', body,
+            demo, [], demo_width=420, text_width=780, text_height=520))
+
+# ----------------------------------------------------- patch_window_position
+body = """The patch_window_position node moves and resizes the app's window.
+
+Use it to bring a patch up at a known size on a particular screen, or to fit
+a projector. It acts on the whole app window, not just this patch's tab.
+
+When the node is made it fills in the window's current place and size,
+so it starts out describing where the window already is. Change a number -
+drag it, or send one in - and the window moves or resizes at once.
+The four values are saved with the patch, and the node applies them again
+whenever the patch is loaded, which is how a patch puts its window where it
+belongs when it opens.
+
+SYNTAX:
+patch_window_position
+
+EXAMPLE:
 patch_window_position
 
 INPUTS and PARAMETERS:
 
-open as presentation (present):
-When checked, this patch opens directly into presentation mode rather than 
-showing the patch as built.
+top:
+The vertical position of the window, in pixels from the top of the screen.
 
-active_widget:
-Reports the widget currently under the mouse. Use it when a patch needs to know 
-what the person is pointing at - context help, or a control that shows what it 
-does when you approach it.
+left:
+The horizontal position of the window, in pixels from the left edge of the
+screen.
 
-top / left / width / height (patch_window_position):
-The window's position and size, in pixels. Send values here to move or resize 
-the patch window while it runs - to bring it up at a known size on a particular 
-screen, or to fit a projector.
+width / height:
+The size of the window, in pixels.
 
-OUTPUTS: 
+Each of the four acts the moment it changes, and all four are applied
+together, so the window is always set to the whole of what the node shows.
 
-None of these three have outlets - they act on the patch itself rather than 
-passing data on."""
+OUTPUTS:
+
+None - the node acts on the window rather than passing data on.
+
+RELATED:
+present switches the patch into presentation mode, and display_info
+reports the screens available to put the window on."""
 
 demo = [
-    {'key': 'pr', 'init': 'present', 'pos': (30, 62), 'w': 190, 'h': 60},
-    {'key': 'c0', 'comment': True, 'text': 'tick to open this patch presented',
-     'pos': (30, 130)},
-    {'key': 'aw', 'init': 'active_widget', 'pos': (30, 175), 'w': 190, 'h': 60},
-    {'key': 'c1', 'comment': True, 'text': 'shows what the mouse is over',
-     'pos': (30, 245)},
-    {'key': 'pw', 'init': 'patch_window_position', 'pos': (30, 290), 'w': 210, 'h': 140},
-    {'key': 'c2', 'comment': True, 'text': 'send numbers here to move the window\nset a node to hidden to leave it out',
-     'pos': (30, 440)},
+    {'key': 'pw', 'init': 'patch_window_position', 'pos': (30, 62), 'w': 210, 'h': 140},
+    {'key': 'c0', 'comment': True,
+     'text': 'starts at where the window is now\ndrag a number to move or resize it',
+     'pos': (30, 215)},
 ]
-print(build('present', 'present - arrange the patch for someone else', body,
-            demo, [], demo_width=420, text_width=780, text_height=520))
+print(build('patch_window_position', 'patch_window_position - place the app window',
+            body, demo, [], demo_width=420, text_width=780, text_height=600))
 
 # --------------------------------------------------------- directory_iterator
 body = """The directory_iterator node walks through the files in a folder, one at a time.

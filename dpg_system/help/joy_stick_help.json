@@ -1,0 +1,444 @@
+{
+    "height": 804,
+    "width": 1437,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "joy_stick_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/joy_stick_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment joy_stick - two values in one gesture",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 463,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "joy_stick - two values in one gesture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "joy_stick - two values in one gesture"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 629,
+            "position_y": 45,
+            "width": 768,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "joy_stick is a two-dimensional pad: drag the dot and it sends x and y.\n\nOne control for two values that belong together - a position on a floor, a \npan and tilt, a pair of mix amounts - so that one gesture moves both at once, \nwhich two separate sliders cannot do.\n\nTHE NODES:\n\njoy_stick      the pad; the dot stays where you leave it\nmomentary_xy   the same pad, springing back to the centre when you let go\n\nThe name only sets where it starts: the momentary option switches either one \nbetween the two behaviours.\n\nThe springing version is a control for RATE, like the momentary sliders: hold \nit off centre to keep something moving, let go to stop. When it springs back it \nsends 0 and 0, so whatever it drives should read zero as \"stop\".\n\nSYNTAX:\njoy_stick\njoy_stick <range>\nmomentary_xy <range>\n\nEXAMPLE:\nmomentary_xy 0.5\n\nBoth axes run from -range to +range, with 0 at the centre. The range is 1.0 \nunless given.\n\nINPUTS and PARAMETERS:\n\nmomentary:\nWhether the dot springs back to the centre when released.\n\nrange:\nHow far each axis runs either side of centre.\n\nwidth / height / marker size:\nThe size of the pad, and of the dot.\n\nOUTPUTS: \n\nx out / y out:\nThe two axes, on separate outlets, sent as you drag - and 0, 0 when a momentary \npad springs back.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "joy_stick is a two-dimensional pad: drag the dot and it sends x and y.\n\nOne control for two values that belong together - a position on a floor, a \npan and tilt, a pair of mix amounts - so that one gesture moves both at once, \nwhich two separate sliders cannot do.\n\nTHE NODES:\n\njoy_stick      the pad; the dot stays where you leave it\nmomentary_xy   the same pad, springing back to the centre when you let go\n\nThe name only sets where it starts: the momentary option switches either one \nbetween the two behaviours.\n\nThe springing version is a control for RATE, like the momentary sliders: hold \nit off centre to keep something moving, let go to stop. When it springs back it \nsends 0 and 0, so whatever it drives should read zero as \"stop\".\n\nSYNTAX:\njoy_stick\njoy_stick <range>\nmomentary_xy <range>\n\nEXAMPLE:\nmomentary_xy 0.5\n\nBoth axes run from -range to +range, with 0 at the centre. The range is 1.0 \nunless given.\n\nINPUTS and PARAMETERS:\n\nmomentary:\nWhether the dot springs back to the centre when released.\n\nrange:\nHow far each axis runs either side of centre.\n\nwidth / height / marker size:\nThe size of the pad, and of the dot.\n\nOUTPUTS: \n\nx out / y out:\nThe two axes, on separate outlets, sent as you drag - and 0, 0 when a momentary \npad springs back."
+        },
+        "3": {
+            "name": "joy_stick",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 168,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "momentary",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "marker size",
+                    "value": 6,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment joy_stick: the dot stays where you leave it",
+            "name": "comment",
+            "id": 385,
+            "position_x": 326,
+            "position_y": 62,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "joy_stick: the dot stays where you leave it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "joy_stick: the dot stays where you leave it"
+        },
+        "5": {
+            "name": "float",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "float",
+            "id": 459,
+            "position_x": 170,
+            "position_y": 300,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment x and y",
+            "name": "comment",
+            "id": 496,
+            "position_x": 326,
+            "position_y": 300,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x and y",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "x and y"
+        },
+        "8": {
+            "name": "momentary_xy",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 168,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "momentary",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "marker size",
+                    "value": 6,
+                    "value_type": "int"
+                }
+            }
+        },
+        "9": {
+            "init": "comment momentary_xy: it springs back to the centre",
+            "name": "comment",
+            "id": 570,
+            "position_x": 326,
+            "position_y": 390,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "momentary_xy: it springs back to the centre",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "momentary_xy: it springs back to the centre"
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 628,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 170,
+            "position_y": 628,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment and sends 0, 0 when it does",
+            "name": "comment",
+            "id": 681,
+            "position_x": 326,
+            "position_y": 628,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and sends 0, 0 when it does",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and sends 0, 0 when it does"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 700,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "x out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "y out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "x out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "y out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

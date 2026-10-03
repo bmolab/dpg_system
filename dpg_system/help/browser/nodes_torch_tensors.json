@@ -1,0 +1,742 @@
+{
+    "height": 750,
+    "width": 909,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1388,
+    "name": "nodes_torch_tensors",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_tensors.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Tensors",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 102,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Tensors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Tensors",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_torch < PyTorch",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 95,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< PyTorch",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 79,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 143,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 385,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Getting data into torch, and making tensors from nothing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 377,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Getting data into torch, and making tensors from nothing.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment Tensors",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 69,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Tensors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Tensors",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link tensor tensor / t.detach / t.to",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "tensor / t.detach / t.to",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 188,
+            "width": 181,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "getting data into torch\n(t.detach, t.to, tensor)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 173,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "getting data into torch\n(t.detach, t.to, tensor)",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link t.info t.info / t.numel",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.info / t.numel",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 240,
+            "width": 329,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "what a tensor actually is\n(t.contiguous, t.info, t.is_contiguous, t.numel)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 321,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "what a tensor actually is\n(t.contiguous, t.info, t.is_contiguous, t.numel)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link t.buffer t.buffer / t.rolling_buffer",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 288,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.buffer / t.rolling_buffer",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 292,
+            "width": 206,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the recent past, as a tensor\n(t.buffer, t.rolling_buffer)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the recent past, as a tensor\n(t.buffer, t.rolling_buffer)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link t.data_set t.data_set",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 340,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.data_set",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 344,
+            "width": 151,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a folder of tensors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 143,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a folder of tensors",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "comment Making tensors",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 123,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Making tensors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Making tensors",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link t.zeros t tensor makers",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 444,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t tensor makers",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 448,
+            "width": 526,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "something out of nothing\n(t.eye, t.full, t.ones, t.ones_like, t.rand, t.rand_like, t.zeros, t.zeros_like)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 518,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "something out of nothing\n(t.eye, t.full, t.ones, t.ones_like, t.rand, t.rand_like, t.zeros, t.zeros_like)",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link t.linspace t sequences",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 496,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t sequences",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 500,
+            "width": 298,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "counts, steps and ratios\n(t.arange, t.linspace, t.logspace, t.range)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "counts, steps and ratios\n(t.arange, t.linspace, t.logspace, t.range)",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link t.dist.distributions t.dist.* random tensors",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 548,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.dist.* random tensors",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 552,
+            "width": 625,
+            "height": 76,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "random tensors drawn from a named distribution\n(t.dist.bernoulli, t.dist.beta, t.dist.cauchy, t.dist.chi2, t.dist.continuous_bernoulli,\n t.dist.exponential, t.dist.fisher_snedecor, t.dist.gamma, t.dist.gumbel, t.dist.gumble,\n t.dist.half_cauchy, t.dist.half_normal, t.dist.kumaraswamy, t.dist.laplace, t.dist.log_normal,\n t.dist.normal, t.dist.pareto, t.dist.poisson, t.dist.uniform, t.dist.von_mises, t.dist.weibull)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 617,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "random tensors drawn from a named distribution\n(t.dist.bernoulli, t.dist.beta, t.dist.cauchy, t.dist.chi2, t.dist.continuous_bernoulli,\n t.dist.exponential, t.dist.fisher_snedecor, t.dist.gamma, t.dist.gumbel, t.dist.gumble,\n t.dist.half_cauchy, t.dist.half_normal, t.dist.kumaraswamy, t.dist.laplace, t.dist.log_normal,\n t.dist.normal, t.dist.pareto, t.dist.poisson, t.dist.uniform, t.dist.von_mises, t.dist.weibull)",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link t.distributions t distributions",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 632,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t distributions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 636,
+            "width": 563,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "probability distributions: sample, density, entropy\n(t.bernoulli, t.cauchy, t.exponential, t.geometric, t.log_normal, t.normal, t.poisson,\n t.uniform)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 555,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "probability distributions: sample, density, entropy\n(t.bernoulli, t.cauchy, t.exponential, t.geometric, t.log_normal, t.normal, t.poisson,\n t.uniform)",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

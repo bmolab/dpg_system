@@ -244,53 +244,138 @@ print(build('dict', 'dict - named values travelling together', body, demo, links
             demo_width=430, text_width=830, text_height=780))
 
 # ------------------------------------------------------- dict_search, list_box
-body = """These two nodes let you FIND something in a large collection by typing at it, 
-rather than by wiring up a lookup.
+body = """The dict_search node lets you FIND a branch of a nested dictionary by typing
+part of its path, rather than by wiring up a lookup.
 
-Both show a scrolling list with a search field above it. Type, and the list 
-narrows to what matches. Click an entry, or press select, and it is sent out.
+It shows a search field with a scrolling list under it. Type, and the list fills
+with the paths that match. Click an entry, or press select, and that branch is
+sent out.
 
-They exist because a dictionary with hundreds of keys, or a list of every file 
-in a directory, is not something you navigate with patch cords. 
-You need to look at it.
+It is built for OSC Query style trees - an OSC namespace, a parameter tree -
+where every level is a dictionary and its children sit under a key called
+CONTENTS. The list shows paths with the CONTENTS levels left out, so
+synth/CONTENTS/freq appears as synth/freq.
 
-THE NODES:
+WHAT IS LISTED:
+Only entries that are themselves dictionaries appear - the nodes of the tree,
+not the plain values stored inside them. A flat dictionary of numbers or words
+therefore shows nothing; use dict_keys for that.
 
-dict_search   browse the keys of a dictionary. Understands nested keys 
-              written with slashes, so a hierarchy can be searched as paths
-list_box      the same browser over a plain list
-
-Use dict_search when the collection arrives as a dictionary - an OSC namespace, 
-a set of presets, a parameter tree. Use list_box for a list of names.
+A search matches any level of a path, not only the first. Typing "f" finds
+every path with a level beginning with f; typing "synth/f" finds a level
+beginning with f directly under synth. A path's children match along with it.
 
 SYNTAX:
 dict_search
+
+EXAMPLE:
+dict_search
+
+INPUTS and PARAMETERS:
+
+dict in:
+The tree to search. It is stored, not shown: the list stays as it was until
+you next type in the search field.
+
+search field:
+Typing filters as you go, and highlights the first match. Pressing return,
+or clicking away from the field, sends the highlighted entry. Text can also be
+sent into this inlet, which sends the highlighted entry without searching again.
+
+list:
+The matching paths. Clicking an entry sends it.
+
+select:
+A button that sends the highlighted entry again.
+
+OUTPUTS:
+
+results out:
+A list with one item per match - the chosen branch and everything under it.
+Each item is itself a three-part list: the short path, the full path with its
+CONTENTS levels, and the dictionary found there.
+
+RELATED:
+list_box is the same search-and-choose interface over a plain list of names.
+dict_keys gives the names of a dictionary as a list, without the interface -
+use that when the patch is choosing, and dict_search when a person is."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to load the tree', 'pos': (30, 115)},
+    # repeat_in_order: one click stores the text in the dict, THEN sends it on
+    {'key': 'rp', 'init': 'repeat_in_order 2', 'pos': (30, 150), 'w': 190, 'h': 70},
+    {'key': 's0', 'init': 'string', 'pos': (30, 235), 'w': 380, 'h': 42,
+     'props': {'text in': '{"CONTENTS": {"synth": {"CONTENTS": {"freq": {"VALUE": 440}, '
+                          '"gain": {"VALUE": 0.5}}}, "lights": {"CONTENTS": '
+                          '{"level": {"VALUE": 1.0}}}}}',
+               'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'a small OSC Query style tree, as text',
+     'pos': (30, 285)},
+    {'key': 'dc', 'init': 'dict', 'pos': (30, 325), 'w': 160, 'h': 180},
+    {'key': 'c2', 'comment': True, 'text': 'turns the text into a dictionary',
+     'pos': (30, 515)},
+    {'key': 'ds', 'init': 'dict_search', 'pos': (30, 555), 'w': 330, 'h': 230},
+    {'key': 'c3', 'comment': True,
+     'text': 'type s, f or synth/f to fill the list\nthen click an entry to send it',
+     'pos': (30, 795)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 850), 'w': 380, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+]
+links = [('btn', '', 'rp', ''),
+         ('rp', 'first', 's0', ''),
+         ('rp', 'second', 'dc', 'send dict'),
+         ('s0', 'string out', 'dc', 'store'),
+         ('dc', 'dict out', 'ds', 'dict in'),
+         ('ds', 'results out', 'l1', '')]
+print(build('dict_search', 'dict_search - find a branch of a tree by typing', body,
+            demo, links, demo_width=430, text_width=790, text_height=820))
+
+# ------------------------------------------------------------------- list_box
+body = """The list_box node lets you choose one item from a list by typing at it.
+
+It shows a search field with a scrolling list under it. Send it a list, and
+every item appears. Type, and the list narrows to the items that contain what
+you typed. Click an entry, and it is sent out.
+
+It exists because a list of every file in a directory, or every preset name,
+is not something you navigate with patch cords. You need to look at it.
+
+SYNTAX:
+list_box
+
+EXAMPLE:
 list_box
 
 INPUTS and PARAMETERS:
 
-dict in / list in:
-The collection to browse. Receiving it triggers the node and refills the list.
+list in:
+The items to choose from. A new list replaces the old one and is filtered
+straight away by whatever is in the search field. Every item is shown, searched
+and sent as text - a number arrives as its text form, so 2.5 reads 2.500 and
+comes out as the text '2.500', not a number.
 
-search_term:
-The text field. Typing filters the list as you go; leave it empty to see 
-everything.
+search field:
+Typing filters as you go. The match is "contains", not "begins with",
+and capitals count: "re" finds red and green, "Re" finds neither.
+Leave it empty to see everything. Pressing return, or clicking away from the
+field, sends the highlighted entry. Text can also be sent into this inlet;
+it sends the highlighted entry, and filters the next list that arrives.
 
-options:
-The list itself. Clicking an entry selects it.
+list:
+The items that match. When the list is refilled, the entry that was
+highlighted stays highlighted if it is still there; otherwise the first entry is.
+Clicking an entry sends it.
 
-select (dict_search):
-A button that sends the current selection. Useful when you want the choice to 
-take effect on a deliberate click rather than as you scroll.
-
-OUTPUTS: 
+OUTPUTS:
 
 results out:
-What you selected.
+The chosen item, as a string. Nothing is sent just because the list changed -
+only when a choice is made.
 
 RELATED:
-dict_keys gives you the same names as a plain list, without the interface - 
-use that when the patch is choosing, and these when a person is."""
+dict_search is the same interface for finding a branch of a nested dictionary
+by its path."""
 
 demo = [
     {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
@@ -306,8 +391,8 @@ demo = [
 ]
 links = [('btn', '', 'm1', ''), ('m1', 'message out', 'lb2', 'list in'),
          ('lb2', 'results out', 's1', '')]
-print(build('dict_search', 'dict_search and list_box - find it by typing', body,
-            demo, links, demo_width=430, text_width=790, text_height=560))
+print(build('list_box', 'list_box - choose from a list by typing', body,
+            demo, links, demo_width=430, text_width=790, text_height=640))
 
 # -------------------------------------------------------------------- replace
 body = """These nodes substitute one value for another as data passes through.

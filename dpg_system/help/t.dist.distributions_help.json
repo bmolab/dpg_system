@@ -6,8 +6,8 @@
         100
     ],
     "id": 6979,
-    "name": "t.dist_help.json",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.dist_help.json",
+    "name": "t.dist.distributions_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.dist.distributions_help.json",
     "nodes": {
         "0": {
             "name": "",
@@ -1679,12 +1679,12 @@
             }
         },
         "41": {
-            "init": "comment t.dist",
+            "init": "comment t.dist.* - random tensors from a named distribution",
             "name": "comment",
             "id": 10325,
             "position_x": 18,
             "position_y": 9,
-            "width": 82,
+            "width": 640,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -1692,7 +1692,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.dist",
+                    "value": "t.dist.* - random tensors from a named distribution",
                     "value_type": "string"
                 },
                 "1": {

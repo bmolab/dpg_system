@@ -1,0 +1,443 @@
+{
+    "height": 761,
+    "width": 1382,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "toggle_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/toggle_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment toggle - a state",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 205,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "toggle - a state",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "toggle - a state"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 544,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nIf you want something that fires once and is done, that is a button - see the \nbutton help patch. The distinction is the same one togedge draws between an \nevent and a state: a toggle can tell you whether something is running, but not \nthat it just started.\n\nTHE NODES:\n\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nSYNTAX:\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (toggle):\nThe box itself. Click it, or send it something: \n  bang          flips it, on to off or off to on \n  a number      on if its whole-number part is not zero, off if it is - so 0.5 \n                turns it OFF, the fraction being dropped first \n  set <value>   changes it the same way WITHOUT sending anything, for putting \n                a toggle in step with something it should not then trigger\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nprefix / prefix_as_label:\nWord(s) sent in front of the value. A prefix of \"record\" makes the toggle send \n\"record 1\" and \"record 0\" - a message rather than a bare number, ready for a \nnode that reads the first word as a command. With prefix_as_label the prefix \nis also drawn as a name in front of the toggle, so a chromeless toggle still \nsays what it is for.\n\nfont size:\nThe size of the box and its name - 24, 30, 36 or 48.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. For a panel \nof controls that is meant to be looked at rather than patched.\n\nOUTPUTS: \n\nout:\n1 when it turns on and 0 when it turns off (after the prefix, if there is one).",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A toggle is a state. Click it and it stays on until you click again, sending 1 \nand 0 as it changes. Use it to enable something.\n\nIf you want something that fires once and is done, that is a button - see the \nbutton help patch. The distinction is the same one togedge draws between an \nevent and a state: a toggle can tell you whether something is running, but not \nthat it just started.\n\nTHE NODES:\n\ntoggle      click to switch between on and off\nset_reset   a toggle driven by two inlets instead of by clicking\n\nset_reset is the toggle for when the patch, rather than a person, decides. \nAnything arriving at \"set\" turns it on, anything at \"reset\" turns it off, \nand it holds that state in between - which is how you latch a condition that \nbegins in one place and ends in another.\n\nSYNTAX:\ntoggle\nset_reset\n\nINPUTS and PARAMETERS:\n\nin (toggle):\nThe box itself. Click it, or send it something: \n  bang          flips it, on to off or off to on \n  a number      on if its whole-number part is not zero, off if it is - so 0.5 \n                turns it OFF, the fraction being dropped first \n  set <value>   changes it the same way WITHOUT sending anything, for putting \n                a toggle in step with something it should not then trigger\n\nset / reset (set_reset):\nTurn the state on and off. Anything sent works; only the arrival matters.\n\nbind to:\nA variable name. A bound toggle and its variable are the same thing.\n\nprefix / prefix_as_label:\nWord(s) sent in front of the value. A prefix of \"record\" makes the toggle send \n\"record 1\" and \"record 0\" - a message rather than a bare number, ready for a \nnode that reads the first word as a command. With prefix_as_label the prefix \nis also drawn as a name in front of the toggle, so a chromeless toggle still \nsays what it is for.\n\nfont size:\nThe size of the box and its name - 24, 30, 36 or 48.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. For a panel \nof controls that is meant to be looked at rather than patched.\n\nOUTPUTS: \n\nout:\n1 when it turns on and 0 when it turns off (after the prefix, if there is one)."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 52,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "prefix",
+                    "value": "run",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "hide_title_bar",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment a state: click it, and it stays where you put it",
+            "name": "comment",
+            "id": 385,
+            "position_x": 211,
+            "position_y": 62,
+            "width": 303,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a state: click it, and it stays where you put it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a state: click it, and it stays where you put it"
+        },
+        "5": {
+            "name": "metro",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "6": {
+            "name": "counter",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 217,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 312,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment counts while the toggle is on",
+            "name": "comment",
+            "id": 533,
+            "position_x": 211,
+            "position_y": 312,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counts while the toggle is on",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counts while the toggle is on"
+        },
+        "9": {
+            "name": "button",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 410,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "button",
+            "id": 607,
+            "position_x": 140,
+            "position_y": 410,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment left button sets, right button resets",
+            "name": "comment",
+            "id": 644,
+            "position_x": 211,
+            "position_y": 410,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left button sets, right button resets",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "left button sets, right button resets"
+        },
+        "12": {
+            "name": "set_reset",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 64,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "int",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 585,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment set_reset: the same state, decided by the patch",
+            "name": "comment",
+            "id": 755,
+            "position_x": 211,
+            "position_y": 585,
+            "width": 297,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "set_reset: the same state, decided by the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "set_reset: the same state, decided by the patch"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 657,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "set"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "reset"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

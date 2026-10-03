@@ -1,0 +1,314 @@
+{
+    "height": 781,
+    "width": 1332,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "int_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/int_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment int - a whole number, read or set",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 414,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "int - a whole number, read or set",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "int - a whole number, read or set"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 484,
+            "position_y": 45,
+            "width": 808,
+            "height": 676,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "int is a number box for whole numbers.\n\nIt does what float does - it shows what arrives, sends what you drag, and keeps \nthe value for later - but it only ever holds a whole number. Use it wherever a \nfraction would be meaningless: a count, an index, a channel, a step in a list. \nIt stops nonsense arriving downstream rather than leaving the next node to tidy \nit up.\n\nA FRACTION IS DROPPED, NOT ROUNDED:\n2.7 arriving at an int becomes 2, and -2.7 becomes -2. If you want the nearest \nwhole number, send the value through round first.\n\nTO USE IT:\nDrag left and right on the number to change it. Double-click, or click and type, \nto enter one exactly. A bang at the inlet re-sends the current value.\n\nSYNTAX:\nint\nint <max>\nint +\n\nEXAMPLE:\nint 10\n\nNOTE: the argument is not the same as float's. A number given to int is the \nLARGEST value the box will hold, not the value it starts with - 'int 10' cannot \nbe dragged past 10. '+' draws it as a typing box with step buttons.\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to display and store. Receiving a number here sets the box (dropping \nany fraction) and sends it on. Receiving a bang re-sends what is already there.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. Every \ninterface node has it - for a panel of controls that is meant to be looked \nat rather than patched.\n\nOUTPUTS: \n\nint out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat keeps the decimals. \nslider and knob given a whole-number argument also send whole numbers. \nround gives the nearest whole number rather than dropping the fraction.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 660,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "int is a number box for whole numbers.\n\nIt does what float does - it shows what arrives, sends what you drag, and keeps \nthe value for later - but it only ever holds a whole number. Use it wherever a \nfraction would be meaningless: a count, an index, a channel, a step in a list. \nIt stops nonsense arriving downstream rather than leaving the next node to tidy \nit up.\n\nA FRACTION IS DROPPED, NOT ROUNDED:\n2.7 arriving at an int becomes 2, and -2.7 becomes -2. If you want the nearest \nwhole number, send the value through round first.\n\nTO USE IT:\nDrag left and right on the number to change it. Double-click, or click and type, \nto enter one exactly. A bang at the inlet re-sends the current value.\n\nSYNTAX:\nint\nint <max>\nint +\n\nEXAMPLE:\nint 10\n\nNOTE: the argument is not the same as float's. A number given to int is the \nLARGEST value the box will hold, not the value it starts with - 'int 10' cannot \nbe dragged past 10. '+' draws it as a typing box with step buttons.\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to display and store. Receiving a number here sets the box (dropping \nany fraction) and sends it on. Receiving a bang re-sends what is already there.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. Every \ninterface node has it - for a panel of controls that is meant to be looked \nat rather than patched.\n\nOUTPUTS: \n\nint out:\nThe value, sent whenever it changes.\n\nRELATED:\nfloat keeps the decimals. \nslider and knob given a whole-number argument also send whole numbers. \nround gives the nearest whole number rather than dropping the fraction."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "float",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "init": "float 2.7"
+        },
+        "5": {
+            "name": "int",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 186,
+            "position_y": 250,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "2.7 becomes 2: the fraction is dropped\ndrag the float to see it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "2.7 becomes 2: the fraction is dropped\ndrag the float to see it"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "init": "int 10"
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 186,
+            "position_y": 380,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "'int 10' stops at 10 -\nthe argument is its maximum",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "'int 10' stops at 10 -\nthe argument is its maximum"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 402,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

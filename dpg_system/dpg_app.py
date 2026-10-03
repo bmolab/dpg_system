@@ -470,6 +470,7 @@ class App:
         self.window_context = None
         self.fresh_patcher = True
         self.pausing = False
+        self.editor_history = []
         self.load_recent_patchers_list()
         self.gl_on_separate_thread = False
 
@@ -1518,6 +1519,9 @@ class App:
 
                 dpg.add_menu_item(label='osc status', callback=self.print_osc_state)
                 self.minimap_menu_item = dpg.add_menu_item(label='minimap', callback=self.show_minimap, check=True)
+
+            with dpg.menu(label='Help'):
+                dpg.add_menu_item(label='Node Browser', callback=self.open_node_browser)
 
     def set_trace(self):
         if self.trace_menu_item != -1:
@@ -3011,13 +3015,66 @@ class App:
             if ed is editor:
                 self.set_tab_title(index, name)
 
+    def select_editor(self, editor, restore_size=True):
+        if editor in self.node_editors:
+            index = self.node_editors.index(editor)
+            self.current_node_editor = index
+            self.select_tab(self.tabs[index])
+            if restore_size:
+                self.restore_window_size(editor)
+
+    # Every patch resizes the one window to its own saved size as it loads,
+    # and nothing put it back: close a help patch and the patch underneath
+    # came back at the help patch's size, mostly hidden. So the current patch
+    # notes the window size each frame -- before any callback runs, so a load
+    # or close in this frame cannot have changed it yet -- along with the
+    # order patches were visited in, and closing one goes back to the last
+    # patch visited, at the size it was shown at.
+    def remember_window_size(self):
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+        editor.window_size = (dpg.get_viewport_width(), dpg.get_viewport_height())
+        if not self.editor_history or self.editor_history[-1] is not editor:
+            if editor in self.editor_history:
+                self.editor_history.remove(editor)
+            self.editor_history.append(editor)
+
+    def restore_window_size(self, editor):
+        size = getattr(editor, 'window_size', None)
+        if size is not None and size != (dpg.get_viewport_width(), dpg.get_viewport_height()):
+            self.place_window(size[0], size[1])
+
+    def return_to_previous_editor(self):
+        self.editor_history = [e for e in self.editor_history if e in self.node_editors]
+        if self.editor_history:
+            self.select_editor(self.editor_history[-1])
+
+    def open_node_browser(self):
+        # Back to the top page, replacing whatever browser page is open.
+        leaving = None
+        for editor in self.node_editors:
+            if os.path.join('help', 'browser') in str(editor.file_path) and editor.patch_name != 'nodes':
+                leaving = editor
+                break
+        basic_nodes.HelpLinkNode.open_page('nodes', leaving=leaving)
+
     def selected_tab(self):
         chosen_tab_uuid = dpg.get_value(self.tab_bar)
-        chosen_tab_index = dpg.get_item_user_data(chosen_tab_uuid)
+        # The tab's position, not its user_data: user_data is the index the tab
+        # had when it was created, and closing an earlier tab never renumbers
+        # it -- so after any close, clicking a later tab selected the wrong
+        # editor.
+        if chosen_tab_uuid in self.tabs:
+            chosen_tab_index = self.tabs.index(chosen_tab_uuid)
+        else:
+            chosen_tab_index = dpg.get_item_user_data(chosen_tab_uuid)
         self.current_node_editor = chosen_tab_index
         if self.get_current_editor() is not None:
             dpg.set_value(self.minimap_menu_item, self.get_current_editor().mini_map)
             self.get_current_editor().bind_theme()
+            # each patch comes back at the window size it was last shown at
+            self.restore_window_size(self.get_current_editor())
 
     def remove_node_editor(self, stale_editor):
         if stale_editor is None:
@@ -3077,6 +3134,8 @@ class App:
                 # If no editors remain, create a fresh empty one
                 if len(self.node_editors) == 0:
                     self.add_node_editor()
+                else:
+                    self.return_to_previous_editor()
 
     def add_node_editor(self):
         editor_name = 'patch ' + str(self.new_patcher_index)
@@ -3190,6 +3249,7 @@ class App:
                         hold_context = self.set_dpg_gl_context()
 
                     now = time.perf_counter()
+                    self.remember_window_size()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
                         node_editor.frame_shift_check()

@@ -1,0 +1,348 @@
+{
+    "height": 1190,
+    "width": 1393,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "gl_button_grid_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_button_grid_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gl_button_grid - a sixteen-square indicator",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gl_button_grid - a sixteen-square indicator",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gl_button_grid - a sixteen-square indicator"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 545,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "gl_button_grid draws a four by four grid of squares in the scene, with one \nof them highlighted.\n\nWHAT IT IS, AND IS NOT:\nIt is an indicator, not a control. It does not respond to the mouse, and it \nhas no outlet but the chain.\n'selection' is an INPUT - send it a number from 0 to 15 and that square is \noutlined in red while the rest stay grey. Any other number highlights none.\n\nThat makes it a way to show, inside a fullscreen render where no patch is \nvisible, which of sixteen states, presets or sections is active.\n\nTHE LAYOUT:\nSquare 0 is at the bottom left, at 'position_x' and 'position_y'. The \nnumbers run left to right along a row, then up a row, so square 15 is at the \ntop right. 'scale' is the distance from one square to the next, and 'spacing' \nis the part of that distance left as a gap - 0.2 leaves a fifth. The squares \nare drawn as outlines, 'thickness' pixels wide.\n\nWHERE IT GOES:\nLike gl_text, it is drawn in the chain's current coordinates and two units \nfurther away. Straight after gl_context it is fixed on the window; after a \ntransform it moves with it.\n\nPUT IT LAST IN ITS CHAIN:\nUnlike most gl nodes, it does not put things back when it is done. Everything \nafter it in the chain is drawn two units further away, with lighting switched \noff.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_button_grid\n\nEXAMPLE:\ngl_button_grid\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\nselection:\nWhich square to highlight, 0 to 15.\n\nposition_x / position_y:\nWhere the bottom left corner of the grid sits.\n\nspacing:\nThe gap between squares, as a part of 'scale'. Default 0.2.\n\nthickness:\nThe outline width in pixels. Default 4.\n\nalpha:\nTransparency, 0 to 1. A low alpha gives an indicator that is there without \ndominating what it sits over.\n\nscale:\nThe distance from one square to the next. Default 0.1.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing - with the changes described above.\n\nRELATED:\ngl_text, which used to share this page, draws text in the scene in the same \nway, and suits a label beside the grid.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "gl_button_grid draws a four by four grid of squares in the scene, with one \nof them highlighted.\n\nWHAT IT IS, AND IS NOT:\nIt is an indicator, not a control. It does not respond to the mouse, and it \nhas no outlet but the chain.\n'selection' is an INPUT - send it a number from 0 to 15 and that square is \noutlined in red while the rest stay grey. Any other number highlights none.\n\nThat makes it a way to show, inside a fullscreen render where no patch is \nvisible, which of sixteen states, presets or sections is active.\n\nTHE LAYOUT:\nSquare 0 is at the bottom left, at 'position_x' and 'position_y'. The \nnumbers run left to right along a row, then up a row, so square 15 is at the \ntop right. 'scale' is the distance from one square to the next, and 'spacing' \nis the part of that distance left as a gap - 0.2 leaves a fifth. The squares \nare drawn as outlines, 'thickness' pixels wide.\n\nWHERE IT GOES:\nLike gl_text, it is drawn in the chain's current coordinates and two units \nfurther away. Straight after gl_context it is fixed on the window; after a \ntransform it moves with it.\n\nPUT IT LAST IN ITS CHAIN:\nUnlike most gl nodes, it does not put things back when it is done. Everything \nafter it in the chain is drawn two units further away, with lighting switched \noff.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_button_grid\n\nEXAMPLE:\ngl_button_grid\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\nselection:\nWhich square to highlight, 0 to 15.\n\nposition_x / position_y:\nWhere the bottom left corner of the grid sits.\n\nspacing:\nThe gap between squares, as a part of 'scale'. Default 0.2.\n\nthickness:\nThe outline width in pixels. Default 4.\n\nalpha:\nTransparency, 0 to 1. A low alpha gives an indicator that is there without \ndominating what it sits over.\n\nscale:\nThe distance from one square to the next. Default 0.1.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing - with the changes described above.\n\nRELATED:\ngl_text, which used to share this page, draws text in the scene in the same \nway, and suits a label beside the grid."
+        },
+        "3": {
+            "name": "gl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 70,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "gl_light",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 202,
+            "width": 222,
+            "height": 294,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "metro",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 516,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "6": {
+            "name": "counter",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 606,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "counter 16 1"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 705,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment counts 0 to 15, then wraps",
+            "name": "comment",
+            "id": 533,
+            "position_x": 278,
+            "position_y": 755,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counts 0 to 15, then wraps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counts 0 to 15, then wraps"
+        },
+        "9": {
+            "name": "gl_button_grid",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 795,
+            "width": 154,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 278,
+            "position_y": 1090,
+            "width": 237,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the counted square lights up red,\nbottom left to top right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the counted square lights up red,\nbottom left to top right"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 965,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "selection"
+        }
+    }
+}

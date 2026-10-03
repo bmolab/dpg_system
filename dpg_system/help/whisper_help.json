@@ -1,11 +1,11 @@
 {
-    "height": 1477,
-    "width": 2038,
+    "height": 1222,
+    "width": 1604,
     "position": [
         100,
         100
     ],
-    "id": 1088,
+    "id": 829,
     "name": "whisper_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/whisper_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment whisper~ and eleven_labs~ - speech in and out",
+            "init": "comment whisper~ - speech into text",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 561,
+            "width": 340,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "whisper~ and eleven_labs~ - speech in and out",
+                    "value": "whisper~ - speech into text",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "whisper~ and eleven_labs~ - speech in and out"
+            "comment": "whisper~ - speech into text"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1180,
+            "position_x": 746,
             "position_y": 45,
             "width": 818,
             "height": 806,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Speech into text, and text back into speech.\n\nTHE NODES:\n\nwhisper~      listens, and gives you what was said\neleven_labs~  takes text, and says it aloud\n\nwhisper~ RUNS HERE; eleven_labs~ DOES NOT:\nwhisper~ transcribes on this machine - nothing leaves it, there is no account,\nand it keeps working with the network unplugged. eleven_labs~ sends your text to\na service and needs an API key in dpg_system/elevenlabs_key.py.\n\nThat difference decides where each belongs. Anything an audience says in\nconfidence can go through whisper~ and must not go through eleven_labs.\n\nwhisper~ GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:\n\nin_progress   what it thinks is being said RIGHT NOW. It changes as more sound\n              arrives - words appear, then get revised, then settle.\nphrases       what it has decided. A phrase is emitted once and does not change.\n\nUse in_progress for anything live and visual, where the guessing and revising is\npart of what the audience sees. Use phrases for anything that acts on meaning -\na decision, a lookup, a prompt to a language model - because acting on\nin_progress means acting on words it is about to withdraw.\n\nThe two are not alternatives. A common arrangement uses both: in_progress drives\nthe display, phrases drive the work.\n\nHOW A GUESS BECOMES A PHRASE:\nSegments have an AGE - how many analysis rounds they have survived unchanged -\nand 'confirmation_age' is how old one must be before it is trusted. A phrase is\nthen emitted when a confirmed segment ends in a full stop, question mark or\nexclamation.\n\nThe age required shrinks as the sentence gets longer, scaled by 'length_factor'.\nThe reasoning is that a long utterance has already given the model plenty of\ncontext, so its early words are unlikely to be revised - and waiting the full\nage on every one of them would leave the transcript lagging badly behind the\nspeaker.\n\n'minimum_confidence' and 'min_trailing_confidence' throw away segments the model\nitself is unsure of, the second applying to the end of a phrase where guessing\nis worst. 'minimum_lifespan' stops very short-lived fragments being emitted at\nall.\n\nTHE 'noises' OUTLET IS NOT A MISTAKE:\nWhisper hallucinates when there is no speech - it will confidently transcribe\nbreathing, a chair, a hum as words. Rather than let that into 'phrases', those\nsegments come out of 'noises' instead.\n\nWhich makes 'noises' quite interesting in its own right: it is what the room\nsounded like to something trying very hard to hear language in it.\n\n'silence_threshold' and 'silence_period' set what counts as nothing happening,\nand 'energy' reports the level so you can see where the threshold should be.\n\nTHE MODEL IS A TRADE:\nLarger models are more accurate and slower, and the delay is felt directly as\nthe transcript trailing the speaker. Start small and go larger only if the words\nare actually wrong; a smaller model that keeps up is usually better in\nperformance than a better one that lags.\n\n'language' can be set or left to detect, and 'translate' asks for English out\nregardless of what went in.\n\neleven_labs~ SPEAKS, AND QUEUES:\nSend text and it says it - out of 'left out' / 'right out', as a signal, so it\nsounds through whatever fader_out~ or audio_out~ it is patched to and can go\nthrough vocoder~, vst~ or a filter on the way, like any other source. Unpatched,\nit is silent. 'backlog' reports how much is waiting, and 'speaking'\nwhether it is busy - from the moment a line is sent off until the last of it\nhas played - which is what to gate on, because sending a second line while the\nfirst is still going stacks them up rather than interrupting. 'sounding' is\nnarrower: true only while sound is actually coming out, not during the pause\nbefore a phrase starts. That is the one to hand whisper~, so it does not\ntranscribe the node talking, or a face that should move with the voice.\n\n'stop' finishes the current phrase and stops; 'hard stop' cuts immediately.\n'accept input' closes the door without stopping what is already queued.\n\nSPEAKING A PHRASE THAT IS STILL BEING WRITTEN:\n'text to speak' wants a finished phrase, which means waiting for the last word\nof it before the first word can be spoken. When the text is coming from a\nlanguage model, that wait is most of the delay you hear.\n\n'stream text' takes it as it is made instead: patch the model's output straight\nin, and bang 'end of response' - the model's own 'end' outlet - when it has\nfinished. The words go up to the service over a socket it can answer on\ncontinuously, so the voice starts once there is enough to start on, and keeps\ngoing while the rest is still being written. It also sounds better than\nchopping the answer into sentences and sending each one: the delivery carries\nacross the whole answer instead of restarting at every full stop.\n\n'characters before speaking' is how much it gathers before beginning. Fifty is\nthe least the service accepts and the soonest it will start; more gives it more\nto read ahead into, which it says better. A word is never split between two\nmessages, and a '<backspace>' from a model that is re-choosing a word takes back\na character that has not been sent yet.\n\nWhole phrases and streamed ones share the one queue, so they are spoken in the\norder they were given, and 'speaking' stays true from the first piece of a\nstreamed phrase until the last of it has played. The v3 models cannot be typed\ninto this way; given streamed text they wait for the end and speak it whole.\n\nTHE VOICE SETTINGS ARE PERFORMANCE DIRECTION:\n'stability' low lets the delivery vary between renderings and sound more alive;\nhigh makes it consistent and flatter. 'style exaggeration' pushes the character\nof the voice. 'similarity_boost' holds it closer to the original recording.\n'speed' is rate.\n\n'latency' trades responsiveness against quality - worth raising only if the\ndelay before it starts is a problem, because the cost is audible. The v3\nmodels do not take it at all, so it is left out of the request for them.\n\nSYNTAX (the plain name, without ~, still works for older patches):\nwhisper~\neleven_labs~\n\nEXAMPLE:\nwhisper~\n\nINPUTS and PARAMETERS:\n\non/off / audio device / in:\nStart listening, and where from. With a ~ signal patched to 'in' (adc~, a\nvoice, stream~ for audio held as an array), whisper~ listens to that instead\nof 'audio device' - decided when it is switched on.\n\nmodel / language / translate:\nWhich model, what language, and whether to render English.\n\nsilence_threshold / silence_period:\nWhat counts as nothing being said.\n\nconfirmation_age / minimum_lifespan / minimum_confidence / length_factor:\nHow sure it must be before a phrase is emitted.\n\ntext to speak / voice / model:\nWhat to say and who says it.\n\nstream text / end of response:\nA phrase as it is being written, and the bang that says that is all of it.\n\ncharacters before speaking:\nHow much streamed text it gathers before it starts. Less is sooner, more is\nbetter spoken.\n\nspeed / stability / style exaggeration / similarity_boost:\nHow it is said.\n\nstop / hard stop / accept input:\nEnd politely, end now, or stop taking new text.\n\nlevel / enable:\nHow loud, and whether it is on at all.\n\nOUTPUTS: \n\nphrases:\nSettled text. Act on this.\n\nin_progress:\nThe current guess, revised as it goes. Display this.\n\nnoises:\nWhat it heard as words when there was no speech.\n\nenergy / rate / language:\nLevel, speed, and what language it thinks it is.\n\nspeaking / sounding / backlog:\nWhether it is busy, whether sound is coming out this instant, and how much is\nqueued.\n\nleft out / right out:\nThe speech as a signal. Patch to fader_out~ or audio_out~ to hear it.\n\nTo keep what it says, patch the signal into record~; to analyse it, into a\nspeech node or capture~.\n\nRELATED:\ntranslate to move between languages in between.\ngemma_4 to answer rather than repeat.\ncairo_layout to put the words on a screen.",
+                    "value": "Listens, and gives you what was said, as text.\n\nwhisper~ RUNS HERE:\nwhisper~ transcribes on this machine - nothing leaves it, there is no account,\nand once its model has been downloaded it keeps working with the network\nunplugged. Anything an audience says in confidence can go through it.\n\nIT GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:\n\nin_progress   what it thinks is being said RIGHT NOW. It changes as more sound\n              arrives - words appear, then get revised, then settle.\nphrases       what it has decided. A phrase is emitted once and does not change.\n\nUse in_progress for anything live and visual, where the guessing and revising is\npart of what the audience sees. Use phrases for anything that acts on meaning -\na decision, a lookup, a prompt to a language model - because acting on\nin_progress means acting on words it is about to withdraw.\n\nThe two are not alternatives. A common arrangement uses both: in_progress drives\nthe display, phrases drive the work.\n\nHOW A GUESS BECOMES A PHRASE:\nThe sound is cut into segments, and each one has an AGE - how many analysis\nrounds it has survived unchanged. 'confirmation_age' is how old one must be\nbefore it is trusted. A trusted segment is emitted as a phrase when it ends in\na full stop, question mark or exclamation, or when two more segments have\nalready formed after it, so a speaker who never uses a full stop is still\nheard.\n\nThe age required shrinks as the sentence gets longer, by one round for every\n'length_factor' characters. The reasoning is that a long utterance has already\ngiven the model plenty of context, so its early words are unlikely to be\nrevised - and waiting the full age on every one of them would leave the\ntranscript lagging badly behind the speaker.\n\nTwo other things push out whatever is pending, finished or not: a pause (see\nsilence below), and the listening buffer filling past\n'buffer_overflow_fraction' during a long unbroken stretch of speech.\n\n'min_trailing_confidence' trims words the model is unsure of off the end of\neach segment, where guessing is worst. 'minimum_confidence' keeps doubtful\nsegments out of in_progress. 'minimum_lifespan' is kept for older patches but\nhas no effect at present - every emission overrides it.\n\nTHE 'noises' OUTLET:\nWhen Whisper hears something that is not speech it often says so, in brackets\nor asterisks - [Music], (coughing), *door closes*. Those segments are kept out\nof 'phrases' and come out of 'noises' instead, with the brackets stripped.\n\nWhich makes 'noises' quite interesting in its own right: it is what the room\nsounded like to something trying very hard to hear language in it.\n\nWhisper can also hallucinate plain words out of near-silence. Those are not\nbracketed, so they are not caught here - a sensible 'silence_threshold' is the\ndefence against them.\n\nSILENCE:\n'energy' reports how much is happening in the sound - the sum of the\nsample-to-sample changes in each block it takes in. A block below\n'silence_threshold' counts as quiet, and after 'silence_period' quiet blocks in\na row the utterance is over: what is pending is emitted and the buffer starts\nafresh. Watch 'energy' while the room is quiet and while someone speaks, and\nset the threshold between the two. 'gain' scales the sound before any of this.\n\nTHE MODEL IS A TRADE:\nLarger models are more accurate and slower, and the delay is felt directly as\nthe transcript trailing the speaker. Start small and go larger only if the words\nare actually wrong; a smaller model that keeps up is usually better in\nperformance than a better one that lags. The '.en' models know only English\nand are better at it.\n\n'language' can be set or left at 'auto' to detect, and 'translate' asks for\nEnglish out regardless of what went in. 'backend' chooses the engine that runs\nthe model - whisper.cpp (the default) or faster-whisper.\n\nSYNTAX (the plain name, without ~, still works for older patches):\nwhisper~ [model] [language] [translate]\n\nAll optional, in any order. model is one of tiny, tiny.en, base, base.en,\nsmall, small.en, medium, medium.en, large-v3-turbo, large-v3 (default\nbase.en). language is a name or a two-letter code - french or fr - or auto\n(default english). 'translate' switches translation on.\n\nEXAMPLE:\nwhisper~ small french translate\n\nINPUTS and PARAMETERS:\n\non/off:\nStart and stop listening. The model is loaded the first time it is switched\non, which takes a few seconds.\n\nin:\nA ~ signal to listen to (adc~, a voice, stream~ for audio held as an array).\nPatched, it replaces 'audio device' - decided at the moment it is switched on.\n\naudio device:\nWhich input to listen to when nothing is patched to 'in'.\n\nmodel / language / translate / backend:\nWhich model, what language, whether to render English, and which engine.\n\nOPTIONS:\n\ngain:\nScales the incoming sound.\n\nsilence_threshold / silence_period:\nWhat counts as nothing being said, and for how many blocks.\n\nconfirmation_age / length_factor:\nHow long a segment must stay unchanged before it is trusted.\n\nminimum_confidence / min_trailing_confidence / minimum_lifespan:\nFilters on the model's own certainty.\n\nupdate_period:\nMilliseconds between analysis rounds. Shorter is more responsive and costs more.\n\noverlap / buffer_overflow_fraction:\nHow much audio is carried across between rounds, and how full the buffer may\nget before it is emptied.\n\ndebug:\nPrints what it is deciding, in the console.\n\nOUTPUTS:\n\nphrases:\nSettled text. Act on this.\n\nin_progress:\nThe current guess, revised as it goes. Display this.\n\nnoises:\nWhat it marked as sounds rather than speech.\n\nenergy:\nThe level, sent every frame while it runs. Use it to set silence_threshold.\n\nrate:\nAn estimate of how fast the person is speaking - characters against time.\n\nlanguage:\nThe language it thinks it is hearing.\n\nRELATED:\neleven_labs~ to say text aloud - the other direction.\nnemotron~ for a streaming alternative.\ntranslate to move between languages in between.\ngemma_4 to answer rather than repeat.\ncairo_layout to put the words on a screen.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Speech into text, and text back into speech.\n\nTHE NODES:\n\nwhisper~      listens, and gives you what was said\neleven_labs~  takes text, and says it aloud\n\nwhisper~ RUNS HERE; eleven_labs~ DOES NOT:\nwhisper~ transcribes on this machine - nothing leaves it, there is no account,\nand it keeps working with the network unplugged. eleven_labs~ sends your text to\na service and needs an API key in dpg_system/elevenlabs_key.py.\n\nThat difference decides where each belongs. Anything an audience says in\nconfidence can go through whisper~ and must not go through eleven_labs.\n\nwhisper~ GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:\n\nin_progress   what it thinks is being said RIGHT NOW. It changes as more sound\n              arrives - words appear, then get revised, then settle.\nphrases       what it has decided. A phrase is emitted once and does not change.\n\nUse in_progress for anything live and visual, where the guessing and revising is\npart of what the audience sees. Use phrases for anything that acts on meaning -\na decision, a lookup, a prompt to a language model - because acting on\nin_progress means acting on words it is about to withdraw.\n\nThe two are not alternatives. A common arrangement uses both: in_progress drives\nthe display, phrases drive the work.\n\nHOW A GUESS BECOMES A PHRASE:\nSegments have an AGE - how many analysis rounds they have survived unchanged -\nand 'confirmation_age' is how old one must be before it is trusted. A phrase is\nthen emitted when a confirmed segment ends in a full stop, question mark or\nexclamation.\n\nThe age required shrinks as the sentence gets longer, scaled by 'length_factor'.\nThe reasoning is that a long utterance has already given the model plenty of\ncontext, so its early words are unlikely to be revised - and waiting the full\nage on every one of them would leave the transcript lagging badly behind the\nspeaker.\n\n'minimum_confidence' and 'min_trailing_confidence' throw away segments the model\nitself is unsure of, the second applying to the end of a phrase where guessing\nis worst. 'minimum_lifespan' stops very short-lived fragments being emitted at\nall.\n\nTHE 'noises' OUTLET IS NOT A MISTAKE:\nWhisper hallucinates when there is no speech - it will confidently transcribe\nbreathing, a chair, a hum as words. Rather than let that into 'phrases', those\nsegments come out of 'noises' instead.\n\nWhich makes 'noises' quite interesting in its own right: it is what the room\nsounded like to something trying very hard to hear language in it.\n\n'silence_threshold' and 'silence_period' set what counts as nothing happening,\nand 'energy' reports the level so you can see where the threshold should be.\n\nTHE MODEL IS A TRADE:\nLarger models are more accurate and slower, and the delay is felt directly as\nthe transcript trailing the speaker. Start small and go larger only if the words\nare actually wrong; a smaller model that keeps up is usually better in\nperformance than a better one that lags.\n\n'language' can be set or left to detect, and 'translate' asks for English out\nregardless of what went in.\n\neleven_labs~ SPEAKS, AND QUEUES:\nSend text and it says it - out of 'left out' / 'right out', as a signal, so it\nsounds through whatever fader_out~ or audio_out~ it is patched to and can go\nthrough vocoder~, vst~ or a filter on the way, like any other source. Unpatched,\nit is silent. 'backlog' reports how much is waiting, and 'speaking'\nwhether it is busy - from the moment a line is sent off until the last of it\nhas played - which is what to gate on, because sending a second line while the\nfirst is still going stacks them up rather than interrupting. 'sounding' is\nnarrower: true only while sound is actually coming out, not during the pause\nbefore a phrase starts. That is the one to hand whisper~, so it does not\ntranscribe the node talking, or a face that should move with the voice.\n\n'stop' finishes the current phrase and stops; 'hard stop' cuts immediately.\n'accept input' closes the door without stopping what is already queued.\n\nSPEAKING A PHRASE THAT IS STILL BEING WRITTEN:\n'text to speak' wants a finished phrase, which means waiting for the last word\nof it before the first word can be spoken. When the text is coming from a\nlanguage model, that wait is most of the delay you hear.\n\n'stream text' takes it as it is made instead: patch the model's output straight\nin, and bang 'end of response' - the model's own 'end' outlet - when it has\nfinished. The words go up to the service over a socket it can answer on\ncontinuously, so the voice starts once there is enough to start on, and keeps\ngoing while the rest is still being written. It also sounds better than\nchopping the answer into sentences and sending each one: the delivery carries\nacross the whole answer instead of restarting at every full stop.\n\n'characters before speaking' is how much it gathers before beginning. Fifty is\nthe least the service accepts and the soonest it will start; more gives it more\nto read ahead into, which it says better. A word is never split between two\nmessages, and a '<backspace>' from a model that is re-choosing a word takes back\na character that has not been sent yet.\n\nWhole phrases and streamed ones share the one queue, so they are spoken in the\norder they were given, and 'speaking' stays true from the first piece of a\nstreamed phrase until the last of it has played. The v3 models cannot be typed\ninto this way; given streamed text they wait for the end and speak it whole.\n\nTHE VOICE SETTINGS ARE PERFORMANCE DIRECTION:\n'stability' low lets the delivery vary between renderings and sound more alive;\nhigh makes it consistent and flatter. 'style exaggeration' pushes the character\nof the voice. 'similarity_boost' holds it closer to the original recording.\n'speed' is rate.\n\n'latency' trades responsiveness against quality - worth raising only if the\ndelay before it starts is a problem, because the cost is audible. The v3\nmodels do not take it at all, so it is left out of the request for them.\n\nSYNTAX (the plain name, without ~, still works for older patches):\nwhisper~\neleven_labs~\n\nEXAMPLE:\nwhisper~\n\nINPUTS and PARAMETERS:\n\non/off / audio device / in:\nStart listening, and where from. With a ~ signal patched to 'in' (adc~, a\nvoice, stream~ for audio held as an array), whisper~ listens to that instead\nof 'audio device' - decided when it is switched on.\n\nmodel / language / translate:\nWhich model, what language, and whether to render English.\n\nsilence_threshold / silence_period:\nWhat counts as nothing being said.\n\nconfirmation_age / minimum_lifespan / minimum_confidence / length_factor:\nHow sure it must be before a phrase is emitted.\n\ntext to speak / voice / model:\nWhat to say and who says it.\n\nstream text / end of response:\nA phrase as it is being written, and the bang that says that is all of it.\n\ncharacters before speaking:\nHow much streamed text it gathers before it starts. Less is sooner, more is\nbetter spoken.\n\nspeed / stability / style exaggeration / similarity_boost:\nHow it is said.\n\nstop / hard stop / accept input:\nEnd politely, end now, or stop taking new text.\n\nlevel / enable:\nHow loud, and whether it is on at all.\n\nOUTPUTS: \n\nphrases:\nSettled text. Act on this.\n\nin_progress:\nThe current guess, revised as it goes. Display this.\n\nnoises:\nWhat it heard as words when there was no speech.\n\nenergy / rate / language:\nLevel, speed, and what language it thinks it is.\n\nspeaking / sounding / backlog:\nWhether it is busy, whether sound is coming out this instant, and how much is\nqueued.\n\nleft out / right out:\nThe speech as a signal. Patch to fader_out~ or audio_out~ to hear it.\n\nTo keep what it says, patch the signal into record~; to analyse it, into a\nspeech node or capture~.\n\nRELATED:\ntranslate to move between languages in between.\ngemma_4 to answer rather than repeat.\ncairo_layout to put the words on a screen."
+            "text": "Listens, and gives you what was said, as text.\n\nwhisper~ RUNS HERE:\nwhisper~ transcribes on this machine - nothing leaves it, there is no account,\nand once its model has been downloaded it keeps working with the network\nunplugged. Anything an audience says in confidence can go through it.\n\nIT GIVES YOU TWO STREAMS, AND THE DIFFERENCE MATTERS:\n\nin_progress   what it thinks is being said RIGHT NOW. It changes as more sound\n              arrives - words appear, then get revised, then settle.\nphrases       what it has decided. A phrase is emitted once and does not change.\n\nUse in_progress for anything live and visual, where the guessing and revising is\npart of what the audience sees. Use phrases for anything that acts on meaning -\na decision, a lookup, a prompt to a language model - because acting on\nin_progress means acting on words it is about to withdraw.\n\nThe two are not alternatives. A common arrangement uses both: in_progress drives\nthe display, phrases drive the work.\n\nHOW A GUESS BECOMES A PHRASE:\nThe sound is cut into segments, and each one has an AGE - how many analysis\nrounds it has survived unchanged. 'confirmation_age' is how old one must be\nbefore it is trusted. A trusted segment is emitted as a phrase when it ends in\na full stop, question mark or exclamation, or when two more segments have\nalready formed after it, so a speaker who never uses a full stop is still\nheard.\n\nThe age required shrinks as the sentence gets longer, by one round for every\n'length_factor' characters. The reasoning is that a long utterance has already\ngiven the model plenty of context, so its early words are unlikely to be\nrevised - and waiting the full age on every one of them would leave the\ntranscript lagging badly behind the speaker.\n\nTwo other things push out whatever is pending, finished or not: a pause (see\nsilence below), and the listening buffer filling past\n'buffer_overflow_fraction' during a long unbroken stretch of speech.\n\n'min_trailing_confidence' trims words the model is unsure of off the end of\neach segment, where guessing is worst. 'minimum_confidence' keeps doubtful\nsegments out of in_progress. 'minimum_lifespan' is kept for older patches but\nhas no effect at present - every emission overrides it.\n\nTHE 'noises' OUTLET:\nWhen Whisper hears something that is not speech it often says so, in brackets\nor asterisks - [Music], (coughing), *door closes*. Those segments are kept out\nof 'phrases' and come out of 'noises' instead, with the brackets stripped.\n\nWhich makes 'noises' quite interesting in its own right: it is what the room\nsounded like to something trying very hard to hear language in it.\n\nWhisper can also hallucinate plain words out of near-silence. Those are not\nbracketed, so they are not caught here - a sensible 'silence_threshold' is the\ndefence against them.\n\nSILENCE:\n'energy' reports how much is happening in the sound - the sum of the\nsample-to-sample changes in each block it takes in. A block below\n'silence_threshold' counts as quiet, and after 'silence_period' quiet blocks in\na row the utterance is over: what is pending is emitted and the buffer starts\nafresh. Watch 'energy' while the room is quiet and while someone speaks, and\nset the threshold between the two. 'gain' scales the sound before any of this.\n\nTHE MODEL IS A TRADE:\nLarger models are more accurate and slower, and the delay is felt directly as\nthe transcript trailing the speaker. Start small and go larger only if the words\nare actually wrong; a smaller model that keeps up is usually better in\nperformance than a better one that lags. The '.en' models know only English\nand are better at it.\n\n'language' can be set or left at 'auto' to detect, and 'translate' asks for\nEnglish out regardless of what went in. 'backend' chooses the engine that runs\nthe model - whisper.cpp (the default) or faster-whisper.\n\nSYNTAX (the plain name, without ~, still works for older patches):\nwhisper~ [model] [language] [translate]\n\nAll optional, in any order. model is one of tiny, tiny.en, base, base.en,\nsmall, small.en, medium, medium.en, large-v3-turbo, large-v3 (default\nbase.en). language is a name or a two-letter code - french or fr - or auto\n(default english). 'translate' switches translation on.\n\nEXAMPLE:\nwhisper~ small french translate\n\nINPUTS and PARAMETERS:\n\non/off:\nStart and stop listening. The model is loaded the first time it is switched\non, which takes a few seconds.\n\nin:\nA ~ signal to listen to (adc~, a voice, stream~ for audio held as an array).\nPatched, it replaces 'audio device' - decided at the moment it is switched on.\n\naudio device:\nWhich input to listen to when nothing is patched to 'in'.\n\nmodel / language / translate / backend:\nWhich model, what language, whether to render English, and which engine.\n\nOPTIONS:\n\ngain:\nScales the incoming sound.\n\nsilence_threshold / silence_period:\nWhat counts as nothing being said, and for how many blocks.\n\nconfirmation_age / length_factor:\nHow long a segment must stay unchanged before it is trusted.\n\nminimum_confidence / min_trailing_confidence / minimum_lifespan:\nFilters on the model's own certainty.\n\nupdate_period:\nMilliseconds between analysis rounds. Shorter is more responsive and costs more.\n\noverlap / buffer_overflow_fraction:\nHow much audio is carried across between rounds, and how full the buffer may\nget before it is emptied.\n\ndebug:\nPrints what it is deciding, in the console.\n\nOUTPUTS:\n\nphrases:\nSettled text. Act on this.\n\nin_progress:\nThe current guess, revised as it goes. Display this.\n\nnoises:\nWhat it marked as sounds rather than speech.\n\nenergy:\nThe level, sent every frame while it runs. Use it to set silence_threshold.\n\nrate:\nAn estimate of how fast the person is speaking - characters against time.\n\nlanguage:\nThe language it thinks it is hearing.\n\nRELATED:\neleven_labs~ to say text aloud - the other direction.\nnemotron~ for a streaming alternative.\ntranslate to move between languages in between.\ngemma_4 to answer rather than repeat.\ncairo_layout to put the words on a screen."
         },
         "3": {
             "name": "toggle",
@@ -105,8 +105,33 @@
             "properties": {}
         },
         "4": {
-            "name": "whisper~",
+            "init": "comment on/off - the model loads the first time",
+            "name": "comment",
             "id": 385,
+            "position_x": 442,
+            "position_y": 62,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "on/off - the model loads the first time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "on/off - the model loads the first time"
+        },
+        "5": {
+            "name": "whisper~",
+            "id": 422,
             "position_x": 30,
             "position_y": 120,
             "width": 386,
@@ -116,12 +141,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "5": {
+        "6": {
             "name": "text_block",
-            "id": 422,
+            "id": 459,
             "annotation": true,
-            "position_x": 876,
-            "position_y": 635,
+            "position_x": 442,
+            "position_y": 120,
             "width": 268,
             "height": 40,
             "visibility": "show_all",
@@ -156,11 +181,11 @@
             },
             "text": "runs on this machine - no account, and\nnothing leaves the room"
         },
-        "6": {
+        "7": {
             "name": "text_display",
-            "id": 459,
-            "position_x": 420,
-            "position_y": 120,
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
             "width": 334,
             "height": 170,
             "visibility": "show_all",
@@ -199,12 +224,12 @@
                 }
             }
         },
-        "7": {
+        "8": {
             "name": "text_block",
-            "id": 496,
+            "id": 533,
             "annotation": true,
-            "position_x": 876,
-            "position_y": 315,
+            "position_x": 442,
+            "position_y": 350,
             "width": 274,
             "height": 40,
             "visibility": "show_all",
@@ -239,11 +264,11 @@
             },
             "text": "in_progress: the current guess, revised\nas it listens. Show this."
         },
-        "8": {
+        "9": {
             "name": "text_display",
-            "id": 533,
-            "position_x": 420,
-            "position_y": 390,
+            "id": 570,
+            "position_x": 30,
+            "position_y": 550,
             "width": 334,
             "height": 170,
             "visibility": "show_all",
@@ -282,12 +307,12 @@
                 }
             }
         },
-        "9": {
+        "10": {
             "name": "text_block",
-            "id": 570,
+            "id": 607,
             "annotation": true,
-            "position_x": 876,
-            "position_y": 585,
+            "position_x": 442,
+            "position_y": 550,
             "width": 268,
             "height": 40,
             "visibility": "show_all",
@@ -322,11 +347,11 @@
             },
             "text": "phrases: settled, emitted once. ACT on\nthis - in_progress will be withdrawn"
         },
-        "10": {
+        "11": {
             "name": "text_display",
-            "id": 607,
-            "position_x": 420,
-            "position_y": 660,
+            "id": 644,
+            "position_x": 30,
+            "position_y": 750,
             "width": 334,
             "height": 130,
             "visibility": "show_all",
@@ -365,13 +390,13 @@
                 }
             }
         },
-        "11": {
+        "12": {
             "name": "text_block",
-            "id": 644,
+            "id": 681,
             "annotation": true,
-            "position_x": 876,
-            "position_y": 815,
-            "width": 255,
+            "position_x": 442,
+            "position_y": 750,
+            "width": 237,
             "height": 52,
             "visibility": "show_all",
             "draggable": true,
@@ -379,7 +404,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "noises: what it heard as words when\nnobody was speaking. Kept out of\nphrases on purpose - and interesting",
+                    "value": "noises: what it marked as sounds,\nnot speech - [Music], (coughing).\nKept out of phrases on purpose",
                     "value_type": "str"
                 },
                 "1": {
@@ -389,7 +414,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 247,
+                    "value": 229,
                     "value_type": "int"
                 },
                 "3": {
@@ -403,13 +428,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "noises: what it heard as words when\nnobody was speaking. Kept out of\nphrases on purpose - and interesting"
+            "text": "noises: what it marked as sounds,\nnot speech - [Music], (coughing).\nKept out of phrases on purpose"
         },
-        "12": {
+        "13": {
             "name": "plot",
-            "id": 681,
+            "id": 718,
             "position_x": 30,
-            "position_y": 690,
+            "position_y": 910,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -468,246 +493,51 @@
                 }
             }
         },
-        "13": {
-            "init": "comment energy - use it to set silence_threshold",
-            "name": "comment",
-            "id": 718,
-            "position_x": 876,
-            "position_y": 880,
-            "width": 254,
-            "height": 30,
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 442,
+            "position_y": 985,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "energy - use it to set silence_threshold",
+                    "name": "block",
+                    "value": "energy - set silence_threshold between\nthe quiet room and someone speaking",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "energy - use it to set silence_threshold"
-        },
-        "14": {
-            "name": "eleven_labs~",
-            "id": 755,
-            "position_x": 30,
-            "position_y": 930,
-            "width": 293,
-            "height": 308,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
+            "text": "energy - set silence_threshold between\nthe quiet room and someone speaking"
         },
         "15": {
-            "name": "text_block",
-            "id": 792,
-            "annotation": true,
-            "position_x": 876,
-            "position_y": 1365,
-            "width": 261,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "this one SENDS YOUR TEXT to a service\nand needs an API key. Nothing private\nshould go through it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "this one SENDS YOUR TEXT to a service\nand needs an API key. Nothing private\nshould go through it"
-        },
-        "16": {
-            "name": "toggle",
-            "id": 829,
-            "position_x": 420,
-            "position_y": 930,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "17": {
-            "name": "text_block",
-            "id": 866,
-            "annotation": true,
-            "position_x": 876,
-            "position_y": 930,
-            "width": 261,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "'speaking' - gate on this. Sending a\nsecond line while the first is going\nstacks them up, it does not interrupt",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "'speaking' - gate on this. Sending a\nsecond line while the first is going\nstacks them up, it does not interrupt"
-        },
-        "18": {
-            "name": "int",
-            "id": 903,
-            "position_x": 420,
-            "position_y": 1030,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "19": {
-            "init": "comment backlog - how much is waiting",
-            "name": "comment",
-            "id": 940,
-            "position_x": 876,
-            "position_y": 1080,
-            "width": 187,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "backlog - how much is waiting",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "backlog - how much is waiting"
-        },
-        "20": {
-            "name": "fader_out~",
-            "id": 977,
-            "position_x": 780,
-            "position_y": 930,
-            "width": 70,
-            "height": 308,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "fader_out~ 1 2"
-        },
-        "21": {
-            "name": "text_block",
-            "id": 1014,
-            "annotation": true,
-            "position_x": 876,
-            "position_y": 1250,
-            "width": 255,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the speech is a signal: nothing\nsounds until it reaches a fader_out~\nor audio_out~",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 247,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "the speech is a signal: nothing\nsounds until it reaches a fader_out~\nor audio_out~"
-        },
-        "22": {
             "name": "close",
-            "id": 1051,
+            "id": 792,
             "position_x": 24,
-            "position_y": 1268,
+            "position_y": 1118,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -728,100 +558,50 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "on/off"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "in_progress",
-            "dest_node": 459,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "2": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "phrases",
-            "dest_node": 533,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "3": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "noises",
-            "dest_node": 607,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "4": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "energy",
-            "dest_node": 681,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
-        },
-        "5": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "phrases",
-            "dest_node": 755,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "text to speak"
-        },
-        "6": {
-            "source_node": 755,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "speaking",
-            "dest_node": 829,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "7": {
-            "source_node": 755,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "backlog",
-            "dest_node": 903,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "8": {
-            "source_node": 755,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "left out",
-            "dest_node": 977,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "left"
-        },
-        "9": {
-            "source_node": 755,
-            "source_node_name": "",
-            "source_output_index": 1,
-            "source_output_name": "right out",
-            "dest_node": 977,
-            "dest_node_name": "",
-            "dest_input_index": 1,
-            "dest_input_name": "right"
         }
     }
 }

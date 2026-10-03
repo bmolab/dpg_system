@@ -1,11 +1,11 @@
-"""momentary widgets, presets, shape sequencers, envelope, slider_bank/gain."""
+"""momentary, joy_stick, presets, shape sequencers, envelope, slider_bank, gain."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
 # ------------------------------------------------------------------ momentary
-body = """These controls spring back to the middle the moment you let go.
+body = """These sliders spring back to the middle the moment you let go.
 
 An ordinary slider stays where you leave it. A momentary one does not - release 
 it and it returns to zero on its own. That makes it a control for RATE rather 
@@ -24,8 +24,8 @@ momentary               one float slider, -1 to 1
 momentary_slider        the same thing
 momentary_int           whole numbers instead, -20 to 20
 momentary_slider_int    the same thing
-momentary_xy            a two-dimensional pad, springing back to the centre
-joy_stick               the same pad, with the spring optional
+
+For the same idea in two dimensions, see joy_stick and momentary_xy.
 
 SYNTAX:
 momentary                     one slider
@@ -48,22 +48,14 @@ range:
 How far the slider travels either side of centre. 
 Defaults to 1.0, or 20 for the int versions.
 
-width / height / marker size:
-The size of the control, and of the dot on the xy pad.
-
-momentary (joy_stick):
-Whether the pad springs back at all. Unchecked, joy_stick keeps its position 
-like an ordinary xy pad - which is the only thing separating it from 
-momentary_xy.
+width:
+The length of the sliders.
 
 OUTPUTS: 
 
 <one outlet per slider>:
 The current value, sent as you move it and again as it springs back - 
 so the last thing you receive is always the zero.
-
-x out / y out (the pads):
-The two axes, on separate outlets.
 
 A NOTE ON WHAT THE SPRING MEANS:
 Because releasing sends a zero, whatever you drive with this must treat zero as 
@@ -82,14 +74,80 @@ demo = [
     {'key': 'f2', 'init': 'float', 'pos': (30, 395), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c2', 'comment': True, 'text': 'through accumulate it becomes a throttle:\nhold to travel, release to stop',
      'pos': (30, 445)},
-    {'key': 'js', 'init': 'joy_stick', 'pos': (280, 62), 'w': 200, 'h': 220,
-     'props': {'momentary': True, 'range': 1.0, 'width': 160, 'height': 160,
-               'marker size': 6}},
-    {'key': 'c4', 'comment': True, 'text': 'two axes at once', 'pos': (280, 295)},
 ]
 links = [('mo', '', 'f1', ''), ('mo', '', 'acc', 'in'), ('acc', 'sum', 'f2', '')]
-print(build('momentary', 'momentary - a control that springs back', body, demo, links,
-            demo_width=500, text_width=800, text_height=700))
+print(build('momentary', 'momentary - a slider that springs back', body, demo, links,
+            demo_width=440, text_width=800, text_height=660))
+
+# ------------------------------------------------------------------ joy_stick
+body = """joy_stick is a two-dimensional pad: drag the dot and it sends x and y.
+
+One control for two values that belong together - a position on a floor, a 
+pan and tilt, a pair of mix amounts - so that one gesture moves both at once, 
+which two separate sliders cannot do.
+
+THE NODES:
+
+joy_stick      the pad; the dot stays where you leave it
+momentary_xy   the same pad, springing back to the centre when you let go
+
+The name only sets where it starts: the momentary option switches either one 
+between the two behaviours.
+
+The springing version is a control for RATE, like the momentary sliders: hold 
+it off centre to keep something moving, let go to stop. When it springs back it 
+sends 0 and 0, so whatever it drives should read zero as "stop".
+
+SYNTAX:
+joy_stick
+joy_stick <range>
+momentary_xy <range>
+
+EXAMPLE:
+momentary_xy 0.5
+
+Both axes run from -range to +range, with 0 at the centre. The range is 1.0 
+unless given.
+
+INPUTS and PARAMETERS:
+
+momentary:
+Whether the dot springs back to the centre when released.
+
+range:
+How far each axis runs either side of centre.
+
+width / height / marker size:
+The size of the pad, and of the dot.
+
+OUTPUTS: 
+
+x out / y out:
+The two axes, on separate outlets, sent as you drag - and 0, 0 when a momentary 
+pad springs back."""
+
+demo = [
+    {'key': 'js', 'init': 'joy_stick', 'pos': (30, 62), 'w': 200, 'h': 220,
+     'props': {'momentary': False, 'range': 1.0, 'width': 160, 'height': 160,
+               'marker size': 6}},
+    {'key': 'c0', 'comment': True, 'text': 'joy_stick: the dot stays where you leave it',
+     'pos': (30, 62)},
+    {'key': 'fx', 'init': 'float', 'pos': (30, 300), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'fy', 'init': 'float', 'pos': (170, 300), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c2', 'comment': True, 'text': 'x and y', 'pos': (30, 300)},
+    {'key': 'mx', 'init': 'momentary_xy', 'pos': (30, 390), 'w': 200, 'h': 220,
+     'props': {'momentary': True, 'range': 1.0, 'width': 160, 'height': 160,
+               'marker size': 6}},
+    {'key': 'c1', 'comment': True, 'text': 'momentary_xy: it springs back to the centre',
+     'pos': (30, 390)},
+    {'key': 'gx', 'init': 'float', 'pos': (30, 628), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'gy', 'init': 'float', 'pos': (170, 628), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c3', 'comment': True, 'text': 'and sends 0, 0 when it does', 'pos': (30, 628)},
+]
+links = [('js', 'x out', 'fx', ''), ('js', 'y out', 'fy', ''),
+         ('mx', 'x out', 'gx', ''), ('mx', 'y out', 'gy', '')]
+print(build('joy_stick', 'joy_stick - two values in one gesture', body, demo, links,
+            demo_width=340, text_width=760, text_height=640))
 
 # -------------------------------------------------------------------- presets
 body = """These nodes remember the state of a patch, so you can put it back later.
@@ -331,7 +389,7 @@ links = [('tog', '', 'met', 'on'), ('met', '', 'ss', 'beat'),
 print(build('shape_sequencer', 'shape_sequencer - a sequence of curves, not values',
             body, demo, links, demo_width=540, text_width=800, text_height=760))
 
-# ------------------------------------------------------- slider_bank and gain
+# ---------------------------------------------------------------- slider_bank
 body = """slider_bank is a row of NAMED sliders, each of which sends a message when moved.
 
 An ordinary slider sends a bare number, and the patch has to know from the 
@@ -346,19 +404,14 @@ The message is a template you set - by default "{name} {value}", but it can be
 anything, so "weight {name} {value}" produces messages ready for a node that 
 expects that shape.
 
-gain is a different thing that looks similar: a single slider that MULTIPLIES 
-whatever passes through it, rather than sending its own value. Signal in, 
-scaled signal out.
-
 SYNTAX:
 slider_bank <count: int>
 slider_bank <name> <name> ...
-gain <max: float>
 
 EXAMPLE:
 slider_bank root spine left_arm right_arm
 
-INPUTS and PARAMETERS - slider_bank:
+INPUTS and PARAMETERS:
 
 in:
 Accepts messages: 
@@ -372,45 +425,84 @@ The template each slider fills in. "{name}" and "{value}" are replaced.
 min / max:
 The range every slider in the bank shares.
 
-INPUTS and PARAMETERS - gain:
+OUTPUTS: 
+
+messages:
+The filled-in message for whichever slider moved, as a list.
+
+RELATED:
+slider is a single one, sending a bare number. 
+gain is a single slider that scales what passes through it."""
+
+demo = [
+    {'key': 'sb', 'init': 'slider_bank root spine left_arm', 'pos': (30, 62),
+     'w': 280, 'h': 200, 'props': {'message': '{name} {value}',
+                                   'min': 0.0, 'max': 1.0}},
+    {'key': 'c0', 'comment': True, 'text': 'move any slider', 'pos': (30, 275)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 315), 'w': 260, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'the name comes with the value',
+     'pos': (30, 365)},
+]
+links = [('sb', 'messages', 'l1', '')]
+print(build('slider_bank', 'slider_bank - many sliders, each with a name', body,
+            demo, links, demo_width=440, text_width=800, text_height=600))
+
+# ----------------------------------------------------------------------- gain
+body = """gain scales whatever passes through it by the position of its slider.
+
+It looks like a slider, but it does not send its own value. A number, NumPy 
+array or PyTorch tensor arriving at the inlet comes out multiplied by where the 
+slider sits - signal in, scaled signal out. It is a volume control for data.
+
+Because only arriving data is sent on, moving the slider by itself sends 
+nothing. The new setting shows in the next value that passes through - for a 
+stream, that is the next frame.
+
+SYNTAX:
+gain
+gain <max>
+
+EXAMPLE:
+gain 2.0
+
+The slider runs from 0 to max, which is 1.0 unless given. With a max above 1 
+the node amplifies as well as attenuates.
+
+INPUTS and PARAMETERS:
 
 in:
-The signal to scale. Numbers, NumPy arrays and PyTorch tensors all pass through.
+The data to scale: numbers, NumPy arrays and PyTorch tensors. 
+Anything else - text, a bang - is ignored.
+
+(the slider):
+The multiplier.
 
 max:
-The top of the slider's range. Above 1.0 the node can amplify as well as 
-attenuate.
+The top of the slider's range.
 
 OUTPUTS: 
 
-messages (slider_bank):
-The filled-in message for whichever slider moved, as a list.
+out:
+The input multiplied by the slider position.
 
-out (gain):
-The input multiplied by the slider position."""
+RELATED:
+slider sends its own value rather than scaling another. 
+* multiplies by a number you send it, rather than one you drag."""
 
 demo = starter() + [
-    {'key': 'sb', 'init': 'slider_bank root spine left_arm', 'pos': (30, 132),
-     'w': 280, 'h': 200, 'props': {'message': '{name} {value}',
-                                   'min': 0.0, 'max': 1.0}},
-    {'key': 'c0', 'comment': True, 'text': 'move any slider', 'pos': (30, 345)},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 385), 'w': 260, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'the name comes with the value',
-     'pos': (30, 435)},
-    {'key': 'sig', 'init': 'signal 3.0 sin', 'pos': (30, 480), 'w': 129, 'h': 78,
+    {'key': 'sig', 'init': 'signal 3.0 sin', 'pos': (30, 132), 'w': 129, 'h': 78,
      'props': SIG('sin', 3.0)},
     # the gain slider's own property is unnamed; start it part-open so the
     # demo shows a scaled wave rather than a flat line at zero
-    {'key': 'gn', 'init': 'gain 1.0', 'pos': (30, 575), 'w': 240, 'h': 70,
+    {'key': 'gn', 'init': 'gain 1.0', 'pos': (30, 230), 'w': 240, 'h': 70,
      'props': {'': 0.7, 'max': 1.0}},
-    {'key': 'p1', 'init': 'plot', 'pos': (30, 660), 'w': 208, 'h': 176,
+    {'key': 'p1', 'init': 'plot', 'pos': (30, 315), 'w': 208, 'h': 176,
      'props': PLOT(-1.2, 1.2)},
-    {'key': 'c2', 'comment': True, 'text': 'gain scales what passes through it',
-     'pos': (30, 845)},
+    {'key': 'c2', 'comment': True, 'text': 'drag the gain: the wave grows and shrinks',
+     'pos': (30, 500)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('sb', 'messages', 'l1', ''),
          ('sig', '', 'gn', ''), ('gn', '', 'p1', 'y')]
-print(build('slider_bank', 'slider_bank - many sliders, each with a name', body,
-            demo, links, demo_width=440, text_width=800, text_height=700))
+print(build('gain', 'gain - a volume control for data', body, demo, links,
+            demo_width=440, text_width=780, text_height=600))

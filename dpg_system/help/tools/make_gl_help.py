@@ -117,7 +117,6 @@ gl_quaternion_rotate  turn, given a quaternion
 gl_axis_angle_rotate  turn, given an axis and an angle
 gl_scale              resize
 gl_align              turn so that a given direction points a given way
-gl_billboard          face the camera, whatever the camera does
 
 gl_align IS THE ONE WORTH KNOWING:
 Give it a direction and it orients whatever follows to point along it. That is 
@@ -158,8 +157,6 @@ The amounts. All accept a stream, so a transform can be driven continuously.
 quaternion / rotation vector:
 The rotation, for those nodes.
 
-width / height / texture (gl_billboard):
-The billboard's size and what is drawn on it.
 
 OUTPUTS: 
 
@@ -283,6 +280,7 @@ gl_disk           a filled circle, or a ring if you give it an inner radius
 gl_partial_disk   a wedge - a disk with a start angle and a sweep
 gl_line           a line between two points
 gl_nested_spheres several spheres at a set of sizes, drawn together
+gl_billboard      a flat rectangle, plain or showing a picture
 
 gl_cylinder MAKES CONES:
 Its base and top radii are separate, so setting the top to zero gives a cone 
@@ -299,6 +297,14 @@ gl_nested_spheres:
 Takes a list of sizes and draws a sphere at each. With transparency enabled 
 that is a set of shells - a way of showing several radii at once, a 
 distribution over distance, or a falloff.
+
+gl_billboard IS A SCREEN IN THE SCENE:
+It draws a flat rectangle, centred on the origin and lying flat in the x-y 
+plane, filled with whatever picture arrives at its 'texture' inlet - a camera, 
+a movie, an image - or plain, if none has. Despite its name it does not turn 
+to face the viewer; to aim it, put a transform before it. (The newer 
+mgl_billboard is a different thing: a transform that really does turn what 
+follows to face the camera.)
 
 WHERE A SHAPE APPEARS:
 At the origin, until a transform moves it. Two shapes with nothing between them 
@@ -338,6 +344,9 @@ The two ends.
 
 sizes (gl_nested_spheres):
 The list of radii.
+
+width / height (gl_billboard):
+The rectangle's size - 1.6 by 0.9 unless set.
 
 texture:
 An image mapped onto the surface.
@@ -460,89 +469,207 @@ print(build('gl_line_array', 'gl_line_array - drawing data and orientation', bod
             demo, links, demo_width=600, text_width=800, text_height=760))
 
 # -------------------------------------------------------------------- gl_text
-body = """These put readable things into the scene: labels, and a grid of buttons.
+body = """These draw text into the scene.
 
 THE NODES:
 
-gl_text         text in the scene
-gl_korean_text  the same with Korean glyph support
-gl_button_grid  a grid of buttons drawn in GL
+gl_text         text in the scene, from the Latin character set 
+gl_korean_text  the same, drawing Hangul syllables
 
-TEXT NEEDS A BILLBOARD, OR A SCREEN POSITION:
-Text drawn in 3D turns edge-on and vanishes as the camera moves. There are two 
-ways round that. Put gl_billboard before it and it stays facing the viewer 
-while remaining at its place in the scene. Or use 'position_x' and 
-'position_y', which place it in SCREEN coordinates - fixed on the window, 
-unaffected by the camera, which is what you want for a title, a readout, or a 
-state indicator.
+WHERE THE TEXT GOES:
+The text is drawn flat, facing along the chain's current z axis, at 
+'position_x' and 'position_y' in the chain's current coordinates and two units 
+further away than whatever came before it. Lighting and depth testing are 
+switched off while it draws, so it is never shaded and never hidden behind 
+anything drawn before it.
 
-The second is usually right for anything the viewer must always be able to 
-read, and the first for a label that belongs to a thing in the scene.
+Because the older system has no camera, text placed straight after gl_context 
+(or after nodes that do not transform, like gl_light) stays fixed on the 
+window: right for a title, a readout, or a state indicator. Put a 
+gl_translate, gl_rotate or gl_scale before it and the text moves with them, 
+like any other shape - which places a label beside the thing it names, but 
+also means a rotation can turn it edge-on until it vanishes.
 
-gl_button_grid:
-An array of buttons drawn in the GL window rather than in the patch. 
-The point is that a scene shown fullscreen has no patch visible - so any 
-control the performer needs has to live inside the render. 'selection' reports 
-what was pressed.
+WHAT CAN BE SENT:
+A string is drawn as it is. A list is drawn piece by piece, with 'separator' 
+between pieces. A piece can also be a pair - some text and a weight - and is 
+then drawn with its transparency multiplied by that weight raised to 'alpha 
+power', and left out entirely when the weight is zero or less. That makes a 
+list of words with confidences, say, readable at a glance.
 
-'scale', 'spacing', 'thickness' and 'alpha' size it and set how present it is; 
-a low alpha gives you a control that is available without dominating what it 
-sits over.
+gl_korean_text:
+Builds its glyphs from the Hangul syllable block only. Letters, digits and 
+spaces are not in it and are skipped, so words run together. Its default font 
+has no Hangul, so it needs a Korean font named as its argument or in 'font', 
+and building over eleven thousand glyphs takes a long time. Its glyph atlas 
+looks to be laid out for 256 characters rather than for the Hangul range, so 
+treat it as unfinished.
 """ + OLDER + """
 SYNTAX:
 gl_text
-gl_button_grid
+gl_text <font size>
+gl_text <font file>
+gl_korean_text <font file> <font size>
+
+A number argument is the font size, a word is the font file. Either order.
 
 EXAMPLE:
-gl_text
+gl_text 36
 
 INPUTS and PARAMETERS:
 
+gl chain in:
+The chain. This triggers the drawing.
+
 text:
-What to draw.
+What to draw: a string, or a list as above.
 
 position_x / position_y:
-Screen position - fixed on the window rather than in the scene.
+Where the text starts, in the chain's current coordinates - its left end, 
+with the letters hanging below that height.
 
-scale / alpha / font:
-Size, transparency and typeface.
+alpha:
+Overall transparency, 0 to 1.
 
-selection (gl_button_grid):
-Which button is pressed.
+scale:
+The size of the letters in the scene. 1 is the default.
 
-spacing / thickness:
-The grid's layout and line weight.
+font:
+The font file. Inconsolata-g.otf by default.
 
-OUTPUTS: 
+size (option):
+The size the font is rendered at, 24 by default for gl_text and 6 for 
+gl_korean_text. A larger size gives sharper letters and also draws them 
+larger, since the drawn size is this times 'scale'.
+
+colour (option):
+The text colour. In the options it carries the label 'alpha', the same as 
+the transparency inlet.
+
+alpha power / separator (options):
+For lists, as above.
+
+OUTPUTS:
 
 gl chain out:
-The chain, continuing.
+The chain, continuing. The text's own offset does not carry downstream.
 
 RELATED:
-mgl_text is the newer equivalent. gl_billboard keeps in-scene text facing 
-the viewer."""
+mgl_text is the newer equivalent. gl_button_grid, which used to share this 
+page, draws a grid of highlighted squares in the same way."""
 
 demo = chain() + [
+    {'key': 'la1', 'init': 'load_action fixed on the window', 'pos': (30, 516),
+     'w': 300, 'h': 90},
     # 'font' saved at its exact default: restore_properties skips a no-op, so
-    # font_changed never fires -- it opens a native file dialog, which would
-    # confront anyone opening this help patch with a file picker.
-    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 516), 'w': 260, 'h': 260,
+    # font_changed never fires. (mgl_text's font callback opens a native file
+    # dialog; gl_text's only reloads the font, but keep the restore a no-op.)
+    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 626), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
-    {'key': 'c0', 'comment': True, 'text': 'position_x and _y are SCREEN coordinates\nso it stays put as the camera moves',
-     'pos': (30, 791)},
-    {'key': 'bb', 'init': 'gl_billboard', 'pos': (30, 866), 'w': 240, 'h': 180},
-    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 1061), 'w': 260, 'h': 260,
+    {'key': 'c0', 'comment': True, 'text': 'straight after the context: no transform is\nin force, so it stays put on the window',
+     'pos': (30, 901)},
+    {'key': 'tr', 'init': 'gl_translate 0 -0.5 0', 'pos': (30, 951), 'w': 240, 'h': 160,
+     'props': {'x': 0.0, 'y': -0.5, 'z': 0.0}},
+    {'key': 'la2', 'init': 'load_action moved by the translate', 'pos': (30, 1131),
+     'w': 300, 'h': 90},
+    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 1241), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
-    {'key': 'c2', 'comment': True, 'text': 'behind a billboard instead: in the scene,\nbut always turned to face you',
-     'pos': (30, 1336)},
-    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (320, 516), 'w': 260, 'h': 280},
-    {'key': 'i1', 'init': 'int', 'pos': (320, 811), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c4', 'comment': True, 'text': 'controls inside a fullscreen render',
-     'pos': (320, 861)},
+    {'key': 'c2', 'comment': True, 'text': 'after a transform: it moves, and would\nturn, with everything else downstream',
+     'pos': (30, 1516)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'gl chain out', 'tx', 'gl chain in'),
-    ('tx', 'gl chain out', 'bb', 'gl chain in'),
-    ('bb', 'gl chain out', 'tx2', 'gl chain in')]
-print(build('gl_text', 'gl_text - labels and controls in the scene', body, demo, links,
-            demo_width=610, text_width=800, text_height=740))
+    ('la1', 'out', 'tx', 'text'),
+    ('tx', 'gl chain out', 'tr', 'gl chain in'),
+    ('tr', 'gl chain out', 'tx2', 'gl chain in'),
+    ('la2', 'out', 'tx2', 'text')]
+print(build('gl_text', 'gl_text - text in the scene', body, demo, links,
+            demo_width=610, text_width=800, text_height=760))
+
+# ------------------------------------------------------------- gl_button_grid
+body = """gl_button_grid draws a four by four grid of squares in the scene, with one 
+of them highlighted.
+
+WHAT IT IS, AND IS NOT:
+It is an indicator, not a control. It does not respond to the mouse, and it 
+has no outlet but the chain.
+'selection' is an INPUT - send it a number from 0 to 15 and that square is 
+outlined in red while the rest stay grey. Any other number highlights none.
+
+That makes it a way to show, inside a fullscreen render where no patch is 
+visible, which of sixteen states, presets or sections is active.
+
+THE LAYOUT:
+Square 0 is at the bottom left, at 'position_x' and 'position_y'. The 
+numbers run left to right along a row, then up a row, so square 15 is at the 
+top right. 'scale' is the distance from one square to the next, and 'spacing' 
+is the part of that distance left as a gap - 0.2 leaves a fifth. The squares 
+are drawn as outlines, 'thickness' pixels wide.
+
+WHERE IT GOES:
+Like gl_text, it is drawn in the chain's current coordinates and two units 
+further away. Straight after gl_context it is fixed on the window; after a 
+transform it moves with it.
+
+PUT IT LAST IN ITS CHAIN:
+Unlike most gl nodes, it does not put things back when it is done. Everything 
+after it in the chain is drawn two units further away, with lighting switched 
+off.
+""" + OLDER + """
+SYNTAX:
+gl_button_grid
+
+EXAMPLE:
+gl_button_grid
+
+INPUTS and PARAMETERS:
+
+gl chain in:
+The chain. This triggers the drawing.
+
+selection:
+Which square to highlight, 0 to 15.
+
+position_x / position_y:
+Where the bottom left corner of the grid sits.
+
+spacing:
+The gap between squares, as a part of 'scale'. Default 0.2.
+
+thickness:
+The outline width in pixels. Default 4.
+
+alpha:
+Transparency, 0 to 1. A low alpha gives an indicator that is there without 
+dominating what it sits over.
+
+scale:
+The distance from one square to the next. Default 0.1.
+
+OUTPUTS:
+
+gl chain out:
+The chain, continuing - with the changes described above.
+
+RELATED:
+gl_text, which used to share this page, draws text in the scene in the same 
+way, and suits a label beside the grid."""
+
+demo = chain() + [
+    {'key': 'met', 'init': 'metro 500', 'pos': (30, 516), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 500.0, 'units': 'milliseconds'}},
+    {'key': 'cnt', 'init': 'counter 16 1', 'pos': (30, 606), 'w': 123, 'h': 84,
+     'props': {'count': 16, 'step': 1}},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 705), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c0', 'comment': True, 'text': 'counts 0 to 15, then wraps', 'pos': (30, 755)},
+    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (30, 795), 'w': 260, 'h': 280},
+    {'key': 'c1', 'comment': True, 'text': 'the counted square lights up red,\nbottom left to top right',
+     'pos': (30, 1090)},
+]
+links = CHAIN_LINKS + [
+    ('lgt', 'gl chain out', 'bg', 'gl chain in'),
+    ('met', '', 'cnt', 'input'),
+    ('cnt', 'count out', 'i1', ''),
+    ('i1', 'int out', 'bg', 'selection')]
+print(build('gl_button_grid', 'gl_button_grid - a sixteen-square indicator', body, demo,
+            links, demo_width=610, text_width=800, text_height=760))

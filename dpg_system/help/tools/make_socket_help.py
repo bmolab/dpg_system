@@ -239,55 +239,134 @@ print(build('tcp_numpy_send', 'tcp_numpy_send - a connection, with guarantees', 
             demo, links, demo_width=700, text_width=800, text_height=720))
 
 # -------------------------------------------------------------- process_group
-body = """Two nodes for working across machines: distributed torch, and finding your address.
+body = """process_group - joining a torch distributed process group.
 
-THE NODES:
-
-process_group  a torch distributed process group
-ip_address     what addresses this machine has
+THE NODE:
+It makes this patch one participant in torch's own distributed machinery, with
+every participant given a RANK and the group knowing its WORLD SIZE, and sends
+tensors to another participant as part of that group.
 
 process_group IS NOT THE SAME AS SENDING AN ARRAY:
 The socket nodes move data between two patches that each do their own work.
-This joins several processes into ONE computation - torch's own distributed
-machinery, with every participant given a RANK and the group knowing its
-WORLD SIZE.
+This joins several processes into ONE computation - what you want when a model
+is too large for one GPU, or when the same computation should run across several
+machines with tensors moving between them as part of the calculation rather than
+as messages.
 
-That is what you want when a model is too large for one GPU, or when the same
-computation should run across several machines with tensors moving between them
-as part of the calculation rather than as messages.
+SETTINGS COME FROM THE ARGUMENTS, IN ORDER:
+ip, port, rank, world size, backend. Anything left out takes its default:
+127.0.0.1, 29500, rank 0, world size 2, backend gloo.
 
-'backend' selects how they talk - the right choice depends on whether the
-participants are GPUs on one machine or separate machines on a network.
+The group is formed from these arguments the moment the node is created. The
+ip, port, rank, backend and world_size fields on the node show those values,
+but changing them afterwards does NOT change the group - to change a setting,
+retype the node with new arguments.
 
 Every participant must agree on the ip, the port and the world size, and each
-must have a different rank. Rank 0 is conventionally the coordinator.
-
-'expected_tensor_example' is how the receiving side knows what shape and dtype
-to expect, because a distributed receive has to allocate before it knows what is
-coming.
+must have a different rank. Rank 0 is the coordinator, and the ip and port are
+where it can be found - on rank 0 itself that is its own address. 'backend'
+selects how they talk: gloo works on any machine; nccl is for NVIDIA GPUs.
 
 CREATING THE NODE STARTS THE RENDEZVOUS:
 A process group is not something you set up and then connect. The moment the
 node exists it begins looking for the other participants, and it waits until all
 of them have arrived - which, if you are still building the other end, is a
-while, and if you mistyped the world size, is forever.
+while, and if you mistyped the world size, is forever. The waiting happens in
+the background, so the patch keeps running meanwhile.
 
 That is why there is no live process_group in this patch: opening a help file
 should not go looking for machines. Build the other participants first, then
-make this node last.
+make this node last. One patch can only belong to one group, so there is no
+point in making two of these in the same patch.
 
-ip_address IS THE SMALL USEFUL ONE:
-It reports the addresses this machine is reachable at. That is what you tell the
-other end to send to, and it saves going to look it up in a system panel - which
-matters when the address changes, as it does on a network you do not control.
+SENDING:
+A tensor (or anything that converts to one) arriving at data_to_send is sent to
+rank 1. The destination_rank field is there, but in the current version it is
+not read - sends always go to rank 1. Only one send can be in flight at a time.
 
+WHAT DOES NOT WORK YET:
+Be warned that this node is unfinished. The node never checks whether a send
+has finished, so sending_complete never sends anything - and since the node
+also never clears its "already sending" flag, only the first tensor sent ever
+goes out. Nothing starts a receive either, so received_data never sends
+anything, and expected_tensor_example only prepares the space a receive would
+use. Treat it as a starting point rather than a working link.
+
+SYNTAX:
+process_group [ip] [port] [rank] [world size] [backend]
+
+EXAMPLE:
+process_group 192.168.1.20 29500 1 2 gloo
+
+INPUTS and PARAMETERS:
+
+data_to_send:
+A tensor to send to rank 1.
+
+destination_rank:
+Meant to choose who gets the tensor; currently ignored.
+
+expected_tensor_example:
+A tensor with the shape and dtype a receive should expect, because a
+distributed receive has to allocate before it knows what is coming.
+
+ip / port / rank / backend / world_size:
+Show the settings the group was made with. Set them with the arguments.
+
+OUTPUTS: 
+
+sending_complete:
+Meant to send a bang when a send finishes; currently never fires.
+
+received_data:
+Meant to send a received tensor; currently never fires.
+
+WHEN NOT TO REACH FOR process_group:
+If two patches are exchanging results, the socket nodes are simpler and more
+robust - they tolerate one end restarting, which a process group does not.
+Distributed torch is for one computation spread across participants, and it
+expects all of them to be present and healthy.
+
+RELATED:
+ip_address tells you what address to give the other participants.
+udp_numpy_send and tcp_numpy_send for passing arrays between patches."""
+
+demo = [
+    {'key': 'c0', 'comment': True, 'text': 'process_group is deliberately NOT in this\npatch: creating one starts a rendezvous\nthat waits for its other participants\n\nmake it with all its arguments, last,\nonce the other participants exist:\n\n    process_group 192.168.1.20 29500 1 2 gloo\n\nevery participant agrees on ip, port\nand world size; each has its own rank',
+     'pos': (30, 62)},
+    {'key': 'ip', 'init': 'ip_address', 'pos': (30, 250), 'w': 240, 'h': 120},
+    {'key': 'c1', 'comment': True, 'text': 'ip_address: the address to give the\nother participants',
+     'pos': (30, 385)},
+]
+links = []
+print(build('process_group', 'process_group - one computation across machines', body,
+            demo, links, demo_width=560, text_width=790, text_height=760))
+
+# ----------------------------------------------------------------- ip_address
+body = """ip_address - what addresses this machine has.
+
+THE NODE:
+It reports the addresses this machine is reachable at - every IPv4 address on
+every network interface, shown in the node itself and sent as a list. That is
+what you tell the other end to send to, and it saves going to look it up in a
+system panel - which matters when the address changes, as it does on a network
+you do not control.
+
+WHICH ONE TO USE:
 A machine usually has several. The one to use is on the same network as the
 other machine; the loopback address 127.0.0.1 only ever reaches this machine
 itself, which is the right choice for testing two patches on one computer and
 useless for anything else.
 
+WHEN IT LOOKS:
+The node looks once when it is created, and again whenever anything arrives at
+get_ip, or the get_ip button is clicked. It does not watch for changes on its
+own - if you move to another network, ask again. Up to 20 addresses are shown.
+
+Only IPv4 addresses are listed - the dotted four-number kind that the socket
+nodes expect.
+
 SYNTAX:
-process_group
 ip_address
 
 EXAMPLE:
@@ -295,46 +374,27 @@ ip_address
 
 INPUTS and PARAMETERS:
 
-ip / port:
-Where the group coordinates.
-
-rank / world_size:
-Which participant this is, and how many there are altogether.
-
-backend:
-How the participants communicate.
-
-data_to_send / destination_rank:
-The tensor and who gets it.
-
-expected_tensor_example:
-The shape and dtype to expect on receive.
-
 get_ip:
-Ask for the addresses.
+Anything arriving here, or a click on its button, looks the addresses up again
+and sends them.
 
 OUTPUTS: 
 
-sending_complete / received_data:
-The distributed exchange.
-
 ip_addresses_out:
-This machine's addresses.
+A list of this machine's IPv4 addresses.
 
-WHEN NOT TO REACH FOR process_group:
-If two patches are exchanging results, the socket nodes are simpler and more
-robust - they tolerate one end restarting, which a process group does not.
-Distributed torch is for one computation spread across participants, and it
-expects all of them to be present and healthy."""
+RELATED:
+udp_numpy_send / tcp_numpy_send take the address of the other end.
+process_group needs the coordinator's address as its first argument."""
 
 demo = [
     {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
     {'key': 'ip', 'init': 'ip_address', 'pos': (30, 120), 'w': 240, 'h': 120},
     {'key': 'l1', 'init': 'list', 'pos': (30, 255), 'w': 320, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'tell the other end this address\n127.0.0.1 only reaches this machine -\nright for testing, useless otherwise\nprocess_group is deliberately NOT in this\npatch: creating one starts a rendezvous\nthat waits for its other participants\nevery participant agrees on ip, port\nand world_size; each has its own rank',
+    {'key': 'c0', 'comment': True, 'text': 'tell the other end this address\n127.0.0.1 only reaches this machine -\nright for testing, useless otherwise',
      'pos': (30, 305)},
 ]
 links = [('btn', '', 'ip', 'get_ip'), ('ip', 'ip_addresses_out', 'l1', '')]
-print(build('process_group', 'process_group and ip_address - across machines', body,
-            demo, links, demo_width=620, text_width=790, text_height=700))
+print(build('ip_address', 'ip_address - where this machine can be reached', body,
+            demo, links, demo_width=560, text_width=790, text_height=560))

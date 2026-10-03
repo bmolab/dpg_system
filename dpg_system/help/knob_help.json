@@ -1,0 +1,283 @@
+{
+    "height": 681,
+    "width": 1428,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "knob_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/knob_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment knob - a slider in less room",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 353,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "knob - a slider in less room",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "knob - a slider in less room"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 580,
+            "position_y": 45,
+            "width": 808,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "knob is a slider wound into a circle: the same value, in less room.\n\nDrag on it to turn it. Like a slider, it shows where the value sits in its range at a glance, and it is the \nbetter choice when a panel needs many of them side by side.\n\nTO USE IT:\nDrag to turn it. Double-click to type a value exactly.\n\nSYNTAX:\nknob\nknob <max>\n\nEXAMPLE:\nknob 10.0\n\nThe argument is the top of the range, not the starting value. A decimal makes \na knob of decimals; a whole number ('knob 100') makes one that sends whole \nnumbers. Without one the knob runs from 0 to 1.\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number turns the knob; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. Every \ninterface node has it - for a panel of controls that is meant to be looked \nat rather than patched.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes. Which one depends on the argument.\n\nRELATED:\nslider is the same control laid out straight, and has a power option to bend \nits scale; the knob does not. \nfloat and int are the same value without the travel.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "knob is a slider wound into a circle: the same value, in less room.\n\nDrag on it to turn it. Like a slider, it shows where the value sits in its range at a glance, and it is the \nbetter choice when a panel needs many of them side by side.\n\nTO USE IT:\nDrag to turn it. Double-click to type a value exactly.\n\nSYNTAX:\nknob\nknob <max>\n\nEXAMPLE:\nknob 10.0\n\nThe argument is the top of the range, not the starting value. A decimal makes \na knob of decimals; a whole number ('knob 100') makes one that sends whole \nnumbers. Without one the knob runs from 0 to 1.\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to show and store. A number turns the knob; a bang re-sends the \ncurrent value.\n\nCOMMON OPTIONS:\n\nmin / max:\nThe limits. A number typed or dragged beyond them is held at the limit. \nLeaving both at 0 means no limit at all.\n\nformat:\nHow the number is displayed, as a printf pattern - \"%.3f\" for three decimal \nplaces, \"%d\" for a whole number. This changes only what you SEE; \nthe value itself keeps its full precision.\n\nspeed_property:\nHow far the value moves per pixel of drag. Lower is finer. \nWorth turning down whenever you find yourself unable to land on a value.\n\nwidth / font size:\nThe size of the widget and its text.\n\nbind to:\nThe name of a variable. Once bound, the widget and the variable are the same \nthing - move the widget and the variable changes, set the variable and the \nwidget moves. This is how one control drives several distant parts of a patch \nwithout a cord. See the var help patch.\n\nhide_title_bar:\nDraws the widget alone, without the node's title bar and frame. Every \ninterface node has it - for a panel of controls that is meant to be looked \nat rather than patched.\n\nOUTPUTS: \n\nfloat out / int out:\nThe value, sent whenever it changes. Which one depends on the argument.\n\nRELATED:\nslider is the same control laid out straight, and has a power option to bend \nits scale; the knob does not. \nfloat and int are the same value without the travel."
+        },
+        "3": {
+            "name": "knob",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 64,
+            "height": 74,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag up or right to turn it",
+            "name": "comment",
+            "id": 385,
+            "position_x": 376,
+            "position_y": 185,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag up or right to turn it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag up or right to turn it"
+        },
+        "5": {
+            "name": "float",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 225,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "knob",
+            "id": 459,
+            "position_x": 220,
+            "position_y": 62,
+            "width": 64,
+            "height": 74,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "knob 100"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 220,
+            "position_y": 225,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment 'knob 100': whole numbers",
+            "name": "comment",
+            "id": 533,
+            "position_x": 376,
+            "position_y": 275,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'knob 100': whole numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'knob 100': whole numbers"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 297,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

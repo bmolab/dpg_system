@@ -1597,6 +1597,12 @@ class WhisperNode(SignalTap, Node):
             self.processor.buffer_overflow_fraction = self.buffer_overflow_option()
             self.processor.set_overlap(self.overlap_option())
             self.processor.debug = self.debug_option()
+            # language / translate were only pushed by their change
+            # callbacks, which cannot reach a processor that does not exist
+            # yet -- so a fresh processor always ran on 'auto', untranslated,
+            # whatever the node showed.
+            self.processor.language = self.language_property()
+            self.processor.translate = self.translate_property()
             # Propagate debug to the backend for timing info
             if self.backend and hasattr(self.backend, 'debug'):
                 self.backend.debug = self.processor.debug

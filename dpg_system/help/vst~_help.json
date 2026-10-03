@@ -1,0 +1,297 @@
+{
+    "height": 1472,
+    "width": 1452,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "vst~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vst~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment vst~ - somebody else's effect, patched in",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vst~ - somebody else's effect, patched in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "vst~ - somebody else's effect, patched in"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 594,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "vst~ hosts somebody else's effect - a VST3 or AudioUnit plugin - patched like\nany other unit.\n\nTHE NODES:\n\nvst~     a plugin effect, in the audio graph\nplugin~  the same node\n\nFINDING THE PLUGIN:\nThe argument is any distinctive part of a plugin's filename - 'supermassive',\n'valhalla', 'waveshell' - or a full path. The first installed file containing\nit is loaded, so be specific when several match. If nothing matches, 'status'\nsays so and the console lists every plugin file installed. A file holding\nseveral plugins (a Waves shell) offers them in the 'plugin' option; pick one\nand it reloads. Effects only: an instrument is refused, and so are macOS's\nown built-in AudioUnits, which cannot be hosted. The node exists only when\nthe pedalboard package is installed.\n\nKNOBS AND MENUS:\nA plugin's parameters come in two kinds. The ones with a range are KNOBS:\nchoose one by name in a 'param n source' option and the 'param n' inlet drives\nit, 0 to 1 whatever the plugin calls its own range - so a knob, an lfo~ or a\njoint's effort all reach it the same way. Each slot then shows the name of\nwhat it drives. The rest are MENUS - a reverb mode, a sync division - set by\npicking the parameter in 'choice n' and its setting in 'choice n value'.\nMenus cannot be modulated; they are set by name, which is exact.\n\nPress 'print parameters' to list what a loaded plugin offers, marked [knob]\nor [menu]. 'open editor' brings up the plugin's own window. The patch UI\nwaits while it is open - the audio carries on - and when it closes, every\nknob and menu the node shows is read back from the plugin, so it is saved\nwith the patch. Edits to parameters the node does not show stay in the\nplugin only and are not saved.\n\nTHREE THINGS WORTH KNOWING:\nParameters move once per block, about 86 times a second. That is what plugin\nautomation is. An audio-rate signal patched to a param inlet is read at the\nlast sample of each block - fine for effort data or an lfo~, wrong for\nanything you want to hear as modulation.\n\nLatency is not compensated. 'status' reports the plugin's delay. The 'mix'\ncontrol is a parallel dry path, so on a plugin with real latency it combs\nrather than blends - leave mix at 1 there and blend outside with mix~.\n\nA plugin that throws, returns the wrong number of samples, or keeps missing\nthe audio deadline is dropped, and the node passes its input through\ninstead. The reason lands in 'status' and on the console.\n\nSYNTAX:\nvst~ <part of a filename> params=<n> choices=<n>\n\nEXAMPLE:\nvst~ supermassive params=12\n\n'params' is how many knob slots (default 8, up to 24) and 'choices' how many\nmenu slots (default 3, up to 12). Both are optional; everything that is not\none of them is part of the name, so 'vst~ WaveShell1-VST3 17.1' reads\ncorrectly.\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal. With nothing patched to 'right in', the left feeds both sides.\n\nbypass:\nPasses the input through untouched.\n\nmix:\nWet against dry, 0 to 1. Default 1, all plugin.\n\nparam 1, param 2, ...:\nThe knob slots, 0 to 1.\n\noptions:\nfile (the name to look for), plugin, param n source, choice n,\nchoice n value, print parameters, open editor.\n\nstatus:\nThe plugin's name, mono or stereo, its cost per block and its latency - or\nwhy nothing is loaded.\n\nOUTPUTS:\n\nleft out / right out:\nThe processed sound. A mono plugin sends the same signal to both.\n\nRELATED:\nmix~, fader~, additive~, delay~",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "vst~ hosts somebody else's effect - a VST3 or AudioUnit plugin - patched like\nany other unit.\n\nTHE NODES:\n\nvst~     a plugin effect, in the audio graph\nplugin~  the same node\n\nFINDING THE PLUGIN:\nThe argument is any distinctive part of a plugin's filename - 'supermassive',\n'valhalla', 'waveshell' - or a full path. The first installed file containing\nit is loaded, so be specific when several match. If nothing matches, 'status'\nsays so and the console lists every plugin file installed. A file holding\nseveral plugins (a Waves shell) offers them in the 'plugin' option; pick one\nand it reloads. Effects only: an instrument is refused, and so are macOS's\nown built-in AudioUnits, which cannot be hosted. The node exists only when\nthe pedalboard package is installed.\n\nKNOBS AND MENUS:\nA plugin's parameters come in two kinds. The ones with a range are KNOBS:\nchoose one by name in a 'param n source' option and the 'param n' inlet drives\nit, 0 to 1 whatever the plugin calls its own range - so a knob, an lfo~ or a\njoint's effort all reach it the same way. Each slot then shows the name of\nwhat it drives. The rest are MENUS - a reverb mode, a sync division - set by\npicking the parameter in 'choice n' and its setting in 'choice n value'.\nMenus cannot be modulated; they are set by name, which is exact.\n\nPress 'print parameters' to list what a loaded plugin offers, marked [knob]\nor [menu]. 'open editor' brings up the plugin's own window. The patch UI\nwaits while it is open - the audio carries on - and when it closes, every\nknob and menu the node shows is read back from the plugin, so it is saved\nwith the patch. Edits to parameters the node does not show stay in the\nplugin only and are not saved.\n\nTHREE THINGS WORTH KNOWING:\nParameters move once per block, about 86 times a second. That is what plugin\nautomation is. An audio-rate signal patched to a param inlet is read at the\nlast sample of each block - fine for effort data or an lfo~, wrong for\nanything you want to hear as modulation.\n\nLatency is not compensated. 'status' reports the plugin's delay. The 'mix'\ncontrol is a parallel dry path, so on a plugin with real latency it combs\nrather than blends - leave mix at 1 there and blend outside with mix~.\n\nA plugin that throws, returns the wrong number of samples, or keeps missing\nthe audio deadline is dropped, and the node passes its input through\ninstead. The reason lands in 'status' and on the console.\n\nSYNTAX:\nvst~ <part of a filename> params=<n> choices=<n>\n\nEXAMPLE:\nvst~ supermassive params=12\n\n'params' is how many knob slots (default 8, up to 24) and 'choices' how many\nmenu slots (default 3, up to 12). Both are optional; everything that is not\none of them is part of the name, so 'vst~ WaveShell1-VST3 17.1' reads\ncorrectly.\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal. With nothing patched to 'right in', the left feeds both sides.\n\nbypass:\nPasses the input through untouched.\n\nmix:\nWet against dry, 0 to 1. Default 1, all plugin.\n\nparam 1, param 2, ...:\nThe knob slots, 0 to 1.\n\noptions:\nfile (the name to look for), plugin, param n source, choice n,\nchoice n value, print parameters, open editor.\n\nstatus:\nThe plugin's name, mono or stereo, its cost per block and its latency - or\nwhy nothing is loaded.\n\nOUTPUTS:\n\nleft out / right out:\nThe processed sound. A mono plugin sends the same signal to both.\n\nRELATED:\nmix~, fader~, additive~, delay~"
+        },
+        "3": {
+            "name": "clock~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 157,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "clock~ 1"
+        },
+        "4": {
+            "init": "comment tick run: one strike a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 284,
+            "position_y": 272,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick run: one strike a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick run: one strike a second"
+        },
+        "5": {
+            "name": "modal~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 228,
+            "height": 386,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "vst~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 730,
+            "width": 187,
+            "height": 238,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vst~ supermassive"
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 284,
+            "position_y": 980,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a plugin, patched like any unit\npick knobs in the param n source options",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a plugin, patched like any unit\npick knobs in the param n source options"
+        },
+        "8": {
+            "name": "fader_out~",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 1030,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "9": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 570,
+            "position_x": 284,
+            "position_y": 1350,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 1368,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trigger",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "strike"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "right out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "right"
+        }
+    }
+}

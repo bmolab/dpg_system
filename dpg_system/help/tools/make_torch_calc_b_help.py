@@ -166,6 +166,8 @@ THE NODES:
 
 t.length             the length of a tensor, taken as one long vector - 
                      its distance from the origin
+t.dist               the distance between TWO tensors - the length of the 
+                     difference between them
 t.cdist              the same measurement, by another route
 t.normalize          divide by that length, giving a unit vector
 t.cosine_similarity  how much two tensors point the same way, regardless of 
@@ -197,6 +199,7 @@ length. For asking how much a body moved, this is the measure, not t.length.
 
 SYNTAX:
 t.length
+t.dist
 t.cosine_similarity
 t.energy <n>
 
@@ -208,6 +211,11 @@ INPUTS and PARAMETERS:
 tensor in / input 1 / input 2:
 The tensors. Receiving the first triggers the node.
 
+tensor 2 in (t.dist):
+The tensor to measure the distance to. It does not trigger anything, so send 
+it before the first - or wire both from the same trigger, the second inlet 
+first. Until it has received something t.dist sends nothing.
+
 dim:
 Which axis to measure along, where that makes sense. Without one, the whole 
 tensor is treated as a single vector.
@@ -218,8 +226,8 @@ How many times to difference before summing. 1 is total movement;
 
 OUTPUTS: 
 
-out / output:
-The measurement - a single number for the length and energy nodes, 
+length (t.length) / distance (t.dist) / output / tensor out:
+The measurement - a single number for length, distance and energy, 
 a tensor for normalize and corrcoef.
 
 A NOTE ON NORMALIZING NEAR ZERO:
@@ -246,14 +254,20 @@ demo = [
     {'key': 'f3', 'init': 'float', 'pos': (30, 665), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c3', 'comment': True, 'text': 'total movement, not total size',
      'pos': (30, 715)},
+    {'key': 'ds', 'init': 't.dist', 'pos': (30, 760), 'w': 180, 'h': 90},
+    {'key': 'f4', 'init': 'float', 'pos': (30, 865), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c4', 'comment': True, 'text': 't.dist: how far apart the two are',
+     'pos': (30, 915)},
 ]
-links = [('btn', '', 'r1', '###input'), ('btn', '', 'r2', '###input'),
+links = [('btn', '', 'r2', '###input'), ('btn', '', 'r1', '###input'),
          ('r1', 'random tensor', 'ln', 'tensor in'), ('ln', '', 'f1', '', 0),
          ('r1', 'random tensor', 'cs', 'input 1'),
          ('r2', 'random tensor', 'cs', 'input 2'), ('cs', 'output', 'f2', ''),
-         ('r1', 'random tensor', 'en', 'tensor in'), ('en', 'tensor out', 'f3', '')]
+         ('r1', 'random tensor', 'en', 'tensor in'), ('en', 'tensor out', 'f3', ''),
+         ('r2', 'random tensor', 'ds', 'tensor 2 in'),
+         ('r1', 'random tensor', 'ds', 'tensor in'), ('ds', 'distance', 'f4', '')]
 print(build('t.distance', 't distance and similarity - how big, how alike', body,
-            demo, links, demo_width=520, text_width=810, text_height=760))
+            demo, links, demo_width=520, text_width=810, text_height=860))
 
 # --------------------------------------------------------------- decompositions
 body = """These break a matrix apart into the pieces it is made of.

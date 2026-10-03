@@ -1,11 +1,11 @@
 {
-    "height": 641,
-    "width": 1341,
+    "height": 681,
+    "width": 1390,
     "position": [
         100,
         100
     ],
-    "id": 607,
+    "id": 459,
     "name": "present_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/present_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 513,
+            "position_x": 562,
             "position_y": 45,
             "width": 788,
-            "height": 536,
+            "height": 576,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These three nodes let a patch arrange its own window and interface.\n\nThey are for finishing a patch - turning something you built into something \nsomeone can use, without them seeing the wiring.\n\nTHE NODES:\n\npresent                  switch the patch into presentation mode\nactive_widget            report which widget the mouse is over\npatch_window_position    set the window's position and size\n\nPresentation mode is the important one. Every node has a presentation state, \nand nodes set to hidden disappear when the patch is presented - so you can lay \nout a clean panel of just the controls, on top of the working patch, and switch \nbetween the two. The \"open as presentation\" option makes a patch open that way \nfrom the start, which is how you hand it to someone who should not be looking \nat the machinery.\n\nSYNTAX:\npresent\nactive_widget\npatch_window_position\n\nINPUTS and PARAMETERS:\n\nopen as presentation (present):\nWhen checked, this patch opens directly into presentation mode rather than \nshowing the patch as built.\n\nactive_widget:\nReports the widget currently under the mouse. Use it when a patch needs to know \nwhat the person is pointing at - context help, or a control that shows what it \ndoes when you approach it.\n\ntop / left / width / height (patch_window_position):\nThe window's position and size, in pixels. Send values here to move or resize \nthe patch window while it runs - to bring it up at a known size on a particular \nscreen, or to fit a projector.\n\nOUTPUTS: \n\nNone of these three have outlets - they act on the patch itself rather than \npassing data on.",
+                    "value": "The present node switches its patch between editing and presentation mode.\n\nIt is for finishing a patch - turning something you built into something\nsomeone can use, without them seeing the wiring.\n\nEvery node has a presentation state as well as its ordinary visibility.\nIn presentation mode each node shows only what its presentation state allows,\nso nodes set to hidden disappear, and nothing can be dragged. You can lay out a\nclean panel of just the controls, on top of the working patch, and switch\nbetween the two.\n\nBecause the checkbox is saved with the patch, ticking it and saving is how you\nmake a patch OPEN presented - which is how you hand it to someone who should\nnot be looking at the machinery.\n\nSYNTAX:\npresent\n\nEXAMPLE:\npresent\n\nINPUTS and PARAMETERS:\n\nopen as presentation:\nTicking it switches the patch into presentation mode straight away; unticking\nit switches back to editing. The setting is saved with the patch, so a patch\nsaved with it ticked comes up presented when it is opened.\n\nLeave the present node itself visible in presentation mode (its presentation\nstate at show all), or there is no checkbox left on screen to untick.\n\nOUTPUTS:\n\nNone - present acts on the patch itself rather than passing data on.\n\nRELATED:\nactive_widget reports which widget is being worked, and patch_window_position\nsets the window's place and size - the other two nodes for arranging a patch\nfor someone else.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 520,
+                    "value": 560,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These three nodes let a patch arrange its own window and interface.\n\nThey are for finishing a patch - turning something you built into something \nsomeone can use, without them seeing the wiring.\n\nTHE NODES:\n\npresent                  switch the patch into presentation mode\nactive_widget            report which widget the mouse is over\npatch_window_position    set the window's position and size\n\nPresentation mode is the important one. Every node has a presentation state, \nand nodes set to hidden disappear when the patch is presented - so you can lay \nout a clean panel of just the controls, on top of the working patch, and switch \nbetween the two. The \"open as presentation\" option makes a patch open that way \nfrom the start, which is how you hand it to someone who should not be looking \nat the machinery.\n\nSYNTAX:\npresent\nactive_widget\npatch_window_position\n\nINPUTS and PARAMETERS:\n\nopen as presentation (present):\nWhen checked, this patch opens directly into presentation mode rather than \nshowing the patch as built.\n\nactive_widget:\nReports the widget currently under the mouse. Use it when a patch needs to know \nwhat the person is pointing at - context help, or a control that shows what it \ndoes when you approach it.\n\ntop / left / width / height (patch_window_position):\nThe window's position and size, in pixels. Send values here to move or resize \nthe patch window while it runs - to bring it up at a known size on a particular \nscreen, or to fit a projector.\n\nOUTPUTS: \n\nNone of these three have outlets - they act on the patch itself rather than \npassing data on."
+            "text": "The present node switches its patch between editing and presentation mode.\n\nIt is for finishing a patch - turning something you built into something\nsomeone can use, without them seeing the wiring.\n\nEvery node has a presentation state as well as its ordinary visibility.\nIn presentation mode each node shows only what its presentation state allows,\nso nodes set to hidden disappear, and nothing can be dragged. You can lay out a\nclean panel of just the controls, on top of the working patch, and switch\nbetween the two.\n\nBecause the checkbox is saved with the patch, ticking it and saving is how you\nmake a patch OPEN presented - which is how you hand it to someone who should\nnot be looking at the machinery.\n\nSYNTAX:\npresent\n\nEXAMPLE:\npresent\n\nINPUTS and PARAMETERS:\n\nopen as presentation:\nTicking it switches the patch into presentation mode straight away; unticking\nit switches back to editing. The setting is saved with the patch, so a patch\nsaved with it ticked comes up presented when it is opened.\n\nLeave the present node itself visible in presentation mode (its presentation\nstate at show all), or there is no checkbox left on screen to untick.\n\nOUTPUTS:\n\nNone - present acts on the patch itself rather than passing data on.\n\nRELATED:\nactive_widget reports which widget is being worked, and patch_window_position\nsets the window's place and size - the other two nodes for arranging a patch\nfor someone else."
         },
         "3": {
             "name": "present",
@@ -105,86 +105,12 @@
             "properties": {}
         },
         "4": {
-            "init": "comment tick to open this patch presented",
-            "name": "comment",
-            "id": 385,
-            "position_x": 228,
-            "position_y": 130,
-            "width": 211,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "tick to open this patch presented",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "tick to open this patch presented"
-        },
-        "5": {
-            "name": "active_widget",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 175,
-            "width": 172,
-            "height": 28,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "init": "comment shows what the mouse is over",
-            "name": "comment",
-            "id": 459,
-            "position_x": 228,
-            "position_y": 245,
-            "width": 181,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "shows what the mouse is over",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "shows what the mouse is over"
-        },
-        "7": {
-            "name": "patch_window_position",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 290,
-            "width": 138,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
             "name": "text_block",
-            "id": 533,
+            "id": 385,
             "annotation": true,
-            "position_x": 228,
-            "position_y": 440,
-            "width": 255,
+            "position_x": 203,
+            "position_y": 130,
+            "width": 329,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -192,7 +118,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "send numbers here to move the window\nset a node to hidden to leave it out",
+                    "value": "tick to present this patch, untick to edit again\nhidden nodes vanish while it is presented",
                     "value_type": "str"
                 },
                 "1": {
@@ -202,7 +128,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 247,
+                    "value": 321,
                     "value_type": "int"
                 },
                 "3": {
@@ -216,13 +142,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "send numbers here to move the window\nset a node to hidden to leave it out"
+            "text": "tick to present this patch, untick to edit again\nhidden nodes vanish while it is presented"
         },
-        "9": {
+        "5": {
             "name": "close",
-            "id": 570,
+            "id": 422,
             "position_x": 24,
-            "position_y": 390,
+            "position_y": 120,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

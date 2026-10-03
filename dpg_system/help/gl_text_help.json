@@ -1,11 +1,11 @@
 {
-    "height": 1436,
-    "width": 1664,
+    "height": 1616,
+    "width": 1454,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "gl_text_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_text_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment gl_text - labels and controls in the scene",
+            "init": "comment gl_text - text in the scene",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 525,
+            "width": 340,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "gl_text - labels and controls in the scene",
+                    "value": "gl_text - text in the scene",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "gl_text - labels and controls in the scene"
+            "comment": "gl_text - text in the scene"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 816,
+            "position_x": 606,
             "position_y": 45,
             "width": 808,
-            "height": 756,
+            "height": 776,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These put readable things into the scene: labels, and a grid of buttons.\n\nTHE NODES:\n\ngl_text         text in the scene\ngl_korean_text  the same with Korean glyph support\ngl_button_grid  a grid of buttons drawn in GL\n\nTEXT NEEDS A BILLBOARD, OR A SCREEN POSITION:\nText drawn in 3D turns edge-on and vanishes as the camera moves. There are two \nways round that. Put gl_billboard before it and it stays facing the viewer \nwhile remaining at its place in the scene. Or use 'position_x' and \n'position_y', which place it in SCREEN coordinates - fixed on the window, \nunaffected by the camera, which is what you want for a title, a readout, or a \nstate indicator.\n\nThe second is usually right for anything the viewer must always be able to \nread, and the first for a label that belongs to a thing in the scene.\n\ngl_button_grid:\nAn array of buttons drawn in the GL window rather than in the patch. \nThe point is that a scene shown fullscreen has no patch visible - so any \ncontrol the performer needs has to live inside the render. 'selection' reports \nwhat was pressed.\n\n'scale', 'spacing', 'thickness' and 'alpha' size it and set how present it is; \na low alpha gives you a control that is available without dominating what it \nsits over.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_button_grid\n\nEXAMPLE:\ngl_text\n\nINPUTS and PARAMETERS:\n\ntext:\nWhat to draw.\n\nposition_x / position_y:\nScreen position - fixed on the window rather than in the scene.\n\nscale / alpha / font:\nSize, transparency and typeface.\n\nselection (gl_button_grid):\nWhich button is pressed.\n\nspacing / thickness:\nThe grid's layout and line weight.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_text is the newer equivalent. gl_billboard keeps in-scene text facing \nthe viewer.",
+                    "value": "These draw text into the scene.\n\nTHE NODES:\n\ngl_text         text in the scene, from the Latin character set \ngl_korean_text  the same, drawing Hangul syllables\n\nWHERE THE TEXT GOES:\nThe text is drawn flat, facing along the chain's current z axis, at \n'position_x' and 'position_y' in the chain's current coordinates and two units \nfurther away than whatever came before it. Lighting and depth testing are \nswitched off while it draws, so it is never shaded and never hidden behind \nanything drawn before it.\n\nBecause the older system has no camera, text placed straight after gl_context \n(or after nodes that do not transform, like gl_light) stays fixed on the \nwindow: right for a title, a readout, or a state indicator. Put a \ngl_translate, gl_rotate or gl_scale before it and the text moves with them, \nlike any other shape - which places a label beside the thing it names, but \nalso means a rotation can turn it edge-on until it vanishes.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. A list is drawn piece by piece, with 'separator' \nbetween pieces. A piece can also be a pair - some text and a weight - and is \nthen drawn with its transparency multiplied by that weight raised to 'alpha \npower', and left out entirely when the weight is zero or less. That makes a \nlist of words with confidences, say, readable at a glance.\n\ngl_korean_text:\nBuilds its glyphs from the Hangul syllable block only. Letters, digits and \nspaces are not in it and are skipped, so words run together. Its default font \nhas no Hangul, so it needs a Korean font named as its argument or in 'font', \nand building over eleven thousand glyphs takes a long time. Its glyph atlas \nlooks to be laid out for 256 characters rather than for the Hangul range, so \ntreat it as unfinished.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_text <font size>\ngl_text <font file>\ngl_korean_text <font file> <font size>\n\nA number argument is the font size, a word is the font file. Either order.\n\nEXAMPLE:\ngl_text 36\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw: a string, or a list as above.\n\nposition_x / position_y:\nWhere the text starts, in the chain's current coordinates - its left end, \nwith the letters hanging below that height.\n\nalpha:\nOverall transparency, 0 to 1.\n\nscale:\nThe size of the letters in the scene. 1 is the default.\n\nfont:\nThe font file. Inconsolata-g.otf by default.\n\nsize (option):\nThe size the font is rendered at, 24 by default for gl_text and 6 for \ngl_korean_text. A larger size gives sharper letters and also draws them \nlarger, since the drawn size is this times 'scale'.\n\ncolour (option):\nThe text colour. In the options it carries the label 'alpha', the same as \nthe transparency inlet.\n\nalpha power / separator (options):\nFor lists, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing. The text's own offset does not carry downstream.\n\nRELATED:\nmgl_text is the newer equivalent. gl_button_grid, which used to share this \npage, draws a grid of highlighted squares in the same way.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These put readable things into the scene: labels, and a grid of buttons.\n\nTHE NODES:\n\ngl_text         text in the scene\ngl_korean_text  the same with Korean glyph support\ngl_button_grid  a grid of buttons drawn in GL\n\nTEXT NEEDS A BILLBOARD, OR A SCREEN POSITION:\nText drawn in 3D turns edge-on and vanishes as the camera moves. There are two \nways round that. Put gl_billboard before it and it stays facing the viewer \nwhile remaining at its place in the scene. Or use 'position_x' and \n'position_y', which place it in SCREEN coordinates - fixed on the window, \nunaffected by the camera, which is what you want for a title, a readout, or a \nstate indicator.\n\nThe second is usually right for anything the viewer must always be able to \nread, and the first for a label that belongs to a thing in the scene.\n\ngl_button_grid:\nAn array of buttons drawn in the GL window rather than in the patch. \nThe point is that a scene shown fullscreen has no patch visible - so any \ncontrol the performer needs has to live inside the render. 'selection' reports \nwhat was pressed.\n\n'scale', 'spacing', 'thickness' and 'alpha' size it and set how present it is; \na low alpha gives you a control that is available without dominating what it \nsits over.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_button_grid\n\nEXAMPLE:\ngl_text\n\nINPUTS and PARAMETERS:\n\ntext:\nWhat to draw.\n\nposition_x / position_y:\nScreen position - fixed on the window rather than in the scene.\n\nscale / alpha / font:\nSize, transparency and typeface.\n\nselection (gl_button_grid):\nWhich button is pressed.\n\nspacing / thickness:\nThe grid's layout and line weight.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_text is the newer equivalent. gl_billboard keeps in-scene text facing \nthe viewer."
+            "text": "These draw text into the scene.\n\nTHE NODES:\n\ngl_text         text in the scene, from the Latin character set \ngl_korean_text  the same, drawing Hangul syllables\n\nWHERE THE TEXT GOES:\nThe text is drawn flat, facing along the chain's current z axis, at \n'position_x' and 'position_y' in the chain's current coordinates and two units \nfurther away than whatever came before it. Lighting and depth testing are \nswitched off while it draws, so it is never shaded and never hidden behind \nanything drawn before it.\n\nBecause the older system has no camera, text placed straight after gl_context \n(or after nodes that do not transform, like gl_light) stays fixed on the \nwindow: right for a title, a readout, or a state indicator. Put a \ngl_translate, gl_rotate or gl_scale before it and the text moves with them, \nlike any other shape - which places a label beside the thing it names, but \nalso means a rotation can turn it edge-on until it vanishes.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. A list is drawn piece by piece, with 'separator' \nbetween pieces. A piece can also be a pair - some text and a weight - and is \nthen drawn with its transparency multiplied by that weight raised to 'alpha \npower', and left out entirely when the weight is zero or less. That makes a \nlist of words with confidences, say, readable at a glance.\n\ngl_korean_text:\nBuilds its glyphs from the Hangul syllable block only. Letters, digits and \nspaces are not in it and are skipped, so words run together. Its default font \nhas no Hangul, so it needs a Korean font named as its argument or in 'font', \nand building over eleven thousand glyphs takes a long time. Its glyph atlas \nlooks to be laid out for 256 characters rather than for the Hangul range, so \ntreat it as unfinished.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_text <font size>\ngl_text <font file>\ngl_korean_text <font file> <font size>\n\nA number argument is the font size, a word is the font file. Either order.\n\nEXAMPLE:\ngl_text 36\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw: a string, or a list as above.\n\nposition_x / position_y:\nWhere the text starts, in the chain's current coordinates - its left end, \nwith the letters hanging below that height.\n\nalpha:\nOverall transparency, 0 to 1.\n\nscale:\nThe size of the letters in the scene. 1 is the default.\n\nfont:\nThe font file. Inconsolata-g.otf by default.\n\nsize (option):\nThe size the font is rendered at, 24 by default for gl_text and 6 for \ngl_korean_text. A larger size gives sharper letters and also draws them \nlarger, since the drawn size is this times 'scale'.\n\ncolour (option):\nThe text colour. In the options it carries the label 'alpha', the same as \nthe transparency inlet.\n\nalpha power / separator (options):\nFor lists, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing. The text's own offset does not carry downstream.\n\nRELATED:\nmgl_text is the newer equivalent. gl_button_grid, which used to share this \npage, draws a grid of highlighted squares in the same way."
         },
         "3": {
             "name": "gl_context",
@@ -117,80 +117,23 @@
             "properties": {}
         },
         "5": {
-            "name": "gl_text",
+            "name": "load_action",
             "id": 422,
             "position_x": 30,
             "position_y": 516,
-            "width": 154,
-            "height": 126,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "font",
-                    "value": "Inconsolata-g.otf",
-                    "value_type": "str"
-                }
-            }
+            "properties": {},
+            "init": "load_action fixed on the window"
         },
         "6": {
-            "name": "text_block",
-            "id": 459,
-            "annotation": true,
-            "position_x": 500,
-            "position_y": 791,
-            "width": 280,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "position_x and _y are SCREEN coordinates\nso it stays put as the camera moves",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 272,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "position_x and _y are SCREEN coordinates\nso it stays put as the camera moves"
-        },
-        "7": {
-            "name": "gl_billboard",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 866,
-            "width": 129,
-            "height": 84,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
             "name": "gl_text",
-            "id": 533,
+            "id": 459,
             "position_x": 30,
-            "position_y": 1061,
+            "position_y": 626,
             "width": 154,
             "height": 126,
             "visibility": "show_all",
@@ -204,13 +147,13 @@
                 }
             }
         },
-        "9": {
+        "7": {
             "name": "text_block",
-            "id": 570,
+            "id": 496,
             "annotation": true,
-            "position_x": 500,
-            "position_y": 1336,
-            "width": 286,
+            "position_x": 278,
+            "position_y": 901,
+            "width": 298,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -218,7 +161,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "behind a billboard instead: in the scene,\nbut always turned to face you",
+                    "value": "straight after the context: no transform is\nin force, so it stays put on the window",
                     "value_type": "str"
                 },
                 "1": {
@@ -228,7 +171,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 278,
+                    "value": 290,
                     "value_type": "int"
                 },
                 "3": {
@@ -242,78 +185,113 @@
                     "value_type": "str"
                 }
             },
-            "text": "behind a billboard instead: in the scene,\nbut always turned to face you"
+            "text": "straight after the context: no transform is\nin force, so it stays put on the window"
         },
-        "10": {
-            "name": "gl_button_grid",
-            "id": 607,
-            "position_x": 320,
-            "position_y": 516,
-            "width": 154,
-            "height": 140,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "11": {
-            "name": "int",
-            "id": 644,
-            "position_x": 320,
-            "position_y": 811,
-            "width": 130,
-            "height": 42,
+        "8": {
+            "name": "gl_translate",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 951,
+            "width": 99,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
+                    "name": "y",
+                    "value": -0.5,
+                    "value_type": "float"
                 },
                 "2": {
-                    "name": "font size",
-                    "value": "24",
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "gl_translate 0 -0.5 0"
+        },
+        "9": {
+            "name": "load_action",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 1131,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "load_action moved by the translate"
+        },
+        "10": {
+            "name": "gl_text",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 1241,
+            "width": 154,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "font",
+                    "value": "Inconsolata-g.otf",
                     "value_type": "str"
                 }
             }
         },
-        "12": {
-            "init": "comment controls inside a fullscreen render",
-            "name": "comment",
-            "id": 681,
-            "position_x": 500,
-            "position_y": 861,
-            "width": 224,
-            "height": 30,
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 278,
+            "position_y": 1516,
+            "width": 268,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "controls inside a fullscreen render",
+                    "name": "block",
+                    "value": "after a transform: it moves, and would\nturn, with everything else downstream",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "controls inside a fullscreen render"
+            "text": "after a transform: it moves, and would\nturn, with everything else downstream"
         },
-        "13": {
+        "12": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 1217,
+            "position_y": 1397,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -344,7 +322,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 422,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -353,14 +331,14 @@
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 496,
+            "source_output_name": "out",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": "text"
         },
         "3": {
-            "source_node": 496,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
@@ -368,6 +346,26 @@
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text"
         }
     }
 }

@@ -1,11 +1,11 @@
 {
-    "height": 681,
-    "width": 1431,
+    "height": 1026,
+    "width": 1493,
     "position": [
         100,
         100
     ],
-    "id": 607,
+    "id": 755,
     "name": "dict_search_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/dict_search_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment dict_search and list_box - find it by typing",
+            "init": "comment dict_search - find a branch of a tree by typing",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 549,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "dict_search and list_box - find it by typing",
+                    "value": "dict_search - find a branch of a tree by typing",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "dict_search and list_box - find it by typing"
+            "comment": "dict_search - find a branch of a tree by typing"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 593,
+            "position_x": 655,
             "position_y": 45,
             "width": 798,
-            "height": 576,
+            "height": 836,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These two nodes let you FIND something in a large collection by typing at it, \nrather than by wiring up a lookup.\n\nBoth show a scrolling list with a search field above it. Type, and the list \nnarrows to what matches. Click an entry, or press select, and it is sent out.\n\nThey exist because a dictionary with hundreds of keys, or a list of every file \nin a directory, is not something you navigate with patch cords. \nYou need to look at it.\n\nTHE NODES:\n\ndict_search   browse the keys of a dictionary. Understands nested keys \n              written with slashes, so a hierarchy can be searched as paths\nlist_box      the same browser over a plain list\n\nUse dict_search when the collection arrives as a dictionary - an OSC namespace, \na set of presets, a parameter tree. Use list_box for a list of names.\n\nSYNTAX:\ndict_search\nlist_box\n\nINPUTS and PARAMETERS:\n\ndict in / list in:\nThe collection to browse. Receiving it triggers the node and refills the list.\n\nsearch_term:\nThe text field. Typing filters the list as you go; leave it empty to see \neverything.\n\noptions:\nThe list itself. Clicking an entry selects it.\n\nselect (dict_search):\nA button that sends the current selection. Useful when you want the choice to \ntake effect on a deliberate click rather than as you scroll.\n\nOUTPUTS: \n\nresults out:\nWhat you selected.\n\nRELATED:\ndict_keys gives you the same names as a plain list, without the interface - \nuse that when the patch is choosing, and these when a person is.",
+                    "value": "The dict_search node lets you FIND a branch of a nested dictionary by typing\npart of its path, rather than by wiring up a lookup.\n\nIt shows a search field with a scrolling list under it. Type, and the list fills\nwith the paths that match. Click an entry, or press select, and that branch is\nsent out.\n\nIt is built for OSC Query style trees - an OSC namespace, a parameter tree -\nwhere every level is a dictionary and its children sit under a key called\nCONTENTS. The list shows paths with the CONTENTS levels left out, so\nsynth/CONTENTS/freq appears as synth/freq.\n\nWHAT IS LISTED:\nOnly entries that are themselves dictionaries appear - the nodes of the tree,\nnot the plain values stored inside them. A flat dictionary of numbers or words\ntherefore shows nothing; use dict_keys for that.\n\nA search matches any level of a path, not only the first. Typing \"f\" finds\nevery path with a level beginning with f; typing \"synth/f\" finds a level\nbeginning with f directly under synth. A path's children match along with it.\n\nSYNTAX:\ndict_search\n\nEXAMPLE:\ndict_search\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe tree to search. It is stored, not shown: the list stays as it was until\nyou next type in the search field.\n\nsearch field:\nTyping filters as you go, and highlights the first match. Pressing return,\nor clicking away from the field, sends the highlighted entry. Text can also be\nsent into this inlet, which sends the highlighted entry without searching again.\n\nlist:\nThe matching paths. Clicking an entry sends it.\n\nselect:\nA button that sends the highlighted entry again.\n\nOUTPUTS:\n\nresults out:\nA list with one item per match - the chosen branch and everything under it.\nEach item is itself a three-part list: the short path, the full path with its\nCONTENTS levels, and the dictionary found there.\n\nRELATED:\nlist_box is the same search-and-choose interface over a plain list of names.\ndict_keys gives the names of a dictionary as a list, without the interface -\nuse that when the patch is choosing, and dict_search when a person is.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 560,
+                    "value": 820,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These two nodes let you FIND something in a large collection by typing at it, \nrather than by wiring up a lookup.\n\nBoth show a scrolling list with a search field above it. Type, and the list \nnarrows to what matches. Click an entry, or press select, and it is sent out.\n\nThey exist because a dictionary with hundreds of keys, or a list of every file \nin a directory, is not something you navigate with patch cords. \nYou need to look at it.\n\nTHE NODES:\n\ndict_search   browse the keys of a dictionary. Understands nested keys \n              written with slashes, so a hierarchy can be searched as paths\nlist_box      the same browser over a plain list\n\nUse dict_search when the collection arrives as a dictionary - an OSC namespace, \na set of presets, a parameter tree. Use list_box for a list of names.\n\nSYNTAX:\ndict_search\nlist_box\n\nINPUTS and PARAMETERS:\n\ndict in / list in:\nThe collection to browse. Receiving it triggers the node and refills the list.\n\nsearch_term:\nThe text field. Typing filters the list as you go; leave it empty to see \neverything.\n\noptions:\nThe list itself. Clicking an entry selects it.\n\nselect (dict_search):\nA button that sends the current selection. Useful when you want the choice to \ntake effect on a deliberate click rather than as you scroll.\n\nOUTPUTS: \n\nresults out:\nWhat you selected.\n\nRELATED:\ndict_keys gives you the same names as a plain list, without the interface - \nuse that when the patch is choosing, and these when a person is."
+            "text": "The dict_search node lets you FIND a branch of a nested dictionary by typing\npart of its path, rather than by wiring up a lookup.\n\nIt shows a search field with a scrolling list under it. Type, and the list fills\nwith the paths that match. Click an entry, or press select, and that branch is\nsent out.\n\nIt is built for OSC Query style trees - an OSC namespace, a parameter tree -\nwhere every level is a dictionary and its children sit under a key called\nCONTENTS. The list shows paths with the CONTENTS levels left out, so\nsynth/CONTENTS/freq appears as synth/freq.\n\nWHAT IS LISTED:\nOnly entries that are themselves dictionaries appear - the nodes of the tree,\nnot the plain values stored inside them. A flat dictionary of numbers or words\ntherefore shows nothing; use dict_keys for that.\n\nA search matches any level of a path, not only the first. Typing \"f\" finds\nevery path with a level beginning with f; typing \"synth/f\" finds a level\nbeginning with f directly under synth. A path's children match along with it.\n\nSYNTAX:\ndict_search\n\nEXAMPLE:\ndict_search\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe tree to search. It is stored, not shown: the list stays as it was until\nyou next type in the search field.\n\nsearch field:\nTyping filters as you go, and highlights the first match. Pressing return,\nor clicking away from the field, sends the highlighted entry. Text can also be\nsent into this inlet, which sends the highlighted entry without searching again.\n\nlist:\nThe matching paths. Clicking an entry sends it.\n\nselect:\nA button that sends the highlighted entry again.\n\nOUTPUTS:\n\nresults out:\nA list with one item per match - the chosen branch and everything under it.\nEach item is itself a three-part list: the short path, the full path with its\nCONTENTS levels, and the dictionary found there.\n\nRELATED:\nlist_box is the same search-and-choose interface over a plain list of names.\ndict_keys gives the names of a dictionary as a list, without the interface -\nuse that when the patch is choosing, and dict_search when a person is."
         },
         "3": {
             "name": "button",
@@ -105,7 +105,7 @@
             "properties": {}
         },
         "4": {
-            "init": "comment click to load the list",
+            "init": "comment click to load the tree",
             "name": "comment",
             "id": 385,
             "position_x": 364,
@@ -118,7 +118,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "click to load the list",
+                    "value": "click to load the tree",
                     "value_type": "str"
                 },
                 "1": {
@@ -127,13 +127,26 @@
                     "value_type": "str"
                 }
             },
-            "comment": "click to load the list"
+            "comment": "click to load the tree"
         },
         "5": {
-            "name": "message",
+            "name": "repeat_in_order",
             "id": 422,
             "position_x": 30,
             "position_y": 150,
+            "width": 101,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 2"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 235,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -142,7 +155,7 @@
             "properties": {
                 "0": {
                     "name": "text in",
-                    "value": "red orange yellow green blue indigo violet",
+                    "value": "{\"CONTENTS\": {\"synth\": {\"CONTENTS\": {\"freq\": {\"VALUE\": 440}, \"gain\": {\"VALUE\": 0.5}}}, \"lights\": {\"CONTENTS\": {\"level\": {\"VALUE\": 1.0}}}}}",
                     "value_type": "str"
                 },
                 "1": {
@@ -152,25 +165,13 @@
                 }
             }
         },
-        "6": {
-            "name": "list_box",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 215,
-            "width": 308,
-            "height": 173,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
         "7": {
-            "init": "comment type to narrow, click to choose",
+            "init": "comment a small OSC Query style tree, as text",
             "name": "comment",
             "id": 496,
             "position_x": 364,
-            "position_y": 430,
-            "width": 199,
+            "position_y": 285,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -178,7 +179,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "type to narrow, click to choose",
+                    "value": "a small OSC Query style tree, as text",
                     "value_type": "str"
                 },
                 "1": {
@@ -187,13 +188,102 @@
                     "value_type": "str"
                 }
             },
-            "comment": "type to narrow, click to choose"
+            "comment": "a small OSC Query style tree, as text"
         },
         "8": {
-            "name": "string",
+            "name": "dict",
             "id": 533,
             "position_x": 30,
-            "position_y": 470,
+            "position_y": 325,
+            "width": 101,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment turns the text into a dictionary",
+            "name": "comment",
+            "id": 570,
+            "position_x": 364,
+            "position_y": 515,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "turns the text into a dictionary",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "turns the text into a dictionary"
+        },
+        "10": {
+            "name": "dict_search",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 555,
+            "width": 308,
+            "height": 187,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 364,
+            "position_y": 795,
+            "width": 261,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "type s, f or synth/f to fill the list\nthen click an entry to send it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "type s, f or synth/f to fill the list\nthen click an entry to send it"
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 850,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -212,11 +302,11 @@
                 }
             }
         },
-        "9": {
+        "13": {
             "name": "close",
-            "id": 570,
+            "id": 718,
             "position_x": 24,
-            "position_y": 542,
+            "position_y": 922,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -246,18 +336,48 @@
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
+            "source_output_name": "first",
             "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "list in"
+            "dest_input_name": ""
         },
         "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "second",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "send dict"
+        },
+        "3": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "results out",
+            "source_output_name": "string out",
             "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "store"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "results out",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

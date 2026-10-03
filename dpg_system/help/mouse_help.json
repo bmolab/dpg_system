@@ -1,11 +1,11 @@
 {
-    "height": 741,
-    "width": 1419,
+    "height": 681,
+    "width": 1413,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 570,
     "name": "mouse_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mouse_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment mouse and keys - play the patch directly",
+            "init": "comment mouse - the pointer as a control",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 500,
+            "width": 402,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "mouse and keys - play the patch directly",
+                    "value": "mouse - the pointer as a control",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "mouse and keys - play the patch directly"
+            "comment": "mouse - the pointer as a control"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 581,
+            "position_x": 575,
             "position_y": 45,
             "width": 798,
-            "height": 636,
+            "height": 576,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These two nodes let the patch respond to the mouse and the keyboard directly.\n\nmouse reports where the pointer is, continuously. \nkeys reports which keys are down, and what was typed.\n\nThey are how a patch becomes playable without building an interface for it - \nuseful for performance, for testing something quickly, and for anything where \na widget would be in the way of what you are doing with your hands.\n\nSYNTAX:\nmouse\nkeys <key name> <key name> ...\n\nEXAMPLE:\nkeys space a s d f\n\nINPUTS and PARAMETERS:\n\nin (mouse):\nAnything here asks for the current position.\n\nlist keys (keys):\nA button that prints every key name the node recognises, to the console. \nClick it when you are not sure what a key is called - the names are what you \ngive as arguments.\n\nArguments to keys name the keys you want their own outlets for. \nWithout arguments you still get the modifier outlets and the general \ncharacter and code outlets.\n\nOUTPUTS - mouse:\n\nx / y:\nThe pointer position, on separate outlets.\n\nOUTPUTS - keys:\n\nshift / control / command / alt:\nThe modifier keys, each reporting 1 while held and 0 when released. \nHaving them separately is what lets you use a modifier to change what an \nordinary key does.\n\ncharacter out:\nThe character typed.\n\nkey code out:\nIts numeric code, for keys that produce no character.\n\n<one outlet per named key>:\n1 while that key is held, 0 when released.\n\nA NOTE ON FOCUS:\nThese read the keyboard and mouse for the application, so they pick up \neverything - including keys you press while editing a patch. Bear that in mind \nwhen a key is wired to something destructive, and consider gating it behind a \ntoggle you can switch off while working.",
+                    "value": "mouse reports where the pointer is, continuously, while it is switched on.\n\nIt is how a patch becomes playable without building an interface for it - \nthe whole window becomes a two-dimensional control, useful for performance, for \ntesting something quickly, and for anything where a widget would be in the way \nof what you are doing with your hand.\n\nTO USE IT:\nTick the box. From then on the position is sent every frame, about 60 times a \nsecond, until you untick it. Unticked, it sends nothing at all.\n\nSYNTAX:\nmouse\n\nINPUTS and PARAMETERS:\n\non (the checkbox):\nSwitches the stream on and off.\n\nOUTPUTS:\n\nx / y:\nThe pointer position in pixels, measured from the top left of the window, on \nseparate outlets. It is sent wherever the pointer is - over a node, over empty \npatch, or outside the window altogether - so the numbers can run negative or \npast the window's size.\n\nTo use it as a control, scale it into the range you need: ranger, or a \ndivision by the window size, turns pixels into 0 to 1.\n\nRELATED:\nkeys reports the keyboard. \njoy_stick is an x and y control that lives in a patch, with a range you set.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 620,
+                    "value": 560,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These two nodes let the patch respond to the mouse and the keyboard directly.\n\nmouse reports where the pointer is, continuously. \nkeys reports which keys are down, and what was typed.\n\nThey are how a patch becomes playable without building an interface for it - \nuseful for performance, for testing something quickly, and for anything where \na widget would be in the way of what you are doing with your hands.\n\nSYNTAX:\nmouse\nkeys <key name> <key name> ...\n\nEXAMPLE:\nkeys space a s d f\n\nINPUTS and PARAMETERS:\n\nin (mouse):\nAnything here asks for the current position.\n\nlist keys (keys):\nA button that prints every key name the node recognises, to the console. \nClick it when you are not sure what a key is called - the names are what you \ngive as arguments.\n\nArguments to keys name the keys you want their own outlets for. \nWithout arguments you still get the modifier outlets and the general \ncharacter and code outlets.\n\nOUTPUTS - mouse:\n\nx / y:\nThe pointer position, on separate outlets.\n\nOUTPUTS - keys:\n\nshift / control / command / alt:\nThe modifier keys, each reporting 1 while held and 0 when released. \nHaving them separately is what lets you use a modifier to change what an \nordinary key does.\n\ncharacter out:\nThe character typed.\n\nkey code out:\nIts numeric code, for keys that produce no character.\n\n<one outlet per named key>:\n1 while that key is held, 0 when released.\n\nA NOTE ON FOCUS:\nThese read the keyboard and mouse for the application, so they pick up \neverything - including keys you press while editing a patch. Bear that in mind \nwhen a key is wired to something destructive, and consider gating it behind a \ntoggle you can switch off while working."
+            "text": "mouse reports where the pointer is, continuously, while it is switched on.\n\nIt is how a patch becomes playable without building an interface for it - \nthe whole window becomes a two-dimensional control, useful for performance, for \ntesting something quickly, and for anything where a widget would be in the way \nof what you are doing with your hand.\n\nTO USE IT:\nTick the box. From then on the position is sent every frame, about 60 times a \nsecond, until you untick it. Unticked, it sends nothing at all.\n\nSYNTAX:\nmouse\n\nINPUTS and PARAMETERS:\n\non (the checkbox):\nSwitches the stream on and off.\n\nOUTPUTS:\n\nx / y:\nThe pointer position in pixels, measured from the top left of the window, on \nseparate outlets. It is sent wherever the pointer is - over a node, over empty \npatch, or outside the window altogether - so the numbers can run negative or \npast the window's size.\n\nTo use it as a control, scale it into the range you need: ranger, or a \ndivision by the window size, turns pixels into 0 to 1.\n\nRELATED:\nkeys reports the keyboard. \njoy_stick is an x and y control that lives in a patch, with a range you set."
         },
         "3": {
             "name": "mouse",
@@ -102,41 +102,44 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
         },
         "4": {
-            "name": "float",
+            "init": "comment ticked: move the mouse anywhere",
+            "name": "comment",
             "id": 385,
-            "position_x": 30,
-            "position_y": 150,
-            "width": 130,
-            "height": 42,
+            "position_x": 346,
+            "position_y": 145,
+            "width": 199,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%.3f",
+                    "name": "text",
+                    "value": "ticked: move the mouse anywhere",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
                     "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
-            }
+            },
+            "comment": "ticked: move the mouse anywhere"
         },
         "5": {
             "name": "float",
             "id": 422,
-            "position_x": 190,
-            "position_y": 150,
+            "position_x": 30,
+            "position_y": 185,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -161,73 +164,10 @@
             }
         },
         "6": {
-            "init": "comment move the mouse over the patch",
-            "name": "comment",
+            "name": "float",
             "id": 459,
-            "position_x": 346,
-            "position_y": 200,
-            "width": 187,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "move the mouse over the patch",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "move the mouse over the patch"
-        },
-        "7": {
-            "name": "keys",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 245,
-            "width": 107,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "keys space"
-        },
-        "8": {
-            "init": "comment hold shift, or press space",
-            "name": "comment",
-            "id": 533,
-            "position_x": 346,
-            "position_y": 460,
-            "width": 168,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "hold shift, or press space",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "hold shift, or press space"
-        },
-        "9": {
-            "name": "int",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 500,
+            "position_x": 190,
+            "position_y": 185,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -236,7 +176,7 @@
             "properties": {
                 "0": {
                     "name": "format",
-                    "value": "%d",
+                    "value": "%.3f",
                     "value_type": "str"
                 },
                 "1": {
@@ -251,36 +191,13 @@
                 }
             }
         },
-        "10": {
-            "name": "string",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 555,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "11": {
-            "init": "comment click \"list keys\" for every name",
+        "7": {
+            "init": "comment x and y, in pixels",
             "name": "comment",
-            "id": 644,
+            "id": 496,
             "position_x": 346,
-            "position_y": 605,
-            "width": 205,
+            "position_y": 235,
+            "width": 119,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -288,7 +205,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "click \"list keys\" for every name",
+                    "value": "x and y, in pixels",
                     "value_type": "str"
                 },
                 "1": {
@@ -297,13 +214,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "click \"list keys\" for every name"
+            "comment": "x and y, in pixels"
         },
-        "12": {
+        "8": {
             "name": "close",
-            "id": 681,
+            "id": 533,
             "position_x": 24,
-            "position_y": 627,
+            "position_y": 257,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -324,7 +241,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "x",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -334,27 +251,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "y",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "2": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "shift",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "character out",
-            "dest_node": 607,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

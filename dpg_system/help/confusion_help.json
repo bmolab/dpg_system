@@ -1,0 +1,347 @@
+{
+    "height": 821,
+    "width": 1396,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "confusion_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/confusion_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment confusion - where two lists agree",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 414,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "confusion - where two lists agree",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "confusion - where two lists agree"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 548,
+            "position_y": 45,
+            "width": 808,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "confusion - two lists, compared item by item.\n\nTHE NODE:\nIt takes two lists and marks every place an item in one EXACTLY equals an item\nin the other. The answer is a matrix - one row per item of the list sent to\ninput2, one column per item of the list sent to input - with 1.0 where the two\nitems match and 0 everywhere else. It is meant for a heat_map, where the pattern\nof agreement is obvious at a glance.\n\nORDER MATTERS - input2 FIRST:\ninput2 only stores its list. The matrix is computed and sent when a list arrives\nat input, compared against whatever input2 last received. If input2 has not\nreceived anything yet, nothing happens. So send the rows first, then the\ncolumns; after that, each new list at input is compared against the same rows.\n\nAN EXAMPLE:\nSending ['apple','pear','engine'] to input2, then\n['fruit','apple','engine','apple'] to input:\n\n              fruit  apple  engine  apple\n    apple       0      1       0      1\n    pear        0      0       0      0\n    engine      0      0       1      0\n\nNote 'pear' is an empty row: it is not in the other list at all. That is the\nuseful part - the gaps show you what one list has that the other does not, and\nrepeats show up as repeated marks along a row.\n\nItems are compared with plain equality, so numbers work as well as words - 3\nmatches 3.0, but '3' as text does not match the number 3.\n\nIT IS EQUALITY, NOT SIMILARITY:\nWorth being clear about, because there is a node that looks almost identical and\ndoes something quite different. This one asks \"are these the same thing\"; it has\nno notion of two things being nearly alike, and 'apple' against 'apples' scores\nzero.\n\nspacy_confusion has the same shape of output and compares MEANING, so 'apple'\nagainst 'fruit' scores well there and nothing at all here. Use this one for\ntokens, labels and categories; use that one for words.\n\nSYNTAX:\nconfusion\n\nEXAMPLE:\nconfusion\n\nINPUTS and PARAMETERS:\n\ninput:\nThe list that becomes the columns. Receiving it computes and sends the matrix.\n\ninput2:\nThe list that becomes the rows. It is stored, and used by every following\nlist at input.\n\nOUTPUTS: \n\noutput:\nA matrix of ones and zeros, one row per input2 item by one column per input item.\n\nRELATED:\nspacy_confusion for meaning rather than equality.\ncwt is the other node here that makes a matrix to look at.\nheat_map is where the output wants to end up.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "confusion - two lists, compared item by item.\n\nTHE NODE:\nIt takes two lists and marks every place an item in one EXACTLY equals an item\nin the other. The answer is a matrix - one row per item of the list sent to\ninput2, one column per item of the list sent to input - with 1.0 where the two\nitems match and 0 everywhere else. It is meant for a heat_map, where the pattern\nof agreement is obvious at a glance.\n\nORDER MATTERS - input2 FIRST:\ninput2 only stores its list. The matrix is computed and sent when a list arrives\nat input, compared against whatever input2 last received. If input2 has not\nreceived anything yet, nothing happens. So send the rows first, then the\ncolumns; after that, each new list at input is compared against the same rows.\n\nAN EXAMPLE:\nSending ['apple','pear','engine'] to input2, then\n['fruit','apple','engine','apple'] to input:\n\n              fruit  apple  engine  apple\n    apple       0      1       0      1\n    pear        0      0       0      0\n    engine      0      0       1      0\n\nNote 'pear' is an empty row: it is not in the other list at all. That is the\nuseful part - the gaps show you what one list has that the other does not, and\nrepeats show up as repeated marks along a row.\n\nItems are compared with plain equality, so numbers work as well as words - 3\nmatches 3.0, but '3' as text does not match the number 3.\n\nIT IS EQUALITY, NOT SIMILARITY:\nWorth being clear about, because there is a node that looks almost identical and\ndoes something quite different. This one asks \"are these the same thing\"; it has\nno notion of two things being nearly alike, and 'apple' against 'apples' scores\nzero.\n\nspacy_confusion has the same shape of output and compares MEANING, so 'apple'\nagainst 'fruit' scores well there and nothing at all here. Use this one for\ntokens, labels and categories; use that one for words.\n\nSYNTAX:\nconfusion\n\nEXAMPLE:\nconfusion\n\nINPUTS and PARAMETERS:\n\ninput:\nThe list that becomes the columns. Receiving it computes and sends the matrix.\n\ninput2:\nThe list that becomes the rows. It is stored, and used by every following\nlist at input.\n\nOUTPUTS: \n\noutput:\nA matrix of ones and zeros, one row per input2 item by one column per input item.\n\nRELATED:\nspacy_confusion for meaning rather than equality.\ncwt is the other node here that makes a matrix to look at.\nheat_map is where the output wants to end up."
+        },
+        "3": {
+            "name": "message",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "apple pear engine",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "init": "comment click this first - the rows, into input2",
+            "name": "comment",
+            "id": 385,
+            "position_x": 264,
+            "position_y": 112,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click this first - the rows, into input2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click this first - the rows, into input2"
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 145,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "fruit apple engine apple",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment then this - the columns, into input",
+            "name": "comment",
+            "id": 459,
+            "position_x": 264,
+            "position_y": 195,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then this - the columns, into input",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then this - the columns, into input"
+        },
+        "7": {
+            "name": "confusion",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 230,
+            "width": 64,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 355,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 264,
+            "position_y": 515,
+            "width": 249,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "EXACT matches only - apple hits two\ncolumns, pear is an empty row\nspacy_confusion looks the same and\ncompares meaning instead"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 535,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input2"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

@@ -36,7 +36,9 @@
     "unpack_dict"
   ],
   "dict_search": [
-    "dict_search",
+    "dict_search"
+  ],
+  "list_box": [
     "list_box"
   ],
   "directory_iterator": [
@@ -51,9 +53,13 @@
     "pak"
   ],
   "present": [
-    "active_widget",
-    "patch_window_position",
     "present"
+  ],
+  "active_widget": [
+    "active_widget"
+  ],
+  "patch_window_position": [
+    "patch_window_position"
   ],
   "repeat": [
     "repeat",
@@ -173,11 +179,14 @@
     "gl_disk",
     "gl_partial_disk",
     "gl_line",
-    "gl_nested_spheres"
+    "gl_nested_spheres",
+    "gl_billboard"
   ],
   "gl_text": [
     "gl_text",
-    "gl_korean_text",
+    "gl_korean_text"
+  ],
+  "gl_button_grid": [
     "gl_button_grid"
   ],
   "gl_translate": [
@@ -186,8 +195,7 @@
     "gl_scale",
     "gl_quaternion_rotate",
     "gl_axis_angle_rotate",
-    "gl_align",
-    "gl_billboard"
+    "gl_align"
   ],
   "_google_translate_nodes": [
     "--- google_translate_nodes.py ---"
@@ -203,9 +211,7 @@
     "b",
     "button",
     "button_set",
-    "buttons",
-    "set_reset",
-    "toggle"
+    "buttons"
   ],
   "color": [
     "color",
@@ -215,23 +221,35 @@
     "envelope"
   ],
   "float": [
-    "float",
+    "float"
+  ],
+  "gain": [
+    "gain"
+  ],
+  "int": [
     "int"
+  ],
+  "joy_stick": [
+    "joy_stick",
+    "momentary_xy"
+  ],
+  "keys": [
+    "keys"
+  ],
+  "knob": [
+    "knob"
   ],
   "load_bang": [
     "load_action",
     "load_bang"
   ],
   "momentary": [
-    "joy_stick",
     "momentary",
     "momentary_int",
     "momentary_slider",
-    "momentary_slider_int",
-    "momentary_xy"
+    "momentary_slider_int"
   ],
   "mouse": [
-    "keys",
     "mouse"
   ],
   "pan_view": [
@@ -268,11 +286,9 @@
     "shape_sequencer"
   ],
   "slider": [
-    "slider",
-    "knob"
+    "slider"
   ],
   "slider_bank": [
-    "gain",
     "slider_bank"
   ],
   "string": [
@@ -286,6 +302,10 @@
   "text": [
     "text",
     "text_display"
+  ],
+  "toggle": [
+    "set_reset",
+    "toggle"
   ],
   "_layout_nodes": [
     "--- layout_nodes.py ---"
@@ -371,7 +391,9 @@
     "rolling_buffer"
   ],
   "cwt": [
-    "cwt",
+    "cwt"
+  ],
+  "confusion": [
     "confusion"
   ],
   "_mgl_shader_node": [
@@ -542,7 +564,9 @@
     "--- ndi_nodes.py ---"
   ],
   "ndi_receiver": [
-    "ndi_receiver",
+    "ndi_receiver"
+  ],
+  "depth_anything": [
     "depth_anything"
   ],
   "_nemotron_nodes": [
@@ -778,7 +802,9 @@
     "rotation_matrix_diff"
   ],
   "quaternion_norm": [
-    "quaternion_norm",
+    "quaternion_norm"
+  ],
+  "tracker_align": [
     "tracker_align"
   ],
   "quaternion_to_6d": [
@@ -935,7 +961,9 @@
     "--- socket_nodes.py ---"
   ],
   "process_group": [
-    "process_group",
+    "process_group"
+  ],
+  "ip_address": [
     "ip_address"
   ],
   "tcp_numpy_send": [
@@ -983,17 +1011,21 @@
   ],
   "additive~": [
     "additive~",
-    "plugin~",
     "shape_modes",
-    "spectrum~",
+    "spectrum~"
+  ],
+  "vst~": [
+    "plugin~",
     "vst~"
   ],
   "adsr~": [
     "adsr~",
-    "clock~",
     "line~",
-    "metro~",
     "ramp~"
+  ],
+  "clock~": [
+    "clock~",
+    "metro~"
   ],
   "audio_out~": [
     "audio_out~"
@@ -1264,6 +1296,7 @@
   ],
   "t.distance": [
     "t.length",
+    "t.dist",
     "t.cdist",
     "t.cosine_similarity",
     "t.normalize",
@@ -1481,8 +1514,10 @@
   ],
   "whisper": [
     "whisper",
+    "whisper~"
+  ],
+  "eleven_labs": [
     "eleven_labs",
-    "whisper~",
     "eleven_labs~"
   ]
 }

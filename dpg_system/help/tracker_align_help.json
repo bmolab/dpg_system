@@ -1,0 +1,647 @@
+{
+    "height": 1566,
+    "width": 1422,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "tracker_align_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/tracker_align_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment tracker_align - putting a tracker in the suit's world",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 660,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tracker_align - putting a tracker in the suit's world",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tracker_align - putting a tracker in the suit's world"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 574,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "tracker_align brings an external tracker's position into the world of an \ninertial suit, by measuring how far the two disagree about which way is north.\n\nTHE TWO WORLDS PROBLEM:\nAn inertial suit knows which way is down, and takes its heading from the \nmagnetic field. An external tracker knows where things are in ITS room \ncoordinates. Neither is wrong, and they disagree about which way is north - so \nthe suit's body faces one way and the tracker's position moves in another, and \nthe two drift apart as the performer turns.\n\nHOW IT MEASURES THE DISAGREEMENT:\nThe tracker rides on the body, so it turns when the suit's root turns. The \nnode compares the tracker's orientation with the suit's root orientation; \nwhatever lean and tilt they share cancels, and what is left is a turn about \nthe vertical - the yaw offset between the two worlds. It then turns the \ntracker's position back by that offset, so the position lands in the suit's \nworld.\n\nThis assumes both worlds have y up, and that the tracker is mounted facing the \nsame way as the suit's root sensor - any fixed turn between the two mountings \nis measured as part of the offset.\n\nThe offset it can measure is limited to 90 degrees either way. A larger \ndisagreement reads as its mirror image - 100 degrees comes out as 80 - so the \ntwo systems need to be set up roughly facing the same way to begin with.\n\nFOLLOWING OR HOLDING:\nWith 'continuous' on (the default) the correction keeps following the \nmeasured offset, which matters because magnetometer heading drifts over a \nsession rather than staying put. 'smoothing' sets how slowly it follows: each \nnew frame moves the correction only part of the way towards the newly \nmeasured offset - the higher the smoothing, the smaller that part. High enough \nthat a momentary disagreement does not swing the body, low enough that real \ndrift is followed. The very first frame sets the correction directly.\n\n'calibrate' captures the current offset, switches 'continuous' off, and holds \nthat correction fixed from then on. Switching 'continuous' back on resumes \nfollowing. With 'continuous' off and no calibration taken yet, it keeps \nfollowing anyway.\n\nNOTHING COMES OUT until 'tracker pos' and 'tracker quat' have each received \nsomething. Only 'imu root quat' triggers the node, so feed the tracker inlets \nfirst and the suit last in each frame.\n\nSYNTAX:\ntracker_align\n\nEXAMPLE:\ntracker_align\n\nINPUTS and PARAMETERS:\n\nimu root quat:\nThe suit's root orientation, scalar first - a single quaternion, a full \n37-joint Shadow pose (the root is joint 4) or a 20-joint active pose (the root \nis joint 5). Any other number of quaternions uses the first one. This inlet \ntriggers the node.\n\ntracker pos:\nThe position the external tracker reports, x y z.\n\ntracker quat:\nThe tracker's orientation, scalar first.\n\nbody offset:\nOptional. Where the tracker sits relative to the suit's root, in the body's \nown coordinates and the same units as the position. When given, it is turned \nwith the suit's root orientation and subtracted, so 'corrected pos' becomes the \nposition of the suit's root rather than of the tracker.\n\ncalibrate:\nCapture the current offset and hold it.\n\ncontinuous:\nKeep following the offset. On by default.\n\nsmoothing:\n0 to 0.999. How slowly the correction follows. Default 0.88.\n\nOUTPUTS:\n\ncorrected pos:\nThe tracker position, brought into the suit's world.\n\ncorrection quat:\nThe correction being applied: a turn about y, scalar first.\n\nyaw offset:\nThe size of the correction, in degrees. Worth watching - an offset that keeps \ngrowing means the magnetometer heading is drifting, which is a sensor problem \nrather than something to keep correcting.\n\nRELATED:\nmag_yaw_correct addresses magnetic heading error at the sensor level, per \nlimb. This node reconciles a whole body with an external reference. \nquaternion_norm, its former partner on a shared page, keeps quaternions at \nunit length.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "tracker_align brings an external tracker's position into the world of an \ninertial suit, by measuring how far the two disagree about which way is north.\n\nTHE TWO WORLDS PROBLEM:\nAn inertial suit knows which way is down, and takes its heading from the \nmagnetic field. An external tracker knows where things are in ITS room \ncoordinates. Neither is wrong, and they disagree about which way is north - so \nthe suit's body faces one way and the tracker's position moves in another, and \nthe two drift apart as the performer turns.\n\nHOW IT MEASURES THE DISAGREEMENT:\nThe tracker rides on the body, so it turns when the suit's root turns. The \nnode compares the tracker's orientation with the suit's root orientation; \nwhatever lean and tilt they share cancels, and what is left is a turn about \nthe vertical - the yaw offset between the two worlds. It then turns the \ntracker's position back by that offset, so the position lands in the suit's \nworld.\n\nThis assumes both worlds have y up, and that the tracker is mounted facing the \nsame way as the suit's root sensor - any fixed turn between the two mountings \nis measured as part of the offset.\n\nThe offset it can measure is limited to 90 degrees either way. A larger \ndisagreement reads as its mirror image - 100 degrees comes out as 80 - so the \ntwo systems need to be set up roughly facing the same way to begin with.\n\nFOLLOWING OR HOLDING:\nWith 'continuous' on (the default) the correction keeps following the \nmeasured offset, which matters because magnetometer heading drifts over a \nsession rather than staying put. 'smoothing' sets how slowly it follows: each \nnew frame moves the correction only part of the way towards the newly \nmeasured offset - the higher the smoothing, the smaller that part. High enough \nthat a momentary disagreement does not swing the body, low enough that real \ndrift is followed. The very first frame sets the correction directly.\n\n'calibrate' captures the current offset, switches 'continuous' off, and holds \nthat correction fixed from then on. Switching 'continuous' back on resumes \nfollowing. With 'continuous' off and no calibration taken yet, it keeps \nfollowing anyway.\n\nNOTHING COMES OUT until 'tracker pos' and 'tracker quat' have each received \nsomething. Only 'imu root quat' triggers the node, so feed the tracker inlets \nfirst and the suit last in each frame.\n\nSYNTAX:\ntracker_align\n\nEXAMPLE:\ntracker_align\n\nINPUTS and PARAMETERS:\n\nimu root quat:\nThe suit's root orientation, scalar first - a single quaternion, a full \n37-joint Shadow pose (the root is joint 4) or a 20-joint active pose (the root \nis joint 5). Any other number of quaternions uses the first one. This inlet \ntriggers the node.\n\ntracker pos:\nThe position the external tracker reports, x y z.\n\ntracker quat:\nThe tracker's orientation, scalar first.\n\nbody offset:\nOptional. Where the tracker sits relative to the suit's root, in the body's \nown coordinates and the same units as the position. When given, it is turned \nwith the suit's root orientation and subtracted, so 'corrected pos' becomes the \nposition of the suit's root rather than of the tracker.\n\ncalibrate:\nCapture the current offset and hold it.\n\ncontinuous:\nKeep following the offset. On by default.\n\nsmoothing:\n0 to 0.999. How slowly the correction follows. Default 0.88.\n\nOUTPUTS:\n\ncorrected pos:\nThe tracker position, brought into the suit's world.\n\ncorrection quat:\nThe correction being applied: a turn about y, scalar first.\n\nyaw offset:\nThe size of the correction, in degrees. Worth watching - an offset that keeps \ngrowing means the magnetometer heading is drifting, which is a sensor problem \nrather than something to keep correcting.\n\nRELATED:\nmag_yaw_correct addresses magnetic heading error at the sensor level, per \nlimb. This node reconciles a whole body with an external reference. \nquaternion_norm, its former partner on a shared page, keeps quaternions at \nunit length."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 90.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 8.0 sin"
+        },
+        "6": {
+            "init": "comment the performer turning: yaw in degrees",
+            "name": "comment",
+            "id": 459,
+            "position_x": 198,
+            "position_y": 215,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the performer turning: yaw in degrees",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the performer turning: yaw in degrees"
+        },
+        "7": {
+            "name": "+",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 30.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 30"
+        },
+        "8": {
+            "init": "comment the tracker's world is 30 degrees round from the suit's",
+            "name": "comment",
+            "id": 533,
+            "position_x": 198,
+            "position_y": 325,
+            "width": 346,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the tracker's world is 30 degrees round from the suit's",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the tracker's world is 30 degrees round from the suit's"
+        },
+        "9": {
+            "name": "pak",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 360,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pak 3"
+        },
+        "10": {
+            "name": "euler_to_quaternion",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 125,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "init": "comment tracker orientation",
+            "name": "comment",
+            "id": 644,
+            "position_x": 198,
+            "position_y": 600,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tracker orientation",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tracker orientation"
+        },
+        "12": {
+            "name": "pak",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 635,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pak 3"
+        },
+        "13": {
+            "name": "euler_to_quaternion",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 750,
+            "width": 125,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
+            "init": "comment suit root orientation",
+            "name": "comment",
+            "id": 755,
+            "position_x": 198,
+            "position_y": 875,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "suit root orientation",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "suit root orientation"
+        },
+        "15": {
+            "name": "pak",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 910,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pak 3"
+        },
+        "16": {
+            "init": "comment tracker position 0 0 1, set once at load",
+            "name": "comment",
+            "id": 829,
+            "position_x": 198,
+            "position_y": 1015,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tracker position 0 0 1, set once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tracker position 0 0 1, set once at load"
+        },
+        "17": {
+            "name": "tracker_align",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 1050,
+            "width": 101,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "18": {
+            "name": "float",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1305,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment yaw offset: 30, however the performer turns",
+            "name": "comment",
+            "id": 940,
+            "position_x": 198,
+            "position_y": 1355,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "yaw offset: 30, however the performer turns",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "yaw offset: 30, however the performer turns"
+        },
+        "20": {
+            "name": "list",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 1390,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "21": {
+            "init": "comment corrected pos: 0 0 1 turned back by 30 degrees",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 198,
+            "position_y": 1440,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "corrected pos: 0 0 1 turned back by 30 degrees",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "corrected pos: 0 0 1 turned back by 30 degrees"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 1462,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 3"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xyz rotation"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tracker quat"
+        },
+        "7": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xyz rotation"
+        },
+        "9": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "imu root quat"
+        },
+        "10": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tracker pos"
+        },
+        "11": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "yaw offset",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "12": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "corrected pos",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,470 @@
+{
+    "height": 1126,
+    "width": 1505,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "eleven_labs_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/eleven_labs_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment eleven_labs~ - text into speech",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 389,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eleven_labs~ - text into speech",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eleven_labs~ - text into speech"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 647,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Takes text, and says it aloud - as a signal, like any other source.\n\neleven_labs~ DOES NOT RUN HERE:\nIt sends your text to the ElevenLabs service and needs an account. Put your API\nkey in dpg_system/elevenlabs_key.py, as a line reading api_key = '...'. Without\nthe network, or without a valid key, it is silent.\n\nThat decides where it belongs. Anything an audience says in confidence must not\nbe fed to it - whisper~, which runs on this machine, is the safe end of a\nconversation; this is not.\n\nIT SPEAKS THROUGH THE PATCH:\nThe speech comes out of 'left out' / 'right out' as a signal, so it sounds\nthrough whatever fader_out~ or audio_out~ it is patched to and can go through\nvocoder~, vst~ or a filter on the way, like any other source. Unpatched, it is\nsilent. To keep what it says, patch the signal into record~; to analyse it,\ninto a speech node or capture~.\n\nIT QUEUES, AND TELLS YOU:\nSending a second line while the first is still going stacks them up rather than\ninterrupting; the line holds sixteen, and text arriving at a full line is\ndropped.\n\n'speaking' is true from the moment a line is sent off until the last of it has\nplayed - that is what to gate new text on. 'sounding' is narrower: true only\nwhile sound is actually coming out, not during the pause before a phrase\nstarts. That is the one for a face that should move with the voice, or to\nswitch whisper~ off (inverted, to its on/off) so it does not transcribe the\nnode talking. 'backlog' is true while more than one phrase is waiting in line,\nand false again once the line has emptied.\n\n'stop' and 'hard stop' do the same thing: they cut the voice off at once and\nthrow away everything waiting in the line. 'accept input' closes the door\nwithout stopping what is already queued - unticked, new text is ignored.\n\nSPEAKING A PHRASE THAT IS STILL BEING WRITTEN:\n'text to speak' wants a finished phrase, which means waiting for the last word\nof it before the first word can be spoken. When the text is coming from a\nlanguage model, that wait is most of the delay you hear.\n\n'stream text' takes it as it is made instead: patch the model's output straight\nin, and bang 'end of response' - the model's own 'end' outlet - when it has\nfinished. The words go up to the service over a socket it can answer on\ncontinuously, so the voice starts once there is enough to start on, and keeps\ngoing while the rest is still being written. It also sounds better than\nchopping the answer into sentences and sending each one: the delivery carries\nacross the whole answer instead of restarting at every full stop.\n\n'characters before speaking' is how much it gathers before beginning. Fifty is\nthe least the service accepts and the soonest it will start; more gives it more\nto read ahead into, which it says better. A word is never split between two\nmessages, and a '<backspace>' from a model that is re-choosing a word takes back\na character that has not been sent yet.\n\nWhole phrases and streamed ones share the one queue, so they are spoken in the\norder they were given, and 'speaking' stays true from the first piece of a\nstreamed phrase until the last of it has played. The v3 models cannot be typed\ninto this way; given streamed text they wait for the end and speak it whole.\n\nTHE VOICE SETTINGS ARE PERFORMANCE DIRECTION:\n'stability' low lets the delivery vary between renderings and sound more alive;\nhigh makes it consistent and flatter. 'style exaggeration' pushes the character\nof the voice. 'similarity_boost' holds it closer to the original recording.\nAll three run from 0 to 1. 'speed' is rate, from 0.7 to 1.2.\n\n'latency' trades responsiveness against quality - worth raising only if the\ndelay before it starts is a problem, because the cost is audible. The v3\nmodels do not take it at all, so it is left out of the request for them.\n\nSYNTAX (the plain name, without ~, still works for older patches):\neleven_labs~ [voice name]\n\nThe voice is one of the names in your ElevenLabs account; the 'voice' menu\nlists them once the node has reached the service. The model starts as Eleven\nTurbo v2.5.\n\nEXAMPLE:\neleven_labs~ David\n\nINPUTS and PARAMETERS:\n\ntext to speak:\nA finished phrase to say.\n\nstream text / end of response:\nA phrase as it is being written, and the bang that says that is all of it.\n\nvoice / model:\nWho says it, and which of the service's models renders it.\n\nspeed / stability / similarity_boost / style exaggeration:\nHow it is said.\n\nlatency:\n0 to 5. Higher starts sooner and sounds worse.\n\ncharacters before speaking:\nHow much streamed text it gathers before it starts. Less is sooner, more is\nbetter spoken.\n\nstop / hard stop:\nCut off now, and empty the line.\n\naccept input:\nUnticked, new text is ignored.\n\nlevel / enable:\nHow loud (0 to 2), and whether it is on at all.\n\nOUTPUTS:\n\nleft out / right out:\nThe speech as a signal. Patch to fader_out~ or audio_out~ to hear it.\n\nspeaking:\nTrue while it is busy with a line, until the last of it has played.\n\nsounding:\nTrue while sound is coming out this instant.\n\nbacklog:\nTrue while more than one phrase is waiting.\n\nRELATED:\nwhisper~ for the other direction - speech into text, on this machine.\ngemma_4 or qwen_moe to write what it says.\nfader_out~ and audio_out~ to hear it, record~ to keep it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Takes text, and says it aloud - as a signal, like any other source.\n\neleven_labs~ DOES NOT RUN HERE:\nIt sends your text to the ElevenLabs service and needs an account. Put your API\nkey in dpg_system/elevenlabs_key.py, as a line reading api_key = '...'. Without\nthe network, or without a valid key, it is silent.\n\nThat decides where it belongs. Anything an audience says in confidence must not\nbe fed to it - whisper~, which runs on this machine, is the safe end of a\nconversation; this is not.\n\nIT SPEAKS THROUGH THE PATCH:\nThe speech comes out of 'left out' / 'right out' as a signal, so it sounds\nthrough whatever fader_out~ or audio_out~ it is patched to and can go through\nvocoder~, vst~ or a filter on the way, like any other source. Unpatched, it is\nsilent. To keep what it says, patch the signal into record~; to analyse it,\ninto a speech node or capture~.\n\nIT QUEUES, AND TELLS YOU:\nSending a second line while the first is still going stacks them up rather than\ninterrupting; the line holds sixteen, and text arriving at a full line is\ndropped.\n\n'speaking' is true from the moment a line is sent off until the last of it has\nplayed - that is what to gate new text on. 'sounding' is narrower: true only\nwhile sound is actually coming out, not during the pause before a phrase\nstarts. That is the one for a face that should move with the voice, or to\nswitch whisper~ off (inverted, to its on/off) so it does not transcribe the\nnode talking. 'backlog' is true while more than one phrase is waiting in line,\nand false again once the line has emptied.\n\n'stop' and 'hard stop' do the same thing: they cut the voice off at once and\nthrow away everything waiting in the line. 'accept input' closes the door\nwithout stopping what is already queued - unticked, new text is ignored.\n\nSPEAKING A PHRASE THAT IS STILL BEING WRITTEN:\n'text to speak' wants a finished phrase, which means waiting for the last word\nof it before the first word can be spoken. When the text is coming from a\nlanguage model, that wait is most of the delay you hear.\n\n'stream text' takes it as it is made instead: patch the model's output straight\nin, and bang 'end of response' - the model's own 'end' outlet - when it has\nfinished. The words go up to the service over a socket it can answer on\ncontinuously, so the voice starts once there is enough to start on, and keeps\ngoing while the rest is still being written. It also sounds better than\nchopping the answer into sentences and sending each one: the delivery carries\nacross the whole answer instead of restarting at every full stop.\n\n'characters before speaking' is how much it gathers before beginning. Fifty is\nthe least the service accepts and the soonest it will start; more gives it more\nto read ahead into, which it says better. A word is never split between two\nmessages, and a '<backspace>' from a model that is re-choosing a word takes back\na character that has not been sent yet.\n\nWhole phrases and streamed ones share the one queue, so they are spoken in the\norder they were given, and 'speaking' stays true from the first piece of a\nstreamed phrase until the last of it has played. The v3 models cannot be typed\ninto this way; given streamed text they wait for the end and speak it whole.\n\nTHE VOICE SETTINGS ARE PERFORMANCE DIRECTION:\n'stability' low lets the delivery vary between renderings and sound more alive;\nhigh makes it consistent and flatter. 'style exaggeration' pushes the character\nof the voice. 'similarity_boost' holds it closer to the original recording.\nAll three run from 0 to 1. 'speed' is rate, from 0.7 to 1.2.\n\n'latency' trades responsiveness against quality - worth raising only if the\ndelay before it starts is a problem, because the cost is audible. The v3\nmodels do not take it at all, so it is left out of the request for them.\n\nSYNTAX (the plain name, without ~, still works for older patches):\neleven_labs~ [voice name]\n\nThe voice is one of the names in your ElevenLabs account; the 'voice' menu\nlists them once the node has reached the service. The model starts as Eleven\nTurbo v2.5.\n\nEXAMPLE:\neleven_labs~ David\n\nINPUTS and PARAMETERS:\n\ntext to speak:\nA finished phrase to say.\n\nstream text / end of response:\nA phrase as it is being written, and the bang that says that is all of it.\n\nvoice / model:\nWho says it, and which of the service's models renders it.\n\nspeed / stability / similarity_boost / style exaggeration:\nHow it is said.\n\nlatency:\n0 to 5. Higher starts sooner and sounds worse.\n\ncharacters before speaking:\nHow much streamed text it gathers before it starts. Less is sooner, more is\nbetter spoken.\n\nstop / hard stop:\nCut off now, and empty the line.\n\naccept input:\nUnticked, new text is ignored.\n\nlevel / enable:\nHow loud (0 to 2), and whether it is on at all.\n\nOUTPUTS:\n\nleft out / right out:\nThe speech as a signal. Patch to fader_out~ or audio_out~ to hear it.\n\nspeaking:\nTrue while it is busy with a line, until the last of it has played.\n\nsounding:\nTrue while sound is coming out this instant.\n\nbacklog:\nTrue while more than one phrase is waiting.\n\nRELATED:\nwhisper~ for the other direction - speech into text, on this machine.\ngemma_4 or qwen_moe to write what it says.\nfader_out~ and audio_out~ to hear it, record~ to keep it."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "Hello. I am reading this aloud.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 349,
+            "position_y": 62,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "press the button beside the text to\nsend it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "press the button beside the text to\nsend it"
+        },
+        "5": {
+            "name": "eleven_labs~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 293,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 349,
+            "position_y": 130,
+            "width": 261,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "this one SENDS YOUR TEXT to a service\nand needs an API key. Nothing private\nshould go through it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "this one SENDS YOUR TEXT to a service\nand needs an API key. Nothing private\nshould go through it"
+        },
+        "7": {
+            "name": "fader_out~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "fader_out~ 1 2"
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 349,
+            "position_y": 470,
+            "width": 255,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the speech is a signal: nothing\nsounds until it reaches a fader_out~\nor audio_out~",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the speech is a signal: nothing\nsounds until it reaches a fader_out~\nor audio_out~"
+        },
+        "9": {
+            "name": "toggle",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 810,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 349,
+            "position_y": 810,
+            "width": 268,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "speaking - gate on this. A second line\nwhile the first is going is queued,\nit does not interrupt",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "speaking - gate on this. A second line\nwhile the first is going is queued,\nit does not interrupt"
+        },
+        "11": {
+            "name": "toggle",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 880,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment sounding - sound is coming out right now",
+            "name": "comment",
+            "id": 681,
+            "position_x": 349,
+            "position_y": 880,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sounding - sound is coming out right now",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sounding - sound is coming out right now"
+        },
+        "13": {
+            "name": "toggle",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 950,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment backlog - more than one phrase waiting",
+            "name": "comment",
+            "id": 755,
+            "position_x": 349,
+            "position_y": 950,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "backlog - more than one phrase waiting",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "backlog - more than one phrase waiting"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1022,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text to speak"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "speaking",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sounding",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "backlog",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "5": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "right out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 1,
+            "dest_input_name": "right"
+        }
+    }
+}

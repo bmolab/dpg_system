@@ -1,0 +1,1112 @@
+{
+    "height": 710,
+    "width": 1493,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1795,
+    "name": "nodes_torch_calc",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Calculation",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 151,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Calculation",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Calculation",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_torch < PyTorch",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 95,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< PyTorch",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 79,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 143,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 366,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Element by element, or reducing a tensor to an answer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 358,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Element by element, or reducing a tensor to an answer.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment Element by element",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 154,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Element by element",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Element by element",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link t.clamp t.clamp / t.maximum / t.minimum",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.clamp / t.maximum / t.minimum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 188,
+            "width": 224,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hold a tensor inside limits\n(t.clamp, t.maximum, t.minimum)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hold a tensor inside limits\n(t.clamp, t.maximum, t.minimum)",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link t.round t rounding",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t rounding",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 240,
+            "width": 298,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "whole numbers, several ways\n(t.ceil, t.floor, t.frac, t.round, t.trunc)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "whole numbers, several ways\n(t.ceil, t.floor, t.frac, t.round, t.trunc)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link t.gcd t.gcd / t.copysign / t.lcm",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 288,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.gcd / t.copysign / t.lcm",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 292,
+            "width": 194,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "whole numbers and signs\n(t.copysign, t.gcd, t.lcm)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "whole numbers and signs\n(t.copysign, t.gcd, t.lcm)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link t.complex t.complex / t.imag / t.real",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 340,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.complex / t.imag / t.real",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 344,
+            "width": 212,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "two numbers travelling as one\n(t.complex, t.imag, t.real)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "two numbers travelling as one\n(t.complex, t.imag, t.real)",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link t.comparison t comparisons",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 392,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t comparisons",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 396,
+            "width": 255,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a tensor of answers, not one\n(t.eq, t.ge, t.gt, t.le, t.lt, t.ne)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a tensor of answers, not one\n(t.eq, t.ge, t.gt, t.le, t.lt, t.ne)",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "comment Reducing and analysing",
+            "name": "comment",
+            "position_x": 645,
+            "position_y": 150,
+            "width": 184,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Reducing and analysing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Reducing and analysing",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link t.mean t reductions",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 184,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t reductions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 188,
+            "width": 446,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "reduce a tensor: mean, median, deviation and more\n(t.mean, t.median, t.nanmean, t.nanmedian, t.nansum, t.prod, t.sum)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 438,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "reduce a tensor: mean, median, deviation and more\n(t.mean, t.median, t.nanmean, t.nanmedian, t.nansum, t.prod, t.sum)",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link t.max t.max / min / argsort",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 236,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.max / min / argsort",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 240,
+            "width": 249,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "extremes and order\n(t.argmax, t.argsort, t.max, t.min)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "extremes and order\n(t.argmax, t.argsort, t.max, t.min)",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link t.any t.any / t.all / t.argwhere",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 288,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.any / t.all / t.argwhere",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 292,
+            "width": 372,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "what is true, and where\n(t.all, t.any, t.argwhere, t.count_nonzero, t.non_zero)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 364,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "what is true, and where\n(t.all, t.any, t.argwhere, t.count_nonzero, t.non_zero)",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link t.histc t.histc / t.bincount / t.bucketize",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 340,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.histc / t.bincount / t.bucketize",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 344,
+            "width": 243,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the shape of the values\n(t.bincount, t.bucketize, t.histc)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the shape of the values\n(t.bincount, t.bucketize, t.histc)",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link t.cumsum t cumulative",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 392,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t cumulative",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 396,
+            "width": 434,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the running story\n(t.cummax, t.cummin, t.cumprod, t.cumsum, t.diff, t.logcumsumexp)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 426,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the running story\n(t.cummax, t.cummin, t.cumprod, t.cumsum, t.diff, t.logcumsumexp)",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "comment Distances and matrices",
+            "name": "comment",
+            "position_x": 645,
+            "position_y": 462,
+            "width": 184,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Distances and matrices",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Distances and matrices",
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "init": "help_link t.distance t.distance",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 496,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.distance",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 500,
+            "width": 545,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how big, how alike\n(t.cdist, t.corrcoef, t.cosine_similarity, t.dist, t.energy, t.length, t.normalize)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 537,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how big, how alike\n(t.cdist, t.corrcoef, t.cosine_similarity, t.dist, t.energy, t.length, t.normalize)",
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "init": "help_link t.linalg.svd t decompositions",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 548,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t decompositions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 552,
+            "width": 428,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "what a matrix is made of\n(t.linalg.eig, t.linalg.pca_low_rank, t.linalg.qr, t.linalg.svd)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 420,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "what a matrix is made of\n(t.linalg.eig, t.linalg.pca_low_rank, t.linalg.qr, t.linalg.svd)",
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "init": "help_link t.mse_loss t losses",
+            "name": "help_link",
+            "position_x": 645,
+            "position_y": 600,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t losses",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 908,
+            "position_y": 604,
+            "width": 311,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how wrong is this\n(t.cross_entropy_loss, t.l1_loss, t.mse_loss)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how wrong is this\n(t.cross_entropy_loss, t.l1_loss, t.mse_loss)",
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

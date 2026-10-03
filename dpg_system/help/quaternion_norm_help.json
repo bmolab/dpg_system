@@ -1,11 +1,11 @@
 {
-    "height": 1155,
+    "height": 891,
     "width": 1318,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 755,
     "name": "quaternion_norm_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/quaternion_norm_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment quaternion_norm and tracker_align - staying valid",
+            "init": "comment quaternion_norm - keeping rotations unit length",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 611,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "quaternion_norm and tracker_align - staying valid",
+                    "value": "quaternion_norm - keeping rotations unit length",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,7 +51,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "quaternion_norm and tracker_align - staying valid"
+            "comment": "quaternion_norm - keeping rotations unit length"
         },
         "2": {
             "name": "text_block",
@@ -59,14 +59,14 @@
             "position_x": 470,
             "position_y": 45,
             "width": 808,
-            "height": 756,
+            "height": 656,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two nodes for keeping rotations valid and putting them in the right frame.\n\nTHE NODES:\n\nquaternion_norm  scale a quaternion back to unit length\ntracker_align    align an inertial body with an external tracker's world\n\nquaternion_norm AND WHY DRIFT HAPPENS:\nOnly unit-length quaternions represent rotations. Composing many of them, or \ninterpolating, or simply accumulating floating point error over a long run, \nlets the length wander away from 1 - and a quaternion that is not unit length \nscales as well as rotates, so things slowly grow or shrink.\n\nThe symptom is a body that gradually inflates or deflates over minutes rather \nthan anything obviously wrong. Normalising in the chain costs nothing and \nremoves the possibility.\n\ntracker_align AND THE TWO WORLDS PROBLEM:\nAn inertial suit knows which way is down, and takes its heading from the \nmagnetic field. An external tracker knows where things are in ITS room \ncoordinates. Neither is wrong, and they disagree about which way is north - so \nthe suit's body faces one way and the tracker's position moves in another, and \nthe two drift apart as the performer turns.\n\nThis node measures that disagreement as a yaw offset and corrects it. \n'calibrate' captures the current offset. 'continuous' keeps tracking it, which \nmatters because magnetometer heading drifts over a session rather than staying \nput. 'smoothing' controls how fast the correction follows - high enough that a \nmomentary disagreement does not swing the body, low enough that real drift is \nfollowed.\n\nSYNTAX:\nquaternion_norm\ntracker_align\n\nEXAMPLE:\nquaternion_norm\n\nINPUTS and PARAMETERS:\n\nquaternions (quaternion_norm):\nOne quaternion or a whole pose. All of them are normalised.\n\nimu root quat (tracker_align):\nThe suit's root orientation - a single quaternion, or a full 37-joint Shadow \npose, or a 20-joint active pose, from which the root is taken.\n\ntracker pos / tracker quat:\nWhat the external tracker reports.\n\nbody offset:\nWhere the tracker sits relative to the suit's root, in body-local coordinates.\n\ncalibrate:\nCapture the current yaw disagreement as the offset.\n\ncontinuous:\nKeep following it. On by default.\n\nsmoothing:\nHow quickly the correction follows. Default 0.88.\n\nOUTPUTS: \n\nnormalized:\nUnit-length quaternions.\n\ncorrected pos:\nThe tracker position, brought into the suit's world.\n\ncorrection quat / yaw offset:\nThe correction being applied, and its size - worth watching, because a yaw \noffset that keeps growing means the magnetometer heading is drifting, which is \na sensor problem rather than something to keep correcting.\n\nRELATED:\nmag_yaw_correct addresses the same magnetic heading error at the sensor level, \nper limb. This one reconciles a whole body with an external reference.",
+                    "value": "quaternion_norm scales quaternions back to unit length, without changing the \nrotation they describe.\n\nWHY DRIFT HAPPENS:\nOnly unit-length quaternions represent rotations. Composing many of them, or \ninterpolating, or simply accumulating floating point error over a long run, \nlets the length wander away from 1. Anything that uses a quaternion directly \nas a rotation then scales as well as rotates, so things slowly grow or shrink.\n\nThe symptom is a body that gradually inflates or deflates over minutes rather \nthan anything obviously wrong. Normalising in the chain costs nothing and \nremoves the possibility.\n\nWHAT IT ACCEPTS:\nA single quaternion (four numbers), or a whole pose as a table of quaternions, \none row of four per joint - as a list, a numpy array or a torch tensor. Each \nrow is divided by its own length. The order of the four numbers does not \nmatter, so scalar-first and scalar-last quaternions both come out right.\n\nAnything else - a flat list holding a whole pose end to end, or a batch of \nposes with more than two dimensions - passes nothing at all. A quaternion of \nall zeros has no direction to keep and comes out as not-a-number.\n\nSYNTAX:\nquaternion_norm\n\nEXAMPLE:\nquaternion_norm\n\nINPUTS and PARAMETERS:\n\nquaternions:\nOne quaternion, or a table of them with four numbers per row.\n\nOUTPUTS:\n\nnormalized:\nThe same quaternions at unit length, in the same shape. A list comes back as a \nnumpy array; a torch tensor stays a tensor.\n\nRELATED:\nquaternion_diff and quaternion_relative normalise their own results. \ntracker_align, which also works on a suit's root orientation, has its own \nhelp page.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 640,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two nodes for keeping rotations valid and putting them in the right frame.\n\nTHE NODES:\n\nquaternion_norm  scale a quaternion back to unit length\ntracker_align    align an inertial body with an external tracker's world\n\nquaternion_norm AND WHY DRIFT HAPPENS:\nOnly unit-length quaternions represent rotations. Composing many of them, or \ninterpolating, or simply accumulating floating point error over a long run, \nlets the length wander away from 1 - and a quaternion that is not unit length \nscales as well as rotates, so things slowly grow or shrink.\n\nThe symptom is a body that gradually inflates or deflates over minutes rather \nthan anything obviously wrong. Normalising in the chain costs nothing and \nremoves the possibility.\n\ntracker_align AND THE TWO WORLDS PROBLEM:\nAn inertial suit knows which way is down, and takes its heading from the \nmagnetic field. An external tracker knows where things are in ITS room \ncoordinates. Neither is wrong, and they disagree about which way is north - so \nthe suit's body faces one way and the tracker's position moves in another, and \nthe two drift apart as the performer turns.\n\nThis node measures that disagreement as a yaw offset and corrects it. \n'calibrate' captures the current offset. 'continuous' keeps tracking it, which \nmatters because magnetometer heading drifts over a session rather than staying \nput. 'smoothing' controls how fast the correction follows - high enough that a \nmomentary disagreement does not swing the body, low enough that real drift is \nfollowed.\n\nSYNTAX:\nquaternion_norm\ntracker_align\n\nEXAMPLE:\nquaternion_norm\n\nINPUTS and PARAMETERS:\n\nquaternions (quaternion_norm):\nOne quaternion or a whole pose. All of them are normalised.\n\nimu root quat (tracker_align):\nThe suit's root orientation - a single quaternion, or a full 37-joint Shadow \npose, or a 20-joint active pose, from which the root is taken.\n\ntracker pos / tracker quat:\nWhat the external tracker reports.\n\nbody offset:\nWhere the tracker sits relative to the suit's root, in body-local coordinates.\n\ncalibrate:\nCapture the current yaw disagreement as the offset.\n\ncontinuous:\nKeep following it. On by default.\n\nsmoothing:\nHow quickly the correction follows. Default 0.88.\n\nOUTPUTS: \n\nnormalized:\nUnit-length quaternions.\n\ncorrected pos:\nThe tracker position, brought into the suit's world.\n\ncorrection quat / yaw offset:\nThe correction being applied, and its size - worth watching, because a yaw \noffset that keeps growing means the magnetometer heading is drifting, which is \na sensor problem rather than something to keep correcting.\n\nRELATED:\nmag_yaw_correct addresses the same magnetic heading error at the sensor level, \nper limb. This one reconciles a whole body with an external reference."
+            "text": "quaternion_norm scales quaternions back to unit length, without changing the \nrotation they describe.\n\nWHY DRIFT HAPPENS:\nOnly unit-length quaternions represent rotations. Composing many of them, or \ninterpolating, or simply accumulating floating point error over a long run, \nlets the length wander away from 1. Anything that uses a quaternion directly \nas a rotation then scales as well as rotates, so things slowly grow or shrink.\n\nThe symptom is a body that gradually inflates or deflates over minutes rather \nthan anything obviously wrong. Normalising in the chain costs nothing and \nremoves the possibility.\n\nWHAT IT ACCEPTS:\nA single quaternion (four numbers), or a whole pose as a table of quaternions, \none row of four per joint - as a list, a numpy array or a torch tensor. Each \nrow is divided by its own length. The order of the four numbers does not \nmatter, so scalar-first and scalar-last quaternions both come out right.\n\nAnything else - a flat list holding a whole pose end to end, or a batch of \nposes with more than two dimensions - passes nothing at all. A quaternion of \nall zeros has no direction to keep and comes out as not-a-number.\n\nSYNTAX:\nquaternion_norm\n\nEXAMPLE:\nquaternion_norm\n\nINPUTS and PARAMETERS:\n\nquaternions:\nOne quaternion, or a table of them with four numbers per row.\n\nOUTPUTS:\n\nnormalized:\nThe same quaternions at unit length, in the same shape. A list comes back as a \nnumpy array; a torch tensor stays a tensor.\n\nRELATED:\nquaternion_diff and quaternion_relative normalise their own results. \ntracker_align, which also works on a suit's root orientation, has its own \nhelp page."
         },
         "3": {
             "name": "load_bang",
@@ -297,47 +297,10 @@
             "comment": "back to length 1, same rotation"
         },
         "13": {
-            "name": "tracker_align",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 810,
-            "width": 101,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "14": {
-            "init": "comment reconciles the suit and a tracker",
-            "name": "comment",
-            "id": 755,
-            "position_x": 198,
-            "position_y": 1065,
-            "width": 211,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "reconciles the suit and a tracker",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "reconciles the suit and a tracker"
-        },
-        "15": {
             "name": "close",
-            "id": 792,
+            "id": 718,
             "position_x": 24,
-            "position_y": 966,
+            "position_y": 787,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -422,16 +385,6 @@
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
-        },
-        "7": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "quaternion rotation",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "imu root quat"
         }
     }
 }

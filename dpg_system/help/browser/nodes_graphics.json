@@ -1,0 +1,1595 @@
+{
+    "height": 918,
+    "width": 1838,
+    "position": [
+        100,
+        100
+    ],
+    "id": 2313,
+    "name": "nodes_graphics",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_graphics.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment 3D graphics",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 151,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "3D graphics",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "3D graphics",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes < dpg_system nodes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< dpg_system nodes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 198,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 348,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A scene is a chain of nodes hanging from a context.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "A scene is a chain of nodes hanging from a context.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "comment ModernGL scenes",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 131,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ModernGL scenes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ModernGL scenes",
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "help_link mgl_context mgl context / display / enable",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 184,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl context / display / enable",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 188,
+            "width": 268,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the root of a 3D scene\n(mgl_context, mgl_display, mgl_enable)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the root of a 3D scene\n(mgl_context, mgl_display, mgl_enable)",
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "help_link mgl_camera mgl camera / light / material",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 236,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl camera / light / material",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 240,
+            "width": 588,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "seeing the scene\n(mgl_camera, mgl_color, mgl_image, mgl_light, mgl_material, mgl_orbit_camera, mgl_texture)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 580,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "seeing the scene\n(mgl_camera, mgl_color, mgl_image, mgl_light, mgl_material, mgl_orbit_camera, mgl_texture)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link mgl_transform mgl transforms",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 288,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl transforms",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 292,
+            "width": 551,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "moving what comes after\n(mgl_axis_angle_rotate, mgl_billboard, mgl_quaternion_rotate, mgl_rotate, mgl_scale,\n mgl_transform, mgl_translate)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 543,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "moving what comes after\n(mgl_axis_angle_rotate, mgl_billboard, mgl_quaternion_rotate, mgl_rotate, mgl_scale,\n mgl_transform, mgl_translate)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link mgl_sphere mgl shapes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 348,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl shapes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 352,
+            "width": 576,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the built-in geometry\n(mgl_box, mgl_cylinder, mgl_disk, mgl_geo_sphere, mgl_line, mgl_partial_disk, mgl_plane,\n mgl_sphere)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 568,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the built-in geometry\n(mgl_box, mgl_cylinder, mgl_disk, mgl_geo_sphere, mgl_line, mgl_partial_disk, mgl_plane,\n mgl_sphere)",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link mgl_mesh mgl meshes and models",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 408,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl meshes and models",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 412,
+            "width": 508,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface, mgl_text)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 500,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface, mgl_text)",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "help_link mgl_shader mgl_shader",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 460,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_shader",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 464,
+            "width": 114,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "your own GLSL",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 106,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "your own GLSL",
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "init": "help_link mgl_body mgl body drawing",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 512,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl body drawing",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 516,
+            "width": 600,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drawing a body, and what it is doing\n(body_proportions, mgl_body, mgl_body_orientation, mgl_contact_disks, mgl_orientation_disks,\n mgl_torque_arc)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 592,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drawing a body, and what it is doing\n(body_proportions, mgl_body, mgl_body_orientation, mgl_contact_disks, mgl_orientation_disks,\n mgl_torque_arc)",
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "init": "help_link mgl_smpl_mesh mgl_smpl_mesh / mgl_smpl_heatmap",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 572,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_smpl_mesh / mgl_smpl_heatmap",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 576,
+            "width": 237,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the figure and its effort\n(mgl_smpl_heatmap, mgl_smpl_mesh)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the figure and its effort\n(mgl_smpl_heatmap, mgl_smpl_mesh)",
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "init": "comment Point clouds",
+            "name": "comment",
+            "position_x": 941,
+            "position_y": 150,
+            "width": 108,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Point clouds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Point clouds",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link femto femto / femto_bolt",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 184,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "femto / femto_bolt",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 188,
+            "width": 151,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the depth camera\n(femto, femto_bolt)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 143,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the depth camera\n(femto, femto_bolt)",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link pc_background pc_background / pc_denoise",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 236,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "pc_background / pc_denoise",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 240,
+            "width": 200,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "removing things\n(pc_background, pc_denoise)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "removing things\n(pc_background, pc_denoise)",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link pc_crop pc crop / voxel / info",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 288,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "pc crop / voxel / info",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 292,
+            "width": 440,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "reduce and inspect\n(mgl_cluster_boxes, pc_cluster_filter, pc_crop, pc_info, pc_voxel)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 432,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "reduce and inspect\n(mgl_cluster_boxes, pc_cluster_filter, pc_crop, pc_info, pc_voxel)",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link t.point_cloud_voxels t point cloud voxels / crop",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 340,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t point cloud voxels / crop",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 344,
+            "width": 292,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "crop, and a solid volume\n(t.point_cloud_crop, t.point_cloud_voxels)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "crop, and a solid volume\n(t.point_cloud_crop, t.point_cloud_voxels)",
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "init": "comment Older GL",
+            "name": "comment",
+            "position_x": 941,
+            "position_y": 410,
+            "width": 77,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Older GL",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Older GL",
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "init": "help_link gl_context gl_context / gl_enable",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 444,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl_context / gl_enable",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 448,
+            "width": 175,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the older scene chain\n(gl_context, gl_enable)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the older scene chain\n(gl_context, gl_enable)",
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "init": "help_link gl_translate gl transforms",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 496,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl transforms",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 500,
+            "width": 582,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "moving what comes after\n(gl_align, gl_axis_angle_rotate, gl_quaternion_rotate, gl_rotate, gl_scale, gl_translate)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 574,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "moving what comes after\n(gl_align, gl_axis_angle_rotate, gl_quaternion_rotate, gl_rotate, gl_scale, gl_translate)",
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "init": "help_link gl_sphere gl shapes",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 548,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl shapes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1869,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "37": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 552,
+            "width": 600,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the built-in geometry\n(gl_billboard, gl_cylinder, gl_disk, gl_line, gl_nested_spheres, gl_partial_disk, gl_sphere)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 592,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the built-in geometry\n(gl_billboard, gl_cylinder, gl_disk, gl_line, gl_nested_spheres, gl_partial_disk, gl_sphere)",
+            "id": 1906,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "38": {
+            "init": "help_link gl_light gl_light / gl_color / gl_material",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 600,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl_light / gl_color / gl_material",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1943,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "39": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 604,
+            "width": 237,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "(gl_color, gl_light, gl_material)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "(gl_color, gl_light, gl_material)",
+            "id": 1980,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "40": {
+            "init": "help_link gl_line_array gl lines and disks",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 652,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl lines and disks",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2017,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "41": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 656,
+            "width": 483,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drawing data and orientation\n(gl_line_array, gl_orientation_disks, gl_rotation_disk, gl_vertex_buffer)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 475,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drawing data and orientation\n(gl_line_array, gl_orientation_disks, gl_rotation_disk, gl_vertex_buffer)",
+            "id": 2054,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "42": {
+            "init": "help_link gl_text gl_text / gl_korean_text",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 704,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl_text / gl_korean_text",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2091,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "43": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 708,
+            "width": 188,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "text in the scene\n(gl_korean_text, gl_text)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "text in the scene\n(gl_korean_text, gl_text)",
+            "id": 2128,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "44": {
+            "init": "help_link gl_button_grid gl_button_grid",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 756,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl_button_grid",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2165,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 760,
+            "width": 194,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a sixteen-square indicator",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a sixteen-square indicator",
+            "id": 2202,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "46": {
+            "init": "help_link gl_body gl_body (alt, simple)",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 808,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl_body (alt, simple)",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2239,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "47": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 812,
+            "width": 268,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drawing a skeleton, the older way\n(gl_alt_body, gl_body, gl_simple_body)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drawing a skeleton, the older way\n(gl_alt_body, gl_body, gl_simple_body)",
+            "id": 2276,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

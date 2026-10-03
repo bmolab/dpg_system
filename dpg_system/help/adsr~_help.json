@@ -1,6 +1,6 @@
 {
-    "height": 1207,
-    "width": 1776,
+    "height": 1662,
+    "width": 1543,
     "position": [
         100,
         100
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment adsr~ - shapes in time, at audio rate",
+            "init": "comment adsr~ and ramp~ - shapes in time, at audio rate",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 463,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "adsr~ - shapes in time, at audio rate",
+                    "value": "adsr~ and ramp~ - shapes in time, at audio rate",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "adsr~ - shapes in time, at audio rate"
+            "comment": "adsr~ and ramp~ - shapes in time, at audio rate"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 918,
+            "position_x": 685,
             "position_y": 45,
             "width": 818,
             "height": 776,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These make things happen over time, at audio rate rather than frame rate.\n\nTHE NODES:\n\nadsr~   an envelope generator, with both a gate and a one-shot trigger\nramp~   a linear ramp to a target over a set time\nline~   the same node\nclock~  a master clock: a pulse train for the audio graph, bangs for the patch\nmetro~  the same node\n\nGATE VERSUS TRIGGER:\nadsr~ has both, and they are different gestures. The 'gate' inlet SUSTAINS: \nhold it up and the envelope goes attack, decay, then sits at sustain until it \nis let go, at which point it releases. The 'trigger' inlet is a one-shot - it \nfires the whole shape and lets go by itself.\n\nTick the gate by hand, send it 0 and 1 from the patch, or drive it from a sig~ \ncarrying thresholded effort - so that moving past a threshold holds the note \nand dropping back releases it.\n\nramp~ NEVER STEPS:\nSend a value to 'target' and the output leaves where it currently is and \narrives at the new value exactly 'time' seconds later. Re-aim it mid-move and \nit starts a fresh line from wherever it had got to. That is what makes it safe \nto feed a stream of targets - it can never jump, however often the target \nchanges.\n\nclock~ IS EXACT:\nIts 'trigger' outlet is a signal whose rising edge is accurate to the sample, \nso patching it into an adsr~ trigger fires the envelope with no block \nquantization - which is audible as a loose feel when timing comes through the \nordinary node world. The 'bang' outlet is the same clock as ordinary messages, \nfor sequencers and counters that do not need that precision.\n\nSYNTAX:\nadsr~\nramp~ <time>\nclock~ <rate>\n\nEXAMPLE:\nadsr~\n\nINPUTS and PARAMETERS:\n\ngate (adsr~):\nHold it up to sustain.\n\ntrigger (adsr~):\nFire the whole shape once.\n\nattack / decay / sustain / release:\nThe four stages. Attack and decay are times, sustain is a level, release is a \ntime.\n\ntarget / time (ramp~):\nWhere to go and how long to take.\n\nrun / rate / pulse width / reset (clock~):\nWhether it is running, how fast, how long each pulse stays up, and a restart.\n\nOUTPUTS: \n\nsignal:\nThe envelope or ramp, as an audio signal.\n\ndone:\nFires when the envelope or ramp finishes - use it to chain one into the next.\n\ntrigger / bang / count (clock~):\nThe sample-accurate pulse, the ordinary bang, and how many have passed.",
+                    "value": "These make shapes in time, at audio rate rather than frame rate.\n\nTHE NODES:\n\nadsr~   an envelope generator, with both a gate and a one-shot trigger\nramp~   a straight line to a target over a set time\nline~   the same node\n\nGATE VERSUS TRIGGER:\nadsr~ has both, and they are different gestures. The 'gate' inlet SUSTAINS:\nhold it up and the envelope goes attack, decay, then sits at sustain until it\nis let go, at which point it releases. The 'trigger' inlet is a one-shot -\nattack, decay, then straight on into release, with nothing held. On a\ntrigger, sustain is just the level the two falling stages meet at: set it to\n0 for a plain percussive shape.\n\nTick the gate by hand, send it 0 and 1 from the patch, or drive it from a sig~\ncarrying thresholded effort - so that moving past a threshold holds the note\nand dropping back releases it. Click the trigger, send it a bang, or patch a\nsignal into it - a clock~ 'trigger' fires it exactly on the sample. Gate and\ntrigger edges are both acted on at the sample they happen, not at the next\nblock.\n\nramp~ NEVER STEPS:\nSend a value to 'target' and the output leaves where it currently is and\narrives at the new value exactly 'time' seconds later. Re-aim it mid-move and\nit starts a fresh line from wherever it had got to. That is what makes it safe\nto feed a stream of targets - it can never jump, however often the target\nchanges. 'time' is read when a move begins, so changing it affects the next\nmove, not the one in flight.\n\nSet the 'time source' option to 'measured' and each move takes as long as the\ngap between values arriving: a stream of effort data at 60 frames a second\nbecomes a continuous signal that reaches each value just as the next one\nlands. 'stretch' scales that measured time; a little over 1 is best, since\narriving early means sitting still until the next value - the steps you were\ntrying to be rid of.\n\nSYNTAX:\nadsr~ <attack> <decay> <sustain> <release>\nramp~ <time> <starting value>\n\nEXAMPLE:\nramp~ 0.5\n\nAll the arguments are optional. Times are in seconds; sustain is a level from\n0 to 1. adsr~ defaults to 0.01, 0.1, 0.7, 0.3, and ramp~ to 0.1 seconds\nstarting from 0.\n\nINPUTS and PARAMETERS (adsr~):\n\ngate:\nHold it up to sustain. Up means at or over the 'gate threshold' option\n(default 0.5).\n\ntrigger:\nFire the whole shape once.\n\nattack / decay / sustain / release:\nThe four stages. Attack, decay and release are times in seconds; sustain is a\nlevel.\n\nenable:\nUntick to fade out and stop.\n\noptions:\nretrigger (on: a new gate restarts the attack from wherever the level is;\noff: a new gate is ignored until the envelope has finished), legato (a new\ngate during attack, decay or sustain is ignored), gate threshold.\n\nINPUTS and PARAMETERS (ramp~):\n\ntarget:\nWhere to go.\n\ntime:\nHow long to take, in seconds.\n\ntrigger:\nRun the move again from where the output now is, towards the target. 'done'\nfires 'time' seconds later.\n\nbypass:\nPass the target straight through, unsmoothed.\n\noptions:\njump to target (arrive at once), time source (manual or measured), stretch.\n\nstream:\nThe measured rate of the incoming values, in 'measured' mode.\n\nOUTPUTS:\n\nsignal:\nThe envelope or ramp, as an audio signal.\n\ndone:\nA bang when the envelope's release reaches silence, or when the ramp arrives -\nuse it to chain one into the next.\n\nRELATED:\nclock~, sig~, vca~, lfo~, shaper~",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,51 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "These make things happen over time, at audio rate rather than frame rate.\n\nTHE NODES:\n\nadsr~   an envelope generator, with both a gate and a one-shot trigger\nramp~   a linear ramp to a target over a set time\nline~   the same node\nclock~  a master clock: a pulse train for the audio graph, bangs for the patch\nmetro~  the same node\n\nGATE VERSUS TRIGGER:\nadsr~ has both, and they are different gestures. The 'gate' inlet SUSTAINS: \nhold it up and the envelope goes attack, decay, then sits at sustain until it \nis let go, at which point it releases. The 'trigger' inlet is a one-shot - it \nfires the whole shape and lets go by itself.\n\nTick the gate by hand, send it 0 and 1 from the patch, or drive it from a sig~ \ncarrying thresholded effort - so that moving past a threshold holds the note \nand dropping back releases it.\n\nramp~ NEVER STEPS:\nSend a value to 'target' and the output leaves where it currently is and \narrives at the new value exactly 'time' seconds later. Re-aim it mid-move and \nit starts a fresh line from wherever it had got to. That is what makes it safe \nto feed a stream of targets - it can never jump, however often the target \nchanges.\n\nclock~ IS EXACT:\nIts 'trigger' outlet is a signal whose rising edge is accurate to the sample, \nso patching it into an adsr~ trigger fires the envelope with no block \nquantization - which is audible as a loose feel when timing comes through the \nordinary node world. The 'bang' outlet is the same clock as ordinary messages, \nfor sequencers and counters that do not need that precision.\n\nSYNTAX:\nadsr~\nramp~ <time>\nclock~ <rate>\n\nEXAMPLE:\nadsr~\n\nINPUTS and PARAMETERS:\n\ngate (adsr~):\nHold it up to sustain.\n\ntrigger (adsr~):\nFire the whole shape once.\n\nattack / decay / sustain / release:\nThe four stages. Attack and decay are times, sustain is a level, release is a \ntime.\n\ntarget / time (ramp~):\nWhere to go and how long to take.\n\nrun / rate / pulse width / reset (clock~):\nWhether it is running, how fast, how long each pulse stays up, and a restart.\n\nOUTPUTS: \n\nsignal:\nThe envelope or ramp, as an audio signal.\n\ndone:\nFires when the envelope or ramp finishes - use it to chain one into the next.\n\ntrigger / bang / count (clock~):\nThe sample-accurate pulse, the ordinary bang, and how many have passed."
+            "text": "These make shapes in time, at audio rate rather than frame rate.\n\nTHE NODES:\n\nadsr~   an envelope generator, with both a gate and a one-shot trigger\nramp~   a straight line to a target over a set time\nline~   the same node\n\nGATE VERSUS TRIGGER:\nadsr~ has both, and they are different gestures. The 'gate' inlet SUSTAINS:\nhold it up and the envelope goes attack, decay, then sits at sustain until it\nis let go, at which point it releases. The 'trigger' inlet is a one-shot -\nattack, decay, then straight on into release, with nothing held. On a\ntrigger, sustain is just the level the two falling stages meet at: set it to\n0 for a plain percussive shape.\n\nTick the gate by hand, send it 0 and 1 from the patch, or drive it from a sig~\ncarrying thresholded effort - so that moving past a threshold holds the note\nand dropping back releases it. Click the trigger, send it a bang, or patch a\nsignal into it - a clock~ 'trigger' fires it exactly on the sample. Gate and\ntrigger edges are both acted on at the sample they happen, not at the next\nblock.\n\nramp~ NEVER STEPS:\nSend a value to 'target' and the output leaves where it currently is and\narrives at the new value exactly 'time' seconds later. Re-aim it mid-move and\nit starts a fresh line from wherever it had got to. That is what makes it safe\nto feed a stream of targets - it can never jump, however often the target\nchanges. 'time' is read when a move begins, so changing it affects the next\nmove, not the one in flight.\n\nSet the 'time source' option to 'measured' and each move takes as long as the\ngap between values arriving: a stream of effort data at 60 frames a second\nbecomes a continuous signal that reaches each value just as the next one\nlands. 'stretch' scales that measured time; a little over 1 is best, since\narriving early means sitting still until the next value - the steps you were\ntrying to be rid of.\n\nSYNTAX:\nadsr~ <attack> <decay> <sustain> <release>\nramp~ <time> <starting value>\n\nEXAMPLE:\nramp~ 0.5\n\nAll the arguments are optional. Times are in seconds; sustain is a level from\n0 to 1. adsr~ defaults to 0.01, 0.1, 0.7, 0.3, and ramp~ to 0.1 seconds\nstarting from 0.\n\nINPUTS and PARAMETERS (adsr~):\n\ngate:\nHold it up to sustain. Up means at or over the 'gate threshold' option\n(default 0.5).\n\ntrigger:\nFire the whole shape once.\n\nattack / decay / sustain / release:\nThe four stages. Attack, decay and release are times in seconds; sustain is a\nlevel.\n\nenable:\nUntick to fade out and stop.\n\noptions:\nretrigger (on: a new gate restarts the attack from wherever the level is;\noff: a new gate is ignored until the envelope has finished), legato (a new\ngate during attack, decay or sustain is ignored), gate threshold.\n\nINPUTS and PARAMETERS (ramp~):\n\ntarget:\nWhere to go.\n\ntime:\nHow long to take, in seconds.\n\ntrigger:\nRun the move again from where the output now is, towards the target. 'done'\nfires 'time' seconds later.\n\nbypass:\nPass the target straight through, unsmoothed.\n\noptions:\njump to target (arrive at once), time source (manual or measured), stretch.\n\nstream:\nThe measured rate of the incoming values, in 'measured' mode.\n\nOUTPUTS:\n\nsignal:\nThe envelope or ramp, as an audio signal.\n\ndone:\nA bang when the envelope's release reaches silence, or when the ramp arrives -\nuse it to chain one into the next.\n\nRELATED:\nclock~, sig~, vca~, lfo~, shaper~"
         },
         "3": {
-            "name": "clock~",
+            "name": "adsr~",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 157,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "clock~ 2"
-        },
-        "4": {
-            "init": "comment tick run: two beats a second",
-            "name": "comment",
-            "id": 385,
-            "position_x": 634,
-            "position_y": 272,
-            "width": 181,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "tick run: two beats a second",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "tick run: two beats a second"
-        },
-        "5": {
-            "name": "adsr~",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 315,
             "width": 187,
             "height": 154,
             "visibility": "show_all",
@@ -142,13 +104,66 @@
             "presentation_state": "show_all",
             "properties": {}
         },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 364,
+            "position_y": 295,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click trigger for one note\ntick gate to hold it, untick to release",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click trigger for one note\ntick gate to hold it, untick to release"
+        },
+        "5": {
+            "name": "ramp~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 180,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "ramp~ 0.5"
+        },
         "6": {
-            "init": "comment the clock trigger is exact to the sample",
+            "init": "comment set target to 1: up an octave in half a second",
             "name": "comment",
             "id": 459,
-            "position_x": 634,
+            "position_x": 364,
             "position_y": 545,
-            "width": 254,
+            "width": 291,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -156,7 +171,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "the clock trigger is exact to the sample",
+                    "value": "set target to 1: up an octave in half a second",
                     "value_type": "str"
                 },
                 "1": {
@@ -165,13 +180,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "the clock trigger is exact to the sample"
+            "comment": "set target to 1: up an octave in half a second"
         },
         "7": {
             "name": "vco~",
             "id": 496,
-            "position_x": 300,
-            "position_y": 315,
+            "position_x": 30,
+            "position_y": 585,
             "width": 199,
             "height": 182,
             "visibility": "show_all",
@@ -184,7 +199,7 @@
             "name": "vca~",
             "id": 533,
             "position_x": 30,
-            "position_y": 585,
+            "position_y": 790,
             "width": 168,
             "height": 126,
             "visibility": "show_all",
@@ -195,8 +210,8 @@
         "9": {
             "name": "scope~",
             "id": 570,
-            "position_x": 300,
-            "position_y": 545,
+            "position_x": 30,
+            "position_y": 945,
             "width": 308,
             "height": 248,
             "visibility": "show_all",
@@ -208,7 +223,7 @@
             "name": "fader_out~",
             "id": 607,
             "position_x": 30,
-            "position_y": 765,
+            "position_y": 1220,
             "width": 70,
             "height": 308,
             "visibility": "show_all",
@@ -221,8 +236,8 @@
             "init": "comment the envelope shapes each note",
             "name": "comment",
             "id": 644,
-            "position_x": 634,
-            "position_y": 1000,
+            "position_x": 364,
+            "position_y": 1545,
             "width": 187,
             "height": 30,
             "visibility": "show_all",
@@ -246,7 +261,7 @@
             "name": "close",
             "id": 681,
             "position_x": 24,
-            "position_y": 1103,
+            "position_y": 1558,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -263,14 +278,14 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "trigger",
-            "dest_node": 422,
+            "source_output_name": "signal",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "trigger"
+            "dest_input_name": "pitch"
         },
         "1": {
             "source_node": 496,
@@ -283,7 +298,7 @@
             "dest_input_name": "left in"
         },
         "2": {
-            "source_node": 422,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "signal",

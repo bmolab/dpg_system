@@ -1,11 +1,11 @@
 {
-    "height": 972,
-    "width": 1359,
+    "height": 721,
+    "width": 1323,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 533,
     "name": "slider_bank_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/slider_bank_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 511,
+            "position_x": 475,
             "position_y": 45,
             "width": 808,
-            "height": 716,
+            "height": 616,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "slider_bank is a row of NAMED sliders, each of which sends a message when moved.\n\nAn ordinary slider sends a bare number, and the patch has to know from the \nwiring what that number was for. A slider bank sends the name with the value, \nso one outlet can carry a whole control panel: move the \"spine\" slider and \n\"spine 0.4\" comes out, move \"left_arm\" and \"left_arm 0.7\" does.\n\nThat is what makes it scale. Twenty separate sliders means twenty cords and \ntwenty places to be wrong; one bank means one cord and a name you can read.\n\nThe message is a template you set - by default \"{name} {value}\", but it can be \nanything, so \"weight {name} {value}\" produces messages ready for a node that \nexpects that shape.\n\ngain is a different thing that looks similar: a single slider that MULTIPLIES \nwhatever passes through it, rather than sending its own value. Signal in, \nscaled signal out.\n\nSYNTAX:\nslider_bank <count: int>\nslider_bank <name> <name> ...\ngain <max: float>\n\nEXAMPLE:\nslider_bank root spine left_arm right_arm\n\nINPUTS and PARAMETERS - slider_bank:\n\nin:\nAccepts messages: \n  set <name or index> <value>   move one slider, and send its message\n  send                          send every slider's message, in order\nA plain list of numbers sets the sliders in order.\n\nmessage:\nThe template each slider fills in. \"{name}\" and \"{value}\" are replaced.\n\nmin / max:\nThe range every slider in the bank shares.\n\nINPUTS and PARAMETERS - gain:\n\nin:\nThe signal to scale. Numbers, NumPy arrays and PyTorch tensors all pass through.\n\nmax:\nThe top of the slider's range. Above 1.0 the node can amplify as well as \nattenuate.\n\nOUTPUTS: \n\nmessages (slider_bank):\nThe filled-in message for whichever slider moved, as a list.\n\nout (gain):\nThe input multiplied by the slider position.",
+                    "value": "slider_bank is a row of NAMED sliders, each of which sends a message when moved.\n\nAn ordinary slider sends a bare number, and the patch has to know from the \nwiring what that number was for. A slider bank sends the name with the value, \nso one outlet can carry a whole control panel: move the \"spine\" slider and \n\"spine 0.4\" comes out, move \"left_arm\" and \"left_arm 0.7\" does.\n\nThat is what makes it scale. Twenty separate sliders means twenty cords and \ntwenty places to be wrong; one bank means one cord and a name you can read.\n\nThe message is a template you set - by default \"{name} {value}\", but it can be \nanything, so \"weight {name} {value}\" produces messages ready for a node that \nexpects that shape.\n\nSYNTAX:\nslider_bank <count: int>\nslider_bank <name> <name> ...\n\nEXAMPLE:\nslider_bank root spine left_arm right_arm\n\nINPUTS and PARAMETERS:\n\nin:\nAccepts messages: \n  set <name or index> <value>   move one slider, and send its message\n  send                          send every slider's message, in order\nA plain list of numbers sets the sliders in order.\n\nmessage:\nThe template each slider fills in. \"{name}\" and \"{value}\" are replaced.\n\nmin / max:\nThe range every slider in the bank shares.\n\nOUTPUTS: \n\nmessages:\nThe filled-in message for whichever slider moved, as a list.\n\nRELATED:\nslider is a single one, sending a bare number. \ngain is a single slider that scales what passes through it.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 700,
+                    "value": 600,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,38 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "slider_bank is a row of NAMED sliders, each of which sends a message when moved.\n\nAn ordinary slider sends a bare number, and the patch has to know from the \nwiring what that number was for. A slider bank sends the name with the value, \nso one outlet can carry a whole control panel: move the \"spine\" slider and \n\"spine 0.4\" comes out, move \"left_arm\" and \"left_arm 0.7\" does.\n\nThat is what makes it scale. Twenty separate sliders means twenty cords and \ntwenty places to be wrong; one bank means one cord and a name you can read.\n\nThe message is a template you set - by default \"{name} {value}\", but it can be \nanything, so \"weight {name} {value}\" produces messages ready for a node that \nexpects that shape.\n\ngain is a different thing that looks similar: a single slider that MULTIPLIES \nwhatever passes through it, rather than sending its own value. Signal in, \nscaled signal out.\n\nSYNTAX:\nslider_bank <count: int>\nslider_bank <name> <name> ...\ngain <max: float>\n\nEXAMPLE:\nslider_bank root spine left_arm right_arm\n\nINPUTS and PARAMETERS - slider_bank:\n\nin:\nAccepts messages: \n  set <name or index> <value>   move one slider, and send its message\n  send                          send every slider's message, in order\nA plain list of numbers sets the sliders in order.\n\nmessage:\nThe template each slider fills in. \"{name}\" and \"{value}\" are replaced.\n\nmin / max:\nThe range every slider in the bank shares.\n\nINPUTS and PARAMETERS - gain:\n\nin:\nThe signal to scale. Numbers, NumPy arrays and PyTorch tensors all pass through.\n\nmax:\nThe top of the slider's range. Above 1.0 the node can amplify as well as \nattenuate.\n\nOUTPUTS: \n\nmessages (slider_bank):\nThe filled-in message for whichever slider moved, as a list.\n\nout (gain):\nThe input multiplied by the slider position."
+            "text": "slider_bank is a row of NAMED sliders, each of which sends a message when moved.\n\nAn ordinary slider sends a bare number, and the patch has to know from the \nwiring what that number was for. A slider bank sends the name with the value, \nso one outlet can carry a whole control panel: move the \"spine\" slider and \n\"spine 0.4\" comes out, move \"left_arm\" and \"left_arm 0.7\" does.\n\nThat is what makes it scale. Twenty separate sliders means twenty cords and \ntwenty places to be wrong; one bank means one cord and a name you can read.\n\nThe message is a template you set - by default \"{name} {value}\", but it can be \nanything, so \"weight {name} {value}\" produces messages ready for a node that \nexpects that shape.\n\nSYNTAX:\nslider_bank <count: int>\nslider_bank <name> <name> ...\n\nEXAMPLE:\nslider_bank root spine left_arm right_arm\n\nINPUTS and PARAMETERS:\n\nin:\nAccepts messages: \n  set <name or index> <value>   move one slider, and send its message\n  send                          send every slider's message, in order\nA plain list of numbers sets the sliders in order.\n\nmessage:\nThe template each slider fills in. \"{name}\" and \"{value}\" are replaced.\n\nmin / max:\nThe range every slider in the bank shares.\n\nOUTPUTS: \n\nmessages:\nThe filled-in message for whichever slider moved, as a list.\n\nRELATED:\nslider is a single one, sending a bare number. \ngain is a single slider that scales what passes through it."
         },
         "3": {
-            "name": "load_bang",
+            "name": "slider_bank",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
-            "name": "slider_bank",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 132,
             "width": 202,
             "height": 84,
             "visibility": "show_all",
@@ -146,12 +121,12 @@
             },
             "init": "slider_bank root spine left_arm"
         },
-        "6": {
+        "4": {
             "init": "comment move any slider",
             "name": "comment",
-            "id": 459,
-            "position_x": 264,
-            "position_y": 345,
+            "id": 385,
+            "position_x": 258,
+            "position_y": 275,
             "width": 101,
             "height": 30,
             "visibility": "show_all",
@@ -171,11 +146,11 @@
             },
             "comment": "move any slider"
         },
-        "7": {
+        "5": {
             "name": "list",
-            "id": 496,
+            "id": 422,
             "position_x": 30,
-            "position_y": 385,
+            "position_y": 315,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -194,12 +169,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "init": "comment the name comes with the value",
             "name": "comment",
-            "id": 533,
-            "position_x": 264,
-            "position_y": 435,
+            "id": 459,
+            "position_x": 258,
+            "position_y": 365,
             "width": 187,
             "height": 30,
             "visibility": "show_all",
@@ -219,167 +194,11 @@
             },
             "comment": "the name comes with the value"
         },
-        "9": {
-            "name": "signal",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 480,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 3.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "shape",
-                    "value": "sin",
-                    "value_type": "str"
-                },
-                "3": {
-                    "name": "range",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "4": {
-                    "name": "bipolar",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "5": {
-                    "name": "vector size",
-                    "value": 1,
-                    "value_type": "int"
-                }
-            },
-            "init": "signal 3.0 sin"
-        },
-        "10": {
-            "name": "gain",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 575,
-            "width": 208,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": 0.7,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "max",
-                    "value": 1.0,
-                    "value_type": "float"
-                }
-            },
-            "init": "gain 1.0"
-        },
-        "11": {
-            "name": "plot",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 660,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
-                },
-                "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": -1.2,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 1.2,
-                    "value_type": "float"
-                }
-            }
-        },
-        "12": {
-            "init": "comment gain scales what passes through it",
-            "name": "comment",
-            "id": 681,
-            "position_x": 264,
-            "position_y": 845,
-            "width": 217,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "gain scales what passes through it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "gain scales what passes through it"
-        },
-        "13": {
+        "7": {
             "name": "close",
-            "id": 718,
+            "id": 496,
             "position_x": 24,
-            "position_y": 868,
+            "position_y": 387,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -399,51 +218,11 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "messages",
-            "dest_node": 496,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
-        },
-        "3": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "4": {
-            "source_node": 607,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
         }
     }
 }
